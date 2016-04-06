@@ -1,0 +1,3 @@
+rootProject.name = 'imposter'
+
+include ':core', ':server', ':plugin:hbase'
