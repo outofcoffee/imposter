@@ -1,9 +1,9 @@
-package com.gatehill.imposter;
+package com.gatehill.imposter.server;
 
 import io.vertx.core.Launcher;
 
 /**
- * @author pcornish
+ * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public class ImposterLauncher extends Launcher {
     private static final String VERTX_LOGGER_FACTORY = "vertx.logger-delegate-factory-class-name";

@@ -1,4 +1,6 @@
 {
-  "viewName": "example",
-  "responseFile": "hbase-example.json"
+  "plugin": "com.gatehill.imposter.plugins.hbase.HBasePluginImpl",
+  "tableName": "exampleTable",
+  "prefix": "examplePrefix",
+  "responseFile": "hbase-data.json"
 }

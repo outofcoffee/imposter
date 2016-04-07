@@ -1,7 +1,7 @@
 package com.gatehill.imposter;
 
 /**
- * @author pcornish
+ * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public class ImposterConfig {
     private String host;

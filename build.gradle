@@ -19,9 +19,9 @@ subprojects {
     }
 
     ext {
-        version_slf4j = '1.7.12'
+        version_vertx = '3.2.0'
+        version_log4j = '2.5'
         version_guice = '4.0'
         version_hbaseApi = '0.98.8-hadoop2'
-        version_vertxWeb = '3.2.0'
     }
 }

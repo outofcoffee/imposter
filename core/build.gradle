@@ -8,7 +8,7 @@ dependencies {
     compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.5'
 
     compile "com.google.inject:guice:$version_guice"
-    compile "io.vertx:vertx-web:$version_vertxWeb"
+    compile "io.vertx:vertx-web:$version_vertx"
 
     testCompile group: 'junit', name: 'junit', version: '4.11'
 }

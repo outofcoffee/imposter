@@ -10,5 +10,7 @@
             <AppenderRef ref="Console"/>
         </Root>
         <Logger name="io.netty" level="warn" />
+        <Logger name="httpclient.wire" level="warn" />
+        <Logger name="org.apache" level="warn" />
     </Loggers>
 </Configuration>
