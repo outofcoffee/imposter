@@ -18,7 +18,7 @@ dependencies {
     // test
     testCompile group: 'junit', name: 'junit', version: "$version_junit"
     testCompile "io.vertx:vertx-unit:$version_vertx"
-    testCompile 'com.jayway.restassured:rest-assured:2.9.0'
+    testCompile "com.jayway.restassured:rest-assured:$version_restAssured"
 }
 
 shadowJar {

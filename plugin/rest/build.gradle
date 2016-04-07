@@ -1,0 +1,15 @@
+apply plugin: 'java'
+
+compileJava {
+    sourceCompatibility = 1.8
+}
+
+dependencies {
+    compile project (':core')
+
+    // test
+    testCompile project (':server')
+    testCompile group: 'junit', name: 'junit', version: "$version_junit"
+    testCompile "io.vertx:vertx-unit:$version_vertx"
+    testCompile "com.jayway.restassured:rest-assured:$version_restAssured"
+}

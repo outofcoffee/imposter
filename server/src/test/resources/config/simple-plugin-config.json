@@ -1,6 +1,6 @@
 {
   "plugin": "com.gatehill.imposter.plugin.test.TestPluginImpl",
   "baseUrl": "/example",
-  "responseFile": "simple-plugin-data.json.json",
+  "responseFile": "simple-plugin-data.json",
   "customProperty": "testValue"
 }

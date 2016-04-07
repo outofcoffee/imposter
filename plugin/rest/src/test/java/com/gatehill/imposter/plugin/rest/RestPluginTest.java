@@ -1,9 +1,6 @@
-package com.gatehill.imposter.server;
+package com.gatehill.imposter.plugin.rest;
 
-import com.gatehill.imposter.plugin.PluginManager;
-import com.gatehill.imposter.plugin.test.TestPluginConfig;
-import com.gatehill.imposter.plugin.test.TestPluginImpl;
-import com.gatehill.imposter.util.InjectorUtil;
+import com.gatehill.imposter.server.ImposterVerticle;
 import com.jayway.restassured.RestAssured;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -21,11 +18,12 @@ import static com.gatehill.imposter.server.ImposterVerticle.CONFIG_PREFIX;
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 
+
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 @RunWith(VertxUnitRunner.class)
-public class ImposterVerticleTest {
+public class RestPluginTest {
     private static final int LISTEN_PORT = 8443;
     private static final String HOST = "localhost";
 
@@ -36,8 +34,8 @@ public class ImposterVerticleTest {
     public void setUp(TestContext testContext) throws Exception {
         final Async async = testContext.async();
 
-        System.setProperty(CONFIG_PREFIX + "configDir", Paths.get(ImposterVerticleTest.class.getResource("/config").toURI()).toString());
-        System.setProperty(CONFIG_PREFIX + "pluginClass", TestPluginImpl.class.getCanonicalName());
+        System.setProperty(CONFIG_PREFIX + "configDir", Paths.get(RestPluginTest.class.getResource("/config").toURI()).toString());
+        System.setProperty(CONFIG_PREFIX + "pluginClass", RestPluginImpl.class.getCanonicalName());
         System.setProperty(CONFIG_PREFIX + "host", HOST);
         System.setProperty(CONFIG_PREFIX + "listenPort", String.valueOf(LISTEN_PORT));
 
@@ -53,26 +51,22 @@ public class ImposterVerticleTest {
     }
 
     @Test
-    public void testPluginLoadAndConfig(TestContext testContext) throws Exception {
-        final PluginManager pluginManager = InjectorUtil.getInjector().getInstance(PluginManager.class);
-
-        final TestPluginImpl plugin = pluginManager.getPlugin(TestPluginImpl.class.getCanonicalName());
-        testContext.assertNotNull(plugin);
-
-        testContext.assertNotNull(plugin.getConfigs());
-        testContext.assertEquals(1, plugin.getConfigs().size());
-
-        final TestPluginConfig pluginConfig = plugin.getConfigs().get(0);
-        testContext.assertEquals("/example", pluginConfig.getBaseUrl());
-        testContext.assertEquals("simple-plugin-data.json", pluginConfig.getResponseFile());
-        testContext.assertEquals("testValue", pluginConfig.getCustomProperty());
-    }
-
-    @Test
     public void testRequestSuccess() throws Exception {
         given().when()
                 .get("/example")
                 .then()
-                .statusCode(equalTo(HttpURLConnection.HTTP_OK));
+                .statusCode(equalTo(HttpURLConnection.HTTP_OK))
+                .and()
+                .contentType(equalTo("application/json"))
+                .and()
+                .body("testKey", equalTo("testValue"));
+    }
+
+    @Test
+    public void testRequestNotFound() throws Exception {
+        given().when()
+                .get("/nonExistentEndpoint")
+                .then()
+                .statusCode(equalTo(HttpURLConnection.HTTP_NOT_FOUND));
     }
 }
