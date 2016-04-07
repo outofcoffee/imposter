@@ -5,6 +5,7 @@ import com.gatehill.imposter.plugin.Plugin;
 import com.gatehill.imposter.plugin.PluginManager;
 import com.gatehill.imposter.plugin.config.BaseConfig;
 import com.gatehill.imposter.plugin.config.ConfigurablePlugin;
+import com.gatehill.imposter.util.InjectorUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.*;
@@ -32,12 +33,13 @@ public class ImposterVerticle extends AbstractVerticle {
     public static final String CONFIG_PREFIX = "com.gatehill.imposter.";
 
     @Inject
+    private Injector injector;
+
+    @Inject
     private ImposterConfig imposterConfig;
 
     @Inject
     private PluginManager pluginManager;
-
-    private Injector injector;
 
     @Override
     public void start() {
@@ -58,8 +60,7 @@ public class ImposterVerticle extends AbstractVerticle {
 
     @SuppressWarnings("unchecked")
     private void initDependencyInjection() {
-        injector = Guice.createInjector(getModules());
-        injector.injectMembers(this);
+        InjectorUtil.create(getModules()).injectMembers(this);
 
         ofNullable(System.getProperty(CONFIG_PREFIX + "pluginClass"))
                 .ifPresent(clazz -> {

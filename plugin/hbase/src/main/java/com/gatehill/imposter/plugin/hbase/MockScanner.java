@@ -1,4 +1,4 @@
-package com.gatehill.imposter.plugins.hbase;
+package com.gatehill.imposter.plugin.hbase;
 
 import com.gatehill.imposter.plugin.config.BaseConfig;
 import org.apache.hadoop.hbase.rest.model.ScannerModel;
@@ -8,12 +8,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public class MockScanner {
+class MockScanner {
     private BaseConfig config;
     private ScannerModel scanner;
     private AtomicInteger rowCounter = new AtomicInteger();
 
-    public MockScanner(BaseConfig config, ScannerModel scanner) {
+    MockScanner(BaseConfig config, ScannerModel scanner) {
         this.config = config;
         this.scanner = scanner;
     }
@@ -26,7 +26,7 @@ public class MockScanner {
         return scanner;
     }
 
-    public AtomicInteger getRowCounter() {
+    AtomicInteger getRowCounter() {
         return rowCounter;
     }
 }

@@ -1,11 +1,11 @@
-package com.gatehill.imposter.plugins.hbase;
+package com.gatehill.imposter.plugin.hbase;
 
 import com.gatehill.imposter.plugin.config.BaseConfig;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public class HBaseConfig extends BaseConfig {
+public class HBasePluginConfig extends BaseConfig {
     private String tableName;
     private String prefix;
 

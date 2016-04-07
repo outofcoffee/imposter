@@ -1,5 +1,5 @@
 {
-  "plugin": "com.gatehill.imposter.plugins.hbase.HBasePluginImpl",
+  "plugin": "com.gatehill.imposter.plugin.hbase.HBasePluginImpl",
   "tableName": "exampleTable",
   "prefix": "examplePrefix",
   "responseFile": "hbase-data.json"

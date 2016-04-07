@@ -15,11 +15,10 @@ dependencies {
     compile group: 'org.apache.logging.log4j', name: 'log4j-1.2-api', version: "$version_log4j"
     compile group: 'org.apache.logging.log4j', name: 'log4j-jul', version: "$version_log4j"
 
-    // plugins
-    testCompile project (':plugin:hbase')
-
+    // test
+    testCompile group: 'junit', name: 'junit', version: "$version_junit"
     testCompile "io.vertx:vertx-unit:$version_vertx"
-    testCompile group: 'junit', name: 'junit', version: '4.11'
+    testCompile 'com.jayway.restassured:rest-assured:2.9.0'
 }
 
 shadowJar {

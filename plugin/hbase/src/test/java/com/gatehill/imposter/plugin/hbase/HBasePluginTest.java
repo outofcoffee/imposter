@@ -1,6 +1,5 @@
-package com.gatehill.imposter;
+package com.gatehill.imposter.plugin.hbase;
 
-import com.gatehill.imposter.plugins.hbase.HBasePluginImpl;
 import com.gatehill.imposter.server.ImposterVerticle;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -14,7 +13,6 @@ import org.apache.hadoop.hbase.rest.client.Client;
 import org.apache.hadoop.hbase.rest.client.Cluster;
 import org.apache.hadoop.hbase.rest.client.RemoteHTable;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

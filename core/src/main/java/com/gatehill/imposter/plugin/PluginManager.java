@@ -31,7 +31,8 @@ public class PluginManager {
         return Collections.unmodifiableCollection(plugins.values());
     }
 
-    public Plugin getPlugin(String pluginClassName) {
-        return plugins.get(pluginClassName);
+    @SuppressWarnings("unchecked")
+    public <P extends Plugin> P getPlugin(String pluginClassName) {
+        return (P) plugins.get(pluginClassName);
     }
 }

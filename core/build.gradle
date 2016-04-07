@@ -10,5 +10,5 @@ dependencies {
     compile "com.google.inject:guice:$version_guice"
     compile "io.vertx:vertx-web:$version_vertx"
 
-    testCompile group: 'junit', name: 'junit', version: '4.11'
+    testCompile group: 'junit', name: 'junit', version: "$version_junit"
 }

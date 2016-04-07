@@ -1,4 +1,4 @@
-package com.gatehill.imposter.plugins.hbase;
+package com.gatehill.imposter.plugin.hbase;
 
 import com.gatehill.imposter.ImposterConfig;
 import com.gatehill.imposter.plugin.config.BaseConfig;
@@ -36,25 +36,25 @@ import static java.util.Optional.ofNullable;
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public class HBasePluginImpl extends ConfiguredPlugin<HBaseConfig> {
+public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> {
     private static final Logger LOGGER = LogManager.getLogger(HBasePluginImpl.class);
 
     @Inject
     private ImposterConfig imposterConfig;
 
-    private Map<String, HBaseConfig> tableConfigs;
+    private Map<String, HBasePluginConfig> tableConfigs;
     private AtomicInteger scannerIdCounter = new AtomicInteger();
     private Map<Integer, MockScanner> createdScanners = Maps.newConcurrentMap();
 
     @Override
-    protected Class<HBaseConfig> getConfigClass() {
-        return HBaseConfig.class;
+    protected Class<HBasePluginConfig> getConfigClass() {
+        return HBasePluginConfig.class;
     }
 
     @Override
-    protected void configurePlugin(List<HBaseConfig> configs) {
+    protected void configurePlugin(List<HBasePluginConfig> configs) {
         this.tableConfigs = configs.stream()
-                .collect(Collectors.toConcurrentMap(HBaseConfig::getTableName, hBaseConfig -> hBaseConfig));
+                .collect(Collectors.toConcurrentMap(HBasePluginConfig::getTableName, hBaseConfig -> hBaseConfig));
     }
 
     @Override
@@ -88,7 +88,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBaseConfig> {
             }
 
             LOGGER.info("Received scanner request for table: {}", tableName);
-            final HBaseConfig config = tableConfigs.get(tableName);
+            final HBasePluginConfig config = tableConfigs.get(tableName);
 
             // parse request
             final ScannerModel scannerModel;
