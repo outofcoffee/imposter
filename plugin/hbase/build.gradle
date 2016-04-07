@@ -1,0 +1,22 @@
+apply plugin: 'java'
+
+compileJava {
+    sourceCompatibility = 1.8
+}
+
+dependencies {
+    compile project (':core')
+
+    // hbase
+    compile ("org.apache.hbase:hbase-client:$version_hbaseApi") {
+        exclude module: 'slf4j-log4j12'
+    }
+    compile ("org.apache.hbase:hbase-rest:$version_hbaseApi") {
+        exclude module: 'slf4j-log4j12'
+    }
+
+    // test
+    testCompile project (':server')
+    testCompile group: 'junit', name: 'junit', version: "$version_junit"
+    testCompile "io.vertx:vertx-unit:$version_vertx"
+}
