@@ -1,5 +1,7 @@
 # Imposter: A multipurpose mock server [![Build Status](https://travis-ci.org/outofcoffee/imposter.svg?branch=master)](https://travis-ci.org/outofcoffee/imposter)
 
+Decouple your integration tests from the cloud/various back-end systems. Imposter is a mock server with a suite of plugins. 
+
 Example:
 
      java -jar distro/build/libs/imposter.jar \
@@ -22,16 +24,6 @@ Example:
      java -jar distro/build/libs/imposter.jar \
             -Dcom.gatehill.imposter.plugin=com.gatehill.imposter.plugin.rest.RestPluginImpl \
             -Dcom.gatehill.imposter.configDir=./plugin/rest/src/test/resources/config
-
-## hbase
-
-Basic HBase mock implementation. Uses protobuf for wire transport. Supports dummy Scanner queries.
-
-Example:
-
-     java -jar distro/build/libs/imposter.jar \
-            -Dcom.gatehill.imposter.plugin=com.gatehill.imposter.plugin.hbase.HBasePluginImpl \
-            -Dcom.gatehill.imposter.configDir=./plugin/hbase/src/test/resources/config
 
 ## sfdc
 
@@ -57,6 +49,16 @@ Example:
 This uses a self-signed certificate for TLS/SSL. You can also choose your own keystore.
 If you need to trust the self-signed certificate when using the default, the keystore is located at
 `server/src/main/resources/keystore` and uses the secure password 'password'.
+
+## hbase
+
+Basic HBase mock implementation. Uses protobuf for wire transport. Supports dummy Scanner queries.
+
+Example:
+
+     java -jar distro/build/libs/imposter.jar \
+            -Dcom.gatehill.imposter.plugin=com.gatehill.imposter.plugin.hbase.HBasePluginImpl \
+            -Dcom.gatehill.imposter.configDir=./plugin/hbase/src/test/resources/config
 
 # Usage
 
