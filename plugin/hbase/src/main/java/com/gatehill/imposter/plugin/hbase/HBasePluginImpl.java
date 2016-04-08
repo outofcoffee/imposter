@@ -3,8 +3,8 @@ package com.gatehill.imposter.plugin.hbase;
 import com.gatehill.imposter.ImposterConfig;
 import com.gatehill.imposter.plugin.config.BaseConfig;
 import com.gatehill.imposter.plugin.config.ConfiguredPlugin;
+import com.gatehill.imposter.util.FileUtil;
 import com.google.common.collect.Maps;
-import com.google.common.io.CharStreams;
 import com.google.inject.Inject;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
@@ -21,11 +21,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -130,8 +126,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> {
             final int scannerId = scannerIdCounter.incrementAndGet();
             createdScanners.put(scannerId, new MockScanner(config, scannerModel));
 
-            final String resultUrl = "http://" + imposterConfig.getHost() + ":" + imposterConfig.getListenPort() +
-                    baseUrl + "/" + tableName + "/scanner/" + scannerId;
+            final String resultUrl = imposterConfig.getServerUrl() + baseUrl + "/" + tableName + "/scanner/" + scannerId;
 
             routingContext.response()
                     .putHeader("Location", resultUrl)
@@ -173,14 +168,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> {
             final MockScanner scanner = createdScanners.get(Integer.valueOf(scannerId));
 
             // load result
-            final JsonArray results;
-            try (InputStream is = Files.newInputStream(Paths.get(imposterConfig.getConfigDir(), mockConfig.getResponseFile()))) {
-                results = new JsonArray(CharStreams.toString(new InputStreamReader(is)));
-
-            } catch (IOException e) {
-                routingContext.fail(e);
-                return;
-            }
+            final JsonArray results = FileUtil.loadResponseAsJsonArray(imposterConfig, mockConfig);
 
             // build results
             final CellSetModel cellSetModel = new CellSetModel();

@@ -11,6 +11,7 @@ import com.google.common.collect.Maps;
 import com.google.inject.*;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.net.JksOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.impl.BodyHandlerImpl;
 import org.apache.logging.log4j.LogManager;
@@ -19,6 +20,9 @@ import org.apache.logging.log4j.Logger;
 import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 
@@ -62,7 +66,7 @@ public class ImposterVerticle extends AbstractVerticle {
     private void initDependencyInjection() {
         InjectorUtil.create(getModules()).injectMembers(this);
 
-        ofNullable(System.getProperty(CONFIG_PREFIX + "pluginClass"))
+        ofNullable(System.getProperty(CONFIG_PREFIX + "plugin"))
                 .ifPresent(clazz -> {
                     try {
                         pluginManager.registerClass((Class<? extends Plugin>) Class.forName(clazz));
@@ -102,6 +106,16 @@ public class ImposterVerticle extends AbstractVerticle {
         imposterConfig.setHost(ofNullable(System.getProperty(CONFIG_PREFIX + "host"))
                 .filter(h -> !h.isEmpty())
                 .orElse("0.0.0.0"));
+
+        imposterConfig.setTlsEnabled(Boolean.parseBoolean(System.getProperty(CONFIG_PREFIX + "tls", "false")));
+
+        try {
+            final String scheme = (imposterConfig.isTlsEnabled() ? "https" : "http") + "://";
+            imposterConfig.setServerUrl(new URI(scheme + imposterConfig.getHost() + ":" + imposterConfig.getListenPort()));
+
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
 
         imposterConfig.setConfigDir(ofNullable(System.getProperty(CONFIG_PREFIX + "configDir"))
                 .map(cps -> (cps.startsWith(".") ? System.getProperty("user.dir") + cps.substring(1) : cps))
@@ -146,8 +160,23 @@ public class ImposterVerticle extends AbstractVerticle {
         LOGGER.info("Starting mock server on {}:{}", imposterConfig.getHost(), imposterConfig.getListenPort());
         final HttpServerOptions serverOptions = new HttpServerOptions();
 
-        // TODO: configure this + keystore and update test config to enable HTTPS
-        serverOptions.setSsl(false);
+        // configure keystore and enable HTTPS
+        if (imposterConfig.isTlsEnabled()) {
+            LOGGER.info("TLS is enabled");
+            try {
+                final JksOptions jksOptions = new JksOptions();
+                jksOptions.setPath(Paths.get(ImposterVerticle.class.getResource("/keystore/ssl.jks").toURI()).toString());
+                jksOptions.setPassword("password");
+                serverOptions.setKeyStoreOptions(jksOptions);
+                serverOptions.setSsl(true);
+
+            } catch (URISyntaxException e) {
+                throw new RuntimeException("Error enabling TLS", e);
+            }
+
+        } else {
+            LOGGER.info("TLS is disabled");
+        }
 
         vertx.createHttpServer(serverOptions)
                 .requestHandler(router::accept)

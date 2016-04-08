@@ -15,7 +15,6 @@ dependencies {
     compile group: 'org.apache.logging.log4j', name: 'log4j-jul', version: "$version_log4j"
 
     // test
-    testCompile group: 'junit', name: 'junit', version: "$version_junit"
-    testCompile "io.vertx:vertx-unit:$version_vertx"
+    testCompile project (':test')
     testCompile "com.jayway.restassured:rest-assured:$version_restAssured"
 }

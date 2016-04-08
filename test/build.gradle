@@ -1,0 +1,14 @@
+apply plugin: 'java'
+
+compileJava {
+    sourceCompatibility = 1.8
+}
+
+dependencies {
+    compile project (':core')
+    compile project (':server')
+
+    // test
+    compile group: 'junit', name: 'junit', version: "$version_junit"
+    compile "io.vertx:vertx-unit:$version_vertx"
+}

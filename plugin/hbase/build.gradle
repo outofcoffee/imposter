@@ -16,7 +16,5 @@ dependencies {
     }
 
     // test
-    testCompile project (':server')
-    testCompile group: 'junit', name: 'junit', version: "$version_junit"
-    testCompile "io.vertx:vertx-unit:$version_vertx"
+    testCompile project (':test')
 }

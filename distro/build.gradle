@@ -12,6 +12,7 @@ dependencies {
     // plugins
     compile project (':plugin:rest')
     compile project (':plugin:hbase')
+    compile project (':plugin:sfdc')
 }
 
 shadowJar {
