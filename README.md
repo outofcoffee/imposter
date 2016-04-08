@@ -9,7 +9,7 @@ Example:
 
 This starts a mock server using the simple REST plugin. Responses are served in line with the configuration files
 inside the `config` folder. With the example above, you can hit the URL
-[http://localhost:8080/example](http://localhost:8443/example) to see the mock response.
+[http://localhost:8080/example](http://localhost:8080/example) to see the mock response.
 
 # Plugins
 
