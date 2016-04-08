@@ -89,4 +89,18 @@ public class SfdcPluginImplTest extends BaseVerticleTest {
 
         api.getSObject("Account", "nonExistentId").as(Account.class);
     }
+
+    @Test
+    public void testCreateRecord(TestContext testContext) {
+        // Post to create object, like:
+        // http://localhost:8443/services/data/v20.0/sobjects/Account/
+
+        final Account account = new Account();
+        account.setName("NewAccount");
+
+        final ForceApi api = buildForceApi();
+
+        final String actual = api.createSObject("Account", account);
+        testContext.assertNotNull(actual);
+    }
 }

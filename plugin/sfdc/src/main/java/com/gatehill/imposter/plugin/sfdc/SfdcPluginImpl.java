@@ -16,6 +16,7 @@ import java.net.HttpURLConnection;
 import java.util.List;
 import java.util.Optional;
 import java.util.StringTokenizer;
+import java.util.UUID;
 
 import static java.util.Optional.*;
 
@@ -71,7 +72,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
             // enrich records
             final JsonArray records = FileUtil.loadResponseAsJsonArray(imposterConfig, config);
             for (int i = 0; i < records.size(); i++) {
-                addRecordAttributes(records.getJsonObject(i), apiVersion, config);
+                addRecordAttributes(records.getJsonObject(i), apiVersion, config.getsObjectName());
             }
 
             final JsonObject responseWrapper = new JsonObject();
@@ -79,7 +80,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
             responseWrapper.put("records", records);
             responseWrapper.put("totalSize", records.size());
 
-            LOGGER.info("Sending {} records in response to query: {}", records.size(), query);
+            LOGGER.info("Sending {} SObjects in response to query: {}", records.size(), query);
 
             final HttpServerResponse response = routingContext.response();
 
@@ -90,7 +91,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
                     .end(Buffer.buffer(responseWrapper.encodePrettily()));
         });
 
-        // SObject handler
+        // get SObject handler
         configs.forEach(config -> {
             router.get("/services/data/:apiVersion/sobjects/" + config.getsObjectName() + "/:sObjectId")
                     .handler(routingContext -> {
@@ -100,12 +101,12 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
                         // find and enrich record
                         final Optional<JsonObject> result = findSObjectById(sObjectId,
                                 FileUtil.loadResponseAsJsonArray(imposterConfig, config))
-                                .map(r -> addRecordAttributes(r, apiVersion, config));
+                                .map(r -> addRecordAttributes(r, apiVersion, config.getsObjectName()));
 
                         final HttpServerResponse response = routingContext.response();
 
                         if (result.isPresent()) {
-                            LOGGER.info("Sending record with ID: {}", sObjectId);
+                            LOGGER.info("Sending SObject with ID: {}", sObjectId);
 
                             ofNullable(config.getContentType())
                                     .ifPresent(contentType -> response.putHeader("Content-Type", contentType));
@@ -120,6 +121,38 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
                         }
                     });
         });
+
+        // create SObject handler
+        router.post("/services/data/:apiVersion/sobjects/:sObjectName")
+                .handler(routingContext -> {
+                    final String sObjectName = routingContext.request().getParam("sObjectName");
+                    final JsonObject sObject = routingContext.getBodyAsJson();
+
+                    LOGGER.info("Received create request for {}: {}", sObjectName, sObject);
+
+                    final JsonObject result = new JsonObject();
+
+                    // Note: ID has to be lowercase, for some reason
+                    result.put("id", generateBase62Id());
+                    result.put("success", true);
+
+                    routingContext.response()
+                            .putHeader("Content-Type", "application/json")
+                            .setStatusCode(HttpURLConnection.HTTP_CREATED)
+                            .end(Buffer.buffer(result.encodePrettily()));
+                });
+    }
+
+    private String generateBase62Id() {
+        final String characters = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+        long b10 = Math.abs(UUID.randomUUID().hashCode());
+        String ret = "";
+        while (b10 > 0) {
+            ret = characters.charAt((int) (b10 % 62)) + ret;
+            b10 /= 62;
+        }
+        return ret;
     }
 
     private Optional<String> getSObjectName(String query) {
@@ -142,13 +175,13 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
         return empty();
     }
 
-    private JsonObject addRecordAttributes(JsonObject record, String apiVersion, SfdcPluginConfig config) {
+    private JsonObject addRecordAttributes(JsonObject record, String apiVersion, String sObjectName) {
         final String sObjectId = ofNullable(record.getString(FIELD_ID))
                 .orElseThrow(() -> new RuntimeException(String.format("Record missing '%s' field: %s", FIELD_ID, record)));
 
         final JsonObject attributes = new JsonObject();
-        attributes.put("type", config.getsObjectName());
-        attributes.put("url", "/services/data/" + apiVersion + "/sobjects/" + config.getsObjectName() + "/" + sObjectId);
+        attributes.put("type", sObjectName);
+        attributes.put("url", "/services/data/" + apiVersion + "/sobjects/" + sObjectName + "/" + sObjectId);
 
         record.put("attributes", attributes);
 
