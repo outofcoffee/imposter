@@ -11,7 +11,7 @@ import io.vertx.ext.unit.TestContext;
 import org.junit.Before;
 import org.junit.Test;
 
-import static com.gatehill.imposter.server.ImposterVerticle.CONFIG_PREFIX;
+import static com.gatehill.imposter.Imposter.CONFIG_PREFIX;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
@@ -31,8 +31,8 @@ public class SfdcPluginImplTest extends BaseVerticleTest {
         super.setUp(testContext);
 
         // set up trust store for TLS
-        System.setProperty("javax.net.ssl.trustStore", CryptoUtil.getKeystore(SfdcPluginImplTest.class).toString());
-        System.setProperty("javax.net.ssl.trustStorePassword", CryptoUtil.KEYSTORE_PASSWORD);
+        System.setProperty("javax.net.ssl.trustStore", CryptoUtil.getDefaultKeystore(SfdcPluginImplTest.class).toString());
+        System.setProperty("javax.net.ssl.trustStorePassword", CryptoUtil.DEFAULT_KEYSTORE_PASSWORD);
         System.setProperty("javax.net.ssl.trustStoreType", "JKS");
 
         // for localhost testing only

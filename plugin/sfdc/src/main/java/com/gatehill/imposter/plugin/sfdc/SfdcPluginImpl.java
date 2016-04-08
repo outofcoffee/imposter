@@ -58,11 +58,8 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
             // e.g. 'SELECT Name, Id from Account LIMIT 100'
             final String query = routingContext.request().getParam("q");
 
-            final String sObjectName = getSObjectName(query);
-            if (null == sObjectName) {
-                routingContext.fail(new RuntimeException(String.format("Could not determine SObject name from query: %s", query)));
-                return;
-            }
+            final String sObjectName = ofNullable(getSObjectName(query))
+                    .orElseThrow(() -> new RuntimeException(String.format("Could not determine SObject name from query: %s", query)));
 
             final SfdcPluginConfig config = configs.stream()
                     .filter(sfdcPluginConfig -> sObjectName.equalsIgnoreCase(sfdcPluginConfig.getsObjectName()))
@@ -139,16 +136,13 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
     }
 
     private JsonObject findSObjectById(String sObjectId, JsonArray records) {
-        JsonObject result = null;
         for (int i = 0; i < records.size(); i++) {
             final JsonObject currentRecord = records.getJsonObject(i);
-
             if (currentRecord.getString("Id").equalsIgnoreCase(sObjectId)) {
-                result = currentRecord;
-                break;
+                return currentRecord;
             }
         }
-        return result;
+        return null;
     }
 
     private void addRecordAttributes(JsonObject record, String apiVersion, SfdcPluginConfig config) {

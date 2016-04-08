@@ -58,8 +58,7 @@ If you want to run tests:
 
 # TODO
 
-* Enable keystore to be specified using config
-* Move system bootstrap logic out of Verticle
+* Support more SFDC methods
 * Add Dockerfile
 
 # Contributing

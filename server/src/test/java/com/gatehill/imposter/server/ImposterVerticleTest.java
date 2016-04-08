@@ -15,7 +15,7 @@ import org.junit.runner.RunWith;
 
 import java.net.HttpURLConnection;
 
-import static com.gatehill.imposter.server.ImposterVerticle.CONFIG_PREFIX;
+import static com.gatehill.imposter.Imposter.CONFIG_PREFIX;
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -24,7 +24,6 @@ import static org.hamcrest.Matchers.equalTo;
  */
 @RunWith(VertxUnitRunner.class)
 public class ImposterVerticleTest extends BaseVerticleTest {
-
     @Override
     protected Class<? extends Plugin> getPluginClass() {
         return TestPluginImpl.class;
@@ -39,7 +38,7 @@ public class ImposterVerticleTest extends BaseVerticleTest {
         super.setUp(testContext);
 
         // set up trust store for TLS
-        RestAssured.trustStore(CryptoUtil.getKeystore(ImposterVerticleTest.class).toFile(), CryptoUtil.KEYSTORE_PASSWORD);
+        RestAssured.trustStore(CryptoUtil.getDefaultKeystore(ImposterVerticleTest.class).toFile(), CryptoUtil.DEFAULT_KEYSTORE_PASSWORD);
         RestAssured.baseURI = "https://" + HOST + ":" + getListenPort();
     }
 

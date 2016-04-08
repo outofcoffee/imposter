@@ -3,6 +3,7 @@ package com.gatehill.imposter.plugin.hbase;
 import com.gatehill.imposter.ImposterConfig;
 import com.gatehill.imposter.plugin.config.BaseConfig;
 import com.gatehill.imposter.plugin.config.ConfiguredPlugin;
+import com.gatehill.imposter.plugin.hbase.model.MockScanner;
 import com.gatehill.imposter.util.FileUtil;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
@@ -143,9 +144,9 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> {
             // query param e.g. ?n=1
             final int rows = Integer.valueOf(routingContext.request().getParam("n"));
 
-            // check that the view is registered
+            // check that the table is registered
             if (!tableConfigs.containsKey(tableName)) {
-                LOGGER.error("Received mock result request for unknown table: {}", tableName);
+                LOGGER.error("Received result request for unknown table: {}", tableName);
 
                 routingContext.response()
                         .setStatusCode(HttpURLConnection.HTTP_NOT_FOUND)
@@ -156,7 +157,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> {
             // check that the scanner was created
             final BaseConfig mockConfig = tableConfigs.get(tableName);
             if (!createdScanners.containsKey(Integer.valueOf(scannerId))) {
-                LOGGER.error("Received mock result request for non-existent scanner {} for table: {}", scannerId, tableName);
+                LOGGER.error("Received result request for non-existent scanner {} for table: {}", scannerId, tableName);
 
                 routingContext.response()
                         .setStatusCode(HttpURLConnection.HTTP_NOT_FOUND)
@@ -164,7 +165,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> {
                 return;
             }
 
-            LOGGER.info("Received mock result request for {} rows from scanner {} for table: {}", rows, scannerId, tableName);
+            LOGGER.info("Received result request for {} rows from scanner {} for table: {}", rows, scannerId, tableName);
             final MockScanner scanner = createdScanners.get(Integer.valueOf(scannerId));
 
             // load result

@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.file.Paths;
 
-import static com.gatehill.imposter.server.ImposterVerticle.CONFIG_PREFIX;
+import static com.gatehill.imposter.Imposter.CONFIG_PREFIX;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}

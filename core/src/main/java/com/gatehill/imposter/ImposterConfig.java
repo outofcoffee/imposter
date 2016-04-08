@@ -11,6 +11,8 @@ public class ImposterConfig {
     private String configDir;
     private URI serverUrl;
     private boolean tlsEnabled;
+    private String keystorePath;
+    private String keystorePassword;
 
     public String getHost() {
         return host;
@@ -50,5 +52,21 @@ public class ImposterConfig {
 
     public void setTlsEnabled(boolean tlsEnabled) {
         this.tlsEnabled = tlsEnabled;
+    }
+
+    public void setKeystorePath(String keystorePath) {
+        this.keystorePath = keystorePath;
+    }
+
+    public String getKeystorePath() {
+        return keystorePath;
+    }
+
+    public void setKeystorePassword(String keystorePassword) {
+        this.keystorePassword = keystorePassword;
+    }
+
+    public String getKeystorePassword() {
+        return keystorePassword;
     }
 }
