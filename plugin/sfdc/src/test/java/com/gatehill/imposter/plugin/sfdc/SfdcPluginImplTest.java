@@ -51,7 +51,7 @@ public class SfdcPluginImplTest extends BaseVerticleTest {
 
     @Test
     public void testQueryRecordsSuccess(TestContext testContext) {
-        // Something like 'SELECT Name, Id from Account LIMIT 100' becomes:
+        // Something like 'SELECT Name, Id from Account LIMIT 100' becomes GET to:
         // http://localhost:8443/services/data/v20.0/query?q=SELECT%20Name,%20Id%20from%20Account%20LIMIT%20100
 
         final ForceApi api = buildForceApi();
@@ -72,7 +72,7 @@ public class SfdcPluginImplTest extends BaseVerticleTest {
 
     @Test
     public void testGetRecordByIdSuccess(TestContext testContext) {
-        // Query for specific object with ID, like:
+        // GET Query for specific object with ID, like:
         // http://localhost:8443/services/data/v20.0/sobjects/Account/0015000000VALDtAAP/
 
         final ForceApi api = buildForceApi();
@@ -92,7 +92,7 @@ public class SfdcPluginImplTest extends BaseVerticleTest {
 
     @Test
     public void testCreateRecord(TestContext testContext) {
-        // Post to create object, like:
+        // POST to create object, like:
         // http://localhost:8443/services/data/v20.0/sobjects/Account/
 
         final Account account = new Account();
@@ -102,5 +102,19 @@ public class SfdcPluginImplTest extends BaseVerticleTest {
 
         final String actual = api.createSObject("Account", account);
         testContext.assertNotNull(actual);
+    }
+
+    @Test
+    public void testUpdateRecord() {
+        final ForceApi api = buildForceApi();
+
+        // get current SObject first
+        final Account account = api.getSObject("Account", "0015000000XALDuAAZ").as(Account.class);
+
+        // PATCH to create object, like:
+        // http://localhost:8443/services/data/v20.0/sobjects/Account/0015000000VALDtAAP
+
+        account.setName("UpdatedName");
+        api.updateSObject("Account", account.getId(), account);
     }
 }

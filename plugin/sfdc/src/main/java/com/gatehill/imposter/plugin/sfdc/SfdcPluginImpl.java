@@ -3,11 +3,14 @@ package com.gatehill.imposter.plugin.sfdc;
 import com.gatehill.imposter.ImposterConfig;
 import com.gatehill.imposter.plugin.config.ConfiguredPlugin;
 import com.gatehill.imposter.util.FileUtil;
+import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -18,6 +21,8 @@ import java.util.Optional;
 import java.util.StringTokenizer;
 import java.util.UUID;
 
+import static com.gatehill.imposter.util.HttpUtil.CONTENT_TYPE;
+import static com.gatehill.imposter.util.HttpUtil.CONTENT_TYPE_JSON;
 import static java.util.Optional.*;
 
 /**
@@ -46,7 +51,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
     public void configureRoutes(Router router) {
         // oauth handler
         router.post("/services/oauth2/token").handler(routingContext -> {
-            LOGGER.info("Handling oauth request");
+            LOGGER.info("Handling oauth request: {}", routingContext.getBodyAsString());
 
             final JsonObject authResponse = new JsonObject();
             authResponse.put("access_token", "dummyAccessToken");
@@ -85,7 +90,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
             final HttpServerResponse response = routingContext.response();
 
             ofNullable(config.getContentType())
-                    .ifPresent(contentType -> response.putHeader("Content-Type", contentType));
+                    .ifPresent(contentType -> response.putHeader(CONTENT_TYPE, contentType));
 
             response.setStatusCode(HttpURLConnection.HTTP_OK)
                     .end(Buffer.buffer(responseWrapper.encodePrettily()));
@@ -109,7 +114,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
                             LOGGER.info("Sending SObject with ID: {}", sObjectId);
 
                             ofNullable(config.getContentType())
-                                    .ifPresent(contentType -> response.putHeader("Content-Type", contentType));
+                                    .ifPresent(contentType -> response.putHeader(CONTENT_TYPE, contentType));
 
                             response.setStatusCode(HttpURLConnection.HTTP_OK)
                                     .end(Buffer.buffer(result.get().encodePrettily()));
@@ -132,15 +137,49 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
 
                     final JsonObject result = new JsonObject();
 
-                    // Note: ID has to be lowercase, for some reason
+                    // Note: ID response field name has to be lowercase, for some reason
                     result.put("id", generateBase62Id());
                     result.put("success", true);
 
                     routingContext.response()
-                            .putHeader("Content-Type", "application/json")
+                            .putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON)
                             .setStatusCode(HttpURLConnection.HTTP_CREATED)
                             .end(Buffer.buffer(result.encodePrettily()));
                 });
+
+        // update SObject handlers
+        router.patch("/services/data/:apiVersion/sobjects/:sObjectName/:sObjectId")
+                .handler(handleUpdateRequest());
+        router.post("/services/data/:apiVersion/sobjects/:sObjectName/:sObjectId")
+                .handler(handleUpdateRequest());
+    }
+
+    /**
+     * Can be a PATCH or a POST request (with query parameter '_HttpMethod=PATCH').
+     *
+     * @return
+     */
+    private Handler<RoutingContext> handleUpdateRequest() {
+        return routingContext -> {
+            final String sObjectName = routingContext.request().getParam("sObjectName");
+            final String sObjectId = routingContext.request().getParam("sObjectId");
+            final JsonObject sObject = routingContext.getBodyAsJson();
+
+            // SFDC work-around for HTTP clients that don't support PATCH
+            if (!HttpMethod.PATCH.equals(routingContext.request().method())
+                    && !"PATCH".equals(routingContext.request().getParam("_HttpMethod"))) {
+
+                routingContext.fail(HttpURLConnection.HTTP_BAD_METHOD);
+                return;
+            }
+
+            LOGGER.info("Received update request for {} with ID: {}: {}", sObjectName, sObjectId, sObject);
+
+            routingContext.response()
+                    .putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON)
+                    .setStatusCode(HttpURLConnection.HTTP_NO_CONTENT)
+                    .end();
+        };
     }
 
     private String generateBase62Id() {

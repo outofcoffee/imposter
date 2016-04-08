@@ -22,7 +22,12 @@ Basic HBase mock implementation. Uses protobuf for wire transport. Supports dumm
 
 ## sfdc
 
-Basic Salesforce mock implementation. Supports SObject retrieval by ID and dummy SOQL queries.
+Basic Salesforce mock implementation. Supports non-persistent:
+
+* SObject creation
+* SObject update
+* SObject retrieval by ID
+* dummy SOQL queries
 
 _Note:_ This plugin requires TLS/SSL to be enabled. Ensure you use an https:// scheme for accessing the mock server.
 
@@ -35,6 +40,8 @@ The following system properties can be used (specify as command line switches wi
     com.gatehill.imposter.host              Host on which to listen
     com.gatehill.imposter.listenPort        Port on which to listen
     com.gatehill.imposter.tls               Whether TLS/SSL is enabled
+    com.gatehill.imposter.keyStorePath      Path to keystore
+    com.gatehill.imposter.keyStorePassword  Keystore password
 
 # Build
 
@@ -58,7 +65,6 @@ If you want to run tests:
 
 # TODO
 
-* Support more SFDC methods
 * Add Dockerfile
 
 # Contributing
