@@ -29,7 +29,7 @@ public class RestPluginTest extends BaseVerticleTest {
     public void setUp(TestContext testContext) throws Exception {
         super.setUp(testContext);
 
-        RestAssured.baseURI = "http://" + HOST + ":" + LISTEN_PORT;
+        RestAssured.baseURI = "http://" + HOST + ":" + getListenPort();
     }
 
     @Test

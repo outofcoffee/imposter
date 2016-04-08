@@ -42,7 +42,7 @@ public class SfdcPluginImplTest extends BaseVerticleTest {
 
     private ForceApi buildForceApi() {
         return new ForceApi(new ApiConfig()
-                .setForceURL("https://" + HOST + ":" + LISTEN_PORT + "/?")
+                .setForceURL("https://" + HOST + ":" + getListenPort() + "/?")
                 .setUsername("user@example.com")
                 .setPassword("password")
                 .setClientId("longclientidalphanumstring")

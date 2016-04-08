@@ -40,7 +40,7 @@ public class ImposterVerticleTest extends BaseVerticleTest {
 
         // set up trust store for TLS
         RestAssured.trustStore(CryptoUtil.getKeystore(ImposterVerticleTest.class).toFile(), CryptoUtil.KEYSTORE_PASSWORD);
-        RestAssured.baseURI = "https://" + HOST + ":" + LISTEN_PORT;
+        RestAssured.baseURI = "https://" + HOST + ":" + getListenPort();
     }
 
     @Test

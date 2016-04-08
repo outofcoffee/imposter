@@ -34,7 +34,7 @@ public class HBasePluginTest extends BaseVerticleTest {
     public void setUp(TestContext testContext) throws Exception {
         super.setUp(testContext);
 
-        client = new Client(new Cluster().add(HOST, LISTEN_PORT));
+        client = new Client(new Cluster().add(HOST, getListenPort()));
     }
 
     @Test
