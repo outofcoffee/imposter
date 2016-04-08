@@ -26,6 +26,7 @@ import static com.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PASSWORD;
 import static com.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PATH;
 import static com.gatehill.imposter.util.FileUtil.CLASSPATH_PREFIX;
 import static com.gatehill.imposter.util.FileUtil.CONFIG_FILE_SUFFIX;
+import static com.gatehill.imposter.util.HttpUtil.BIND_ALL_HOSTS;
 import static com.gatehill.imposter.util.MapUtil.MAPPER;
 import static java.util.Optional.ofNullable;
 
@@ -92,16 +93,9 @@ public class Imposter {
                 .map(Integer::parseInt)
                 .orElse(8443));
 
-        imposterConfig.setHost(System.getProperty(CONFIG_PREFIX + "host", "0.0.0.0"));
+        imposterConfig.setHost(System.getProperty(CONFIG_PREFIX + "host", BIND_ALL_HOSTS));
 
         imposterConfig.setTlsEnabled(Boolean.parseBoolean(System.getProperty(CONFIG_PREFIX + "tls", "false")));
-
-        try {
-            final String scheme = (imposterConfig.isTlsEnabled() ? "https" : "http") + "://";
-            imposterConfig.setServerUrl(new URI(scheme + imposterConfig.getHost() + ":" + imposterConfig.getListenPort()));
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
 
         imposterConfig.setKeystorePath(System.getProperty(CONFIG_PREFIX + "keystorePath",
                 CLASSPATH_PREFIX + DEFAULT_KEYSTORE_PATH));
@@ -109,10 +103,31 @@ public class Imposter {
         imposterConfig.setKeystorePassword(System.getProperty(CONFIG_PREFIX + "keystorePassword",
                 DEFAULT_KEYSTORE_PASSWORD));
 
+        imposterConfig.setServerUrl(buildServerUrl());
+
         imposterConfig.setConfigDir(ofNullable(System.getProperty(CONFIG_PREFIX + "configDir"))
                 .map(cps -> (cps.startsWith(".") ? System.getProperty("user.dir") + cps.substring(1) : cps))
                 .orElseThrow(() -> new RuntimeException(String.format(
                         "System property '%sconfigDir' must be set to a directory", CONFIG_PREFIX))));
+    }
+
+    private URI buildServerUrl() {
+        final String scheme = (imposterConfig.isTlsEnabled() ? "https" : "http") + "://";
+        final String host = (BIND_ALL_HOSTS.equals(imposterConfig.getHost()) ? "localhost" : imposterConfig.getHost());
+
+        final String port;
+        if ((imposterConfig.isTlsEnabled() && 443 == imposterConfig.getListenPort())
+                || (!imposterConfig.isTlsEnabled() && 80 == imposterConfig.getListenPort())) {
+            port = "";
+        } else {
+            port = ":" + String.valueOf(imposterConfig.getListenPort());
+        }
+
+        try {
+            return new URI(scheme + host + port);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException("Error building server URL", e);
+        }
     }
 
     private void configurePlugins() {

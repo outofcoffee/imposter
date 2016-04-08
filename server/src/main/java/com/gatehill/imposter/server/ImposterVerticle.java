@@ -95,6 +95,8 @@ public class ImposterVerticle extends AbstractVerticle {
             LOGGER.info("TLS is disabled");
         }
 
+        LOGGER.info("Listening on {}", imposterConfig.getServerUrl());
+
         httpServer = vertx.createHttpServer(serverOptions)
                 .requestHandler(router::accept)
                 .listen(imposterConfig.getListenPort(), imposterConfig.getHost(), resolveFutureOnCompletion(startFuture));

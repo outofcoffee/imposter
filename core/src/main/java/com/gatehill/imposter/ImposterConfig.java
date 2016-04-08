@@ -7,7 +7,7 @@ import java.net.URI;
  */
 public class ImposterConfig {
     private String host;
-    private Integer listenPort;
+    private int listenPort;
     private String configDir;
     private URI serverUrl;
     private boolean tlsEnabled;
@@ -22,11 +22,11 @@ public class ImposterConfig {
         this.host = host;
     }
 
-    public Integer getListenPort() {
+    public int getListenPort() {
         return listenPort;
     }
 
-    public void setListenPort(Integer listenPort) {
+    public void setListenPort(int listenPort) {
         this.listenPort = listenPort;
     }
 
