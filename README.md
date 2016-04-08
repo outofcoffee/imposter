@@ -1,4 +1,4 @@
-# Imposter: A multipurpose mock server
+# Imposter: A multipurpose mock server [![Build Status](https://travis-ci.org/outofcoffee/imposter.svg?branch=master)](https://travis-ci.org/outofcoffee/imposter)
 
 Example:
 
