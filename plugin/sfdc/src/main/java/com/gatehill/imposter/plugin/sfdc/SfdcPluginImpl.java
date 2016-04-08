@@ -124,15 +124,13 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
     }
 
     private String getSObjectName(String query) {
-        String sObjectName = null;
         final StringTokenizer tokenizer = new StringTokenizer(query, " ");
-        for (String token = null; tokenizer.hasMoreTokens(); token = tokenizer.nextToken()) {
-            if ("FROM".equalsIgnoreCase(token)) {
-                sObjectName = tokenizer.nextToken();
-                break;
+        for (String token = tokenizer.nextToken(); tokenizer.hasMoreTokens(); token = tokenizer.nextToken()) {
+            if ("FROM".equalsIgnoreCase(token) && tokenizer.hasMoreTokens()) {
+                return tokenizer.nextToken();
             }
         }
-        return sObjectName;
+        return null;
     }
 
     private JsonObject findSObjectById(String sObjectId, JsonArray records) {

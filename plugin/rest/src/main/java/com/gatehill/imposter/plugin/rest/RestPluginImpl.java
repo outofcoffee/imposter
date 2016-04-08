@@ -40,7 +40,7 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
     @Override
     public void configureRoutes(Router router) {
         configs.forEach(config -> {
-            router.get(config.getBaseUrl())
+            router.get(config.getBasePath())
                     .handler(routingContext -> {
                         LOGGER.info("Handling request for: {}", routingContext.request().absoluteURI());
 

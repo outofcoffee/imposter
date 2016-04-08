@@ -57,21 +57,21 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> {
     @Override
     public void configureRoutes(Router router) {
         tableConfigs.values().stream()
-                .map(baseConfig -> ofNullable(baseConfig.getBaseUrl()).orElse(""))
+                .map(config -> ofNullable(config.getBasePath()).orElse(""))
                 .distinct()
-                .forEach(baseUrl -> {
-                    LOGGER.debug("Added mock routes for base URL: {}", () -> (baseUrl.isEmpty() ? "<empty>" : baseUrl));
+                .forEach(basePath -> {
+                    LOGGER.debug("Adding routes for base path: {}", () -> (basePath.isEmpty() ? "<empty>" : basePath));
 
                     // the first call obtains a scanner
-                    addCreateScannerRoute(router, baseUrl);
+                    addCreateScannerRoute(router, basePath);
 
                     // the second call returns the result
-                    addReadScannerResultsRoute(router, baseUrl);
+                    addReadScannerResultsRoute(router, basePath);
                 });
     }
 
-    private void addCreateScannerRoute(Router router, String baseUrl) {
-        router.post(baseUrl + "/:tableName/scanner").handler(routingContext -> {
+    private void addCreateScannerRoute(Router router, String basePath) {
+        router.post(basePath + "/:tableName/scanner").handler(routingContext -> {
             final String tableName = routingContext.request().getParam("tableName");
 
             // check that the view is registered
@@ -127,7 +127,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> {
             final int scannerId = scannerIdCounter.incrementAndGet();
             createdScanners.put(scannerId, new MockScanner(config, scannerModel));
 
-            final String resultUrl = imposterConfig.getServerUrl() + baseUrl + "/" + tableName + "/scanner/" + scannerId;
+            final String resultUrl = imposterConfig.getServerUrl() + basePath + "/" + tableName + "/scanner/" + scannerId;
 
             routingContext.response()
                     .putHeader("Location", resultUrl)
@@ -136,8 +136,8 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> {
         });
     }
 
-    private void addReadScannerResultsRoute(Router router, String baseUrl) {
-        router.get(baseUrl + "/:tableName/scanner/:scannerId").handler(routingContext -> {
+    private void addReadScannerResultsRoute(Router router, String basePath) {
+        router.get(basePath + "/:tableName/scanner/:scannerId").handler(routingContext -> {
             final String tableName = routingContext.request().getParam("tableName");
             final String scannerId = routingContext.request().getParam("scannerId");
 

@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class BaseConfig {
     private String plugin;
-    private String baseUrl;
+    private String basePath;
     private String responseFile;
 
     public String getResponseFile() {
@@ -19,7 +19,7 @@ public class BaseConfig {
         return plugin;
     }
 
-    public String getBaseUrl() {
-        return baseUrl;
+    public String getBasePath() {
+        return basePath;
     }
 }
