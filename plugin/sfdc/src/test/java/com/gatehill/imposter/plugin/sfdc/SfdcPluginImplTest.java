@@ -82,4 +82,11 @@ public class SfdcPluginImplTest extends BaseVerticleTest {
         testContext.assertEquals("0015000000VALDtAAP", actual.getId());
         testContext.assertEquals("GenePoint", actual.getName());
     }
+
+    @Test(expected = RuntimeException.class)
+    public void testRecordNotFound() {
+        final ForceApi api = buildForceApi();
+
+        api.getSObject("Account", "nonExistentId").as(Account.class);
+    }
 }

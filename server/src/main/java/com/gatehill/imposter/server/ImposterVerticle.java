@@ -6,6 +6,10 @@ import com.gatehill.imposter.plugin.PluginManager;
 import com.gatehill.imposter.util.FileUtil;
 import com.gatehill.imposter.util.InjectorUtil;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.net.JksOptions;
 import io.vertx.ext.web.Router;
@@ -18,6 +22,8 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static java.util.Optional.ofNullable;
+
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
@@ -29,24 +35,34 @@ public class ImposterVerticle extends AbstractVerticle {
 
     @Inject
     private PluginManager pluginManager;
+    private HttpServer httpServer;
 
     @Override
-    public void start() {
+    public void start(Future<Void> startFuture) throws Exception {
+        LOGGER.debug("Initialising mock server");
+
         new Imposter().start();
         InjectorUtil.getInjector().injectMembers(this);
-        startServer();
+        startServer(startFuture);
     }
 
     @Override
-    public void stop() {
-        if (null != vertx) {
-            LOGGER.info("Stopping mock server on {}:{}", imposterConfig.getHost(), imposterConfig.getListenPort());
-            vertx.close();
-            vertx = null;
-        }
+    public void stop(Future<Void> stopFuture) {
+        LOGGER.info("Stopping mock server on {}:{}", imposterConfig.getHost(), imposterConfig.getListenPort());
+        ofNullable(httpServer).ifPresent(server -> server.close(resolveFutureOnCompletion(stopFuture)));
     }
 
-    private void startServer() {
+    private <T> Handler<AsyncResult<T>> resolveFutureOnCompletion(Future<Void> future) {
+        return completion -> {
+            if (completion.succeeded()) {
+                future.complete();
+            } else {
+                future.fail(completion.cause());
+            }
+        };
+    }
+
+    private void startServer(Future<Void> startFuture) {
         final Router router = configureRoutes();
 
         LOGGER.info("Starting mock server on {}:{}", imposterConfig.getHost(), imposterConfig.getListenPort());
@@ -79,9 +95,9 @@ public class ImposterVerticle extends AbstractVerticle {
             LOGGER.info("TLS is disabled");
         }
 
-        vertx.createHttpServer(serverOptions)
+        httpServer = vertx.createHttpServer(serverOptions)
                 .requestHandler(router::accept)
-                .listen(imposterConfig.getListenPort(), imposterConfig.getHost());
+                .listen(imposterConfig.getListenPort(), imposterConfig.getHost(), resolveFutureOnCompletion(startFuture));
     }
 
     private Router configureRoutes() {

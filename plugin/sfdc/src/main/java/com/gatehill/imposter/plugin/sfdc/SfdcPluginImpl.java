@@ -14,15 +14,17 @@ import org.apache.logging.log4j.Logger;
 import javax.inject.Inject;
 import java.net.HttpURLConnection;
 import java.util.List;
+import java.util.Optional;
 import java.util.StringTokenizer;
 
-import static java.util.Optional.ofNullable;
+import static java.util.Optional.*;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
     private static final Logger LOGGER = LogManager.getLogger(SfdcPluginImpl.class);
+    private static final String FIELD_ID = "Id";
 
     @Inject
     private ImposterConfig imposterConfig;
@@ -58,7 +60,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
             // e.g. 'SELECT Name, Id from Account LIMIT 100'
             final String query = routingContext.request().getParam("q");
 
-            final String sObjectName = ofNullable(getSObjectName(query))
+            final String sObjectName = getSObjectName(query)
                     .orElseThrow(() -> new RuntimeException(String.format("Could not determine SObject name from query: %s", query)));
 
             final SfdcPluginConfig config = configs.stream()
@@ -66,11 +68,10 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
                     .findAny()
                     .orElseThrow(() -> new RuntimeException(String.format("Unable to find mock config for SObject: %s", sObjectName)));
 
+            // enrich records
             final JsonArray records = FileUtil.loadResponseAsJsonArray(imposterConfig, config);
-
             for (int i = 0; i < records.size(); i++) {
-                final JsonObject record = records.getJsonObject(i);
-                addRecordAttributes(record, apiVersion, config);
+                addRecordAttributes(records.getJsonObject(i), apiVersion, config);
             }
 
             final JsonObject responseWrapper = new JsonObject();
@@ -93,64 +94,64 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
         configs.forEach(config -> {
             router.get("/services/data/:apiVersion/sobjects/" + config.getsObjectName() + "/:sObjectId")
                     .handler(routingContext -> {
-                        final HttpServerResponse response = routingContext.response();
-
                         final String apiVersion = routingContext.request().getParam("apiVersion");
                         final String sObjectId = routingContext.request().getParam("sObjectId");
 
-                        // find and filter records
-                        final JsonArray records = FileUtil.loadResponseAsJsonArray(imposterConfig, config);
-                        final JsonObject result = findSObjectById(sObjectId, records);
+                        // find and enrich record
+                        final Optional<JsonObject> result = findSObjectById(sObjectId,
+                                FileUtil.loadResponseAsJsonArray(imposterConfig, config))
+                                .map(r -> addRecordAttributes(r, apiVersion, config));
 
-                        if (null != result) {
-                            addRecordAttributes(result, apiVersion, config);
+                        final HttpServerResponse response = routingContext.response();
 
+                        if (result.isPresent()) {
+                            LOGGER.info("Sending record with ID: {}", sObjectId);
+
+                            ofNullable(config.getContentType())
+                                    .ifPresent(contentType -> response.putHeader("Content-Type", contentType));
+
+                            response.setStatusCode(HttpURLConnection.HTTP_OK)
+                                    .end(Buffer.buffer(result.get().encodePrettily()));
                         } else {
                             // no such record
                             LOGGER.error("{} SObject with ID: {} not found", config.getsObjectName(), sObjectId);
-                            response.setStatusCode(HttpURLConnection.HTTP_NOT_FOUND).end();
-                            return;
+                            response.setStatusCode(HttpURLConnection.HTTP_NOT_FOUND)
+                                    .end();
                         }
-
-                        LOGGER.info("Sending record with ID: {}", sObjectId);
-
-                        ofNullable(config.getContentType())
-                                .ifPresent(contentType -> response.putHeader("Content-Type", contentType));
-
-                        response.setStatusCode(HttpURLConnection.HTTP_OK)
-                                .end(Buffer.buffer(result.encodePrettily()));
                     });
         });
     }
 
-    private String getSObjectName(String query) {
+    private Optional<String> getSObjectName(String query) {
         final StringTokenizer tokenizer = new StringTokenizer(query, " ");
         for (String token = tokenizer.nextToken(); tokenizer.hasMoreTokens(); token = tokenizer.nextToken()) {
             if ("FROM".equalsIgnoreCase(token) && tokenizer.hasMoreTokens()) {
-                return tokenizer.nextToken();
+                return of(tokenizer.nextToken());
             }
         }
-        return null;
+        return empty();
     }
 
-    private JsonObject findSObjectById(String sObjectId, JsonArray records) {
+    private Optional<JsonObject> findSObjectById(String sObjectId, JsonArray records) {
         for (int i = 0; i < records.size(); i++) {
             final JsonObject currentRecord = records.getJsonObject(i);
-            if (currentRecord.getString("Id").equalsIgnoreCase(sObjectId)) {
-                return currentRecord;
+            if (currentRecord.getString(FIELD_ID).equalsIgnoreCase(sObjectId)) {
+                return of(currentRecord);
             }
         }
-        return null;
+        return empty();
     }
 
-    private void addRecordAttributes(JsonObject record, String apiVersion, SfdcPluginConfig config) {
-        final String sObjectId = ofNullable(record.getString("Id"))
-                .orElseThrow(() -> new RuntimeException(String.format("Record missing 'Id' field: %s", record)));
+    private JsonObject addRecordAttributes(JsonObject record, String apiVersion, SfdcPluginConfig config) {
+        final String sObjectId = ofNullable(record.getString(FIELD_ID))
+                .orElseThrow(() -> new RuntimeException(String.format("Record missing '%s' field: %s", FIELD_ID, record)));
 
         final JsonObject attributes = new JsonObject();
         attributes.put("type", config.getsObjectName());
         attributes.put("url", "/services/data/" + apiVersion + "/sobjects/" + config.getsObjectName() + "/" + sObjectId);
 
         record.put("attributes", attributes);
+
+        return record;
     }
 }
