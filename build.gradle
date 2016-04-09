@@ -22,7 +22,7 @@ subprojects {
         version_vertx = '3.2.0'
         version_log4j = '2.5'
         version_guice = '4.0'
-        version_hbaseApi = '0.98.8-hadoop2'
+        version_hbaseApi = '0.98.18-hadoop2'
         version_junit = '4.11'
         version_restAssured = '2.9.0'
     }
