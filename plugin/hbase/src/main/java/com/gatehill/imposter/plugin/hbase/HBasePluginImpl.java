@@ -209,7 +209,13 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> {
                 cellSetModel.addRow(row);
             }
 
-            LOGGER.info("Returning {} rows from scanner {} for table: {}", cellSetModel.getRows().size());
+            final boolean exhausted = (scanner.getRowCounter().get() >= results.size());
+            if (exhausted) {
+                LOGGER.info("Scanner {} for table: {} exhausted", scannerId, tableName);
+                createdScanners.invalidate(scannerId);
+            }
+
+            LOGGER.info("Returning {} rows from scanner {} for table: {}", cellSetModel.getRows().size(), scannerId, tableName);
 
             final byte[] protobufOutput = cellSetModel.createProtobufOutput();
 
