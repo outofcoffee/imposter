@@ -34,7 +34,7 @@ Basic Salesforce mock implementation. Supports non-persistent:
 * SObject retrieval by ID
 * Dummy SOQL queries
 
-_Note:_ Clients interacting with this plugin usually requires TLS/SSL to be enabled. 
+**Note:** Clients interacting with this plugin usually requires TLS/SSL to be enabled. 
 Ensure that you use an _https://_ scheme for accessing the mock server.
 
 Example:
@@ -46,7 +46,7 @@ Example:
             -Dcom.gatehill.imposter.keystorePath=./server/src/main/resources/keystore/ssl.jks \
             -Dcom.gatehill.imposter.keystorePassword=password
 
-This uses a self-signed certificate for TLS/SSL. You can also choose your own keystore.
+**Note:** This uses a self-signed certificate for TLS/SSL. You can also choose your own keystore.
 If you need to trust the self-signed certificate when using the default, the keystore is located at
 `server/src/main/resources/keystore` and uses the secure password 'password'.
 
@@ -60,6 +60,9 @@ Example:
             -Dcom.gatehill.imposter.plugin=com.gatehill.imposter.plugin.hbase.HBasePluginImpl \
             -Dcom.gatehill.imposter.configDir=./plugin/hbase/src/test/resources/config
 
+**Note:** This plugin will use the server URL in the `Location` header of the scanner creation response. You might
+want to consider setting the `serverUrl` property explicitly to the publicly-accessible address of the mock server.
+
 # Usage
 
 The following system properties can be used (specify as command line switches with `-Dswitch=value`). 
@@ -68,6 +71,7 @@ The following system properties can be used (specify as command line switches wi
     com.gatehill.imposter.configDir         Directory containing mock configuration files
     com.gatehill.imposter.host              Host to which to bind when listening
     com.gatehill.imposter.listenPort        Port on which to listen
+    com.gatehill.imposter.serverUrl         Explicitly set the server address, e.g. http://mypublicserver:8443
     com.gatehill.imposter.tls               Whether TLS/SSL is enabled
     com.gatehill.imposter.keyStorePath      Path to keystore
     com.gatehill.imposter.keyStorePassword  Keystore password

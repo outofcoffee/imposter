@@ -18,9 +18,9 @@ import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PASSWORD;
 import static com.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PATH;
@@ -112,6 +112,13 @@ public class Imposter {
     }
 
     private URI buildServerUrl() {
+        // might be set explicitly
+        final Optional<String> explicitUrl = ofNullable(System.getProperty(CONFIG_PREFIX + "serverUrl"));
+        if (explicitUrl.isPresent()) {
+            return URI.create(explicitUrl.get());
+        }
+
+        // build based on configuration
         final String scheme = (imposterConfig.isTlsEnabled() ? "https" : "http") + "://";
         final String host = (BIND_ALL_HOSTS.equals(imposterConfig.getHost()) ? "localhost" : imposterConfig.getHost());
 
@@ -123,11 +130,7 @@ public class Imposter {
             port = ":" + String.valueOf(imposterConfig.getListenPort());
         }
 
-        try {
-            return new URI(scheme + host + port);
-        } catch (URISyntaxException e) {
-            throw new RuntimeException("Error building server URL", e);
-        }
+        return URI.create(scheme + host + port);
     }
 
     private void configurePlugins() {
