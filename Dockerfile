@@ -16,6 +16,8 @@ RUN cd ${IMPOSTER_SRC_DIR} && ./gradlew clean shadowJar
 
 RUN mv ${IMPOSTER_SRC_DIR}/distro/build/libs/imposter.jar /opt/imposter
 
+RUN rm -rf ${IMPOSTER_TEMP_DIR}
+
 EXPOSE 8443
 
 ENTRYPOINT ["java", "-jar", "/opt/imposter/imposter.jar"]
