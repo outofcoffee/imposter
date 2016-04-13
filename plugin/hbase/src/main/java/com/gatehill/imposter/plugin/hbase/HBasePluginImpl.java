@@ -3,7 +3,9 @@ package com.gatehill.imposter.plugin.hbase;
 import com.gatehill.imposter.ImposterConfig;
 import com.gatehill.imposter.plugin.config.BaseConfig;
 import com.gatehill.imposter.plugin.config.ConfiguredPlugin;
-import com.gatehill.imposter.plugin.hbase.model.MockScanner;
+import com.gatehill.imposter.plugin.hbase.model.InMemoryScanner;
+import com.gatehill.imposter.plugin.hbase.model.ResultCell;
+import com.gatehill.imposter.plugin.hbase.model.ResultCellComparator;
 import com.gatehill.imposter.util.FileUtil;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -48,7 +50,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> {
     /**
      * Hold scanners for a period of time.
      */
-    private Cache<Integer, MockScanner> createdScanners = CacheBuilder.newBuilder()
+    private Cache<Integer, InMemoryScanner> createdScanners = CacheBuilder.newBuilder()
             .expireAfterAccess(5, TimeUnit.MINUTES)
             .build();
 
@@ -125,7 +127,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> {
 
             // register scanner
             final int scannerId = scannerIdCounter.incrementAndGet();
-            createdScanners.put(scannerId, new MockScanner(config, scannerModel));
+            createdScanners.put(scannerId, new InMemoryScanner(config, scannerModel));
 
             final String resultUrl = imposterConfig.getServerUrl() + basePath + "/" + tableName + "/scanner/" + scannerId;
 
@@ -169,7 +171,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> {
             }
 
             // check that the scanner was created
-            final Optional<MockScanner> optionalScanner = ofNullable(createdScanners.getIfPresent(Integer.valueOf(scannerId)));
+            final Optional<InMemoryScanner> optionalScanner = ofNullable(createdScanners.getIfPresent(Integer.valueOf(scannerId)));
             if (!optionalScanner.isPresent()) {
                 LOGGER.error("Received result request for non-existent scanner {} for table: {}", scannerId, tableName);
 
@@ -180,7 +182,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> {
             }
 
             LOGGER.info("Received result request for {} rows from scanner {} for table: {}", rows, scannerId, tableName);
-            final MockScanner scanner = optionalScanner.get();
+            final InMemoryScanner scanner = optionalScanner.get();
 
             // load result
             final BaseConfig config = tableConfigs.get(tableName);
@@ -199,12 +201,20 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> {
                 row.setKey(Bytes.toBytes("rowKey" + scanner.getRowCounter().incrementAndGet()));
 
                 // add cells from result file
-                for (String fieldName : result.fieldNames()) {
+                final List<ResultCell> cells = result.fieldNames().stream()
+                        .map(fieldName -> new ResultCell(fieldName, result.getString(fieldName)))
+                        .collect(Collectors.toList());
+
+                // sort the cells before adding to row
+                cells.sort(new ResultCellComparator());
+
+                // add cells in sorted order
+                cells.forEach(c -> {
                     final CellModel cell = new CellModel();
-                    cell.setColumn(Bytes.toBytes(fieldName));
-                    cell.setValue(Bytes.toBytes(result.getString(fieldName)));
+                    cell.setColumn(Bytes.toBytes(c.getFieldName()));
+                    cell.setValue(Bytes.toBytes(c.getFieldValue()));
                     row.addCell(cell);
-                }
+                });
 
                 cellSetModel.addRow(row);
             }

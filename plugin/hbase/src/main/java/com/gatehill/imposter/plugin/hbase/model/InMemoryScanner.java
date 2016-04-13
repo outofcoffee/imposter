@@ -8,12 +8,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public class MockScanner {
+public class InMemoryScanner {
     private BaseConfig config;
     private ScannerModel scanner;
     private AtomicInteger rowCounter = new AtomicInteger();
 
-    public MockScanner(BaseConfig config, ScannerModel scanner) {
+    public InMemoryScanner(BaseConfig config, ScannerModel scanner) {
         this.config = config;
         this.scanner = scanner;
     }

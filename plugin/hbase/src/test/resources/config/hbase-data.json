@@ -1,5 +1,7 @@
 [
   {
-    "abc:exampleCell": "exampleValue"
+    "abc:exampleStringC": "exampleValueC",
+    "abc:exampleStringA": "exampleValueA",
+    "abc:exampleStringB": "exampleValueB"
   }
 ]

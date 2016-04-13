@@ -48,7 +48,9 @@ public class HBasePluginTest extends BaseVerticleTest {
         int rowCount = 0;
         for (Result result : scanner) {
             rowCount++;
-            testContext.assertEquals("exampleValue", Bytes.toString(result.getValue(Bytes.toBytes("abc"), Bytes.toBytes("exampleCell"))));
+            testContext.assertEquals("exampleValueA", Bytes.toString(result.getValue(Bytes.toBytes("abc"), Bytes.toBytes("exampleStringA"))));
+            testContext.assertEquals("exampleValueB", Bytes.toString(result.getValue(Bytes.toBytes("abc"), Bytes.toBytes("exampleStringB"))));
+            testContext.assertEquals("exampleValueC", Bytes.toString(result.getValue(Bytes.toBytes("abc"), Bytes.toBytes("exampleStringC"))));
         }
 
         testContext.assertEquals(1, rowCount);
