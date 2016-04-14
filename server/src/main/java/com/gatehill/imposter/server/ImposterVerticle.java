@@ -4,6 +4,7 @@ import com.gatehill.imposter.Imposter;
 import com.gatehill.imposter.ImposterConfig;
 import com.gatehill.imposter.plugin.PluginManager;
 import com.gatehill.imposter.util.FileUtil;
+import com.gatehill.imposter.util.HttpUtil;
 import com.gatehill.imposter.util.InjectorUtil;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
@@ -106,6 +107,11 @@ public class ImposterVerticle extends AbstractVerticle {
         final Router router = Router.router(vertx);
 
         router.route().handler(new BodyHandlerImpl());
+
+        // status check to indicate when server is up
+        router.get("/system/status").handler(routingContext -> routingContext.response()
+                .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_JSON)
+                .end(HttpUtil.STATUS_RESPONSE));
 
         pluginManager.getPlugins().forEach(plugin -> plugin.configureRoutes(router));
 
