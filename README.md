@@ -13,7 +13,42 @@ This starts a mock server using the simple REST plugin. Responses are served in 
 inside the `config` folder. With the example above, you can hit the URL
 [http://localhost:8080/example](http://localhost:8080/example) to see the mock response.
 
-# Plugins
+## Plugins
+
+Imposter supports different mock server types using plugins:
+
+* rest - Simple REST API mock.
+* sfdc - Basic Salesforce mock implementation.
+* hbase - Basic HBase mock implementation.
+
+# Getting started
+
+Note: See the _Usage_ section for the required arguments, and the examples below.
+
+## Docker container
+
+The easiest way to get started is to use the Docker container:
+
+    docker run --ti -p 8443 outofcoffee/imposter [args]
+
+## Java
+
+You can build Imposter as a JAR file. See the _Build_ section below.
+
+# Usage
+
+The following system properties can be used (specify as command line switches with `-Dswitch=value`). 
+
+    com.gatehill.imposter.plugin            Plugin class name
+    com.gatehill.imposter.configDir         Directory containing mock configuration files
+    com.gatehill.imposter.host              Host to which to bind when listening
+    com.gatehill.imposter.listenPort        Port on which to listen
+    com.gatehill.imposter.serverUrl         Explicitly set the server address, e.g. http://mypublicserver:8443
+    com.gatehill.imposter.tls               Whether TLS/SSL is enabled
+    com.gatehill.imposter.keyStorePath      Path to keystore
+    com.gatehill.imposter.keyStorePassword  Keystore password
+
+# Plugin examples
 
 ## rest
 
@@ -63,19 +98,6 @@ Example:
 **Note:** This plugin will use the server URL in the `Location` header of the scanner creation response. You might
 want to consider setting the `serverUrl` property explicitly to the publicly-accessible address of the mock server.
 
-# Usage
-
-The following system properties can be used (specify as command line switches with `-Dswitch=value`). 
-
-    com.gatehill.imposter.plugin            Plugin class name
-    com.gatehill.imposter.configDir         Directory containing mock configuration files
-    com.gatehill.imposter.host              Host to which to bind when listening
-    com.gatehill.imposter.listenPort        Port on which to listen
-    com.gatehill.imposter.serverUrl         Explicitly set the server address, e.g. http://mypublicserver:8443
-    com.gatehill.imposter.tls               Whether TLS/SSL is enabled
-    com.gatehill.imposter.keyStorePath      Path to keystore
-    com.gatehill.imposter.keyStorePassword  Keystore password
-
 # Build
 
 ## Prerequisites
@@ -85,20 +107,24 @@ The following system properties can be used (specify as command line switches wi
 For distribution, Imposter is built as a 'fat JAR' (aka 'shadow JAR'). To get started with the examples here, first run:
 
     ./gradlew clean shadowJar
+    
+The JAR is created under the `distro/build/libs` directory.
 
 If, instead, you want to compile the JAR without embedded dependencies, use:
 
     ./gradlew clean build
 
-# Tests
+## Tests
 
 If you want to run tests:
 
     ./gradlew clean test
 
-# TODO
+## Docker container
 
-* Add Dockerfile
+Build the Docker container with:
+
+    docker build --tag outofcoffee/imposter .
 
 # Contributing
 
