@@ -104,6 +104,8 @@ want to consider setting the `serverUrl` property explicitly to the publicly-acc
 
 * JDK 8
 
+## Steps
+
 For distribution, Imposter is built as a 'fat JAR' (aka 'shadow JAR'). To get started with the examples here, first run:
 
     ./gradlew clean shadowJar
@@ -125,6 +127,14 @@ If you want to run tests:
 Build the Docker container with:
 
     docker build --tag outofcoffee/imposter .
+
+# TODO
+
+* HBase content negotiation
+* HBase individual record retrieval
+* HBase response content type header
+* Pattern matched configs based on URL, headers etc. (to support different response values)
+* Script-evaluated matched configs based on URL, headers etc. (to support different response values) - consider using Kotlin/Groovy scripting engine
 
 # Contributing
 
