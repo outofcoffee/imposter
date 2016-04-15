@@ -135,6 +135,7 @@ Build the Docker container with:
 * HBase response content type header
 * Pattern matched configs based on URL, headers etc. (to support different response values)
 * Script-evaluated matched configs based on URL, headers etc. (to support different response values) - consider using Kotlin/Groovy scripting engine
+* Config upload from tests (using a client library to wrap REST API?)
 
 # Contributing
 
