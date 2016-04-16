@@ -107,6 +107,24 @@ Imposter configuration files must be named with a `-config.json` suffix. For exa
 
 Response files can be named anything you like and are resolved relative to the configuration directory.
 
+For example:
+
+    {
+      "plugin": "com.gatehill.imposter.plugin.rest.RestPluginImpl",
+      "basePath": "/scripted",
+      "response": {
+        "staticFile": "example-data.json"
+      }
+    }
+
+Here's the corresponding static response file (`example-data.json`):
+
+     {
+       "hello": "world"
+     }
+
+You must specify the plugin to use in the configuration file. See the examples in this document for possible values.
+
 ## Advanced (scripting)
 
 You can control Imposter's responses using [Groovy](http://groovy-lang.org/) scripts.
