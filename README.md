@@ -1,4 +1,4 @@
-# Imposter: A scriptable multipurpose mock server [![Build Status](https://travis-ci.org/outofcoffee/imposter.svg?branch=master)](https://travis-ci.org/outofcoffee/imposter)
+# Imposter: A scriptable, multipurpose mock server [![Build Status](https://travis-ci.org/outofcoffee/imposter.svg?branch=master)](https://travis-ci.org/outofcoffee/imposter)
 
 Decouple your integration tests from the cloud/various back-end systems. Imposter is a mock server with a suite of
 plugins. It also allows you to write Groovy scripts to customise its behaviour.
