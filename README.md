@@ -3,7 +3,15 @@
 Decouple your integration tests from the cloud/various back-end systems. Imposter is a mock server with a suite of
 plugins. It also allows you to write Groovy scripts to customise its behaviour.
 
-Example:
+## Plugins
+
+Imposter supports different mock server types using plugins:
+
+* rest - Simple REST API mock.
+* sfdc - Basic Salesforce mock implementation.
+* hbase - Basic HBase mock implementation.
+
+## Example
 
      java -jar distro/build/libs/imposter.jar \
             -Dcom.gatehill.imposter.plugin=com.gatehill.imposter.plugin.rest.RestPluginImpl \
@@ -13,14 +21,6 @@ Example:
 This starts a mock server using the simple REST plugin. Responses are served in line with the configuration files
 inside the `config` folder. With the example above, you can hit the URL
 [http://localhost:8080/example](http://localhost:8080/example) to see the mock response.
-
-## Plugins
-
-Imposter supports different mock server types using plugins:
-
-* rest - Simple REST API mock.
-* sfdc - Basic Salesforce mock implementation.
-* hbase - Basic HBase mock implementation.
 
 # Getting started
 
