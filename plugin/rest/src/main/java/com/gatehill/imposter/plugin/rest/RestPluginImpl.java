@@ -1,16 +1,15 @@
 package com.gatehill.imposter.plugin.rest;
 
-import com.gatehill.imposter.ImposterConfig;
+import com.gatehill.imposter.model.ResponseBehaviour;
 import com.gatehill.imposter.plugin.config.ConfiguredPlugin;
+import com.gatehill.imposter.service.ResponseService;
+import com.gatehill.imposter.util.HttpUtil;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.Router;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.inject.Inject;
-import java.net.HttpURLConnection;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 import static java.util.Optional.ofNullable;
@@ -22,9 +21,9 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
     private static final Logger LOGGER = LogManager.getLogger(RestPluginImpl.class);
 
     @Inject
-    private ImposterConfig imposterConfig;
+    private ResponseService responseService;
 
-    protected List<C> configs;
+    private List<C> configs;
 
     @SuppressWarnings("unchecked")
     @Override
@@ -47,17 +46,26 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
                         final HttpServerResponse response = routingContext.response();
 
                         ofNullable(config.getContentType())
-                                .ifPresent(contentType -> response.putHeader("Content-Type", contentType));
+                                .ifPresent(contentType -> response.putHeader(HttpUtil.CONTENT_TYPE, contentType));
 
                         try {
-                            final Path responseFile = Paths.get(imposterConfig.getConfigDir(), config.getResponseFile());
-                            response.setStatusCode(HttpURLConnection.HTTP_OK)
-                                    .sendFile(responseFile.toString());
+                            final ResponseBehaviour responseBehaviour = responseService.getResponseBehaviour(routingContext, config);
+                            response.setStatusCode(responseBehaviour.getStatusCode());
+
+                            if (responseBehaviour.isHandled()) {
+                                response.end();
+                            } else {
+                                response.sendFile(responseBehaviour.getResponseFile().toString());
+                            }
 
                         } catch (Exception e) {
                             routingContext.fail(e);
                         }
                     });
         });
+    }
+
+    protected List<C> getConfigs() {
+        return configs;
     }
 }

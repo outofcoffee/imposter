@@ -7,10 +7,8 @@ import com.gatehill.imposter.plugin.config.ConfigurablePlugin;
 import com.gatehill.imposter.util.InjectorUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
 import com.google.inject.Module;
-import com.google.inject.Singleton;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -78,14 +76,8 @@ public class Imposter {
         }
     }
 
-    private Module getModules() {
-        return new AbstractModule() {
-            @Override
-            protected void configure() {
-                bind(ImposterConfig.class).in(Singleton.class);
-                bind(PluginManager.class).in(Singleton.class);
-            }
-        };
+    protected Module[] getModules() {
+        return new ImposterModule[]{new ImposterModule()};
     }
 
     private void configureSystem() {
@@ -144,10 +136,10 @@ public class Imposter {
             for (File configFile : configFiles) {
                 final BaseConfig config = MAPPER.readValue(configFile, BaseConfig.class);
 
-                List<File> pluginConfigs = mockConfigs.get(config.getPlugin());
+                List<File> pluginConfigs = mockConfigs.get(config.getPluginClass());
                 if (null == pluginConfigs) {
                     pluginConfigs = Lists.newArrayList();
-                    mockConfigs.put(config.getPlugin(), pluginConfigs);
+                    mockConfigs.put(config.getPluginClass(), pluginConfigs);
                 }
 
                 pluginConfigs.add(configFile);

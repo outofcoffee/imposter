@@ -13,6 +13,8 @@ import java.net.HttpURLConnection;
 
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
 
 
 /**
@@ -42,6 +44,43 @@ public class RestPluginTest extends BaseVerticleTest {
                 .contentType(equalTo("application/json"))
                 .and()
                 .body("testKey", equalTo("testValue"));
+    }
+
+    @Test
+    public void testRequestScriptedSuccess() throws Exception {
+        // default action should return static data
+        given().when()
+                .get("/scripted")
+                .then()
+                .statusCode(equalTo(HttpURLConnection.HTTP_OK))
+                .and()
+                .contentType(equalTo("application/json"))
+                .and()
+                .body("testKey", equalTo("testValue"));
+
+        // script causes short circuit to 201
+        given().when()
+                .get("/scripted?action=create")
+                .then()
+                .statusCode(equalTo(HttpURLConnection.HTTP_CREATED))
+                .and()
+                .body(is(isEmptyOrNullString()));
+
+        // script causes short circuit to 204
+        given().when()
+                .get("/scripted?action=delete")
+                .then()
+                .statusCode(equalTo(HttpURLConnection.HTTP_NO_CONTENT))
+                .and()
+                .body(is(isEmptyOrNullString()));
+
+        // script causes short circuit to 400
+        given().when()
+                .get("/scripted?bad")
+                .then()
+                .statusCode(equalTo(HttpURLConnection.HTTP_BAD_REQUEST))
+                .and()
+                .body(is(isEmptyOrNullString()));
     }
 
     @Test

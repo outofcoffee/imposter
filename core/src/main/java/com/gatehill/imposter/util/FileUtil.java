@@ -20,16 +20,4 @@ public final class FileUtil {
 
     private FileUtil() {
     }
-
-    public static InputStream loadResponseAsStream(ImposterConfig imposterConfig, BaseConfig mockConfig) throws IOException {
-        return Files.newInputStream(Paths.get(imposterConfig.getConfigDir(), mockConfig.getResponseFile()));
-    }
-
-    public static JsonArray loadResponseAsJsonArray(ImposterConfig imposterConfig, BaseConfig config) {
-        try (InputStream is = loadResponseAsStream(imposterConfig, config)) {
-            return new JsonArray(CharStreams.toString(new InputStreamReader(is)));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
 }

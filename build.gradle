@@ -25,5 +25,6 @@ subprojects {
         version_hbaseApi = '0.98.18-hadoop2'
         version_junit = '4.11'
         version_restAssured = '2.9.0'
+        version_groovy = '2.4.6'
     }
 }

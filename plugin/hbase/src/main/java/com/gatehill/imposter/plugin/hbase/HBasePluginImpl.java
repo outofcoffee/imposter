@@ -6,7 +6,7 @@ import com.gatehill.imposter.plugin.config.ConfiguredPlugin;
 import com.gatehill.imposter.plugin.hbase.model.InMemoryScanner;
 import com.gatehill.imposter.plugin.hbase.model.ResultCell;
 import com.gatehill.imposter.plugin.hbase.model.ResultCellComparator;
-import com.gatehill.imposter.util.FileUtil;
+import com.gatehill.imposter.service.ResponseService;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.inject.Inject;
@@ -43,6 +43,9 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> {
 
     @Inject
     private ImposterConfig imposterConfig;
+
+    @javax.inject.Inject
+    private ResponseService responseService;
 
     private Map<String, HBasePluginConfig> tableConfigs;
     private AtomicInteger scannerIdCounter = new AtomicInteger();
@@ -186,13 +189,14 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> {
 
             // load result
             final BaseConfig config = tableConfigs.get(tableName);
-            final JsonArray results = FileUtil.loadResponseAsJsonArray(imposterConfig, config);
+            final JsonArray results = responseService.loadResponseAsJsonArray(imposterConfig, routingContext, config);
 
             // build results
             final CellSetModel cellSetModel = new CellSetModel();
 
             // start the row counter from the last position in the scanner
-            for (int i = scanner.getRowCounter().get(); i < rows && i < results.size(); i++) {
+            final int lastPosition = scanner.getRowCounter().get();
+            for (int i = lastPosition; i < (lastPosition + rows) && i < results.size(); i++) {
                 final JsonObject result = results.getJsonObject(i);
 
                 final RowModel row = new RowModel();

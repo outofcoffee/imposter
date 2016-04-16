@@ -2,7 +2,7 @@ package com.gatehill.imposter.plugin.sfdc;
 
 import com.gatehill.imposter.ImposterConfig;
 import com.gatehill.imposter.plugin.config.ConfiguredPlugin;
-import com.gatehill.imposter.util.FileUtil;
+import com.gatehill.imposter.service.ResponseService;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpMethod;
@@ -34,6 +34,9 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
 
     @Inject
     private ImposterConfig imposterConfig;
+
+    @Inject
+    private ResponseService responseService;
 
     private List<SfdcPluginConfig> configs;
 
@@ -75,7 +78,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
                     .orElseThrow(() -> new RuntimeException(String.format("Unable to find mock config for SObject: %s", sObjectName)));
 
             // enrich records
-            final JsonArray records = FileUtil.loadResponseAsJsonArray(imposterConfig, config);
+            final JsonArray records = responseService.loadResponseAsJsonArray(imposterConfig, routingContext, config);
             for (int i = 0; i < records.size(); i++) {
                 addRecordAttributes(records.getJsonObject(i), apiVersion, config.getsObjectName());
             }
@@ -105,7 +108,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
 
                         // find and enrich record
                         final Optional<JsonObject> result = findSObjectById(sObjectId,
-                                FileUtil.loadResponseAsJsonArray(imposterConfig, config))
+                                responseService.loadResponseAsJsonArray(imposterConfig, routingContext, config))
                                 .map(r -> addRecordAttributes(r, apiVersion, config.getsObjectName()));
 
                         final HttpServerResponse response = routingContext.response();

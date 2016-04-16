@@ -1,25 +1,31 @@
 package com.gatehill.imposter.plugin.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class BaseConfig {
-    private String plugin;
+    @JsonProperty("plugin")
+    private String pluginClass;
+
+    @JsonProperty("basePath")
     private String basePath;
-    private String responseFile;
 
-    public String getResponseFile() {
-        return responseFile;
-    }
+    @JsonProperty("response")
+    private ResponseConfig responseConfig;
 
-    public String getPlugin() {
-        return plugin;
+    public String getPluginClass() {
+        return pluginClass;
     }
 
     public String getBasePath() {
         return basePath;
+    }
+
+    public ResponseConfig getResponseConfig() {
+        return responseConfig;
     }
 }
