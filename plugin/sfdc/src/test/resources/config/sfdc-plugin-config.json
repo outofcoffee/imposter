@@ -1,0 +1,5 @@
+{
+  "plugin": "com.gatehill.imposter.plugin.sfdc.SfdcPluginImpl",
+  "responseFile": "sfdc-plugin-data.json",
+  "sObjectName": "Account"
+}

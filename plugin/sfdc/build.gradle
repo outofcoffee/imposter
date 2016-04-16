@@ -1,0 +1,14 @@
+apply plugin: 'java'
+
+compileJava {
+    sourceCompatibility = 1.8
+}
+
+dependencies {
+    compile project (':core')
+    compile project (':plugin:rest')
+
+    // test
+    testCompile project (':test')
+    testCompile 'com.frejo:force-rest-api:0.0.29'
+}

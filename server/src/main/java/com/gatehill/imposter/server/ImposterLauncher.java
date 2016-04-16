@@ -13,4 +13,13 @@ public class ImposterLauncher extends Launcher {
         // delegate all Vert.x logging to SLF4J
         System.setProperty(VERTX_LOGGER_FACTORY, VERTX_LOGGER_IMPL);
     }
+
+    /**
+     * Main entry point.
+     *
+     * @param args the user command line arguments.
+     */
+    public static void main(String[] args) {
+        new ImposterLauncher().dispatch(args);
+    }
 }

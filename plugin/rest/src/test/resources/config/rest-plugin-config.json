@@ -1,0 +1,6 @@
+{
+  "plugin": "com.gatehill.imposter.plugin.rest.RestPluginImpl",
+  "basePath": "/example",
+  "responseFile": "rest-plugin-data.json",
+  "contentType": "application/json"
+}

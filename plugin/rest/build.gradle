@@ -1,0 +1,13 @@
+apply plugin: 'java'
+
+compileJava {
+    sourceCompatibility = 1.8
+}
+
+dependencies {
+    compile project (':core')
+
+    // test
+    testCompile project (':test')
+    testCompile "com.jayway.restassured:rest-assured:$version_restAssured"
+}
