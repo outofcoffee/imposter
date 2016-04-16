@@ -111,7 +111,7 @@ For example:
 
     {
       "plugin": "com.gatehill.imposter.plugin.rest.RestPluginImpl",
-      "basePath": "/scripted",
+      "basePath": "/example",
       "response": {
         "staticFile": "example-data.json"
       }
