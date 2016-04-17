@@ -1,7 +1,8 @@
 # Imposter: A scriptable, multipurpose mock server [![Build Status](https://travis-ci.org/outofcoffee/imposter.svg?branch=master)](https://travis-ci.org/outofcoffee/imposter)
 
 Decouple your integration tests from the cloud/various back-end systems. Imposter is a mock server with a suite of
-plugins. It also allows you to write Groovy scripts to customise its behaviour.
+plugins. Respond using static files, or write Groovy scripts to customise its behaviour. For
+maximum control, you can write your own plugins.
 
 ## Plugins
 
@@ -34,7 +35,8 @@ The easiest way to get started is to use the Docker container:
 
 ## Java
 
-You can build Imposter as a JAR file. See the _Build_ section below.
+If Docker isn't your thing, or you want to build Imposter yourself, you can create a standlone
+JAR file. See the _Build_ section below.
 
 # Usage
 
@@ -105,8 +107,6 @@ want to consider setting the `serverUrl` property explicitly to the publicly-acc
 
 Imposter configuration files must be named with a `-config.json` suffix. For example: `mydata-config.json`.
 
-Response files can be named anything you like and are resolved relative to the configuration directory.
-
 For example:
 
     {
@@ -117,15 +117,20 @@ For example:
       }
     }
 
+You **must** specify the plugin to use in the configuration file. See the examples in this document for possible values.
+
 ## Simple (static response files)
+
+You can control Imposter's responses using static response files. Use the `staticFile` property
+within the `response` object in your configuration.
+
+Response files can be named anything you like and are resolved relative to the configuration directory.
 
 In the example above, we are using a static response file (`example-data.json`):
 
      {
        "hello": "world"
      }
-
-You must specify the plugin to use in the configuration file. See the examples in this document for possible values.
 
 ## Advanced (scripting)
 
@@ -173,24 +178,27 @@ For example:
     ...
     400 Bad Request
 
-In the case of `action=fetch`, the script causes the mock server to use the content of the static response file
+In the case of `action=fetch`, the script causes the mock server to use the content of the static file
 `static-data.json` to serve the response.
 
 ## The InvocationContext object
 
 The `context` object in the example above is of type `com.gatehill.imposter.model.InvocationContext`. This holds
-request parameters and the absolute URI.
+things you might like to interrogate, like request parameters or the absolute URI of the request.
 
 ## The ResponseBehaviour object
 
-The response methods are being called on an object of type `com.gatehill.imposter.model.ResponseBehaviour`.
+Your scripts are a subclass of `com.gatehill.imposter.model.ResponseBehaviour`.
 
 As well as the `ResponseBehaviour.withStatusCode(int)` method, you can also take advantage of the
 `ResponseBehaviour.withDefaultBehaviour()` method to respond with the content of a static file.
-To do this, ensure you have either set the `staticFile` property within the `response` object in your configuration,
-or call `ResponseBehaviour.withFile(String)` in your script.
 
-For example:
+To do this, ensure you have either:
+
+1. set the `staticFile` property within the `response` object in your configuration, or
+2. call `ResponseBehaviour.withFile(String)` in your script.
+
+Here's an example of the static file approach (1):
 
     {
       "plugin": "com.gatehill.imposter.plugin.rest.RestPluginImpl",
@@ -202,9 +210,9 @@ For example:
       "contentType": "application/json"
     }
 
-In this case, the static file `example-data.json` will be used if there is no script file specified, or if the script does not
-invoke the `InvocationContext.respondWithStatusCode(int)` method, or if it explicitly invokes `InvocationContext.respondDefault()`.
-See the *rest* plugin tests for a working example.
+In this case, the static file `example-data.json` will be used if the script does not
+invoke the `ResponseBehaviour.withFile(String)` method, or if it explicitly invokes
+`ResponseBehaviour.withDefaultBehaviour()`. See the *rest* plugin tests for a working example.
 
 # Build
 
@@ -243,6 +251,7 @@ Build the Docker container with:
 * HBase individual record retrieval
 * HBase response content type header
 * Config upload from tests (using a client library to wrap REST API?)
+* API specification import (e.g. Swagger)
 
 # Contributing
 
