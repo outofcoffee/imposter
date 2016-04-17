@@ -1,42 +1,86 @@
 package com.gatehill.imposter.model;
 
-import com.gatehill.imposter.ImposterConfig;
-
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public class ResponseBehaviour {
+    private InvocationContext context;
+    private ResponseBehaviourType behaviourType;
     private int statusCode;
-    private boolean handled;
-    private Path responseFile;
+    private String responseFile;
+    private boolean behaviourConfigured;
+
+    public InvocationContext getContext() {
+        return context;
+    }
+
+    public void setContext(InvocationContext context) {
+        this.context = context;
+    }
 
     public int getStatusCode() {
         return statusCode;
     }
 
-    public boolean isHandled() {
-        return handled;
-    }
-
-    public Path getResponseFile() {
+    public String getResponseFile() {
         return responseFile;
     }
 
-    public static ResponseBehaviour buildStatic(int statusCode, ImposterConfig imposterConfig, String staticFile) {
-        final ResponseBehaviour behaviour = new ResponseBehaviour();
-        behaviour.statusCode = statusCode;
-        behaviour.handled = false;
-        behaviour.responseFile = Paths.get(imposterConfig.getConfigDir(), staticFile);
-        return behaviour;
+    public void process() throws Exception {
+        // no op
     }
 
-    public static ResponseBehaviour buildHandled(int statusCode) {
-        final ResponseBehaviour behaviour = new ResponseBehaviour();
-        behaviour.statusCode = statusCode;
-        behaviour.handled = true;
-        return behaviour;
+    public ResponseBehaviour withStatusCode(int statusCode) {
+        this.statusCode = statusCode;
+        return this;
+    }
+
+    public ResponseBehaviour withFile(String responseFile) {
+        this.responseFile = responseFile;
+        return this;
+    }
+
+    public ResponseBehaviour withDefaultBehaviour() {
+        if (behaviourConfigured) {
+            throw new IllegalStateException("Response already handled");
+        } else {
+            behaviourConfigured = true;
+        }
+
+        behaviourType = ResponseBehaviourType.DEFAULT_BEHAVIOUR;
+        return this;
+    }
+
+    public ResponseBehaviour immediately() {
+        if (behaviourConfigured) {
+            throw new IllegalStateException("Response already handled");
+        } else {
+            behaviourConfigured = true;
+        }
+
+        behaviourType = ResponseBehaviourType.IMMEDIATE_RESPONSE;
+        return this;
+    }
+
+    /**
+     * Syntactic sugar.
+     *
+     * @return
+     */
+    public ResponseBehaviour respond() {
+        return this;
+    }
+
+    /**
+     * Syntactic sugar.
+     *
+     * @return
+     */
+    public ResponseBehaviour and() {
+        return this;
+    }
+
+    public ResponseBehaviourType getBehaviourType() {
+        return behaviourType;
     }
 }

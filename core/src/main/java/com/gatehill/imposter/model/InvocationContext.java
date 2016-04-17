@@ -11,8 +11,6 @@ import java.util.stream.Collectors;
  */
 public class InvocationContext {
     private RoutingContext routingContext;
-    private int statusCode;
-    private boolean handled;
     private Map<String, String> params;
 
     private InvocationContext(RoutingContext routingContext) {
@@ -27,26 +25,8 @@ public class InvocationContext {
     public String toString() {
         return Objects.toStringHelper(this)
                 .add("uri", getUri())
-                .add("statusCode", statusCode)
-                .add("handled", handled)
+                .add("params", getParams())
                 .toString();
-    }
-
-    public void respondWithStatusCode(int statusCode) {
-        handled = true;
-        this.statusCode = statusCode;
-    }
-
-    public void respondDefault() {
-        handled = false;
-    }
-
-    public int getStatusCode() {
-        return statusCode;
-    }
-
-    public boolean isHandled() {
-        return handled;
     }
 
     public String getUri() {

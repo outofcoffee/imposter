@@ -2,7 +2,7 @@
   "plugin": "com.gatehill.imposter.plugin.rest.RestPluginImpl",
   "basePath": "/example",
   "response": {
-    "staticFile": "rest-plugin-data.json"
+    "staticFile": "rest-plugin-data1.json"
   },
   "contentType": "application/json"
 }

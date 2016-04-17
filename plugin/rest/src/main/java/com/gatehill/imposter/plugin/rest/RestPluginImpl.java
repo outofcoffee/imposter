@@ -1,5 +1,6 @@
 package com.gatehill.imposter.plugin.rest;
 
+import com.gatehill.imposter.ImposterConfig;
 import com.gatehill.imposter.model.ResponseBehaviour;
 import com.gatehill.imposter.plugin.config.ConfiguredPlugin;
 import com.gatehill.imposter.service.ResponseService;
@@ -10,6 +11,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.inject.Inject;
+import java.nio.file.Paths;
 import java.util.List;
 
 import static java.util.Optional.ofNullable;
@@ -22,6 +24,9 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
 
     @Inject
     private ResponseService responseService;
+
+    @Inject
+    private ImposterConfig imposterConfig;
 
     private List<C> configs;
 
@@ -52,10 +57,15 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
                             final ResponseBehaviour responseBehaviour = responseService.getResponseBehaviour(routingContext, config);
                             response.setStatusCode(responseBehaviour.getStatusCode());
 
-                            if (responseBehaviour.isHandled()) {
-                                response.end();
-                            } else {
-                                response.sendFile(responseBehaviour.getResponseFile().toString());
+                            switch (responseBehaviour.getBehaviourType()) {
+                                case DEFAULT_BEHAVIOUR:
+                                    response.sendFile(
+                                            Paths.get(imposterConfig.getConfigDir(), responseBehaviour.getResponseFile()).toString());
+                                    break;
+
+                                case IMMEDIATE_RESPONSE:
+                                    response.end();
+                                    break;
                             }
 
                         } catch (Exception e) {

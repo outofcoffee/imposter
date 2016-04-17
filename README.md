@@ -117,7 +117,9 @@ For example:
       }
     }
 
-Here's the corresponding static response file (`example-data.json`):
+## Simple (static response files)
+
+In the example above, we are using a static response file (`example-data.json`):
 
      {
        "hello": "world"
@@ -127,9 +129,10 @@ You must specify the plugin to use in the configuration file. See the examples i
 
 ## Advanced (scripting)
 
-You can control Imposter's responses using [Groovy](http://groovy-lang.org/) scripts.
+You can also control Imposter's responses using [Groovy](http://groovy-lang.org/) scripts. Since it's Groovy, you
+can write plain Java in your scripts as well.
 
-Here's an example configuration that uses a script file:
+Here's an example configuration file that uses a script:
 
     {
       "plugin": "com.gatehill.imposter.plugin.rest.RestPluginImpl",
@@ -144,20 +147,20 @@ Here's the corresponding script (`example.groovy`):
     switch (context.params["action"]) {
         case "create":
             // HTTP Status-Code 201: Created.
-            context.respondWithStatusCode 201
+            respond() withStatusCode 201 immediately()
             break
 
-        case "delete":
-            // HTTP Status-Code 204: No Content.
-            context.respondWithStatusCode 204
+        case "fetch":
+            // use a different static response file with the default behaviour
+            respond() withFile "static-data.json" and() withDefaultBehaviour()
             break
 
         default:
             // default to bad request
-            context.respondWithStatusCode 400
+            respond() withStatusCode 400 immediately()
     }
 
-In this example, the script causes the mock server to respond with HTTP status codes 201, 204 or 400 depending on
+In this example, the script causes the mock server to respond with HTTP status codes 200, 201 or 400 depending on
 the value of the `action` parameter in the request.
 
 For example:
@@ -170,13 +173,22 @@ For example:
     ...
     400 Bad Request
 
-## The InvocationContext
+In the case of `action=fetch`, the script causes the mock server to use the content of the static response file
+`static-data.json` to serve the response.
 
-The `context` object in the example above is of type `com.gatehill.imposter.model.InvocationContext`.
+## The InvocationContext object
 
-As well as the `InvocationContext.respondWithStatusCode(int)` method, you can also take advantage of the
-`InvocationContext.respondDefault()` method to respond with the content of a static file.
-To do this, ensure you have set the `staticFile` property within the `response` object in your configuration.
+The `context` object in the example above is of type `com.gatehill.imposter.model.InvocationContext`. This holds
+request parameters and the absolute URI.
+
+## The ResponseBehaviour object
+
+The response methods are being called on an object of type `com.gatehill.imposter.model.ResponseBehaviour`.
+
+As well as the `ResponseBehaviour.withStatusCode(int)` method, you can also take advantage of the
+`ResponseBehaviour.withDefaultBehaviour()` method to respond with the content of a static file.
+To do this, ensure you have either set the `staticFile` property within the `response` object in your configuration,
+or call `ResponseBehaviour.withFile(String)` in your script.
 
 For example:
 

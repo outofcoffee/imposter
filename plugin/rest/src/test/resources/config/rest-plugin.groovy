@@ -1,34 +1,34 @@
-import com.gatehill.imposter.model.InvocationContext
-
 /**
  * Trivial example of returning a specific status code, based on the URI.
  *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 
-// this assignment is only done for illustrative purposes
-InvocationContext ctx = context
-
-switch (ctx.uri) {
+switch (context.uri) {
     case ~/.*bad/:
         // HTTP Status-Code 400: Bad Request.
-        ctx.respondWithStatusCode 400
+        respond() withStatusCode 400 immediately()
         return
 
 }
 
-switch (ctx.params["action"]) {
+switch (context.params["action"]) {
     case "create":
         // HTTP Status-Code 201: Created.
-        ctx.respondWithStatusCode 201
+        respond() withStatusCode 201 immediately()
         break
 
     case "delete":
         // HTTP Status-Code 204: No Content.
-        ctx.respondWithStatusCode 204
+        respond() withStatusCode 204 immediately()
+        break
+
+    case "fetch":
+        // use a different static response file with the default behaviour
+        respond() withFile "rest-plugin-data2.json" and() withDefaultBehaviour()
         break
 
     default:
         // default to static file in config
-        ctx.respondDefault()
+        respond() withDefaultBehaviour()
 }

@@ -43,12 +43,12 @@ public class RestPluginTest extends BaseVerticleTest {
                 .and()
                 .contentType(equalTo("application/json"))
                 .and()
-                .body("testKey", equalTo("testValue"));
+                .body("testKey", equalTo("testValue1"));
     }
 
     @Test
-    public void testRequestScriptedSuccess() throws Exception {
-        // default action should return static data
+    public void testRequestScriptedResponseFile() throws Exception {
+        // default action should return static data file 1
         given().when()
                 .get("/scripted")
                 .then()
@@ -56,8 +56,21 @@ public class RestPluginTest extends BaseVerticleTest {
                 .and()
                 .contentType(equalTo("application/json"))
                 .and()
-                .body("testKey", equalTo("testValue"));
+                .body("testKey", equalTo("testValue1"));
 
+        // default action should return static data file 2
+        given().when()
+                .get("/scripted?action=fetch")
+                .then()
+                .statusCode(equalTo(HttpURLConnection.HTTP_OK))
+                .and()
+                .contentType(equalTo("application/json"))
+                .and()
+                .body("testKey", equalTo("testValue2"));
+    }
+
+    @Test
+    public void testRequestScriptedStatusCode() throws Exception {
         // script causes short circuit to 201
         given().when()
                 .get("/scripted?action=create")
