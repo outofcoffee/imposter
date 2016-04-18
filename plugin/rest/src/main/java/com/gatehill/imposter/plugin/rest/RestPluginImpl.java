@@ -1,9 +1,8 @@
 package com.gatehill.imposter.plugin.rest;
 
 import com.gatehill.imposter.ImposterConfig;
-import com.gatehill.imposter.model.ResponseBehaviour;
+import com.gatehill.imposter.plugin.ScriptedPlugin;
 import com.gatehill.imposter.plugin.config.ConfiguredPlugin;
-import com.gatehill.imposter.service.ResponseService;
 import com.gatehill.imposter.util.HttpUtil;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.Router;
@@ -19,11 +18,8 @@ import static java.util.Optional.ofNullable;
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin<C> {
+public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin<C> implements ScriptedPlugin<C> {
     private static final Logger LOGGER = LogManager.getLogger(RestPluginImpl.class);
-
-    @Inject
-    private ResponseService responseService;
 
     @Inject
     private ImposterConfig imposterConfig;
@@ -43,39 +39,27 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
 
     @Override
     public void configureRoutes(Router router) {
-        configs.forEach(config -> {
-            router.get(config.getBasePath())
-                    .handler(routingContext -> {
-                        LOGGER.info("Handling request for: {}", routingContext.request().absoluteURI());
+        configs.forEach(config -> router.get(config.getBasePath()).handler(routingContext -> {
+            // script should fire first
+            scriptHandler(config, routingContext, responseBehaviour -> {
+                LOGGER.info("Handling request for: {}", routingContext.request().absoluteURI());
 
-                        final HttpServerResponse response = routingContext.response();
+                final HttpServerResponse response = routingContext.response();
 
-                        ofNullable(config.getContentType())
-                                .ifPresent(contentType -> response.putHeader(HttpUtil.CONTENT_TYPE, contentType));
+                ofNullable(config.getContentType())
+                        .ifPresent(contentType -> response.putHeader(HttpUtil.CONTENT_TYPE, contentType));
 
-                        try {
-                            final ResponseBehaviour responseBehaviour = responseService.getResponseBehaviour(routingContext, config);
-                            response.setStatusCode(responseBehaviour.getStatusCode());
+                try {
+                    response.setStatusCode(responseBehaviour.getStatusCode());
 
-                            switch (responseBehaviour.getBehaviourType()) {
-                                case DEFAULT_BEHAVIOUR:
-                                    response.sendFile(
-                                            Paths.get(imposterConfig.getConfigDir(), responseBehaviour.getResponseFile()).toString());
-                                    break;
+                    response.sendFile(
+                            Paths.get(imposterConfig.getConfigDir(), responseBehaviour.getResponseFile()).toString());
 
-                                case IMMEDIATE_RESPONSE:
-                                    response.end();
-                                    break;
-                            }
+                } catch (Exception e) {
+                    routingContext.fail(e);
+                }
+            });
 
-                        } catch (Exception e) {
-                            routingContext.fail(e);
-                        }
-                    });
-        });
-    }
-
-    protected List<C> getConfigs() {
-        return configs;
+        }));
     }
 }

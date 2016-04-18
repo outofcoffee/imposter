@@ -57,6 +57,22 @@ public class HBasePluginTest extends BaseVerticleTest {
     }
 
     @Test
+    public void testScriptedFailure(TestContext testContext) throws Exception {
+        final RemoteHTable table = new RemoteHTable(client, "scriptedTable");
+
+        final Scan scan = new Scan();
+        scan.setFilter(new PrefixFilter(Bytes.toBytes("fail")));
+
+        try {
+            table.getScanner(scan);
+            testContext.fail(IOException.class + " expected");
+
+        } catch (IOException e) {
+            testContext.assertTrue(e.getLocalizedMessage().contains("400"));
+        }
+    }
+
+    @Test
     public void testTableNotFound(TestContext testContext) throws Exception {
         final RemoteHTable table = new RemoteHTable(client, "nonExistentTable");
 

@@ -1,0 +1,7 @@
+{
+  "plugin": "com.gatehill.imposter.plugin.hbase.HBasePluginImpl",
+  "tableName": "scriptedTable",
+  "response": {
+    "scriptFile": "hbase-plugin.groovy"
+  }
+}

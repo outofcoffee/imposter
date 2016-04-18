@@ -36,6 +36,7 @@ public class ImposterVerticle extends AbstractVerticle {
 
     @Inject
     private PluginManager pluginManager;
+
     private HttpServer httpServer;
 
     @Override

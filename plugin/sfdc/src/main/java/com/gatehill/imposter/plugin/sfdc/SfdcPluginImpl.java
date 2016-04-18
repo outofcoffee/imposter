@@ -1,6 +1,7 @@
 package com.gatehill.imposter.plugin.sfdc;
 
 import com.gatehill.imposter.ImposterConfig;
+import com.gatehill.imposter.plugin.ScriptedPlugin;
 import com.gatehill.imposter.plugin.config.ConfiguredPlugin;
 import com.gatehill.imposter.service.ResponseService;
 import io.vertx.core.Handler;
@@ -28,7 +29,7 @@ import static java.util.Optional.*;
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
+public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> implements ScriptedPlugin<SfdcPluginConfig> {
     private static final Logger LOGGER = LogManager.getLogger(SfdcPluginImpl.class);
     private static final String FIELD_ID = "Id";
 
@@ -77,56 +78,64 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
                     .findAny()
                     .orElseThrow(() -> new RuntimeException(String.format("Unable to find mock config for SObject: %s", sObjectName)));
 
-            // enrich records
-            final JsonArray records = responseService.loadResponseAsJsonArray(imposterConfig, routingContext, config);
-            for (int i = 0; i < records.size(); i++) {
-                addRecordAttributes(records.getJsonObject(i), apiVersion, config.getsObjectName());
-            }
+            // script should fire first
+            scriptHandler(config, routingContext, responseBehaviour -> {
 
-            final JsonObject responseWrapper = new JsonObject();
-            responseWrapper.put("done", true);
-            responseWrapper.put("records", records);
-            responseWrapper.put("totalSize", records.size());
+                // enrich records
+                final JsonArray records = responseService.loadResponseAsJsonArray(imposterConfig, responseBehaviour);
+                for (int i = 0; i < records.size(); i++) {
+                    addRecordAttributes(records.getJsonObject(i), apiVersion, config.getsObjectName());
+                }
 
-            LOGGER.info("Sending {} SObjects in response to query: {}", records.size(), query);
+                final JsonObject responseWrapper = new JsonObject();
+                responseWrapper.put("done", true);
+                responseWrapper.put("records", records);
+                responseWrapper.put("totalSize", records.size());
 
-            final HttpServerResponse response = routingContext.response();
+                LOGGER.info("Sending {} SObjects in response to query: {}", records.size(), query);
 
-            ofNullable(config.getContentType())
-                    .ifPresent(contentType -> response.putHeader(CONTENT_TYPE, contentType));
+                final HttpServerResponse response = routingContext.response();
 
-            response.setStatusCode(HttpURLConnection.HTTP_OK)
-                    .end(Buffer.buffer(responseWrapper.encodePrettily()));
+                ofNullable(config.getContentType())
+                        .ifPresent(contentType -> response.putHeader(CONTENT_TYPE, contentType));
+
+                response.setStatusCode(HttpURLConnection.HTTP_OK)
+                        .end(Buffer.buffer(responseWrapper.encodePrettily()));
+            });
         });
 
         // get SObject handler
         configs.forEach(config -> {
             router.get("/services/data/:apiVersion/sobjects/" + config.getsObjectName() + "/:sObjectId")
                     .handler(routingContext -> {
-                        final String apiVersion = routingContext.request().getParam("apiVersion");
-                        final String sObjectId = routingContext.request().getParam("sObjectId");
+                        // script should fire first
+                        scriptHandler(config, routingContext, responseBehaviour -> {
 
-                        // find and enrich record
-                        final Optional<JsonObject> result = findSObjectById(sObjectId,
-                                responseService.loadResponseAsJsonArray(imposterConfig, routingContext, config))
-                                .map(r -> addRecordAttributes(r, apiVersion, config.getsObjectName()));
+                            final String apiVersion = routingContext.request().getParam("apiVersion");
+                            final String sObjectId = routingContext.request().getParam("sObjectId");
 
-                        final HttpServerResponse response = routingContext.response();
+                            // find and enrich record
+                            final Optional<JsonObject> result = findSObjectById(sObjectId,
+                                    responseService.loadResponseAsJsonArray(imposterConfig, responseBehaviour))
+                                    .map(r -> addRecordAttributes(r, apiVersion, config.getsObjectName()));
 
-                        if (result.isPresent()) {
-                            LOGGER.info("Sending SObject with ID: {}", sObjectId);
+                            final HttpServerResponse response = routingContext.response();
 
-                            ofNullable(config.getContentType())
-                                    .ifPresent(contentType -> response.putHeader(CONTENT_TYPE, contentType));
+                            if (result.isPresent()) {
+                                LOGGER.info("Sending SObject with ID: {}", sObjectId);
 
-                            response.setStatusCode(HttpURLConnection.HTTP_OK)
-                                    .end(Buffer.buffer(result.get().encodePrettily()));
-                        } else {
-                            // no such record
-                            LOGGER.error("{} SObject with ID: {} not found", config.getsObjectName(), sObjectId);
-                            response.setStatusCode(HttpURLConnection.HTTP_NOT_FOUND)
-                                    .end();
-                        }
+                                ofNullable(config.getContentType())
+                                        .ifPresent(contentType -> response.putHeader(CONTENT_TYPE, contentType));
+
+                                response.setStatusCode(HttpURLConnection.HTTP_OK)
+                                        .end(Buffer.buffer(result.get().encodePrettily()));
+                            } else {
+                                // no such record
+                                LOGGER.error("{} SObject with ID: {} not found", config.getsObjectName(), sObjectId);
+                                response.setStatusCode(HttpURLConnection.HTTP_NOT_FOUND)
+                                        .end();
+                            }
+                        });
                     });
         });
 

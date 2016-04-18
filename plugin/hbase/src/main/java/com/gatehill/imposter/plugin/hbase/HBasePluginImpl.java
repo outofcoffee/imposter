@@ -1,7 +1,7 @@
 package com.gatehill.imposter.plugin.hbase;
 
 import com.gatehill.imposter.ImposterConfig;
-import com.gatehill.imposter.plugin.config.BaseConfig;
+import com.gatehill.imposter.plugin.ScriptedPlugin;
 import com.gatehill.imposter.plugin.config.ConfiguredPlugin;
 import com.gatehill.imposter.plugin.hbase.model.InMemoryScanner;
 import com.gatehill.imposter.plugin.hbase.model.ResultCell;
@@ -9,11 +9,13 @@ import com.gatehill.imposter.plugin.hbase.model.ResultCellComparator;
 import com.gatehill.imposter.service.ResponseService;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
 import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.PrefixFilter;
 import org.apache.hadoop.hbase.rest.model.CellModel;
@@ -33,12 +35,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> {
+public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> implements ScriptedPlugin<HBasePluginConfig> {
     private static final Logger LOGGER = LogManager.getLogger(HBasePluginImpl.class);
 
     @Inject
@@ -104,44 +107,62 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> {
             // parse request
             final ScannerModel scannerModel;
             try {
-                final byte[] rawMessage = routingContext.getBody().getBytes();
-                scannerModel = new ScannerModel();
-                scannerModel.getObjectFromMessage(rawMessage);
-
+                scannerModel = getScannerModel(routingContext);
             } catch (IOException e) {
                 routingContext.fail(e);
                 return;
             }
 
-            LOGGER.debug("{} scanner filter: {}", tableName, scannerModel.getFilter());
+            final Optional<String> scannerFilterPrefix = getScannerFilterPrefix(scannerModel);
+            LOGGER.debug("Scanner filter for table: {}: {}, with prefix: {}", tableName, scannerModel.getFilter(), scannerFilterPrefix);
 
             // assert prefix matches if present
             if (ofNullable(config.getPrefix())
-                    .map(configPrefix -> isFilterMatch(scannerModel, configPrefix))
+                    .map(configPrefix -> scannerFilterPrefix.map(configPrefix::equals).orElse(false))
                     .orElse(true)) {
 
                 LOGGER.info("Scanner filter prefix matches expected value: {}", config.getPrefix());
 
             } else {
-                LOGGER.error("Scanner filter prefix does not match expected value: {}}", config.getPrefix());
+                LOGGER.error("Scanner filter prefix '{}' does not match expected value: {}}",
+                        scannerFilterPrefix, config.getPrefix());
+
                 routingContext.fail(HttpURLConnection.HTTP_INTERNAL_ERROR);
                 return;
             }
 
-            // register scanner
-            final int scannerId = scannerIdCounter.incrementAndGet();
-            createdScanners.put(scannerId, new InMemoryScanner(config, scannerModel));
+            // additional bindings
+            final Map<String, Object> bindings = Maps.newHashMapWithExpectedSize(1);
+            bindings.put("scannerFilterPrefix", scannerFilterPrefix.orElse(""));
 
-            final String resultUrl = imposterConfig.getServerUrl() + basePath + "/" + tableName + "/scanner/" + scannerId;
+            // script should fire first
+            scriptHandler(config, routingContext, bindings, responseBehaviour -> {
 
-            routingContext.response()
-                    .putHeader("Location", resultUrl)
-                    .setStatusCode(HttpURLConnection.HTTP_CREATED)
-                    .end();
+                // register scanner
+                final int scannerId = scannerIdCounter.incrementAndGet();
+                createdScanners.put(scannerId, new InMemoryScanner(config, scannerModel));
+
+                final String resultUrl = imposterConfig.getServerUrl() + basePath + "/" + tableName + "/scanner/" + scannerId;
+
+                routingContext.response()
+                        .putHeader("Location", resultUrl)
+                        .setStatusCode(HttpURLConnection.HTTP_CREATED)
+                        .end();
+            });
         });
     }
 
-    private boolean isFilterMatch(ScannerModel scannerModel, String configPrefix) {
+    private ScannerModel getScannerModel(RoutingContext routingContext) throws IOException {
+        final ScannerModel scannerModel = new ScannerModel();
+        final byte[] rawMessage = routingContext.getBody().getBytes();
+
+        // deserialise from protobuf
+        scannerModel.getObjectFromMessage(rawMessage);
+
+        return scannerModel;
+    }
+
+    private Optional<String> getScannerFilterPrefix(ScannerModel scannerModel) {
         final Filter filter;
         try {
             filter = ScannerModel.buildFilter(scannerModel.getFilter());
@@ -149,10 +170,10 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> {
             throw new RuntimeException(e);
         }
         if (filter instanceof PrefixFilter) {
-            final String filterPrefix = Bytes.toString(((PrefixFilter) filter).getPrefix());
-            return configPrefix.equals(filterPrefix);
+            final String prefix = Bytes.toString(((PrefixFilter) filter).getPrefix());
+            return Optional.of(prefix);
         }
-        return false;
+        return empty();
     }
 
     private void addReadScannerResultsRoute(Router router, String basePath) {
@@ -188,54 +209,59 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> {
             final InMemoryScanner scanner = optionalScanner.get();
 
             // load result
-            final BaseConfig config = tableConfigs.get(tableName);
-            final JsonArray results = responseService.loadResponseAsJsonArray(imposterConfig, routingContext, config);
+            final HBasePluginConfig config = tableConfigs.get(tableName);
 
-            // build results
-            final CellSetModel cellSetModel = new CellSetModel();
+            // script should fire first
+            scriptHandler(config, routingContext, responseBehaviour -> {
 
-            // start the row counter from the last position in the scanner
-            final int lastPosition = scanner.getRowCounter().get();
-            for (int i = lastPosition; i < (lastPosition + rows) && i < results.size(); i++) {
-                final JsonObject result = results.getJsonObject(i);
+                // build results
+                final JsonArray results = responseService.loadResponseAsJsonArray(imposterConfig, responseBehaviour);
+                final CellSetModel cellSetModel = new CellSetModel();
 
-                final RowModel row = new RowModel();
+                // start the row counter from the last position in the scanner
+                final int lastPosition = scanner.getRowCounter().get();
+                for (int i = lastPosition; i < (lastPosition + rows) && i < results.size(); i++) {
+                    final JsonObject result = results.getJsonObject(i);
 
-                // TODO consider setting key to prefix from scanner filter
-                row.setKey(Bytes.toBytes("rowKey" + scanner.getRowCounter().incrementAndGet()));
+                    final RowModel row = new RowModel();
 
-                // add cells from result file
-                final List<ResultCell> cells = result.fieldNames().stream()
-                        .map(fieldName -> new ResultCell(fieldName, result.getString(fieldName)))
-                        .collect(Collectors.toList());
+                    // TODO consider setting key to prefix from scanner filter
+                    row.setKey(Bytes.toBytes("rowKey" + scanner.getRowCounter().incrementAndGet()));
 
-                // sort the cells before adding to row
-                cells.sort(new ResultCellComparator());
+                    // add cells from result file
+                    final List<ResultCell> cells = result.fieldNames().stream()
+                            .map(fieldName -> new ResultCell(fieldName, result.getString(fieldName)))
+                            .collect(Collectors.toList());
 
-                // add cells in sorted order
-                cells.forEach(c -> {
-                    final CellModel cell = new CellModel();
-                    cell.setColumn(Bytes.toBytes(c.getFieldName()));
-                    cell.setValue(Bytes.toBytes(c.getFieldValue()));
-                    row.addCell(cell);
-                });
+                    // sort the cells before adding to row
+                    cells.sort(new ResultCellComparator());
 
-                cellSetModel.addRow(row);
-            }
+                    // add cells in sorted order
+                    cells.forEach(c -> {
+                        final CellModel cell = new CellModel();
+                        cell.setColumn(Bytes.toBytes(c.getFieldName()));
+                        cell.setValue(Bytes.toBytes(c.getFieldValue()));
+                        row.addCell(cell);
+                    });
 
-            final boolean exhausted = (scanner.getRowCounter().get() >= results.size());
-            if (exhausted) {
-                LOGGER.info("Scanner {} for table: {} exhausted", scannerId, tableName);
-                createdScanners.invalidate(scannerId);
-            }
+                    cellSetModel.addRow(row);
+                }
 
-            LOGGER.info("Returning {} rows from scanner {} for table: {}", cellSetModel.getRows().size(), scannerId, tableName);
+                final boolean exhausted = (scanner.getRowCounter().get() >= results.size());
+                if (exhausted) {
+                    LOGGER.info("Scanner {} for table: {} exhausted", scannerId, tableName);
+                    createdScanners.invalidate(scannerId);
+                }
 
-            final byte[] protobufOutput = cellSetModel.createProtobufOutput();
+                LOGGER.info("Returning {} rows from scanner {} for table: {}", cellSetModel.getRows().size(), scannerId, tableName);
 
-            routingContext.response()
-                    .setStatusCode(HttpURLConnection.HTTP_OK)
-                    .end(Buffer.buffer(protobufOutput));
+                final byte[] protobufOutput = cellSetModel.createProtobufOutput();
+
+                routingContext.response()
+                        .setStatusCode(HttpURLConnection.HTTP_OK)
+                        .end(Buffer.buffer(protobufOutput));
+            });
+
         });
     }
 }

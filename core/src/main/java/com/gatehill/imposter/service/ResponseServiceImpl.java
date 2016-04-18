@@ -4,6 +4,7 @@ import com.gatehill.imposter.ImposterConfig;
 import com.gatehill.imposter.model.InvocationContext;
 import com.gatehill.imposter.model.ResponseBehaviour;
 import com.gatehill.imposter.plugin.config.BaseConfig;
+import com.gatehill.imposter.plugin.config.ResponseConfig;
 import com.google.common.base.Strings;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -23,6 +24,7 @@ import java.net.HttpURLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -44,20 +46,22 @@ public class ResponseServiceImpl implements ResponseService {
             .build();
 
     @Override
-    public ResponseBehaviour getResponseBehaviour(RoutingContext routingContext, BaseConfig config) {
-        final int statusCode = ofNullable(config.getResponseConfig().getStatusCode()).orElse(HttpURLConnection.HTTP_OK);
+    public ResponseBehaviour getResponseBehaviour(RoutingContext routingContext, BaseConfig config, Map<String, Object> bindings) {
+        final ResponseConfig responseConfig = config.getResponseConfig();
 
-        if (null == config.getResponseConfig().getScriptFile()) {
+        final int statusCode = ofNullable(responseConfig.getStatusCode()).orElse(HttpURLConnection.HTTP_OK);
+
+        if (null == responseConfig.getScriptFile()) {
             // default behaviour is to use a static response file
             LOGGER.debug("Using default response behaviour for request: {}", routingContext.request().absoluteURI());
             return new ResponseBehaviour()
                     .withStatusCode(statusCode)
-                    .withFile(config.getResponseConfig().getStaticFile())
+                    .withFile(responseConfig.getStaticFile())
                     .withDefaultBehaviour();
         }
 
         try {
-            LOGGER.debug("Using scripted response behaviour for request: {}", routingContext.request().absoluteURI());
+            LOGGER.debug("Executing script '{}' for request: {}", responseConfig.getScriptFile(), routingContext.request().absoluteURI());
 
             final InvocationContext invocationContext = InvocationContext.build(routingContext);
             LOGGER.trace("InvocationContext for request: {}", invocationContext);
@@ -65,6 +69,11 @@ public class ResponseServiceImpl implements ResponseService {
             final Binding binding = new Binding();
             binding.setVariable("config", config);
             binding.setVariable("context", invocationContext);
+
+            // add custom bindings
+            ofNullable(bindings)
+                    .map(Map::entrySet)
+                    .ifPresent(entries -> entries.forEach(entry -> binding.setVariable(entry.getKey(), entry.getValue())));
 
             // holds the response
             final AtomicReference<ResponseBehaviour> responseHolder = new AtomicReference<>();
@@ -82,7 +91,7 @@ public class ResponseServiceImpl implements ResponseService {
             // use defaults if not set
             if (DEFAULT_BEHAVIOUR.equals(responseBehaviour.getBehaviourType())) {
                 if (Strings.isNullOrEmpty(responseBehaviour.getResponseFile())) {
-                    responseBehaviour.withFile(config.getResponseConfig().getStaticFile());
+                    responseBehaviour.withFile(responseConfig.getStaticFile());
                 }
                 if (0 == responseBehaviour.getStatusCode()) {
                     responseBehaviour.withStatusCode(statusCode);
@@ -114,8 +123,7 @@ public class ResponseServiceImpl implements ResponseService {
     }
 
     @Override
-    public InputStream loadResponseAsStream(ImposterConfig imposterConfig, RoutingContext routingContext, BaseConfig mockConfig) throws IOException {
-        final ResponseBehaviour behaviour = getResponseBehaviour(routingContext, mockConfig);
+    public InputStream loadResponseAsStream(ImposterConfig imposterConfig, ResponseBehaviour behaviour) throws IOException {
         if (null != behaviour.getResponseFile()) {
             return Files.newInputStream(Paths.get(imposterConfig.getConfigDir(), behaviour.getResponseFile()));
         } else {
@@ -124,8 +132,8 @@ public class ResponseServiceImpl implements ResponseService {
     }
 
     @Override
-    public JsonArray loadResponseAsJsonArray(ImposterConfig imposterConfig, RoutingContext routingContext, BaseConfig config) {
-        try (InputStream is = loadResponseAsStream(imposterConfig, routingContext, config)) {
+    public JsonArray loadResponseAsJsonArray(ImposterConfig imposterConfig, ResponseBehaviour behaviour) {
+        try (InputStream is = loadResponseAsStream(imposterConfig, behaviour)) {
             return new JsonArray(CharStreams.toString(new InputStreamReader(is)));
         } catch (IOException e) {
             throw new RuntimeException(e);
