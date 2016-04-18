@@ -246,7 +246,6 @@ Build the Docker container with:
 
 # TODO
 
-* Add script support to other plugins than just the _rest_ plugin
 * HBase content negotiation
 * HBase individual record retrieval
 * HBase response content type header
