@@ -4,6 +4,7 @@ import com.gatehill.imposter.plugin.Plugin;
 import com.gatehill.imposter.server.BaseVerticleTest;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
@@ -54,6 +55,14 @@ public class HBasePluginTest extends BaseVerticleTest {
         }
 
         testContext.assertEquals(1, rowCount);
+    }
+
+    @Test
+    public void testFetchSingleRow(TestContext testContext) throws Exception {
+        final RemoteHTable table = new RemoteHTable(client, "exampleTable");
+
+        final Result result = table.get(new Get(Bytes.toBytes("record1")));
+        testContext.assertEquals("exampleValueA", Bytes.toString(result.getValue(Bytes.toBytes("abc"), Bytes.toBytes("exampleStringA"))));
     }
 
     @Test

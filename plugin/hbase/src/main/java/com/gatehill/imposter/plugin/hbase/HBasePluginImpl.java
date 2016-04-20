@@ -80,19 +80,77 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
                 .forEach(basePath -> {
                     LOGGER.debug("Adding routes for base path: {}", () -> (basePath.isEmpty() ? "<empty>" : basePath));
 
-                    // the first call obtains a scanner
-                    addCreateScannerRoute(router, basePath);
+                    // endpoint to allow individual row retrieval
+                    addRowRetrievalRoute(router, basePath);
 
-                    // the second call returns the result
+                    // Note: when scanning for results, the first call obtains a scanner:
+                    addCreateScannerRoute(router, basePath);
+                    // ...and the second call returns the results
                     addReadScannerResultsRoute(router, basePath);
                 });
     }
 
+    /**
+     * Handles a request for a particular row within a table.
+     *
+     * @param router
+     * @param basePath
+     */
+    private void addRowRetrievalRoute(Router router, String basePath) {
+        router.get(basePath + "/:tableName/:recordId/").handler(routingContext -> {
+            final String tableName = routingContext.request().getParam("tableName");
+            final String recordId = routingContext.request().getParam("recordId");
+
+            // check that the table is registered
+            if (!tableConfigs.containsKey(tableName)) {
+                LOGGER.error("Received row request for unknown table: {}", tableName);
+
+                routingContext.response()
+                        .setStatusCode(HttpURLConnection.HTTP_NOT_FOUND)
+                        .end();
+                return;
+            }
+
+            LOGGER.info("Received request for row with ID: {} for table: {}", recordId, tableName);
+            final HBasePluginConfig config = tableConfigs.get(tableName);
+
+            // script should fire first
+            final Map<String, Object> bindings = buildScriptBindings(ResponsePhase.RECORD, empty());
+            scriptHandler(config, routingContext, bindings, responseBehaviour -> {
+
+                // build results
+                final JsonArray results = responseService.loadResponseAsJsonArray(imposterConfig, responseBehaviour);
+                final CellSetModel cellSetModel = new CellSetModel();
+
+                // always returns the first result
+                // FIXME allow config to specify the ID to use to to determine which row is which
+                final JsonObject result = results.getJsonObject(0);
+
+                cellSetModel.addRow(buildRow(result, recordId));
+
+                LOGGER.info("Returning single row with ID: {} for table: {}", recordId, tableName);
+
+                final byte[] protobufOutput = cellSetModel.createProtobufOutput();
+
+                routingContext.response()
+                        .setStatusCode(HttpURLConnection.HTTP_OK)
+                        .end(Buffer.buffer(protobufOutput));
+            });
+        });
+    }
+
+    /**
+     * Handles the first part of a request for results - creation of a scanner. Results are read from the scanner
+     * in the handler {@link #addReadScannerResultsRoute(Router, String)}.
+     *
+     * @param router
+     * @param basePath
+     */
     private void addCreateScannerRoute(Router router, String basePath) {
         router.post(basePath + "/:tableName/scanner").handler(routingContext -> {
             final String tableName = routingContext.request().getParam("tableName");
 
-            // check that the view is registered
+            // check that the table is registered
             if (!tableConfigs.containsKey(tableName)) {
                 LOGGER.error("Received scanner request for unknown table: {}", tableName);
 
@@ -151,43 +209,12 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
     }
 
     /**
-     * Add additional script bindings.
+     * Handles the second part of a request for results - reading rows from the scanner created
+     * in {@link #addCreateScannerRoute(Router, String)}.
      *
-     * @param responsePhase
-     * @param scannerFilterPrefix
-     * @return
+     * @param router
+     * @param basePath
      */
-    private Map<String, Object> buildScriptBindings(ResponsePhase responsePhase, Optional<String> scannerFilterPrefix) {
-        final Map<String, Object> bindings = Maps.newHashMap();
-        bindings.put("responsePhase", responsePhase);
-        bindings.put("scannerFilterPrefix", scannerFilterPrefix.orElse(""));
-        return bindings;
-    }
-
-    private ScannerModel getScannerModel(RoutingContext routingContext) throws IOException {
-        final ScannerModel scannerModel = new ScannerModel();
-        final byte[] rawMessage = routingContext.getBody().getBytes();
-
-        // deserialise from protobuf
-        scannerModel.getObjectFromMessage(rawMessage);
-
-        return scannerModel;
-    }
-
-    private Optional<String> getScannerFilterPrefix(ScannerModel scannerModel) {
-        final Filter filter;
-        try {
-            filter = ScannerModel.buildFilter(scannerModel.getFilter());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        if (filter instanceof PrefixFilter) {
-            final String prefix = Bytes.toString(((PrefixFilter) filter).getPrefix());
-            return Optional.of(prefix);
-        }
-        return empty();
-    }
-
     private void addReadScannerResultsRoute(Router router, String basePath) {
         router.get(basePath + "/:tableName/scanner/:scannerId").handler(routingContext -> {
             final String tableName = routingContext.request().getParam("tableName");
@@ -236,26 +263,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
                 for (int i = lastPosition; i < (lastPosition + rows) && i < results.size(); i++) {
                     final JsonObject result = results.getJsonObject(i);
 
-                    final RowModel row = new RowModel();
-
-                    // TODO consider setting key to prefix from scanner filter
-                    row.setKey(Bytes.toBytes("rowKey" + scanner.getRowCounter().incrementAndGet()));
-
-                    // add cells from result file
-                    final List<ResultCell> cells = result.fieldNames().stream()
-                            .map(fieldName -> new ResultCell(fieldName, result.getString(fieldName)))
-                            .collect(Collectors.toList());
-
-                    // sort the cells before adding to row
-                    cells.sort(new ResultCellComparator());
-
-                    // add cells in sorted order
-                    cells.forEach(c -> {
-                        final CellModel cell = new CellModel();
-                        cell.setColumn(Bytes.toBytes(c.getFieldName()));
-                        cell.setValue(Bytes.toBytes(c.getFieldValue()));
-                        row.addCell(cell);
-                    });
+                    final RowModel row = buildRow(result, "rowKey" + scanner.getRowCounter().incrementAndGet());
 
                     cellSetModel.addRow(row);
                 }
@@ -276,5 +284,74 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
             });
 
         });
+    }
+
+    /**
+     * Build an HBase RowModel for the given {@code result}.
+     *
+     * @param result
+     * @param rowKey
+     * @return a row
+     */
+    private RowModel buildRow(JsonObject result, String rowKey) {
+        final RowModel row = new RowModel();
+
+        // TODO consider setting key to prefix from scanner filter
+        row.setKey(Bytes.toBytes(rowKey));
+
+        // add cells from result file
+        final List<ResultCell> cells = result.fieldNames().stream()
+                .map(fieldName -> new ResultCell(fieldName, result.getString(fieldName)))
+                .collect(Collectors.toList());
+
+        // sort the cells before adding to row
+        cells.sort(new ResultCellComparator());
+
+        // add cells in sorted order
+        cells.forEach(c -> {
+            final CellModel cell = new CellModel();
+            cell.setColumn(Bytes.toBytes(c.getFieldName()));
+            cell.setValue(Bytes.toBytes(c.getFieldValue()));
+            row.addCell(cell);
+        });
+        return row;
+    }
+
+    /**
+     * Add additional script bindings.
+     *
+     * @param responsePhase
+     * @param scannerFilterPrefix
+     * @return
+     */
+    private Map<String, Object> buildScriptBindings(ResponsePhase responsePhase, Optional<String> scannerFilterPrefix) {
+        final Map<String, Object> bindings = Maps.newHashMap();
+        bindings.put("responsePhase", responsePhase);
+        bindings.put("scannerFilterPrefix", scannerFilterPrefix.orElse(""));
+        return bindings;
+    }
+
+    private ScannerModel getScannerModel(RoutingContext routingContext) throws IOException {
+        final ScannerModel scannerModel = new ScannerModel();
+        final byte[] rawMessage = routingContext.getBody().getBytes();
+
+        // deserialise from protobuf
+        scannerModel.getObjectFromMessage(rawMessage);
+
+        return scannerModel;
+    }
+
+    private Optional<String> getScannerFilterPrefix(ScannerModel scannerModel) {
+        final Filter filter;
+        try {
+            filter = ScannerModel.buildFilter(scannerModel.getFilter());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        if (filter instanceof PrefixFilter) {
+            final String prefix = Bytes.toString(((PrefixFilter) filter).getPrefix());
+            return Optional.of(prefix);
+        }
+        return empty();
     }
 }
