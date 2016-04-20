@@ -4,6 +4,7 @@ import com.gatehill.imposter.ImposterConfig;
 import com.gatehill.imposter.plugin.ScriptedPlugin;
 import com.gatehill.imposter.plugin.config.ConfiguredPlugin;
 import com.gatehill.imposter.plugin.hbase.model.InMemoryScanner;
+import com.gatehill.imposter.plugin.hbase.model.ResponsePhase;
 import com.gatehill.imposter.plugin.hbase.model.ResultCell;
 import com.gatehill.imposter.plugin.hbase.model.ResultCellComparator;
 import com.gatehill.imposter.service.ResponseService;
@@ -131,11 +132,8 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
                 return;
             }
 
-            // additional bindings
-            final Map<String, Object> bindings = Maps.newHashMapWithExpectedSize(1);
-            bindings.put("scannerFilterPrefix", scannerFilterPrefix.orElse(""));
-
             // script should fire first
+            final Map<String, Object> bindings = buildScriptBindings(ResponsePhase.SCANNER, scannerFilterPrefix);
             scriptHandler(config, routingContext, bindings, responseBehaviour -> {
 
                 // register scanner
@@ -150,6 +148,20 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
                         .end();
             });
         });
+    }
+
+    /**
+     * Add additional script bindings.
+     *
+     * @param responsePhase
+     * @param scannerFilterPrefix
+     * @return
+     */
+    private Map<String, Object> buildScriptBindings(ResponsePhase responsePhase, Optional<String> scannerFilterPrefix) {
+        final Map<String, Object> bindings = Maps.newHashMap();
+        bindings.put("responsePhase", responsePhase);
+        bindings.put("scannerFilterPrefix", scannerFilterPrefix.orElse(""));
+        return bindings;
     }
 
     private ScannerModel getScannerModel(RoutingContext routingContext) throws IOException {
@@ -212,7 +224,8 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
             final HBasePluginConfig config = tableConfigs.get(tableName);
 
             // script should fire first
-            scriptHandler(config, routingContext, responseBehaviour -> {
+            final Map<String, Object> bindings = buildScriptBindings(ResponsePhase.RESULTS, getScannerFilterPrefix(scanner.getScanner()));
+            scriptHandler(config, routingContext, bindings, responseBehaviour -> {
 
                 // build results
                 final JsonArray results = responseService.loadResponseAsJsonArray(imposterConfig, responseBehaviour);

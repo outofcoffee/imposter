@@ -12,13 +12,16 @@ import java.util.stream.Collectors;
 public class InvocationContext {
     private RoutingContext routingContext;
     private Map<String, String> params;
+    private Map<String, Object> additional;
 
     private InvocationContext(RoutingContext routingContext) {
         this.routingContext = routingContext;
     }
 
-    public static InvocationContext build(RoutingContext routingContext) {
-        return new InvocationContext(routingContext);
+    public static InvocationContext build(RoutingContext routingContext, Map<String, Object> additionalContext) {
+        final InvocationContext context = new InvocationContext(routingContext);
+        context.setAdditional(additionalContext);
+        return context;
     }
 
     @Override
@@ -39,5 +42,13 @@ public class InvocationContext {
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         }
         return params;
+    }
+
+    public Map<String, Object> getAdditional() {
+        return additional;
+    }
+
+    public void setAdditional(Map<String, Object> additional) {
+        this.additional = additional;
     }
 }

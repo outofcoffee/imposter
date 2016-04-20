@@ -7,6 +7,7 @@ import com.gatehill.imposter.service.ResponseService;
 import com.gatehill.imposter.util.InjectorUtil;
 import io.vertx.ext.web.RoutingContext;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -18,13 +19,14 @@ public interface ScriptedPlugin<C extends BaseConfig> {
         scriptHandler(config, routingContext, null, defaultBehaviourHandler);
     }
 
-    default void scriptHandler(C config, RoutingContext routingContext, Map<String, Object> bindings,
+    default void scriptHandler(C config, RoutingContext routingContext, Map<String, Object> additionalContext,
                                Consumer<ResponseBehaviour> defaultBehaviourHandler) {
 
         final ResponseService responseService = InjectorUtil.getInjector().getInstance(ResponseService.class);
 
         try {
-            final ResponseBehaviour responseBehaviour = responseService.getResponseBehaviour(routingContext, config, bindings);
+            final ResponseBehaviour responseBehaviour = responseService.getResponseBehaviour(
+                    routingContext, config, additionalContext, Collections.emptyMap());
 
             if (ResponseBehaviourType.IMMEDIATE_RESPONSE == responseBehaviour.getBehaviourType()) {
                 routingContext.response()

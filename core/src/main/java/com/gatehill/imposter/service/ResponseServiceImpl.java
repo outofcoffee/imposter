@@ -24,10 +24,12 @@ import java.net.HttpURLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import static com.gatehill.imposter.model.ResponseBehaviourType.DEFAULT_BEHAVIOUR;
 import static java.util.Optional.ofNullable;
@@ -46,7 +48,9 @@ public class ResponseServiceImpl implements ResponseService {
             .build();
 
     @Override
-    public ResponseBehaviour getResponseBehaviour(RoutingContext routingContext, BaseConfig config, Map<String, Object> bindings) {
+    public ResponseBehaviour getResponseBehaviour(RoutingContext routingContext, BaseConfig config,
+                                                  Map<String, Object> additionalContext, Map<String, Object> bindings) {
+
         final ResponseConfig responseConfig = config.getResponseConfig();
 
         final int statusCode = ofNullable(responseConfig.getStatusCode()).orElse(HttpURLConnection.HTTP_OK);
@@ -63,7 +67,7 @@ public class ResponseServiceImpl implements ResponseService {
         try {
             LOGGER.debug("Executing script '{}' for request: {}", responseConfig.getScriptFile(), routingContext.request().absoluteURI());
 
-            final InvocationContext invocationContext = InvocationContext.build(routingContext);
+            final InvocationContext invocationContext = InvocationContext.build(routingContext, additionalContext);
             LOGGER.trace("InvocationContext for request: {}", invocationContext);
 
             final Binding binding = new Binding();
@@ -109,17 +113,32 @@ public class ResponseServiceImpl implements ResponseService {
         return scriptCache.get(config, () -> {
             final Path scriptFile = Paths.get(imposterConfig.getConfigDir(), config.getResponseConfig().getScriptFile());
 
-            return "def __responseBehaviour = new com.gatehill.imposter.model.ResponseBehaviour() {" +
+            final List<String> scriptContent = Files.readAllLines(scriptFile);
+            return "import com.gatehill.imposter.model.ResponseBehaviour" +
+                    "\n" + getImports(scriptContent) +
+                    "\n\ndef __responseBehaviour = new ResponseBehaviour() {" +
                     "\n\tpublic void process() throws Exception {\n" +
 
                     // use default charset (set for JVM)
-                    new String(Files.readAllBytes(scriptFile)) +
+                    getLines(scriptContent) +
                     "\n\t}" +
                     "\n}" +
                     "\n__responseHolder.set(__responseBehaviour)" +
-                    "\n__responseBehaviour.setContext(context)" +
+                    "\n__responseBehaviour.setInvocationContext(context)" +
                     "\n__responseBehaviour.process()";
         });
+    }
+
+    private String getImports(List<String> scriptContent) {
+        return scriptContent.stream()
+                .filter(line -> line.startsWith("import "))
+                .collect(Collectors.joining("\n"));
+    }
+
+    private String getLines(List<String> scriptContent) {
+        return scriptContent.stream()
+                .filter(line -> !line.startsWith("import "))
+                .collect(Collectors.joining("\n"));
     }
 
     private InputStream loadResponseAsStream(ImposterConfig imposterConfig, ResponseBehaviour behaviour) throws IOException {

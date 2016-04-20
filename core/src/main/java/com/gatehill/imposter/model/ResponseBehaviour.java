@@ -1,21 +1,36 @@
 package com.gatehill.imposter.model;
 
+import com.google.common.collect.Maps;
+
+import java.util.Map;
+
+import static java.util.Optional.ofNullable;
+
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public class ResponseBehaviour {
-    private InvocationContext context;
+    private Map<String, Object> context;
     private ResponseBehaviourType behaviourType;
     private int statusCode;
     private String responseFile;
     private boolean behaviourConfigured;
 
-    public InvocationContext getContext() {
+    /**
+     * Accessible in Groovy style {@code context.uri} etc.
+     *
+     * @return the context
+     */
+    public Map<String, Object> getContext() {
         return context;
     }
 
-    public void setContext(InvocationContext context) {
-        this.context = context;
+    public void setInvocationContext(InvocationContext invocationContext) {
+        // build the context
+        context = Maps.newHashMap();
+        context.put("uri", invocationContext.getUri());
+        context.put("params", invocationContext.getParams());
+        ofNullable(invocationContext.getAdditional()).ifPresent(context::putAll);
     }
 
     public int getStatusCode() {

@@ -16,5 +16,6 @@ import java.util.Map;
 public interface ResponseService {
     JsonArray loadResponseAsJsonArray(ImposterConfig imposterConfig, ResponseBehaviour behaviour);
 
-    ResponseBehaviour getResponseBehaviour(RoutingContext routingContext, BaseConfig config, Map<String, Object> bindings);
+    ResponseBehaviour getResponseBehaviour(RoutingContext routingContext, BaseConfig config,
+                                           Map<String, Object> additionalContext, Map<String, Object> bindings);
 }
