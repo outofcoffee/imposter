@@ -40,6 +40,11 @@ public class ResponseBehaviour {
         return this;
     }
 
+    public ResponseBehaviour withEmpty() {
+        this.responseFile = null;
+        return this;
+    }
+
     public ResponseBehaviour withDefaultBehaviour() {
         if (behaviourConfigured) {
             throw new IllegalStateException("Response already handled");

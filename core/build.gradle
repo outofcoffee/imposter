@@ -5,8 +5,7 @@ compileJava {
 }
 
 dependencies {
-    compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.5'
-
+    compile "org.apache.logging.log4j:log4j-core:$version_log4j"
     compile "com.google.inject:guice:$version_guice"
     compile "io.vertx:vertx-web:$version_vertx"
     compile "org.codehaus.groovy:groovy-all:$version_groovy"

@@ -4,6 +4,7 @@ import com.gatehill.imposter.ImposterConfig;
 import com.gatehill.imposter.plugin.ScriptedPlugin;
 import com.gatehill.imposter.plugin.config.ConfiguredPlugin;
 import com.gatehill.imposter.util.HttpUtil;
+import com.google.common.base.Strings;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.Router;
 import org.apache.logging.log4j.LogManager;
@@ -52,8 +53,13 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
                 try {
                     response.setStatusCode(responseBehaviour.getStatusCode());
 
-                    response.sendFile(
-                            Paths.get(imposterConfig.getConfigDir(), responseBehaviour.getResponseFile()).toString());
+                    if (Strings.isNullOrEmpty(responseBehaviour.getResponseFile())) {
+                        LOGGER.debug("Response file blank - returning empty response");
+                        response.end();
+
+                    } else {
+                        response.sendFile(Paths.get(imposterConfig.getConfigDir(), responseBehaviour.getResponseFile()).toString());
+                    }
 
                 } catch (Exception e) {
                     routingContext.fail(e);

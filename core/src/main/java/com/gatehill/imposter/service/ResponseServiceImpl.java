@@ -122,8 +122,7 @@ public class ResponseServiceImpl implements ResponseService {
         });
     }
 
-    @Override
-    public InputStream loadResponseAsStream(ImposterConfig imposterConfig, ResponseBehaviour behaviour) throws IOException {
+    private InputStream loadResponseAsStream(ImposterConfig imposterConfig, ResponseBehaviour behaviour) throws IOException {
         if (null != behaviour.getResponseFile()) {
             return Files.newInputStream(Paths.get(imposterConfig.getConfigDir(), behaviour.getResponseFile()));
         } else {
@@ -133,6 +132,11 @@ public class ResponseServiceImpl implements ResponseService {
 
     @Override
     public JsonArray loadResponseAsJsonArray(ImposterConfig imposterConfig, ResponseBehaviour behaviour) {
+        if (Strings.isNullOrEmpty(behaviour.getResponseFile())) {
+            LOGGER.debug("Response file blank - returning empty array");
+            return new JsonArray();
+        }
+
         try (InputStream is = loadResponseAsStream(imposterConfig, behaviour)) {
             return new JsonArray(CharStreams.toString(new InputStreamReader(is)));
         } catch (IOException e) {

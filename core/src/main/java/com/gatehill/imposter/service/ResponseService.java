@@ -14,8 +14,6 @@ import java.util.Map;
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public interface ResponseService {
-    InputStream loadResponseAsStream(ImposterConfig imposterConfig, ResponseBehaviour behaviour) throws IOException;
-
     JsonArray loadResponseAsJsonArray(ImposterConfig imposterConfig, ResponseBehaviour behaviour);
 
     ResponseBehaviour getResponseBehaviour(RoutingContext routingContext, BaseConfig config, Map<String, Object> bindings);
