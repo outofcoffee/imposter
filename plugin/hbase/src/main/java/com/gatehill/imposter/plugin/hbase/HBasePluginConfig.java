@@ -8,6 +8,7 @@ import com.gatehill.imposter.plugin.config.BaseConfig;
 public class HBasePluginConfig extends BaseConfig {
     private String tableName;
     private String prefix;
+    private String idField;
 
     public String getTableName() {
         return tableName;
@@ -15,5 +16,9 @@ public class HBasePluginConfig extends BaseConfig {
 
     public String getPrefix() {
         return prefix;
+    }
+
+    public String getIdField() {
+        return idField;
     }
 }

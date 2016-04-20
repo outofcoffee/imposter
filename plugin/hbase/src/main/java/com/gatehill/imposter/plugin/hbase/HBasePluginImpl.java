@@ -8,11 +8,13 @@ import com.gatehill.imposter.plugin.hbase.model.ResponsePhase;
 import com.gatehill.imposter.plugin.hbase.model.ResultCell;
 import com.gatehill.imposter.plugin.hbase.model.ResultCellComparator;
 import com.gatehill.imposter.service.ResponseService;
+import com.google.common.base.Strings;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
@@ -36,8 +38,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import static java.util.Optional.empty;
-import static java.util.Optional.ofNullable;
+import static java.util.Optional.*;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
@@ -118,23 +119,27 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
             final Map<String, Object> bindings = buildScriptBindings(ResponsePhase.RECORD, empty());
             scriptHandler(config, routingContext, bindings, responseBehaviour -> {
 
-                // build results
+                // find the right row from results
                 final JsonArray results = responseService.loadResponseAsJsonArray(imposterConfig, responseBehaviour);
-                final CellSetModel cellSetModel = new CellSetModel();
+                final Optional<JsonObject> result = findRow(config, recordId, results);
 
-                // always returns the first result
-                // FIXME allow config to specify the ID to use to to determine which row is which
-                final JsonObject result = results.getJsonObject(0);
+                final HttpServerResponse response = routingContext.response();
+                if (result.isPresent()) {
+                    final CellSetModel cellSetModel = new CellSetModel();
+                    cellSetModel.addRow(buildRow(result.get(), recordId));
 
-                cellSetModel.addRow(buildRow(result, recordId));
+                    LOGGER.info("Returning single row with ID: {} for table: {}", recordId, tableName);
 
-                LOGGER.info("Returning single row with ID: {} for table: {}", recordId, tableName);
+                    final byte[] protobufOutput = cellSetModel.createProtobufOutput();
 
-                final byte[] protobufOutput = cellSetModel.createProtobufOutput();
-
-                routingContext.response()
-                        .setStatusCode(HttpURLConnection.HTTP_OK)
-                        .end(Buffer.buffer(protobufOutput));
+                    response.setStatusCode(HttpURLConnection.HTTP_OK)
+                            .end(Buffer.buffer(protobufOutput));
+                } else {
+                    // no such record
+                    LOGGER.error("No row found with ID: {} for table: {}", recordId, tableName);
+                    response.setStatusCode(HttpURLConnection.HTTP_NOT_FOUND)
+                            .end();
+                }
             });
         });
     }
@@ -331,6 +336,11 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
         return bindings;
     }
 
+    /**
+     * @param routingContext
+     * @return the scanner
+     * @throws IOException
+     */
     private ScannerModel getScannerModel(RoutingContext routingContext) throws IOException {
         final ScannerModel scannerModel = new ScannerModel();
         final byte[] rawMessage = routingContext.getBody().getBytes();
@@ -341,6 +351,10 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
         return scannerModel;
     }
 
+    /**
+     * @param scannerModel
+     * @return the scanner filter prefix
+     */
     private Optional<String> getScannerFilterPrefix(ScannerModel scannerModel) {
         final Filter filter;
         try {
@@ -351,6 +365,28 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
         if (filter instanceof PrefixFilter) {
             final String prefix = Bytes.toString(((PrefixFilter) filter).getPrefix());
             return Optional.of(prefix);
+        }
+        return empty();
+    }
+
+    /**
+     * Find the row with the given ID.
+     *
+     * @param config
+     * @param recordId
+     * @param results
+     * @return
+     */
+    private Optional<JsonObject> findRow(HBasePluginConfig config, String recordId, JsonArray results) {
+        if (Strings.isNullOrEmpty(config.getIdField())) {
+            throw new IllegalStateException("Field ID name not configured");
+        }
+
+        for (int i = 0; i < results.size(); i++) {
+            final JsonObject currentRecord = results.getJsonObject(i);
+            if (currentRecord.getString(config.getIdField()).equalsIgnoreCase(recordId)) {
+                return of(currentRecord);
+            }
         }
         return empty();
     }
