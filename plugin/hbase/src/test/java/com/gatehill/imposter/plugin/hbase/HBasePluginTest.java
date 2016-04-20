@@ -41,9 +41,12 @@ public class HBasePluginTest extends BaseVerticleTest {
     @Test
     public void testFetchResults(TestContext testContext) throws Exception {
         final RemoteHTable table = new RemoteHTable(client, "exampleTable");
+        expectSuccessfulRows(testContext, table, "examplePrefix");
+    }
 
+    private void expectSuccessfulRows(TestContext testContext, RemoteHTable table, String prefix) throws IOException {
         final Scan scan = new Scan();
-        scan.setFilter(new PrefixFilter(Bytes.toBytes("examplePrefix")));
+        scan.setFilter(new PrefixFilter(Bytes.toBytes(prefix)));
         final ResultScanner scanner = table.getScanner(scan);
 
         int rowCount = 0;
@@ -63,6 +66,12 @@ public class HBasePluginTest extends BaseVerticleTest {
 
         final Result result = table.get(new Get(Bytes.toBytes("record1")));
         testContext.assertEquals("exampleValueA", Bytes.toString(result.getValue(Bytes.toBytes("abc"), Bytes.toBytes("exampleStringA"))));
+    }
+
+    @Test
+    public void testScriptedSuccess(TestContext testContext) throws Exception {
+        final RemoteHTable table = new RemoteHTable(client, "scriptedTable");
+        expectSuccessfulRows(testContext, table, "examplePrefix");
     }
 
     @Test

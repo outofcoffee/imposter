@@ -67,12 +67,15 @@ public class ResponseServiceImpl implements ResponseService {
         try {
             LOGGER.debug("Executing script '{}' for request: {}", responseConfig.getScriptFile(), routingContext.request().absoluteURI());
 
-            final InvocationContext invocationContext = InvocationContext.build(routingContext, additionalContext);
+            final InvocationContext invocationContext = InvocationContext.build(
+                    getScriptName(responseConfig.getScriptFile()), routingContext, additionalContext);
+
             LOGGER.trace("InvocationContext for request: {}", invocationContext);
 
             final Binding binding = new Binding();
+            binding.setVariable("logger", invocationContext.getLogger());
             binding.setVariable("config", config);
-            binding.setVariable("context", invocationContext);
+            binding.setVariable("__context", invocationContext);
 
             // add custom bindings
             ofNullable(bindings)
@@ -107,6 +110,10 @@ public class ResponseServiceImpl implements ResponseService {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private String getScriptName(String scriptFile) {
+        return scriptFile.replaceAll("\\.groovy", "");
     }
 
     private String generateScript(BaseConfig config) throws ExecutionException {

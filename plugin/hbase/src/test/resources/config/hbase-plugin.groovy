@@ -6,12 +6,17 @@ import com.gatehill.imposter.plugin.hbase.model.ResponsePhase
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 
-if (ResponsePhase.SCANNER.equals(context.responsePhase)) {
-    switch (context.scannerFilterPrefix) {
-        case "fail":
+switch (context.responsePhase) {
+    case ResponsePhase.SCANNER:
+        if ("fail".equals(context.scannerFilterPrefix)) {
             // HTTP Status-Code 400: Bad Request.
+            logger.info("Matched 'fail' prefix - returning HTTP 400")
             respond() withStatusCode 400 immediately()
-            return
+        }
+        break
 
-    }
+    case ResponsePhase.RESULTS:
+        logger.info("Returning static results using default behaviour")
+        respond() withFile "hbase-data.json" withDefaultBehaviour()
+        break
 }

@@ -125,7 +125,7 @@ You **must** specify the plugin to use in the configuration file. See the exampl
 You can control Imposter's responses using static response files. Use the `staticFile` property
 within the `response` object in your configuration.
 
-Response files can be named anything you like and are resolved relative to the configuration directory.
+Response files can be named anything you like and their path is resolved relative to the server's configuration directory.
 
 In the example above, we are using a static response file (`example-data.json`):
 
@@ -187,9 +187,14 @@ In the case of `action=fetch`, the script causes the mock server to use the cont
 The `context` object in the example above is holds things you might like to interrogate,
 like request parameters or the absolute URI of the request.
 
+| Property | Description
+| --- | ---
+| `uri` | The absolute URI of the request.
+| `params` | A `Map` containing the request parameters.
+
 Certain plugins will add additional properties to the `context`, for example, the _hbase_
-plugin provides a `responsePhase` property of type `com.gatehill.imposter.plugin.hbase.model.ResponsePhase`
-that you can use to determine the type of request.
+plugin provides a `responsePhase` property, of type `com.gatehill.imposter.plugin.hbase.model.ResponsePhase`,
+which you can use to determine the type of request being served.
 
 ## The ResponseBehaviour object
 
@@ -199,16 +204,16 @@ The ResponseBehaviour class provides a number of methods to enable you to contro
  
 | Method | Description
 | --- | ---
-| `withStatusCode(int)`    | Set the HTTP status code for the response
-| `withFile()`             | Respond with the content of a static file
-| `withEmpty()`            | Respond with empty content, or no records
+| `withStatusCode(int)` | Set the HTTP status code for the response
+| `withFile()` | Respond with the content of a static file
+| `withEmpty()` | Respond with empty content, or no records
 | `withDefaultBehaviour()` | Use the plugin's default behaviour to respond
-| `immedately()`           | Skip the plugin's default behaviour and respond immediately
-| `and()`                  | Syntactic sugar to improve readability of `respond` statements
+| `immedately()` | Skip the plugin's default behaviour and respond immediately
+| `and()` | Syntactic sugar to improve readability of `respond` statements
 
 ## Returning data
 
-To do this, you must either:
+To return data when using a script, you must either:
 
 1. set the `staticFile` property within the `response` object in your configuration, or
 2. call the `ResponseBehaviour.withFile(String)` in your script.
@@ -238,6 +243,10 @@ See the *rest* plugin tests for a working example.
 
 The mock server exposes an endpoint at `/system/status` that will return HTTP 200 when the mock server is up and running.
 You can use this to let your tests know when the mock server is ready.
+
+## Script logging
+
+You can use the `logger` object within your scripts, which supports levels such as `info`, `debug` etc.
 
 ## JUnit integration
 

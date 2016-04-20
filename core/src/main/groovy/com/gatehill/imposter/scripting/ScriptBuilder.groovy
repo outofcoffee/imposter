@@ -29,7 +29,7 @@ class ScriptBuilder {
             }
 
             __responseHolder.set(__responseBehaviour)
-            __responseBehaviour.setInvocationContext(context)
+            __responseBehaviour.setInvocationContext(__context)
             __responseBehaviour.process()
         """
     }
