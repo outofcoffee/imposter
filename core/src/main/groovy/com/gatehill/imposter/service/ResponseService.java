@@ -6,8 +6,6 @@ import com.gatehill.imposter.plugin.config.BaseConfig;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.web.RoutingContext;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Map;
 
 /**

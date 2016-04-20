@@ -90,7 +90,8 @@ If you need to trust the self-signed certificate when using the default, the key
 
 ## hbase
 
-Basic HBase mock implementation. Uses protobuf for wire transport. Supports dummy Scanner queries.
+Basic HBase mock implementation. Uses protobuf for wire transport. Supports dummy Scanner queries and individual 
+row/record retrieval.
 
 Example:
 
@@ -181,22 +182,36 @@ For example:
 In the case of `action=fetch`, the script causes the mock server to use the content of the static file
 `static-data.json` to serve the response.
 
-## The InvocationContext object
+## The context object
 
-The `context` object in the example above is of type `com.gatehill.imposter.model.InvocationContext`. This holds
-things you might like to interrogate, like request parameters or the absolute URI of the request.
+The `context` object in the example above is holds things you might like to interrogate,
+like request parameters or the absolute URI of the request.
+
+Certain plugins will add additional properties to the `context`, for example, the _hbase_
+plugin provides a `responsePhase` property of type `com.gatehill.imposter.plugin.hbase.model.ResponsePhase`
+that you can use to determine the type of request.
 
 ## The ResponseBehaviour object
 
 Your scripts are a subclass of `com.gatehill.imposter.model.ResponseBehaviour`.
 
-As well as the `ResponseBehaviour.withStatusCode(int)` method, you can also take advantage of the
-`ResponseBehaviour.withDefaultBehaviour()` method to respond with the content of a static file.
+The ResponseBehaviour class provides a number of methods to enable you to control the mock server response:
+ 
+| Method | Description
+| --- | ---
+| `withStatusCode(int)`    | Set the HTTP status code for the response
+| `withFile()`             | Respond with the content of a static file
+| `withEmpty()`            | Respond with empty content, or no records
+| `withDefaultBehaviour()` | Use the plugin's default behaviour to respond
+| `immedately()`           | Skip the plugin's default behaviour and respond immediately
+| `and()`                  | Syntactic sugar to improve readability of `respond` statements
 
-To do this, ensure you have either:
+## Returning data
+
+To do this, you must either:
 
 1. set the `staticFile` property within the `response` object in your configuration, or
-2. call `ResponseBehaviour.withFile(String)` in your script.
+2. call the `ResponseBehaviour.withFile(String)` in your script.
 
 Here's an example of the static file approach (1):
 
@@ -211,8 +226,37 @@ Here's an example of the static file approach (1):
     }
 
 In this case, the static file `example-data.json` will be used if the script does not
-invoke the `ResponseBehaviour.withFile(String)` method, or if it explicitly invokes
-`ResponseBehaviour.withDefaultBehaviour()`. See the *rest* plugin tests for a working example.
+invoke the `ResponseBehaviour.withFile(String)` method with a different filename.
+
+In order for the mock server to return the response file in an appropriate format,
+your script should invoke `ResponseBehaviour.withDefaultBehaviour()`.
+See the *rest* plugin tests for a working example.
+
+# Tips and tricks
+
+## Waiting for the server to be ready
+
+The mock server exposes an endpoint at `/system/status` that will return HTTP 200 when the mock server is up and running.
+You can use this to let your tests know when the mock server is ready.
+
+## JUnit integration
+
+You can make use of Imposter mocks in your [JUnit](http://junit.org) tests using the excellent 
+[testcontainers](http://testcontainers.org) library. This will enable your mocks to start/stop before/after your
+tests run.
+
+Here's a simple overview:
+
+1. Create a simple _Dockerfile_ that extends `outofcoffee/imposter` and adds your desired properties as its `CMD`.
+2. Build an image from your _Dockerfile_.
+3. Follow the _testcontainers_ 'getting started' documentation for your project.
+4. Create your mock configuration and mock data and place it in project (e.g. under `src/test/resources`).
+5. Add a `GenericContainer` _testcontainers_ class rule to your JUnit test.
+6. Configure your `GenericContainer` to wait for the `/system/status` HTTP endpoint to be accessible so your tests don't start before the mock is ready.
+7. Configure your `GenericContainer` to mount the directory containing your configuration and data to `/opt/imposter/config`.
+ 
+Now, when you run your test, your custom mock container will start, load your configuration and mock data, ready
+for your test methods to use it!
 
 # Build
 
@@ -247,9 +291,7 @@ Build the Docker container with:
 # TODO
 
 * HBase content negotiation
-* HBase individual record retrieval
 * HBase response content type header
-* Config upload from tests (using a client library to wrap REST API?)
 * API specification import (e.g. Swagger)
 
 # Contributing

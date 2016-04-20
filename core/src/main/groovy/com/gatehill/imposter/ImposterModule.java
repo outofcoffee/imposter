@@ -1,10 +1,10 @@
 package com.gatehill.imposter;
 
+import com.google.inject.AbstractModule;
+import com.google.inject.Singleton;
 import com.gatehill.imposter.plugin.PluginManager;
 import com.gatehill.imposter.service.ResponseService;
 import com.gatehill.imposter.service.ResponseServiceImpl;
-import com.google.inject.AbstractModule;
-import com.google.inject.Singleton;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}

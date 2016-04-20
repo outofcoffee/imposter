@@ -1,16 +1,17 @@
 package com.gatehill.imposter.service;
 
-import com.gatehill.imposter.ImposterConfig;
-import com.gatehill.imposter.model.InvocationContext;
-import com.gatehill.imposter.model.ResponseBehaviour;
-import com.gatehill.imposter.plugin.config.BaseConfig;
-import com.gatehill.imposter.plugin.config.ResponseConfig;
+import com.gatehill.imposter.scripting.ScriptBuilder;
 import com.google.common.base.Strings;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.io.CharStreams;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
+import com.gatehill.imposter.ImposterConfig;
+import com.gatehill.imposter.model.InvocationContext;
+import com.gatehill.imposter.model.ResponseBehaviour;
+import com.gatehill.imposter.plugin.config.BaseConfig;
+import com.gatehill.imposter.plugin.config.ResponseConfig;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.web.RoutingContext;
 import org.apache.logging.log4j.LogManager;
@@ -29,7 +30,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 import static com.gatehill.imposter.model.ResponseBehaviourType.DEFAULT_BEHAVIOUR;
 import static java.util.Optional.ofNullable;
@@ -112,33 +112,9 @@ public class ResponseServiceImpl implements ResponseService {
     private String generateScript(BaseConfig config) throws ExecutionException {
         return scriptCache.get(config, () -> {
             final Path scriptFile = Paths.get(imposterConfig.getConfigDir(), config.getResponseConfig().getScriptFile());
-
             final List<String> scriptContent = Files.readAllLines(scriptFile);
-            return "import com.gatehill.imposter.model.ResponseBehaviour" +
-                    "\n" + getImports(scriptContent) +
-                    "\n\ndef __responseBehaviour = new ResponseBehaviour() {" +
-                    "\n\tpublic void process() throws Exception {\n" +
-
-                    // use default charset (set for JVM)
-                    getLines(scriptContent) +
-                    "\n\t}" +
-                    "\n}" +
-                    "\n__responseHolder.set(__responseBehaviour)" +
-                    "\n__responseBehaviour.setInvocationContext(context)" +
-                    "\n__responseBehaviour.process()";
+            return ScriptBuilder.buildScript(scriptContent);
         });
-    }
-
-    private String getImports(List<String> scriptContent) {
-        return scriptContent.stream()
-                .filter(line -> line.startsWith("import "))
-                .collect(Collectors.joining("\n"));
-    }
-
-    private String getLines(List<String> scriptContent) {
-        return scriptContent.stream()
-                .filter(line -> !line.startsWith("import "))
-                .collect(Collectors.joining("\n"));
     }
 
     private InputStream loadResponseAsStream(ImposterConfig imposterConfig, ResponseBehaviour behaviour) throws IOException {

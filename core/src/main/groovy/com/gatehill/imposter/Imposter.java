@@ -1,14 +1,14 @@
 package com.gatehill.imposter;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.inject.Injector;
+import com.google.inject.Module;
 import com.gatehill.imposter.plugin.Plugin;
 import com.gatehill.imposter.plugin.PluginManager;
 import com.gatehill.imposter.plugin.config.BaseConfig;
 import com.gatehill.imposter.plugin.config.ConfigurablePlugin;
 import com.gatehill.imposter.util.InjectorUtil;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.inject.Injector;
-import com.google.inject.Module;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
