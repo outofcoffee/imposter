@@ -29,9 +29,15 @@ Note: See the _Usage_ section for the required arguments, and the examples below
 
 ## Docker container
 
-The easiest way to get started is to use the Docker container:
+The easiest way to get started is to use an Imposter Docker container:
 
-    docker run --ti -p 8443 outofcoffee/imposter [args]
+* `outofcoffee/imposter-rest:latest`
+* `outofcoffee/imposter-hbase:latest`
+* `outofcoffee/imposter-sfdc:latest`
+
+For example:
+
+    docker run --ti -p 8443 outofcoffee/imposter-rest [args]
 
 ## Java
 
@@ -248,22 +254,33 @@ You can use this to let your tests know when the mock server is ready.
 
 You can use the `logger` object within your scripts, which supports levels such as `info`, `debug` etc.
 
+## Standalone mocks
+
+You can make use of Imposter mocks as standalone Docker containers.
+
+Here's a simple overview:
+
+1. Create a simple _Dockerfile_ that extends `outofcoffee/imposter` and adds your desired properties as its `CMD`.
+2. Add your mock configuration and mock data to `/opt/imposter/config` within the Docker image.
+3. Build an image from your _Dockerfile_.
+
+
+Now, when you start a container from your image, your standalone mock container will start, load your configuration and mock data, and listen for connections.
+
 ## JUnit integration
 
-You can make use of Imposter mocks in your [JUnit](http://junit.org) tests using the excellent 
+You can make use of Imposter mocks in your [JUnit](http://junit.org) tests using the excellent
 [testcontainers](http://testcontainers.org) library. This will enable your mocks to start/stop before/after your
 tests run.
 
 Here's a simple overview:
 
-1. Create a simple _Dockerfile_ that extends `outofcoffee/imposter` and adds your desired properties as its `CMD`.
-2. Build an image from your _Dockerfile_.
-3. Follow the _testcontainers_ 'getting started' documentation for your project.
-4. Create your mock configuration and mock data and place it in project (e.g. under `src/test/resources`).
-5. Add a `GenericContainer` _testcontainers_ class rule to your JUnit test.
-6. Configure your `GenericContainer` to wait for the `/system/status` HTTP endpoint to be accessible so your tests don't start before the mock is ready.
-7. Configure your `GenericContainer` to mount the directory containing your configuration and data to `/opt/imposter/config`.
- 
+1. Follow the _testcontainers_ 'getting started' documentation for your project.
+2. Add your mock configuration and mock data to your project (e.g. under `src/test/resources`).
+3. Add a _testcontainers_ `GenericContainer` class rule to your JUnit test, for one of the Imposter Docker images (see _Docker_ section).
+4. Configure your `GenericContainer` to mount the directory containing your configuration and data (e.g. `src/test/resources`) to `/opt/imposter/config`.
+5. Configure your `GenericContainer` to wait for the `/system/status` HTTP endpoint to be accessible so your tests don't start before the mock is ready.
+
 Now, when you run your test, your custom mock container will start, load your configuration and mock data, ready
 for your test methods to use it!
 
@@ -291,11 +308,12 @@ If you want to run tests:
 
     ./gradlew clean test
 
-## Docker container
+## Docker containers
 
-Build the Docker container with:
+Build the Docker containers with:
 
-    docker build --tag outofcoffee/imposter .
+    cd docker
+    ./build.sh
 
 # TODO
 
