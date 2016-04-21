@@ -11,12 +11,18 @@ switch (context.responsePhase) {
         if ("fail".equals(context.scannerFilterPrefix)) {
             // HTTP Status-Code 400: Bad Request.
             logger.info("Matched 'fail' prefix - returning HTTP 400")
-            respond() withStatusCode 400 immediately()
+            respond {
+                withStatusCode 400
+                immediately()
+            }
         }
         break
 
     case ResponsePhase.RESULTS:
         logger.info("Returning static results using default behaviour")
-        respond() withFile "hbase-data.json" withDefaultBehaviour()
+        respond {
+            withFile "hbase-data.json"
+            usingDefaultBehaviour()
+        }
         break
 }

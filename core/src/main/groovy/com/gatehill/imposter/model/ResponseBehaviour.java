@@ -26,7 +26,6 @@ public class ResponseBehaviour {
     }
 
     public void setInvocationContext(InvocationContext invocationContext) {
-        // build the context
         context = Maps.newHashMap();
         context.put("uri", invocationContext.getUri());
         context.put("params", invocationContext.getParams());
@@ -41,26 +40,58 @@ public class ResponseBehaviour {
         return responseFile;
     }
 
+    public ResponseBehaviourType getBehaviourType() {
+        return behaviourType;
+    }
+
+    /**
+     * This method is overridden by the script that instantiates a subclass of this class.
+     * The actual user-provided scripts are placed in the body of this method for execution.
+     *
+     * @throws Exception
+     */
     public void process() throws Exception {
         // no op
     }
 
+    /**
+     * Set the HTTP status code for the response.
+     *
+     * @param statusCode the HTTP status code
+     * @return this
+     */
     public ResponseBehaviour withStatusCode(int statusCode) {
         this.statusCode = statusCode;
         return this;
     }
 
+    /**
+     * Respond with the content of a static file.
+     *
+     * @param responseFile the response file
+     * @return this
+     */
     public ResponseBehaviour withFile(String responseFile) {
         this.responseFile = responseFile;
         return this;
     }
 
+    /**
+     * Respond with empty content, or no records.
+     *
+     * @return this
+     */
     public ResponseBehaviour withEmpty() {
         this.responseFile = null;
         return this;
     }
 
-    public ResponseBehaviour withDefaultBehaviour() {
+    /**
+     * Use the plugin's default behaviour to respond
+     *
+     * @return this
+     */
+    public ResponseBehaviour usingDefaultBehaviour() {
         if (behaviourConfigured) {
             throw new IllegalStateException("Response already handled");
         } else {
@@ -71,6 +102,11 @@ public class ResponseBehaviour {
         return this;
     }
 
+    /**
+     * Skip the plugin's default behaviour and respond immediately.
+     *
+     * @return this
+     */
     public ResponseBehaviour immediately() {
         if (behaviourConfigured) {
             throw new IllegalStateException("Response already handled");
@@ -85,22 +121,28 @@ public class ResponseBehaviour {
     /**
      * Syntactic sugar.
      *
-     * @return
+     * @return this
      */
     public ResponseBehaviour respond() {
         return this;
     }
 
     /**
-     * Syntactic sugar.
+     * Syntactic sugar that executes the Runnable immediately.
      *
-     * @return
+     * @return this
      */
-    public ResponseBehaviour and() {
+    public ResponseBehaviour respond(Runnable closure) {
+        closure.run();
         return this;
     }
 
-    public ResponseBehaviourType getBehaviourType() {
-        return behaviourType;
+    /**
+     * Syntactic sugar.
+     *
+     * @return this
+     */
+    public ResponseBehaviour and() {
+        return this;
     }
 }

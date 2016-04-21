@@ -183,17 +183,28 @@ Here's the corresponding script (`example.groovy`):
     switch (context.params["action"]) {
         case "create":
             // HTTP Status-Code 201: Created.
-            respond() withStatusCode 201 immediately()
+            respond {
+                withStatusCode 201
+                immediately()
+            }
             break
 
         case "fetch":
             // use a different static response file with the default behaviour
-            respond() withFile "static-data.json" and() withDefaultBehaviour()
+            respond {
+                withFile "static-data.json"
+                and()
+                usingDefaultBehaviour()
+            }
             break
 
         default:
             // default to bad request
-            respond() withStatusCode 400 immediately()
+            respond {
+                withStatusCode 400
+                immediately()
+            }
+            break
     }
 
 In this example, the script causes the mock server to respond with HTTP status codes 200, 201 or 400 depending on
@@ -237,9 +248,23 @@ The ResponseBehaviour class provides a number of methods to enable you to contro
 | `withStatusCode(int)` | Set the HTTP status code for the response
 | `withFile()` | Respond with the content of a static file
 | `withEmpty()` | Respond with empty content, or no records
-| `withDefaultBehaviour()` | Use the plugin's default behaviour to respond
+| `usingDefaultBehaviour()` | Use the plugin's default behaviour to respond
 | `immedately()` | Skip the plugin's default behaviour and respond immediately
 | `and()` | Syntactic sugar to improve readability of `respond` statements
+
+Typically you structure you respond behaviours like so:
+
+    respond {
+        // behaviours go here
+    }
+    
+For example:
+
+    respond {
+        withStatusCode 201
+        and()
+        usingDefaultBehaviour()
+    }
 
 ## Returning data
 
@@ -264,7 +289,7 @@ In this case, the static file `example-data.json` will be used if the script doe
 invoke the `ResponseBehaviour.withFile(String)` method with a different filename.
 
 In order for the mock server to return the response file in an appropriate format,
-your script should invoke `ResponseBehaviour.withDefaultBehaviour()`.
+your script should invoke `ResponseBehaviour.usingDefaultBehaviour()`.
 See the *rest* plugin tests for a working example.
 
 # Tips and tricks

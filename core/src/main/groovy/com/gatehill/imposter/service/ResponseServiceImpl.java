@@ -61,7 +61,7 @@ public class ResponseServiceImpl implements ResponseService {
             return new ResponseBehaviour()
                     .withStatusCode(statusCode)
                     .withFile(responseConfig.getStaticFile())
-                    .withDefaultBehaviour();
+                    .usingDefaultBehaviour();
         }
 
         try {
