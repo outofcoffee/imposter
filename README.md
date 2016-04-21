@@ -341,6 +341,7 @@ Build the Docker containers with:
 
 # TODO
 
+* Replace system property-based configuration with shorter command line arguments (Args4J)
 * HBase content negotiation
 * HBase response content type header
 * API specification import (e.g. Swagger)
