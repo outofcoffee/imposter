@@ -246,7 +246,7 @@ The ResponseBehaviour class provides a number of methods to enable you to contro
 | Method | Description
 | --- | ---
 | `withStatusCode(int)` | Set the HTTP status code for the response
-| `withFile()` | Respond with the content of a static file
+| `withFile(String)` | Respond with the content of a static file
 | `withEmpty()` | Respond with empty content, or no records
 | `usingDefaultBehaviour()` | Use the plugin's default behaviour to respond
 | `immedately()` | Skip the plugin's default behaviour and respond immediately
@@ -268,10 +268,14 @@ For example:
 
 ## Returning data
 
-To return data when using a script, you must either:
+To return data when using a script, you specify a response file. To do this you can either:
 
 1. set the `staticFile` property within the `response` object in your configuration, or
 2. call the `ResponseBehaviour.withFile(String)` in your script.
+
+The response file is used by the active plugin to generate a response. For example, the _rest_ plugin might return
+the content of the file unmodified, however, the _hbase_ and _sfdc_ plugins use the response file to generate
+responses that mimic their respective systems.
 
 Here's an example of the static file approach (1):
 
@@ -285,12 +289,26 @@ Here's an example of the static file approach (1):
       "contentType": "application/json"
     }
 
-In this case, the static file `example-data.json` will be used if the script does not
-invoke the `ResponseBehaviour.withFile(String)` method with a different filename.
+Here, the response file `example-data.json` will be used, unless the script invokes the 
+`ResponseBehaviour.withFile(String)` method with a different filename.
 
-In order for the mock server to return the response file in an appropriate format,
-your script should invoke `ResponseBehaviour.usingDefaultBehaviour()`.
-See the *rest* plugin tests for a working example.
+In order for the mock server to return the response file in an appropriate format, the plugin must be allowed to
+process it. That means you should not call `ResponseBehaviour.immediately()` unless you want to skip using a response file (e.g. if
+you want to send an error code back or a response without a body).
+
+Whilst not required, your script could invoke `ResponseBehaviour.usingDefaultBehaviour()` for readability to indicate
+that you want the plugin to handle the response file for you. See the *rest* plugin tests for a working example. To this
+end, the following blocks are semantically identical:
+
+    respond {
+        withFile "static-data.json" and() usingDefaultBehaviour()
+    }
+
+and:
+
+    respond {
+        withFile "static-data.json"
+    }
 
 # Tips and tricks
 
