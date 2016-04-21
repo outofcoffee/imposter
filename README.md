@@ -44,6 +44,10 @@ For example:
 If Docker isn't your thing, or you want to build Imposter yourself, you can create a standlone
 JAR file. See the _Build_ section below.
 
+Once, built, you can run the JAR as follows:
+
+    java -jar distro/build/libs/imposter.jar [args]
+
 # Usage
 
 The following system properties can be used (specify as command line switches with `-Dswitch=value`). 
@@ -59,17 +63,39 @@ The following system properties can be used (specify as command line switches wi
 
 # Plugin examples
 
+The following examples apply to both using Java and Docker to start the mock server.
+
+## Java
+
+If using Java, replace `<imposter>` with:
+
+    java -jar distro/build/libs/imposter.jar -Dcom.gatehill.imposter.plugin=<plugin class> [args]
+
+...ensuring that you choose the right plugin class for the plugin you want to use, for example:
+
+    java -jar distro/build/libs/imposter.jar -Dcom.gatehill.imposter.plugin=com.gatehill.imposter.plugin.rest.RestPluginImpl [args]
+
+## Docker
+
+If using Docker, replace `<imposter>` with:
+
+    docker run --ti -p 8443 outofcoffee/imposter-rest [args]
+
+...ensuring that you choose the right image for the plugin you want to use.
+
 ## rest
+
+Plugin class: `com.gatehill.imposter.plugin.rest.RestPluginImpl`
 
 Simple REST API mock.
 
 Example:
 
-     java -jar distro/build/libs/imposter.jar \
-            -Dcom.gatehill.imposter.plugin=com.gatehill.imposter.plugin.rest.RestPluginImpl \
-            -Dcom.gatehill.imposter.configDir=./plugin/rest/src/test/resources/config
+     <imposter> -Dcom.gatehill.imposter.configDir=./plugin/rest/src/test/resources/config
 
 ## sfdc
+
+Plugin class: `com.gatehill.imposter.plugin.sfdc.SfdcPluginImpl`
 
 Basic Salesforce mock implementation. Supports non-persistent:
 
@@ -83,12 +109,10 @@ Ensure that you use an _https://_ scheme for accessing the mock server.
 
 Example:
 
-     java -jar distro/build/libs/imposter.jar \
-            -Dcom.gatehill.imposter.plugin=com.gatehill.imposter.plugin.sfdc.SfdcPluginImpl \
-            -Dcom.gatehill.imposter.configDir=./plugin/sfdc/src/test/resources/config \
-            -Dcom.gatehill.imposter.tls=true \
-            -Dcom.gatehill.imposter.keystorePath=./server/src/main/resources/keystore/ssl.jks \
-            -Dcom.gatehill.imposter.keystorePassword=password
+    <imposter> -Dcom.gatehill.imposter.configDir=./plugin/sfdc/src/test/resources/config \
+               -Dcom.gatehill.imposter.tls=true \
+               -Dcom.gatehill.imposter.keystorePath=./server/src/main/resources/keystore/ssl.jks \
+               -Dcom.gatehill.imposter.keystorePassword=password
 
 **Note:** This uses a self-signed certificate for TLS/SSL. You can also choose your own keystore.
 If you need to trust the self-signed certificate when using the default, the keystore is located at
@@ -96,14 +120,14 @@ If you need to trust the self-signed certificate when using the default, the key
 
 ## hbase
 
+Plugin class: `com.gatehill.imposter.plugin.hbase.HBasePluginImpl`
+
 Basic HBase mock implementation. Uses protobuf for wire transport. Supports dummy Scanner queries and individual 
 row/record retrieval.
 
 Example:
 
-     java -jar distro/build/libs/imposter.jar \
-            -Dcom.gatehill.imposter.plugin=com.gatehill.imposter.plugin.hbase.HBasePluginImpl \
-            -Dcom.gatehill.imposter.configDir=./plugin/hbase/src/test/resources/config
+     <imposter> -Dcom.gatehill.imposter.configDir=./plugin/hbase/src/test/resources/config
 
 **Note:** This plugin will use the server URL in the `Location` header of the scanner creation response. You might
 want to consider setting the `serverUrl` property explicitly to the publicly-accessible address of the mock server.
