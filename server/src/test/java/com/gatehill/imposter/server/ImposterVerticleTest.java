@@ -1,5 +1,6 @@
 package com.gatehill.imposter.server;
 
+import com.gatehill.imposter.ImposterConfig;
 import com.gatehill.imposter.plugin.Plugin;
 import com.gatehill.imposter.plugin.PluginManager;
 import com.gatehill.imposter.plugin.test.TestPluginConfig;
@@ -15,7 +16,9 @@ import org.junit.runner.RunWith;
 
 import java.net.HttpURLConnection;
 
-import static com.gatehill.imposter.Imposter.CONFIG_PREFIX;
+import static com.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PASSWORD;
+import static com.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PATH;
+import static com.gatehill.imposter.util.FileUtil.CLASSPATH_PREFIX;
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -31,15 +34,21 @@ public class ImposterVerticleTest extends BaseVerticleTest {
 
     @Before
     public void setUp(TestContext testContext) throws Exception {
-        // enable TLS before deployment
-        System.setProperty(CONFIG_PREFIX + "tls", "true");
-
-        // deploy
         super.setUp(testContext);
 
         // set up trust store for TLS
         RestAssured.trustStore(CryptoUtil.getDefaultKeystore(ImposterVerticleTest.class).toFile(), CryptoUtil.DEFAULT_KEYSTORE_PASSWORD);
         RestAssured.baseURI = "https://" + HOST + ":" + getListenPort();
+    }
+
+    @Override
+    protected void configure(ImposterConfig imposterConfig) throws Exception {
+        super.configure(imposterConfig);
+
+        // enable TLS
+        imposterConfig.setTlsEnabled(true);
+        imposterConfig.setKeystorePath(CLASSPATH_PREFIX + DEFAULT_KEYSTORE_PATH);
+        imposterConfig.setKeystorePassword(DEFAULT_KEYSTORE_PASSWORD);
     }
 
     @Test

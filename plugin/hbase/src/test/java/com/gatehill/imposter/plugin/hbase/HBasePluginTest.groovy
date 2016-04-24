@@ -3,7 +3,6 @@ package com.gatehill.imposter.plugin.hbase
 import com.gatehill.imposter.plugin.Plugin
 import com.gatehill.imposter.server.BaseVerticleTest
 import io.vertx.ext.unit.TestContext
-import io.vertx.ext.unit.junit.VertxUnitRunner
 import org.apache.hadoop.hbase.client.Get
 import org.apache.hadoop.hbase.client.Result
 import org.apache.hadoop.hbase.client.ResultScanner
@@ -15,14 +14,12 @@ import org.apache.hadoop.hbase.rest.client.RemoteHTable
 import org.apache.hadoop.hbase.util.Bytes
 import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
 
 /**
  * Tests for {@link HBasePluginImpl}.
  *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-@RunWith(VertxUnitRunner.class)
 public class HBasePluginTest extends BaseVerticleTest {
     private Client client
 

@@ -1,14 +1,14 @@
 package com.gatehill.imposter;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.inject.Injector;
-import com.google.inject.Module;
 import com.gatehill.imposter.plugin.Plugin;
 import com.gatehill.imposter.plugin.PluginManager;
 import com.gatehill.imposter.plugin.config.BaseConfig;
 import com.gatehill.imposter.plugin.config.ConfigurablePlugin;
 import com.gatehill.imposter.util.InjectorUtil;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.inject.Injector;
+import com.google.inject.Module;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -20,9 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PASSWORD;
-import static com.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PATH;
-import static com.gatehill.imposter.util.FileUtil.CLASSPATH_PREFIX;
 import static com.gatehill.imposter.util.FileUtil.CONFIG_FILE_SUFFIX;
 import static com.gatehill.imposter.util.HttpUtil.BIND_ALL_HOSTS;
 import static com.gatehill.imposter.util.MapUtil.MAPPER;
@@ -33,7 +30,6 @@ import static java.util.Optional.ofNullable;
  */
 public class Imposter {
     private static final Logger LOGGER = LogManager.getLogger(Imposter.class);
-    public static final String CONFIG_PREFIX = "com.gatehill.imposter.";
 
     @Inject
     private Injector injector;
@@ -45,67 +41,28 @@ public class Imposter {
     private PluginManager pluginManager;
 
     public void start() {
-        initDependencyInjection();
-        configureSystem();
+        InjectorUtil.createChildInjector(getModules()).injectMembers(this);
+
+        processConfiguration();
+        instantiatePlugins();
         configurePlugins();
-    }
-
-    @SuppressWarnings("unchecked")
-    private void initDependencyInjection() {
-        InjectorUtil.create(getModules()).injectMembers(this);
-
-        ofNullable(System.getProperty(CONFIG_PREFIX + "plugin"))
-                .ifPresent(clazz -> {
-                    try {
-                        pluginManager.registerClass((Class<? extends Plugin>) Class.forName(clazz));
-                        LOGGER.debug("Registered plugin {}", clazz);
-                    } catch (ClassNotFoundException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
-
-        pluginManager.getPluginClasses()
-                .forEach(pluginClass -> pluginManager.registerInstance(injector.getInstance(pluginClass)));
-
-        final int pluginCount = pluginManager.getPlugins().size();
-        if (pluginCount > 0) {
-            LOGGER.info("Started {} plugins", pluginCount);
-        } else {
-            throw new RuntimeException(String.format(
-                    "No plugins were loaded. Specify system property '%splugin'", CONFIG_PREFIX));
-        }
     }
 
     protected Module[] getModules() {
         return new ImposterModule[]{new ImposterModule()};
     }
 
-    private void configureSystem() {
-        imposterConfig.setListenPort(ofNullable(System.getProperty(CONFIG_PREFIX + "listenPort"))
-                .map(Integer::parseInt)
-                .orElse(8443));
+    private void processConfiguration() {
+        imposterConfig.setServerUrl(buildServerUrl().toString());
 
-        imposterConfig.setHost(System.getProperty(CONFIG_PREFIX + "host", BIND_ALL_HOSTS));
-
-        imposterConfig.setTlsEnabled(Boolean.parseBoolean(System.getProperty(CONFIG_PREFIX + "tls", "false")));
-
-        imposterConfig.setKeystorePath(System.getProperty(CONFIG_PREFIX + "keystorePath",
-                CLASSPATH_PREFIX + DEFAULT_KEYSTORE_PATH));
-
-        imposterConfig.setKeystorePassword(System.getProperty(CONFIG_PREFIX + "keystorePassword",
-                DEFAULT_KEYSTORE_PASSWORD));
-
-        imposterConfig.setServerUrl(buildServerUrl());
-
-        imposterConfig.setConfigDir(ofNullable(System.getProperty(CONFIG_PREFIX + "configDir"))
-                .map(cps -> (cps.startsWith(".") ? System.getProperty("user.dir") + cps.substring(1) : cps))
-                .orElseThrow(() -> new RuntimeException(String.format(
-                        "System property '%sconfigDir' must be set to a directory", CONFIG_PREFIX))));
+        imposterConfig.setConfigDir(imposterConfig.getConfigDir().startsWith(".") ?
+                System.getProperty("user.dir") + imposterConfig.getConfigDir().substring(1) :
+                imposterConfig.getConfigDir());
     }
 
     private URI buildServerUrl() {
         // might be set explicitly
-        final Optional<String> explicitUrl = ofNullable(System.getProperty(CONFIG_PREFIX + "serverUrl"));
+        final Optional<String> explicitUrl = ofNullable(imposterConfig.getServerUrl());
         if (explicitUrl.isPresent()) {
             return URI.create(explicitUrl.get());
         }
@@ -123,6 +80,29 @@ public class Imposter {
         }
 
         return URI.create(scheme + host + port);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void instantiatePlugins() {
+        ofNullable(imposterConfig.getPluginClassName())
+                .ifPresent(clazz -> {
+                    try {
+                        pluginManager.registerClass((Class<? extends Plugin>) Class.forName(clazz));
+                        LOGGER.debug("Registered plugin {}", clazz);
+                    } catch (ClassNotFoundException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+
+        pluginManager.getPluginClasses()
+                .forEach(pluginClass -> pluginManager.registerInstance(injector.getInstance(pluginClass)));
+
+        final int pluginCount = pluginManager.getPlugins().size();
+        if (pluginCount > 0) {
+            LOGGER.info("Started {} plugins", pluginCount);
+        } else {
+            throw new RuntimeException("No plugins were loaded");
+        }
     }
 
     private void configurePlugins() {

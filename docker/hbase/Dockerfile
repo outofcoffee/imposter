@@ -2,4 +2,4 @@ FROM outofcoffee/imposter
 
 MAINTAINER Pete Cornish <outofcoffee@gmail.com>
 
-CMD ["-Dcom.gatehill.imposter.plugin=com.gatehill.imposter.plugin.hbase.HBasePluginImpl", "-Dcom.gatehill.imposter.configDir=/opt/imposter/config"]
+ENTRYPOINT ["java", "-jar", "/opt/imposter/imposter.jar", "--plugin", "com.gatehill.imposter.plugin.hbase.HBasePluginImpl", "--configDir", "/opt/imposter/config"]

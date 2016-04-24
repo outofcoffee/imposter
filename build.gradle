@@ -4,10 +4,10 @@ subprojects {
 
     buildscript {
         repositories {
+            mavenCentral()
             maven {
                 url "https://plugins.gradle.org/m2/"
             }
-            mavenCentral()
         }
         dependencies {
             classpath "com.github.jengelman.gradle.plugins:shadow:1.2.3"
@@ -26,5 +26,6 @@ subprojects {
         version_junit = '4.11'
         version_restAssured = '2.9.0'
         version_groovy = '2.4.6'
+        version_args4j = '2.33'
     }
 }

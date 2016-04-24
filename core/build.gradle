@@ -10,5 +10,5 @@ dependencies {
     compile "io.vertx:vertx-web:$version_vertx"
     compile "org.codehaus.groovy:groovy-all:$version_groovy"
 
-    testCompile group: 'junit', name: 'junit', version: "$version_junit"
+    testCompile "junit:junit:$version_junit"
 }

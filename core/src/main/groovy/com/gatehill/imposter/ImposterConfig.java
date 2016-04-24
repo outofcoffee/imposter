@@ -1,7 +1,5 @@
 package com.gatehill.imposter;
 
-import java.net.URI;
-
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
@@ -9,10 +7,11 @@ public class ImposterConfig {
     private String host;
     private int listenPort;
     private String configDir;
-    private URI serverUrl;
+    private String serverUrl;
     private boolean tlsEnabled;
     private String keystorePath;
     private String keystorePassword;
+    private String pluginClassName;
 
     public String getHost() {
         return host;
@@ -38,11 +37,11 @@ public class ImposterConfig {
         this.configDir = configDir;
     }
 
-    public URI getServerUrl() {
+    public String getServerUrl() {
         return serverUrl;
     }
 
-    public void setServerUrl(URI serverUrl) {
+    public void setServerUrl(String serverUrl) {
         this.serverUrl = serverUrl;
     }
 
@@ -68,5 +67,13 @@ public class ImposterConfig {
 
     public String getKeystorePassword() {
         return keystorePassword;
+    }
+
+    public void setPluginClassName(String pluginClassName) {
+        this.pluginClassName = pluginClassName;
+    }
+
+    public String getPluginClassName() {
+        return pluginClassName;
     }
 }

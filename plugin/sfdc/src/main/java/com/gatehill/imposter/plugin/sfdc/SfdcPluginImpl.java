@@ -59,7 +59,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> implement
 
             final JsonObject authResponse = new JsonObject();
             authResponse.put("access_token", "dummyAccessToken");
-            authResponse.put("instance_url", imposterConfig.getServerUrl().toString());
+            authResponse.put("instance_url", imposterConfig.getServerUrl());
             routingContext.response().end(authResponse.encode());
         });
 

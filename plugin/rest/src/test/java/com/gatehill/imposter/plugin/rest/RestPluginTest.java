@@ -4,23 +4,18 @@ import com.gatehill.imposter.plugin.Plugin;
 import com.gatehill.imposter.server.BaseVerticleTest;
 import com.jayway.restassured.RestAssured;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import java.net.HttpURLConnection;
 
 import static com.jayway.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
+import static org.hamcrest.Matchers.*;
 
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-@RunWith(VertxUnitRunner.class)
 public class RestPluginTest extends BaseVerticleTest {
     @Override
     protected Class<? extends Plugin> getPluginClass() {

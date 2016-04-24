@@ -9,6 +9,6 @@ dependencies {
     compile project (':server')
 
     // test
-    compile group: 'junit', name: 'junit', version: "$version_junit"
+    compile "junit:junit:$version_junit"
     compile "io.vertx:vertx-unit:$version_vertx"
 }

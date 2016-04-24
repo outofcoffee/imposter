@@ -1,6 +1,8 @@
 package com.gatehill.imposter.server;
 
+import com.gatehill.imposter.ImposterConfig;
 import com.gatehill.imposter.plugin.Plugin;
+import com.gatehill.imposter.util.InjectorUtil;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.RunTestOnContext;
@@ -12,8 +14,6 @@ import org.junit.runner.RunWith;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.file.Paths;
-
-import static com.gatehill.imposter.Imposter.CONFIG_PREFIX;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
@@ -37,10 +37,9 @@ public abstract class BaseVerticleTest {
 
         listenPort = findFreePort();
 
-        System.setProperty(CONFIG_PREFIX + "configDir", Paths.get(getClass().getResource("/config").toURI()).toString());
-        System.setProperty(CONFIG_PREFIX + "plugin", getPluginClass().getCanonicalName());
-        System.setProperty(CONFIG_PREFIX + "host", HOST);
-        System.setProperty(CONFIG_PREFIX + "listenPort", String.valueOf(listenPort));
+        // simulate ImposterLauncher injector bootstrap
+        final ImposterConfig imposterConfig = InjectorUtil.create(new BootstrapModule()).getInstance(ImposterConfig.class);
+        configure(imposterConfig);
 
         rule.vertx().deployVerticle(ImposterVerticle.class.getCanonicalName(), completion -> {
             if (completion.succeeded()) {
@@ -49,6 +48,13 @@ public abstract class BaseVerticleTest {
                 testContext.fail(completion.cause());
             }
         });
+    }
+
+    protected void configure(ImposterConfig imposterConfig) throws Exception {
+        imposterConfig.setConfigDir(Paths.get(getClass().getResource("/config").toURI()).toString());
+        imposterConfig.setPluginClassName(getPluginClass().getCanonicalName());
+        imposterConfig.setHost(HOST);
+        imposterConfig.setListenPort(listenPort);
     }
 
     private int findFreePort() throws IOException {

@@ -3,6 +3,7 @@ package com.gatehill.imposter.plugin.sfdc;
 import com.force.api.ApiConfig;
 import com.force.api.ForceApi;
 import com.force.api.QueryResult;
+import com.gatehill.imposter.ImposterConfig;
 import com.gatehill.imposter.plugin.Plugin;
 import com.gatehill.imposter.plugin.sfdc.support.Account;
 import com.gatehill.imposter.server.BaseVerticleTest;
@@ -11,7 +12,9 @@ import io.vertx.ext.unit.TestContext;
 import org.junit.Before;
 import org.junit.Test;
 
-import static com.gatehill.imposter.Imposter.CONFIG_PREFIX;
+import static com.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PASSWORD;
+import static com.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PATH;
+import static com.gatehill.imposter.util.FileUtil.CLASSPATH_PREFIX;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
@@ -24,10 +27,6 @@ public class SfdcPluginImplTest extends BaseVerticleTest {
 
     @Before
     public void setUp(TestContext testContext) throws Exception {
-        // enable TLS before deployment
-        System.setProperty(CONFIG_PREFIX + "tls", "true");
-
-        // deploy
         super.setUp(testContext);
 
         // set up trust store for TLS
@@ -38,6 +37,16 @@ public class SfdcPluginImplTest extends BaseVerticleTest {
         // for localhost testing only
         javax.net.ssl.HttpsURLConnection.setDefaultHostnameVerifier(
                 (hostname, sslSession) -> hostname.equals("localhost"));
+    }
+
+    @Override
+    protected void configure(ImposterConfig imposterConfig) throws Exception {
+        super.configure(imposterConfig);
+
+        // enable TLS
+        imposterConfig.setTlsEnabled(true);
+        imposterConfig.setKeystorePath(CLASSPATH_PREFIX + DEFAULT_KEYSTORE_PATH);
+        imposterConfig.setKeystorePassword(DEFAULT_KEYSTORE_PASSWORD);
     }
 
     private ForceApi buildForceApi() {

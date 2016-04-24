@@ -14,10 +14,19 @@ Imposter supports different mock server types using plugins:
 
 ## Example
 
-     java -jar distro/build/libs/imposter.jar \
-            -Dcom.gatehill.imposter.plugin=com.gatehill.imposter.plugin.rest.RestPluginImpl \
-            -Dcom.gatehill.imposter.configDir=./plugin/rest/src/test/resources/config \
-            -Dcom.gatehill.imposter.listenPort=8080
+Docker example:
+
+    docker run -ti -p 8080:8080 \
+            -v $(pwd)/plugin/rest/src/test/resources/config:/opt/imposter/config \
+            outofcoffee/imposter-rest \
+            --listenPort 8080
+
+Plain Java example:
+
+    java -jar distro/build/libs/imposter.jar \
+            --plugin com.gatehill.imposter.plugin.rest.RestPluginImpl \
+            --configDir ./plugin/rest/src/test/resources/config \
+            --listenPort 8080
 
 This starts a mock server using the simple REST plugin. Responses are served in line with the configuration files
 inside the `config` folder. With the example above, you can hit the URL
@@ -37,7 +46,7 @@ The easiest way to get started is to use an Imposter Docker container:
 
 For example:
 
-    docker run --ti -p 8443 outofcoffee/imposter-rest [args]
+    docker run -ti -p 8443:8443 outofcoffee/imposter-rest [args]
 
 ## Java
 
@@ -50,16 +59,18 @@ Once, built, you can run the JAR as follows:
 
 # Usage
 
-The following system properties can be used (specify as command line switches with `-Dswitch=value`). 
+The following command line arguments can be used:
 
-    com.gatehill.imposter.plugin            Plugin class name
-    com.gatehill.imposter.configDir         Directory containing mock configuration files
-    com.gatehill.imposter.host              Host to which to bind when listening
-    com.gatehill.imposter.listenPort        Port on which to listen
-    com.gatehill.imposter.serverUrl         Explicitly set the server address, e.g. http://mypublicserver:8443
-    com.gatehill.imposter.tls               Whether TLS/SSL is enabled
-    com.gatehill.imposter.keyStorePath      Path to keystore
-    com.gatehill.imposter.keyStorePassword  Keystore password
+     --configDir (-c) VAL   : Directory containing mock configuration files
+     --help (-h)            : Display usage only
+     --host (-b) VAL        : Bind host
+     --keystorePassword VAL : Password for the keystore (default: password)
+     --keystorePath VAL     : Path to the keystore (default: classpath:/keystore/ssl.jks)
+     --listenPort (-l) N    : Listen port (default: 8443)
+     --plugin (-p) VAL      : Plugin class name
+     --serverUrl (-u) VAL   : Explicitly set the server address
+     --tlsEnabled (-t)      : Whether TLS (HTTPS) is enabled (requires keystore to be configured) (default: false)
+     --version (-v)         : Print version and exit
 
 # Plugin examples
 
@@ -69,19 +80,19 @@ The following examples apply to both using Java and Docker to start the mock ser
 
 If using Java, replace `<imposter>` with:
 
-    java -jar distro/build/libs/imposter.jar -Dcom.gatehill.imposter.plugin=<plugin class> [args]
+    java -jar distro/build/libs/imposter.jar --plugin <plugin class> [args]
 
 ...ensuring that you choose the right plugin class for the plugin you want to use, for example:
 
-    java -jar distro/build/libs/imposter.jar -Dcom.gatehill.imposter.plugin=com.gatehill.imposter.plugin.rest.RestPluginImpl [args]
+    java -jar distro/build/libs/imposter.jar --plugin com.gatehill.imposter.plugin.rest.RestPluginImpl [args]
 
 ## Docker
 
 If using Docker, replace `<imposter>` with:
 
-    docker run --ti -p 8443 outofcoffee/imposter-rest [args]
+    docker run -ti -p 8443:8443 outofcoffee/imposter-rest [args]
 
-...ensuring that you choose the right image for the plugin you want to use.
+...ensuring that you choose the right image for the plugin you wish to use.
 
 ## rest
 
@@ -91,7 +102,7 @@ Simple REST API mock.
 
 Example:
 
-     <imposter> -Dcom.gatehill.imposter.configDir=./plugin/rest/src/test/resources/config
+     <imposter> --configDir ./plugin/rest/src/test/resources/config
 
 ## sfdc
 
@@ -109,10 +120,10 @@ Ensure that you use an _https://_ scheme for accessing the mock server.
 
 Example:
 
-    <imposter> -Dcom.gatehill.imposter.configDir=./plugin/sfdc/src/test/resources/config \
-               -Dcom.gatehill.imposter.tls=true \
-               -Dcom.gatehill.imposter.keystorePath=./server/src/main/resources/keystore/ssl.jks \
-               -Dcom.gatehill.imposter.keystorePassword=password
+    <imposter> --configDir ./plugin/sfdc/src/test/resources/config \
+               --tlsEnabled \
+               --keystorePath ./server/src/main/resources/keystore/ssl.jks \
+               --keystorePassword password
 
 **Note:** This uses a self-signed certificate for TLS/SSL. You can also choose your own keystore.
 If you need to trust the self-signed certificate when using the default, the keystore is located at
@@ -127,7 +138,7 @@ row/record retrieval.
 
 Example:
 
-     <imposter> -Dcom.gatehill.imposter.configDir=./plugin/hbase/src/test/resources/config
+     <imposter> --configDir ./plugin/hbase/src/test/resources/config
 
 **Note:** This plugin will use the server URL in the `Location` header of the scanner creation response. You might
 want to consider setting the `serverUrl` property explicitly to the publicly-accessible address of the mock server.
