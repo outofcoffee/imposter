@@ -400,6 +400,7 @@ Build the Docker containers with:
 * API specification import (e.g. Swagger)
 * REST plugin support for ID field name (like HBase plugin)
 * Template URIs instead of/as well as Base paths
+* Execute mock processing asynchronously
 
 # Contributing
 
