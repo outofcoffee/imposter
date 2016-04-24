@@ -395,10 +395,11 @@ Build the Docker containers with:
 
 # TODO
 
-* Replace system property-based configuration with shorter command line arguments (Args4J)
 * HBase content negotiation
 * HBase response content type header
 * API specification import (e.g. Swagger)
+* REST plugin support for ID field name (like HBase plugin)
+* Template URIs instead of/as well as Base paths
 
 # Contributing
 
