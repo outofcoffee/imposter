@@ -76,6 +76,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
 
     @Override
     public void configureRoutes(Router router) {
+        // add route for each distinct path
         tableConfigs.values().stream()
                 .map(config -> ofNullable(config.getPath()).orElse(""))
                 .distinct()

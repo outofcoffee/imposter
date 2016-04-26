@@ -107,6 +107,8 @@ public class Imposter {
     }
 
     private void configurePlugins() {
+        int configCount = 0;
+
         // read all config files
         final Map<String, List<File>> mockConfigs = Maps.newHashMap();
         try {
@@ -115,6 +117,9 @@ public class Imposter {
                     .orElse(new File[0]);
 
             for (File configFile : configFiles) {
+                LOGGER.debug("Loading configuration file: {}", configFile);
+                configCount++;
+
                 final BaseConfig config = MAPPER.readValue(configFile, BaseConfig.class);
 
                 List<File> pluginConfigs = mockConfigs.get(config.getPluginClass());
@@ -130,7 +135,7 @@ public class Imposter {
             throw new RuntimeException(e);
         }
 
-        LOGGER.info("Loaded {} mock configs from: {}", mockConfigs.size(), imposterConfig.getConfigDir());
+        LOGGER.info("Loaded {} mock configuration files from: {}", configCount, imposterConfig.getConfigDir());
 
         // send config to plugins
         pluginManager.getPlugins().stream()
