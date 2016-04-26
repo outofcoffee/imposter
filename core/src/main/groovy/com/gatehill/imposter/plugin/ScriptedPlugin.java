@@ -28,17 +28,14 @@ public interface ScriptedPlugin<C extends ResourceConfig> {
             final ResponseBehaviour responseBehaviour = responseService.getResponseBehaviour(
                     routingContext, config, additionalContext, Collections.emptyMap());
 
-            switch (responseBehaviour.getBehaviourType()) {
-                case IMMEDIATE_RESPONSE:
-                    routingContext.response()
-                            .setStatusCode(responseBehaviour.getStatusCode())
-                            .end();
-                    break;
+            if (ResponseBehaviourType.IMMEDIATE_RESPONSE.equals(responseBehaviour.getBehaviourType())) {
+                routingContext.response()
+                        .setStatusCode(responseBehaviour.getStatusCode())
+                        .end();
 
-                default:
-                    // default behaviour
-                    defaultBehaviourHandler.accept(responseBehaviour);
-                    break;
+            } else {
+                // default behaviour
+                defaultBehaviourHandler.accept(responseBehaviour);
             }
 
         } catch (Exception e) {
