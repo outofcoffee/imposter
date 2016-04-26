@@ -16,6 +16,7 @@ import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -55,8 +56,8 @@ public class Imposter {
     private void processConfiguration() {
         imposterConfig.setServerUrl(buildServerUrl().toString());
 
-        imposterConfig.setConfigDir(imposterConfig.getConfigDir().startsWith(".") ?
-                System.getProperty("user.dir") + imposterConfig.getConfigDir().substring(1) :
+        imposterConfig.setConfigDir(imposterConfig.getConfigDir().startsWith("./") ?
+                Paths.get(System.getProperty("user.dir"), imposterConfig.getConfigDir().substring(2)).toString() :
                 imposterConfig.getConfigDir());
     }
 

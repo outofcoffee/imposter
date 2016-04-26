@@ -1,0 +1,14 @@
+[
+  {
+    "id": "1",
+    "aKey": "aValue1"
+  },
+  {
+    "id": "2",
+    "aKey": "aValue2"
+  },
+  {
+    "id": "3",
+    "aKey": "aValue3"
+  }
+]

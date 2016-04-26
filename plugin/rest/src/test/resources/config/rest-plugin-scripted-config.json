@@ -1,6 +1,6 @@
 {
   "plugin": "com.gatehill.imposter.plugin.rest.RestPluginImpl",
-  "basePath": "/scripted",
+  "path": "/scripted",
   "response": {
     "scriptFile": "rest-plugin.groovy",
     "staticFile": "rest-plugin-data1.json"

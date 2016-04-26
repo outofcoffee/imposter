@@ -2,7 +2,7 @@ package com.gatehill.imposter.plugin;
 
 import com.gatehill.imposter.model.ResponseBehaviour;
 import com.gatehill.imposter.model.ResponseBehaviourType;
-import com.gatehill.imposter.plugin.config.BaseConfig;
+import com.gatehill.imposter.plugin.config.ResourceConfig;
 import com.gatehill.imposter.service.ResponseService;
 import com.gatehill.imposter.util.InjectorUtil;
 import io.vertx.ext.web.RoutingContext;
@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public interface ScriptedPlugin<C extends BaseConfig> {
+public interface ScriptedPlugin<C extends ResourceConfig> {
     default void scriptHandler(C config, RoutingContext routingContext, Consumer<ResponseBehaviour> defaultBehaviourHandler) {
         scriptHandler(config, routingContext, null, defaultBehaviourHandler);
     }
@@ -28,14 +28,17 @@ public interface ScriptedPlugin<C extends BaseConfig> {
             final ResponseBehaviour responseBehaviour = responseService.getResponseBehaviour(
                     routingContext, config, additionalContext, Collections.emptyMap());
 
-            if (ResponseBehaviourType.IMMEDIATE_RESPONSE == responseBehaviour.getBehaviourType()) {
-                routingContext.response()
-                        .setStatusCode(responseBehaviour.getStatusCode())
-                        .end();
+            switch (responseBehaviour.getBehaviourType()) {
+                case IMMEDIATE_RESPONSE:
+                    routingContext.response()
+                            .setStatusCode(responseBehaviour.getStatusCode())
+                            .end();
+                    break;
 
-            } else {
-                // default behaviour
-                defaultBehaviourHandler.accept(responseBehaviour);
+                default:
+                    // default behaviour
+                    defaultBehaviourHandler.accept(responseBehaviour);
+                    break;
             }
 
         } catch (Exception e) {

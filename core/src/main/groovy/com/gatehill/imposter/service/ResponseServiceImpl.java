@@ -1,5 +1,10 @@
 package com.gatehill.imposter.service;
 
+import com.gatehill.imposter.ImposterConfig;
+import com.gatehill.imposter.model.InvocationContext;
+import com.gatehill.imposter.model.ResponseBehaviour;
+import com.gatehill.imposter.plugin.config.ResourceConfig;
+import com.gatehill.imposter.plugin.config.ResponseConfig;
 import com.gatehill.imposter.scripting.ScriptBuilder;
 import com.google.common.base.Strings;
 import com.google.common.cache.Cache;
@@ -7,11 +12,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.io.CharStreams;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
-import com.gatehill.imposter.ImposterConfig;
-import com.gatehill.imposter.model.InvocationContext;
-import com.gatehill.imposter.model.ResponseBehaviour;
-import com.gatehill.imposter.plugin.config.BaseConfig;
-import com.gatehill.imposter.plugin.config.ResponseConfig;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.web.RoutingContext;
 import org.apache.logging.log4j.LogManager;
@@ -43,12 +43,12 @@ public class ResponseServiceImpl implements ResponseService {
     @Inject
     private ImposterConfig imposterConfig;
 
-    private Cache<BaseConfig, String> scriptCache = CacheBuilder.newBuilder()
+    private Cache<ResourceConfig, String> scriptCache = CacheBuilder.newBuilder()
             .expireAfterAccess(5, TimeUnit.MINUTES)
             .build();
 
     @Override
-    public ResponseBehaviour getResponseBehaviour(RoutingContext routingContext, BaseConfig config,
+    public ResponseBehaviour getResponseBehaviour(RoutingContext routingContext, ResourceConfig config,
                                                   Map<String, Object> additionalContext, Map<String, Object> bindings) {
 
         final ResponseConfig responseConfig = config.getResponseConfig();
@@ -116,7 +116,7 @@ public class ResponseServiceImpl implements ResponseService {
         return scriptFile.replaceAll("\\.groovy", "");
     }
 
-    private String generateScript(BaseConfig config) throws ExecutionException {
+    private String generateScript(ResourceConfig config) throws ExecutionException {
         return scriptCache.get(config, () -> {
             final Path scriptFile = Paths.get(imposterConfig.getConfigDir(), config.getResponseConfig().getScriptFile());
             final List<String> scriptContent = Files.readAllLines(scriptFile);
@@ -124,22 +124,27 @@ public class ResponseServiceImpl implements ResponseService {
         });
     }
 
-    private InputStream loadResponseAsStream(ImposterConfig imposterConfig, ResponseBehaviour behaviour) throws IOException {
-        if (null != behaviour.getResponseFile()) {
-            return Files.newInputStream(Paths.get(imposterConfig.getConfigDir(), behaviour.getResponseFile()));
+    private InputStream loadResponseAsStream(String responseFile) throws IOException {
+        if (null != responseFile) {
+            return Files.newInputStream(Paths.get(imposterConfig.getConfigDir(), responseFile));
         } else {
             throw new IllegalStateException("No response file set on ResponseBehaviour");
         }
     }
 
     @Override
-    public JsonArray loadResponseAsJsonArray(ImposterConfig imposterConfig, ResponseBehaviour behaviour) {
-        if (Strings.isNullOrEmpty(behaviour.getResponseFile())) {
+    public JsonArray loadResponseAsJsonArray(ResponseBehaviour behaviour) {
+        return loadResponseAsJsonArray(behaviour.getResponseFile());
+    }
+
+    @Override
+    public JsonArray loadResponseAsJsonArray(String responseFile) {
+        if (Strings.isNullOrEmpty(responseFile)) {
             LOGGER.debug("Response file blank - returning empty array");
             return new JsonArray();
         }
 
-        try (InputStream is = loadResponseAsStream(imposterConfig, behaviour)) {
+        try (InputStream is = loadResponseAsStream(responseFile)) {
             return new JsonArray(CharStreams.toString(new InputStreamReader(is)));
         } catch (IOException e) {
             throw new RuntimeException(e);

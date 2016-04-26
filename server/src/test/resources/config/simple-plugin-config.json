@@ -1,6 +1,6 @@
 {
   "plugin": "com.gatehill.imposter.plugin.test.TestPluginImpl",
-  "basePath": "/example",
+  "path": "/example",
   "response": {
     "staticFile": "simple-plugin-data.json"
   },

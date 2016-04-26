@@ -98,7 +98,7 @@ If using Docker, replace `<imposter>` with:
 
 Plugin class: `com.gatehill.imposter.plugin.rest.RestPluginImpl`
 
-Simple REST API mock.
+Simple REST API mock, supporting arbitrary format static files and optional JSON array responses.
 
 Example:
 
@@ -153,7 +153,7 @@ For example:
 
     {
       "plugin": "com.gatehill.imposter.plugin.rest.RestPluginImpl",
-      "basePath": "/example",
+      "path": "/example",
       "response": {
         "staticFile": "example-data.json"
       }
@@ -183,7 +183,7 @@ Here's an example configuration file that uses a script:
 
     {
       "plugin": "com.gatehill.imposter.plugin.rest.RestPluginImpl",
-      "basePath": "/scripted",
+      "path": "/scripted",
       "response": {
         "scriptFile": "example.groovy"
       }
@@ -292,7 +292,7 @@ Here's an example of the static file approach (1):
 
     {
       "plugin": "com.gatehill.imposter.plugin.rest.RestPluginImpl",
-      "basePath": "/scripted",
+      "path": "/scripted",
       "response": {
         "scriptFile": "example.groovy",
         "staticFile": "example-data.json"
@@ -398,8 +398,6 @@ Build the Docker containers with:
 * HBase content negotiation
 * HBase response content type header
 * API specification import (e.g. Swagger)
-* REST plugin support for ID field name (like HBase plugin)
-* Template URIs instead of/as well as Base paths
 * Execute mock processing asynchronously
 
 # Contributing

@@ -62,7 +62,7 @@ public class ImposterVerticleTest extends BaseVerticleTest {
         testContext.assertEquals(1, plugin.getConfigs().size());
 
         final TestPluginConfig pluginConfig = plugin.getConfigs().get(0);
-        testContext.assertEquals("/example", pluginConfig.getBasePath());
+        testContext.assertEquals("/example", pluginConfig.getPath());
         testContext.assertEquals("simple-plugin-data.json", pluginConfig.getResponseConfig().getStaticFile());
         testContext.assertEquals("testValue", pluginConfig.getCustomProperty());
     }

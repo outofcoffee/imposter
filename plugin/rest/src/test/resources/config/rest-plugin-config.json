@@ -1,6 +1,15 @@
 {
   "plugin": "com.gatehill.imposter.plugin.rest.RestPluginImpl",
-  "basePath": "/example",
+  "path": "/example",
+  "resources": [
+    {
+      "path": "/:id",
+      "type": "ARRAY",
+      "response": {
+        "staticFile": "rest-plugin-list-data.json"
+      }
+    }
+  ],
   "response": {
     "staticFile": "rest-plugin-data1.json"
   },

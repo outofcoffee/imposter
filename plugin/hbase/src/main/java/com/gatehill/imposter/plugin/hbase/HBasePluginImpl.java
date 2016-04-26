@@ -8,7 +8,7 @@ import com.gatehill.imposter.plugin.hbase.model.ResponsePhase;
 import com.gatehill.imposter.plugin.hbase.model.ResultCell;
 import com.gatehill.imposter.plugin.hbase.model.ResultCellComparator;
 import com.gatehill.imposter.service.ResponseService;
-import com.google.common.base.Strings;
+import com.gatehill.imposter.util.FileUtil;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Maps;
@@ -38,7 +38,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import static java.util.Optional.*;
+import static java.util.Optional.empty;
+import static java.util.Optional.ofNullable;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
@@ -76,18 +77,18 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
     @Override
     public void configureRoutes(Router router) {
         tableConfigs.values().stream()
-                .map(config -> ofNullable(config.getBasePath()).orElse(""))
+                .map(config -> ofNullable(config.getPath()).orElse(""))
                 .distinct()
-                .forEach(basePath -> {
-                    LOGGER.debug("Adding routes for base path: {}", () -> (basePath.isEmpty() ? "<empty>" : basePath));
+                .forEach(path -> {
+                    LOGGER.debug("Adding routes for base path: {}", () -> (path.isEmpty() ? "<empty>" : path));
 
                     // endpoint to allow individual row retrieval
-                    addRowRetrievalRoute(router, basePath);
+                    addRowRetrievalRoute(router, path);
 
                     // Note: when scanning for results, the first call obtains a scanner:
-                    addCreateScannerRoute(router, basePath);
+                    addCreateScannerRoute(router, path);
                     // ...and the second call returns the results
-                    addReadScannerResultsRoute(router, basePath);
+                    addReadScannerResultsRoute(router, path);
                 });
     }
 
@@ -95,10 +96,10 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
      * Handles a request for a particular row within a table.
      *
      * @param router
-     * @param basePath
+     * @param path
      */
-    private void addRowRetrievalRoute(Router router, String basePath) {
-        router.get(basePath + "/:tableName/:recordId/").handler(routingContext -> {
+    private void addRowRetrievalRoute(Router router, String path) {
+        router.get(path + "/:tableName/:recordId/").handler(routingContext -> {
             final String tableName = routingContext.request().getParam("tableName");
             final String recordId = routingContext.request().getParam("recordId");
 
@@ -120,8 +121,8 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
             scriptHandler(config, routingContext, bindings, responseBehaviour -> {
 
                 // find the right row from results
-                final JsonArray results = responseService.loadResponseAsJsonArray(imposterConfig, responseBehaviour);
-                final Optional<JsonObject> result = findRow(config, recordId, results);
+                final JsonArray results = responseService.loadResponseAsJsonArray(responseBehaviour);
+                final Optional<JsonObject> result = FileUtil.findRow(config.getIdField(), recordId, results);
 
                 final HttpServerResponse response = routingContext.response();
                 if (result.isPresent()) {
@@ -149,10 +150,10 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
      * in the handler {@link #addReadScannerResultsRoute(Router, String)}.
      *
      * @param router
-     * @param basePath
+     * @param path
      */
-    private void addCreateScannerRoute(Router router, String basePath) {
-        router.post(basePath + "/:tableName/scanner").handler(routingContext -> {
+    private void addCreateScannerRoute(Router router, String path) {
+        router.post(path + "/:tableName/scanner").handler(routingContext -> {
             final String tableName = routingContext.request().getParam("tableName");
 
             // check that the table is registered
@@ -203,7 +204,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
                 final int scannerId = scannerIdCounter.incrementAndGet();
                 createdScanners.put(scannerId, new InMemoryScanner(config, scannerModel));
 
-                final String resultUrl = imposterConfig.getServerUrl() + basePath + "/" + tableName + "/scanner/" + scannerId;
+                final String resultUrl = imposterConfig.getServerUrl() + path + "/" + tableName + "/scanner/" + scannerId;
 
                 routingContext.response()
                         .putHeader("Location", resultUrl)
@@ -218,10 +219,10 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
      * in {@link #addCreateScannerRoute(Router, String)}.
      *
      * @param router
-     * @param basePath
+     * @param path
      */
-    private void addReadScannerResultsRoute(Router router, String basePath) {
-        router.get(basePath + "/:tableName/scanner/:scannerId").handler(routingContext -> {
+    private void addReadScannerResultsRoute(Router router, String path) {
+        router.get(path + "/:tableName/scanner/:scannerId").handler(routingContext -> {
             final String tableName = routingContext.request().getParam("tableName");
             final String scannerId = routingContext.request().getParam("scannerId");
 
@@ -260,7 +261,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
             scriptHandler(config, routingContext, bindings, responseBehaviour -> {
 
                 // build results
-                final JsonArray results = responseService.loadResponseAsJsonArray(imposterConfig, responseBehaviour);
+                final JsonArray results = responseService.loadResponseAsJsonArray(responseBehaviour);
                 final CellSetModel cellSetModel = new CellSetModel();
 
                 // start the row counter from the last position in the scanner
@@ -365,28 +366,6 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
         if (filter instanceof PrefixFilter) {
             final String prefix = Bytes.toString(((PrefixFilter) filter).getPrefix());
             return Optional.of(prefix);
-        }
-        return empty();
-    }
-
-    /**
-     * Find the row with the given ID.
-     *
-     * @param config
-     * @param recordId
-     * @param results
-     * @return
-     */
-    private Optional<JsonObject> findRow(HBasePluginConfig config, String recordId, JsonArray results) {
-        if (Strings.isNullOrEmpty(config.getIdField())) {
-            throw new IllegalStateException("Field ID name not configured");
-        }
-
-        for (int i = 0; i < results.size(); i++) {
-            final JsonObject currentRecord = results.getJsonObject(i);
-            if (currentRecord.getString(config.getIdField()).equalsIgnoreCase(recordId)) {
-                return of(currentRecord);
-            }
         }
         return empty();
     }

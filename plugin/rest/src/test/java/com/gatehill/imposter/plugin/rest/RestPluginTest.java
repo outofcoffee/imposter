@@ -30,7 +30,7 @@ public class RestPluginTest extends BaseVerticleTest {
     }
 
     @Test
-    public void testRequestSuccess() throws Exception {
+    public void testRequestRootPathSuccess() throws Exception {
         given().when()
                 .get("/example")
                 .then()
@@ -39,6 +39,24 @@ public class RestPluginTest extends BaseVerticleTest {
                 .contentType(equalTo("application/json"))
                 .and()
                 .body("testKey", equalTo("testValue1"));
+    }
+
+    @Test
+    public void testRequestArrayResourceSuccess() throws Exception {
+        fetchVerifyRow(1);
+        fetchVerifyRow(2);
+        fetchVerifyRow(3);
+    }
+
+    private void fetchVerifyRow(final int rowId) {
+        given().when()
+                .get("/example/" + rowId)
+                .then()
+                .statusCode(equalTo(HttpURLConnection.HTTP_OK))
+                .and()
+                .contentType(equalTo("application/json"))
+                .and()
+                .body("aKey", equalTo("aValue" + rowId));
     }
 
     @Test
