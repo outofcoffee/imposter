@@ -2,11 +2,12 @@
 set -e
 
 IMAGE_BASE_NAME="outofcoffee/imposter"
+IMAGE_TAG="${1-dev}"
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 function buildImage()
 {
-    IMAGE_NAME="${IMAGE_BASE_NAME}$2"
+    IMAGE_NAME="${IMAGE_BASE_NAME}$2:${IMAGE_TAG}"
     echo "" && echo "Building Docker image: ${IMAGE_NAME}"
 
     cd ${SCRIPT_DIR}/$1

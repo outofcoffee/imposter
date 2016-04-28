@@ -1,5 +1,21 @@
+sudo: required
+
 language: java
+
+services:
+- docker
+
 jdk:
-  - oraclejdk8
+- oraclejdk8
+
 script:
- - ./gradlew test --info --stacktrace
+- "./gradlew test --info --stacktrace"
+
+after_success:
+  - docker login -e "${DOCKER_EMAIL}" -u "${DOCKER_USER}" -p "${DOCKER_PASSWORD}"
+  - |
+    if [ "${TRAVIS_BRANCH}" == "master" ] && [ "${TRAVIS_PULL_REQUEST}" == "false" ]; then
+      $( cd docker && ./build.sh latest && ./push.sh latest )
+    else
+      echo "Not on master (on ${TRAVIS_BRANCH}) - skipping Docker build"
+    fi
