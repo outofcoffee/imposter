@@ -17,5 +17,5 @@ after_success:
     if [ "${TRAVIS_BRANCH}" == "master" ] && [ "${TRAVIS_PULL_REQUEST}" == "false" ]; then
       $( cd docker && ./build.sh latest && ./push.sh latest )
     else
-      echo "Not on master (on ${TRAVIS_BRANCH}) - skipping Docker build"
+      echo "Not on master (or current build is a PR) - skipping Docker build"
     fi
