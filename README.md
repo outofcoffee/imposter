@@ -162,10 +162,10 @@ Plugin class: `com.gatehill.imposter.plugin.sfdc.SfdcPluginImpl`
 ### Features
 
 * Basic Salesforce mock implementation.
-* Supports non-persistent SObject creation.
-* Supports non-persistent SObject update.
-* Supports SObject retrieval by ID.
-* Supports dummy SOQL queries.
+* Non-persistent SObject creation.
+* Non-persistent SObject update.
+* SObject retrieval by ID.
+* Dummy SOQL queries.
 
 **Note:** Clients interacting with this plugin usually requires TLS/SSL to be enabled. 
 Ensure that you use an _https://_ scheme for accessing the mock server.
@@ -193,8 +193,8 @@ Plugin class: `com.gatehill.imposter.plugin.hbase.HBasePluginImpl`
 
 * Basic HBase mock implementation.
 * Uses protobuf for wire transport.
-* Supports dummy Scanner queries.
-* Supports individual row/record retrieval.
+* Dummy Scanner queries.
+* Individual table row/record retrieval.
 
 ### Additional context objects
 
