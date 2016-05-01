@@ -1,13 +1,13 @@
 # Imposter: A scriptable, multipurpose mock server [![Build Status](https://travis-ci.org/outofcoffee/imposter.svg?branch=master)](https://travis-ci.org/outofcoffee/imposter)
 
-Mock server for general REST, Salesforce and HBase APIs. Full
-[OpenAPI](https://github.com/OAI/OpenAPI-Specification) (aka Swagger) support.
+Mock server for general REST, Salesforce and HBase APIs. Also supports
+[OpenAPI](https://github.com/OAI/OpenAPI-Specification) (aka Swagger) APIs.
 
-Imposter is a mock server with a suite of plugins. Decouple your integration tests from the cloud/various back-end
-systems. Respond using static files, or customise behaviour using Groovy scripts. For real power users, you can
-write your own plugins in a JVM language of your choice.
+Imposter is a mock server with a suite of plugins. Use it to decouple your integration tests from the cloud/various back-end systems or run standalone mocks for your application.
 
-## What plugins are available?
+Response behaviour can use static files, or customised using Groovy scripts. Power users can write thier own plugins in a JVM language of their choice.
+
+## Which plugins are available?
 
 Imposter supports different mock server types using plugins:
 
@@ -87,24 +87,32 @@ The following command line arguments can be used:
 
 Plugin information and examples are given below.
 
-_Note:_ The following examples apply regardless of whether you are running Imposter as a standalone
-Java application, or as a Docker container. They use the placeholder `<imposter>`, which you should replace as follows:
+_Note:_ The following examples can be used whether you are running Imposter as a standalone
+Java application, or as a Docker container.
 
 ### Running as a standalone Java application
 
-If you want to run Imposter as a standalone Java application, replace `<imposter>` with:
+If you want to run Imposter as a standalone Java application, use:
 
-    java -jar distro/build/libs/imposter.jar --plugin <plugin class> [args]
+    java -jar distro/build/libs/imposter.jar \
+            --plugin <plugin class> \
+            --configDir <config dir> \
+            [args]
 
 ...ensuring that you choose the right plugin class for the plugin you want to use, for example:
 
-    java -jar distro/build/libs/imposter.jar --plugin com.gatehill.imposter.plugin.rest.RestPluginImpl [args]
+    java -jar distro/build/libs/imposter.jar \
+            --plugin com.gatehill.imposter.plugin.rest.RestPluginImpl \
+            --configDir /path/to/config \
+            [args]
 
 ### Running as a Docker container
 
-If you want to run Imposter using Docker, replace `<imposter>` with:
+If you want to run Imposter using Docker, use:
 
-    docker run -ti -p 8443:8443 outofcoffee/imposter-rest [args]
+    docker run -ti -p 8443:8443 \
+            -v /path/to/config:/opt/imposter/config \
+            outofcoffee/imposter-rest [args]
 
 ...ensuring that you choose the right image for the plugin you wish to use.
 
@@ -124,7 +132,9 @@ None.
 
 ### Example
 
-    <imposter> --configDir ./plugin/rest/src/test/resources/config
+For working examples, see:
+
+    plugin/rest/src/test/resources/config
 
 ## openapi (aka swagger) plugin
 
@@ -147,7 +157,9 @@ The plugin provides support for [OpenAPI](https://github.com/OAI/OpenAPI-Specifi
 
 ### Example
 
-    <imposter> --configDir ./plugin/openapi/src/test/resources/config
+For working examples, see:
+
+    plugin/openapi/src/test/resources/config
 
 A great way to use this plugin is to take advantage of the built in `examples` feature of OpenAPI/Swagger files.
 These provide a standard way to document sample responses for each API response. This plugin will
@@ -173,7 +185,8 @@ Plugin class: `com.gatehill.imposter.plugin.sfdc.SfdcPluginImpl`
 * Dummy SOQL queries.
 
 **Note:** Clients interacting with this plugin usually requires TLS/SSL to be enabled. 
-Ensure that you use an _https://_ scheme for accessing the mock server.
+Ensure that you use an _https://_ scheme for accessing the mock server. See the TLS/SSL section in this document
+for more details.
 
 ### Additional context objects
 
@@ -181,14 +194,9 @@ None.
 
 ### Example
 
-    <imposter> --configDir ./plugin/sfdc/src/test/resources/config \
-               --tlsEnabled \
-               --keystorePath ./server/src/main/resources/keystore/ssl.jks \
-               --keystorePassword password
+For working examples, see:
 
-**Note:** This uses a self-signed certificate for TLS/SSL. You can also choose your own keystore.
-If you need to trust the self-signed certificate when using the default, the keystore is located at
-`server/src/main/resources/keystore` and uses the secure password 'password'.
+    plugin/sfdc/src/test/resources/config
 
 ## hbase plugin
 
@@ -211,7 +219,9 @@ Plugin class: `com.gatehill.imposter.plugin.hbase.HBasePluginImpl`
 
 ### Example
 
-    <imposter> --configDir ./plugin/hbase/src/test/resources/config
+For working examples, see:
+
+    plugin/hbase/src/test/resources/config
 
 **Note:** This plugin will use the server URL in the `Location` header of the scanner creation response. You might
 want to consider setting the `serverUrl` property explicitly to the publicly-accessible address of the mock server.
@@ -336,7 +346,7 @@ The ResponseBehaviour class provides a number of methods to enable you to contro
 | `immedately()` | Skip the plugin's default behaviour and respond immediately
 | `and()` | Syntactic sugar to improve readability of `respond` statements
 
-Typically you structure you respond behaviours like so:
+Typically you structure your response behaviours like so:
 
     respond {
         // behaviours go here
@@ -394,12 +404,29 @@ and:
         withFile "static-data.json"
     }
 
+## TLS/SSL
+
+You can run Imposter with HTTPS enabled. To do this, enable the TLS option and provide keystore options.
+
+### Example
+
+    java -jar distro/build/libs/imposter.jar \
+            --plugin com.gatehill.imposter.plugin.rest.RestPluginImpl \
+            --configDir /path/to/config \
+            --tlsEnabled \
+            --keystorePath ./server/src/main/resources/keystore/ssl.jks \
+            --keystorePassword password
+
+**Note:** This uses a self-signed certificate for TLS/SSL. You can also choose your own keystore.
+If you need to trust the self-signed certificate when using the default, the keystore is located at
+`server/src/main/resources/keystore` and uses the secure password 'password'.
+
 # Tips and tricks
 
 ## Waiting for the server to be ready
 
 The mock server exposes an endpoint at `/system/status` that will return HTTP 200 when the mock server is up and running.
-You can use this to let your tests know when the mock server is ready.
+You can use this in your tests to know when the mock server is ready.
 
 ## Script logging
 
@@ -415,8 +442,8 @@ Here's a simple overview:
 2. Add your mock configuration and mock data to `/opt/imposter/config` within the Docker image.
 3. Build an image from your _Dockerfile_.
 
-
-Now, when you start a container from your image, your standalone mock container will start, load your configuration and mock data, and listen for connections.
+Now, when you start a container from your image, your standalone mock container will start, load your configuration and
+mock data, and listen for connections.
 
 ## JUnit integration
 

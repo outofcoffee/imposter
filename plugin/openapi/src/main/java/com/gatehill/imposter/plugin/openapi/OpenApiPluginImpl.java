@@ -53,18 +53,40 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
     @Override
     public void configureRoutes(Router router) {
         configs.forEach(config -> {
-            final Swagger swagger = new SwaggerParser().read(config.getSpecFile());
+            final Swagger swagger = new SwaggerParser().read(Paths.get(
+                    imposterConfig.getConfigDir(), config.getSpecFile()).toString());
 
-            swagger.getPaths().forEach((path, pathConfig) -> pathConfig.getOperationMap().forEach((httpMethod, operation) -> {
-                router.route(convertMethod(httpMethod), path).handler(buildHandler(config, operation));
-            }));
+            if (null != swagger) {
+                // bind a handler to each path
+                swagger.getPaths()
+                        .forEach((path, pathConfig) -> pathConfig.getOperationMap()
+                                .forEach((httpMethod, operation) -> {
+                                    router.route(convertMethod(httpMethod), path).handler(buildHandler(config, operation));
+                                }));
+
+            } else {
+                throw new RuntimeException(String.format("Unable to load API specification: %s", config.getSpecFile()));
+            }
         });
     }
 
+    /**
+     * Convert an {@link io.swagger.models.HttpMethod} to a {@link io.vertx.core.http.HttpMethod}.
+     *
+     * @param httpMethod the method to convert
+     * @return the converted method
+     */
     private HttpMethod convertMethod(io.swagger.models.HttpMethod httpMethod) {
         return HttpMethod.valueOf(httpMethod.name());
     }
 
+    /**
+     * Build a handler for the given operation.
+     *
+     * @param config
+     * @param operation
+     * @return
+     */
     private Handler<RoutingContext> buildHandler(OpenApiPluginConfig config, Operation operation) {
         return routingContext -> {
             final HashMap<String, Object> context = Maps.newHashMap();
@@ -73,6 +95,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
             scriptHandler(config, routingContext, context, responseBehaviour -> {
                 final String statusCode = String.valueOf((responseBehaviour.getStatusCode()));
 
+                // look for a specification response based on the status code
                 final Optional<Response> optionalMockResponse = operation.getResponses().entrySet().parallelStream()
                         .filter(r -> r.getKey().equals(statusCode))
                         .map(Map.Entry::getValue)
@@ -81,39 +104,66 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
                 final HttpServerResponse response = routingContext.response()
                         .setStatusCode(responseBehaviour.getStatusCode());
 
-                if (!optionalMockResponse.isPresent()) {
-                    LOGGER.debug("No explicit mock response found at URI {} and status code {}",
+                if (optionalMockResponse.isPresent()) {
+                    serveMockResponse(config, operation, routingContext, responseBehaviour,
+                            statusCode, response, optionalMockResponse.get());
+
+                } else {
+                    LOGGER.debug("No explicit mock response found for URI {} and status code {}",
                             routingContext.request().absoluteURI(), statusCode);
 
                     response.end();
-
-                } else {
-                    LOGGER.trace("Found mock response for URI {} and status code {}",
-                            routingContext.request().absoluteURI(), statusCode);
-
-                    if (!Strings.isNullOrEmpty(responseBehaviour.getResponseFile())) {
-                        // response file takes precedence
-                        serveResponseFile(config, routingContext, responseBehaviour, statusCode, response);
-
-                    } else {
-                        // look for example
-                        final Response mockResponse = optionalMockResponse.get();
-                        final boolean exampleServed = attemptServeExample(routingContext, operation, statusCode,
-                                response, mockResponse);
-
-                        if (!exampleServed) {
-                            // no example found
-                            LOGGER.debug("No example found and no response file set for mock response at URI {} and status code {}",
-                                    routingContext.request().absoluteURI(), statusCode);
-
-                            response.end();
-                        }
-                    }
                 }
             });
         };
     }
 
+    /**
+     * Build a response from the specification.
+     *
+     * @param config
+     * @param operation
+     * @param routingContext
+     * @param responseBehaviour
+     * @param statusCode
+     * @param response
+     * @param mockResponse
+     */
+    private void serveMockResponse(OpenApiPluginConfig config, Operation operation, RoutingContext routingContext,
+                                   ResponseBehaviour responseBehaviour, String statusCode,
+                                   HttpServerResponse response, Response mockResponse) {
+
+        LOGGER.trace("Found mock response for URI {} and status code {}",
+                routingContext.request().absoluteURI(), statusCode);
+
+        if (!Strings.isNullOrEmpty(responseBehaviour.getResponseFile())) {
+            // response file takes precedence
+            serveResponseFile(config, routingContext, responseBehaviour, statusCode, response);
+
+        } else {
+            // look for example
+            final boolean exampleServed = attemptServeExample(routingContext, operation, statusCode,
+                    response, mockResponse);
+
+            if (!exampleServed) {
+                // no example found
+                LOGGER.debug("No example found and no response file set for mock response for URI {} and status code {}",
+                        routingContext.request().absoluteURI(), statusCode);
+
+                response.end();
+            }
+        }
+    }
+
+    /**
+     * Reply with a static response file.
+     *
+     * @param config
+     * @param routingContext
+     * @param responseBehaviour
+     * @param statusCode
+     * @param response
+     */
     private void serveResponseFile(OpenApiPluginConfig config, RoutingContext routingContext,
                                    ResponseBehaviour responseBehaviour, String statusCode, HttpServerResponse response) {
 
@@ -125,10 +175,19 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
             response.putHeader(CONTENT_TYPE, config.getContentType());
         }
 
-        response.sendFile(Paths.get(imposterConfig.getConfigDir(),
-                responseBehaviour.getResponseFile()).toString());
+        response.sendFile(Paths.get(imposterConfig.getConfigDir(), responseBehaviour.getResponseFile()).toString());
     }
 
+    /**
+     * Attempt to respond with an examle from the API specification.
+     *
+     * @param routingContext
+     * @param operation
+     * @param statusCode
+     * @param response
+     * @param mockResponse
+     * @return {@code true} if an example was served, otherwise {@code false}
+     */
     private boolean attemptServeExample(RoutingContext routingContext, Operation operation, String statusCode,
                                         HttpServerResponse response, Response mockResponse) {
 
@@ -136,7 +195,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
         final Map<String, Object> examples = ofNullable(mockResponse.getExamples()).orElse(Collections.EMPTY_MAP);
 
         if (examples.size() > 0) {
-            LOGGER.trace("Checking for mock example in {} candidates for URI {} and status code {}",
+            LOGGER.trace("Checking for mock example in specification ({} candidates) for URI {} and status code {}",
                     examples.size(), routingContext.request().absoluteURI(), statusCode);
 
             // match accepted content types to those produced by this response operation
@@ -172,7 +231,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
             }
 
         } else {
-            LOGGER.trace("No mock examples for URI {} and status code {}",
+            LOGGER.trace("No mock examples found in specification for URI {} and status code {}",
                     routingContext.request().absoluteURI(), statusCode);
         }
 
