@@ -6,6 +6,7 @@ compileJava {
 
 dependencies {
     compile project(':core')
+    compile 'io.swagger:swagger-parser:1.0.19'
 
     // test
     testCompile project(':test')

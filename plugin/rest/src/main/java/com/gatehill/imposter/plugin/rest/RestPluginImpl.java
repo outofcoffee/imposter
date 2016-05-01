@@ -25,6 +25,8 @@ import java.util.regex.Pattern;
 import static java.util.Optional.ofNullable;
 
 /**
+ * Plugin for simple RESTful APIs.
+ *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin<C> implements ScriptedPlugin<ResourceConfig> {

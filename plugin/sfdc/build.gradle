@@ -5,10 +5,9 @@ compileJava {
 }
 
 dependencies {
-    compile project (':core')
-    compile project (':plugin:rest')
+    compile project(':core')
 
     // test
-    testCompile project (':test')
+    testCompile project(':test')
     testCompile 'com.frejo:force-rest-api:0.0.29'
 }

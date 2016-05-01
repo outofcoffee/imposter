@@ -1,10 +1,7 @@
 import com.gatehill.imposter.plugin.hbase.model.ResponsePhase
 
-/**
- * Trivial example of returning a specific status code, based on the URI.
- *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
- */
+// Example of returning a specific status code or response file,
+// based on the scanner filter prefix (essentially the HBase query).
 
 switch (context.responsePhase) {
     case ResponsePhase.SCANNER:

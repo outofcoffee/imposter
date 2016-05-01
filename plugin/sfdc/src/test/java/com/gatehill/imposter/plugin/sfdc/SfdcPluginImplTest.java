@@ -17,6 +17,8 @@ import static com.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PATH;
 import static com.gatehill.imposter.util.FileUtil.CLASSPATH_PREFIX;
 
 /**
+ * Tests for {@link SfdcPluginImpl}.
+ *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public class SfdcPluginImplTest extends BaseVerticleTest {

@@ -9,6 +9,7 @@ maximum control, you can write your own plugins.
 Imposter supports different mock server types using plugins:
 
 * rest - Simple REST API mock.
+* openapi - Support for [OpenAPI](https://github.com/OAI/OpenAPI-Specification) (aka Swagger) API specifications.
 * sfdc - Basic Salesforce mock implementation.
 * hbase - Basic HBase mock implementation.
 
@@ -41,12 +42,17 @@ Note: See the _Usage_ section for the required arguments, and the examples below
 The easiest way to get started is to use an Imposter Docker container:
 
 * `outofcoffee/imposter-rest:latest`
+* `outofcoffee/imposter-openapi:latest`
 * `outofcoffee/imposter-hbase:latest`
 * `outofcoffee/imposter-sfdc:latest`
 
 For example:
 
     docker run -ti -p 8443:8443 outofcoffee/imposter-rest [args]
+
+_Note:_ There is also a base container that does not enable any plugins:
+
+    outofcoffee/imposter:latest
 
 ## Java
 
@@ -72,13 +78,16 @@ The following command line arguments can be used:
      --tlsEnabled (-t)      : Whether TLS (HTTPS) is enabled (requires keystore to be configured) (default: false)
      --version (-v)         : Print version and exit
 
-# Plugin examples
+# Plugins
 
-The following examples apply to both using Java and Docker to start the mock server.
+Plugin information and examples are given below.
 
-## Java
+_Note:_ The following examples apply regardless of whether you are running Imposter as a standalone
+Java application, or as a Docker container. They use the placeholder `<imposter>`, which you should replace as follows:
 
-If using Java, replace `<imposter>` with:
+### Running as a standalone Java application
+
+If you want to run Imposter as a standalone Java application, replace `<imposter>` with:
 
     java -jar distro/build/libs/imposter.jar --plugin <plugin class> [args]
 
@@ -86,39 +95,86 @@ If using Java, replace `<imposter>` with:
 
     java -jar distro/build/libs/imposter.jar --plugin com.gatehill.imposter.plugin.rest.RestPluginImpl [args]
 
-## Docker
+### Running as a Docker container
 
-If using Docker, replace `<imposter>` with:
+If you want to run Imposter using Docker, replace `<imposter>` with:
 
     docker run -ti -p 8443:8443 outofcoffee/imposter-rest [args]
 
 ...ensuring that you choose the right image for the plugin you wish to use.
 
-## rest
+## rest plugin
 
 Plugin class: `com.gatehill.imposter.plugin.rest.RestPluginImpl`
 
-Simple REST API mock, supporting arbitrary format static files and optional JSON array responses.
+### Features
 
-Example:
+* Simple REST API mock.
+* Supports arbitrary format static files.
+* Supports optional JSON array responses.
 
-     <imposter> --configDir ./plugin/rest/src/test/resources/config
+### Additional context objects
 
-## sfdc
+None.
+
+### Example
+
+    <imposter> --configDir ./plugin/rest/src/test/resources/config
+
+## openapi (aka swagger) plugin
+
+Plugin class: `com.gatehill.imposter.plugin.openapi.OpenApiPluginImpl`
+
+The plugin provides support for [OpenAPI](https://github.com/OAI/OpenAPI-Specification) (aka Swagger) specifications.
+
+### Features
+
+* OpenAPI/Swagger 2 API specifications
+* Response examples inside the specification
+* Static response files
+* Script-driven responses, using status code, response files etc.
+
+### Additional context objects
+
+| Object | Type | Description
+| --- | --- | ---
+| `operation` | `io.swagger.models.Operation` | The OpenAPI operation for the request.
+
+### Example
+
+    <imposter> --configDir ./plugin/openapi/src/test/resources/config
+
+A great way to use this plugin is to take advantage of the built in `examples` feature of OpenAPI/Swagger files.
+These provide a standard way to document sample responses for each API response. This plugin will
+match the example to serve using a combination of:
+
+* matching URI/path
+* matching content type in `Accept` HTTP request header to the `produces` property of the response
+* matching status code to the response
+
+Typically you will use a simple script (see `plugin/openapi/src/test/resources/config` for working example)
+to control the status code, and thus the content of the response.
+
+## sfdc plugin
 
 Plugin class: `com.gatehill.imposter.plugin.sfdc.SfdcPluginImpl`
 
-Basic Salesforce mock implementation. Supports non-persistent:
+### Features
 
-* SObject creation
-* SObject update
-* SObject retrieval by ID
-* Dummy SOQL queries
+* Basic Salesforce mock implementation.
+* Supports non-persistent SObject creation.
+* Supports non-persistent SObject update.
+* Supports SObject retrieval by ID.
+* Supports dummy SOQL queries.
 
 **Note:** Clients interacting with this plugin usually requires TLS/SSL to be enabled. 
 Ensure that you use an _https://_ scheme for accessing the mock server.
 
-Example:
+### Additional context objects
+
+None.
+
+### Example
 
     <imposter> --configDir ./plugin/sfdc/src/test/resources/config \
                --tlsEnabled \
@@ -129,16 +185,28 @@ Example:
 If you need to trust the self-signed certificate when using the default, the keystore is located at
 `server/src/main/resources/keystore` and uses the secure password 'password'.
 
-## hbase
+## hbase plugin
 
 Plugin class: `com.gatehill.imposter.plugin.hbase.HBasePluginImpl`
 
-Basic HBase mock implementation. Uses protobuf for wire transport. Supports dummy Scanner queries and individual 
-row/record retrieval.
+### Features
 
-Example:
+* Basic HBase mock implementation.
+* Uses protobuf for wire transport.
+* Supports dummy Scanner queries.
+* Supports individual row/record retrieval.
 
-     <imposter> --configDir ./plugin/hbase/src/test/resources/config
+### Additional context objects
+
+| Object | Type | Description
+| --- | --- | ---
+| `tableName` | `String` | The name of the HBase table.
+| `responsePhase` | `com.gatehill.imposter.plugin.hbase.model.ResponsePhase` | The type of response being served.
+| `scannerFilterPrefix` | `String` | The prefix from the filter of the result scanner.
+
+### Example
+
+    <imposter> --configDir ./plugin/hbase/src/test/resources/config
 
 **Note:** This plugin will use the server URL in the `Location` header of the scanner creation response. You might
 want to consider setting the `serverUrl` property explicitly to the publicly-accessible address of the mock server.
@@ -239,14 +307,14 @@ In the case of `action=fetch`, the script causes the mock server to use the cont
 The `context` object in the example above is holds things you might like to interrogate,
 like request parameters or the absolute URI of the request.
 
-| Property | Description
-| --- | ---
-| `uri` | The absolute URI of the request.
-| `params` | A `Map` containing the request parameters.
+| Property | Description | Example
+| --- | --- | ---
+| `method` | The HTTP method of the request. | `"GET"`
+| `uri` | The absolute URI of the request. | `"http://example.com?foo=bar&baz=qux"`
+| `params` | A `Map` containing the request parameters. | `[ "foo": "bar", "baz": "qux" ]`
 
-Certain plugins will add additional properties to the `context`, for example, the _hbase_
-plugin provides a `responsePhase` property, of type `com.gatehill.imposter.plugin.hbase.model.ResponsePhase`,
-which you can use to determine the type of request being served.
+Certain plugins will add additional properties to the `context`. For example, the _hbase_
+plugin provides a `tableName` object, which you can use to determine the HBase table for the request being served.
 
 ## The ResponseBehaviour object
 
@@ -397,7 +465,6 @@ Build the Docker containers with:
 
 * HBase content negotiation
 * HBase response content type header
-* API specification import (e.g. Swagger)
 * Execute mock processing asynchronously
 
 # Contributing

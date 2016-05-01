@@ -1,0 +1,7 @@
+{
+  "plugin": "com.gatehill.imposter.plugin.openapi.OpenApiPluginImpl",
+  "response": {
+    "scriptFile": "openapi-plugin.groovy"
+  },
+  "specFile": "api-with-examples.yaml"
+}

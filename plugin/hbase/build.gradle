@@ -5,16 +5,16 @@ compileJava {
 }
 
 dependencies {
-    compile project (':core')
+    compile project(':core')
 
     // hbase
-    compile ("org.apache.hbase:hbase-client:$version_hbaseApi") {
+    compile("org.apache.hbase:hbase-client:$version_hbaseApi") {
         exclude module: 'slf4j-log4j12'
     }
-    compile ("org.apache.hbase:hbase-rest:$version_hbaseApi") {
+    compile("org.apache.hbase:hbase-rest:$version_hbaseApi") {
         exclude module: 'slf4j-log4j12'
     }
 
     // test
-    testCompile project (':test')
+    testCompile project(':test')
 }

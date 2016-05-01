@@ -5,8 +5,8 @@ compileJava {
 }
 
 dependencies {
-    compile project (':core')
-    compile project (':server')
+    compile project(':core')
+    compile project(':server')
 
     // test
     compile "junit:junit:$version_junit"

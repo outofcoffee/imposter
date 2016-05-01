@@ -28,6 +28,8 @@ import static com.gatehill.imposter.util.HttpUtil.CONTENT_TYPE_JSON;
 import static java.util.Optional.*;
 
 /**
+ * Plugin for SFDC.
+ *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> implements ScriptedPlugin<SfdcPluginConfig> {
@@ -97,10 +99,8 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> implement
 
                 final HttpServerResponse response = routingContext.response();
 
-                ofNullable(config.getContentType())
-                        .ifPresent(contentType -> response.putHeader(CONTENT_TYPE, contentType));
-
-                response.setStatusCode(HttpURLConnection.HTTP_OK)
+                response.putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON)
+                        .setStatusCode(HttpURLConnection.HTTP_OK)
                         .end(Buffer.buffer(responseWrapper.encodePrettily()));
             });
         });
@@ -125,10 +125,8 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> implement
                             if (result.isPresent()) {
                                 LOGGER.info("Sending SObject with ID: {}", sObjectId);
 
-                                ofNullable(config.getContentType())
-                                        .ifPresent(contentType -> response.putHeader(CONTENT_TYPE, contentType));
-
-                                response.setStatusCode(HttpURLConnection.HTTP_OK)
+                                response.putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON)
+                                        .setStatusCode(HttpURLConnection.HTTP_OK)
                                         .end(Buffer.buffer(result.get().encodePrettily()));
                             } else {
                                 // no such record

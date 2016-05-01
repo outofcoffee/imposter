@@ -1,8 +1,5 @@
-/**
- * Trivial example of returning a specific status code, based on the URI.
- *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
- */
+// Example of returning a specific status code or response file,
+// based on URI parameters or the absolute URI.
 
 switch (context.uri) {
     case ~/.*bad/:

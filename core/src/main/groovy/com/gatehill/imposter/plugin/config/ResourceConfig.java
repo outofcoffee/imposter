@@ -10,7 +10,7 @@ public class ResourceConfig {
     private String path;
 
     @JsonProperty("response")
-    private ResponseConfig responseConfig;
+    private ResponseConfig responseConfig = new ResponseConfig();
 
     public String getPath() {
         return path;

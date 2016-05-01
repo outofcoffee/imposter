@@ -27,6 +27,7 @@ public class ResponseBehaviour {
 
     public void setInvocationContext(InvocationContext invocationContext) {
         context = Maps.newHashMap();
+        context.put("method", invocationContext.getMethod());
         context.put("uri", invocationContext.getUri());
         context.put("params", invocationContext.getParams());
         ofNullable(invocationContext.getAdditional()).ifPresent(context::putAll);

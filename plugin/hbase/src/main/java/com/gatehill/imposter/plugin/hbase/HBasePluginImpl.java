@@ -42,6 +42,8 @@ import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 
 /**
+ * Plugin for HBase.
+ *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> implements ScriptedPlugin<HBasePluginConfig> {
@@ -118,7 +120,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
             final HBasePluginConfig config = tableConfigs.get(tableName);
 
             // script should fire first
-            final Map<String, Object> bindings = buildScriptBindings(ResponsePhase.RECORD, empty());
+            final Map<String, Object> bindings = buildScriptBindings(ResponsePhase.RECORD, tableName, empty());
             scriptHandler(config, routingContext, bindings, responseBehaviour -> {
 
                 // find the right row from results
@@ -198,7 +200,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
             }
 
             // script should fire first
-            final Map<String, Object> bindings = buildScriptBindings(ResponsePhase.SCANNER, scannerFilterPrefix);
+            final Map<String, Object> bindings = buildScriptBindings(ResponsePhase.SCANNER, tableName, scannerFilterPrefix);
             scriptHandler(config, routingContext, bindings, responseBehaviour -> {
 
                 // register scanner
@@ -258,7 +260,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
             final HBasePluginConfig config = tableConfigs.get(tableName);
 
             // script should fire first
-            final Map<String, Object> bindings = buildScriptBindings(ResponsePhase.RESULTS, getScannerFilterPrefix(scanner.getScanner()));
+            final Map<String, Object> bindings = buildScriptBindings(ResponsePhase.RESULTS, tableName, getScannerFilterPrefix(scanner.getScanner()));
             scriptHandler(config, routingContext, bindings, responseBehaviour -> {
 
                 // build results
@@ -328,11 +330,13 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
      * Add additional script bindings.
      *
      * @param responsePhase
+     * @param tableName
      * @param scannerFilterPrefix
      * @return
      */
-    private Map<String, Object> buildScriptBindings(ResponsePhase responsePhase, Optional<String> scannerFilterPrefix) {
+    private Map<String, Object> buildScriptBindings(ResponsePhase responsePhase, String tableName, Optional<String> scannerFilterPrefix) {
         final Map<String, Object> bindings = Maps.newHashMap();
+        bindings.put("tableName", tableName);
         bindings.put("responsePhase", responsePhase);
         bindings.put("scannerFilterPrefix", scannerFilterPrefix.orElse(""));
         return bindings;

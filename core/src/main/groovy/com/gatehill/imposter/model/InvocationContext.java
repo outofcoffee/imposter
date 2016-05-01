@@ -32,6 +32,7 @@ public class InvocationContext {
     public String toString() {
         return Objects.toStringHelper(this)
                 .add("scriptName", scriptName)
+                .add("method", getMethod())
                 .add("uri", getUri())
                 .add("params", getParams())
                 .toString();
@@ -59,5 +60,9 @@ public class InvocationContext {
 
     public Logger getLogger() {
         return LogManager.getLogger(scriptName);
+    }
+
+    public String getMethod() {
+        return routingContext.request().method().name();
     }
 }
