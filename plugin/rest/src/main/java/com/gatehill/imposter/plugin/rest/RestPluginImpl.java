@@ -15,7 +15,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.inject.Inject;
-import java.net.HttpURLConnection;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
@@ -141,12 +140,12 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
 
                 if (result.isPresent()) {
                     LOGGER.info("Returning single row for {}={}", idFieldName, idField);
-                    response.setStatusCode(HttpURLConnection.HTTP_OK)
+                    response.setStatusCode(HttpUtil.HTTP_OK)
                             .end(result.get().encodePrettily());
                 } else {
                     // no such record
                     LOGGER.error("No row found for {}={}", idFieldName, idField);
-                    response.setStatusCode(HttpURLConnection.HTTP_NOT_FOUND)
+                    response.setStatusCode(HttpUtil.HTTP_NOT_FOUND)
                             .end();
                 }
             });

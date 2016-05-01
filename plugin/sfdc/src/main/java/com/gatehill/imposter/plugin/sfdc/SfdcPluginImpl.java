@@ -5,6 +5,7 @@ import com.gatehill.imposter.plugin.ScriptedPlugin;
 import com.gatehill.imposter.plugin.config.ConfiguredPlugin;
 import com.gatehill.imposter.service.ResponseService;
 import com.gatehill.imposter.util.FileUtil;
+import com.gatehill.imposter.util.HttpUtil;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpMethod;
@@ -17,7 +18,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.inject.Inject;
-import java.net.HttpURLConnection;
 import java.util.List;
 import java.util.Optional;
 import java.util.StringTokenizer;
@@ -100,7 +100,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> implement
                 final HttpServerResponse response = routingContext.response();
 
                 response.putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON)
-                        .setStatusCode(HttpURLConnection.HTTP_OK)
+                        .setStatusCode(HttpUtil.HTTP_OK)
                         .end(Buffer.buffer(responseWrapper.encodePrettily()));
             });
         });
@@ -126,12 +126,12 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> implement
                                 LOGGER.info("Sending SObject with ID: {}", sObjectId);
 
                                 response.putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON)
-                                        .setStatusCode(HttpURLConnection.HTTP_OK)
+                                        .setStatusCode(HttpUtil.HTTP_OK)
                                         .end(Buffer.buffer(result.get().encodePrettily()));
                             } else {
                                 // no such record
                                 LOGGER.error("{} SObject with ID: {} not found", config.getsObjectName(), sObjectId);
-                                response.setStatusCode(HttpURLConnection.HTTP_NOT_FOUND)
+                                response.setStatusCode(HttpUtil.HTTP_NOT_FOUND)
                                         .end();
                             }
                         });
@@ -154,7 +154,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> implement
 
                     routingContext.response()
                             .putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON)
-                            .setStatusCode(HttpURLConnection.HTTP_CREATED)
+                            .setStatusCode(HttpUtil.HTTP_CREATED)
                             .end(Buffer.buffer(result.encodePrettily()));
                 });
 
@@ -180,7 +180,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> implement
             if (!HttpMethod.PATCH.equals(routingContext.request().method())
                     && !"PATCH".equals(routingContext.request().getParam("_HttpMethod"))) {
 
-                routingContext.fail(HttpURLConnection.HTTP_BAD_METHOD);
+                routingContext.fail(HttpUtil.HTTP_BAD_METHOD);
                 return;
             }
 
@@ -188,7 +188,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> implement
 
             routingContext.response()
                     .putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON)
-                    .setStatusCode(HttpURLConnection.HTTP_NO_CONTENT)
+                    .setStatusCode(HttpUtil.HTTP_NO_CONTENT)
                     .end();
         };
     }

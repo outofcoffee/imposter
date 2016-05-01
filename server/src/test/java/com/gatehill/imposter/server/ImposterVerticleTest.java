@@ -6,6 +6,7 @@ import com.gatehill.imposter.plugin.PluginManager;
 import com.gatehill.imposter.plugin.test.TestPluginConfig;
 import com.gatehill.imposter.plugin.test.TestPluginImpl;
 import com.gatehill.imposter.util.CryptoUtil;
+import com.gatehill.imposter.util.HttpUtil;
 import com.gatehill.imposter.util.InjectorUtil;
 import com.jayway.restassured.RestAssured;
 import io.vertx.ext.unit.TestContext;
@@ -13,8 +14,6 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.net.HttpURLConnection;
 
 import static com.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PASSWORD;
 import static com.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PATH;
@@ -72,6 +71,6 @@ public class ImposterVerticleTest extends BaseVerticleTest {
         given().when()
                 .get("/example")
                 .then()
-                .statusCode(equalTo(HttpURLConnection.HTTP_OK));
+                .statusCode(equalTo(HttpUtil.HTTP_OK));
     }
 }

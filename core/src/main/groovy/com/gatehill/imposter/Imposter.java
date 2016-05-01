@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -141,7 +142,8 @@ public class Imposter {
         pluginManager.getPlugins().stream()
                 .filter(plugin -> ConfigurablePlugin.class.isAssignableFrom(plugin.getClass()))
                 .forEach(plugin -> {
-                    final List<File> configFiles = mockConfigs.get(plugin.getClass().getCanonicalName());
+                    final List<File> configFiles = ofNullable(mockConfigs.get(plugin.getClass().getCanonicalName()))
+                                    .orElse(Collections.emptyList());
                     ((ConfigurablePlugin) plugin).loadConfiguration(configFiles);
                 });
     }

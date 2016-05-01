@@ -3,6 +3,7 @@ package com.gatehill.imposter.plugin.openapi;
 import com.gatehill.imposter.ImposterConfig;
 import com.gatehill.imposter.plugin.Plugin;
 import com.gatehill.imposter.server.BaseVerticleTest;
+import com.gatehill.imposter.util.HttpUtil;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.http.ContentType;
 import io.vertx.core.json.JsonArray;
@@ -10,7 +11,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Before;
 import org.junit.Test;
-import sun.net.www.protocol.http.HttpURLConnection;
 
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
@@ -53,7 +53,7 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
                 .get("/apis")
                 .then()
                 .log().everything()
-                .statusCode(HttpURLConnection.HTTP_OK)
+                .statusCode(HttpUtil.HTTP_OK)
                 .extract().asString();
 
         testContext.assertNotNull(body);
@@ -82,7 +82,7 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
                 .put("/apis")
                 .then()
                 .log().everything()
-                .statusCode(HttpURLConnection.HTTP_CREATED)
+                .statusCode(HttpUtil.HTTP_CREATED)
                 .body("result", equalTo("success"));
     }
 }

@@ -6,6 +6,7 @@ import com.gatehill.imposter.model.ResponseBehaviour;
 import com.gatehill.imposter.plugin.config.ResourceConfig;
 import com.gatehill.imposter.plugin.config.ResponseConfig;
 import com.gatehill.imposter.scripting.ScriptBuilder;
+import com.gatehill.imposter.util.HttpUtil;
 import com.google.common.base.Strings;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -21,7 +22,6 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -53,7 +53,7 @@ public class ResponseServiceImpl implements ResponseService {
 
         final ResponseConfig responseConfig = config.getResponseConfig();
 
-        final int statusCode = ofNullable(responseConfig.getStatusCode()).orElse(HttpURLConnection.HTTP_OK);
+        final int statusCode = ofNullable(responseConfig.getStatusCode()).orElse(HttpUtil.HTTP_OK);
 
         if (null == responseConfig.getScriptFile()) {
             // default behaviour is to use a static response file

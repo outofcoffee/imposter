@@ -1,9 +1,9 @@
 package com.gatehill.imposter.plugin.test;
 
 import com.gatehill.imposter.plugin.config.ConfiguredPlugin;
+import com.gatehill.imposter.util.HttpUtil;
 import io.vertx.ext.web.Router;
 
-import java.net.HttpURLConnection;
 import java.util.List;
 
 /**
@@ -25,7 +25,7 @@ public class TestPluginImpl extends ConfiguredPlugin<TestPluginConfig> {
     @Override
     public void configureRoutes(Router router) {
         router.get("/example")
-                .handler(routingContext -> routingContext.response().setStatusCode(HttpURLConnection.HTTP_OK).end());
+                .handler(routingContext -> routingContext.response().setStatusCode(HttpUtil.HTTP_OK).end());
     }
 
     public List<TestPluginConfig> getConfigs() {

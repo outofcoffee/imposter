@@ -2,12 +2,11 @@ package com.gatehill.imposter.plugin.rest;
 
 import com.gatehill.imposter.plugin.Plugin;
 import com.gatehill.imposter.server.BaseVerticleTest;
+import com.gatehill.imposter.util.HttpUtil;
 import com.jayway.restassured.RestAssured;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.net.HttpURLConnection;
 
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
@@ -34,7 +33,7 @@ public class RestPluginTest extends BaseVerticleTest {
         given().when()
                 .get("/example")
                 .then()
-                .statusCode(equalTo(HttpURLConnection.HTTP_OK))
+                .statusCode(equalTo(HttpUtil.HTTP_OK))
                 .and()
                 .contentType(equalTo("application/json"))
                 .and()
@@ -52,7 +51,7 @@ public class RestPluginTest extends BaseVerticleTest {
         given().when()
                 .get("/example/" + rowId)
                 .then()
-                .statusCode(equalTo(HttpURLConnection.HTTP_OK))
+                .statusCode(equalTo(HttpUtil.HTTP_OK))
                 .and()
                 .contentType(equalTo("application/json"))
                 .and()
@@ -65,7 +64,7 @@ public class RestPluginTest extends BaseVerticleTest {
         given().when()
                 .get("/scripted")
                 .then()
-                .statusCode(equalTo(HttpURLConnection.HTTP_OK))
+                .statusCode(equalTo(HttpUtil.HTTP_OK))
                 .and()
                 .contentType(equalTo("application/json"))
                 .and()
@@ -75,7 +74,7 @@ public class RestPluginTest extends BaseVerticleTest {
         given().when()
                 .get("/scripted?action=fetch")
                 .then()
-                .statusCode(equalTo(HttpURLConnection.HTTP_OK))
+                .statusCode(equalTo(HttpUtil.HTTP_OK))
                 .and()
                 .contentType(equalTo("application/json"))
                 .and()
@@ -88,7 +87,7 @@ public class RestPluginTest extends BaseVerticleTest {
         given().when()
                 .get("/scripted?action=create")
                 .then()
-                .statusCode(equalTo(HttpURLConnection.HTTP_CREATED))
+                .statusCode(equalTo(HttpUtil.HTTP_CREATED))
                 .and()
                 .body(is(isEmptyOrNullString()));
 
@@ -96,7 +95,7 @@ public class RestPluginTest extends BaseVerticleTest {
         given().when()
                 .get("/scripted?action=delete")
                 .then()
-                .statusCode(equalTo(HttpURLConnection.HTTP_NO_CONTENT))
+                .statusCode(equalTo(HttpUtil.HTTP_NO_CONTENT))
                 .and()
                 .body(is(isEmptyOrNullString()));
 
@@ -104,7 +103,7 @@ public class RestPluginTest extends BaseVerticleTest {
         given().when()
                 .get("/scripted?bad")
                 .then()
-                .statusCode(equalTo(HttpURLConnection.HTTP_BAD_REQUEST))
+                .statusCode(equalTo(HttpUtil.HTTP_BAD_REQUEST))
                 .and()
                 .body(is(isEmptyOrNullString()));
     }
@@ -114,6 +113,6 @@ public class RestPluginTest extends BaseVerticleTest {
         given().when()
                 .get("/nonExistentEndpoint")
                 .then()
-                .statusCode(equalTo(HttpURLConnection.HTTP_NOT_FOUND));
+                .statusCode(equalTo(HttpUtil.HTTP_NOT_FOUND));
     }
 }

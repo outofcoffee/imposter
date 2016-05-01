@@ -9,6 +9,7 @@ import com.gatehill.imposter.plugin.hbase.model.ResultCell;
 import com.gatehill.imposter.plugin.hbase.model.ResultCellComparator;
 import com.gatehill.imposter.service.ResponseService;
 import com.gatehill.imposter.util.FileUtil;
+import com.gatehill.imposter.util.HttpUtil;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Maps;
@@ -30,7 +31,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -111,7 +111,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
                 LOGGER.error("Received row request for unknown table: {}", tableName);
 
                 routingContext.response()
-                        .setStatusCode(HttpURLConnection.HTTP_NOT_FOUND)
+                        .setStatusCode(HttpUtil.HTTP_NOT_FOUND)
                         .end();
                 return;
             }
@@ -136,12 +136,12 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
 
                     final byte[] protobufOutput = cellSetModel.createProtobufOutput();
 
-                    response.setStatusCode(HttpURLConnection.HTTP_OK)
+                    response.setStatusCode(HttpUtil.HTTP_OK)
                             .end(Buffer.buffer(protobufOutput));
                 } else {
                     // no such record
                     LOGGER.error("No row found with ID: {} for table: {}", recordId, tableName);
-                    response.setStatusCode(HttpURLConnection.HTTP_NOT_FOUND)
+                    response.setStatusCode(HttpUtil.HTTP_NOT_FOUND)
                             .end();
                 }
             });
@@ -164,7 +164,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
                 LOGGER.error("Received scanner request for unknown table: {}", tableName);
 
                 routingContext.response()
-                        .setStatusCode(HttpURLConnection.HTTP_NOT_FOUND)
+                        .setStatusCode(HttpUtil.HTTP_NOT_FOUND)
                         .end();
                 return;
             }
@@ -195,7 +195,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
                 LOGGER.error("Scanner filter prefix '{}' does not match expected value: {}}",
                         scannerFilterPrefix, config.getPrefix());
 
-                routingContext.fail(HttpURLConnection.HTTP_INTERNAL_ERROR);
+                routingContext.fail(HttpUtil.HTTP_INTERNAL_ERROR);
                 return;
             }
 
@@ -211,7 +211,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
 
                 routingContext.response()
                         .putHeader("Location", resultUrl)
-                        .setStatusCode(HttpURLConnection.HTTP_CREATED)
+                        .setStatusCode(HttpUtil.HTTP_CREATED)
                         .end();
             });
         });
@@ -237,7 +237,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
                 LOGGER.error("Received result request for unknown table: {}", tableName);
 
                 routingContext.response()
-                        .setStatusCode(HttpURLConnection.HTTP_NOT_FOUND)
+                        .setStatusCode(HttpUtil.HTTP_NOT_FOUND)
                         .end();
                 return;
             }
@@ -248,7 +248,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
                 LOGGER.error("Received result request for non-existent scanner {} for table: {}", scannerId, tableName);
 
                 routingContext.response()
-                        .setStatusCode(HttpURLConnection.HTTP_NOT_FOUND)
+                        .setStatusCode(HttpUtil.HTTP_NOT_FOUND)
                         .end();
                 return;
             }
@@ -288,7 +288,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
                 final byte[] protobufOutput = cellSetModel.createProtobufOutput();
 
                 routingContext.response()
-                        .setStatusCode(HttpURLConnection.HTTP_OK)
+                        .setStatusCode(HttpUtil.HTTP_OK)
                         .end(Buffer.buffer(protobufOutput));
             });
 

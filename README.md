@@ -1,17 +1,20 @@
 # Imposter: A scriptable, multipurpose mock server [![Build Status](https://travis-ci.org/outofcoffee/imposter.svg?branch=master)](https://travis-ci.org/outofcoffee/imposter)
 
-Decouple your integration tests from the cloud/various back-end systems. Imposter is a mock server with a suite of
-plugins. Respond using static files, or write Groovy scripts to customise its behaviour. For
-maximum control, you can write your own plugins.
+Mock server for general REST, Salesforce and HBase APIs. Full
+[OpenAPI](https://github.com/OAI/OpenAPI-Specification) (aka Swagger) support.
 
-## Plugins
+Imposter is a mock server with a suite of plugins. Decouple your integration tests from the cloud/various back-end
+systems. Respond using static files, or customise behaviour using Groovy scripts. For real power users, you can
+write your own plugins in a JVM language of your choice.
+
+## What plugins are available?
 
 Imposter supports different mock server types using plugins:
 
-* rest - Simple REST API mock.
-* openapi - Support for [OpenAPI](https://github.com/OAI/OpenAPI-Specification) (aka Swagger) API specifications.
-* sfdc - Basic Salesforce mock implementation.
-* hbase - Basic HBase mock implementation.
+* **rest** - Mocks RESTful APIs.
+* **openapi** - Support for [OpenAPI](https://github.com/OAI/OpenAPI-Specification) (aka Swagger) API specifications.
+* **sfdc** - Basic Salesforce mock implementation.
+* **hbase** - Basic HBase mock implementation.
 
 ## Example
 
@@ -22,14 +25,14 @@ Docker example:
             outofcoffee/imposter-rest \
             --listenPort 8080
 
-Plain Java example:
+Standalone Java example:
 
     java -jar distro/build/libs/imposter.jar \
             --plugin com.gatehill.imposter.plugin.rest.RestPluginImpl \
             --configDir ./plugin/rest/src/test/resources/config \
             --listenPort 8080
 
-This starts a mock server using the simple REST plugin. Responses are served in line with the configuration files
+This starts a mock server using the simple REST plugin. Responses are served based on the configuration files
 inside the `config` folder. With the example above, you can hit the URL
 [http://localhost:8080/example](http://localhost:8080/example) to see the mock response.
 
@@ -53,6 +56,8 @@ For example:
 _Note:_ There is also a base container that does not enable any plugins:
 
     outofcoffee/imposter:latest
+
+You can use this to create your own custom images.
 
 ## Java
 
