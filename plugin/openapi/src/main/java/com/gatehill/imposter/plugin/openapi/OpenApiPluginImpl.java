@@ -109,7 +109,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
                             statusCode, response, optionalMockResponse.get());
 
                 } else {
-                    LOGGER.debug("No explicit mock response found for URI {} and status code {}",
+                    LOGGER.info("No explicit mock response found for URI {} and status code {}",
                             routingContext.request().absoluteURI(), statusCode);
 
                     response.end();
@@ -147,7 +147,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
 
             if (!exampleServed) {
                 // no example found
-                LOGGER.debug("No example found and no response file set for mock response for URI {} and status code {}",
+                LOGGER.info("No example found and no response file set for mock response for URI {} and status code {}",
                         routingContext.request().absoluteURI(), statusCode);
 
                 response.end();
@@ -217,7 +217,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
                         LOGGER.trace("Serving mock example for URI {} and status code {}: {}",
                                 routingContext.request().absoluteURI(), statusCode, exampleResponse);
                     } else {
-                        LOGGER.debug("Serving mock example for URI {} and status code {} (response body {} bytes)",
+                        LOGGER.info("Serving mock example for URI {} and status code {} (response body {} bytes)",
                                 routingContext.request().absoluteURI(), statusCode,
                                 ofNullable(exampleResponse).map(String::length).orElse(0));
                     }

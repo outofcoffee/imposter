@@ -95,10 +95,11 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
                     response.setStatusCode(responseBehaviour.getStatusCode());
 
                     if (Strings.isNullOrEmpty(responseBehaviour.getResponseFile())) {
-                        LOGGER.debug("Response file blank - returning empty response");
+                        LOGGER.info("Response file blank - returning empty response");
                         response.end();
 
                     } else {
+                        LOGGER.info("Responding with file: {}", responseBehaviour.getResponseFile());
                         response.sendFile(Paths.get(imposterConfig.getConfigDir(),
                                 responseBehaviour.getResponseFile()).toString());
                     }
