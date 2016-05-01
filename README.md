@@ -40,33 +40,54 @@ inside the `config` folder. With the example above, you can hit the URL
 
 Note: See the _Usage_ section for the required arguments, and the examples below.
 
-## Docker container
+## Running as a Docker container
 
-The easiest way to get started is to use an Imposter Docker container:
+The easiest way to get started is to use an Imposter Docker container, such as:
+
+    docker run -ti -p 8443:8443 outofcoffee/imposter-rest [args]
+
+### Docker images
+
+The following images are available:
 
 * `outofcoffee/imposter-rest:latest`
 * `outofcoffee/imposter-openapi:latest`
 * `outofcoffee/imposter-hbase:latest`
 * `outofcoffee/imposter-sfdc:latest`
 
-For example:
-
-    docker run -ti -p 8443:8443 outofcoffee/imposter-rest [args]
-
 _Note:_ There is also a base container that does not enable any plugins:
 
     outofcoffee/imposter:latest
 
-You can use this to create your own custom images.
+You can use the base image to create your own custom images.
 
-## Java
+### Example
 
-If Docker isn't your thing, or you want to build Imposter yourself, you can create a standlone
-JAR file. See the _Build_ section below.
+If you want to run Imposter using Docker, use:
+
+    docker run -ti -p 8443:8443 \
+            -v /path/to/config:/opt/imposter/config \
+            outofcoffee/imposter-rest [args]
+
+...ensuring that you choose the right image for the plugin you wish to use.
+
+## Running as a standalone Java application
+
+If Docker isn't your thing, or you want to build Imposter yourself, you can create a standlone JAR file. See the _Build_ section below.
 
 Once, built, you can run the JAR as follows:
 
-    java -jar distro/build/libs/imposter.jar [args]
+    java -jar distro/build/libs/imposter.jar \
+            --plugin <plugin class> \
+            --configDir <config dir> \
+            [args]
+
+...ensuring that you choose the right plugin class for the plugin you want to use, for example:
+
+    java -jar distro/build/libs/imposter.jar \
+            --plugin com.gatehill.imposter.plugin.rest.RestPluginImpl \
+            --configDir /path/to/config \
+            [args]
 
 # Usage
 
@@ -85,36 +106,7 @@ The following command line arguments can be used:
 
 # Plugins
 
-Plugin information and examples are given below.
-
-_Note:_ The following examples can be used whether you are running Imposter as a standalone
-Java application, or as a Docker container.
-
-### Running as a standalone Java application
-
-If you want to run Imposter as a standalone Java application, use:
-
-    java -jar distro/build/libs/imposter.jar \
-            --plugin <plugin class> \
-            --configDir <config dir> \
-            [args]
-
-...ensuring that you choose the right plugin class for the plugin you want to use, for example:
-
-    java -jar distro/build/libs/imposter.jar \
-            --plugin com.gatehill.imposter.plugin.rest.RestPluginImpl \
-            --configDir /path/to/config \
-            [args]
-
-### Running as a Docker container
-
-If you want to run Imposter using Docker, use:
-
-    docker run -ti -p 8443:8443 \
-            -v /path/to/config:/opt/imposter/config \
-            outofcoffee/imposter-rest [args]
-
-...ensuring that you choose the right image for the plugin you wish to use.
+This section describes the available plugins. You can also write your own, if you want to further customise behaviour.
 
 ## rest plugin
 
