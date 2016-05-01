@@ -12,6 +12,7 @@ script:
 - "./gradlew test --info --stacktrace"
 
 after_success:
+  - ./gradlew shadowJar --info --stacktrace
   - docker login -e "${DOCKER_EMAIL}" -u "${DOCKER_USER}" -p "${DOCKER_PASSWORD}"
   - |
     set -e

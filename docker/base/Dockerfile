@@ -1,4 +1,4 @@
-FROM anapsix/alpine-java:jdk8
+FROM java:openjdk-8-jre
 
 MAINTAINER Pete Cornish <outofcoffee@gmail.com>
 
@@ -21,4 +21,4 @@ RUN rm -rf $HOME/.m2
 
 EXPOSE 8443
 
-ENTRYPOINT ["java", "-jar", "/opt/imposter/imposter.jar"]
+ENTRYPOINT ["java", "-jar", "/opt/imposter/bin/imposter.jar"]
