@@ -38,24 +38,7 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
         super.configure(imposterConfig);
     }
 
-    /**
-     * Should return the example from the specification for the default HTTP 200 status code.
-     *
-     * @param testContext
-     * @throws Exception
-     */
-    @Test
-    public void testServeDefaultExample(TestContext testContext) throws Exception {
-        final String body = given()
-                .log().everything()
-                .accept(ContentType.JSON)
-                .when()
-                .get("/apis")
-                .then()
-                .log().everything()
-                .statusCode(HttpUtil.HTTP_OK)
-                .extract().asString();
-
+    private void assertBody(TestContext testContext, String body) {
         testContext.assertNotNull(body);
 
         final JsonObject jsonBody = new JsonObject(body);
@@ -69,6 +52,29 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
     }
 
     /**
+     * Should return the example from the specification for the default HTTP 200 status code, since the
+     * content type in the 'Accept' matches that in the specification example.
+     *
+     * @param testContext
+     * @throws Exception
+     */
+    @Test
+    public void testServeDefaultExampleMatchContentType(TestContext testContext) throws Exception {
+        final String body = given()
+                .log().everything()
+                // JSON content type in 'Accept' header matches specification example
+                .accept(ContentType.JSON)
+                .when()
+                .get("/apis")
+                .then()
+                .log().everything()
+                .statusCode(HttpUtil.HTTP_OK)
+                .extract().asString();
+
+        assertBody(testContext, body);
+    }
+
+    /**
      * Should return the example from the specification when the script triggers an HTTP 201 Created status code.
      *
      * @throws Exception
@@ -77,6 +83,7 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
     public void testServeScriptedExample() throws Exception {
         given()
                 .log().everything()
+                // JSON content type in 'Accept' header matches specification example
                 .accept(ContentType.JSON)
                 .when()
                 .put("/apis")
@@ -84,5 +91,29 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
                 .log().everything()
                 .statusCode(HttpUtil.HTTP_CREATED)
                 .body("result", equalTo("success"));
+    }
+
+    /**
+     * Should return the example from the specification for the default HTTP 200 status code, even though the
+     * content type in the 'Accept' header does not match that in the specification example.
+     *
+     * @param testContext
+     * @throws Exception
+     * @see OpenApiPluginConfig#isPickFirstIfNoneMatch()
+     */
+    @Test
+    public void testServeDefaultExampleNoExactMatch(TestContext testContext) throws Exception {
+        final String body = given()
+                .log().everything()
+                // do not set JSON content type in 'Accept' header, to force mismatch against specification example
+                .accept(ContentType.TEXT)
+                .when()
+                .get("/apis")
+                .then()
+                .log().everything()
+                .statusCode(HttpUtil.HTTP_OK)
+                .extract().asString();
+
+        assertBody(testContext, body);
     }
 }

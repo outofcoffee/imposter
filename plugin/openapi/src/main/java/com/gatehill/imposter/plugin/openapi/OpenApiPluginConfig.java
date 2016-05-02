@@ -7,8 +7,13 @@ import com.gatehill.imposter.plugin.config.ContentTypedBaseConfig;
  */
 public class OpenApiPluginConfig extends ContentTypedBaseConfig {
     private String specFile;
+    private boolean pickFirstIfNoneMatch = true;
 
     public String getSpecFile() {
         return specFile;
+    }
+
+    public boolean isPickFirstIfNoneMatch() {
+        return pickFirstIfNoneMatch;
     }
 }
