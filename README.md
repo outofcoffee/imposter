@@ -20,21 +20,19 @@ Imposter supports different mock server types using plugins:
 
 Docker example:
 
-    docker run -ti -p 8080:8080 \
+    docker run -ti -p 8443:8443 \
             -v $(pwd)/plugin/rest/src/test/resources/config:/opt/imposter/config \
-            outofcoffee/imposter-rest \
-            --listenPort 8080
+            outofcoffee/imposter-rest
 
 Standalone Java example:
 
     java -jar distro/build/libs/imposter.jar \
             --plugin com.gatehill.imposter.plugin.rest.RestPluginImpl \
-            --configDir ./plugin/rest/src/test/resources/config \
-            --listenPort 8080
+            --configDir ./plugin/rest/src/test/resources/config
 
 This starts a mock server using the simple REST plugin. Responses are served based on the configuration files
 inside the `config` folder. With the example above, you can hit the URL
-[http://localhost:8080/example](http://localhost:8080/example) to see the mock response.
+[http://localhost:8443/example](http://localhost:8443/example) to see the mock response.
 
 # Getting started
 
@@ -108,7 +106,7 @@ The following command line arguments can be used:
 
 This section describes the available plugins. You can also write your own, if you want to further customise behaviour.
 
-## rest plugin
+## REST plugin
 
 Plugin class: `com.gatehill.imposter.plugin.rest.RestPluginImpl`
 
@@ -128,7 +126,7 @@ For working examples, see:
 
     plugin/rest/src/test/resources/config
 
-## openapi (aka swagger) plugin
+## OpenAPI (aka Swagger) plugin
 
 Plugin class: `com.gatehill.imposter.plugin.openapi.OpenApiPluginImpl`
 
@@ -164,7 +162,7 @@ match the example to serve using a combination of:
 Typically you will use a simple script (see `plugin/openapi/src/test/resources/config` for working example)
 to control the status code, and thus the content of the response.
 
-## sfdc plugin
+## Salesforce (SFDC) plugin
 
 Plugin class: `com.gatehill.imposter.plugin.sfdc.SfdcPluginImpl`
 
@@ -190,7 +188,7 @@ For working examples, see:
 
     plugin/sfdc/src/test/resources/config
 
-## hbase plugin
+## HBase plugin
 
 Plugin class: `com.gatehill.imposter.plugin.hbase.HBasePluginImpl`
 
@@ -335,7 +333,7 @@ The ResponseBehaviour class provides a number of methods to enable you to contro
 | `withFile(String)` | Respond with the content of a static file
 | `withEmpty()` | Respond with empty content, or no records
 | `usingDefaultBehaviour()` | Use the plugin's default behaviour to respond
-| `immedately()` | Skip the plugin's default behaviour and respond immediately
+| `immediately()` | Skip the plugin's default behaviour and respond immediately
 | `and()` | Syntactic sugar to improve readability of `respond` statements
 
 Typically you structure your response behaviours like so:
@@ -354,7 +352,7 @@ For example:
 
 ## Returning data
 
-To return data when using a script, you specify a response file. To do this you can either:
+To return data when using a script, you specify a response file. To specify which response file to use, you can either:
 
 1. set the `staticFile` property within the `response` object in your configuration, or
 2. call the `ResponseBehaviour.withFile(String)` in your script.
@@ -363,7 +361,7 @@ The response file is used by the active plugin to generate a response. For examp
 the content of the file unmodified, however, the _hbase_ and _sfdc_ plugins use the response file to generate
 responses that mimic their respective systems.
 
-Here's an example of the static file approach (1):
+Here's an example of the static file approach:
 
     {
       "plugin": "com.gatehill.imposter.plugin.rest.RestPluginImpl",
