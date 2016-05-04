@@ -485,7 +485,6 @@ Build the Docker containers with:
 
 # TODO
 
-* HBase content negotiation
 * HBase response content type header
 * Execute mock processing asynchronously
 

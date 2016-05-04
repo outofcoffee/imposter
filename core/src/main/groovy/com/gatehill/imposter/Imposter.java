@@ -2,6 +2,7 @@ package com.gatehill.imposter;
 
 import com.gatehill.imposter.plugin.Plugin;
 import com.gatehill.imposter.plugin.PluginManager;
+import com.gatehill.imposter.plugin.RequireModules;
 import com.gatehill.imposter.plugin.config.BaseConfig;
 import com.gatehill.imposter.plugin.config.ConfigurablePlugin;
 import com.gatehill.imposter.util.InjectorUtil;
@@ -25,6 +26,7 @@ import java.util.Optional;
 import static com.gatehill.imposter.util.FileUtil.CONFIG_FILE_SUFFIX;
 import static com.gatehill.imposter.util.HttpUtil.BIND_ALL_HOSTS;
 import static com.gatehill.imposter.util.MapUtil.MAPPER;
+import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -97,7 +99,7 @@ public class Imposter {
                 });
 
         pluginManager.getPluginClasses()
-                .forEach(pluginClass -> pluginManager.registerInstance(injector.getInstance(pluginClass)));
+                .forEach(this::registerPlugin);
 
         final int pluginCount = pluginManager.getPlugins().size();
         if (pluginCount > 0) {
@@ -105,6 +107,33 @@ public class Imposter {
         } else {
             throw new RuntimeException("No plugins were loaded");
         }
+    }
+
+    private void registerPlugin(Class<? extends Plugin> pluginClass) {
+        final Injector pluginInjector;
+
+        final RequireModules moduleAnnotation = pluginClass.getAnnotation(RequireModules.class);
+        if (null != moduleAnnotation && moduleAnnotation.value().length > 0) {
+            pluginInjector = injector.createChildInjector(instantiateModules(moduleAnnotation));
+        } else {
+            pluginInjector = injector;
+        }
+
+        pluginManager.registerInstance(pluginInjector.getInstance(pluginClass));
+    }
+
+    private List<Module> instantiateModules(RequireModules moduleAnnotation) {
+        final List<Module> modules = Lists.newArrayList();
+
+        for (Class<? extends Module> moduleClass : moduleAnnotation.value()) {
+            try {
+                modules.add(moduleClass.newInstance());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return modules;
     }
 
     private void configurePlugins() {
@@ -125,7 +154,7 @@ public class Imposter {
 
                 List<File> pluginConfigs = mockConfigs.get(config.getPluginClass());
                 if (null == pluginConfigs) {
-                    pluginConfigs = Lists.newArrayList();
+                    pluginConfigs = newArrayList();
                     mockConfigs.put(config.getPluginClass(), pluginConfigs);
                 }
 
@@ -143,7 +172,7 @@ public class Imposter {
                 .filter(plugin -> ConfigurablePlugin.class.isAssignableFrom(plugin.getClass()))
                 .forEach(plugin -> {
                     final List<File> configFiles = ofNullable(mockConfigs.get(plugin.getClass().getCanonicalName()))
-                                    .orElse(Collections.emptyList());
+                            .orElse(Collections.emptyList());
                     ((ConfigurablePlugin) plugin).loadConfiguration(configFiles);
                 });
     }

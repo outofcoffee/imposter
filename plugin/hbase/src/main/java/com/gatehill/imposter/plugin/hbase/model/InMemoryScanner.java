@@ -1,7 +1,6 @@
 package com.gatehill.imposter.plugin.hbase.model;
 
 import com.gatehill.imposter.plugin.config.BaseConfig;
-import org.apache.hadoop.hbase.rest.model.ScannerModel;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -10,10 +9,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class InMemoryScanner {
     private BaseConfig config;
-    private ScannerModel scanner;
+    private MockScanner scanner;
     private AtomicInteger rowCounter = new AtomicInteger();
 
-    public InMemoryScanner(BaseConfig config, ScannerModel scanner) {
+    public InMemoryScanner(BaseConfig config, MockScanner scanner) {
         this.config = config;
         this.scanner = scanner;
     }
@@ -22,7 +21,7 @@ public class InMemoryScanner {
         return config;
     }
 
-    public ScannerModel getScanner() {
+    public MockScanner getScanner() {
         return scanner;
     }
 

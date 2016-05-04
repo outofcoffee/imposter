@@ -1,43 +1,39 @@
 package com.gatehill.imposter.plugin.hbase;
 
 import com.gatehill.imposter.ImposterConfig;
+import com.gatehill.imposter.plugin.RequireModules;
 import com.gatehill.imposter.plugin.ScriptedPlugin;
 import com.gatehill.imposter.plugin.config.ConfiguredPlugin;
 import com.gatehill.imposter.plugin.hbase.model.InMemoryScanner;
+import com.gatehill.imposter.plugin.hbase.model.MockScanner;
 import com.gatehill.imposter.plugin.hbase.model.ResponsePhase;
-import com.gatehill.imposter.plugin.hbase.model.ResultCell;
-import com.gatehill.imposter.plugin.hbase.model.ResultCellComparator;
+import com.gatehill.imposter.plugin.hbase.service.ScannerService;
+import com.gatehill.imposter.plugin.hbase.service.serialisation.DeserialisationService;
+import com.gatehill.imposter.plugin.hbase.service.serialisation.SerialisationService;
 import com.gatehill.imposter.service.ResponseService;
 import com.gatehill.imposter.util.FileUtil;
 import com.gatehill.imposter.util.HttpUtil;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
-import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.name.Names;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
-import org.apache.hadoop.hbase.filter.Filter;
-import org.apache.hadoop.hbase.filter.PrefixFilter;
-import org.apache.hadoop.hbase.rest.model.CellModel;
-import org.apache.hadoop.hbase.rest.model.CellSetModel;
-import org.apache.hadoop.hbase.rest.model.RowModel;
-import org.apache.hadoop.hbase.rest.model.ScannerModel;
-import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.IOException;
+import javax.inject.Inject;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import static com.gatehill.imposter.util.HttpUtil.CONTENT_TYPE_JSON;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 
@@ -46,24 +42,23 @@ import static java.util.Optional.ofNullable;
  *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
+@RequireModules(HBasePluginModule.class)
 public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> implements ScriptedPlugin<HBasePluginConfig> {
     private static final Logger LOGGER = LogManager.getLogger(HBasePluginImpl.class);
 
     @Inject
     private ImposterConfig imposterConfig;
 
-    @javax.inject.Inject
+    @Inject
     private ResponseService responseService;
 
-    private Map<String, HBasePluginConfig> tableConfigs;
-    private AtomicInteger scannerIdCounter = new AtomicInteger();
+    @Inject
+    private ScannerService scannerService;
 
-    /**
-     * Hold scanners for a period of time.
-     */
-    private Cache<Integer, InMemoryScanner> createdScanners = CacheBuilder.newBuilder()
-            .expireAfterAccess(5, TimeUnit.MINUTES)
-            .build();
+    @Inject
+    private Injector injector;
+
+    private Map<String, HBasePluginConfig> tableConfigs;
 
     @Override
     protected Class<HBasePluginConfig> getConfigClass() {
@@ -129,15 +124,10 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
 
                 final HttpServerResponse response = routingContext.response();
                 if (result.isPresent()) {
-                    final CellSetModel cellSetModel = new CellSetModel();
-                    cellSetModel.addRow(buildRow(result.get(), recordId));
-
-                    LOGGER.info("Returning single row with ID: {} for table: {}", recordId, tableName);
-
-                    final byte[] protobufOutput = cellSetModel.createProtobufOutput();
-
+                    final SerialisationService serialiser = findSerialiser(routingContext);
+                    final Buffer buffer = serialiser.serialise(tableName, recordId, result.get());
                     response.setStatusCode(HttpUtil.HTTP_OK)
-                            .end(Buffer.buffer(protobufOutput));
+                            .end(buffer);
                 } else {
                     // no such record
                     LOGGER.error("No row found with ID: {} for table: {}", recordId, tableName);
@@ -172,17 +162,18 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
             LOGGER.info("Received scanner request for table: {}", tableName);
             final HBasePluginConfig config = tableConfigs.get(tableName);
 
-            // parse request
-            final ScannerModel scannerModel;
+            final DeserialisationService deserialiser = findDeserialiser(routingContext);
+
+            final MockScanner scanner;
             try {
-                scannerModel = getScannerModel(routingContext);
-            } catch (IOException e) {
+                scanner = deserialiser.decodeScanner(routingContext);
+            } catch (Exception e) {
                 routingContext.fail(e);
                 return;
             }
 
-            final Optional<String> scannerFilterPrefix = getScannerFilterPrefix(scannerModel);
-            LOGGER.debug("Scanner filter for table: {}: {}, with prefix: {}", tableName, scannerModel.getFilter(), scannerFilterPrefix);
+            final Optional<String> scannerFilterPrefix = deserialiser.decodeScannerFilterPrefix(scanner);
+            LOGGER.debug("Scanner filter for table: {}: {}, with prefix: {}", tableName, scanner.getFilter(), scannerFilterPrefix);
 
             // assert prefix matches if present
             if (ofNullable(config.getPrefix())
@@ -202,10 +193,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
             // script should fire first
             final Map<String, Object> bindings = buildScriptBindings(ResponsePhase.SCANNER, tableName, scannerFilterPrefix);
             scriptHandler(config, routingContext, bindings, responseBehaviour -> {
-
-                // register scanner
-                final int scannerId = scannerIdCounter.incrementAndGet();
-                createdScanners.put(scannerId, new InMemoryScanner(config, scannerModel));
+                final int scannerId = scannerService.registerScanner(config, scanner);
 
                 final String resultUrl = imposterConfig.getServerUrl() + path + "/" + tableName + "/scanner/" + scannerId;
 
@@ -243,7 +231,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
             }
 
             // check that the scanner was created
-            final Optional<InMemoryScanner> optionalScanner = ofNullable(createdScanners.getIfPresent(Integer.valueOf(scannerId)));
+            final Optional<InMemoryScanner> optionalScanner = scannerService.fetchScanner(Integer.valueOf(scannerId));
             if (!optionalScanner.isPresent()) {
                 LOGGER.error("Received result request for non-existent scanner {} for table: {}", scannerId, tableName);
 
@@ -260,70 +248,79 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
             final HBasePluginConfig config = tableConfigs.get(tableName);
 
             // script should fire first
-            final Map<String, Object> bindings = buildScriptBindings(ResponsePhase.RESULTS, tableName, getScannerFilterPrefix(scanner.getScanner()));
+            final DeserialisationService deserialiser = findDeserialiser(routingContext);
+
+            final Map<String, Object> bindings = buildScriptBindings(ResponsePhase.RESULTS, tableName,
+                    deserialiser.decodeScannerFilterPrefix(scanner.getScanner()));
+
             scriptHandler(config, routingContext, bindings, responseBehaviour -> {
 
                 // build results
                 final JsonArray results = responseService.loadResponseAsJsonArray(responseBehaviour);
-                final CellSetModel cellSetModel = new CellSetModel();
-
-                // start the row counter from the last position in the scanner
-                final int lastPosition = scanner.getRowCounter().get();
-                for (int i = lastPosition; i < (lastPosition + rows) && i < results.size(); i++) {
-                    final JsonObject result = results.getJsonObject(i);
-
-                    final RowModel row = buildRow(result, "rowKey" + scanner.getRowCounter().incrementAndGet());
-
-                    cellSetModel.addRow(row);
-                }
-
-                final boolean exhausted = (scanner.getRowCounter().get() >= results.size());
-                if (exhausted) {
-                    LOGGER.info("Scanner {} for table: {} exhausted", scannerId, tableName);
-                    createdScanners.invalidate(scannerId);
-                }
-
-                LOGGER.info("Returning {} rows from scanner {} for table: {}", cellSetModel.getRows().size(), scannerId, tableName);
-
-                final byte[] protobufOutput = cellSetModel.createProtobufOutput();
-
+                final SerialisationService serialiser = findSerialiser(routingContext);
+                final Buffer buffer = serialiser.serialise(tableName, scannerId, results, scanner, rows);
                 routingContext.response()
                         .setStatusCode(HttpUtil.HTTP_OK)
-                        .end(Buffer.buffer(protobufOutput));
+                        .end(buffer);
             });
-
         });
     }
 
     /**
-     * Build an HBase RowModel for the given {@code result}.
+     * Find the serialiser binding based on the content types accepted by the client.
      *
-     * @param result
-     * @param rowKey
-     * @return a row
+     * @param routingContext the Vert.x routing context
+     * @return the serialiser
      */
-    private RowModel buildRow(JsonObject result, String rowKey) {
-        final RowModel row = new RowModel();
+    private SerialisationService findSerialiser(RoutingContext routingContext) {
+        final List<String> acceptedContentTypes = HttpUtil.readAcceptedContentTypes(routingContext);
 
-        // TODO consider setting key to prefix from scanner filter
-        row.setKey(Bytes.toBytes(rowKey));
+        // add as default to end of the list
+        if (!acceptedContentTypes.contains(CONTENT_TYPE_JSON)) {
+            acceptedContentTypes.add(CONTENT_TYPE_JSON);
+        }
 
-        // add cells from result file
-        final List<ResultCell> cells = result.fieldNames().stream()
-                .map(fieldName -> new ResultCell(fieldName, result.getString(fieldName)))
-                .collect(Collectors.toList());
+        // search the ordered list
+        for (String contentType : acceptedContentTypes) {
+            try {
+                final SerialisationService serialiser = injector.getInstance(Key.get(SerialisationService.class, Names.named(contentType)));
+                LOGGER.debug("Found serialiser binding {} for content type '{}'", serialiser.getClass().getSimpleName(), contentType);
+                return serialiser;
 
-        // sort the cells before adding to row
-        cells.sort(new ResultCellComparator());
+            } catch (Exception e) {
+                LOGGER.trace("Unable to load serialiser binding for content type '{}'", contentType, e);
+            }
+        }
 
-        // add cells in sorted order
-        cells.forEach(c -> {
-            final CellModel cell = new CellModel();
-            cell.setColumn(Bytes.toBytes(c.getFieldName()));
-            cell.setValue(Bytes.toBytes(c.getFieldValue()));
-            row.addCell(cell);
-        });
-        return row;
+        throw new RuntimeException(String.format(
+                "Unable to find serialiser matching any accepted content type: %s", acceptedContentTypes));
+    }
+
+    /**
+     * Find the deserialiser binding based on the content types sent by the client.
+     *
+     * @param routingContext the Vert.x routing context
+     * @return the deserialiser
+     */
+    private DeserialisationService findDeserialiser(RoutingContext routingContext) {
+        String contentType = routingContext.request().getHeader("Content-Type");
+
+        // use JSON as default
+        if (Strings.isNullOrEmpty(contentType)) {
+            contentType = CONTENT_TYPE_JSON;
+        }
+
+        try {
+            final DeserialisationService deserialiser = injector.getInstance(Key.get(DeserialisationService.class, Names.named(contentType)));
+            LOGGER.debug("Found deserialiser binding {} for content type '{}'", deserialiser.getClass().getSimpleName(), contentType);
+            return deserialiser;
+
+        } catch (Exception e) {
+            LOGGER.trace("Unable to load deserialiser binding for content type '{}'", contentType, e);
+        }
+
+        throw new RuntimeException(String.format(
+                "Unable to find deserialiser matching content type: %s", contentType));
     }
 
     /**
@@ -340,38 +337,5 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
         bindings.put("responsePhase", responsePhase);
         bindings.put("scannerFilterPrefix", scannerFilterPrefix.orElse(""));
         return bindings;
-    }
-
-    /**
-     * @param routingContext
-     * @return the scanner
-     * @throws IOException
-     */
-    private ScannerModel getScannerModel(RoutingContext routingContext) throws IOException {
-        final ScannerModel scannerModel = new ScannerModel();
-        final byte[] rawMessage = routingContext.getBody().getBytes();
-
-        // deserialise from protobuf
-        scannerModel.getObjectFromMessage(rawMessage);
-
-        return scannerModel;
-    }
-
-    /**
-     * @param scannerModel
-     * @return the scanner filter prefix
-     */
-    private Optional<String> getScannerFilterPrefix(ScannerModel scannerModel) {
-        final Filter filter;
-        try {
-            filter = ScannerModel.buildFilter(scannerModel.getFilter());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        if (filter instanceof PrefixFilter) {
-            final String prefix = Bytes.toString(((PrefixFilter) filter).getPrefix());
-            return Optional.of(prefix);
-        }
-        return empty();
     }
 }

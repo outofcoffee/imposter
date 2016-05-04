@@ -35,8 +35,7 @@ public class HBasePluginTest extends BaseVerticleTest {
         client = new Client(new Cluster().add(HOST, getListenPort()))
     }
 
-    private
-    static void expectSuccessfulRows(TestContext testContext, RemoteHTable table, String prefix) throws IOException {
+    private static void expectSuccessfulRows(TestContext testContext, RemoteHTable table, String prefix) throws IOException {
         final Scan scan = new Scan()
         scan.setFilter(new PrefixFilter(Bytes.toBytes(prefix)))
         final ResultScanner scanner = table.getScanner(scan)
