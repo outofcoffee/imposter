@@ -486,7 +486,9 @@ Build the Docker containers with:
 # TODO
 
 * HBase response content type header
+* Reuse HBase model classes for JSON serialisation
 * Execute mock processing asynchronously
+* Docker images shadow JARs should only depend on a single plugin module
 
 # Contributing
 
