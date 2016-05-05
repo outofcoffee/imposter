@@ -17,7 +17,7 @@ public class ResponseBehaviour {
     private boolean behaviourConfigured;
 
     /**
-     * Accessible in Groovy style {@code context.uri} etc.
+     * Accessible in Groovy style {@code context.request.uri} etc.
      *
      * @return the context
      */
@@ -27,9 +27,20 @@ public class ResponseBehaviour {
 
     public void setInvocationContext(InvocationContext invocationContext) {
         context = Maps.newHashMap();
-        context.put("method", invocationContext.getMethod());
+
+        // request params
+        final Map<String, Object> request = Maps.newHashMap();
+        context.put("request", request);
+        request.put("method", invocationContext.getMethod());
+        request.put("uri", invocationContext.getUri());
+        request.put("params", invocationContext.getParams());
+        request.put("body", invocationContext.getBody());
+
+        // legacy scripts use these
         context.put("uri", invocationContext.getUri());
         context.put("params", invocationContext.getParams());
+
+        // additional context
         ofNullable(invocationContext.getAdditional()).ifPresent(context::putAll);
     }
 

@@ -35,6 +35,7 @@ public class InvocationContext {
                 .add("method", getMethod())
                 .add("uri", getUri())
                 .add("params", getParams())
+                .add("body", getBody())
                 .toString();
     }
 
@@ -64,5 +65,9 @@ public class InvocationContext {
 
     public String getMethod() {
         return routingContext.request().method().name();
+    }
+
+    public String getBody() {
+        return routingContext.getBodyAsString();
     }
 }

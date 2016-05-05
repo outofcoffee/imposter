@@ -2,10 +2,10 @@
 // specification example is returned in the response.
 
 // applies to URIs ending with '/apis'
-if (context.uri ==~ /(.*)\/apis$/) {
+if (context.request.uri ==~ /(.*)\/apis$/) {
 
         // applies to PUT requests only
-        switch (context.method) {
+        switch (context.request.method) {
             case 'PUT':
                 respond {
                     withStatusCode 201

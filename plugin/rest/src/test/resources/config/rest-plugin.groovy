@@ -1,7 +1,7 @@
 // Example of returning a specific status code or response file,
 // based on URI parameters or the absolute URI.
 
-switch (context.uri) {
+switch (context.request.uri) {
     case ~/.*bad/:
         // HTTP Status-Code 400: Bad Request.
         respond {
@@ -12,7 +12,7 @@ switch (context.uri) {
 
 }
 
-switch (context.params["action"]) {
+switch (context.request.params["action"]) {
     case "create":
         // HTTP Status-Code 201: Created.
         respond {

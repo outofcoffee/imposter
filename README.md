@@ -222,7 +222,7 @@ want to consider setting the `serverUrl` property explicitly to the publicly-acc
 
 Imposter configuration files must be named with a `-config.json` suffix. For example: `mydata-config.json`.
 
-For example:
+Here is an example configuration file:
 
     {
       "plugin": "com.gatehill.imposter.plugin.rest.RestPluginImpl",
@@ -232,7 +232,7 @@ For example:
       }
     }
 
-You **must** specify the plugin to use in the configuration file. See the examples in this document for possible values.
+**Note:** You must specify the plugin to use in the configuration file. See the examples in this document for possible values.
 
 ## Simple (static response files)
 
@@ -264,7 +264,20 @@ Here's an example configuration file that uses a script:
 
 Here's the corresponding script (`example.groovy`):
 
-    switch (context.params["action"]) {
+    if (context.request.params["action"] == "create") {
+        // HTTP Status-Code 201: Created.
+        respond {
+            withStatusCode 201
+            immediately()
+        }
+    }
+
+In the example above, the script causes the mock server to respond with HTTP status code 201 if the value of
+the `action` parameter in the request is `create`.
+
+Here's a more sophisticated example:
+
+    switch (context.request.params["action"]) {
         case "create":
             // HTTP Status-Code 201: Created.
             respond {
@@ -307,19 +320,36 @@ For example:
 In the case of `action=fetch`, the script causes the mock server to use the content of the static file
 `static-data.json` to serve the response.
 
+## Script objects
+
+Certain objects are available to your scripts.
+
+| Object | Description
+| --- | --- | ---
+| `context` | Convenience object for accessing request properties
+
 ## The context object
 
-The `context` object in the example above is holds things you might like to interrogate,
-like request parameters or the absolute URI of the request.
+The `context` object is available to your scripts. It holds things you might like to interrogate,
+like the request object.
 
-| Property | Description | Example
-| --- | --- | ---
-| `method` | The HTTP method of the request. | `"GET"`
-| `uri` | The absolute URI of the request. | `"http://example.com?foo=bar&baz=qux"`
-| `params` | A `Map` containing the request parameters. | `[ "foo": "bar", "baz": "qux" ]`
+| Property | Description
+| --- | ---
+| `request` | The HTTP request.
 
-Certain plugins will add additional properties to the `context`. For example, the _hbase_
+**Note:** Certain plugins will add additional properties to the `context`. For example, the _hbase_
 plugin provides a `tableName` object, which you can use to determine the HBase table for the request being served.
+
+## The request object
+
+The request object is available on the `context`. It provides access to request parameters, method, URI etc.
+
+| Property | Description | Example                                                                                                                                                           
+| --- | --- | --------------------------------------
+| `method` | The HTTP method of the request. | `"GET"`                                                                                                                                                           
+| `uri` | The absolute URI of the request. | `"http://example.com?foo=bar&baz=qux"`
+| `params` | A `Map` containing the request parameters. | `[ "foo": "bar", "baz": "qux" ]`                              
+| `body` | A `String` containing the request body. | `"Hello world."`                                                                                                                    
 
 ## The ResponseBehaviour object
 
