@@ -1,5 +1,6 @@
 package com.gatehill.imposter.model;
 
+import com.gatehill.imposter.util.HttpUtil;
 import com.google.common.collect.Maps;
 
 import java.util.Map;
@@ -10,9 +11,9 @@ import static java.util.Optional.ofNullable;
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public class ResponseBehaviour {
+    private ResponseBehaviourType behaviourType = ResponseBehaviourType.DEFAULT_BEHAVIOUR;
+    private int statusCode = HttpUtil.HTTP_OK;
     private Map<String, Object> context;
-    private ResponseBehaviourType behaviourType;
-    private int statusCode;
     private String responseFile;
     private boolean behaviourConfigured;
 

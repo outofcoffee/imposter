@@ -325,8 +325,9 @@ In the case of `action=fetch`, the script causes the mock server to use the cont
 Certain objects are available to your scripts.
 
 | Object | Description
-| --- | --- | ---
+| --- | ---
 | `context` | Convenience object for accessing request properties
+| `logger` | Logger, supporting levels such as `info(String)`, `warn(String)` etc.
 
 ## The context object
 
