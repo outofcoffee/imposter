@@ -63,9 +63,12 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
                 swagger.getPaths()
                         .forEach((path, pathConfig) -> pathConfig.getOperationMap()
                                 .forEach((httpMethod, operation) -> {
+                                    final String fullPath = ofNullable(swagger.getBasePath()).orElse("") + path;
+                                    LOGGER.debug("Adding mock endpoint: {} -> {}", httpMethod, fullPath);
+
                                     // convert an {@link io.swagger.models.HttpMethod} to an {@link io.vertx.core.http.HttpMethod}
                                     final HttpMethod method = HttpMethod.valueOf(httpMethod.name());
-                                    router.route(method, path).handler(buildHandler(config, operation));
+                                    router.route(method, fullPath).handler(buildHandler(config, operation));
                                 }));
 
             } else {
