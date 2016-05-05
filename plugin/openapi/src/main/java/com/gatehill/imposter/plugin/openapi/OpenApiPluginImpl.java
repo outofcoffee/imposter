@@ -255,7 +255,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
         if (config.isPickFirstIfNoneMatch()) {
             final Map.Entry<String, Object> example = examples.entrySet().iterator().next();
             LOGGER.debug("No exact example match found - choosing one example ({}) from specification." +
-                    " You can switch off this behaviour by setting 'pickFirstIfNoneMatch=false'.", example.getKey());
+                    " You can switch off this behaviour by setting configuration option: pickFirstIfNoneMatch=false", example.getKey());
 
             return Optional.of(example);
         }
