@@ -23,6 +23,8 @@ import javax.inject.Inject;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.gatehill.imposter.util.HttpUtil.CONTENT_TYPE;
@@ -36,6 +38,7 @@ import static java.util.Optional.ofNullable;
  */
 public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> implements ScriptedPlugin<OpenApiPluginConfig> {
     private static final Logger LOGGER = LogManager.getLogger(OpenApiPluginImpl.class);
+    private static final Pattern PATH_PARAM_PLACEHOLDER = Pattern.compile("\\{([a-zA-Z]+)\\}");
 
     @Inject
     private ImposterConfig imposterConfig;
@@ -63,7 +66,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
                 swagger.getPaths()
                         .forEach((path, pathConfig) -> pathConfig.getOperationMap()
                                 .forEach((httpMethod, operation) -> {
-                                    final String fullPath = ofNullable(swagger.getBasePath()).orElse("") + path;
+                                    final String fullPath = ofNullable(swagger.getBasePath()).orElse("") + convertPath(path);
                                     LOGGER.debug("Adding mock endpoint: {} -> {}", httpMethod, fullPath);
 
                                     // convert an {@link io.swagger.models.HttpMethod} to an {@link io.vertx.core.http.HttpMethod}
@@ -75,6 +78,25 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
                 throw new RuntimeException(String.format("Unable to load API specification: %s", config.getSpecFile()));
             }
         });
+    }
+
+    /**
+     * Convert the OpenAPI path to a Vert.x path, including any parameter placeholders.
+     *
+     * @param path the OpenAPI path
+     * @return the Vert.x path
+     */
+    private String convertPath(String path) {
+        boolean matchFound;
+        do {
+            final Matcher matcher = PATH_PARAM_PLACEHOLDER.matcher(path);
+            matchFound = matcher.find();
+            if (matchFound) {
+                path = matcher.replaceFirst(":" + matcher.group(1));
+            }
+        } while (matchFound);
+
+        return path;
     }
 
     /**
