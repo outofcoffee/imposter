@@ -4,8 +4,10 @@ import com.gatehill.imposter.ImposterConfig;
 import com.gatehill.imposter.plugin.Plugin;
 import com.gatehill.imposter.server.BaseVerticleTest;
 import com.gatehill.imposter.util.HttpUtil;
+import com.gatehill.imposter.util.MapUtil;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.http.ContentType;
+import io.swagger.models.Swagger;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.TestContext;
@@ -65,7 +67,7 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
                 // JSON content type in 'Accept' header matches specification example
                 .accept(ContentType.JSON)
                 .when()
-                .get("/apis")
+                .get("/base/apis")
                 .then()
                 .log().everything()
                 .statusCode(HttpUtil.HTTP_OK)
@@ -86,7 +88,7 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
                 // JSON content type in 'Accept' header matches specification example
                 .accept(ContentType.JSON)
                 .when()
-                .put("/apis")
+                .put("/base/apis")
                 .then()
                 .log().everything()
                 .statusCode(HttpUtil.HTTP_CREATED)
@@ -108,12 +110,58 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
                 // do not set JSON content type in 'Accept' header, to force mismatch against specification example
                 .accept(ContentType.TEXT)
                 .when()
-                .get("/apis")
+                .get("/base/apis")
                 .then()
                 .log().everything()
                 .statusCode(HttpUtil.HTTP_OK)
                 .extract().asString();
 
         assertBody(testContext, body);
+    }
+
+    /**
+     * Should return the specification UI.
+     *
+     * @param testContext
+     * @throws Exception
+     */
+    @Test
+    public void testGetSpecUi(TestContext testContext) throws Exception {
+        final String body = given()
+                .log().everything()
+                .accept(ContentType.TEXT)
+                .when()
+                .get(OpenApiPluginImpl.SPECIFICATION_PATH + "/")
+                .then()
+                .log().everything()
+                .statusCode(HttpUtil.HTTP_OK)
+                .extract().asString();
+
+        testContext.assertTrue(body.contains("<html>"));
+    }
+
+    /**
+     * Should return a combined specification.
+     *
+     * @param testContext
+     * @throws Exception
+     */
+    @Test
+    public void testGetCombinedSpec(TestContext testContext) throws Exception {
+        final byte[] body = given()
+                .log().everything()
+                .accept(ContentType.JSON)
+                .when()
+                .get(OpenApiPluginImpl.COMBINED_SPECIFICATION_PATH)
+                .then()
+                .log().everything()
+                .statusCode(HttpUtil.HTTP_OK)
+                .extract().asByteArray();
+
+        testContext.assertNotNull(body);
+
+        final Swagger combined = MapUtil.MAPPER.readValue(body, Swagger.class);
+        testContext.assertNotNull(combined.getInfo());
+        testContext.assertEquals("Combined specification", combined.getInfo().getTitle());
     }
 }

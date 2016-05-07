@@ -1,11 +1,18 @@
 package com.gatehill.imposter.plugin.openapi;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
 import com.gatehill.imposter.ImposterConfig;
 import com.gatehill.imposter.model.ResponseBehaviour;
+import com.gatehill.imposter.plugin.RequireModules;
 import com.gatehill.imposter.plugin.ScriptedPlugin;
 import com.gatehill.imposter.plugin.config.ConfiguredPlugin;
+import com.gatehill.imposter.plugin.openapi.service.OpenApiService;
 import com.gatehill.imposter.util.HttpUtil;
+import com.gatehill.imposter.util.MapUtil;
 import com.google.common.base.Strings;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import io.swagger.models.Operation;
 import io.swagger.models.Response;
@@ -16,12 +23,14 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.StaticHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.inject.Inject;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,14 +45,22 @@ import static java.util.Optional.ofNullable;
  *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
+@RequireModules(OpenApiModule.class)
 public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> implements ScriptedPlugin<OpenApiPluginConfig> {
     private static final Logger LOGGER = LogManager.getLogger(OpenApiPluginImpl.class);
     private static final Pattern PATH_PARAM_PLACEHOLDER = Pattern.compile("\\{([a-zA-Z]+)\\}");
+    static final String SPECIFICATION_PATH = "/_spec";
+    static final String COMBINED_SPECIFICATION_PATH = SPECIFICATION_PATH + "/combined.json";
 
     @Inject
     private ImposterConfig imposterConfig;
 
+    @Inject
+    private OpenApiService openApiService;
+
     private List<OpenApiPluginConfig> configs;
+
+    private Cache<String, String> specCache = CacheBuilder.newBuilder().build();
 
     @Override
     protected Class<OpenApiPluginConfig> getConfigClass() {
@@ -57,27 +74,64 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
 
     @Override
     public void configureRoutes(Router router) {
+        final List<Swagger> allSpecs = Lists.newArrayListWithExpectedSize(configs.size());
+
+        // add specification routes
         configs.forEach(config -> {
             final Swagger swagger = new SwaggerParser().read(Paths.get(
                     imposterConfig.getConfigDir(), config.getSpecFile()).toString());
 
             if (null != swagger) {
-                // bind a handler to each path
-                swagger.getPaths()
-                        .forEach((path, pathConfig) -> pathConfig.getOperationMap()
-                                .forEach((httpMethod, operation) -> {
-                                    final String fullPath = ofNullable(swagger.getBasePath()).orElse("") + convertPath(path);
-                                    LOGGER.debug("Adding mock endpoint: {} -> {}", httpMethod, fullPath);
+                allSpecs.add(swagger);
 
-                                    // convert an {@link io.swagger.models.HttpMethod} to an {@link io.vertx.core.http.HttpMethod}
-                                    final HttpMethod method = HttpMethod.valueOf(httpMethod.name());
-                                    router.route(method, fullPath).handler(buildHandler(config, operation));
-                                }));
+                // bind a handler to each path
+                swagger.getPaths().forEach((path, pathConfig) ->
+                        pathConfig.getOperationMap().forEach((httpMethod, operation) -> {
+                            final String fullPath = ofNullable(swagger.getBasePath()).orElse("") + convertPath(path);
+                            LOGGER.debug("Adding mock endpoint: {} -> {}", httpMethod, fullPath);
+
+                            // convert an {@link io.swagger.models.HttpMethod} to an {@link io.vertx.core.http.HttpMethod}
+                            final HttpMethod method = HttpMethod.valueOf(httpMethod.name());
+                            router.route(method, fullPath).handler(buildHandler(config, operation));
+                        }));
 
             } else {
                 throw new RuntimeException(String.format("Unable to load API specification: %s", config.getSpecFile()));
             }
         });
+
+        // specification and UI
+        LOGGER.debug("Adding specification UI at: {}", SPECIFICATION_PATH);
+        router.get(COMBINED_SPECIFICATION_PATH).handler(routingContext -> handleCombinedSpec(routingContext, allSpecs));
+        router.getWithRegex(SPECIFICATION_PATH + "$").handler(routingContext -> routingContext.response().putHeader("Location", SPECIFICATION_PATH + "/").setStatusCode(HttpUtil.HTTP_MOVED_PERM).end());
+        router.get(SPECIFICATION_PATH + "/*").handler(StaticHandler.create("swagger-ui"));
+    }
+
+    /**
+     * Returns an OpenAPI specification combining all the given specifications.
+     *
+     * @param routingContext the Vert.x routing context
+     * @param allSpecs all specifications
+     */
+    private void handleCombinedSpec(RoutingContext routingContext, List<Swagger> allSpecs) {
+        try {
+            final String combinedJson = specCache.get("combinedSpec", () -> {
+                try {
+                    final Swagger combined = openApiService.combineSpecifications(allSpecs);
+                    return MapUtil.MAPPER.writeValueAsString(combined);
+
+                } catch (JsonGenerationException e) {
+                    throw new ExecutionException(e);
+                }
+            });
+
+            routingContext.response()
+                    .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_JSON)
+                    .end(combinedJson);
+
+        } catch (Exception e) {
+            routingContext.fail(e);
+        }
     }
 
     /**

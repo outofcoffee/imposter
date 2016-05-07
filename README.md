@@ -134,10 +134,10 @@ The plugin provides support for [OpenAPI](https://github.com/OAI/OpenAPI-Specifi
 
 ### Features
 
-* OpenAPI/Swagger 2 API specifications
-* Response examples inside the specification
-* Static response files
-* Script-driven responses, using status code, response files etc.
+* Creates mock endpoints from OpenAPI/Swagger 2 API specifications.
+* Serves response examples embedded in the specification.
+* Also supports static response files and script-driven responses, using status code, response files etc.
+* Provides an interactive API sandbox at `/_spec`; e.g. [http://localhost:8443/_spec](http://localhost:8443/_spec)
 
 ### Additional context objects
 
@@ -195,7 +195,7 @@ Plugin class: `com.gatehill.imposter.plugin.hbase.HBasePluginImpl`
 ### Features
 
 * Basic HBase mock implementation.
-* Uses protobuf for wire transport.
+* Supports protobuf or JSON for wire transport.
 * Dummy Scanner queries.
 * Individual table row/record retrieval.
 

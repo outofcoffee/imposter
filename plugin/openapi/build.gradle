@@ -4,6 +4,13 @@ compileJava {
     sourceCompatibility = 1.8
 }
 
+task copyStaticUi(type: Copy) {
+    from 'src/main/html'
+    into "${sourceSets.main.output.resourcesDir}/swagger-ui"
+}
+
+tasks.processResources.dependsOn copyStaticUi
+
 dependencies {
     compile project(':core')
     compile 'io.swagger:swagger-parser:1.0.19'
