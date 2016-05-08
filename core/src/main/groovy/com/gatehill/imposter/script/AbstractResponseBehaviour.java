@@ -1,36 +1,30 @@
-package com.gatehill.imposter.model;
+package com.gatehill.imposter.script;
 
 import com.gatehill.imposter.util.HttpUtil;
+import groovy.lang.Script;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public class ResponseBehaviour {
+public abstract class AbstractResponseBehaviour extends Script implements ResponseBehaviour {
     private ResponseBehaviourType behaviourType = ResponseBehaviourType.DEFAULT_BEHAVIOUR;
     private int statusCode = HttpUtil.HTTP_OK;
     private String responseFile;
     private boolean behaviourConfigured;
 
+    @Override
     public int getStatusCode() {
         return statusCode;
     }
 
+    @Override
     public String getResponseFile() {
         return responseFile;
     }
 
+    @Override
     public ResponseBehaviourType getBehaviourType() {
         return behaviourType;
-    }
-
-    /**
-     * This method is overridden by the script that instantiates a subclass of this class.
-     * The actual user-provided scripts are placed in the body of this method for execution.
-     *
-     * @throws Exception
-     */
-    public void process() throws Exception {
-        // no op
     }
 
     /**
@@ -39,7 +33,7 @@ public class ResponseBehaviour {
      * @param statusCode the HTTP status code
      * @return this
      */
-    public ResponseBehaviour withStatusCode(int statusCode) {
+    public AbstractResponseBehaviour withStatusCode(int statusCode) {
         this.statusCode = statusCode;
         return this;
     }
@@ -50,7 +44,7 @@ public class ResponseBehaviour {
      * @param responseFile the response file
      * @return this
      */
-    public ResponseBehaviour withFile(String responseFile) {
+    public AbstractResponseBehaviour withFile(String responseFile) {
         this.responseFile = responseFile;
         return this;
     }
@@ -60,7 +54,7 @@ public class ResponseBehaviour {
      *
      * @return this
      */
-    public ResponseBehaviour withEmpty() {
+    public AbstractResponseBehaviour withEmpty() {
         this.responseFile = null;
         return this;
     }
@@ -70,7 +64,7 @@ public class ResponseBehaviour {
      *
      * @return this
      */
-    public ResponseBehaviour usingDefaultBehaviour() {
+    public AbstractResponseBehaviour usingDefaultBehaviour() {
         if (behaviourConfigured) {
             throw new IllegalStateException("Response already handled");
         } else {
@@ -86,7 +80,7 @@ public class ResponseBehaviour {
      *
      * @return this
      */
-    public ResponseBehaviour immediately() {
+    public AbstractResponseBehaviour immediately() {
         if (behaviourConfigured) {
             throw new IllegalStateException("Response already handled");
         } else {
@@ -102,7 +96,7 @@ public class ResponseBehaviour {
      *
      * @return this
      */
-    public ResponseBehaviour respond() {
+    public AbstractResponseBehaviour respond() {
         return this;
     }
 
@@ -111,7 +105,7 @@ public class ResponseBehaviour {
      *
      * @return this
      */
-    public ResponseBehaviour respond(Runnable closure) {
+    public AbstractResponseBehaviour respond(Runnable closure) {
         closure.run();
         return this;
     }
@@ -121,7 +115,7 @@ public class ResponseBehaviour {
      *
      * @return this
      */
-    public ResponseBehaviour and() {
+    public AbstractResponseBehaviour and() {
         return this;
     }
 }

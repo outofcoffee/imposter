@@ -359,7 +359,7 @@ The request object is available on the `context`. It provides access to request 
 
 ## The ResponseBehaviour object
 
-Your scripts are a subclass of `com.gatehill.imposter.model.ResponseBehaviour`.
+Your scripts are a subclass of `com.gatehill.imposter.script.AbstractResponseBehaviour`.
 
 The ResponseBehaviour class provides a number of methods to enable you to control the mock server response:
  

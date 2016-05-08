@@ -2,7 +2,7 @@ package com.gatehill.imposter.plugin.openapi;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.gatehill.imposter.ImposterConfig;
-import com.gatehill.imposter.model.ResponseBehaviour;
+import com.gatehill.imposter.script.ResponseBehaviour;
 import com.gatehill.imposter.plugin.RequireModules;
 import com.gatehill.imposter.plugin.ScriptedPlugin;
 import com.gatehill.imposter.plugin.config.ConfiguredPlugin;

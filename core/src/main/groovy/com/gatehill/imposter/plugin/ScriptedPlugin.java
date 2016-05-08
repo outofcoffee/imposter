@@ -1,7 +1,7 @@
 package com.gatehill.imposter.plugin;
 
-import com.gatehill.imposter.model.ResponseBehaviour;
-import com.gatehill.imposter.model.ResponseBehaviourType;
+import com.gatehill.imposter.script.ResponseBehaviour;
+import com.gatehill.imposter.script.ResponseBehaviourType;
 import com.gatehill.imposter.plugin.config.ResourceConfig;
 import com.gatehill.imposter.service.ResponseService;
 import com.gatehill.imposter.util.InjectorUtil;
