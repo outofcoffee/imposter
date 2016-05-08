@@ -1,8 +1,8 @@
 swagger: "2.0"
-basePath: /base
+basePath: /simple
 info:
   title: Simple API overview
-  description: Description for the Simple API
+  description: A simple API containing response examples
   version: v2
 paths:
   /apis:

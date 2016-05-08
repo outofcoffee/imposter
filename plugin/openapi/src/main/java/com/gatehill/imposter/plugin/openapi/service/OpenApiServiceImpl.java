@@ -2,32 +2,43 @@ package com.gatehill.imposter.plugin.openapi.service;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import io.swagger.models.*;
 import io.swagger.models.auth.SecuritySchemeDefinition;
 import io.swagger.models.parameters.Parameter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public class OpenApiServiceImpl implements OpenApiService {
+    private static final Logger LOGGER = LogManager.getLogger(OpenApiServiceImpl.class);
+
     @Override
     public Swagger combineSpecifications(List<Swagger> specs) {
+        requireNonNull(specs, "Input specifications must not be null");
+        LOGGER.debug("Generating combined specification from {} inputs", specs.size());
+
         final Swagger combined = new Swagger();
 
         final Info info = new Info();
         combined.setInfo(info);
 
-        final List<String> consumes = Lists.newArrayList();
-        combined.setConsumes(consumes);
+        final List<Tag> tags = Lists.newArrayList();
+        combined.setTags(tags);
 
-        final List<String> produces = Lists.newArrayList();
-        combined.setProduces(produces);
+        // use set to force uniqueness
+        final Set<String> consumes = Sets.newHashSet();
+        final Set<String> produces = Sets.newHashSet();
 
         final List<Scheme> schemes = Lists.newArrayList();
         combined.setSchemes(schemes);
@@ -51,17 +62,18 @@ public class OpenApiServiceImpl implements OpenApiService {
         combined.setResponses(responses);
 
         final StringBuilder description = new StringBuilder()
-                .append("API specifications:" + "\n<ul>");
+                .append("This specification includes the following APIs:");
 
         specs.forEach(spec -> {
             ofNullable(spec.getInfo()).ifPresent(specInfo -> description
-                    .append("\n<li>")
+                    .append("\n* **")
                     .append(specInfo.getTitle())
-                    .append(ofNullable(specInfo.getDescription()).map(specDesc -> "<p>" + specDesc + "</p>").orElse(""))
-                    .append("</li>"));
+                    .append("**")
+                    .append(ofNullable(specInfo.getDescription()).map(specDesc -> " - " + specDesc).orElse("")));
 
             final String basePath = ofNullable(spec.getBasePath()).orElse("");
 
+            tags.addAll(getOrEmpty(spec.getTags()));
             consumes.addAll(getOrEmpty(spec.getConsumes()));
             produces.addAll(getOrEmpty(spec.getProduces()));
             schemes.addAll(getOrEmpty(spec.getSchemes()));
@@ -76,8 +88,10 @@ public class OpenApiServiceImpl implements OpenApiService {
                     paths.put(basePath + path, pathDetails));
         });
 
-        info.setTitle("Combined specification");
-        description.append("\n</ul>");
+        combined.setConsumes(Lists.newArrayList(consumes));
+        combined.setProduces(Lists.newArrayList(produces));
+
+        info.setTitle("Imposter Mock APIs");
         info.setDescription(description.toString());
         return combined;
     }

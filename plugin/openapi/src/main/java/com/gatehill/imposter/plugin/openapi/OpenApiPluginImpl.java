@@ -14,7 +14,9 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import io.swagger.models.Operation;
+import io.swagger.models.Path;
 import io.swagger.models.Response;
 import io.swagger.models.Swagger;
 import io.swagger.parser.SwaggerParser;
@@ -49,6 +51,7 @@ import static java.util.Optional.ofNullable;
 public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> implements ScriptedPlugin<OpenApiPluginConfig> {
     private static final Logger LOGGER = LogManager.getLogger(OpenApiPluginImpl.class);
     private static final Pattern PATH_PARAM_PLACEHOLDER = Pattern.compile("\\{([a-zA-Z]+)\\}");
+    private static final String UI_WEB_ROOT = "swagger-ui";
     static final String SPECIFICATION_PATH = "/_spec";
     static final String COMBINED_SPECIFICATION_PATH = SPECIFICATION_PATH + "/combined.json";
 
@@ -60,6 +63,9 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
 
     private List<OpenApiPluginConfig> configs;
 
+    /**
+     * Holds the specifications.
+     */
     private Cache<String, String> specCache = CacheBuilder.newBuilder().build();
 
     @Override
@@ -76,42 +82,53 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
     public void configureRoutes(Router router) {
         final List<Swagger> allSpecs = Lists.newArrayListWithExpectedSize(configs.size());
 
-        // add specification routes
+        // specification mock endpoints
         configs.forEach(config -> {
             final Swagger swagger = new SwaggerParser().read(Paths.get(
                     imposterConfig.getConfigDir(), config.getSpecFile()).toString());
 
             if (null != swagger) {
                 allSpecs.add(swagger);
-
-                // bind a handler to each path
                 swagger.getPaths().forEach((path, pathConfig) ->
-                        pathConfig.getOperationMap().forEach((httpMethod, operation) -> {
-                            final String fullPath = ofNullable(swagger.getBasePath()).orElse("") + convertPath(path);
-                            LOGGER.debug("Adding mock endpoint: {} -> {}", httpMethod, fullPath);
-
-                            // convert an {@link io.swagger.models.HttpMethod} to an {@link io.vertx.core.http.HttpMethod}
-                            final HttpMethod method = HttpMethod.valueOf(httpMethod.name());
-                            router.route(method, fullPath).handler(buildHandler(config, operation));
-                        }));
+                        handlePathOperations(router, config, swagger, path, pathConfig));
 
             } else {
                 throw new RuntimeException(String.format("Unable to load API specification: %s", config.getSpecFile()));
             }
         });
 
-        // specification and UI
+        // serve specification and UI
         LOGGER.debug("Adding specification UI at: {}", SPECIFICATION_PATH);
         router.get(COMBINED_SPECIFICATION_PATH).handler(routingContext -> handleCombinedSpec(routingContext, allSpecs));
         router.getWithRegex(SPECIFICATION_PATH + "$").handler(routingContext -> routingContext.response().putHeader("Location", SPECIFICATION_PATH + "/").setStatusCode(HttpUtil.HTTP_MOVED_PERM).end());
-        router.get(SPECIFICATION_PATH + "/*").handler(StaticHandler.create("swagger-ui"));
+        router.get(SPECIFICATION_PATH + "/*").handler(StaticHandler.create(UI_WEB_ROOT));
+    }
+
+    /**
+     * Bind a handler to each operation.
+     *
+     * @param router     the Vert.x router
+     * @param config     the plugin configuration
+     * @param swagger    the OpenAPI specification
+     * @param path       the mock path
+     * @param pathConfig the path configuration
+     */
+    private void handlePathOperations(Router router, OpenApiPluginConfig config, Swagger swagger, String path, Path pathConfig) {
+        pathConfig.getOperationMap().forEach((httpMethod, operation) -> {
+            final String fullPath = ofNullable(swagger.getBasePath()).orElse("") + convertPath(path);
+            LOGGER.debug("Adding mock endpoint: {} -> {}", httpMethod, fullPath);
+
+            // convert an {@link io.swagger.models.HttpMethod} to an {@link io.vertx.core.http.HttpMethod}
+            final HttpMethod method = HttpMethod.valueOf(httpMethod.name());
+            router.route(method, fullPath).handler(buildHandler(config, swagger, operation));
+        });
     }
 
     /**
      * Returns an OpenAPI specification combining all the given specifications.
      *
      * @param routingContext the Vert.x routing context
-     * @param allSpecs all specifications
+     * @param allSpecs       all specifications
      */
     private void handleCombinedSpec(RoutingContext routingContext, List<Swagger> allSpecs) {
         try {
@@ -157,10 +174,10 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
      * Build a handler for the given operation.
      *
      * @param config    the plugin configuration
-     * @param operation the specification operation
-     * @return a route handler
+     * @param swagger   the OpenAPI specification
+     * @param operation the specification operation  @return a route handler
      */
-    private Handler<RoutingContext> buildHandler(OpenApiPluginConfig config, Operation operation) {
+    private Handler<RoutingContext> buildHandler(OpenApiPluginConfig config, Swagger swagger, Operation operation) {
         return routingContext -> {
             final HashMap<String, Object> context = Maps.newHashMap();
             context.put("operation", operation);
@@ -179,7 +196,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
                         .setStatusCode(responseBehaviour.getStatusCode());
 
                 if (optionalMockResponse.isPresent()) {
-                    serveMockResponse(config, operation, routingContext, responseBehaviour, optionalMockResponse.get());
+                    serveMockResponse(config, swagger, operation, routingContext, responseBehaviour, optionalMockResponse.get());
 
                 } else {
                     LOGGER.info("No explicit mock response found for URI {} and status code {}",
@@ -195,13 +212,15 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
      * Build a response from the specification.
      *
      * @param config            the plugin configuration
+     * @param swagger           the OpenAPI specification
      * @param operation         the specification operation
      * @param routingContext    the Vert.x routing context
      * @param responseBehaviour the response behaviour
      * @param mockResponse      the specification response
      */
-    private void serveMockResponse(OpenApiPluginConfig config, Operation operation, RoutingContext routingContext,
-                                   ResponseBehaviour responseBehaviour, Response mockResponse) {
+    private void serveMockResponse(OpenApiPluginConfig config, Swagger swagger, Operation operation,
+                                   RoutingContext routingContext, ResponseBehaviour responseBehaviour,
+                                   Response mockResponse) {
 
         LOGGER.trace("Found mock response for URI {} and status code {}",
                 routingContext.request().absoluteURI(), responseBehaviour.getStatusCode());
@@ -212,7 +231,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
 
         } else {
             // attempt to serve an example from the specification, falling back if not present
-            serveExample(config, routingContext, responseBehaviour, operation, mockResponse, this::fallback);
+            serveExample(config, swagger, routingContext, responseBehaviour, operation, mockResponse, this::fallback);
         }
     }
 
@@ -245,13 +264,14 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
      * Attempt to respond with an example from the API specification.
      *
      * @param config            the plugin configuration
+     * @param swagger           the OpenAPI specification
      * @param routingContext    the Vert.x routing context
      * @param responseBehaviour the response behaviour
      * @param operation         the specification operation
      * @param mockResponse      the specification response
      * @param fallback          callback to invoke if no example was served
      */
-    private void serveExample(OpenApiPluginConfig config, RoutingContext routingContext,
+    private void serveExample(OpenApiPluginConfig config, Swagger swagger, RoutingContext routingContext,
                               ResponseBehaviour responseBehaviour, Operation operation,
                               Response mockResponse, BiConsumer<RoutingContext, ResponseBehaviour> fallback) {
 
@@ -264,7 +284,8 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
             LOGGER.trace("Checking for mock example in specification ({} candidates) for URI {} and status code {}",
                     examples.size(), routingContext.request().absoluteURI(), statusCode);
 
-            final Optional<Map.Entry<String, Object>> example = findExample(config, examples, routingContext, operation);
+            final Optional<Map.Entry<String, Object>> example = findExample(
+                    routingContext, config, swagger, operation, examples);
 
             // serve example
             if (example.isPresent()) {
@@ -299,18 +320,24 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
     /**
      * Locate an example, first by searching the matched content types, then, optionally, the first found.
      *
-     * @param config         the plugin configuration
-     * @param examples       the specification response examples
      * @param routingContext the Vert.x routing context
-     * @param operation      the specification operation
-     * @return an optional example entry
+     * @param config         the plugin configuration
+     * @param swagger        the OpenAPI specification
+     * @param operation      the specification operation    @return an optional example entry
+     * @param examples       the specification response examples
      */
-    private Optional<Map.Entry<String, Object>> findExample(OpenApiPluginConfig config, Map<String, Object> examples,
-                                                            RoutingContext routingContext, Operation operation) {
+    private Optional<Map.Entry<String, Object>> findExample(RoutingContext routingContext, OpenApiPluginConfig config,
+                                                            Swagger swagger, Operation operation,
+                                                            Map<String, Object> examples) {
+
+        // consolidate the produced content types
+        final Set<String> produces = Sets.newHashSet();
+        ofNullable(swagger.getProduces()).ifPresent(produces::addAll);
+        ofNullable(operation.getProduces()).ifPresent(produces::addAll);
 
         // match accepted content types to those produced by this response operation
         final List<String> matchedContentTypes = HttpUtil.readAcceptedContentTypes(routingContext).parallelStream()
-                .filter(a -> operation.getProduces().contains(a))
+                .filter(produces::contains)
                 .collect(Collectors.toList());
 
         // match first example by produced and accepted content types

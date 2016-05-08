@@ -4,10 +4,10 @@ import com.gatehill.imposter.ImposterConfig;
 import com.gatehill.imposter.plugin.Plugin;
 import com.gatehill.imposter.server.BaseVerticleTest;
 import com.gatehill.imposter.util.HttpUtil;
-import com.gatehill.imposter.util.MapUtil;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.http.ContentType;
 import io.swagger.models.Swagger;
+import io.swagger.parser.SwaggerParser;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.TestContext;
@@ -67,7 +67,7 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
                 // JSON content type in 'Accept' header matches specification example
                 .accept(ContentType.JSON)
                 .when()
-                .get("/base/apis")
+                .get("/simple/apis")
                 .then()
                 .log().everything()
                 .statusCode(HttpUtil.HTTP_OK)
@@ -88,7 +88,7 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
                 // JSON content type in 'Accept' header matches specification example
                 .accept(ContentType.JSON)
                 .when()
-                .put("/base/apis")
+                .put("/simple/apis")
                 .then()
                 .log().everything()
                 .statusCode(HttpUtil.HTTP_CREATED)
@@ -110,7 +110,7 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
                 // do not set JSON content type in 'Accept' header, to force mismatch against specification example
                 .accept(ContentType.TEXT)
                 .when()
-                .get("/base/apis")
+                .get("/simple/apis")
                 .then()
                 .log().everything()
                 .statusCode(HttpUtil.HTTP_OK)
@@ -148,7 +148,7 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
      */
     @Test
     public void testGetCombinedSpec(TestContext testContext) throws Exception {
-        final byte[] body = given()
+        final String body = given()
                 .log().everything()
                 .accept(ContentType.JSON)
                 .when()
@@ -156,12 +156,17 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
                 .then()
                 .log().everything()
                 .statusCode(HttpUtil.HTTP_OK)
-                .extract().asByteArray();
+                .extract().asString();
 
         testContext.assertNotNull(body);
 
-        final Swagger combined = MapUtil.MAPPER.readValue(body, Swagger.class);
+        final Swagger combined = new SwaggerParser().parse(body);
         testContext.assertNotNull(combined.getInfo());
-        testContext.assertEquals("Combined specification", combined.getInfo().getTitle());
+        testContext.assertEquals("Imposter Mock APIs", combined.getInfo().getTitle());
+
+        // should contain combination of both specs' endpoints
+        testContext.assertEquals(4, combined.getPaths().size());
+        testContext.assertTrue(combined.getPaths().keySet().contains("/simple/apis"));
+        testContext.assertTrue(combined.getPaths().keySet().contains("/api/pets"));
     }
 }

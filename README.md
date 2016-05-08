@@ -137,7 +137,7 @@ The plugin provides support for [OpenAPI](https://github.com/OAI/OpenAPI-Specifi
 * Creates mock endpoints from OpenAPI/Swagger 2 API specifications.
 * Serves response examples embedded in the specification.
 * Also supports static response files and script-driven responses, using status code, response files etc.
-* Provides an interactive API sandbox at `/_spec`; e.g. [http://localhost:8443/_spec](http://localhost:8443/_spec)
+* Provides an interactive API sandbox at `/_spec`
 
 ### Additional context objects
 
@@ -161,6 +161,11 @@ match the example to serve using a combination of:
 
 Typically you will use a simple script (see `plugin/openapi/src/test/resources/config` for working example)
 to control the status code, and thus the content of the response.
+
+You can also use the interactive API sandbox at `/_spec`; e.g. [http://localhost:8443/_spec](http://localhost:8443/_spec),
+which looks like this:
+
+![API sandbox](docs/images/api-sandbox.png)
 
 ## Salesforce (SFDC) plugin
 
