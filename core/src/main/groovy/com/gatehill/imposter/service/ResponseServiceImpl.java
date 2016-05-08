@@ -1,7 +1,6 @@
 package com.gatehill.imposter.service;
 
 import com.gatehill.imposter.ImposterConfig;
-import com.gatehill.imposter.model.InvocationContext;
 import com.gatehill.imposter.model.ResponseBehaviour;
 import com.gatehill.imposter.plugin.config.ResourceConfig;
 import com.gatehill.imposter.plugin.config.ResponseConfig;
@@ -67,15 +66,13 @@ public class ResponseServiceImpl implements ResponseService {
         try {
             LOGGER.debug("Executing script '{}' for request: {}", responseConfig.getScriptFile(), routingContext.request().absoluteURI());
 
-            final InvocationContext invocationContext = InvocationContext.build(
-                    getScriptName(responseConfig.getScriptFile()), routingContext, additionalContext);
-
-            LOGGER.trace("InvocationContext for request: {}", invocationContext);
+            final Map<String, Object> context = ScriptBuilder.buildContext(routingContext, additionalContext);
+            LOGGER.trace("Context for request: {}", () -> context);
 
             final Binding binding = new Binding();
-            binding.setVariable("logger", invocationContext.getLogger());
+            binding.setVariable("logger", LogManager.getLogger(getScriptName(responseConfig.getScriptFile())));
             binding.setVariable("config", config);
-            binding.setVariable("__context", invocationContext);
+            binding.setVariable("context", context);
 
             // add custom bindings
             ofNullable(bindings)

@@ -270,7 +270,6 @@ Here's an example configuration file that uses a script:
 Here's the corresponding script (`example.groovy`):
 
     if (context.request.params["action"] == "create") {
-        // HTTP Status-Code 201: Created.
         respond {
             withStatusCode 201
             immediately()
@@ -332,6 +331,7 @@ Certain objects are available to your scripts.
 | Object | Description
 | --- | ---
 | `context` | Convenience object for accessing request properties
+| `config` | The plugin configuration for the current request
 | `logger` | Logger, supporting levels such as `info(String)`, `warn(String)` etc.
 
 ## The context object

@@ -1,11 +1,6 @@
 package com.gatehill.imposter.model;
 
 import com.gatehill.imposter.util.HttpUtil;
-import com.google.common.collect.Maps;
-
-import java.util.Map;
-
-import static java.util.Optional.ofNullable;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
@@ -13,37 +8,8 @@ import static java.util.Optional.ofNullable;
 public class ResponseBehaviour {
     private ResponseBehaviourType behaviourType = ResponseBehaviourType.DEFAULT_BEHAVIOUR;
     private int statusCode = HttpUtil.HTTP_OK;
-    private Map<String, Object> context;
     private String responseFile;
     private boolean behaviourConfigured;
-
-    /**
-     * Accessible in Groovy style {@code context.request.uri} etc.
-     *
-     * @return the context
-     */
-    public Map<String, Object> getContext() {
-        return context;
-    }
-
-    public void setInvocationContext(InvocationContext invocationContext) {
-        context = Maps.newHashMap();
-
-        // request params
-        final Map<String, Object> request = Maps.newHashMap();
-        context.put("request", request);
-        request.put("method", invocationContext.getMethod());
-        request.put("uri", invocationContext.getUri());
-        request.put("params", invocationContext.getParams());
-        request.put("body", invocationContext.getBody());
-
-        // legacy scripts use these
-        context.put("uri", invocationContext.getUri());
-        context.put("params", invocationContext.getParams());
-
-        // additional context
-        ofNullable(invocationContext.getAdditional()).ifPresent(context::putAll);
-    }
 
     public int getStatusCode() {
         return statusCode;
