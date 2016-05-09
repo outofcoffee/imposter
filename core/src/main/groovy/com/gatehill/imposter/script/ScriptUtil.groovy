@@ -13,7 +13,7 @@ import static java.util.Optional.ofNullable
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 class ScriptUtil {
-    private static final Logger LOGGER = LogManager.getLogger(ScriptUtil.class)
+    private static final Logger LOGGER = LogManager.getLogger(ScriptUtil)
 
     /**
      * Build the {@code context} {@link Map}, containing lazily-evaluated values.
@@ -47,11 +47,11 @@ class ScriptUtil {
 
         // root context
         // NOTE: params and uri present for legacy script support
-        final context = [:].withDefault deprecatedParams
+        final Map<String, Object> context = [:].withDefault deprecatedParams
         context.put "uri", "${-> deprecatedUri()}"
 
         // request information
-        final request = [:].withDefault lazyParams
+        final Map<String, Object> request = [:].withDefault lazyParams
         request.put "method", "${-> routingContext.request().method().name()}"
         request.put "uri", "${-> routingContext.request().absoluteURI()}"
         request.put "body", "${-> routingContext.getBodyAsString()}"
