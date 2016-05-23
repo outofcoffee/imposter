@@ -9,10 +9,9 @@ import com.gatehill.imposter.script.ResponseBehaviourImpl;
 import com.gatehill.imposter.script.ScriptUtil;
 import com.gatehill.imposter.util.HttpUtil;
 import com.google.common.base.Strings;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import com.google.common.io.CharStreams;
 import groovy.lang.Binding;
+import groovy.lang.GroovyCodeSource;
 import groovy.lang.GroovyShell;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.web.RoutingContext;
@@ -29,7 +28,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
 import static com.gatehill.imposter.script.ResponseBehaviourType.DEFAULT_BEHAVIOUR;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -43,10 +41,6 @@ public class ResponseServiceImpl implements ResponseService {
 
     @Inject
     private ImposterConfig imposterConfig;
-
-    private Cache<ResourceConfig, String> scriptCache = CacheBuilder.newBuilder()
-            .expireAfterAccess(5, TimeUnit.MINUTES)
-            .build();
 
     @Override
     public ResponseBehaviour getResponseBehaviour(RoutingContext routingContext, ResourceConfig config,
@@ -111,20 +105,24 @@ public class ResponseServiceImpl implements ResponseService {
      * @throws ExecutionException
      */
     private AbstractResponseBehaviour executeScript(ResourceConfig config, Binding binding) throws ExecutionException {
-        // generate the script
-        final String script = scriptCache.get(config, () -> {
-            final Path scriptFile = Paths.get(imposterConfig.getConfigDir(), config.getResponseConfig().getScriptFile());
-            return new String(Files.readAllBytes(scriptFile));
-        });
-        LOGGER.trace("Executing script: {}", script);
+        final Path scriptFile = Paths.get(imposterConfig.getConfigDir(), config.getResponseConfig().getScriptFile());
+        LOGGER.trace("Executing script file: {}", scriptFile);
 
         // the script class will be a subclass of AbstractResponseBehaviour
         final CompilerConfiguration compilerConfig = new CompilerConfiguration();
         compilerConfig.setScriptBaseClass(AbstractResponseBehaviour.class.getCanonicalName());
         final GroovyShell groovyShell = new GroovyShell(binding, compilerConfig);
 
-        return (AbstractResponseBehaviour) ofNullable(groovyShell.evaluate(script)).orElseThrow(() ->
-                new RuntimeException("Script execution terminated abnormally (possible illegal return statement)"));
+        try {
+            final AbstractResponseBehaviour script = (AbstractResponseBehaviour) groovyShell.parse(
+                    new GroovyCodeSource(scriptFile.toFile(), compilerConfig.getSourceEncoding()));
+
+            script.run();
+            return script;
+
+        } catch (Exception e) {
+            throw new RuntimeException("Script execution terminated abnormally", e);
+        }
     }
 
     private String getScriptName(String scriptFile) {
