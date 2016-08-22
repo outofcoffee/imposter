@@ -115,22 +115,22 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
             final HBasePluginConfig config = tableConfigs.get(tableName);
 
             // script should fire first
-            final Map<String, Object> bindings = buildScriptBindings(ResponsePhase.RECORD, tableName, empty());
+            final Map<String, Object> bindings = buildScriptBindings(ResponsePhase.RECORD, tableName, recordId, empty());
             scriptHandler(config, routingContext, bindings, responseBehaviour -> {
-
+                final String scriptRecordId=(String)bindings.get("recordId");
                 // find the right row from results
                 final JsonArray results = responseService.loadResponseAsJsonArray(responseBehaviour);
-                final Optional<JsonObject> result = FileUtil.findRow(config.getIdField(), recordId, results);
+                final Optional<JsonObject> result = FileUtil.findRow(config.getIdField(), scriptRecordId, results);
 
                 final HttpServerResponse response = routingContext.response();
                 if (result.isPresent()) {
                     final SerialisationService serialiser = findSerialiser(routingContext);
-                    final Buffer buffer = serialiser.serialise(tableName, recordId, result.get());
+                    final Buffer buffer = serialiser.serialise(tableName, scriptRecordId, result.get());
                     response.setStatusCode(HttpUtil.HTTP_OK)
                             .end(buffer);
                 } else {
                     // no such record
-                    LOGGER.error("No row found with ID: {} for table: {}", recordId, tableName);
+                    LOGGER.error("No row found with ID: {} for table: {}", scriptRecordId, tableName);
                     response.setStatusCode(HttpUtil.HTTP_NOT_FOUND)
                             .end();
                 }
@@ -191,7 +191,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
             }
 
             // script should fire first
-            final Map<String, Object> bindings = buildScriptBindings(ResponsePhase.SCANNER, tableName, scannerFilterPrefix);
+            final Map<String, Object> bindings = buildScriptBindings(ResponsePhase.SCANNER, tableName,null, scannerFilterPrefix);
             scriptHandler(config, routingContext, bindings, responseBehaviour -> {
                 final int scannerId = scannerService.registerScanner(config, scanner);
 
@@ -250,7 +250,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
             // script should fire first
             final DeserialisationService deserialiser = findDeserialiser(routingContext);
 
-            final Map<String, Object> bindings = buildScriptBindings(ResponsePhase.RESULTS, tableName,
+            final Map<String, Object> bindings = buildScriptBindings(ResponsePhase.RESULTS, tableName, null,
                     deserialiser.decodeScannerFilterPrefix(scanner.getScanner()));
 
             scriptHandler(config, routingContext, bindings, responseBehaviour -> {
@@ -331,9 +331,10 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
      * @param scannerFilterPrefix
      * @return
      */
-    private Map<String, Object> buildScriptBindings(ResponsePhase responsePhase, String tableName, Optional<String> scannerFilterPrefix) {
+    private Map<String, Object> buildScriptBindings(ResponsePhase responsePhase, String tableName, String recordId, Optional<String> scannerFilterPrefix) {
         final Map<String, Object> bindings = Maps.newHashMap();
         bindings.put("tableName", tableName);
+        bindings.put("recordId",recordId );
         bindings.put("responsePhase", responsePhase);
         bindings.put("scannerFilterPrefix", scannerFilterPrefix.orElse(""));
         return bindings;

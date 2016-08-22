@@ -2,6 +2,10 @@ package com.gatehill.imposter.plugin.hbase
 
 import com.gatehill.imposter.plugin.Plugin
 import com.gatehill.imposter.server.BaseVerticleTest
+import io.vertx.core.AsyncResult
+import io.vertx.core.Future
+import io.vertx.core.Handler
+import io.vertx.core.Vertx
 import io.vertx.ext.unit.TestContext
 import org.apache.hadoop.hbase.client.Get
 import org.apache.hadoop.hbase.client.Result
@@ -65,13 +69,31 @@ public class HBasePluginTest extends BaseVerticleTest {
     public void testFetchIndividualRow_Success(TestContext testContext) throws Exception {
         final RemoteHTable table = new RemoteHTable(client, "exampleTable")
 
-        final Result result1 = table.get(new Get(Bytes.toBytes("row1")))
-        testContext.assertNotNull(result1)
-        testContext.assertEquals("exampleValue1A", getStringValue(result1, "abc", "exampleStringA"))
+        def async = testContext.async()
 
-        final Result result2 = table.get(new Get(Bytes.toBytes("row2")))
-        testContext.assertNotNull(result2)
-        testContext.assertEquals("exampleValue2A", getStringValue(result2, "abc", "exampleStringA"))
+        Vertx.currentContext().executeBlocking(new Handler<Future<?>>() {
+            @Override
+            void handle(Future<?> future) {
+                final Result result1 = table.get(new Get(Bytes.toBytes("row1")))
+                testContext.assertNotNull(result1)
+                testContext.assertEquals("exampleValue1A", getStringValue(result1, "abc", "exampleStringA"))
+
+                final Result result2 = table.get(new Get(Bytes.toBytes("row2")))
+                testContext.assertNotNull(result2)
+                testContext.assertEquals("exampleValue2A", getStringValue(result2, "abc", "exampleStringA"))
+
+                future.complete()
+            }
+
+        }, new Handler<AsyncResult<?>>() {
+            @Override
+            void handle(AsyncResult<?> asyncResult) {
+                if (!asyncResult.succeeded()) {
+                    testContext.fail(asyncResult.cause())
+                }
+                async.complete()
+            }
+        })
     }
 
     @Test
