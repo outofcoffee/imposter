@@ -211,7 +211,7 @@ Plugin class: `com.gatehill.imposter.plugin.hbase.HBasePluginImpl`
 | `tableName` | `String` | The name of the HBase table.
 | `responsePhase` | `com.gatehill.imposter.plugin.hbase.model.ResponsePhase` | The type of response being served.
 | `scannerFilterPrefix` | `String` | The prefix from the filter of the result scanner.
-| `recordInfo` | `RecordInfo` | Information about the requested record, if a single record is requested.
+| `recordInfo` | `com.gatehill.imposter.plugin.hbase.model.RecordInfo` | Information about the requested record, if a single record is requested.
 
 ### Example
 
