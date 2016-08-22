@@ -2,10 +2,6 @@ package com.gatehill.imposter.plugin.hbase
 
 import com.gatehill.imposter.plugin.Plugin
 import com.gatehill.imposter.server.BaseVerticleTest
-import io.vertx.core.AsyncResult
-import io.vertx.core.Future
-import io.vertx.core.Handler
-import io.vertx.core.Vertx
 import io.vertx.ext.unit.TestContext
 import org.apache.hadoop.hbase.client.Get
 import org.apache.hadoop.hbase.client.Result
@@ -75,7 +71,6 @@ public class HBasePluginTest extends BaseVerticleTest {
             @Override
             void handle(Future<?> future) {
                 final Result result1 = table.get(new Get(Bytes.toBytes("row1")))
-                testContext.assertNotNull(result1)
                 testContext.assertEquals("exampleValue1A", getStringValue(result1, "abc", "exampleStringA"))
 
                 final Result result2 = table.get(new Get(Bytes.toBytes("row2")))
