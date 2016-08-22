@@ -65,30 +65,13 @@ public class HBasePluginTest extends BaseVerticleTest {
     public void testFetchIndividualRow_Success(TestContext testContext) throws Exception {
         final RemoteHTable table = new RemoteHTable(client, "exampleTable")
 
-        def async = testContext.async()
+        final Result result1 = table.get(new Get(Bytes.toBytes("row1")))
+        testContext.assertNotNull(result1)
+        testContext.assertEquals("exampleValue1A", getStringValue(result1, "abc", "exampleStringA"))
 
-        Vertx.currentContext().executeBlocking(new Handler<Future<?>>() {
-            @Override
-            void handle(Future<?> future) {
-                final Result result1 = table.get(new Get(Bytes.toBytes("row1")))
-                testContext.assertEquals("exampleValue1A", getStringValue(result1, "abc", "exampleStringA"))
-
-                final Result result2 = table.get(new Get(Bytes.toBytes("row2")))
-                testContext.assertNotNull(result2)
-                testContext.assertEquals("exampleValue2A", getStringValue(result2, "abc", "exampleStringA"))
-
-                future.complete()
-            }
-
-        }, new Handler<AsyncResult<?>>() {
-            @Override
-            void handle(AsyncResult<?> asyncResult) {
-                if (!asyncResult.succeeded()) {
-                    testContext.fail(asyncResult.cause())
-                }
-                async.complete()
-            }
-        })
+        final Result result2 = table.get(new Get(Bytes.toBytes("row2")))
+        testContext.assertNotNull(result2)
+        testContext.assertEquals("exampleValue2A", getStringValue(result2, "abc", "exampleStringA"))
     }
 
     @Test
