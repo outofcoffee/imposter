@@ -9,14 +9,13 @@ jdk:
 - oraclejdk8
 
 script:
-- "./gradlew test --info --stacktrace"
+- "./gradlew test shadowJar --info --stacktrace"
 
 after_success:
-  - ./gradlew shadowJar --info --stacktrace
-  - docker login -e "${DOCKER_EMAIL}" -u "${DOCKER_USER}" -p "${DOCKER_PASSWORD}"
   - |
     set -e
     if [ "${TRAVIS_BRANCH}" == "master" ] && [ "${TRAVIS_PULL_REQUEST}" == "false" ]; then
+      docker login -e "${DOCKER_EMAIL}" -u "${DOCKER_USER}" -p "${DOCKER_PASSWORD}"
       cd ./docker
       ./build.sh latest
       ./push.sh latest
