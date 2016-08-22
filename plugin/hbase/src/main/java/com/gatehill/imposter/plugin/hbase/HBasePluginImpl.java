@@ -6,6 +6,7 @@ import com.gatehill.imposter.plugin.ScriptedPlugin;
 import com.gatehill.imposter.plugin.config.ConfiguredPlugin;
 import com.gatehill.imposter.plugin.hbase.model.InMemoryScanner;
 import com.gatehill.imposter.plugin.hbase.model.MockScanner;
+import com.gatehill.imposter.plugin.hbase.model.RecordInfo;
 import com.gatehill.imposter.plugin.hbase.model.ResponsePhase;
 import com.gatehill.imposter.plugin.hbase.service.ScannerService;
 import com.gatehill.imposter.plugin.hbase.service.serialisation.DeserialisationService;
@@ -100,7 +101,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
         router.get(path + "/:tableName/:recordId/").handler(routingContext -> {
             final String tableName = routingContext.request().getParam("tableName");
             final String recordId = routingContext.request().getParam("recordId");
-
+            final RecordInfo recordInfo = new RecordInfo(recordId);
             // check that the table is registered
             if (!tableConfigs.containsKey(tableName)) {
                 LOGGER.error("Received row request for unknown table: {}", tableName);
@@ -115,9 +116,9 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
             final HBasePluginConfig config = tableConfigs.get(tableName);
 
             // script should fire first
-            final Map<String, Object> bindings = buildScriptBindings(ResponsePhase.RECORD, tableName, recordId, empty());
+            final Map<String, Object> bindings = buildScriptBindings(ResponsePhase.RECORD, tableName, recordInfo, empty());
             scriptHandler(config, routingContext, bindings, responseBehaviour -> {
-                final String scriptRecordId = (String) bindings.get("recordId");
+                final String scriptRecordId = recordInfo.getRecordId();
                 // find the right row from results
                 final JsonArray results = responseService.loadResponseAsJsonArray(responseBehaviour);
                 final Optional<JsonObject> result = FileUtil.findRow(config.getIdField(), scriptRecordId, results);
@@ -331,10 +332,10 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
      * @param scannerFilterPrefix
      * @return
      */
-    private Map<String, Object> buildScriptBindings(ResponsePhase responsePhase, String tableName, String recordId, Optional<String> scannerFilterPrefix) {
+    private Map<String, Object> buildScriptBindings(ResponsePhase responsePhase, String tableName, RecordInfo recordInfo, Optional<String> scannerFilterPrefix) {
         final Map<String, Object> bindings = Maps.newHashMap();
         bindings.put("tableName", tableName);
-        bindings.put("recordId", recordId);
+        bindings.put("recordInfo", recordInfo);
         bindings.put("responsePhase", responsePhase);
         bindings.put("scannerFilterPrefix", scannerFilterPrefix.orElse(""));
         return bindings;
