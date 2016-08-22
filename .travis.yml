@@ -15,7 +15,7 @@ after_success:
   - |
     set -e
     if [ "${TRAVIS_BRANCH}" == "master" ] && [ "${TRAVIS_PULL_REQUEST}" == "false" ]; then
-      docker login -e "${DOCKER_EMAIL}" -u "${DOCKER_USER}" -p "${DOCKER_PASSWORD}"
+      docker login -u "${DOCKER_USER}" -p "${DOCKER_PASSWORD}"
       cd ./docker
       ./build.sh latest
       ./push.sh latest
