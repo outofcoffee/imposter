@@ -37,7 +37,7 @@ public class ImposterLauncher extends Launcher {
     private String configDir;
 
     @Option(name = "--plugin", aliases = {"-p"}, usage = "Plugin class name", required = true)
-    private String pluginClassName;
+    private String[] pluginClassNames;
 
     @Option(name = "--listenPort", aliases = {"-l"}, usage = "Listen port")
     private Integer listenPort = 8443;
@@ -109,7 +109,7 @@ public class ImposterLauncher extends Launcher {
         InjectorUtil.create(new BootstrapModule()).injectMembers(this);
 
         imposterConfig.setConfigDir(configDir);
-        imposterConfig.setPluginClassName(pluginClassName);
+        imposterConfig.setPluginClassNames(pluginClassNames);
         imposterConfig.setListenPort(listenPort);
         imposterConfig.setHost(host);
         imposterConfig.setServerUrl(serverUrl);

@@ -104,6 +104,8 @@ The following command line arguments can be used:
 
 # Plugins
 
+You can load one or more plugins.
+
 This section describes the available plugins. You can also write your own, if you want to further customise behaviour.
 
 ## REST plugin

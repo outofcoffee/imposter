@@ -11,7 +11,7 @@ public class ImposterConfig {
     private boolean tlsEnabled;
     private String keystorePath;
     private String keystorePassword;
-    private String pluginClassName;
+    private String[] pluginClassNames;
 
     public String getHost() {
         return host;
@@ -69,11 +69,11 @@ public class ImposterConfig {
         return keystorePassword;
     }
 
-    public void setPluginClassName(String pluginClassName) {
-        this.pluginClassName = pluginClassName;
+    public void setPluginClassNames(String[] pluginClassNames) {
+        this.pluginClassNames = pluginClassNames;
     }
 
-    public String getPluginClassName() {
-        return pluginClassName;
+    public String[] getPluginClassNames() {
+        return pluginClassNames;
     }
 }

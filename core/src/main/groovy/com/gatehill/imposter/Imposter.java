@@ -18,10 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static com.gatehill.imposter.util.FileUtil.CONFIG_FILE_SUFFIX;
 import static com.gatehill.imposter.util.HttpUtil.BIND_ALL_HOSTS;
@@ -88,15 +85,15 @@ public class Imposter {
 
     @SuppressWarnings("unchecked")
     private void instantiatePlugins() {
-        ofNullable(imposterConfig.getPluginClassName())
-                .ifPresent(clazz -> {
+        ofNullable(imposterConfig.getPluginClassNames()).ifPresent(classNames ->
+                Arrays.stream(classNames).forEach(className -> {
                     try {
-                        pluginManager.registerClass((Class<? extends Plugin>) Class.forName(clazz));
-                        LOGGER.debug("Registered plugin {}", clazz);
+                        pluginManager.registerClass((Class<? extends Plugin>) Class.forName(className));
+                        LOGGER.debug("Registered plugin {}", className);
                     } catch (ClassNotFoundException e) {
                         throw new RuntimeException(e);
                     }
-                });
+                }));
 
         pluginManager.getPluginClasses()
                 .forEach(this::registerPlugin);

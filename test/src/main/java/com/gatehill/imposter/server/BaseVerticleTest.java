@@ -52,7 +52,7 @@ public abstract class BaseVerticleTest {
 
     protected void configure(ImposterConfig imposterConfig) throws Exception {
         imposterConfig.setConfigDir(Paths.get(getClass().getResource("/config").toURI()).toString());
-        imposterConfig.setPluginClassName(getPluginClass().getCanonicalName());
+        imposterConfig.setPluginClassNames(new String[]{getPluginClass().getCanonicalName()});
         imposterConfig.setHost(HOST);
         imposterConfig.setListenPort(listenPort);
     }
