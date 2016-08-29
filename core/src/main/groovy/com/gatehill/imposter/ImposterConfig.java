@@ -6,7 +6,7 @@ package com.gatehill.imposter;
 public class ImposterConfig {
     private String host;
     private int listenPort;
-    private String configDir;
+    private String[] configDirs;
     private String serverUrl;
     private boolean tlsEnabled;
     private String keystorePath;
@@ -29,12 +29,12 @@ public class ImposterConfig {
         this.listenPort = listenPort;
     }
 
-    public String getConfigDir() {
-        return configDir;
+    public String[] getConfigDirs() {
+        return configDirs;
     }
 
-    public void setConfigDir(String configDir) {
-        this.configDir = configDir;
+    public void setConfigDirs(String[] configDirs) {
+        this.configDirs = configDirs;
     }
 
     public String getServerUrl() {

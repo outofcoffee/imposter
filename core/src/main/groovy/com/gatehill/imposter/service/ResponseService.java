@@ -11,9 +11,9 @@ import java.util.Map;
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public interface ResponseService {
-    JsonArray loadResponseAsJsonArray(ResponseBehaviour behaviour);
+    JsonArray loadResponseAsJsonArray(ResourceConfig config, ResponseBehaviour behaviour);
 
-    JsonArray loadResponseAsJsonArray(String responseFile);
+    JsonArray loadResponseAsJsonArray(ResourceConfig config, String responseFile);
 
     ResponseBehaviour getResponseBehaviour(RoutingContext routingContext, ResourceConfig config,
                                            Map<String, Object> additionalContext,
