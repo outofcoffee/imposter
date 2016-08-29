@@ -1,6 +1,5 @@
 package com.gatehill.imposter.plugin.rest;
 
-import com.gatehill.imposter.ImposterConfig;
 import com.gatehill.imposter.plugin.ScriptedPlugin;
 import com.gatehill.imposter.plugin.config.ConfiguredPlugin;
 import com.gatehill.imposter.plugin.config.ResourceConfig;
@@ -37,9 +36,6 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
     private static final Pattern PARAM_MATCHER = Pattern.compile(".*:(.+).*");
 
     @Inject
-    private ImposterConfig imposterConfig;
-
-    @Inject
     private ResponseService responseService;
 
     private List<C> configs;
@@ -59,7 +55,7 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
     public void configureRoutes(Router router) {
         configs.forEach(config -> {
             // add root handler
-            addObjectHandler(router, config, "", config.getContentType());
+            addObjectHandler(router, "", config, config.getContentType());
 
             // add child resource handlers
             ofNullable(config.getResources())
@@ -71,19 +67,26 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
     private void addResourceHandler(Router router, C rootConfig, RestResourceConfig resourceConfig, String contentType) {
         switch (resourceConfig.getType()) {
             case OBJECT:
-                addObjectHandler(router, resourceConfig, rootConfig.getPath(), contentType);
+                addObjectHandler(router, rootConfig, resourceConfig, contentType);
                 break;
 
             case ARRAY:
-                addArrayHandler(router, resourceConfig, rootConfig.getPath(), contentType);
+                addArrayHandler(router, rootConfig, resourceConfig, contentType);
                 break;
         }
     }
 
-    private void addObjectHandler(Router router, ResourceConfig config, String basePath, String contentType) {
-        router.get(basePath + config.getPath()).handler(routingContext -> {
+    private void addObjectHandler(Router router, RestPluginConfig rootConfig, ResourceConfig resourceConfig, String contentType) {
+        addObjectHandler(router, rootConfig.getPath(), resourceConfig, contentType);
+    }
+
+    private void addObjectHandler(Router router, String rootPath, ResourceConfig resourceConfig, String contentType) {
+        final String qualifiedPath = rootPath + resourceConfig.getPath();
+        LOGGER.debug("Adding REST object handler: {}", qualifiedPath);
+
+        router.get(qualifiedPath).handler(routingContext -> {
             // script should fire first
-            scriptHandler(config, routingContext, responseBehaviour -> {
+            scriptHandler(resourceConfig, routingContext, responseBehaviour -> {
                 LOGGER.info("Handling object request for: {}", routingContext.request().absoluteURI());
 
                 final HttpServerResponse response = routingContext.response();
@@ -100,7 +103,7 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
 
                     } else {
                         LOGGER.info("Responding with file: {}", responseBehaviour.getResponseFile());
-                        response.sendFile(Paths.get(imposterConfig.getConfigDir(),
+                        response.sendFile(Paths.get(resourceConfig.getParentDir().getAbsolutePath(),
                                 responseBehaviour.getResponseFile()).toString());
                     }
 
@@ -111,8 +114,10 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
         });
     }
 
-    private void addArrayHandler(Router router, ResourceConfig config, String basePath, String contentType) {
-        final String resourcePath = config.getPath();
+    private void addArrayHandler(Router router, RestPluginConfig rootConfig, ResourceConfig resourceConfig, String contentType) {
+        final String resourcePath = resourceConfig.getPath();
+        final String qualifiedPath = rootConfig.getPath() + resourcePath;
+        LOGGER.debug("Adding REST array handler: {}", qualifiedPath);
 
         // validate path includes parameter
         final Matcher matcher = PARAM_MATCHER.matcher(resourcePath);
@@ -121,9 +126,9 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
                     resourcePath));
         }
 
-        router.get(basePath + resourcePath).handler(routingContext -> {
+        router.get(qualifiedPath).handler(routingContext -> {
             // script should fire first
-            scriptHandler(config, routingContext, responseBehaviour -> {
+            scriptHandler(resourceConfig, routingContext, responseBehaviour -> {
                 LOGGER.info("Handling array request for: {}", routingContext.request().absoluteURI());
 
                 // get the first param in the path
@@ -132,7 +137,7 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
 
                 // find row
                 final Optional<JsonObject> result = FileUtil.findRow(idFieldName, idField,
-                        responseService.loadResponseAsJsonArray(responseBehaviour));
+                        responseService.loadResponseAsJsonArray(rootConfig, responseBehaviour));
 
                 final HttpServerResponse response = routingContext.response();
 

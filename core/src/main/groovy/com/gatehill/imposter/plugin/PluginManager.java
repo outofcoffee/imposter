@@ -1,22 +1,23 @@
 package com.gatehill.imposter.plugin;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public class PluginManager {
-    private List<Class<? extends Plugin>> pluginClasses = Lists.newArrayList();
-    private Map<String, Plugin> plugins = Maps.newHashMap();
+    private final Set<Class<? extends Plugin>> pluginClasses = Sets.newHashSet();
+    private final Set<Class<? extends PluginProvider>> providers = Sets.newHashSet();
+    private final Map<String, Plugin> plugins = Maps.newHashMap();
 
-    public void registerClass(Class<? extends Plugin> plugin) {
-        pluginClasses.add(plugin);
+    public boolean registerClass(Class<? extends Plugin> plugin) {
+        return pluginClasses.add(plugin);
     }
 
     public Collection<Class<? extends Plugin>> getPluginClasses() {
@@ -34,5 +35,13 @@ public class PluginManager {
     @SuppressWarnings("unchecked")
     public <P extends Plugin> P getPlugin(String pluginClassName) {
         return (P) plugins.get(pluginClassName);
+    }
+
+    public void registerProvider(Class<? extends PluginProvider> provider) {
+        providers.add(provider);
+    }
+
+    public boolean isProviderRegistered(Class<? extends PluginProvider> provider) {
+        return providers.contains(provider);
     }
 }

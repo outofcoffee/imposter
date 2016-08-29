@@ -120,7 +120,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
             final Map<String, Object> bindings = buildScriptBindings(ResponsePhase.RECORD, tableName, recordInfo, empty());
             scriptHandler(config, routingContext, bindings, responseBehaviour -> {
                 // find the right row from results
-                final JsonArray results = responseService.loadResponseAsJsonArray(responseBehaviour);
+                final JsonArray results = responseService.loadResponseAsJsonArray(config, responseBehaviour);
                 final Optional<JsonObject> result = FileUtil.findRow(config.getIdField(), recordInfo.getRecordId(), results);
 
                 final HttpServerResponse response = routingContext.response();
@@ -257,7 +257,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
             scriptHandler(config, routingContext, bindings, responseBehaviour -> {
 
                 // build results
-                final JsonArray results = responseService.loadResponseAsJsonArray(responseBehaviour);
+                final JsonArray results = responseService.loadResponseAsJsonArray(config, responseBehaviour);
                 final SerialisationService serialiser = findSerialiser(routingContext);
                 final Buffer buffer = serialiser.serialise(tableName, scannerId, results, scanner, rows);
                 routingContext.response()

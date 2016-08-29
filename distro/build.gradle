@@ -10,6 +10,7 @@ dependencies {
     compile project (':server')
 
     // plugins
+    compile project (':plugin:detector')
     compile project (':plugin:rest')
     compile project (':plugin:openapi')
     compile project (':plugin:hbase')

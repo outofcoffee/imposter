@@ -20,7 +20,10 @@ public abstract class ConfiguredPlugin<T extends BaseConfig> implements Plugin, 
         final List<T> configs = configFiles.stream()
                 .map(file -> {
                     try {
-                        return MAPPER.readValue(file, getConfigClass());
+                        final T config = MAPPER.readValue(file, getConfigClass());
+                        config.setParentDir(file.getParentFile());
+                        return config;
+
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }

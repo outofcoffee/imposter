@@ -1,12 +1,11 @@
 package com.gatehill.imposter.plugin.openapi;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
-import com.gatehill.imposter.ImposterConfig;
-import com.gatehill.imposter.script.ResponseBehaviour;
 import com.gatehill.imposter.plugin.RequireModules;
 import com.gatehill.imposter.plugin.ScriptedPlugin;
 import com.gatehill.imposter.plugin.config.ConfiguredPlugin;
 import com.gatehill.imposter.plugin.openapi.service.OpenApiService;
+import com.gatehill.imposter.script.ResponseBehaviour;
 import com.gatehill.imposter.util.HttpUtil;
 import com.gatehill.imposter.util.MapUtil;
 import com.google.common.base.Strings;
@@ -56,9 +55,6 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
     static final String COMBINED_SPECIFICATION_PATH = SPECIFICATION_PATH + "/combined.json";
 
     @Inject
-    private ImposterConfig imposterConfig;
-
-    @Inject
     private OpenApiService openApiService;
 
     private List<OpenApiPluginConfig> configs;
@@ -85,7 +81,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
         // specification mock endpoints
         configs.forEach(config -> {
             final Swagger swagger = new SwaggerParser().read(Paths.get(
-                    imposterConfig.getConfigDir(), config.getSpecFile()).toString());
+                    config.getParentDir().getAbsolutePath(), config.getSpecFile()).toString());
 
             if (null != swagger) {
                 allSpecs.add(swagger);
@@ -257,7 +253,8 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
             response.putHeader(CONTENT_TYPE, config.getContentType());
         }
 
-        response.sendFile(Paths.get(imposterConfig.getConfigDir(), responseBehaviour.getResponseFile()).toString());
+        response.sendFile(Paths.get(config.getParentDir().getAbsolutePath(),
+                responseBehaviour.getResponseFile()).toString());
     }
 
     /**

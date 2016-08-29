@@ -522,12 +522,18 @@ Build the Docker containers with:
     cd docker
     ./build.sh
 
-# TODO
+# Recent changes and Roadmap
+  
+For recent changes see the [Changelog](CHANGELOG.md).
+  
+## Roadmap
 
-* HBase response content type header
+* Add content type header to HBase response
 * Reuse HBase model classes for JSON serialisation
 * Execute mock processing asynchronously
 * Docker images shadow JARs should only depend on a single plugin module
+* Investigate support for Javascript scripting engine
+* Docs - split plugin documentation into separate files
 
 # Contributing
 

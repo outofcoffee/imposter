@@ -85,7 +85,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> implement
             scriptHandler(config, routingContext, responseBehaviour -> {
 
                 // enrich records
-                final JsonArray records = responseService.loadResponseAsJsonArray(responseBehaviour);
+                final JsonArray records = responseService.loadResponseAsJsonArray(config, responseBehaviour);
                 for (int i = 0; i < records.size(); i++) {
                     addRecordAttributes(records.getJsonObject(i), apiVersion, config.getsObjectName());
                 }
@@ -117,7 +117,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> implement
 
                             // find and enrich record
                             final Optional<JsonObject> result = FileUtil.findRow(FIELD_ID, sObjectId,
-                                    responseService.loadResponseAsJsonArray(responseBehaviour))
+                                    responseService.loadResponseAsJsonArray(config, responseBehaviour))
                                     .map(r -> addRecordAttributes(r, apiVersion, config.getsObjectName()));
 
                             final HttpServerResponse response = routingContext.response();
