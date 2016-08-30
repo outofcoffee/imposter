@@ -2,27 +2,26 @@ package com.gatehill.imposter.service;
 
 import com.gatehill.imposter.plugin.config.ResourceConfig;
 import com.gatehill.imposter.plugin.config.ResponseConfig;
-import com.gatehill.imposter.script.AbstractResponseBehaviour;
 import com.gatehill.imposter.script.ResponseBehaviour;
-import com.gatehill.imposter.script.ResponseBehaviourImpl;
 import com.gatehill.imposter.script.ScriptUtil;
+import com.gatehill.imposter.script.MutableResponseBehaviour;
+import com.gatehill.imposter.script.impl.MutableResponseBehaviourImpl;
 import com.gatehill.imposter.util.HttpUtil;
+import com.gatehill.imposter.util.annotation.GroovyImpl;
+import com.gatehill.imposter.util.annotation.JavascriptImpl;
 import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
 import com.google.common.io.CharStreams;
-import groovy.lang.Binding;
-import groovy.lang.GroovyCodeSource;
-import groovy.lang.GroovyShell;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.web.RoutingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.codehaus.groovy.control.CompilerConfiguration;
 
+import javax.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Objects;
@@ -37,6 +36,14 @@ import static java.util.Optional.ofNullable;
 public class ResponseServiceImpl implements ResponseService {
     private static final Logger LOGGER = LogManager.getLogger(ResponseServiceImpl.class);
 
+    @Inject
+    @GroovyImpl
+    private ScriptService groovyScriptService;
+
+    @Inject
+    @JavascriptImpl
+    private ScriptService javascriptScriptService;
+
     @Override
     public ResponseBehaviour getResponseBehaviour(RoutingContext routingContext, ResourceConfig config,
                                                   Map<String, Object> additionalContext,
@@ -50,7 +57,7 @@ public class ResponseServiceImpl implements ResponseService {
         if (Objects.isNull(responseConfig.getScriptFile())) {
             // default behaviour is to use a static response file
             LOGGER.debug("Using default response behaviour for request: {}", routingContext.request().absoluteURI());
-            return new ResponseBehaviourImpl()
+            return new MutableResponseBehaviourImpl()
                     .withStatusCode(statusCode)
                     .withFile(responseConfig.getStaticFile())
                     .usingDefaultBehaviour();
@@ -63,16 +70,16 @@ public class ResponseServiceImpl implements ResponseService {
             final Map<String, Object> context = ScriptUtil.buildContext(routingContext, additionalContext);
             LOGGER.trace("Context for request: {}", () -> context);
 
-            final Binding binding = new Binding();
-            binding.setVariable("logger", LogManager.getLogger(getScriptName(responseConfig.getScriptFile())));
-            binding.setVariable("config", config);
-            binding.setVariable("context", context);
+            final Map<String, Object> bindings = Maps.newHashMap();
+            bindings.put("logger", LogManager.getLogger(determineScriptName(responseConfig.getScriptFile())));
+            bindings.put("config", config);
+            bindings.put("context", context);
 
             // add custom bindings
-            ofNullable(additionalBindings).ifPresent(additionalBinding -> additionalBinding.forEach(binding::setVariable));
+            ofNullable(additionalBindings).ifPresent(bindings::putAll);
 
             // execute the script and read response behaviour
-            final AbstractResponseBehaviour responseBehaviour = executeScript(config, binding);
+            final MutableResponseBehaviour responseBehaviour = fetchScriptService(config.getResponseConfig().getScriptFile()).executeScript(config, bindings);
 
             // use defaults if not set
             if (DEFAULT_BEHAVIOUR.equals(responseBehaviour.getBehaviourType())) {
@@ -91,36 +98,32 @@ public class ResponseServiceImpl implements ResponseService {
         }
     }
 
-    /**
-     * Execute the script and read response behaviour.
-     *
-     * @param config  the plugin configuration
-     * @param binding the script engine bindings
-     * @return the response behaviour
-     */
-    private AbstractResponseBehaviour executeScript(ResourceConfig config, Binding binding) {
-        final Path scriptFile = Paths.get(config.getParentDir().getAbsolutePath(), config.getResponseConfig().getScriptFile());
-        LOGGER.trace("Executing script file: {}", scriptFile);
+    private ScriptService fetchScriptService(String scriptFile) {
+        final String scriptExtension;
+        final int dotIndex = scriptFile.lastIndexOf('.');
+        if (dotIndex >= 1 && dotIndex < scriptFile.length() - 1) {
+            scriptExtension = scriptFile.substring(dotIndex + 1);
+        } else {
+            scriptExtension = "";
+        }
 
-        // the script class will be a subclass of AbstractResponseBehaviour
-        final CompilerConfiguration compilerConfig = new CompilerConfiguration();
-        compilerConfig.setScriptBaseClass(AbstractResponseBehaviour.class.getCanonicalName());
-        final GroovyShell groovyShell = new GroovyShell(binding, compilerConfig);
-
-        try {
-            final AbstractResponseBehaviour script = (AbstractResponseBehaviour) groovyShell.parse(
-                    new GroovyCodeSource(scriptFile.toFile(), compilerConfig.getSourceEncoding()));
-
-            script.run();
-            return script;
-
-        } catch (Exception e) {
-            throw new RuntimeException("Script execution terminated abnormally", e);
+        switch (scriptExtension.toLowerCase()) {
+            case "groovy":
+                return groovyScriptService;
+            case "js":
+                return javascriptScriptService;
+            default:
+                throw new RuntimeException("Unable to determine script engine from script file name: " + scriptFile);
         }
     }
 
-    private String getScriptName(String scriptFile) {
-        return scriptFile.replaceAll("\\.groovy", "");
+    private String determineScriptName(String scriptFile) {
+        final int dotIndex = scriptFile.lastIndexOf('.');
+        if (dotIndex >= 1 && dotIndex < scriptFile.length() - 1) {
+            return scriptFile.substring(0, dotIndex);
+        } else {
+            return scriptFile;
+        }
     }
 
     private InputStream loadResponseAsStream(ResourceConfig config, String responseFile) throws IOException {
