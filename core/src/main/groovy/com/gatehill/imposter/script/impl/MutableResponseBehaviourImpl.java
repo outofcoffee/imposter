@@ -1,12 +1,13 @@
-package com.gatehill.imposter.script;
+package com.gatehill.imposter.script.impl;
 
+import com.gatehill.imposter.script.ResponseBehaviourType;
+import com.gatehill.imposter.script.MutableResponseBehaviour;
 import com.gatehill.imposter.util.HttpUtil;
-import groovy.lang.Script;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public abstract class AbstractResponseBehaviour extends Script implements ResponseBehaviour {
+public class MutableResponseBehaviourImpl implements MutableResponseBehaviour {
     private ResponseBehaviourType behaviourType = ResponseBehaviourType.DEFAULT_BEHAVIOUR;
     private int statusCode = HttpUtil.HTTP_OK;
     private String responseFile;
@@ -33,7 +34,8 @@ public abstract class AbstractResponseBehaviour extends Script implements Respon
      * @param statusCode the HTTP status code
      * @return this
      */
-    public AbstractResponseBehaviour withStatusCode(int statusCode) {
+    @Override
+    public MutableResponseBehaviour withStatusCode(int statusCode) {
         this.statusCode = statusCode;
         return this;
     }
@@ -44,7 +46,8 @@ public abstract class AbstractResponseBehaviour extends Script implements Respon
      * @param responseFile the response file
      * @return this
      */
-    public AbstractResponseBehaviour withFile(String responseFile) {
+    @Override
+    public MutableResponseBehaviour withFile(String responseFile) {
         this.responseFile = responseFile;
         return this;
     }
@@ -54,7 +57,8 @@ public abstract class AbstractResponseBehaviour extends Script implements Respon
      *
      * @return this
      */
-    public AbstractResponseBehaviour withEmpty() {
+    @Override
+    public MutableResponseBehaviour withEmpty() {
         this.responseFile = null;
         return this;
     }
@@ -64,7 +68,8 @@ public abstract class AbstractResponseBehaviour extends Script implements Respon
      *
      * @return this
      */
-    public AbstractResponseBehaviour usingDefaultBehaviour() {
+    @Override
+    public MutableResponseBehaviour usingDefaultBehaviour() {
         if (behaviourConfigured) {
             throw new IllegalStateException("Response already handled");
         } else {
@@ -80,7 +85,8 @@ public abstract class AbstractResponseBehaviour extends Script implements Respon
      *
      * @return this
      */
-    public AbstractResponseBehaviour immediately() {
+    @Override
+    public MutableResponseBehaviour immediately() {
         if (behaviourConfigured) {
             throw new IllegalStateException("Response already handled");
         } else {
@@ -96,7 +102,8 @@ public abstract class AbstractResponseBehaviour extends Script implements Respon
      *
      * @return this
      */
-    public AbstractResponseBehaviour respond() {
+    @Override
+    public MutableResponseBehaviour respond() {
         return this;
     }
 
@@ -105,7 +112,8 @@ public abstract class AbstractResponseBehaviour extends Script implements Respon
      *
      * @return this
      */
-    public AbstractResponseBehaviour respond(Runnable closure) {
+    @Override
+    public MutableResponseBehaviour respond(Runnable closure) {
         closure.run();
         return this;
     }
@@ -115,7 +123,8 @@ public abstract class AbstractResponseBehaviour extends Script implements Respon
      *
      * @return this
      */
-    public AbstractResponseBehaviour and() {
+    @Override
+    public MutableResponseBehaviour and() {
         return this;
     }
 }
