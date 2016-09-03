@@ -3,6 +3,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.5.0] - 2016-09-03
+### Added
+- Adds JavaScript scripting support.
+- Refactored documentation.
+
 ## [0.4.0] - 2016-08-29
 ### Added
 - Adds changelog (this document!)
@@ -13,6 +18,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - Breaking change - response files are now resolved relative to the plugin configuration file, not the core configuration directory.
+
+## [0.3.4] - 2016-08-22
+### Added
+- Adds RecordInfo and record ID to context for HBase plugin.
 
 ## [0.3.3] - 2016-05-08
 ### Added
@@ -33,7 +42,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Adds request method to script context for all plugins.
 - Adds table name to HBase plugin.
 
-## [0.2.5] - 2016-04-25
+## [0.2.5] - 2016-04-26
 ### Added
 - Adds REST plugin support for ID field name (like HBase plugin).
 - Adds REST plugin subresources to return objects or arrays of data.

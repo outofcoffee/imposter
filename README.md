@@ -12,7 +12,7 @@ Use Imposter to:
 * decouple your integration tests from the cloud/various back-end systems and take control of your dependencies
 * quickly set up a temporary API for your mobile/web client teams whilst the real API is being built
 
-Mock responses can use simple static files, or be customised using [JavaScript](https://www.javascript.com/) or [Groovy](http://www.groovy-lang.org/) scripts. Power users can write thier own plugins in a JVM language of their choice.
+Mock responses can use simple static files, or be customised using [JavaScript](https://www.javascript.com/) or [Groovy](http://www.groovy-lang.org/) scripts. Power users can write their own plugins in a JVM language of their choice.
 
 ## Plugins
 

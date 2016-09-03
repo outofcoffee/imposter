@@ -35,7 +35,8 @@ If you want to run Imposter using Docker, use:
 
 ## Running as a standalone Java application
 
-If Docker isn't your thing, or you want to build Imposter yourself, you can create a standlone JAR file. See the _Build_ section below.
+If Docker isn't your thing, or you want to build Imposter yourself, you can create a standlone JAR file.
+See the [Build](build.md) section.
 
 Once, built, you can run the JAR as follows:
 
