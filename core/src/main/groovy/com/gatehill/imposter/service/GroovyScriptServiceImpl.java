@@ -1,6 +1,7 @@
 package com.gatehill.imposter.service;
 
 import com.gatehill.imposter.plugin.config.ResourceConfig;
+import com.gatehill.imposter.script.InternalResponseBehavior;
 import com.gatehill.imposter.script.impl.GroovyResponseBehaviourImpl;
 import groovy.lang.Binding;
 import groovy.lang.GroovyCodeSource;
@@ -22,12 +23,12 @@ public class GroovyScriptServiceImpl implements ScriptService {
     /**
      * Execute the script and read response behaviour.
      *
-     * @param config  the plugin configuration
+     * @param config   the plugin configuration
      * @param bindings the script engine bindings
      * @return the response behaviour
      */
     @Override
-    public GroovyResponseBehaviourImpl executeScript(ResourceConfig config, Map<String, Object> bindings) {
+    public InternalResponseBehavior executeScript(ResourceConfig config, Map<String, Object> bindings) {
         final Path scriptFile = Paths.get(config.getParentDir().getAbsolutePath(), config.getResponseConfig().getScriptFile());
         LOGGER.trace("Executing script file: {}", scriptFile);
 

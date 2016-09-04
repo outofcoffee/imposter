@@ -22,7 +22,7 @@ None.
 
 **Note:** Clients interacting with this plugin often require TLS/SSL to be enabled.
 If this is the case for your client, ensure that you use an _https://_ scheme for accessing
-the mock server. See the TLS/SSL section in the [Configuration](configuration.md) section for more details.
+the mock server. See the TLS/SSL section in the [Usage](usage.md) section for more details.
 
 **Note:** Typically, an OAuth2 login step precedes interactions with the SFDC API. As part
 of this, the mock server is required to return an `instance_url` to the client. Imposter uses the 'server URL', which
@@ -39,7 +39,7 @@ Let's assume your configuration is in a folder named `config`.
 Docker example:
 
     docker run -ti -p 8443:8443 \
-        -v /config:/opt/imposter/config \
+        -v $(pwd)/config:/opt/imposter/config \
         outofcoffee/imposter-sfdc \
         --serverUrl http://localhost:8443
 
@@ -54,6 +54,6 @@ This starts a mock server using the SFDC plugin. Responses are served based on t
 inside the `config` folder.
 
 Using the example above, you can connect a Salesforce client, such as
-[ForceApi](https://github.com/jesperfj/force-rest-api), to the URL
+[ForceApi](https://github.com/jesperfj/force-rest-api), to
 [http://localhost:8443/](http://localhost:8443/) to interact with the API. In this example,
 you can interact with the `Account` SObject, as defined in `sfdc-plugin-config.json` and `sfdc-plugin-data.json`.

@@ -44,3 +44,27 @@ which looks like this:
 For working examples, see:
 
     plugin/openapi/src/test/resources/config
+
+Let's assume your configuration is in a folder named `config`.
+
+Docker example:
+
+    docker run -ti -p 8443:8443 \
+        -v $(pwd)/config:/opt/imposter/config \
+        outofcoffee/imposter-openapi
+
+Standalone Java example:
+
+    java -jar distro/build/libs/imposter.jar \
+        --plugin com.gatehill.imposter.plugin.openapi.OpenApiPluginImpl \
+        --configDir ./config
+
+This starts a mock server using the OpenAPI plugin. Responses are served based on the configuration files
+inside the `config` folder; in particular the Swagger specification `petstore-expanded.yaml`.
+
+Using the example above, you can interact with the APIs with examples in the Swagger specification
+at their respective endpoints under
+`http://localhost:8443/<endpoint path>`.
+
+For specific information about the endpoints, see the interactive sandbox at
+[http://localhost:8443/_spec](http://localhost:8443/_spec).

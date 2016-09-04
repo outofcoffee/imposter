@@ -12,3 +12,4 @@ This section lists future ideas for features and improvements. Feel free to subm
 ## Features
 
 * SAML2 plugin
+* Set response data from a script

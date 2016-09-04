@@ -6,6 +6,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [0.5.0] - 2016-09-03
 ### Added
 - Adds JavaScript scripting support.
+
+### Changed
 - Refactored documentation.
 
 ## [0.4.0] - 2016-08-29

@@ -10,11 +10,14 @@ Salesforce and HBase APIs.
 
 ## What's it for?
 
-You can use Imposter to:
+Use Imposter to:
 
 * run standalone mocks in place of real systems
-* decouple your integration tests from the cloud/various back-end systems and take control of your dependencies
+* turn a Swagger file into a mock API for testing or QA
 * quickly set up a temporary API for your mobile/web client teams whilst the real API is being built
+* decouple your integration tests from the cloud/various back-end systems and take control of your dependencies
+
+Provide mock responses using static files or customise behaviour using JavaScript or Java/Groovy. Power users can write their own plugins in a JVM language of their choice.
 
 ## Getting started
 

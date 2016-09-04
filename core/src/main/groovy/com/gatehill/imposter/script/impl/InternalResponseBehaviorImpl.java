@@ -1,5 +1,6 @@
 package com.gatehill.imposter.script.impl;
 
+import com.gatehill.imposter.script.InternalResponseBehavior;
 import com.gatehill.imposter.script.ResponseBehaviourType;
 import com.gatehill.imposter.script.MutableResponseBehaviour;
 import com.gatehill.imposter.util.HttpUtil;
@@ -7,7 +8,7 @@ import com.gatehill.imposter.util.HttpUtil;
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public class MutableResponseBehaviourImpl implements MutableResponseBehaviour {
+public class InternalResponseBehaviorImpl implements InternalResponseBehavior {
     private ResponseBehaviourType behaviourType = ResponseBehaviourType.DEFAULT_BEHAVIOUR;
     private int statusCode = HttpUtil.HTTP_OK;
     private String responseFile;

@@ -1,14 +1,15 @@
 package com.gatehill.imposter.script.impl;
 
-import com.gatehill.imposter.script.ResponseBehaviourType;
+import com.gatehill.imposter.script.InternalResponseBehavior;
 import com.gatehill.imposter.script.MutableResponseBehaviour;
+import com.gatehill.imposter.script.ResponseBehaviourType;
 import groovy.lang.Script;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public abstract class GroovyResponseBehaviourImpl extends Script implements MutableResponseBehaviour {
-    private final MutableResponseBehaviour delegate = new MutableResponseBehaviourImpl();
+public abstract class GroovyResponseBehaviourImpl extends Script implements InternalResponseBehavior {
+    private final InternalResponseBehavior delegate = new InternalResponseBehaviorImpl();
 
     @Override
     public ResponseBehaviourType getBehaviourType() {

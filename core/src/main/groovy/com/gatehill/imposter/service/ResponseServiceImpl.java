@@ -2,10 +2,10 @@ package com.gatehill.imposter.service;
 
 import com.gatehill.imposter.plugin.config.ResourceConfig;
 import com.gatehill.imposter.plugin.config.ResponseConfig;
+import com.gatehill.imposter.script.InternalResponseBehavior;
 import com.gatehill.imposter.script.ResponseBehaviour;
 import com.gatehill.imposter.script.ScriptUtil;
-import com.gatehill.imposter.script.MutableResponseBehaviour;
-import com.gatehill.imposter.script.impl.MutableResponseBehaviourImpl;
+import com.gatehill.imposter.script.impl.InternalResponseBehaviorImpl;
 import com.gatehill.imposter.util.HttpUtil;
 import com.gatehill.imposter.util.annotation.GroovyImpl;
 import com.gatehill.imposter.util.annotation.JavascriptImpl;
@@ -57,10 +57,13 @@ public class ResponseServiceImpl implements ResponseService {
         if (Objects.isNull(responseConfig.getScriptFile())) {
             // default behaviour is to use a static response file
             LOGGER.debug("Using default response behaviour for request: {}", routingContext.request().absoluteURI());
-            return new MutableResponseBehaviourImpl()
+
+            final InternalResponseBehaviorImpl responseBehaviour = new InternalResponseBehaviorImpl();
+            responseBehaviour
                     .withStatusCode(statusCode)
                     .withFile(responseConfig.getStaticFile())
                     .usingDefaultBehaviour();
+            return responseBehaviour;
         }
 
         try {
@@ -79,7 +82,8 @@ public class ResponseServiceImpl implements ResponseService {
             ofNullable(additionalBindings).ifPresent(bindings::putAll);
 
             // execute the script and read response behaviour
-            final MutableResponseBehaviour responseBehaviour = fetchScriptService(config.getResponseConfig().getScriptFile()).executeScript(config, bindings);
+            final InternalResponseBehavior responseBehaviour =
+                    fetchScriptService(config.getResponseConfig().getScriptFile()).executeScript(config, bindings);
 
             // use defaults if not set
             if (DEFAULT_BEHAVIOUR.equals(responseBehaviour.getBehaviourType())) {

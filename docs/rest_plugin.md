@@ -4,7 +4,7 @@ Plugin class: `com.gatehill.imposter.plugin.rest.RestPluginImpl`
 
 ## Features
 
-* Simple REST API mock.
+* Supports RESTful or plain HTTP APIs.
 * Supports arbitrary format static files.
 * Supports optional JSON array responses.
 
@@ -27,7 +27,7 @@ Let's assume your configuration is in a folder named `config`.
 Docker example:
 
     docker run -ti -p 8443:8443 \
-        -v /config:/opt/imposter/config \
+        -v $(pwd)/config:/opt/imposter/config \
         outofcoffee/imposter-rest
 
 Standalone Java example:
