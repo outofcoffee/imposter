@@ -19,4 +19,6 @@ public interface MutableResponseBehaviour {
     MutableResponseBehaviour respond(Runnable closure);
 
     MutableResponseBehaviour and();
+
+    MutableResponseBehaviour withData(String responseData);
 }

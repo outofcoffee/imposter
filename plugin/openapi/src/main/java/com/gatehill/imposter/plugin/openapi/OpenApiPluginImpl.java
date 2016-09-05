@@ -1,5 +1,22 @@
 package com.gatehill.imposter.plugin.openapi;
 
+import static com.gatehill.imposter.util.HttpUtil.CONTENT_TYPE;
+import static java.util.Optional.empty;
+import static java.util.Optional.ofNullable;
+
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.function.BiConsumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import javax.inject.Inject;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.gatehill.imposter.plugin.RequireModules;
 import com.gatehill.imposter.plugin.ScriptedPlugin;
@@ -14,6 +31,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+
 import io.swagger.models.Operation;
 import io.swagger.models.Path;
 import io.swagger.models.Response;
@@ -25,21 +43,6 @@ import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import javax.inject.Inject;
-import java.nio.file.Paths;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.function.BiConsumer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import static com.gatehill.imposter.util.HttpUtil.CONTENT_TYPE;
-import static java.util.Optional.empty;
-import static java.util.Optional.ofNullable;
 
 /**
  * Plugin for OpenAPI (OAI; formerly known as 'Swagger').
@@ -224,6 +227,10 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
         if (!Strings.isNullOrEmpty(responseBehaviour.getResponseFile())) {
             // response file takes precedence
             serveResponseFile(config, routingContext, responseBehaviour);
+
+        } else if (!Strings.isNullOrEmpty(responseBehaviour.getResponseData())) {
+            // response data
+            routingContext.response().setStatusCode(responseBehaviour.getStatusCode()).end(responseBehaviour.getResponseData());
 
         } else {
             // attempt to serve an example from the specification, falling back if not present

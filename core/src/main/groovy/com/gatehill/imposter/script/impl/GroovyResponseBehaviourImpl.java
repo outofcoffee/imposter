@@ -3,6 +3,7 @@ package com.gatehill.imposter.script.impl;
 import com.gatehill.imposter.script.InternalResponseBehavior;
 import com.gatehill.imposter.script.MutableResponseBehaviour;
 import com.gatehill.imposter.script.ResponseBehaviourType;
+
 import groovy.lang.Script;
 
 /**
@@ -27,6 +28,11 @@ public abstract class GroovyResponseBehaviourImpl extends Script implements Inte
     }
 
     @Override
+    public String getResponseData() {
+        return delegate.getResponseData();
+    }
+
+    @Override
     public MutableResponseBehaviour withStatusCode(int statusCode) {
         delegate.withStatusCode(statusCode);
         return this;
@@ -35,6 +41,12 @@ public abstract class GroovyResponseBehaviourImpl extends Script implements Inte
     @Override
     public MutableResponseBehaviour withFile(String responseFile) {
         delegate.withFile(responseFile);
+        return this;
+    }
+
+    @Override
+    public MutableResponseBehaviour withData(String responseData) {
+        delegate.withData(responseData);
         return this;
     }
 
