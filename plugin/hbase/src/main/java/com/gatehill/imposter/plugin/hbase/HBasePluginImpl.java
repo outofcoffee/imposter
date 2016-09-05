@@ -115,6 +115,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
             LOGGER.info("Received request for row with ID: {} for table: {}", recordId, tableName);
             final HBasePluginConfig config = tableConfigs.get(tableName);
             final RecordInfo recordInfo = new RecordInfo(recordId);
+
             // script should fire first
             final Map<String, Object> bindings = buildScriptBindings(ResponsePhase.RECORD, tableName, recordInfo, empty());
             scriptHandler(config, routingContext, bindings, responseBehaviour -> {
@@ -126,13 +127,11 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
                 if (result.isPresent()) {
                     final SerialisationService serialiser = findSerialiser(routingContext);
                     final Buffer buffer = serialiser.serialise(tableName, recordInfo.getRecordId(), result.get());
-
                     response.setStatusCode(HttpUtil.HTTP_OK)
                             .end(buffer);
                 } else {
                     // no such record
                     LOGGER.error("No row found with ID: {} for table: {}", recordInfo.getRecordId(), tableName);
-
                     response.setStatusCode(HttpUtil.HTTP_NOT_FOUND)
                             .end();
                 }
