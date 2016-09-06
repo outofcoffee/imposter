@@ -1,6 +1,7 @@
 package com.gatehill.imposter.plugin.openapi;
 
 import static com.gatehill.imposter.util.HttpUtil.CONTENT_TYPE;
+import static com.gatehill.imposter.util.HttpUtil.CONTENT_TYPE_JSON;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 
@@ -142,7 +143,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
             });
 
             routingContext.response()
-                    .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_JSON)
+                    .putHeader(HttpUtil.CONTENT_TYPE, CONTENT_TYPE_JSON)
                     .end(combinedJson);
 
         } catch (Exception e) {
@@ -230,7 +231,9 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
 
         } else if (!Strings.isNullOrEmpty(responseBehaviour.getResponseData())) {
             // response data
-            routingContext.response().setStatusCode(responseBehaviour.getStatusCode()).end(responseBehaviour.getResponseData());
+            LOGGER.info("Response data is: {}", responseBehaviour.getResponseData());
+            routingContext.response().putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON)
+                .setStatusCode(responseBehaviour.getStatusCode()).end(responseBehaviour.getResponseData());
 
         } else {
             // attempt to serve an example from the specification, falling back if not present
