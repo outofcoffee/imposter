@@ -51,3 +51,7 @@ Once, built, you can run the JAR as follows:
         --plugin com.gatehill.imposter.plugin.rest.RestPluginImpl \
         --configDir /path/to/config \
         [args]
+
+## What's next
+
+Learn how to use Imposter with the [Configuration guide](configuration.md).
