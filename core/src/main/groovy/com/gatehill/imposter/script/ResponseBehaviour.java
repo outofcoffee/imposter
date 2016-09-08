@@ -8,5 +8,7 @@ public interface ResponseBehaviour {
 
     String getResponseFile();
 
+    String getResponseData();
+
     ResponseBehaviourType getBehaviourType();
 }

@@ -1,8 +1,8 @@
 package com.gatehill.imposter.script.impl;
 
 import com.gatehill.imposter.script.InternalResponseBehavior;
-import com.gatehill.imposter.script.ResponseBehaviourType;
 import com.gatehill.imposter.script.MutableResponseBehaviour;
+import com.gatehill.imposter.script.ResponseBehaviourType;
 import com.gatehill.imposter.util.HttpUtil;
 
 /**
@@ -12,6 +12,7 @@ public class InternalResponseBehaviorImpl implements InternalResponseBehavior {
     private ResponseBehaviourType behaviourType = ResponseBehaviourType.DEFAULT_BEHAVIOUR;
     private int statusCode = HttpUtil.HTTP_OK;
     private String responseFile;
+    private String responseData;
     private boolean behaviourConfigured;
 
     @Override
@@ -22,6 +23,11 @@ public class InternalResponseBehaviorImpl implements InternalResponseBehavior {
     @Override
     public String getResponseFile() {
         return responseFile;
+    }
+
+    @Override
+    public String getResponseData() {
+        return responseData;
     }
 
     @Override
@@ -126,6 +132,12 @@ public class InternalResponseBehaviorImpl implements InternalResponseBehavior {
      */
     @Override
     public MutableResponseBehaviour and() {
+        return this;
+    }
+
+    @Override
+    public MutableResponseBehaviour withData(String responseData) {
+        this.responseData = responseData;
         return this;
     }
 }
