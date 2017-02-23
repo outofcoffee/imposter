@@ -24,11 +24,12 @@ public class OpenApiServiceImpl implements OpenApiService {
     private static final Logger LOGGER = LogManager.getLogger(OpenApiServiceImpl.class);
 
     @Override
-    public Swagger combineSpecifications(List<Swagger> specs) {
+    public Swagger combineSpecifications(String basePath, List<Swagger> specs) {
         requireNonNull(specs, "Input specifications must not be null");
         LOGGER.debug("Generating combined specification from {} inputs", specs.size());
 
         final Swagger combined = new Swagger();
+        combined.basePath(basePath);
 
         final Info info = new Info();
         combined.setInfo(info);
@@ -71,8 +72,6 @@ public class OpenApiServiceImpl implements OpenApiService {
                     .append("**")
                     .append(ofNullable(specInfo.getDescription()).map(specDesc -> " - " + specDesc).orElse("")));
 
-            final String basePath = ofNullable(spec.getBasePath()).orElse("");
-
             tags.addAll(getOrEmpty(spec.getTags()));
             consumes.addAll(getOrEmpty(spec.getConsumes()));
             produces.addAll(getOrEmpty(spec.getProduces()));
@@ -84,8 +83,9 @@ public class OpenApiServiceImpl implements OpenApiService {
             responses.putAll(getOrEmpty(spec.getResponses()));
 
             // prefix paths with base url
+            final String childBasePath = ofNullable(spec.getBasePath()).orElse("");
             getOrEmpty(spec.getPaths()).forEach((path, pathDetails) ->
-                    paths.put(basePath + path, pathDetails));
+                    paths.put(childBasePath + path, pathDetails));
         });
 
         combined.setConsumes(Lists.newArrayList(consumes));

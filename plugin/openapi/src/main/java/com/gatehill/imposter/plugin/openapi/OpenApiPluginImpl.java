@@ -1,24 +1,7 @@
 package com.gatehill.imposter.plugin.openapi;
 
-import static com.gatehill.imposter.util.HttpUtil.CONTENT_TYPE;
-import static com.gatehill.imposter.util.HttpUtil.CONTENT_TYPE_JSON;
-import static java.util.Optional.empty;
-import static java.util.Optional.ofNullable;
-
-import java.nio.file.Paths;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.function.BiConsumer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import javax.inject.Inject;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.fasterxml.jackson.core.JsonGenerationException;
+import com.gatehill.imposter.ImposterConfig;
 import com.gatehill.imposter.plugin.RequireModules;
 import com.gatehill.imposter.plugin.ScriptedPlugin;
 import com.gatehill.imposter.plugin.config.ConfiguredPlugin;
@@ -32,7 +15,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-
 import io.swagger.models.Operation;
 import io.swagger.models.Path;
 import io.swagger.models.Response;
@@ -44,6 +26,22 @@ import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import javax.inject.Inject;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.function.BiConsumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import static com.gatehill.imposter.util.HttpUtil.CONTENT_TYPE;
+import static com.gatehill.imposter.util.HttpUtil.CONTENT_TYPE_JSON;
+import static java.util.Optional.empty;
+import static java.util.Optional.ofNullable;
 
 /**
  * Plugin for OpenAPI (OAI; formerly known as 'Swagger').
@@ -55,8 +53,12 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
     private static final Logger LOGGER = LogManager.getLogger(OpenApiPluginImpl.class);
     private static final Pattern PATH_PARAM_PLACEHOLDER = Pattern.compile("\\{([a-zA-Z]+)\\}");
     private static final String UI_WEB_ROOT = "swagger-ui";
+    private static final String ARG_BASEPATH = "openapi.basepath";
     static final String SPECIFICATION_PATH = "/_spec";
     static final String COMBINED_SPECIFICATION_PATH = SPECIFICATION_PATH + "/combined.json";
+
+    @Inject
+    private ImposterConfig imposterConfig;
 
     @Inject
     private OpenApiService openApiService;
@@ -134,7 +136,8 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
         try {
             final String combinedJson = specCache.get("combinedSpec", () -> {
                 try {
-                    final Swagger combined = openApiService.combineSpecifications(allSpecs);
+                    final String basePath = imposterConfig.getPluginArgs().get(ARG_BASEPATH);
+                    final Swagger combined = openApiService.combineSpecifications(basePath, allSpecs);
                     return MapUtil.MAPPER.writeValueAsString(combined);
 
                 } catch (JsonGenerationException e) {
@@ -233,7 +236,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
             // response data
             LOGGER.info("Response data is: {}", responseBehaviour.getResponseData());
             routingContext.response().putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON)
-                .setStatusCode(responseBehaviour.getStatusCode()).end(responseBehaviour.getResponseData());
+                    .setStatusCode(responseBehaviour.getStatusCode()).end(responseBehaviour.getResponseData());
 
         } else {
             // attempt to serve an example from the specification, falling back if not present

@@ -1,5 +1,7 @@
 package com.gatehill.imposter;
 
+import java.util.Map;
+
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
@@ -12,6 +14,7 @@ public class ImposterConfig {
     private String keystorePath;
     private String keystorePassword;
     private String[] pluginClassNames;
+    private Map<String, String> pluginArgs;
 
     public String getHost() {
         return host;
@@ -75,5 +78,13 @@ public class ImposterConfig {
 
     public String[] getPluginClassNames() {
         return pluginClassNames;
+    }
+
+    public void setPluginArgs(Map<String, String> pluginArgs) {
+        this.pluginArgs = pluginArgs;
+    }
+
+    public Map<String, String> getPluginArgs() {
+        return pluginArgs;
     }
 }

@@ -14,8 +14,11 @@ import org.kohsuke.args4j.Option;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import static com.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PASSWORD;
 import static com.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PATH;
@@ -40,7 +43,7 @@ public class ImposterLauncher extends Launcher {
     private boolean displayVersion;
 
     @Option(name = "--configDir", aliases = {"-c"}, usage = "Directory containing mock configuration files", required = true)
-    private String[] configDir;
+    private String[] configDirs;
 
     @Option(name = "--plugin", aliases = {"-p"}, usage = "Plugin class name")
     private String[] pluginClassNames;
@@ -62,6 +65,9 @@ public class ImposterLauncher extends Launcher {
 
     @Option(name = "--keystorePassword", usage = "Password for the keystore")
     private String keystorePassword = DEFAULT_KEYSTORE_PASSWORD;
+
+    @Option(name = "--pluginArg", usage = "Plugin arguments")
+    private String[] pluginArgs;
 
     @Inject
     private ImposterConfig imposterConfig;
@@ -119,13 +125,17 @@ public class ImposterLauncher extends Launcher {
         if (isNull(pluginClassNames) || 0 == pluginClassNames.length) {
             LOGGER.debug("No plugins specified - attempting to load defaults");
 
-            // check for plugins list of comma-separated plugin classes to load if none specified
+            // check for list of comma-separated plugin classes to load if none specified
             pluginClassNames = ofNullable(readMetaProperties().getProperty("plugins"))
                     .map(plugin -> plugin.split(","))
                     .orElse(new String[0]);
         }
 
-        imposterConfig.setConfigDirs(configDir);
+        final Map<String, String> splitArgs = Arrays.stream(ofNullable(pluginArgs).orElse(new String[0]))
+                .map(arg -> arg.split("="))
+                .collect(Collectors.toMap(splitArg -> splitArg[0], splitArg -> splitArg[1]));
+
+        imposterConfig.setConfigDirs(configDirs);
         imposterConfig.setPluginClassNames(pluginClassNames);
         imposterConfig.setListenPort(listenPort);
         imposterConfig.setHost(host);
@@ -133,6 +143,7 @@ public class ImposterLauncher extends Launcher {
         imposterConfig.setTlsEnabled(tlsEnabled);
         imposterConfig.setKeystorePath(keystorePath);
         imposterConfig.setKeystorePassword(keystorePassword);
+        imposterConfig.setPluginArgs(splitArgs);
 
         final List<String> args = Lists.newArrayList(originalArgs);
         args.add(0, "run");

@@ -8,5 +8,5 @@ import java.util.List;
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public interface OpenApiService {
-    Swagger combineSpecifications(List<Swagger> specs);
+    Swagger combineSpecifications(String basePath, List<Swagger> specs);
 }

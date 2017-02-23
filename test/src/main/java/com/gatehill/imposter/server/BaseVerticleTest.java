@@ -15,6 +15,8 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.file.Paths;
 
+import static java.util.Collections.emptyMap;
+
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
@@ -55,6 +57,7 @@ public abstract class BaseVerticleTest {
         imposterConfig.setPluginClassNames(new String[]{getPluginClass().getCanonicalName()});
         imposterConfig.setHost(HOST);
         imposterConfig.setListenPort(listenPort);
+        imposterConfig.setPluginArgs(emptyMap());
     }
 
     private int findFreePort() throws IOException {
