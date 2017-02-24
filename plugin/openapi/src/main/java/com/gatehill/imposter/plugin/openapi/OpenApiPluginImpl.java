@@ -15,10 +15,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import io.swagger.models.Operation;
-import io.swagger.models.Path;
-import io.swagger.models.Response;
-import io.swagger.models.Swagger;
+import io.swagger.models.*;
 import io.swagger.parser.SwaggerParser;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
@@ -54,6 +51,8 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
     private static final Pattern PATH_PARAM_PLACEHOLDER = Pattern.compile("\\{([a-zA-Z]+)\\}");
     private static final String UI_WEB_ROOT = "swagger-ui";
     private static final String ARG_BASEPATH = "openapi.basepath";
+    private static final String ARG_SCHEME = "openapi.scheme";
+    private static final String ARG_TITLE = "openapi.title";
     static final String SPECIFICATION_PATH = "/_spec";
     static final String COMBINED_SPECIFICATION_PATH = SPECIFICATION_PATH + "/combined.json";
 
@@ -136,8 +135,11 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
         try {
             final String combinedJson = specCache.get("combinedSpec", () -> {
                 try {
+                    final Scheme scheme = Scheme.forValue(imposterConfig.getPluginArgs().get(ARG_SCHEME));
                     final String basePath = imposterConfig.getPluginArgs().get(ARG_BASEPATH);
-                    final Swagger combined = openApiService.combineSpecifications(basePath, allSpecs);
+                    final String title = imposterConfig.getPluginArgs().get(ARG_TITLE);
+
+                    final Swagger combined = openApiService.combineSpecifications(allSpecs, basePath, scheme, title);
                     return MapUtil.MAPPER.writeValueAsString(combined);
 
                 } catch (JsonGenerationException e) {

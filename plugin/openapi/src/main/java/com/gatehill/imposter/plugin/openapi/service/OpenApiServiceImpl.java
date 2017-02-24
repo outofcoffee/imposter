@@ -22,9 +22,15 @@ import static java.util.Optional.ofNullable;
  */
 public class OpenApiServiceImpl implements OpenApiService {
     private static final Logger LOGGER = LogManager.getLogger(OpenApiServiceImpl.class);
+    private static final String DEFAULT_TITLE = "Imposter Mock APIs";
 
     @Override
-    public Swagger combineSpecifications(String basePath, List<Swagger> specs) {
+    public Swagger combineSpecifications(List<Swagger> specs, String basePath) {
+        return combineSpecifications(specs, basePath, null, null);
+    }
+
+    @Override
+    public Swagger combineSpecifications(List<Swagger> specs, String basePath, Scheme scheme, String title) {
         requireNonNull(specs, "Input specifications must not be null");
         LOGGER.debug("Generating combined specification from {} inputs", specs.size());
 
@@ -41,8 +47,8 @@ public class OpenApiServiceImpl implements OpenApiService {
         final Set<String> consumes = Sets.newHashSet();
         final Set<String> produces = Sets.newHashSet();
 
-        final List<Scheme> schemes = Lists.newArrayList();
-        combined.setSchemes(schemes);
+        // note: overridden by scheme parameter
+        final List<Scheme> childSchemes = Lists.newArrayList();
 
         final List<SecurityRequirement> security = Lists.newArrayList();
         combined.setSecurity(security);
@@ -75,7 +81,7 @@ public class OpenApiServiceImpl implements OpenApiService {
             tags.addAll(getOrEmpty(spec.getTags()));
             consumes.addAll(getOrEmpty(spec.getConsumes()));
             produces.addAll(getOrEmpty(spec.getProduces()));
-            schemes.addAll(getOrEmpty(spec.getSchemes()));
+            childSchemes.addAll(getOrEmpty(spec.getSchemes()));
             security.addAll(getOrEmpty(spec.getSecurity()));
             securityDefinitions.putAll(getOrEmpty(spec.getSecurityDefinitions()));
             definitions.putAll(getOrEmpty(spec.getDefinitions()));
@@ -91,7 +97,14 @@ public class OpenApiServiceImpl implements OpenApiService {
         combined.setConsumes(Lists.newArrayList(consumes));
         combined.setProduces(Lists.newArrayList(produces));
 
-        info.setTitle("Imposter Mock APIs");
+        if (null != scheme) {
+            combined.scheme(scheme);
+        } else {
+            // use those derived from the child specifications
+            combined.setSchemes(childSchemes);
+        }
+
+        info.setTitle(ofNullable(title).orElse(DEFAULT_TITLE));
         info.setDescription(description.toString());
         return combined;
     }
