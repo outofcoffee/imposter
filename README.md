@@ -17,6 +17,10 @@ Use Imposter to:
 
 Provide mock responses using static files or customise behaviour using JavaScript or Java/Groovy. Power users can write their own plugins in a JVM language of their choice.
 
+# Getting started
+
+The quickest way to get up and running is to use our free cloud-hosted version at [https://www.remotebot.io/mocks](https://www.remotebot.io/mocks)
+
 *****
 # Documentation
 
