@@ -5,6 +5,9 @@ import com.gatehill.imposter.script.MutableResponseBehaviour;
 import com.gatehill.imposter.script.ResponseBehaviourType;
 import com.gatehill.imposter.util.HttpUtil;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
@@ -13,7 +16,13 @@ public class InternalResponseBehaviorImpl implements InternalResponseBehavior {
     private int statusCode = HttpUtil.HTTP_OK;
     private String responseFile;
     private String responseData;
+    private Map<String,String> responseHeaders = new HashMap<>();
     private boolean behaviourConfigured;
+
+    @Override
+    public Map<String, String> getResponseHeaders() {
+        return responseHeaders;
+    }
 
     @Override
     public int getStatusCode() {
@@ -33,6 +42,16 @@ public class InternalResponseBehaviorImpl implements InternalResponseBehavior {
     @Override
     public ResponseBehaviourType getBehaviourType() {
         return behaviourType;
+    }
+
+    @Override
+    public MutableResponseBehaviour withHeader(String header, String value) {
+        if (value == null) {
+            responseHeaders.remove(header);
+        } else {
+            responseHeaders.put(header, value);
+        }
+        return this;
     }
 
     /**
