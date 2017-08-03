@@ -169,4 +169,20 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
         testContext.assertTrue(combined.getPaths().keySet().contains("/simple/apis"));
         testContext.assertTrue(combined.getPaths().keySet().contains("/api/pets"));
     }
+
+    @Test
+    public void testServeModelExamples(TestContext testContext) throws Exception {
+        final String body = given()
+                .log().everything()
+                // JSON content type in 'Accept' header matches specification example
+                .accept(ContentType.JSON)
+                .when()
+                .get("/api/pets")
+                .then()
+                .log().everything()
+                .statusCode(HttpUtil.HTTP_OK)
+                .extract().asString();
+
+        testContext.assertEquals("[{\"name\":\"\",\"tag\":\"\",\"id\":0,\"gender\":\"male\",\"misc\":{\"sick\":false,\"population\":47435}}]", body);
+    }
 }

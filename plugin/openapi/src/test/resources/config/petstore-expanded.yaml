@@ -50,20 +50,6 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Pet'
-          examples:
-            application/json: |-
-              [
-                {
-                  "name": "Fluffy",
-                  "tag": "cat",
-                  "id": 1
-                },
-                {
-                  "name": "Lassie",
-                  "tag": "dog",
-                  "id": 2
-                }
-              ]
         default:
           description: unexpected error
           schema:
@@ -155,7 +141,18 @@ definitions:
       name:
         type: string
       tag:
-        type: string    
+        type: string
+      gender:
+        type: string
+        example: male
+      misc:
+        type: object
+        properties:
+          population:
+            type: integer
+            example: 47435
+          sick:
+            type: boolean
 
   Error:
     required:

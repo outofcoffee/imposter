@@ -1,6 +1,8 @@
 package com.gatehill.imposter.plugin.openapi;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gatehill.imposter.ImposterConfig;
 import com.gatehill.imposter.plugin.RequireModules;
 import com.gatehill.imposter.plugin.ScriptedPlugin;
@@ -16,6 +18,10 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import io.swagger.models.*;
+import io.swagger.models.properties.ArrayProperty;
+import io.swagger.models.properties.ObjectProperty;
+import io.swagger.models.properties.Property;
+import io.swagger.models.properties.RefProperty;
 import io.swagger.parser.SwaggerParser;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
@@ -33,6 +39,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import static com.gatehill.imposter.util.HttpUtil.CONTENT_TYPE;
@@ -320,6 +327,23 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
 
                 return;
             }
+        } else if (mockResponse.getSchema() != null) {
+
+            if (Property.class.isAssignableFrom(mockResponse.getSchema().getClass())) {
+                Object dynamicExamples = collectExamples(mockResponse.getSchema(), swagger);
+
+                try {
+                    ObjectMapper mapper = new ObjectMapper();
+                    String jsonString = mapper.writeValueAsString(dynamicExamples);
+
+                    routingContext.response()
+                            .putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON)
+                            .end(jsonString);
+                    return;
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         LOGGER.trace("No example matches found in specification for URI {} and status code {}",
@@ -327,6 +351,67 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
 
         // no matching example - use fallback
         fallback.accept(routingContext, responseBehaviour);
+    }
+
+    private Object collectExamples(Property property, Swagger swagger) {
+        if (property.getExample() != null) {
+            return property.getExample();
+        } else if (RefProperty.class.isAssignableFrom(property.getClass())) {
+            RefProperty refProperty = (RefProperty) property;
+            String refName = refProperty.getSimpleRef();
+            Model model = swagger.getDefinitions().get(refName);
+            return collectModel(model, swagger);
+        } else if (ObjectProperty.class.isAssignableFrom(property.getClass())) {
+            ObjectProperty objectProperty = (ObjectProperty) property;
+            return collectProperties(objectProperty.getProperties(), swagger);
+        } else if (ArrayProperty.class.isAssignableFrom(property.getClass())) {
+            ArrayProperty arrayProperty = (ArrayProperty) property;
+            Property items = arrayProperty.getItems();
+            List<Object> list = new ArrayList<>();
+            list.add(collectExamples(items, swagger));
+            return list;
+        }
+        return getPropertyDefault(property);
+    }
+
+    private Map<String,Object> collectModel(Model model, Swagger swagger) {
+        Map<String,Object> map = new HashMap<>();
+        if (model.getProperties() != null) {
+            return collectProperties(model.getProperties(), swagger);
+        } else if (RefModel.class.isAssignableFrom(model.getClass())) {
+            RefModel refModel = (RefModel) model;
+            String refName = refModel.getSimpleRef();
+            Model solvedModel = swagger.getDefinitions().get(refName);
+            return collectModel(solvedModel, swagger);
+        } else if (ComposedModel.class.isAssignableFrom(model.getClass())) {
+            ComposedModel composedModel = (ComposedModel) model;
+            if (composedModel.getAllOf() != null) {
+                List<Model> allOf = composedModel.getAllOf();
+                allOf.forEach(e ->map.putAll(collectModel(e, swagger)));
+            }
+        }
+        return map;
+    }
+
+    private Map<String,Object> collectProperties(Map<String, Property> properties, Swagger swagger) {
+        return properties.entrySet().stream()
+                .collect(Collectors.toMap(e -> e.getKey(), e -> collectExamples(e.getValue(), swagger)));
+    }
+
+    private Object getPropertyDefault(Property property) {
+        switch (property.getType()) {
+            case "string":
+                return "";
+            case "number":
+            case "integer":
+                return 0;
+            case "boolean":
+                return false;
+            default:
+                return null;
+
+        }
+
     }
 
     /**
