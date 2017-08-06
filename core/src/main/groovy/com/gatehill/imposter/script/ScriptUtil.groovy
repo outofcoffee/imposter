@@ -1,6 +1,7 @@
 package com.gatehill.imposter.script
 
 import io.vertx.ext.web.RoutingContext
+import io.vertx.core.http.HttpHeaders
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 
@@ -55,6 +56,7 @@ class ScriptUtil {
         request.put "method", "${-> routingContext.request().method().name()}"
         request.put "uri", "${-> routingContext.request().absoluteURI()}"
         request.put "body", "${-> routingContext.getBodyAsString()}"
+		request.put "headers", -> routingContext.request().headers()
         context.put "request", unmodifiableMap(request)
 
         // additional context
