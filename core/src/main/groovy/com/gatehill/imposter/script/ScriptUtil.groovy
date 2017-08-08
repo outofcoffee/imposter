@@ -56,7 +56,7 @@ class ScriptUtil {
         request.put "method", "${-> routingContext.request().method().name()}"
         request.put "uri", "${-> routingContext.request().absoluteURI()}"
         request.put "body", "${-> routingContext.getBodyAsString()}"
-		request.put "headers", -> routingContext.request().headers()
+        request.put "headers", routingContext.request().headers()
         context.put "request", unmodifiableMap(request)
 
         // additional context
