@@ -92,7 +92,8 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
                 .then()
                 .log().everything()
                 .statusCode(HttpUtil.HTTP_CREATED)
-                .body("result", equalTo("success"));
+                .body("result", equalTo("success"))
+                .header("MyHeader","MyHeaderValue");
     }
 
     /**

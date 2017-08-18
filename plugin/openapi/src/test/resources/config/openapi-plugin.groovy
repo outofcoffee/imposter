@@ -9,6 +9,7 @@ if (context.request.uri ==~ /(.*)\/apis$/) {
             case 'PUT':
                 respond {
                     withStatusCode 201
+                    withHeader("MyHeader","MyHeaderValue")
                 }
                 break
 

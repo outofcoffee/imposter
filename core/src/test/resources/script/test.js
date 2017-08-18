@@ -4,5 +4,6 @@ if ('world' === hello) {
     respond()
         .withStatusCode(201).and()
         .withFile("foo.bar")
-        .immediately();
+        .immediately().
+        withHeader("MyHeader","AwesomeHeader");
 }
