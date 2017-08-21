@@ -230,6 +230,12 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
         LOGGER.trace("Found mock response for URI {} and status code {}",
                 routingContext.request().absoluteURI(), responseBehaviour.getStatusCode());
 
+        if (!responseBehaviour.getResponseHeaders().isEmpty()) {
+            responseBehaviour.getResponseHeaders().forEach((header, value) -> {
+                routingContext.response().putHeader(header, value);
+            });
+        }
+
         if (!Strings.isNullOrEmpty(responseBehaviour.getResponseFile())) {
             // response file takes precedence
             serveResponseFile(config, routingContext, responseBehaviour);

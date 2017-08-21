@@ -6,11 +6,18 @@ import com.gatehill.imposter.script.ResponseBehaviourType;
 
 import groovy.lang.Script;
 
+import java.util.Map;
+
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public abstract class GroovyResponseBehaviourImpl extends Script implements InternalResponseBehavior {
     private final InternalResponseBehavior delegate = new InternalResponseBehaviorImpl();
+
+    @Override
+    public Map<String, String> getResponseHeaders() {
+        return delegate.getResponseHeaders();
+    }
 
     @Override
     public ResponseBehaviourType getBehaviourType() {
@@ -30,6 +37,12 @@ public abstract class GroovyResponseBehaviourImpl extends Script implements Inte
     @Override
     public String getResponseData() {
         return delegate.getResponseData();
+    }
+
+    @Override
+    public MutableResponseBehaviour withHeader(String header, String value) {
+        delegate.withHeader(header, value);
+        return this;
     }
 
     @Override
