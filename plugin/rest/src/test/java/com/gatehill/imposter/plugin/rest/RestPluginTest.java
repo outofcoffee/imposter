@@ -115,4 +115,13 @@ public class RestPluginTest extends BaseVerticleTest {
                 .then()
                 .statusCode(equalTo(HttpUtil.HTTP_NOT_FOUND));
     }
+
+    @Test
+    public void testRequestWithHeaders() throws Exception {
+        given().when()
+                .header("Authorization", "AUTH_HEADER")
+                .get("/scripted?with-auth")
+                .then()
+                .statusCode(equalTo(HttpUtil.HTTP_NO_CONTENT));
+    }
 }

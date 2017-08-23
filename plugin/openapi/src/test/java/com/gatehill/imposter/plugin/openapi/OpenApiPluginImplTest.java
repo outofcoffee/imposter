@@ -170,4 +170,16 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
         testContext.assertTrue(combined.getPaths().keySet().contains("/simple/apis"));
         testContext.assertTrue(combined.getPaths().keySet().contains("/api/pets"));
     }
+
+    @Test
+    public void testRequestWithHeaders() throws Exception {
+        given()
+            .log().everything()
+            .accept(ContentType.TEXT)
+            .when()
+            .header("Authorization", "AUTH_HEADER")
+            .get("/simple/apis")
+            .then()
+            .statusCode(equalTo(HttpUtil.HTTP_NO_CONTENT));
+    }
 }
