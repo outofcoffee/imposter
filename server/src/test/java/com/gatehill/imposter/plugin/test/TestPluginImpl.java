@@ -6,6 +6,8 @@ import io.vertx.ext.web.Router;
 
 import java.util.List;
 
+import static com.gatehill.imposter.util.AsyncUtil.handleAsync;
+
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
@@ -24,8 +26,8 @@ public class TestPluginImpl extends ConfiguredPlugin<TestPluginConfig> {
 
     @Override
     public void configureRoutes(Router router) {
-        router.get("/example")
-                .handler(routingContext -> routingContext.response().setStatusCode(HttpUtil.HTTP_OK).end());
+        router.get("/example").handler(handleAsync(routingContext ->
+                routingContext.response().setStatusCode(HttpUtil.HTTP_OK).end()));
     }
 
     public List<TestPluginConfig> getConfigs() {

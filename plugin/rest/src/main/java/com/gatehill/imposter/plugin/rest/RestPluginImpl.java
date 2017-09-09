@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.gatehill.imposter.util.AsyncUtil.handleAsync;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -58,9 +59,8 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
             addObjectHandler(router, "", config, config.getContentType());
 
             // add child resource handlers
-            ofNullable(config.getResources())
-                    .ifPresent(resources -> resources
-                            .forEach(resource -> addResourceHandler(router, config, resource, config.getContentType())));
+            ofNullable(config.getResources()).ifPresent(resources -> resources.forEach(resource ->
+                    addResourceHandler(router, config, resource, config.getContentType())));
         });
     }
 
@@ -84,7 +84,7 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
         final String qualifiedPath = rootPath + resourceConfig.getPath();
         LOGGER.debug("Adding REST object handler: {}", qualifiedPath);
 
-        router.get(qualifiedPath).handler(routingContext -> {
+        router.get(qualifiedPath).handler(handleAsync(routingContext -> {
             // script should fire first
             scriptHandler(resourceConfig, routingContext, responseBehaviour -> {
                 LOGGER.info("Handling object request for: {}", routingContext.request().absoluteURI());
@@ -111,7 +111,7 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
                     routingContext.fail(e);
                 }
             });
-        });
+        }));
     }
 
     private void addArrayHandler(Router router, RestPluginConfig rootConfig, ResourceConfig resourceConfig, String contentType) {
@@ -126,7 +126,7 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
                     resourcePath));
         }
 
-        router.get(qualifiedPath).handler(routingContext -> {
+        router.get(qualifiedPath).handler(handleAsync(routingContext -> {
             // script should fire first
             scriptHandler(resourceConfig, routingContext, responseBehaviour -> {
                 LOGGER.info("Handling array request for: {}", routingContext.request().absoluteURI());
@@ -155,6 +155,6 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
                             .end();
                 }
             });
-        });
+        }));
     }
 }

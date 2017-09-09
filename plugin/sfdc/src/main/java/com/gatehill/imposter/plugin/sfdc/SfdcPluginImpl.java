@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.StringTokenizer;
 import java.util.UUID;
 
+import static com.gatehill.imposter.util.AsyncUtil.handleAsync;
 import static com.gatehill.imposter.util.HttpUtil.CONTENT_TYPE;
 import static com.gatehill.imposter.util.HttpUtil.CONTENT_TYPE_JSON;
 import static java.util.Optional.*;
@@ -57,17 +58,17 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> implement
     @Override
     public void configureRoutes(Router router) {
         // oauth handler
-        router.post("/services/oauth2/token").handler(routingContext -> {
+        router.post("/services/oauth2/token").handler(handleAsync(routingContext -> {
             LOGGER.info("Handling oauth request: {}", routingContext.getBodyAsString());
 
             final JsonObject authResponse = new JsonObject();
             authResponse.put("access_token", "dummyAccessToken");
             authResponse.put("instance_url", imposterConfig.getServerUrl());
             routingContext.response().end(authResponse.encode());
-        });
+        }));
 
         // query handler
-        router.get("/services/data/:apiVersion/query/").handler(routingContext -> {
+        router.get("/services/data/:apiVersion/query/").handler(handleAsync(routingContext -> {
             final String apiVersion = routingContext.request().getParam("apiVersion");
 
             // e.g. 'SELECT Name, Id from Account LIMIT 100'
@@ -103,12 +104,12 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> implement
                         .setStatusCode(HttpUtil.HTTP_OK)
                         .end(Buffer.buffer(responseWrapper.encodePrettily()));
             });
-        });
+        }));
 
         // get SObject handler
         configs.forEach(config -> {
             router.get("/services/data/:apiVersion/sobjects/" + config.getsObjectName() + "/:sObjectId")
-                    .handler(routingContext -> {
+                    .handler(handleAsync(routingContext -> {
                         // script should fire first
                         scriptHandler(config, routingContext, responseBehaviour -> {
 
@@ -135,12 +136,12 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> implement
                                         .end();
                             }
                         });
-                    });
+                    }));
         });
 
         // create SObject handler
         router.post("/services/data/:apiVersion/sobjects/:sObjectName")
-                .handler(routingContext -> {
+                .handler(handleAsync(routingContext -> {
                     final String sObjectName = routingContext.request().getParam("sObjectName");
                     final JsonObject sObject = routingContext.getBodyAsJson();
 
@@ -156,7 +157,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> implement
                             .putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON)
                             .setStatusCode(HttpUtil.HTTP_CREATED)
                             .end(Buffer.buffer(result.encodePrettily()));
-                });
+                }));
 
         // update SObject handlers
         router.patch("/services/data/:apiVersion/sobjects/:sObjectName/:sObjectId")
@@ -171,7 +172,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> implement
      * @return
      */
     private Handler<RoutingContext> handleUpdateRequest() {
-        return routingContext -> {
+        return handleAsync(routingContext -> {
             final String sObjectName = routingContext.request().getParam("sObjectName");
             final String sObjectId = routingContext.request().getParam("sObjectId");
             final JsonObject sObject = routingContext.getBodyAsJson();
@@ -190,7 +191,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> implement
                     .putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON)
                     .setStatusCode(HttpUtil.HTTP_NO_CONTENT)
                     .end();
-        };
+        });
     }
 
     private String generateBase62Id() {

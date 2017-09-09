@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.gatehill.imposter.util.AsyncUtil.handleAsync;
 import static com.gatehill.imposter.util.HttpUtil.CONTENT_TYPE_JSON;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
@@ -98,7 +99,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
      * @param path
      */
     private void addRowRetrievalRoute(Router router, String path) {
-        router.get(path + "/:tableName/:recordId/").handler(routingContext -> {
+        router.get(path + "/:tableName/:recordId/").handler(handleAsync(routingContext -> {
             final String tableName = routingContext.request().getParam("tableName");
             final String recordId = routingContext.request().getParam("recordId");
 
@@ -136,7 +137,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
                             .end();
                 }
             });
-        });
+        }));
     }
 
     /**
@@ -147,7 +148,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
      * @param path
      */
     private void addCreateScannerRoute(Router router, String path) {
-        router.post(path + "/:tableName/scanner").handler(routingContext -> {
+        router.post(path + "/:tableName/scanner").handler(handleAsync(routingContext -> {
             final String tableName = routingContext.request().getParam("tableName");
 
             // check that the table is registered
@@ -203,7 +204,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
                         .setStatusCode(HttpUtil.HTTP_CREATED)
                         .end();
             });
-        });
+        }));
     }
 
     /**
@@ -214,7 +215,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
      * @param path
      */
     private void addReadScannerResultsRoute(Router router, String path) {
-        router.get(path + "/:tableName/scanner/:scannerId").handler(routingContext -> {
+        router.get(path + "/:tableName/scanner/:scannerId").handler(handleAsync(routingContext -> {
             final String tableName = routingContext.request().getParam("tableName");
             final String scannerId = routingContext.request().getParam("scannerId");
 
@@ -264,7 +265,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
                         .setStatusCode(HttpUtil.HTTP_OK)
                         .end(buffer);
             });
-        });
+        }));
     }
 
     /**
