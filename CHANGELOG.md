@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased] 
+### Added
+- Exposes request headers to scripts (thanks, kareem-habib).
+- Adds withData response behaviour (thanks, yanan-l).
+- Adds withHeader response behaviour (thanks, benjvoigt).
+- Adds documentation for new response behaviours.
+
+### Changed
+- Switches to asynchronous request handling, which should improve performance under load.
+- Updates swagger-ui to version 3.0.21 (thanks, benjvoigt).
+
 ## [0.5.0] - 2016-09-03
 ### Added
 - Adds JavaScript scripting support.
