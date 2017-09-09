@@ -5,5 +5,5 @@ if ('world' == hello) {
             .withStatusCode(201).and()
             .withFile("foo.bar")
             .immediately()
-            .withHeader("MyHeader","AwesomeHeader")
+            .withHeader("MyHeader", "AwesomeHeader")
 }

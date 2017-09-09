@@ -67,7 +67,7 @@ Here's an example configuration file that uses a script:
 
 ...and here's the corresponding script (`example.groovy`):
 
-    if (context.request.params.action == "create") {
+    if (context.request.params.action == 'create') {
         respond {
             withStatusCode 201
             immediately()
@@ -92,7 +92,7 @@ For example:
 Here's a more sophisticated example script:
 
     switch (context.request.params.action) {
-        case "create":
+        case 'create':
             // HTTP Status-Code 201: Created.
             respond {
                 withStatusCode 201
@@ -100,10 +100,10 @@ Here's a more sophisticated example script:
             }
             break
 
-        case "fetch":
+        case 'fetch':
             // use a static response file and the default plugin behaviour
             respond {
-                withFile "example-data.json"
+                withFile 'example-data.json'
                 and()
                 usingDefaultBehaviour()
             }
@@ -188,6 +188,8 @@ The ResponseBehaviour object provides a number of methods to enable you to contr
 | --- | ---
 | `withStatusCode(int)` | Set the HTTP status code for the response
 | `withFile(String)` | Respond with the content of a static file
+| `withData(String)` | Respond with the content of the `String`
+| `withHeader(String, String)` | Set a response header
 | `withEmpty()` | Respond with empty content, or no records
 | `usingDefaultBehaviour()` | Use the plugin's default behaviour to respond
 | `immediately()` | Skip the plugin's default behaviour and respond immediately
@@ -261,11 +263,28 @@ that you want the plugin to handle the response file for you. See the *rest* plu
 end, the following blocks are semantically identical:
 
     respond {
-        withFile "static-data.json" and() usingDefaultBehaviour()
+        withFile 'static-data.json' and() usingDefaultBehaviour()
     }
 
 and:
 
     respond {
-        withFile "static-data.json"
+        withFile 'static-data.json'
+    }
+
+### Setting response headers
+
+You can set response headers using the `withHeader(String, String)` method. 
+
+    respond {
+        withHeader('X-Custom-Header', 'example value')
+    }
+
+
+### Returning raw data
+
+You can return raw data using the `withData(String)` method.
+
+    respond {
+        withData '{ "someKey": "someValue" }'
     }
