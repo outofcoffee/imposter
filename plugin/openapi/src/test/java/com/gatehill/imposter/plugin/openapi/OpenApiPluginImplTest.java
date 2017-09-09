@@ -138,7 +138,7 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
                 .statusCode(HttpUtil.HTTP_OK)
                 .extract().asString();
 
-        testContext.assertTrue(body.contains("<html>"));
+        testContext.assertTrue(body.contains("</html>"));
     }
 
     /**
