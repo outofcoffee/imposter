@@ -29,3 +29,7 @@ subprojects {
         version_args4j = '2.33'
     }
 }
+
+wrapper {
+    gradleVersion = '4.1'
+}
