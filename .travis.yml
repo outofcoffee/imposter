@@ -14,11 +14,20 @@ script:
 after_success:
   - |
     set -e
-    if [ "${TRAVIS_BRANCH}" == "master" ] && [ "${TRAVIS_PULL_REQUEST}" == "false" ]; then
+    case "${TRAVIS_BRANCH}" in
+      master)
+        IMAGE_TAG="latest"
+        ;;
+      develop)
+        IMAGE_TAG="beta"
+        ;;
+    esac
+    if [ ! -z "${IMAGE_TAG}" ] && [ "${TRAVIS_PULL_REQUEST}" == "false" ]; then
+      echo "Releasing image: ${IMAGE_TAG}"
       docker login -u "${DOCKER_USER}" -p "${DOCKER_PASSWORD}"
       cd ./docker
-      ./build.sh latest
-      ./push.sh latest
+      ./build.sh "${IMAGE_TAG}"
+      ./push.sh "${IMAGE_TAG}"
     else
-      echo "Not on master (or current build is a PR) - skipping Docker build"
+      echo "Not on release branch (or current build is a PR) - skipping Docker build"
     fi
