@@ -1,6 +1,6 @@
 subprojects {
     group 'com.gatehill'
-    version '0.6.0'
+    version '0.6.1-SNAPSHOT'
 
     buildscript {
         ext.version_shadow = '2.0.1'
