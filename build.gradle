@@ -1,8 +1,10 @@
 subprojects {
     group 'com.gatehill'
-    version '0.0.1-SNAPSHOT'
+    version '0.6.0-SNAPSHOT'
 
     buildscript {
+        ext.version_shadow = '2.0.1'
+
         repositories {
             mavenCentral()
             maven {
@@ -10,7 +12,7 @@ subprojects {
             }
         }
         dependencies {
-            classpath "com.github.jengelman.gradle.plugins:shadow:1.2.3"
+            classpath "com.github.jengelman.gradle.plugins:shadow:$version_shadow"
         }
     }
 

@@ -112,7 +112,7 @@ public class ImposterVerticle extends AbstractVerticle {
         // status check to indicate when server is up
         router.get("/system/status").handler(routingContext -> routingContext.response()
                 .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_JSON)
-                .end(HttpUtil.STATUS_RESPONSE));
+                .end(HttpUtil.buildStatusResponse()));
 
         pluginManager.getPlugins().forEach(plugin -> plugin.configureRoutes(router));
 

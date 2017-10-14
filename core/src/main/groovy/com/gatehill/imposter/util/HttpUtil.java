@@ -15,7 +15,6 @@ public final class HttpUtil {
     public static final String CONTENT_TYPE = "Content-Type";
     public static final String CONTENT_TYPE_JSON = "application/json";
     public static final String BIND_ALL_HOSTS = "0.0.0.0";
-    public static final String STATUS_RESPONSE = "{\"status\":\"ok\"}";
 
     /* 2XX: generally "OK" */
 
@@ -219,7 +218,7 @@ public final class HttpUtil {
      * @param acceptHeader the value of the 'Accept' HTTP request header
      * @return the ordered content types
      */
-    public static List<String> readAcceptedContentTypes(String acceptHeader) {
+    static List<String> readAcceptedContentTypes(String acceptHeader) {
         final List<WeightedAcceptEntry> accepts = newArrayList(ofNullable(acceptHeader)
                 .map(a -> a.replaceAll("\\s*", ""))
                 .map(a -> a.split(","))
@@ -244,6 +243,10 @@ public final class HttpUtil {
         return accepts.parallelStream()
                 .map(weightedAcceptEntry -> weightedAcceptEntry.contentType)
                 .collect(Collectors.toList());
+    }
+
+    public static String buildStatusResponse() {
+        return "{\n  \"status\":\"ok\"\n  \"version\":\"" + MetaUtil.readVersion() + "\"\n}";
     }
 
     private static class WeightedAcceptEntry {
