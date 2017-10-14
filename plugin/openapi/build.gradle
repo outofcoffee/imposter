@@ -13,7 +13,7 @@ tasks.processResources.dependsOn copyStaticUi
 
 dependencies {
     compile project(':core')
-    compile 'io.swagger:swagger-parser:1.0.19'
+    compile 'io.swagger:swagger-parser:1.0.32'
 
     // test
     testCompile project(':test')
