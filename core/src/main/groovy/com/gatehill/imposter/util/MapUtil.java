@@ -10,7 +10,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
  */
 public final class MapUtil {
     public static final ObjectMapper JSON_MAPPER = new ObjectMapper();
-    public static final ObjectMapper YAML_MAPPER = new YAMLMapper();
+    public static final YAMLMapper YAML_MAPPER = new YAMLMapper();
 
     static {
         JSON_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
