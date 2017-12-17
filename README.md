@@ -1,4 +1,4 @@
-# Imposter: A scriptable, multipurpose mock server [![Build Status](https://travis-ci.org/outofcoffee/imposter.svg?branch=master)](https://travis-ci.org/outofcoffee/imposter)
+# Imposter: A scriptable, multipurpose mock server [![CircleCI](https://circleci.com/gh/outofcoffee/imposter/tree/master.svg?style=svg)](https://circleci.com/gh/outofcoffee/imposter/tree/master)
 
 Reliable, scriptable and extensible mock server for general REST APIs,
 [OpenAPI](https://github.com/OAI/OpenAPI-Specification) (aka Swagger) specifications,

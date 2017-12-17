@@ -1,5 +1,7 @@
-FROM outofcoffee/imposter
+ARG BASE_IMAGE_TAG=latest
+
+FROM outofcoffee/imposter:${BASE_IMAGE_TAG}
 
 MAINTAINER Pete Cornish <outofcoffee@gmail.com>
 
-ENTRYPOINT ["java", "-jar", "/opt/imposter/bin/imposter.jar", "--plugin", "com.gatehill.imposter.plugin.sfdc.SfdcPluginImpl", "--configDir", "/opt/imposter/config"]
+CMD ["--plugin", "com.gatehill.imposter.plugin.sfdc.SfdcPluginImpl", "--configDir", "/opt/imposter/config"]

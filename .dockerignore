@@ -1,0 +1,9 @@
+.circleci
+.gradle
+core
+docs
+gradle
+plugin
+scripts
+server
+test
