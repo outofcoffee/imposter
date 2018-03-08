@@ -51,7 +51,9 @@ Docker example:
 
     docker run -ti -p 8443:8443 \
         -v $(pwd)/config:/opt/imposter/config \
-        outofcoffee/imposter-openapi
+        outofcoffee/imposter-openapi \
+        --plugin com.gatehill.imposter.plugin.openapi.OpenApiPluginImpl \
+        --configDir /opt/imposter/config
 
 Standalone Java example:
 
