@@ -30,6 +30,7 @@ import javax.inject.Inject;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -83,27 +84,35 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
     @Override
     public void configureRoutes(Router router) {
         final List<Swagger> allSpecs = Lists.newArrayListWithExpectedSize(configs.size());
-
         // specification mock endpoints
+        configs.forEach(config -> System.out.println(config.getSpecFile()));
         configs.forEach(config -> {
-            final Swagger swagger = new SwaggerParser().read(Paths.get(
-                    config.getParentDir().getAbsolutePath(), config.getSpecFile()).toString());
+            AtomicInteger counter = new AtomicInteger(0);
+            Boolean keepOnRunning;
+            do {
+                final Swagger swagger = new SwaggerParser().read(Paths.get(
+                        config.getParentDir().getAbsolutePath(), config.getSpecFile()).toString());
 
-            if (null != swagger) {
-                allSpecs.add(swagger);
-                swagger.getPaths().forEach((path, pathConfig) ->
-                        handlePathOperations(router, config, swagger, path, pathConfig));
+                if (null != swagger) {
+                    allSpecs.add(swagger);
+                    swagger.getPaths().forEach((path, pathConfig) ->
+                            handlePathOperations(router, config, swagger, path, pathConfig));
+                    keepOnRunning = false;
 
-            } else {
-                throw new RuntimeException(String.format("Unable to load API specification: %s", config.getSpecFile()));
-            }
+                } else {
+                    keepOnRunning = counter.incrementAndGet() <= 30;
+                }
+            } while (keepOnRunning);
+
         });
+        if (!allSpecs.isEmpty()) {
+            // serve specification and UI
+            LOGGER.debug("Adding specification UI at: {}", SPECIFICATION_PATH);
+            router.get(COMBINED_SPECIFICATION_PATH).handler(handleAsync(routingContext -> handleCombinedSpec(routingContext, allSpecs)));
+            router.getWithRegex(SPECIFICATION_PATH + "$").handler(handleAsync(routingContext -> routingContext.response().putHeader("Location", SPECIFICATION_PATH + "/").setStatusCode(HttpUtil.HTTP_MOVED_PERM).end()));
+            router.get(SPECIFICATION_PATH + "/*").handler(StaticHandler.create(UI_WEB_ROOT));
+        }
 
-        // serve specification and UI
-        LOGGER.debug("Adding specification UI at: {}", SPECIFICATION_PATH);
-        router.get(COMBINED_SPECIFICATION_PATH).handler(handleAsync(routingContext -> handleCombinedSpec(routingContext, allSpecs)));
-        router.getWithRegex(SPECIFICATION_PATH + "$").handler(handleAsync(routingContext -> routingContext.response().putHeader("Location", SPECIFICATION_PATH + "/").setStatusCode(HttpUtil.HTTP_MOVED_PERM).end()));
-        router.get(SPECIFICATION_PATH + "/*").handler(StaticHandler.create(UI_WEB_ROOT));
     }
 
     /**
@@ -134,19 +143,13 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
      */
     private void handleCombinedSpec(RoutingContext routingContext, List<Swagger> allSpecs) {
         try {
-            final String combinedJson = specCache.get("combinedSpec", () -> {
-                try {
-                    final Scheme scheme = Scheme.forValue(imposterConfig.getPluginArgs().get(ARG_SCHEME));
-                    final String basePath = imposterConfig.getPluginArgs().get(ARG_BASEPATH);
-                    final String title = imposterConfig.getPluginArgs().get(ARG_TITLE);
 
-                    final Swagger combined = openApiService.combineSpecifications(allSpecs, basePath, scheme, title);
-                    return MapUtil.MAPPER.writeValueAsString(combined);
+            final Scheme scheme = Scheme.forValue(imposterConfig.getPluginArgs().get(ARG_SCHEME));
+            final String basePath = imposterConfig.getPluginArgs().get(ARG_BASEPATH);
+            final String title = imposterConfig.getPluginArgs().get(ARG_TITLE);
 
-                } catch (JsonGenerationException e) {
-                    throw new ExecutionException(e);
-                }
-            });
+            final Swagger combined = openApiService.combineSpecifications(allSpecs, basePath, scheme, title);
+            final String combinedJson = MapUtil.MAPPER.writeValueAsString(combined);
 
             routingContext.response()
                     .putHeader(HttpUtil.CONTENT_TYPE, CONTENT_TYPE_JSON)

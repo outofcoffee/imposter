@@ -18,15 +18,17 @@ import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.gatehill.imposter.util.FileUtil.CONFIG_FILE_SUFFIX;
 import static com.gatehill.imposter.util.HttpUtil.BIND_ALL_HOSTS;
 import static com.gatehill.imposter.util.MapUtil.MAPPER;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toList;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
@@ -53,6 +55,10 @@ public class Imposter {
         final Map<String, List<File>> pluginConfigs = loadPluginConfigs(imposterConfig.getConfigDirs());
         instantiatePlugins(imposterConfig.getPluginClassNames(), pluginConfigs);
         configurePlugins(pluginConfigs);
+
+        FileWatcher fw = new FileWatcher();
+        Thread t = new Thread(fw);
+        t.start();
     }
 
     protected Module[] getModules() {
@@ -115,8 +121,8 @@ public class Imposter {
         final List<PluginProvider> newProviders = pluginManager.getPlugins().stream()
                 .filter(plugin -> plugin instanceof PluginProvider)
                 .map(plugin -> ((PluginProvider) plugin))
-                .filter(provider -> !pluginManager.isProviderRegistered(provider.getClass()))
-                .collect(Collectors.toList());
+                .filter(provider -> pluginManager.isProviderRegistered(provider.getClass()))
+                .collect(toList());
 
         // recurse for any new providers
         newProviders.forEach(provider -> {
@@ -216,5 +222,78 @@ public class Imposter {
                 configCount, Arrays.toString(configDirs));
 
         return allPluginConfigs;
+    }
+
+    class FileWatcher implements Runnable {
+        Map<String, WatchService> watchServices = new HashMap<>();
+
+        FileWatcher() {
+            Arrays.stream(imposterConfig.getConfigDirs()).forEachOrdered(config -> {
+                Path path = Paths.get(config);
+
+                try (Stream<Path> paths = Files.walk(path)) {
+
+                     List<Path> yamls = paths.filter(Files::isRegularFile)
+                            .filter(filePath -> {
+                                try {
+                                    return (filePath.toFile().getCanonicalPath().endsWith("yaml") ||
+                                            filePath.toFile().getCanonicalPath().endsWith("yml"));
+                                } catch (IOException io) {
+                                    System.out.println(io.getLocalizedMessage());
+                                    return false;
+                                }
+                            }).collect(toList());
+
+
+                    yamls.forEach(p -> {
+                        try{
+                            String actualPath = p.toFile().getCanonicalPath();
+                            watchServices.put(actualPath, Paths.get(actualPath).getParent().getFileSystem().newWatchService());
+                        } catch(IOException io){
+                            System.out.println(io.getLocalizedMessage());
+                        }
+                    });
+
+                    watchServices.forEach((s,w)-> {
+                        try {
+                            Paths.get(s).getParent().register(w, StandardWatchEventKinds.ENTRY_MODIFY);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                } catch (IOException io) {
+                    System.out.println(io.getLocalizedMessage());
+                }
+            });
+        }
+
+        @SuppressWarnings("unchecked")
+        private void removePluginClass(String pluginClassName) {
+            try {
+                if (pluginManager.removeClass((Class<? extends Plugin>) Class.forName(pluginClassName))) {
+                    LOGGER.debug("Registered plugin {}", pluginClassName);
+                }
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public void run() {
+            //noinspection InfiniteLoopStatement
+            while (true) {
+                watchServices.forEach((s,w) -> {
+                    WatchKey watchKey = w.poll();
+                    if (watchKey != null) {
+                        watchKey.pollEvents().forEach(event -> System.out.println("File changed reloading plugins and registering new changes"));
+                        final Map<String, List<File>> pluginConfigs = loadPluginConfigs(imposterConfig.getConfigDirs());
+                        ofNullable(imposterConfig.getPluginClassNames()).ifPresent(classNames ->
+                                Arrays.stream(classNames).forEach(this::removePluginClass));
+                        instantiatePlugins(imposterConfig.getPluginClassNames(), pluginConfigs);
+                        configurePlugins(pluginConfigs);
+                    }
+                });
+            }
+        }
     }
 }

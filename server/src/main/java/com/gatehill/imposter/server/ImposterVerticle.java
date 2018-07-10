@@ -12,18 +12,27 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.http.impl.HttpServerImpl;
+import io.vertx.core.impl.FutureFactoryImpl;
 import io.vertx.core.net.JksOptions;
+import io.vertx.core.spi.FutureFactory;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.impl.BodyHandlerImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.inject.Inject;
+import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toList;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
@@ -56,9 +65,9 @@ public class ImposterVerticle extends AbstractVerticle {
 
     private <T> Handler<AsyncResult<T>> resolveFutureOnCompletion(Future<Void> future) {
         return completion -> {
-            if (completion.succeeded()) {
+            if (completion.succeeded() && !future.isComplete()) {
                 future.complete();
-            } else {
+            } else if (!future.isComplete()) {
                 future.fail(completion.cause());
             }
         };
@@ -66,6 +75,10 @@ public class ImposterVerticle extends AbstractVerticle {
 
     private void startServer(Future<Void> startFuture) {
         final Router router = configureRoutes();
+
+        FileWatcher fw = new FileWatcher();
+        Thread t = new Thread(fw);
+        t.start();
 
         LOGGER.info("Starting mock server on {}:{}", imposterConfig.getHost(), imposterConfig.getListenPort());
         final HttpServerOptions serverOptions = new HttpServerOptions();
@@ -117,5 +130,78 @@ public class ImposterVerticle extends AbstractVerticle {
         pluginManager.getPlugins().forEach(plugin -> plugin.configureRoutes(router));
 
         return router;
+    }
+
+    class FileWatcher implements Runnable {
+
+        private final Future<Void> startFuture;
+        private final Future<Void> future;
+        Map<String, WatchService> watchServices = new HashMap<>();
+        FileWatcher() {
+            this.startFuture = Future.future();
+            this.future = new FutureFactoryImpl().future();
+
+            Arrays.stream(imposterConfig.getConfigDirs()).forEachOrdered(config -> {
+                Path path = Paths.get(config);
+
+                try (Stream<Path> paths = Files.walk(path)) {
+
+                    List<Path> yamls = paths.filter(Files::isRegularFile)
+                            .filter(filePath -> {
+                                try {
+                                    return (filePath.toFile().getCanonicalPath().endsWith("yaml") ||
+                                            filePath.toFile().getCanonicalPath().endsWith("yml"));
+                                } catch (IOException io) {
+                                    System.out.println(io.getLocalizedMessage());
+                                    return false;
+                                }
+                            }).collect(toList());
+
+
+                    yamls.forEach(p -> {
+                        try{
+                            String actualPath = p.toFile().getCanonicalPath();
+                            watchServices.put(actualPath, Paths.get(actualPath).getParent().getFileSystem().newWatchService());
+                        } catch(IOException io){
+                            System.out.println(io.getLocalizedMessage());
+                        }
+                    });
+
+                    watchServices.forEach((s,w)-> {
+                        try {
+                            Paths.get(s).getParent().register(w, StandardWatchEventKinds.ENTRY_MODIFY);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                } catch (IOException io) {
+                    System.out.println(io.getLocalizedMessage());
+                }
+            });
+
+        }
+
+        @Override
+        public void run() {
+            //noinspection InfiniteLoopStatement
+            while(true) {
+                watchServices.forEach((s,w) -> {
+                    WatchKey watchKey = w.poll();
+                    if (watchKey != null) {
+                        watchKey.pollEvents().forEach(event -> System.out.println("File changed restarting server"));
+                        synchronized (future) {
+                            if(!future.isComplete()) {
+                                future.setHandler(result -> {
+                                    if(result.succeeded()) {
+                                        startServer(startFuture);
+                                    }
+                                });
+                                httpServer.close(future.completer());
+                            }
+                        }
+                    }
+                });
+            }
+        }
     }
 }

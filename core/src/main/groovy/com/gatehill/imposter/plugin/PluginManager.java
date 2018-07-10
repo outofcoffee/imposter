@@ -44,4 +44,13 @@ public class PluginManager {
     public boolean isProviderRegistered(Class<? extends PluginProvider> provider) {
         return providers.contains(provider);
     }
+
+    public boolean removeClass(Class<? extends Plugin> plugin) {
+        if (pluginClasses.contains(plugin)) {
+            pluginClasses.remove(plugin);
+            return true;
+        }
+        return false;
+
+    }
 }
