@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.*;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -283,14 +284,19 @@ public class Imposter {
             //noinspection InfiniteLoopStatement
             while (true) {
                 watchServices.forEach((s,w) -> {
-                    WatchKey watchKey = w.poll();
-                    if (watchKey != null) {
-                        watchKey.pollEvents().forEach(event -> System.out.println("File changed reloading plugins and registering new changes"));
-                        final Map<String, List<File>> pluginConfigs = loadPluginConfigs(imposterConfig.getConfigDirs());
-                        ofNullable(imposterConfig.getPluginClassNames()).ifPresent(classNames ->
-                                Arrays.stream(classNames).forEach(this::removePluginClass));
-                        instantiatePlugins(imposterConfig.getPluginClassNames(), pluginConfigs);
-                        configurePlugins(pluginConfigs);
+                    WatchKey watchKey;
+                    try {
+                        watchKey = w.take();
+                        if (watchKey != null) {
+                            watchKey.pollEvents().forEach(event -> System.out.println("File changed reloading plugins and registering new changes"));
+                            final Map<String, List<File>> pluginConfigs = loadPluginConfigs(imposterConfig.getConfigDirs());
+                            ofNullable(imposterConfig.getPluginClassNames()).ifPresent(classNames ->
+                                    Arrays.stream(classNames).forEach(this::removePluginClass));
+                            instantiatePlugins(imposterConfig.getPluginClassNames(), pluginConfigs);
+                            configurePlugins(pluginConfigs);
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
                 });
             }

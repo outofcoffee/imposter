@@ -137,6 +137,7 @@ public class ImposterVerticle extends AbstractVerticle {
         private final Future<Void> startFuture;
         private final Future<Void> future;
         Map<String, WatchService> watchServices = new HashMap<>();
+
         FileWatcher() {
             this.startFuture = Future.future();
             this.future = new FutureFactoryImpl().future();
@@ -186,20 +187,26 @@ public class ImposterVerticle extends AbstractVerticle {
             //noinspection InfiniteLoopStatement
             while(true) {
                 watchServices.forEach((s,w) -> {
-                    WatchKey watchKey = w.poll();
-                    if (watchKey != null) {
-                        watchKey.pollEvents().forEach(event -> System.out.println("File changed restarting server"));
-                        synchronized (future) {
-                            if(!future.isComplete()) {
-                                future.setHandler(result -> {
-                                    if(result.succeeded()) {
-                                        startServer(startFuture);
-                                    }
-                                });
-                                httpServer.close(future.completer());
+                    WatchKey watchKey;
+                    try {
+                        watchKey = w.take();
+                        if (watchKey != null) {
+                            watchKey.pollEvents().forEach(event -> System.out.println("File changed restarting server"));
+                            synchronized (this.future) {
+                                if(!this.future.isComplete()) {
+                                    this.future.setHandler(result -> {
+                                        if(result.succeeded()) {
+                                            startServer(this.startFuture);
+                                        }
+                                    });
+                                    httpServer.close(this.future.completer());
+                                }
                             }
                         }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
+
                 });
             }
         }
