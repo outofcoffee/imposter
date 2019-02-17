@@ -12,10 +12,10 @@ task copyStaticUi(type: Copy) {
 tasks.processResources.dependsOn copyStaticUi
 
 dependencies {
-    compile project(':core')
+    compile project(':imposter-core')
     compile 'io.swagger:swagger-parser:1.0.32'
 
     // test
-    testCompile project(':test')
+    testCompile project(':imposter-test')
     testCompile "com.jayway.restassured:rest-assured:$version_restAssured"
 }

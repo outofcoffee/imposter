@@ -1,3 +1,23 @@
 rootProject.name = 'imposter'
 
-include ':core', ':server', ':distro', ':test', ':plugin:detector', ':plugin:rest', ':plugin:openapi', ':plugin:hbase', ':plugin:sfdc'
+include ':api'
+project(':api').name = 'imposter-api'
+
+include ':core'
+project(':core').name = 'imposter-core'
+
+include ':distro'
+project(':distro').name = 'imposter-distro'
+
+include ':server'
+project(':server').name = 'imposter-server'
+
+include ':test'
+project(':test').name = 'imposter-test'
+
+// plugins
+include ':plugin:detector'
+include ':plugin:rest'
+include ':plugin:openapi'
+include ':plugin:hbase'
+include ':plugin:sfdc'

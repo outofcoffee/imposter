@@ -18,11 +18,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.gatehill.imposter.server.ServerFactory.DEFAULT_SERVER_FACTORY;
 import static com.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PASSWORD;
 import static com.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PATH;
 import static com.gatehill.imposter.util.FileUtil.CLASSPATH_PREFIX;
 import static com.gatehill.imposter.util.HttpUtil.BIND_ALL_HOSTS;
+import static com.gatehill.imposter.util.HttpUtil.DEFAULT_SERVER_FACTORY;
 import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;
 

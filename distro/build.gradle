@@ -6,8 +6,8 @@ compileJava {
 }
 
 dependencies {
-    compile project (':core')
-    compile project (':server')
+    compile project (':imposter-core')
+    compile project (':imposter-server')
 
     // plugins
     compile project (':plugin:detector')

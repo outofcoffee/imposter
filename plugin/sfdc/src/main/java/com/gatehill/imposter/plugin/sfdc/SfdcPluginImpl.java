@@ -84,7 +84,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> implement
                     .orElseThrow(() -> new RuntimeException(String.format("Unable to find mock config for SObject: %s", sObjectName)));
 
             // script should fire first
-            scriptHandler(config, routingContext, responseBehaviour -> {
+            scriptHandler(config, routingContext, getInjector(), responseBehaviour -> {
 
                 // enrich records
                 final JsonArray records = responseService.loadResponseAsJsonArray(config, responseBehaviour);
@@ -112,7 +112,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> implement
             router.get("/services/data/:apiVersion/sobjects/" + config.getsObjectName() + "/:sObjectId")
                     .handler(handleAsync(routingContext -> {
                         // script should fire first
-                        scriptHandler(config, routingContext, responseBehaviour -> {
+                        scriptHandler(config, routingContext, getInjector(), responseBehaviour -> {
 
                             final String apiVersion = routingContext.request().getParam("apiVersion");
                             final String sObjectId = routingContext.request().getParam("sObjectId");

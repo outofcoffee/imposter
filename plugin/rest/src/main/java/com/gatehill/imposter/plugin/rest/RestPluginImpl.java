@@ -86,7 +86,7 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
 
         router.get(qualifiedPath).handler(handleAsync(routingContext -> {
             // script should fire first
-            scriptHandler(resourceConfig, routingContext, responseBehaviour -> {
+            scriptHandler(resourceConfig, routingContext, getInjector(), responseBehaviour -> {
                 LOGGER.info("Handling object request for: {}", routingContext.request().absoluteURI());
 
                 final HttpServerResponse response = routingContext.response();
@@ -128,7 +128,7 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
 
         router.get(qualifiedPath).handler(handleAsync(routingContext -> {
             // script should fire first
-            scriptHandler(resourceConfig, routingContext, responseBehaviour -> {
+            scriptHandler(resourceConfig, routingContext, getInjector(), responseBehaviour -> {
                 LOGGER.info("Handling array request for: {}", routingContext.request().absoluteURI());
 
                 // get the first param in the path

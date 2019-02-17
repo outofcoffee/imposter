@@ -1,6 +1,8 @@
 package com.gatehill.imposter.plugin.config;
 
 import com.gatehill.imposter.plugin.Plugin;
+import com.gatehill.imposter.util.InjectorUtil;
+import com.google.inject.Injector;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,4 +40,8 @@ public abstract class ConfiguredPlugin<T extends BaseConfig> implements Plugin, 
      * @param configs
      */
     protected abstract void configurePlugin(List<T> configs);
+
+    protected Injector getInjector() {
+        return InjectorUtil.getInjector();
+    }
 }

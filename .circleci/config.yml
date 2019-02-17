@@ -19,6 +19,10 @@ jobs:
           name: Run gradle build
           command: ./gradlew test shadowJar --info --stacktrace
 
+      - run:
+          name: Publish maven artifacts
+          command: ./gradlew :imposter-api:publish --info --stacktrace
+
       - save_cache:
           key: gradle-cache
           paths:

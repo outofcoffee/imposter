@@ -4,6 +4,7 @@ import com.gatehill.imposter.ImposterConfig;
 import com.gatehill.imposter.plugin.Plugin;
 import com.gatehill.imposter.server.BaseVerticleTest;
 import com.gatehill.imposter.util.HttpUtil;
+import com.google.inject.Module;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.http.ContentType;
 import io.swagger.models.Swagger;
@@ -26,6 +27,11 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
     @Override
     protected Class<? extends Plugin> getPluginClass() {
         return OpenApiPluginImpl.class;
+    }
+
+    @Override
+    protected Module[] getAdditionalModules() {
+        return new Module[]{new OpenApiModule()};
     }
 
     @Before
@@ -93,7 +99,7 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
                 .log().everything()
                 .statusCode(HttpUtil.HTTP_CREATED)
                 .body("result", equalTo("success"))
-                .header("MyHeader","MyHeaderValue");
+                .header("MyHeader", "MyHeaderValue");
     }
 
     /**
@@ -174,12 +180,12 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
     @Test
     public void testRequestWithHeaders() throws Exception {
         given()
-            .log().everything()
-            .accept(ContentType.TEXT)
-            .when()
-            .header("Authorization", "AUTH_HEADER")
-            .get("/simple/apis")
-            .then()
-            .statusCode(equalTo(HttpUtil.HTTP_NO_CONTENT));
+                .log().everything()
+                .accept(ContentType.TEXT)
+                .when()
+                .header("Authorization", "AUTH_HEADER")
+                .get("/simple/apis")
+                .then()
+                .statusCode(equalTo(HttpUtil.HTTP_NO_CONTENT));
     }
 }

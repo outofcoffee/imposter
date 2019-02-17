@@ -26,7 +26,7 @@ public final class InjectorUtil {
             LOGGER.warn("Injector already initialised");
         }
 
-        InjectorUtil.injector = Guice.createInjector(modules);
+        injector = Guice.createInjector(modules);
         return injector;
     }
 

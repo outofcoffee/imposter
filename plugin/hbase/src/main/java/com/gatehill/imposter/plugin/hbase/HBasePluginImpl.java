@@ -1,7 +1,6 @@
 package com.gatehill.imposter.plugin.hbase;
 
 import com.gatehill.imposter.ImposterConfig;
-import com.gatehill.imposter.plugin.RequireModules;
 import com.gatehill.imposter.plugin.ScriptedPlugin;
 import com.gatehill.imposter.plugin.config.ConfiguredPlugin;
 import com.gatehill.imposter.plugin.hbase.model.InMemoryScanner;
@@ -16,7 +15,6 @@ import com.gatehill.imposter.util.FileUtil;
 import com.gatehill.imposter.util.HttpUtil;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
-import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.name.Names;
 import io.vertx.core.buffer.Buffer;
@@ -44,7 +42,6 @@ import static java.util.Optional.ofNullable;
  *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-@RequireModules(HBasePluginModule.class)
 public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> implements ScriptedPlugin<HBasePluginConfig> {
     private static final Logger LOGGER = LogManager.getLogger(HBasePluginImpl.class);
 
@@ -56,9 +53,6 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
 
     @Inject
     private ScannerService scannerService;
-
-    @Inject
-    private Injector injector;
 
     private Map<String, HBasePluginConfig> tableConfigs;
 
@@ -119,7 +113,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
 
             // script should fire first
             final Map<String, Object> bindings = buildScriptBindings(ResponsePhase.RECORD, tableName, recordInfo, empty());
-            scriptHandler(config, routingContext, bindings, responseBehaviour -> {
+            scriptHandler(config, routingContext, getInjector(), bindings, responseBehaviour -> {
                 // find the right row from results
                 final JsonArray results = responseService.loadResponseAsJsonArray(config, responseBehaviour);
                 final Optional<JsonObject> result = FileUtil.findRow(config.getIdField(), recordInfo.getRecordId(), results);
@@ -194,7 +188,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
 
             // script should fire first
             final Map<String, Object> bindings = buildScriptBindings(ResponsePhase.SCANNER, tableName, null, scannerFilterPrefix);
-            scriptHandler(config, routingContext, bindings, responseBehaviour -> {
+            scriptHandler(config, routingContext, getInjector(), bindings, responseBehaviour -> {
                 final int scannerId = scannerService.registerScanner(config, scanner);
 
                 final String resultUrl = imposterConfig.getServerUrl() + path + "/" + tableName + "/scanner/" + scannerId;
@@ -255,7 +249,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
             final Map<String, Object> bindings = buildScriptBindings(ResponsePhase.RESULTS, tableName, null,
                     deserialiser.decodeScannerFilterPrefix(scanner.getScanner()));
 
-            scriptHandler(config, routingContext, bindings, responseBehaviour -> {
+            scriptHandler(config, routingContext, getInjector(), bindings, responseBehaviour -> {
 
                 // build results
                 final JsonArray results = responseService.loadResponseAsJsonArray(config, responseBehaviour);
@@ -285,7 +279,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
         // search the ordered list
         for (String contentType : acceptedContentTypes) {
             try {
-                final SerialisationService serialiser = injector.getInstance(Key.get(SerialisationService.class, Names.named(contentType)));
+                final SerialisationService serialiser = getInjector().getInstance(Key.get(SerialisationService.class, Names.named(contentType)));
                 LOGGER.debug("Found serialiser binding {} for content type '{}'", serialiser.getClass().getSimpleName(), contentType);
                 return serialiser;
 
@@ -313,7 +307,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
         }
 
         try {
-            final DeserialisationService deserialiser = injector.getInstance(Key.get(DeserialisationService.class, Names.named(contentType)));
+            final DeserialisationService deserialiser = getInjector().getInstance(Key.get(DeserialisationService.class, Names.named(contentType)));
             LOGGER.debug("Found deserialiser binding {} for content type '{}'", deserialiser.getClass().getSimpleName(), contentType);
             return deserialiser;
 

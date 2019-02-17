@@ -5,9 +5,9 @@ compileJava {
 }
 
 dependencies {
-    compile project(':core')
+    compile project(':imposter-core')
 
     // test
-    testCompile project(':test')
+    testCompile project(':imposter-test')
     testCompile "com.jayway.restassured:rest-assured:$version_restAssured"
 }

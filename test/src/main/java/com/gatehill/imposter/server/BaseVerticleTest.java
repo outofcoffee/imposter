@@ -3,6 +3,8 @@ package com.gatehill.imposter.server;
 import com.gatehill.imposter.ImposterConfig;
 import com.gatehill.imposter.plugin.Plugin;
 import com.gatehill.imposter.util.InjectorUtil;
+import com.google.common.collect.Lists;
+import com.google.inject.Module;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.RunTestOnContext;
@@ -15,6 +17,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.file.Paths;
 
+import static com.gatehill.imposter.util.HttpUtil.DEFAULT_SERVER_FACTORY;
 import static java.util.Collections.emptyMap;
 
 /**
@@ -40,8 +43,9 @@ public abstract class BaseVerticleTest {
         listenPort = findFreePort();
 
         // simulate ImposterLauncher injector bootstrap
-        final BootstrapModule bootstrapModule = new BootstrapModule(ServerFactory.DEFAULT_SERVER_FACTORY);
-        final ImposterConfig imposterConfig = InjectorUtil.create(bootstrapModule).getInstance(ImposterConfig.class);
+        final Module[] modules = Lists.asList(new BootstrapModule(DEFAULT_SERVER_FACTORY), getAdditionalModules()).toArray(new Module[0]);
+
+        final ImposterConfig imposterConfig = InjectorUtil.create(modules).getInstance(ImposterConfig.class);
         configure(imposterConfig);
 
         rule.vertx().deployVerticle(ImposterVerticle.class.getCanonicalName(), completion -> {
@@ -51,6 +55,10 @@ public abstract class BaseVerticleTest {
                 testContext.fail(completion.cause());
             }
         });
+    }
+
+    protected Module[] getAdditionalModules() {
+        return new Module[0];
     }
 
     protected void configure(ImposterConfig imposterConfig) throws Exception {

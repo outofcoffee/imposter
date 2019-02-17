@@ -10,7 +10,5 @@ import io.vertx.ext.web.Router;
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public interface ServerFactory {
-    String DEFAULT_SERVER_FACTORY = VertxWebServerFactoryImpl.class.getCanonicalName();
-
     HttpServer provide(ImposterConfig imposterConfig, Future<Void> startFuture, Vertx vertx, Router router);
 }

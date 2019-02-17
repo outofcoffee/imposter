@@ -5,5 +5,5 @@ compileJava {
 }
 
 dependencies {
-    compile project (':core')
+    compile project (':imposter-core')
 }

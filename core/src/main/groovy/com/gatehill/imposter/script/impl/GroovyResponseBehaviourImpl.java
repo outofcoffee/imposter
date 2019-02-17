@@ -3,7 +3,6 @@ package com.gatehill.imposter.script.impl;
 import com.gatehill.imposter.script.InternalResponseBehavior;
 import com.gatehill.imposter.script.MutableResponseBehaviour;
 import com.gatehill.imposter.script.ResponseBehaviourType;
-
 import groovy.lang.Script;
 
 import java.util.Map;

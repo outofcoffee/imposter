@@ -1,10 +1,11 @@
 subprojects {
-    group 'com.gatehill'
-    version '0.6.1-SNAPSHOT'
+    group 'com.gatehill.imposter'
+    version '0.7.0-SNAPSHOT'
 
     buildscript {
-        ext.version_shadow = '2.0.1'
-
+        ext {
+            version_shadow = '2.0.1'
+        }
         repositories {
             mavenCentral()
             maven {
@@ -21,6 +22,10 @@ subprojects {
     }
 
     ext {
+        mavenSnapshotRepository = 's3://gatehillsoftware-maven/snapshots'
+        awsAccessKey = System.getenv('AWS_ACCESS_KEY_ID') ?: project.findProperty('AWS_ACCESS_KEY_ID')
+        awsSecretKey = System.getenv('AWS_SECRET_ACCESS_KEY') ?: project.findProperty('AWS_SECRET_ACCESS_KEY')
+
         version_vertx = '3.4.2'
         version_log4j = '2.9.1'
         version_guice = '4.1.0'

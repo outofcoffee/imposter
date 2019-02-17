@@ -2,7 +2,6 @@ package com.gatehill.imposter.plugin.openapi;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.gatehill.imposter.ImposterConfig;
-import com.gatehill.imposter.plugin.RequireModules;
 import com.gatehill.imposter.plugin.ScriptedPlugin;
 import com.gatehill.imposter.plugin.config.ConfiguredPlugin;
 import com.gatehill.imposter.plugin.openapi.service.OpenApiService;
@@ -46,7 +45,6 @@ import static java.util.Optional.ofNullable;
  *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-@RequireModules(OpenApiModule.class)
 public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> implements ScriptedPlugin<OpenApiPluginConfig> {
     private static final Logger LOGGER = LogManager.getLogger(OpenApiPluginImpl.class);
     private static final Pattern PATH_PARAM_PLACEHOLDER = Pattern.compile("\\{([a-zA-Z]+)\\}");
@@ -188,7 +186,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
             final HashMap<String, Object> context = Maps.newHashMap();
             context.put("operation", operation);
 
-            scriptHandler(config, routingContext, context, responseBehaviour -> {
+            scriptHandler(config, routingContext, getInjector(), context, responseBehaviour -> {
                 final String statusCode = String.valueOf(responseBehaviour.getStatusCode());
 
                 // look for a specification response based on the status code
