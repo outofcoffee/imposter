@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.gatehill.imposter.server.ServerFactory.DEFAULT_SERVER_FACTORY;
 import static com.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PASSWORD;
 import static com.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PATH;
 import static com.gatehill.imposter.util.FileUtil.CLASSPATH_PREFIX;
@@ -65,6 +66,9 @@ public class ImposterLauncher extends Launcher {
 
     @Option(name = "--pluginArg", usage = "Plugin arguments")
     private String[] pluginArgs = {};
+
+    @Option(name = "--serverFactory", usage = "Fully qualified class for server factory")
+    private String serverFactory = DEFAULT_SERVER_FACTORY;
 
     @Inject
     private ImposterConfig imposterConfig;
@@ -115,7 +119,7 @@ public class ImposterLauncher extends Launcher {
     }
 
     private void startServer(String[] originalArgs) {
-        InjectorUtil.create(new BootstrapModule()).injectMembers(this);
+        InjectorUtil.create(new BootstrapModule(serverFactory)).injectMembers(this);
 
         if (isNull(pluginClassNames) || 0 == pluginClassNames.length) {
             LOGGER.debug("No plugins specified - attempting to load defaults");

@@ -1,5 +1,7 @@
 package com.gatehill.imposter.util;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.RoutingContext;
@@ -38,5 +40,15 @@ public class AsyncUtil {
             }
 
         }, result -> { /* no op */ });
+    }
+
+    public static <T> Handler<AsyncResult<T>> resolveFutureOnCompletion(Future<Void> future) {
+        return completion -> {
+            if (completion.succeeded()) {
+                future.complete();
+            } else {
+                future.fail(completion.cause());
+            }
+        };
     }
 }

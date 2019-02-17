@@ -40,7 +40,8 @@ public abstract class BaseVerticleTest {
         listenPort = findFreePort();
 
         // simulate ImposterLauncher injector bootstrap
-        final ImposterConfig imposterConfig = InjectorUtil.create(new BootstrapModule()).getInstance(ImposterConfig.class);
+        final BootstrapModule bootstrapModule = new BootstrapModule(ServerFactory.DEFAULT_SERVER_FACTORY);
+        final ImposterConfig imposterConfig = InjectorUtil.create(bootstrapModule).getInstance(ImposterConfig.class);
         configure(imposterConfig);
 
         rule.vertx().deployVerticle(ImposterVerticle.class.getCanonicalName(), completion -> {
