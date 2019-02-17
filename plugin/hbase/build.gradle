@@ -1,11 +1,11 @@
-apply plugin: 'java'
+apply plugin: 'groovy'
 
 compileJava {
     sourceCompatibility = 1.8
 }
 
 dependencies {
-    compile project(':core')
+    compile project(':imposter-core')
 
     // hbase
     compile("org.apache.hbase:hbase-client:$version_hbaseApi") {
@@ -16,5 +16,5 @@ dependencies {
     }
 
     // test
-    testCompile project(':test')
+    testCompile project(':imposter-test')
 }
