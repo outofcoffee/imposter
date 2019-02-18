@@ -21,7 +21,7 @@ jobs:
 
       - run:
           name: Publish maven artifacts
-          command: ./gradlew :imposter-api:publish --info --stacktrace
+          command: ./gradlew publish --info --stacktrace
 
       - save_cache:
           key: gradle-cache

@@ -7,10 +7,10 @@ import com.google.inject.Singleton;
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-class BootstrapModule extends AbstractModule {
+public class BootstrapModule extends AbstractModule {
     private final String serverFactory;
 
-    BootstrapModule(String serverFactory) {
+    public BootstrapModule(String serverFactory) {
         this.serverFactory = serverFactory;
     }
 
