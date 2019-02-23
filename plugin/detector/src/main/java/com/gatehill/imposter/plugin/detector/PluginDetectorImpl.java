@@ -15,7 +15,6 @@ import java.util.Map;
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public class PluginDetectorImpl implements Plugin, PluginProvider {
-
     @Override
     public void configureRoutes(Router router) {
         // no op

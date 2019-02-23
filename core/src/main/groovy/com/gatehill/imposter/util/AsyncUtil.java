@@ -42,7 +42,7 @@ public class AsyncUtil {
         }, result -> { /* no op */ });
     }
 
-    public static <T> Handler<AsyncResult<T>> resolveFutureOnCompletion(Future<Void> future) {
+    public static <T> Handler<AsyncResult<T>> resolveFutureOnCompletion(Future<?> future) {
         return completion -> {
             if (completion.succeeded()) {
                 future.complete();

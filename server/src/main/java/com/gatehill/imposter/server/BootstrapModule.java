@@ -1,23 +1,24 @@
 package com.gatehill.imposter.server;
 
-import com.gatehill.imposter.ImposterConfig;
 import com.google.inject.AbstractModule;
-import com.google.inject.Singleton;
+import io.vertx.core.Vertx;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public class BootstrapModule extends AbstractModule {
+    private final Vertx vertx;
     private final String serverFactory;
 
-    public BootstrapModule(String serverFactory) {
+    public BootstrapModule(Vertx vertx, String serverFactory) {
+        this.vertx = vertx;
         this.serverFactory = serverFactory;
     }
 
     @Override
     @SuppressWarnings("unchecked")
     protected void configure() {
-        bind(ImposterConfig.class).in(Singleton.class);
+        bind(Vertx.class).toInstance(vertx);
 
         try {
             final Class<? extends ServerFactory> serverFactoryClass =

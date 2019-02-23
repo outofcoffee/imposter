@@ -3,6 +3,7 @@ package com.gatehill.imposter.server;
 import com.gatehill.imposter.Imposter;
 import com.gatehill.imposter.ImposterConfig;
 import com.gatehill.imposter.plugin.PluginManager;
+import com.gatehill.imposter.server.util.ConfigUtil;
 import com.gatehill.imposter.util.HttpUtil;
 import com.gatehill.imposter.util.InjectorUtil;
 import io.vertx.core.AbstractVerticle;
@@ -25,34 +26,51 @@ public class ImposterVerticle extends AbstractVerticle {
     private static final Logger LOGGER = LogManager.getLogger(ImposterVerticle.class);
 
     @Inject
-    private ImposterConfig imposterConfig;
-
-    @Inject
     private PluginManager pluginManager;
 
     @Inject
     private ServerFactory serverFactory;
 
+    private final ImposterConfig imposterConfig;
+
     private HttpServer httpServer;
+
+    public ImposterVerticle() {
+        imposterConfig = ConfigUtil.getConfig();
+    }
 
     @Override
     public void start(Future<Void> startFuture) {
         LOGGER.debug("Initialising mock server");
 
-        new Imposter().start();
-        InjectorUtil.getInjector().injectMembers(this);
-        startServer(startFuture);
+        vertx.executeBlocking(future -> {
+            try {
+                startEngine();
+                InjectorUtil.getInjector().injectMembers(ImposterVerticle.this);
+                httpServer = serverFactory.provide(imposterConfig, future, vertx, configureRoutes());
+
+            } catch (Exception e) {
+                future.fail(e);
+            }
+        }, result -> {
+            if (result.failed()) {
+                startFuture.fail(result.cause());
+            } else {
+                startFuture.complete();
+            }
+        });
+    }
+
+    private void startEngine() {
+        final BootstrapModule bootstrapModule = new BootstrapModule(vertx, imposterConfig.getServerFactory());
+        final Imposter imposter = new Imposter(imposterConfig, bootstrapModule);
+        imposter.start();
     }
 
     @Override
     public void stop(Future<Void> stopFuture) {
         LOGGER.info("Stopping mock server on {}:{}", imposterConfig.getHost(), imposterConfig.getListenPort());
         ofNullable(httpServer).ifPresent(server -> server.close(resolveFutureOnCompletion(stopFuture)));
-    }
-
-    private void startServer(Future<Void> startFuture) {
-        final Router router = configureRoutes();
-        httpServer = serverFactory.provide(imposterConfig, startFuture, vertx, router);
     }
 
     private Router configureRoutes() {

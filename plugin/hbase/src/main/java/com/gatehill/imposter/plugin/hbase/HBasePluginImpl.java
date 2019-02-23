@@ -1,6 +1,7 @@
 package com.gatehill.imposter.plugin.hbase;
 
 import com.gatehill.imposter.ImposterConfig;
+import com.gatehill.imposter.plugin.RequireModules;
 import com.gatehill.imposter.plugin.ScriptedPlugin;
 import com.gatehill.imposter.plugin.config.ConfiguredPlugin;
 import com.gatehill.imposter.plugin.hbase.model.InMemoryScanner;
@@ -42,6 +43,7 @@ import static java.util.Optional.ofNullable;
  *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
+@RequireModules(HBasePluginModule.class)
 public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> implements ScriptedPlugin<HBasePluginConfig> {
     private static final Logger LOGGER = LogManager.getLogger(HBasePluginImpl.class);
 

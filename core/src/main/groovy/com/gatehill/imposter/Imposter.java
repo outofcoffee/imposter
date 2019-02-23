@@ -1,20 +1,15 @@
 package com.gatehill.imposter;
 
-import com.gatehill.imposter.plugin.Plugin;
-import com.gatehill.imposter.plugin.PluginManager;
-import com.gatehill.imposter.plugin.PluginProvider;
-import com.gatehill.imposter.plugin.RequireModules;
+import com.gatehill.imposter.plugin.*;
 import com.gatehill.imposter.plugin.config.BaseConfig;
 import com.gatehill.imposter.plugin.config.ConfigurablePlugin;
 import com.gatehill.imposter.util.InjectorUtil;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -26,6 +21,7 @@ import static com.gatehill.imposter.util.FileUtil.CONFIG_FILE_SUFFIX;
 import static com.gatehill.imposter.util.HttpUtil.BIND_ALL_HOSTS;
 import static com.gatehill.imposter.util.MapUtil.MAPPER;
 import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -34,29 +30,43 @@ import static java.util.Optional.ofNullable;
 public class Imposter {
     private static final Logger LOGGER = LogManager.getLogger(Imposter.class);
 
-    @Inject
-    private Injector injector;
+    private final ImposterConfig imposterConfig;
+    private final Module[] bootstrapModules;
+    private final PluginManager pluginManager;
 
-    @Inject
-    private ImposterConfig imposterConfig;
-
-    @Inject
-    private PluginManager pluginManager;
-
-    public void start() {
-        InjectorUtil.createChildInjector(getModules()).injectMembers(this);
-
-        // server config
-        processConfiguration();
-
-        // load and configure plugins
-        final Map<String, List<File>> pluginConfigs = loadPluginConfigs(imposterConfig.getConfigDirs());
-        instantiatePlugins(imposterConfig.getPluginClassNames(), pluginConfigs);
-        configurePlugins(pluginConfigs);
+    public Imposter(ImposterConfig imposterConfig, Module... bootstrapModules) {
+        this(imposterConfig, bootstrapModules, new PluginManager());
     }
 
-    protected Module[] getModules() {
-        return new ImposterModule[]{new ImposterModule()};
+    public Imposter(ImposterConfig imposterConfig, Module[] bootstrapModules, PluginManager pluginManager) {
+        this.imposterConfig = imposterConfig;
+        this.bootstrapModules = bootstrapModules;
+        this.pluginManager = pluginManager;
+    }
+
+    public void start() {
+        LOGGER.info("Starting mock engine");
+
+        // load config
+        processConfiguration();
+        final Map<String, List<File>> pluginConfigs = loadPluginConfigs(imposterConfig.getConfigDirs());
+
+        // prepare plugins
+        final List<PluginDependencies> dependencies = preparePluginsFromConfig(imposterConfig.getPluginClassNames(), pluginConfigs)
+                .stream()
+                .filter(deps -> nonNull(deps.getRequiredModules()))
+                .collect(Collectors.toList());
+
+        final List<Module> allModules = newArrayList(bootstrapModules);
+        allModules.add(new ImposterModule(imposterConfig, pluginManager));
+        dependencies.forEach(deps -> allModules.addAll(deps.getRequiredModules()));
+
+        // inject dependencies
+        final Injector injector = InjectorUtil.create(allModules.toArray(new Module[0]));
+        injector.injectMembers(this);
+        registerPlugins(injector);
+
+        configurePlugins(pluginConfigs);
     }
 
     private void processConfiguration() {
@@ -88,43 +98,35 @@ public class Imposter {
                 || (!imposterConfig.isTlsEnabled() && 80 == imposterConfig.getListenPort())) {
             port = "";
         } else {
-            port = ":" + String.valueOf(imposterConfig.getListenPort());
+            port = ":" + imposterConfig.getListenPort();
         }
 
         return URI.create(scheme + host + port);
     }
 
-    @SuppressWarnings("unchecked")
-    private void instantiatePlugins(String[] plugins, Map<String, List<File>> pluginConfigs) {
-        instantiatePluginsFromConfig(plugins, pluginConfigs);
+    private List<PluginDependencies> preparePluginsFromConfig(String[] pluginClassNames, Map<String, List<File>> pluginConfigs) {
+        final List<PluginDependencies> dependencies = newArrayList();
 
-        final int pluginCount = pluginManager.getPlugins().size();
-        if (pluginCount > 0) {
-            LOGGER.info("Loaded {} plugins", pluginCount);
-        } else {
-            throw new RuntimeException("No plugins were loaded");
-        }
-    }
-
-    private void instantiatePluginsFromConfig(String[] pluginClassNames, Map<String, List<File>> pluginConfigs) {
         ofNullable(pluginClassNames).ifPresent(classNames ->
                 Arrays.stream(classNames).forEach(this::registerPluginClass));
 
-        pluginManager.getPluginClasses().forEach(this::registerPlugin);
+        dependencies.addAll(pluginManager.getPluginClasses().stream()
+                .map(this::examinePlugin)
+                .collect(Collectors.toList()));
 
-        final List<PluginProvider> newProviders = pluginManager.getPlugins().stream()
-                .filter(plugin -> plugin instanceof PluginProvider)
-                .map(plugin -> ((PluginProvider) plugin))
-                .filter(provider -> !pluginManager.isProviderRegistered(provider.getClass()))
-                .collect(Collectors.toList());
+        findUnregisteredProviders().forEach(providerClass -> {
+            pluginManager.registerProvider(providerClass);
+            final PluginProvider pluginProvider = createPluginProvider(providerClass);
+            final String[] provided = pluginProvider.providePlugins(imposterConfig, pluginConfigs);
+            LOGGER.debug("{} plugins provided by {}", provided.length, providerClass.getCanonicalName());
 
-        // recurse for any new providers
-        newProviders.forEach(provider -> {
-            pluginManager.registerProvider(provider.getClass());
-            final String[] provided = provider.providePlugins(imposterConfig, pluginConfigs);
-            LOGGER.debug("{} plugins provided by {}", provided.length, provider.getClass().getCanonicalName());
-            instantiatePluginsFromConfig(provided, pluginConfigs);
+            // recurse for new providers
+            if (provided.length > 0) {
+                dependencies.addAll(preparePluginsFromConfig(provided, pluginConfigs));
+            }
         });
+
+        return dependencies;
     }
 
     @SuppressWarnings("unchecked")
@@ -133,27 +135,68 @@ public class Imposter {
             if (pluginManager.registerClass((Class<? extends Plugin>) Class.forName(className))) {
                 LOGGER.debug("Registered plugin {}", className);
             }
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to register plugin: " + className, e);
         }
     }
 
-    private void registerPlugin(Class<? extends Plugin> pluginClass) {
-        final Injector pluginInjector;
+    /**
+     * Examine the plugin for any required dependencies.
+     *
+     * @param pluginClass the plugin to examine
+     * @return the plugin's dependencies
+     */
+    private PluginDependencies examinePlugin(Class<? extends Plugin> pluginClass) {
+        final PluginDependencies registration = new PluginDependencies();
 
         final RequireModules moduleAnnotation = pluginClass.getAnnotation(RequireModules.class);
         if (null != moduleAnnotation && moduleAnnotation.value().length > 0) {
-            pluginInjector = injector.createChildInjector(instantiateModules(moduleAnnotation));
-        } else {
-            pluginInjector = injector;
+            registration.setRequiredModules(instantiateModules(moduleAnnotation));
         }
 
-        pluginManager.registerInstance(pluginInjector.getInstance(pluginClass));
+        return registration;
+    }
+
+    /**
+     * @return any {@link PluginProvider}s not yet registered with the plugin manager
+     */
+    @SuppressWarnings("unchecked")
+    private List<Class<PluginProvider>> findUnregisteredProviders() {
+        return pluginManager.getPluginClasses().stream()
+                .filter(pluginClass -> pluginClass.isAssignableFrom(PluginProvider.class))
+                .map(pluginClass -> (Class<PluginProvider>) pluginClass.asSubclass(PluginProvider.class))
+                .filter(providerClass -> !pluginManager.isProviderRegistered(providerClass))
+                .collect(Collectors.toList());
+    }
+
+    private PluginProvider createPluginProvider(Class<PluginProvider> providerClass) {
+        try {
+            return providerClass.newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException("Error instantiating plugin provider: " + providerClass.getCanonicalName(), e);
+        }
+    }
+
+    /**
+     * Instantiate all plugins and register them with the plugin manager.
+     *
+     * @param injector the injector from which the plugins can be instantiated
+     */
+    private void registerPlugins(Injector injector) {
+        pluginManager.getPluginClasses().forEach(pluginClass -> {
+            pluginManager.registerInstance(injector.getInstance(pluginClass));
+        });
+
+        final int pluginCount = pluginManager.getPlugins().size();
+        if (pluginCount > 0) {
+            LOGGER.info("Loaded {} plugins", pluginCount);
+        } else {
+            throw new IllegalStateException("No plugins were loaded");
+        }
     }
 
     private List<Module> instantiateModules(RequireModules moduleAnnotation) {
-        final List<Module> modules = Lists.newArrayList();
-
+        final List<Module> modules = newArrayList();
         for (Class<? extends Module> moduleClass : moduleAnnotation.value()) {
             try {
                 modules.add(moduleClass.newInstance());
@@ -161,7 +204,6 @@ public class Imposter {
                 throw new RuntimeException(e);
             }
         }
-
         return modules;
     }
 

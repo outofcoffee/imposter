@@ -29,9 +29,4 @@ public final class InjectorUtil {
         injector = Guice.createInjector(modules);
         return injector;
     }
-
-    public static Injector createChildInjector(Module... modules) {
-        injector = InjectorUtil.injector.createChildInjector(modules);
-        return injector;
-    }
 }

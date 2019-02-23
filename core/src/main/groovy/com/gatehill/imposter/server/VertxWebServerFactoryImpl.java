@@ -24,7 +24,7 @@ public class VertxWebServerFactoryImpl implements ServerFactory {
     private static final Logger LOGGER = LogManager.getLogger(VertxWebServerFactoryImpl.class);
 
     @Override
-    public HttpServer provide(ImposterConfig imposterConfig, Future<Void> startFuture, Vertx vertx, Router router) {
+    public HttpServer provide(ImposterConfig imposterConfig, Future<?> startFuture, Vertx vertx, Router router) {
         LOGGER.info("Starting mock server on {}:{}", imposterConfig.getHost(), imposterConfig.getListenPort());
         final HttpServerOptions serverOptions = new HttpServerOptions();
 

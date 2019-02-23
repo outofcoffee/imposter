@@ -2,7 +2,6 @@ package com.gatehill.imposter.plugin.hbase
 
 import com.gatehill.imposter.plugin.Plugin
 import com.gatehill.imposter.server.BaseVerticleTest
-import com.google.inject.Module
 import io.vertx.ext.unit.TestContext
 import org.apache.hadoop.hbase.client.Get
 import org.apache.hadoop.hbase.client.Result
@@ -27,11 +26,6 @@ class HBasePluginTest extends BaseVerticleTest {
     @Override
     protected Class<? extends Plugin> getPluginClass() {
         return HBasePluginImpl.class
-    }
-
-    @Override
-    protected Module[] getAdditionalModules() {
-        return [new HBasePluginModule()]
     }
 
     @Before
