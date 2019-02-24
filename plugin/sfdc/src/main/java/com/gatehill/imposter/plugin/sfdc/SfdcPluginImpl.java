@@ -23,7 +23,7 @@ import java.util.Optional;
 import java.util.StringTokenizer;
 import java.util.UUID;
 
-import static com.gatehill.imposter.util.AsyncUtil.handleAsync;
+import static com.gatehill.imposter.util.AsyncUtil.handleRoute;
 import static com.gatehill.imposter.util.HttpUtil.CONTENT_TYPE;
 import static com.gatehill.imposter.util.HttpUtil.CONTENT_TYPE_JSON;
 import static java.util.Optional.*;
@@ -58,7 +58,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> implement
     @Override
     public void configureRoutes(Router router) {
         // oauth handler
-        router.post("/services/oauth2/token").handler(handleAsync(routingContext -> {
+        router.post("/services/oauth2/token").handler(handleRoute(imposterConfig, vertx, routingContext -> {
             LOGGER.info("Handling oauth request: {}", routingContext.getBodyAsString());
 
             final JsonObject authResponse = new JsonObject();
@@ -69,7 +69,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> implement
         }));
 
         // query handler
-        router.get("/services/data/:apiVersion/query/").handler(handleAsync(routingContext -> {
+        router.get("/services/data/:apiVersion/query/").handler(handleRoute(imposterConfig, vertx, routingContext -> {
             final String apiVersion = routingContext.request().getParam("apiVersion");
 
             // e.g. 'SELECT Name, Id from Account LIMIT 100'
@@ -110,7 +110,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> implement
         // get SObject handler
         configs.forEach(config -> {
             router.get("/services/data/:apiVersion/sobjects/" + config.getsObjectName() + "/:sObjectId")
-                    .handler(handleAsync(routingContext -> {
+                    .handler(handleRoute(imposterConfig, vertx, routingContext -> {
                         // script should fire first
                         scriptHandler(config, routingContext, getInjector(), responseBehaviour -> {
 
@@ -142,7 +142,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> implement
 
         // create SObject handler
         router.post("/services/data/:apiVersion/sobjects/:sObjectName")
-                .handler(handleAsync(routingContext -> {
+                .handler(handleRoute(imposterConfig, vertx, routingContext -> {
                     final String sObjectName = routingContext.request().getParam("sObjectName");
                     final JsonObject sObject = routingContext.getBodyAsJson();
 
@@ -173,7 +173,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> implement
      * @return
      */
     private Handler<RoutingContext> handleUpdateRequest() {
-        return handleAsync(routingContext -> {
+        return handleRoute(imposterConfig, vertx, routingContext -> {
             final String sObjectName = routingContext.request().getParam("sObjectName");
             final String sObjectId = routingContext.request().getParam("sObjectId");
             final JsonObject sObject = routingContext.getBodyAsJson();

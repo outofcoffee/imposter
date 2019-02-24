@@ -35,7 +35,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static com.gatehill.imposter.util.AsyncUtil.handleAsync;
+import static com.gatehill.imposter.util.AsyncUtil.handleRoute;
 import static com.gatehill.imposter.util.HttpUtil.CONTENT_TYPE;
 import static com.gatehill.imposter.util.HttpUtil.CONTENT_TYPE_JSON;
 import static java.util.Optional.empty;
@@ -101,8 +101,8 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
 
         // serve specification and UI
         LOGGER.debug("Adding specification UI at: {}", SPECIFICATION_PATH);
-        router.get(COMBINED_SPECIFICATION_PATH).handler(handleAsync(routingContext -> handleCombinedSpec(routingContext, allSpecs)));
-        router.getWithRegex(SPECIFICATION_PATH + "$").handler(handleAsync(routingContext -> routingContext.response().putHeader("Location", SPECIFICATION_PATH + "/").setStatusCode(HttpUtil.HTTP_MOVED_PERM).end()));
+        router.get(COMBINED_SPECIFICATION_PATH).handler(handleRoute(imposterConfig, vertx, routingContext -> handleCombinedSpec(routingContext, allSpecs)));
+        router.getWithRegex(SPECIFICATION_PATH + "$").handler(handleRoute(imposterConfig, vertx, routingContext -> routingContext.response().putHeader("Location", SPECIFICATION_PATH + "/").setStatusCode(HttpUtil.HTTP_MOVED_PERM).end()));
         router.get(SPECIFICATION_PATH + "/*").handler(StaticHandler.create(UI_WEB_ROOT));
     }
 
@@ -184,7 +184,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
      * @param operation the specification operation  @return a route handler
      */
     private Handler<RoutingContext> buildHandler(OpenApiPluginConfig config, Swagger swagger, Operation operation) {
-        return handleAsync(routingContext -> {
+        return handleRoute(imposterConfig, vertx, routingContext -> {
             final HashMap<String, Object> context = Maps.newHashMap();
             context.put("operation", operation);
 

@@ -1,5 +1,6 @@
 package com.gatehill.imposter.plugin.rest;
 
+import com.gatehill.imposter.ImposterConfig;
 import com.gatehill.imposter.plugin.ScriptedPlugin;
 import com.gatehill.imposter.plugin.config.ConfiguredPlugin;
 import com.gatehill.imposter.plugin.config.ResourceConfig;
@@ -20,7 +21,7 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.gatehill.imposter.util.AsyncUtil.handleAsync;
+import static com.gatehill.imposter.util.AsyncUtil.handleRoute;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -35,6 +36,9 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
      * Example: <pre>/anything/:id/something</pre>
      */
     private static final Pattern PARAM_MATCHER = Pattern.compile(".*:(.+).*");
+
+    @Inject
+    private ImposterConfig imposterConfig;
 
     @Inject
     private ResponseService responseService;
@@ -84,7 +88,7 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
         final String qualifiedPath = rootPath + resourceConfig.getPath();
         LOGGER.debug("Adding REST object handler: {}", qualifiedPath);
 
-        router.get(qualifiedPath).handler(handleAsync(routingContext -> {
+        router.get(qualifiedPath).handler(handleRoute(imposterConfig, vertx, routingContext -> {
             // script should fire first
             scriptHandler(resourceConfig, routingContext, getInjector(), responseBehaviour -> {
                 LOGGER.info("Handling object request for: {}", routingContext.request().absoluteURI());
@@ -126,7 +130,7 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
                     resourcePath));
         }
 
-        router.get(qualifiedPath).handler(handleAsync(routingContext -> {
+        router.get(qualifiedPath).handler(handleRoute(imposterConfig, vertx, routingContext -> {
             // script should fire first
             scriptHandler(resourceConfig, routingContext, getInjector(), responseBehaviour -> {
                 LOGGER.info("Handling array request for: {}", routingContext.request().absoluteURI());
