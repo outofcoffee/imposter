@@ -49,12 +49,11 @@ jobs:
       - run:
           name: Build and push Docker image
           command: |
-            cd ./scripts
-            chmod +x *.sh
+            chmod +x ./scripts/*.sh
 
-            IMAGE_TAG_NAME="$( ./branch-to-tag-name.sh ${CIRCLE_BRANCH} )"
+            IMAGE_TAG_NAME="$( ./scripts/branch-to-tag-name.sh ${CIRCLE_BRANCH} )"
             if [[ ! -z ${IMAGE_TAG_NAME} ]]; then
-              ./docker-build.sh "${IMAGE_TAG_NAME}"
+              ./scripts/docker-build.sh "${IMAGE_TAG_NAME}"
             fi
 
 workflows:
