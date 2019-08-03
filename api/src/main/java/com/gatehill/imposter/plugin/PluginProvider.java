@@ -7,6 +7,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Provides class names of plugins to load.
+ * <p>
+ * Note that plugin providers are instantiated before dependency injection is available.
+ *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public interface PluginProvider {

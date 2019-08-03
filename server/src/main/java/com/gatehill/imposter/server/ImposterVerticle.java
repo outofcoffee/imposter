@@ -3,26 +3,20 @@ package com.gatehill.imposter.server;
 import com.gatehill.imposter.Imposter;
 import com.gatehill.imposter.ImposterConfig;
 import com.gatehill.imposter.plugin.PluginManager;
-import com.gatehill.imposter.util.FileUtil;
+import com.gatehill.imposter.server.util.ConfigUtil;
 import com.gatehill.imposter.util.HttpUtil;
 import com.gatehill.imposter.util.InjectorUtil;
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServer;
-import io.vertx.core.http.HttpServerOptions;
-import io.vertx.core.net.JksOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.impl.BodyHandlerImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.inject.Inject;
-import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
+import static com.gatehill.imposter.util.AsyncUtil.resolveFutureOnCompletion;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -32,76 +26,51 @@ public class ImposterVerticle extends AbstractVerticle {
     private static final Logger LOGGER = LogManager.getLogger(ImposterVerticle.class);
 
     @Inject
-    private ImposterConfig imposterConfig;
+    private PluginManager pluginManager;
 
     @Inject
-    private PluginManager pluginManager;
+    private ServerFactory serverFactory;
+
+    private final ImposterConfig imposterConfig;
 
     private HttpServer httpServer;
 
+    public ImposterVerticle() {
+        imposterConfig = ConfigUtil.getConfig();
+    }
+
     @Override
-    public void start(Future<Void> startFuture) throws Exception {
+    public void start(Future<Void> startFuture) {
         LOGGER.debug("Initialising mock server");
 
-        new Imposter().start();
-        InjectorUtil.getInjector().injectMembers(this);
-        startServer(startFuture);
+        vertx.executeBlocking(future -> {
+            try {
+                startEngine();
+                InjectorUtil.getInjector().injectMembers(ImposterVerticle.this);
+                httpServer = serverFactory.provide(imposterConfig, future, vertx, configureRoutes());
+
+            } catch (Exception e) {
+                future.fail(e);
+            }
+        }, result -> {
+            if (result.failed()) {
+                startFuture.fail(result.cause());
+            } else {
+                startFuture.complete();
+            }
+        });
+    }
+
+    private void startEngine() {
+        final BootstrapModule bootstrapModule = new BootstrapModule(vertx, imposterConfig.getServerFactory());
+        final Imposter imposter = new Imposter(imposterConfig, bootstrapModule);
+        imposter.start();
     }
 
     @Override
     public void stop(Future<Void> stopFuture) {
         LOGGER.info("Stopping mock server on {}:{}", imposterConfig.getHost(), imposterConfig.getListenPort());
         ofNullable(httpServer).ifPresent(server -> server.close(resolveFutureOnCompletion(stopFuture)));
-    }
-
-    private <T> Handler<AsyncResult<T>> resolveFutureOnCompletion(Future<Void> future) {
-        return completion -> {
-            if (completion.succeeded()) {
-                future.complete();
-            } else {
-                future.fail(completion.cause());
-            }
-        };
-    }
-
-    private void startServer(Future<Void> startFuture) {
-        final Router router = configureRoutes();
-
-        LOGGER.info("Starting mock server on {}:{}", imposterConfig.getHost(), imposterConfig.getListenPort());
-        final HttpServerOptions serverOptions = new HttpServerOptions();
-
-        // configure keystore and enable HTTPS
-        if (imposterConfig.isTlsEnabled()) {
-            LOGGER.info("TLS is enabled");
-
-            // locate keystore
-            final Path keystorePath;
-            if (imposterConfig.getKeystorePath().startsWith(FileUtil.CLASSPATH_PREFIX)) {
-                try {
-                    keystorePath = Paths.get(ImposterVerticle.class.getResource(
-                            imposterConfig.getKeystorePath().substring(FileUtil.CLASSPATH_PREFIX.length())).toURI());
-                } catch (URISyntaxException e) {
-                    throw new RuntimeException("Error locating keystore", e);
-                }
-            } else {
-                keystorePath = Paths.get(imposterConfig.getKeystorePath());
-            }
-
-            final JksOptions jksOptions = new JksOptions();
-            jksOptions.setPath(keystorePath.toString());
-            jksOptions.setPassword(imposterConfig.getKeystorePassword());
-            serverOptions.setKeyStoreOptions(jksOptions);
-            serverOptions.setSsl(true);
-
-        } else {
-            LOGGER.info("TLS is disabled");
-        }
-
-        LOGGER.info("Listening on {}", imposterConfig.getServerUrl());
-
-        httpServer = vertx.createHttpServer(serverOptions)
-                .requestHandler(router::accept)
-                .listen(imposterConfig.getListenPort(), imposterConfig.getHost(), resolveFutureOnCompletion(startFuture));
     }
 
     private Router configureRoutes() {

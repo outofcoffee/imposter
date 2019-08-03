@@ -1,7 +1,7 @@
 package com.gatehill.imposter.server;
 
 import com.gatehill.imposter.ImposterConfig;
-import com.gatehill.imposter.util.InjectorUtil;
+import com.gatehill.imposter.server.util.ConfigUtil;
 import com.gatehill.imposter.util.LogUtil;
 import com.gatehill.imposter.util.MetaUtil;
 import com.google.common.collect.Lists;
@@ -12,7 +12,6 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 
-import javax.inject.Inject;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +21,7 @@ import static com.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PASSWORD;
 import static com.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PATH;
 import static com.gatehill.imposter.util.FileUtil.CLASSPATH_PREFIX;
 import static com.gatehill.imposter.util.HttpUtil.BIND_ALL_HOSTS;
+import static com.gatehill.imposter.util.HttpUtil.DEFAULT_SERVER_FACTORY;
 import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;
 
@@ -66,8 +66,8 @@ public class ImposterLauncher extends Launcher {
     @Option(name = "--pluginArg", usage = "Plugin arguments")
     private String[] pluginArgs = {};
 
-    @Inject
-    private ImposterConfig imposterConfig;
+    @Option(name = "--serverFactory", usage = "Fully qualified class for server factory")
+    private String serverFactory = DEFAULT_SERVER_FACTORY;
 
     static {
         // delegate all Vert.x logging to SLF4J
@@ -115,8 +115,6 @@ public class ImposterLauncher extends Launcher {
     }
 
     private void startServer(String[] originalArgs) {
-        InjectorUtil.create(new BootstrapModule()).injectMembers(this);
-
         if (isNull(pluginClassNames) || 0 == pluginClassNames.length) {
             LOGGER.debug("No plugins specified - attempting to load defaults");
 
@@ -130,20 +128,22 @@ public class ImposterLauncher extends Launcher {
                 .map(arg -> arg.split("="))
                 .collect(Collectors.toMap(splitArg -> splitArg[0], splitArg -> splitArg[1]));
 
-        imposterConfig.setConfigDirs(configDirs);
-        imposterConfig.setPluginClassNames(pluginClassNames);
+        final ImposterConfig imposterConfig = ConfigUtil.getConfig();
+        imposterConfig.setServerFactory(serverFactory);
         imposterConfig.setListenPort(listenPort);
         imposterConfig.setHost(host);
         imposterConfig.setServerUrl(serverUrl);
         imposterConfig.setTlsEnabled(tlsEnabled);
         imposterConfig.setKeystorePath(keystorePath);
         imposterConfig.setKeystorePassword(keystorePassword);
+        imposterConfig.setConfigDirs(configDirs);
+        imposterConfig.setPluginClassNames(pluginClassNames);
         imposterConfig.setPluginArgs(splitArgs);
 
         final List<String> args = Lists.newArrayList(originalArgs);
         args.add(0, "run");
         args.add(1, ImposterVerticle.class.getCanonicalName());
-        super.dispatch(args.toArray(new String[args.size()]));
+        super.dispatch(args.toArray(new String[0]));
     }
 
     private void printVersion() {

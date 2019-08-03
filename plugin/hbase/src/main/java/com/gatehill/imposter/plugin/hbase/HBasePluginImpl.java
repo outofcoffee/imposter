@@ -16,7 +16,6 @@ import com.gatehill.imposter.util.FileUtil;
 import com.gatehill.imposter.util.HttpUtil;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
-import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.name.Names;
 import io.vertx.core.buffer.Buffer;
@@ -34,7 +33,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.gatehill.imposter.util.AsyncUtil.handleAsync;
+import static com.gatehill.imposter.util.AsyncUtil.handleRoute;
 import static com.gatehill.imposter.util.HttpUtil.CONTENT_TYPE_JSON;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
@@ -56,9 +55,6 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
 
     @Inject
     private ScannerService scannerService;
-
-    @Inject
-    private Injector injector;
 
     private Map<String, HBasePluginConfig> tableConfigs;
 
@@ -99,7 +95,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
      * @param path
      */
     private void addRowRetrievalRoute(Router router, String path) {
-        router.get(path + "/:tableName/:recordId/").handler(handleAsync(routingContext -> {
+        router.get(path + "/:tableName/:recordId/").handler(handleRoute(imposterConfig, vertx, routingContext -> {
             final String tableName = routingContext.request().getParam("tableName");
             final String recordId = routingContext.request().getParam("recordId");
 
@@ -119,7 +115,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
 
             // script should fire first
             final Map<String, Object> bindings = buildScriptBindings(ResponsePhase.RECORD, tableName, recordInfo, empty());
-            scriptHandler(config, routingContext, bindings, responseBehaviour -> {
+            scriptHandler(config, routingContext, getInjector(), bindings, responseBehaviour -> {
                 // find the right row from results
                 final JsonArray results = responseService.loadResponseAsJsonArray(config, responseBehaviour);
                 final Optional<JsonObject> result = FileUtil.findRow(config.getIdField(), recordInfo.getRecordId(), results);
@@ -148,7 +144,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
      * @param path
      */
     private void addCreateScannerRoute(Router router, String path) {
-        router.post(path + "/:tableName/scanner").handler(handleAsync(routingContext -> {
+        router.post(path + "/:tableName/scanner").handler(handleRoute(imposterConfig, vertx, routingContext -> {
             final String tableName = routingContext.request().getParam("tableName");
 
             // check that the table is registered
@@ -194,7 +190,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
 
             // script should fire first
             final Map<String, Object> bindings = buildScriptBindings(ResponsePhase.SCANNER, tableName, null, scannerFilterPrefix);
-            scriptHandler(config, routingContext, bindings, responseBehaviour -> {
+            scriptHandler(config, routingContext, getInjector(), bindings, responseBehaviour -> {
                 final int scannerId = scannerService.registerScanner(config, scanner);
 
                 final String resultUrl = imposterConfig.getServerUrl() + path + "/" + tableName + "/scanner/" + scannerId;
@@ -215,7 +211,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
      * @param path
      */
     private void addReadScannerResultsRoute(Router router, String path) {
-        router.get(path + "/:tableName/scanner/:scannerId").handler(handleAsync(routingContext -> {
+        router.get(path + "/:tableName/scanner/:scannerId").handler(handleRoute(imposterConfig, vertx, routingContext -> {
             final String tableName = routingContext.request().getParam("tableName");
             final String scannerId = routingContext.request().getParam("scannerId");
 
@@ -255,7 +251,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
             final Map<String, Object> bindings = buildScriptBindings(ResponsePhase.RESULTS, tableName, null,
                     deserialiser.decodeScannerFilterPrefix(scanner.getScanner()));
 
-            scriptHandler(config, routingContext, bindings, responseBehaviour -> {
+            scriptHandler(config, routingContext, getInjector(), bindings, responseBehaviour -> {
 
                 // build results
                 final JsonArray results = responseService.loadResponseAsJsonArray(config, responseBehaviour);
@@ -285,7 +281,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
         // search the ordered list
         for (String contentType : acceptedContentTypes) {
             try {
-                final SerialisationService serialiser = injector.getInstance(Key.get(SerialisationService.class, Names.named(contentType)));
+                final SerialisationService serialiser = getInjector().getInstance(Key.get(SerialisationService.class, Names.named(contentType)));
                 LOGGER.debug("Found serialiser binding {} for content type '{}'", serialiser.getClass().getSimpleName(), contentType);
                 return serialiser;
 
@@ -313,7 +309,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
         }
 
         try {
-            final DeserialisationService deserialiser = injector.getInstance(Key.get(DeserialisationService.class, Names.named(contentType)));
+            final DeserialisationService deserialiser = getInjector().getInstance(Key.get(DeserialisationService.class, Names.named(contentType)));
             LOGGER.debug("Found deserialiser binding {} for content type '{}'", deserialiser.getClass().getSimpleName(), contentType);
             return deserialiser;
 

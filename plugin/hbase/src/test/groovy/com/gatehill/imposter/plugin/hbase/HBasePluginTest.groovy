@@ -20,7 +20,7 @@ import org.junit.Test
  *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public class HBasePluginTest extends BaseVerticleTest {
+class HBasePluginTest extends BaseVerticleTest {
     private Client client
 
     @Override
@@ -29,7 +29,7 @@ public class HBasePluginTest extends BaseVerticleTest {
     }
 
     @Before
-    public void setUp(TestContext testContext) throws Exception {
+    void setUp(TestContext testContext) throws Exception {
         super.setUp(testContext)
 
         client = new Client(new Cluster().add(HOST, getListenPort()))
@@ -56,13 +56,13 @@ public class HBasePluginTest extends BaseVerticleTest {
     }
 
     @Test
-    public void testFetchResults(TestContext testContext) throws Exception {
+    void testFetchResults(TestContext testContext) throws Exception {
         final RemoteHTable table = new RemoteHTable(client, "exampleTable")
         expectSuccessfulRows(testContext, table, "examplePrefix")
     }
 
     @Test
-    public void testFetchIndividualRow_Success(TestContext testContext) throws Exception {
+    void testFetchIndividualRow_Success(TestContext testContext) throws Exception {
         final RemoteHTable table = new RemoteHTable(client, "exampleTable")
 
         final Result result1 = table.get(new Get(Bytes.toBytes("row1")))
@@ -75,7 +75,7 @@ public class HBasePluginTest extends BaseVerticleTest {
     }
 
     @Test
-    public void testFetchIndividualRow_NotFound(TestContext testContext) throws Exception {
+    void testFetchIndividualRow_NotFound(TestContext testContext) throws Exception {
         final RemoteHTable table = new RemoteHTable(client, "exampleTable")
 
         def actual = table.get(new Get(Bytes.toBytes("row404")))
@@ -83,13 +83,13 @@ public class HBasePluginTest extends BaseVerticleTest {
     }
 
     @Test
-    public void testScriptedSuccess(TestContext testContext) throws Exception {
+    void testScriptedSuccess(TestContext testContext) throws Exception {
         final RemoteHTable table = new RemoteHTable(client, "scriptedTable")
         expectSuccessfulRows(testContext, table, "examplePrefix")
     }
 
     @Test
-    public void testScriptedFailure(TestContext testContext) throws Exception {
+    void testScriptedFailure(TestContext testContext) throws Exception {
         final RemoteHTable table = new RemoteHTable(client, "scriptedTable")
 
         final Scan scan = new Scan()
@@ -105,7 +105,7 @@ public class HBasePluginTest extends BaseVerticleTest {
     }
 
     @Test
-    public void testTableNotFound(TestContext testContext) throws Exception {
+    void testTableNotFound(TestContext testContext) throws Exception {
         final RemoteHTable table = new RemoteHTable(client, "nonExistentTable")
 
         final Scan scan = new Scan()
@@ -121,7 +121,7 @@ public class HBasePluginTest extends BaseVerticleTest {
     }
 
     @Test
-    public void testFilterMismatch(TestContext testContext) throws Exception {
+    void testFilterMismatch(TestContext testContext) throws Exception {
         final RemoteHTable table = new RemoteHTable(client, "exampleTable")
 
         final Scan scan = new Scan()

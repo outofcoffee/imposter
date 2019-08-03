@@ -1,5 +1,7 @@
 package com.gatehill.imposter;
 
+import com.gatehill.imposter.server.RequestHandlingMode;
+
 import java.util.Map;
 
 /**
@@ -15,6 +17,8 @@ public class ImposterConfig {
     private String keystorePassword;
     private String[] pluginClassNames;
     private Map<String, String> pluginArgs;
+    private String serverFactory;
+    private RequestHandlingMode requestHandlingMode = RequestHandlingMode.ASYNC;
 
     public String getHost() {
         return host;
@@ -86,5 +90,21 @@ public class ImposterConfig {
 
     public Map<String, String> getPluginArgs() {
         return pluginArgs;
+    }
+
+    public String getServerFactory() {
+        return serverFactory;
+    }
+
+    public void setServerFactory(String serverFactory) {
+        this.serverFactory = serverFactory;
+    }
+
+    public RequestHandlingMode getRequestHandlingMode() {
+        return requestHandlingMode;
+    }
+
+    public void setRequestHandlingMode(RequestHandlingMode requestHandlingMode) {
+        this.requestHandlingMode = requestHandlingMode;
     }
 }

@@ -93,7 +93,7 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
                 .log().everything()
                 .statusCode(HttpUtil.HTTP_CREATED)
                 .body("result", equalTo("success"))
-                .header("MyHeader","MyHeaderValue");
+                .header("MyHeader", "MyHeaderValue");
     }
 
     /**
@@ -174,12 +174,12 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
     @Test
     public void testRequestWithHeaders() throws Exception {
         given()
-            .log().everything()
-            .accept(ContentType.TEXT)
-            .when()
-            .header("Authorization", "AUTH_HEADER")
-            .get("/simple/apis")
-            .then()
-            .statusCode(equalTo(HttpUtil.HTTP_NO_CONTENT));
+                .log().everything()
+                .accept(ContentType.TEXT)
+                .when()
+                .header("Authorization", "AUTH_HEADER")
+                .get("/simple/apis")
+                .then()
+                .statusCode(equalTo(HttpUtil.HTTP_NO_CONTENT));
     }
 }

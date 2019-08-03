@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- Adds extension point to allow custom HTTP server implementation.
+
+### Changed
+- Moves core API into Maven-published 'api' module.
+- Sets SFDC plugin content type to JSON (thanks, pauturner).
+
+### Fixed
+- HBase plugin tests now included in test reports.
+
 ## [0.6.0] - 2017-10-14 
 ### Added
 - Exposes request headers to scripts (thanks, kareem-habib).
