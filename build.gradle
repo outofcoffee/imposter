@@ -1,6 +1,6 @@
 subprojects {
     group 'com.gatehill.imposter'
-    version '0.7.0'
+    version '0.7.1-SNAPSHOT'
 
     buildscript {
         ext {

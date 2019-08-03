@@ -3,7 +3,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.7.0]
+## [Unreleased]
+### Added
+- ...
+
+## [0.7.0] - 2019-08-03
 ### Added
 - Adds extension point to allow custom HTTP server implementation.
 - More modules published for extension developers.
