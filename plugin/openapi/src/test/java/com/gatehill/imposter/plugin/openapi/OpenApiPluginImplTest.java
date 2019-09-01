@@ -18,6 +18,7 @@ import org.junit.Test;
 
 import java.util.function.Consumer;
 import java.util.Collections;
+import java.util.function.Consumer;
 
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
@@ -173,14 +174,59 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
         testContext.assertEquals(6, combined.getPaths().size());
 
         // OASv2
-        testContext.assertTrue(combined.getPaths().keySet().contains("/apis"));
-        testContext.assertTrue(combined.getPaths().keySet().contains("/v2"));
-        testContext.assertTrue(combined.getPaths().keySet().contains("/pets"));
-        testContext.assertTrue(combined.getPaths().keySet().contains("/pets/{id}"));
+        testContext.assertTrue(combined.getPaths().containsKey("/apis"));
+        testContext.assertTrue(combined.getPaths().containsKey("/v2"));
+        testContext.assertTrue(combined.getPaths().containsKey("/pets"));
+        testContext.assertTrue(combined.getPaths().containsKey("/pets/{id}"));
 
         // OASv3
-        testContext.assertTrue(combined.getPaths().keySet().contains("/oas3/apis"));
-        testContext.assertTrue(combined.getPaths().keySet().contains("/oas3/v2"));
+        testContext.assertTrue(combined.getPaths().containsKey("/oas3/apis"));
+        testContext.assertTrue(combined.getPaths().containsKey("/oas3/v2"));
+    }
+
+    /**
+     * Should return examples formatted as JSON.
+     *
+     * @param testContext
+     */
+    @Test
+    public void testExamples(TestContext testContext) {
+        // OASv2
+        queryEndpoint("/apis", responseBody -> {
+            final String trimmed = responseBody.trim();
+            testContext.assertTrue(trimmed.startsWith("{"));
+            testContext.assertTrue(trimmed.contains("CURRENT"));
+            testContext.assertTrue(trimmed.endsWith("}"));
+        });
+
+        queryEndpoint("/pets/1", responseBody -> {
+            final String trimmed = responseBody.trim();
+            testContext.assertTrue(trimmed.startsWith("{"));
+            testContext.assertTrue(trimmed.contains("Fluffy"));
+            testContext.assertTrue(trimmed.endsWith("}"));
+        });
+
+        // OASv3
+        queryEndpoint("/oas3/apis", responseBody -> {
+            final String trimmed = responseBody.trim();
+            testContext.assertTrue(trimmed.startsWith("{"));
+            testContext.assertTrue(trimmed.contains("CURRENT"));
+            testContext.assertTrue(trimmed.endsWith("}"));
+        });
+    }
+
+    private void queryEndpoint(String url, Consumer<String> bodyConsumer) {
+        final String body = given()
+                .log().everything()
+                .accept(ContentType.JSON)
+                .when()
+                .get(url)
+                .then()
+                .log().everything()
+                .statusCode(HttpUtil.HTTP_OK)
+                .extract().asString();
+
+        bodyConsumer.accept(body);
     }
 
     /**
