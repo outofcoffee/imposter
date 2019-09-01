@@ -34,6 +34,7 @@ subprojects {
         version_restAssured = '2.9.0'
         version_groovy = '2.4.12'
         version_args4j = '2.33'
+        version_jackson = '2.9.0'
     }
 }
 

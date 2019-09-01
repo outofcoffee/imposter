@@ -39,7 +39,7 @@ public class JsonSerialisationServiceImpl implements SerialisationService, Deser
     @Override
     public MockScanner decodeScanner(RoutingContext routingContext) {
         try {
-            return MapUtil.MAPPER.readValue(routingContext.getBody().getBytes(), MockScanner.class);
+            return MapUtil.JSON_MAPPER.readValue(routingContext.getBody().getBytes(), MockScanner.class);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

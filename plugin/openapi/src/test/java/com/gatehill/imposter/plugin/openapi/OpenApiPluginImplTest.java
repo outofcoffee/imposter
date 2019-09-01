@@ -14,6 +14,8 @@ import io.vertx.ext.unit.TestContext;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.function.Consumer;
+
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -166,9 +168,52 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
         testContext.assertEquals("Imposter Mock APIs", combined.getInfo().getTitle());
 
         // should contain combination of both specs' endpoints
-        testContext.assertEquals(4, combined.getPaths().size());
-        testContext.assertTrue(combined.getPaths().keySet().contains("/simple/apis"));
-        testContext.assertTrue(combined.getPaths().keySet().contains("/api/pets"));
+        testContext.assertEquals(5, combined.getPaths().size());
+        testContext.assertTrue(combined.getPaths().containsKey("/simple/apis"));
+        testContext.assertTrue(combined.getPaths().containsKey("/api/pets"));
+    }
+
+    /**
+     * Should return examples formatted as JSON.
+     *
+     * @param testContext
+     */
+    @Test
+    public void testExamples(TestContext testContext) {
+        queryEndpoint("/simple/apis", responseBody -> {
+            final String trimmed = responseBody.trim();
+            testContext.assertTrue(trimmed.startsWith("{"));
+            testContext.assertTrue(trimmed.contains("CURRENT"));
+            testContext.assertTrue(trimmed.endsWith("}"));
+        });
+
+        queryEndpoint("/api/pets/1", responseBody -> {
+            final String trimmed = responseBody.trim();
+            testContext.assertTrue(trimmed.startsWith("{"));
+            testContext.assertTrue(trimmed.contains("Fluffy"));
+            testContext.assertTrue(trimmed.endsWith("}"));
+        });
+
+        queryEndpoint("/objects/team", responseBody -> {
+            final String trimmed = responseBody.trim();
+            testContext.assertTrue(trimmed.startsWith("{"));
+            testContext.assertTrue(trimmed.contains("Engineering"));
+            testContext.assertTrue(trimmed.endsWith("}"));
+        });
+    }
+
+    private void queryEndpoint(String url, Consumer<String> bodyConsumer) {
+        final String body = given()
+                .log().everything()
+                .accept(ContentType.JSON)
+                .when()
+                .get(url)
+                .then()
+                .log().everything()
+                .statusCode(HttpUtil.HTTP_OK)
+                .extract().asString();
+
+        bodyConsumer.accept(body);
     }
 
     @Test

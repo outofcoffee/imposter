@@ -1,6 +1,7 @@
 package com.gatehill.imposter.plugin.openapi;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gatehill.imposter.ImposterConfig;
 import com.gatehill.imposter.plugin.RequireModules;
 import com.gatehill.imposter.plugin.ScriptedPlugin;
@@ -141,7 +142,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
                     final String title = imposterConfig.getPluginArgs().get(ARG_TITLE);
 
                     final Swagger combined = openApiService.combineSpecifications(allSpecs, basePath, scheme, title);
-                    return MapUtil.MAPPER.writeValueAsString(combined);
+                    return MapUtil.JSON_MAPPER.writeValueAsString(combined);
 
                 } catch (JsonGenerationException e) {
                     throw new ExecutionException(e);
@@ -308,7 +309,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
             if (example.isPresent()) {
                 final Map.Entry<String, Object> exampleEntry = example.get();
 
-                final String exampleResponse = exampleEntry.getValue().toString();
+                final String exampleResponse = buildExampleResponse(exampleEntry);
                 if (LOGGER.isTraceEnabled()) {
                     LOGGER.trace("Serving mock example for URI {} and status code {}: {}",
                             routingContext.request().absoluteURI(), statusCode, exampleResponse);
@@ -332,6 +333,45 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
 
         // no matching example - use fallback
         fallback.accept(routingContext, responseBehaviour);
+    }
+
+    /**
+     * @param exampleEntry the example
+     * @return the {@link String} representation of the example entry
+     */
+    private String buildExampleResponse(Map.Entry<String, Object> exampleEntry) {
+        try {
+            final Object exampleValue = exampleEntry.getValue();
+            final String exampleResponse;
+            if (exampleValue instanceof Map) {
+                switch (exampleEntry.getKey()) {
+                    case "application/json":
+                        exampleResponse = MapUtil.JSON_MAPPER.writeValueAsString(exampleValue);
+                        break;
+
+                    case "text/x-yaml":
+                    case "application/x-yaml":
+                    case "application/yaml":
+                        exampleResponse = MapUtil.YAML_MAPPER.writeValueAsString(exampleValue);
+                        break;
+
+                    default:
+                        LOGGER.warn("Unsupported response MIME type - returning example as string");
+                        exampleResponse = exampleValue.toString();
+                        break;
+                }
+            } else if (exampleValue instanceof String) {
+                exampleResponse = (String) exampleValue;
+            } else {
+                LOGGER.warn("Unsupported example type - attempting String conversion");
+                exampleResponse = exampleValue.toString();
+            }
+            return exampleResponse;
+
+        } catch (JsonProcessingException e) {
+            LOGGER.error("Error building example response", e);
+            return "";
+        }
     }
 
     /**

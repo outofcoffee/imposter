@@ -70,3 +70,27 @@ at their respective endpoints under
 
 For specific information about the endpoints, see the interactive sandbox at
 [http://localhost:8443/_spec](http://localhost:8443/_spec).
+
+## Object response examples
+
+Imposter has limited support for response examples defined as objects, for example an API specification like [object-examples.yaml](../plugin/openapi/src/test/resources/config/object-examples.yaml).
+
+The salient part of the response is as follows:
+
+```yaml
+responses:
+  "200":
+    description: team response
+    schema:
+      type: object
+      items:
+        $ref: '#/definitions/Team'
+    examples:
+      application/json:
+        id: 10
+        name: Engineering
+```
+
+> Note: the JSON example is specified as an object.
+
+Imposter currently supports JSON and YAML serialised content types in the response if they are specified in this way. If you want to return a different format, return a literal string, such as those above.
