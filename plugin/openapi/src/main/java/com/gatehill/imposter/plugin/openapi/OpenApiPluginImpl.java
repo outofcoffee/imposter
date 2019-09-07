@@ -22,6 +22,7 @@ import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.examples.Example;
 import io.swagger.v3.oas.models.responses.ApiResponse;
+import io.swagger.v3.oas.models.servers.Server;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerResponse;
@@ -32,6 +33,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.inject.Inject;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -123,17 +126,51 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
      */
     private void handlePathOperations(Router router, OpenApiPluginConfig config, OpenAPI swagger, String path, PathItem pathConfig) {
         pathConfig.readOperationsMap().forEach((httpMethod, operation) -> {
-            // TODO Consider deriving URL from 'servers' element:
-            // swagger.getServers().stream()
-            //                    .findFirst()
-            //                    .map(Server::getUrl)
-            final String fullPath = convertPath(path);
+            final String fullPath = buildPath(swagger, path, config);
             LOGGER.debug("Adding mock endpoint: {} -> {}", httpMethod, fullPath);
 
-            // convert an {@link io.swagger.models.HttpMethod} to an {@link io.vertx.core.http.HttpMethod}
+            // convert an io.swagger.models.HttpMethod to an io.vertx.core.http.HttpMethod
             final HttpMethod method = HttpMethod.valueOf(httpMethod.name());
             router.route(method, fullPath).handler(buildHandler(config, operation));
         });
+    }
+
+    /**
+     * Construct the path at which the example response will be served.
+     *
+     * @param swagger the OpenAPI specification
+     * @param path    the mock path
+     * @param config  the mock configuration
+     * @return the path
+     */
+    private String buildPath(OpenAPI swagger, String path, OpenApiPluginConfig config) {
+        String basePath;
+
+        if (config.isUseServerPathAsBaseUrl()) {
+            // Treat the mock server as substitute for 'the' server.
+            // Note: OASv2 'basePath' is converted to OASv3 'server' entries.
+
+            final Optional<Server> firstServer = swagger.getServers().stream().findFirst();
+            if (firstServer.isPresent()) {
+                final String url = ofNullable(firstServer.get().getUrl()).orElse("");
+                if (url.length() > 1) {
+                    // attempt to parse as URI and extract path
+                    try {
+                        basePath = new URI(url).getPath();
+                    } catch (URISyntaxException ignored) {
+                        basePath = "";
+                    }
+                } else {
+                    basePath = "";
+                }
+            } else {
+                basePath = "";
+            }
+        } else {
+            basePath = "";
+        }
+
+        return basePath + convertPath(path);
     }
 
     /**
@@ -363,7 +400,9 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
         try {
             final Object exampleValue = exampleEntry.getValue();
             final String exampleResponse;
-            if (exampleValue instanceof Map) {
+            if (exampleValue instanceof Example) {
+                exampleResponse = ((Example) exampleValue).getValue().toString();
+            } else if (exampleValue instanceof Map) {
                 switch (exampleEntry.getKey()) {
                     case "application/json":
                         exampleResponse = MapUtil.JSON_MAPPER.writeValueAsString(exampleValue);

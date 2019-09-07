@@ -13,6 +13,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -83,10 +84,6 @@ public class OpenApiServiceImpl implements OpenApiService {
 
             // prefix paths with base url
             final String childBasePath = ofNullable(basePath).orElse("");
-
-            // TODO determine whether to incorporate OASv2 basePath (converted to OASv3 'server' entries)
-            // into child base path
-
             getOrEmpty(spec.getPaths()).forEach((path, pathDetails) ->
                     paths.put(childBasePath + path, pathDetails));
         });
@@ -123,7 +120,7 @@ public class OpenApiServiceImpl implements OpenApiService {
 
         combined.setComponents(components);
 
-        if (null != scheme) {
+        if (nonNull(scheme)) {
             // override scheme if provided
             servers.forEach(server -> overrideScheme(scheme.toValue(), server));
         }
@@ -144,14 +141,14 @@ public class OpenApiServiceImpl implements OpenApiService {
      */
     private void overrideScheme(String requiredScheme, Server server) {
         try {
-            final URI original = URI.create(server.getUrl());
+            final URI original = new URI(server.getUrl());
             if (!original.getScheme().equalsIgnoreCase(requiredScheme)) {
                 final URI modified = new URI(requiredScheme, original.getUserInfo(), original.getHost(), original.getPort(),
                         original.getPath(), original.getQuery(), original.getFragment());
 
                 server.setUrl(modified.toASCIIString());
             }
-        } catch (Exception ignored) {
+        } catch (URISyntaxException ignored) {
         }
     }
 
