@@ -5,7 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
-- ...
+- Adds support for object response examples in the OpenAPI plugin.
 
 ## [0.7.0] - 2019-08-03
 ### Added

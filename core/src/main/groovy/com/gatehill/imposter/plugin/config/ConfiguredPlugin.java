@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.gatehill.imposter.util.MapUtil.MAPPER;
+import static com.gatehill.imposter.util.MapUtil.JSON_MAPPER;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
@@ -27,7 +27,7 @@ public abstract class ConfiguredPlugin<T extends BaseConfig> implements Plugin, 
         final List<T> configs = configFiles.stream()
                 .map(file -> {
                     try {
-                        final T config = MAPPER.readValue(file, getConfigClass());
+                        final T config = JSON_MAPPER.readValue(file, getConfigClass());
                         config.setParentDir(file.getParentFile());
                         return config;
 

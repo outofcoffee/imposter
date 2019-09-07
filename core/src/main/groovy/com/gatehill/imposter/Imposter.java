@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 import static com.gatehill.imposter.util.FileUtil.CONFIG_FILE_SUFFIX;
 import static com.gatehill.imposter.util.HttpUtil.BIND_ALL_HOSTS;
-import static com.gatehill.imposter.util.MapUtil.MAPPER;
+import static com.gatehill.imposter.util.MapUtil.JSON_MAPPER;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
@@ -237,7 +237,7 @@ public class Imposter {
                     LOGGER.debug("Loading configuration file: {}", configFile);
                     configCount++;
 
-                    final BaseConfig config = MAPPER.readValue(configFile, BaseConfig.class);
+                    final BaseConfig config = JSON_MAPPER.readValue(configFile, BaseConfig.class);
                     config.setParentDir(configFile.getParentFile());
 
                     List<File> pluginConfigs = allPluginConfigs.get(config.getPluginClass());
