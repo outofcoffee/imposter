@@ -20,8 +20,7 @@ import java.util.stream.Collectors;
 import static com.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PASSWORD;
 import static com.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PATH;
 import static com.gatehill.imposter.util.FileUtil.CLASSPATH_PREFIX;
-import static com.gatehill.imposter.util.HttpUtil.BIND_ALL_HOSTS;
-import static com.gatehill.imposter.util.HttpUtil.DEFAULT_SERVER_FACTORY;
+import static com.gatehill.imposter.util.HttpUtil.*;
 import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;
 
@@ -45,8 +44,8 @@ public class ImposterLauncher extends Launcher {
     @Option(name = "--plugin", aliases = {"-p"}, usage = "Plugin class name")
     private String[] pluginClassNames = {};
 
-    @Option(name = "--listenPort", aliases = {"-l"}, usage = "Listen port")
-    private Integer listenPort = 8443;
+    @Option(name = "--listenPort", aliases = {"-l"}, usage = "Listen port (default " + DEFAULT_HTTP_LISTEN_PORT + " unless TLS enabled, in which case default is " + DEFAULT_HTTPS_LISTEN_PORT + ")")
+    private Integer listenPort;
 
     @Option(name = "--host", aliases = {"-b"}, usage = "Bind host")
     private String host = BIND_ALL_HOSTS;
@@ -128,9 +127,20 @@ public class ImposterLauncher extends Launcher {
                 .map(arg -> arg.split("="))
                 .collect(Collectors.toMap(splitArg -> splitArg[0], splitArg -> splitArg[1]));
 
+        final int port;
+        if (isNull(listenPort)) {
+            if (tlsEnabled) {
+                port = DEFAULT_HTTPS_LISTEN_PORT;
+            } else {
+                port = DEFAULT_HTTP_LISTEN_PORT;
+            }
+        } else {
+            port = listenPort;
+        }
+
         final ImposterConfig imposterConfig = ConfigUtil.getConfig();
         imposterConfig.setServerFactory(serverFactory);
-        imposterConfig.setListenPort(listenPort);
+        imposterConfig.setListenPort(port);
         imposterConfig.setHost(host);
         imposterConfig.setServerUrl(serverUrl);
         imposterConfig.setTlsEnabled(tlsEnabled);
