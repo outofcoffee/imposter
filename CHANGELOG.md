@@ -11,6 +11,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Breaking change: Defaults HTTP listen port to 8080.
 - Slims distributions to include only the required dependencies.
 - Switches Docker base image to Alpine.
+- Enables cgroup-aware heap sizing JVM option.
 
 ## [0.7.0] - 2019-08-03
 ### Added
@@ -56,7 +57,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Adds core support for specifying plugin class via META-INF properties file.
 
 ### Changed
-- Breaking change - response files are now resolved relative to the plugin configuration file, not the core configuration directory.
+- Breaking change: response files are now resolved relative to the plugin configuration file, not the core configuration directory.
 
 ## [0.3.4] - 2016-08-22
 ### Added
