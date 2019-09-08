@@ -11,7 +11,7 @@ The following command line arguments can be used:
      --host (-b) VAL        : Bind host
      --keystorePassword VAL : Password for the keystore (default: password)
      --keystorePath VAL     : Path to the keystore (default: classpath:/keystore/ssl.jks)
-     --listenPort (-l) N    : Listen port (default: 8443)
+     --listenPort (-l) N    : Listen port (default: 8080)
      --plugin (-p) VAL      : Plugin class name
      --serverUrl (-u) VAL   : Explicitly set the server address
      --tlsEnabled (-t)      : Whether TLS (HTTPS) is enabled (requires keystore to be configured) (default: false)
@@ -25,16 +25,4 @@ is not the URL you wish to use, you can override this with the `serverUrl` comma
 
 ## TLS/SSL
 
-You can run Imposter with HTTPS enabled. To do this, enable the TLS option and provide keystore options.
-
-### Example
-
-    java -jar distro/build/libs/imposter.jar \
-            --plugin com.gatehill.imposter.plugin.rest.RestPluginImpl \
-            --configDir /path/to/config \
-            --tlsEnabled \
-            --keystorePath ./server/src/main/resources/keystore/ssl.jks \
-            --keystorePassword password
-
-**Note:** This example uses the self-signed certificate for TLS/SSL found in the source repository. You can, of course, use your own keystore instead. If you need to access the keys or certificate from this example, the keystore is located at
-`server/src/main/resources/keystore` and uses the secure password 'password'.
+See [TLS/SSL](tls_ssl.md).

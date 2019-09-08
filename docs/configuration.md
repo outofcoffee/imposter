@@ -20,10 +20,7 @@ Here is an example configuration file:
 
 ### Returning data
 
-You can control the data Imposter sends back using response files.
-The response file is used by the active plugin to generate a response. For example, the [REST plugin](rest_plugin.md) might return
-the content of the file unmodified, whereas the [HBase](hbase_plugin.md) and [SFDC](sfdc_plugin.md) plugins use the response file to generate
-responses that mimic their respective systems.
+You can control the data Imposter sends back using response files. The response file is used by the active plugin to generate a response. For example, the [REST plugin](rest_plugin.md) might return the content of the file unmodified, whereas the [HBase](hbase_plugin.md) and [SFDC](sfdc_plugin.md) plugins use the response file to generate responses that mimic their respective systems.
 
 Response files can be named anything you like; their path is resolved relative to the configuration file.
 
@@ -39,7 +36,7 @@ In the example above, we are using a static response file (`example-data.json`) 
 
 Using the configuration above, if we were to send an HTTP request to the `/example` path defined in the configuration file, we would see:
 
-    HTTP GET http://localhost:8443/example
+    HTTP GET http://localhost:8080/example
     ...
     200 OK
     ...
@@ -51,9 +48,7 @@ The plugin has returned the contents of the `staticFile` in the HTTP response.
 
 ## Scripted responses (advanced)
 
-For more advanced scenarios, you can also control Imposter's responses using [JavaScript](https://www.javascript.com/) or
-[Groovy](http://www.groovy-lang.org/) scripts. (If you choose Groovy, you can of course write plain
-Java in your scripts as well).
+For more advanced scenarios, you can also control Imposter's responses using [JavaScript](https://www.javascript.com/) or [Groovy](http://www.groovy-lang.org/) scripts. (If you choose Groovy, you can of course write plain Java in your scripts as well).
 
 Here's an example configuration file that uses a script:
 
@@ -74,18 +69,15 @@ Here's an example configuration file that uses a script:
         }
     }
     
-We will explain this syntax later, in the _ResponseBehaviour object_ section. For now, it's enough to know that
-the example above causes the mock server to respond with HTTP status code 201 if the value of
-the `action` parameter in the request is `create`.
+We will explain this syntax later, in the _ResponseBehaviour object_ section. For now, it's enough to know that the example above causes the mock server to respond with HTTP status code 201 if the value of the `action` parameter in the request is `create`.
 
 For example:
 
-    HTTP GET http://localhost:8443/example-two?action=create
+    HTTP GET http://localhost:8080/example-two?action=create
     ...
     201 Created
 
-*Tip:* The `params` object used in the script is just a map of the request parameters, so you can use either
-`params.yourParamName` or `params['yourParamName']` syntax to access its members.
+*Tip:* The `params` object used in the script is just a map of the request parameters, so you can use either `params.yourParamName` or `params['yourParamName']` syntax to access its members.
 
 ### Another example
 
@@ -118,12 +110,11 @@ Here's a more sophisticated example script:
             break
     }
 
-In this example, the script causes the mock server to respond with HTTP status codes 200, 201 or 400 depending on
-the value of the `action` parameter in the request.
+In this example, the script causes the mock server to respond with HTTP status codes 200, 201 or 400 depending on the value of the `action` parameter in the request.
 
 For example:
 
-    HTTP GET http://localhost:8443/example-two?action=fetch
+    HTTP GET http://localhost:8080/example-two?action=fetch
     ...
     200 OK
     ...
@@ -136,14 +127,13 @@ In the case of `action=fetch`, the script causes the mock server to use the cont
 
 And:
 
-    HTTP GET http://localhost:8443/example-two?action=foo
+    HTTP GET http://localhost:8080/example-two?action=foo
     ...
     400 Bad Request
 
 In the default case, the script causes the mock server to return an HTTP 400 response, as shown above.
 
-There are many other script objects you could use in order to decide what to return. For example, your script might use the
-request method (GET, POST, PUT, DELETE etc.) or other request attributes.
+There are many other script objects you could use in order to decide what to return. For example, your script might use the request method (GET, POST, PUT, DELETE etc.) or other request attributes.
 
 ## Script objects
 
@@ -157,8 +147,7 @@ In order to help you determine what action to take, Imposter makes certain objec
 
 ## Context object
 
-The `context` object is available to your scripts. It holds things you might like to interrogate,
-like the request object.
+The `context` object is available to your scripts. It holds things you might like to interrogate, like the request object.
 
 | Property | Description
 | --- | ---
@@ -254,13 +243,9 @@ Here's an example of the static file approach:
 Here, the response file `example-data.json` will be used, unless the script invokes the
 `withFile(String)` method with a different filename.
 
-In order for the mock server to return the response file in an appropriate format, the plugin must be allowed to
-process it. That means you should not call `immediately()` unless you want to skip using a response file (e.g. if
-you want to send an error code back or a response without a body).
+In order for the mock server to return the response file in an appropriate format, the plugin must be allowed to process it. That means you should not call `immediately()` unless you want to skip using a response file (e.g. if you want to send an error code back or a response without a body).
 
-Whilst not required, your script could invoke `usingDefaultBehaviour()` for readability to indicate
-that you want the plugin to handle the response file for you. See the *rest* plugin tests for a working example. To this
-end, the following blocks are semantically identical:
+Whilst not required, your script could invoke `usingDefaultBehaviour()` for readability to indicate that you want the plugin to handle the response file for you. See the *rest* plugin tests for a working example. To this end, the following blocks are semantically identical:
 
     respond {
         withFile 'static-data.json' and() usingDefaultBehaviour()

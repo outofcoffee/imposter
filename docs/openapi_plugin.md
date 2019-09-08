@@ -23,19 +23,15 @@ Read the [Configuration](configuration.md) section to understand how to configur
 
 ## Using the plugin
 
-A great way to use this plugin is to take advantage of the built in `examples` feature of OpenAPI/Swagger files.
-These provide a standard way to document sample responses for each API response. This plugin will
-match the example to serve using a combination of:
+A great way to use this plugin is to take advantage of the built in `examples` feature of OpenAPI/Swagger files. These provide a standard way to document sample responses for each API response. This plugin will match the example to serve using a combination of:
 
 * matching URI/path
 * matching content type in `Accept` HTTP request header to the `produces` property of the response
 * matching status code to the response
 
-Typically you will use a simple script (see `plugin/openapi/src/test/resources/config` for working example)
-to control the status code, and thus the content of the response.
+Typically you will use a simple script (see `plugin/openapi/src/test/resources/config` for working example) to control the status code, and thus the content of the response.
 
-You can also use the interactive API sandbox at `/_spec`; e.g. [http://localhost:8443/_spec](http://localhost:8443/_spec),
-which looks like this:
+You can also use the interactive API sandbox at `/_spec`; e.g. [http://localhost:8080/_spec](http://localhost:8080/_spec), which looks like this:
 
 ![API sandbox](images/api-sandbox.png)
 
@@ -49,7 +45,7 @@ Let's assume your configuration is in a folder named `config`.
 
 Docker example:
 
-    docker run -ti -p 8443:8443 \
+    docker run -ti -p 8080:8080 \
         -v $(pwd)/config:/opt/imposter/config \
         outofcoffee/imposter-openapi \
         --plugin com.gatehill.imposter.plugin.openapi.OpenApiPluginImpl \
@@ -61,15 +57,11 @@ Standalone Java example:
         --plugin com.gatehill.imposter.plugin.openapi.OpenApiPluginImpl \
         --configDir ./config
 
-This starts a mock server using the OpenAPI plugin. Responses are served based on the configuration files
-inside the `config` folder; in particular the Swagger specification `petstore-expanded.yaml`.
+This starts a mock server using the OpenAPI plugin. Responses are served based on the configuration files inside the `config` folder; in particular the Swagger specification `petstore-expanded.yaml`.
 
-Using the example above, you can interact with the APIs with examples in the Swagger specification
-at their respective endpoints under
-`http://localhost:8443/<endpoint path>`.
+Using the example above, you can interact with the APIs with examples in the Swagger specification at their respective endpoints under `http://localhost:8080/<endpoint path>`.
 
-For specific information about the endpoints, see the interactive sandbox at
-[http://localhost:8443/_spec](http://localhost:8443/_spec).
+For specific information about the endpoints, see the interactive sandbox at [http://localhost:8080/_spec](http://localhost:8080/_spec).
 
 ## Object response examples
 

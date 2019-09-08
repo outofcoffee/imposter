@@ -10,11 +10,11 @@ For distribution, Imposter is built as a 'fat JAR' (aka 'shadow JAR'). To get st
 
     ./gradlew clean shadowJar
 
-The JAR is created under the `distro/build/libs` directory.
+The JAR is created under the `distro/all/build/libs` directory.
 
-If, instead, you want to compile the JAR without embedded dependencies, use:
-
-    ./gradlew clean build
+> If, instead, you wanted to compile the JAR _without_ embedded dependencies, use:
+>
+>     ./gradlew clean build
 
 ## Tests
 

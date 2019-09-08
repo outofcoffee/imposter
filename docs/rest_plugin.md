@@ -26,7 +26,7 @@ Let's assume your configuration is in a folder named `config`.
 
 Docker example:
 
-    docker run -ti -p 8443:8443 \
+    docker run -ti -p 8080:8080 \
         -v $(pwd)/config:/opt/imposter/config \
         outofcoffee/imposter-rest
 
@@ -36,6 +36,4 @@ Standalone Java example:
         --plugin com.gatehill.imposter.plugin.rest.RestPluginImpl \
         --configDir ./config
 
-This starts a mock server using the simple REST plugin. Responses are served based on the configuration files
-inside the `config` folder. With the example above, you can hit the URL
-[http://localhost:8443/example](http://localhost:8443/example) to see the mock response.
+This starts a mock server using the simple REST plugin. Responses are served based on the configuration files inside the `config` folder. With the example above, you can hit the URL [http://localhost:8080/example](http://localhost:8080/example) to see the mock response.
