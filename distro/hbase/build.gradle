@@ -6,19 +6,15 @@ compileJava {
 }
 
 dependencies {
-    compile project (':imposter-core')
-    compile project (':imposter-server')
+    compile project (':distro:distro-base')
 
     // plugins
-    compile project (':plugin:detector')
-    compile project (':plugin:rest')
-    compile project (':plugin:openapi')
-    compile project (':plugin:hbase')
-    compile project (':plugin:sfdc')
+    compile project (':plugin:plugin-detector')
+    compile project (':plugin:plugin-hbase')
 }
 
 shadowJar {
-    baseName = rootProject.name
+    baseName = 'imposter-hbase'
     version = ''
     classifier = ''
 

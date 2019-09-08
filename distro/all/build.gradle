@@ -1,0 +1,33 @@
+apply plugin: 'java'
+apply plugin: 'com.github.johnrengelman.shadow'
+
+compileJava {
+    sourceCompatibility = 1.8
+}
+
+dependencies {
+    compile project (':distro:distro-base')
+
+    // plugins
+    compile project (':plugin:plugin-detector')
+    compile project (':plugin:plugin-hbase')
+    compile project (':plugin:plugin-openapi')
+    compile project (':plugin:plugin-rest')
+    compile project (':plugin:plugin-sfdc')
+}
+
+shadowJar {
+    baseName = 'imposter-all'
+    version = ''
+    classifier = ''
+
+    manifest {
+        attributes 'Main-Class': 'com.gatehill.imposter.server.ImposterLauncher'
+        attributes 'Main-Verticle': 'com.gatehill.imposter.server.ImposterVerticle'
+        attributes 'Imposter-Version': project.version
+    }
+
+    mergeServiceFiles {
+        include 'META-INF/services/io.vertx.core.spi.VerticleFactory'
+    }
+}
