@@ -1,3 +1,8 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
+set -e
 
-exec java ${JAVA_ARGS} -jar /opt/imposter/lib/imposter-${DISTRO_NAME}.jar "$@"
+if [ -z "${JAVA_OPTS}" ]; then
+  export JAVA_OPTS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
+fi
+
+exec java ${JAVA_ARGS} ${JAVA_OPTS} -jar /opt/imposter/lib/imposter-${DISTRO_NAME}.jar "$@"

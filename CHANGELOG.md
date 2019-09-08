@@ -7,6 +7,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Adds support for object response examples in the OpenAPI plugin.
 
+### Changed
+- Breaking change: Defaults HTTP listen port to 8080.
+- Slims distributions to include only the required dependencies.
+- Switches Docker base image to Alpine.
+
 ## [0.7.0] - 2019-08-03
 ### Added
 - Adds extension point to allow custom HTTP server implementation.

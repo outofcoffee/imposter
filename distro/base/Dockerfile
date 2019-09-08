@@ -1,4 +1,4 @@
-FROM java:openjdk-8-jre
+FROM openjdk:8u212-jre-alpine
 
 LABEL MAINTAINER="Pete Cornish <outofcoffee@gmail.com>"
 ENV JAVA_ARGS=""

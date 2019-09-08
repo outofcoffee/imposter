@@ -27,7 +27,7 @@ case ${LAUNCH_MODE} in
     export IMAGE_DIR="${DISTRO_NAME}"
     ./scripts/docker-build.sh
 
-    docker run -ti -p 8080:8080 \
+    docker run -ti --rm -p 8080:8080 \
       -v "$(pwd)/plugin/${DISTRO_NAME}/src/test/resources/config":/opt/imposter/config \
       -e JAVA_ARGS="${JAVA_ARGS}" \
       outofcoffee/imposter-${DISTRO_NAME}:dev
