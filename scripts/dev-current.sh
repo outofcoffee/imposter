@@ -35,7 +35,7 @@ case ${LAUNCH_MODE} in
 
   java)
     java ${JAVA_ARGS} \
-      -jar distro/${DISTRO_NAME}/build/libs/imposter.jar \
+      -jar distro/${DISTRO_NAME}/build/libs/imposter-${DISTRO_NAME}.jar \
       --configDir ./plugin/${DISTRO_NAME}/src/test/resources/config
     ;;
 esac

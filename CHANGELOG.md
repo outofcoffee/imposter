@@ -13,6 +13,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Switches Docker base image to Alpine.
 - Enables cgroup-aware heap sizing JVM option.
 
+### Fixed
+- Automatic plugin detection now works properly.
+
 ## [0.7.0] - 2019-08-03
 ### Added
 - Adds extension point to allow custom HTTP server implementation.

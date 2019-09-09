@@ -163,7 +163,7 @@ public class Imposter {
     @SuppressWarnings("unchecked")
     private List<Class<PluginProvider>> findUnregisteredProviders() {
         return pluginManager.getPluginClasses().stream()
-                .filter(pluginClass -> pluginClass.isAssignableFrom(PluginProvider.class))
+                .filter(PluginProvider.class::isAssignableFrom)
                 .map(pluginClass -> (Class<PluginProvider>) pluginClass.asSubclass(PluginProvider.class))
                 .filter(providerClass -> !pluginManager.isProviderRegistered(providerClass))
                 .collect(Collectors.toList());
