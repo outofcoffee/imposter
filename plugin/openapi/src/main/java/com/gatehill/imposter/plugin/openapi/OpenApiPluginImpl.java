@@ -7,6 +7,7 @@ import com.gatehill.imposter.plugin.RequireModules;
 import com.gatehill.imposter.plugin.ScriptedPlugin;
 import com.gatehill.imposter.plugin.config.ConfiguredPlugin;
 import com.gatehill.imposter.plugin.openapi.service.OpenApiService;
+import com.gatehill.imposter.plugin.openapi.util.OpenApiVersionUtil;
 import com.gatehill.imposter.script.ResponseBehaviour;
 import com.gatehill.imposter.util.HttpUtil;
 import com.gatehill.imposter.util.MapUtil;
@@ -14,10 +15,14 @@ import com.google.common.base.Strings;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import io.swagger.models.*;
-import io.swagger.parser.SwaggerParser;
+import io.swagger.models.Scheme;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.examples.Example;
+import io.swagger.v3.oas.models.responses.ApiResponse;
+import io.swagger.v3.oas.models.servers.Server;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerResponse;
@@ -28,6 +33,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.inject.Inject;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -39,6 +46,8 @@ import java.util.stream.Collectors;
 import static com.gatehill.imposter.util.AsyncUtil.handleRoute;
 import static com.gatehill.imposter.util.HttpUtil.CONTENT_TYPE;
 import static com.gatehill.imposter.util.HttpUtil.CONTENT_TYPE_JSON;
+import static com.google.common.collect.Maps.newHashMap;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 
@@ -83,12 +92,11 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
 
     @Override
     public void configureRoutes(Router router) {
-        final List<Swagger> allSpecs = Lists.newArrayListWithExpectedSize(configs.size());
+        final List<OpenAPI> allSpecs = Lists.newArrayListWithExpectedSize(configs.size());
 
         // specification mock endpoints
         configs.forEach(config -> {
-            final Swagger swagger = new SwaggerParser().read(Paths.get(
-                    config.getParentDir().getAbsolutePath(), config.getSpecFile()).toString());
+            final OpenAPI swagger = OpenApiVersionUtil.parseSpecification(config);
 
             if (null != swagger) {
                 allSpecs.add(swagger);
@@ -116,15 +124,53 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
      * @param path       the mock path
      * @param pathConfig the path configuration
      */
-    private void handlePathOperations(Router router, OpenApiPluginConfig config, Swagger swagger, String path, Path pathConfig) {
-        pathConfig.getOperationMap().forEach((httpMethod, operation) -> {
-            final String fullPath = ofNullable(swagger.getBasePath()).orElse("") + convertPath(path);
+    private void handlePathOperations(Router router, OpenApiPluginConfig config, OpenAPI swagger, String path, PathItem pathConfig) {
+        pathConfig.readOperationsMap().forEach((httpMethod, operation) -> {
+            final String fullPath = buildPath(swagger, path, config);
             LOGGER.debug("Adding mock endpoint: {} -> {}", httpMethod, fullPath);
 
-            // convert an {@link io.swagger.models.HttpMethod} to an {@link io.vertx.core.http.HttpMethod}
+            // convert an io.swagger.models.HttpMethod to an io.vertx.core.http.HttpMethod
             final HttpMethod method = HttpMethod.valueOf(httpMethod.name());
-            router.route(method, fullPath).handler(buildHandler(config, swagger, operation));
+            router.route(method, fullPath).handler(buildHandler(config, operation));
         });
+    }
+
+    /**
+     * Construct the path at which the example response will be served.
+     *
+     * @param swagger the OpenAPI specification
+     * @param path    the mock path
+     * @param config  the mock configuration
+     * @return the path
+     */
+    private String buildPath(OpenAPI swagger, String path, OpenApiPluginConfig config) {
+        String basePath;
+
+        if (config.isUseServerPathAsBaseUrl()) {
+            // Treat the mock server as substitute for 'the' server.
+            // Note: OASv2 'basePath' is converted to OASv3 'server' entries.
+
+            final Optional<Server> firstServer = swagger.getServers().stream().findFirst();
+            if (firstServer.isPresent()) {
+                final String url = ofNullable(firstServer.get().getUrl()).orElse("");
+                if (url.length() > 1) {
+                    // attempt to parse as URI and extract path
+                    try {
+                        basePath = new URI(url).getPath();
+                    } catch (URISyntaxException ignored) {
+                        basePath = "";
+                    }
+                } else {
+                    basePath = "";
+                }
+            } else {
+                basePath = "";
+            }
+        } else {
+            basePath = "";
+        }
+
+        return basePath + convertPath(path);
     }
 
     /**
@@ -133,7 +179,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
      * @param routingContext the Vert.x routing context
      * @param allSpecs       all specifications
      */
-    private void handleCombinedSpec(RoutingContext routingContext, List<Swagger> allSpecs) {
+    private void handleCombinedSpec(RoutingContext routingContext, List<OpenAPI> allSpecs) {
         try {
             final String combinedJson = specCache.get("combinedSpec", () -> {
                 try {
@@ -141,7 +187,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
                     final String basePath = imposterConfig.getPluginArgs().get(ARG_BASEPATH);
                     final String title = imposterConfig.getPluginArgs().get(ARG_TITLE);
 
-                    final Swagger combined = openApiService.combineSpecifications(allSpecs, basePath, scheme, title);
+                    final OpenAPI combined = openApiService.combineSpecifications(allSpecs, basePath, scheme, title);
                     return MapUtil.JSON_MAPPER.writeValueAsString(combined);
 
                 } catch (JsonGenerationException e) {
@@ -181,19 +227,18 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
      * Build a handler for the given operation.
      *
      * @param config    the plugin configuration
-     * @param swagger   the OpenAPI specification
      * @param operation the specification operation  @return a route handler
      */
-    private Handler<RoutingContext> buildHandler(OpenApiPluginConfig config, Swagger swagger, Operation operation) {
+    private Handler<RoutingContext> buildHandler(OpenApiPluginConfig config, Operation operation) {
         return handleRoute(imposterConfig, vertx, routingContext -> {
-            final HashMap<String, Object> context = Maps.newHashMap();
+            final HashMap<String, Object> context = newHashMap();
             context.put("operation", operation);
 
             scriptHandler(config, routingContext, getInjector(), context, responseBehaviour -> {
                 final String statusCode = String.valueOf(responseBehaviour.getStatusCode());
 
                 // look for a specification response based on the status code
-                final Optional<Response> optionalMockResponse = operation.getResponses().entrySet().parallelStream()
+                final Optional<ApiResponse> optionalMockResponse = operation.getResponses().entrySet().parallelStream()
                         .filter(mockResponse -> mockResponse.getKey().equals(statusCode))
                         .map(Map.Entry::getValue)
                         .findAny();
@@ -203,7 +248,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
                         .setStatusCode(responseBehaviour.getStatusCode());
 
                 if (optionalMockResponse.isPresent()) {
-                    serveMockResponse(config, swagger, operation, routingContext, responseBehaviour, optionalMockResponse.get());
+                    serveMockResponse(config, routingContext, responseBehaviour, optionalMockResponse.get());
 
                 } else {
                     LOGGER.info("No explicit mock response found for URI {} and status code {}",
@@ -219,15 +264,14 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
      * Build a response from the specification.
      *
      * @param config            the plugin configuration
-     * @param swagger           the OpenAPI specification
-     * @param operation         the specification operation
      * @param routingContext    the Vert.x routing context
      * @param responseBehaviour the response behaviour
      * @param mockResponse      the specification response
      */
-    private void serveMockResponse(OpenApiPluginConfig config, Swagger swagger, Operation operation,
-                                   RoutingContext routingContext, ResponseBehaviour responseBehaviour,
-                                   Response mockResponse) {
+    private void serveMockResponse(OpenApiPluginConfig config,
+                                   RoutingContext routingContext,
+                                   ResponseBehaviour responseBehaviour,
+                                   ApiResponse mockResponse) {
 
         LOGGER.trace("Found mock response for URI {} and status code {}",
                 routingContext.request().absoluteURI(), responseBehaviour.getStatusCode());
@@ -249,7 +293,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
 
         } else {
             // attempt to serve an example from the specification, falling back if not present
-            serveExample(config, swagger, routingContext, responseBehaviour, operation, mockResponse, this::fallback);
+            serveExample(config, routingContext, responseBehaviour, mockResponse, this::fallback);
         }
     }
 
@@ -283,27 +327,40 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
      * Attempt to respond with an example from the API specification.
      *
      * @param config            the plugin configuration
-     * @param swagger           the OpenAPI specification
      * @param routingContext    the Vert.x routing context
      * @param responseBehaviour the response behaviour
-     * @param operation         the specification operation
      * @param mockResponse      the specification response
      * @param fallback          callback to invoke if no example was served
      */
-    private void serveExample(OpenApiPluginConfig config, Swagger swagger, RoutingContext routingContext,
-                              ResponseBehaviour responseBehaviour, Operation operation,
-                              Response mockResponse, BiConsumer<RoutingContext, ResponseBehaviour> fallback) {
+    private void serveExample(OpenApiPluginConfig config, RoutingContext routingContext,
+                              ResponseBehaviour responseBehaviour,
+                              ApiResponse mockResponse, BiConsumer<RoutingContext, ResponseBehaviour> fallback) {
 
         final int statusCode = responseBehaviour.getStatusCode();
 
-        @SuppressWarnings("unchecked") final Map<String, Object> examples = ofNullable(mockResponse.getExamples()).orElse(Collections.EMPTY_MAP);
+        // fetch all examples
+        final Map<String, Object> examples = newHashMap();
+
+        if (nonNull(mockResponse.getContent())) {
+            mockResponse.getContent().forEach((mimeTypeName, mediaType) -> {
+                if (nonNull(mediaType.getExample())) {
+                    // "The example field is mutually exclusive of the examples field."
+                    // https://github.com/OAI/OpenAPI-Specification/blob/3.0.1/versions/3.0.1.md#mediaTypeObject
+                    examples.put(mimeTypeName, mediaType.getExample());
+                } else {
+                    mediaType.getExamples().forEach((exampleName, example) -> {
+                        examples.put(mimeTypeName, example);
+                    });
+                }
+            });
+        }
 
         if (examples.size() > 0) {
             LOGGER.trace("Checking for mock example in specification ({} candidates) for URI {} and status code {}",
                     examples.size(), routingContext.request().absoluteURI(), statusCode);
 
             final Optional<Map.Entry<String, Object>> example = findExample(
-                    routingContext, config, swagger, operation, examples);
+                    routingContext, config, examples);
 
             // serve example
             if (example.isPresent()) {
@@ -343,7 +400,9 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
         try {
             final Object exampleValue = exampleEntry.getValue();
             final String exampleResponse;
-            if (exampleValue instanceof Map) {
+            if (exampleValue instanceof Example) {
+                exampleResponse = ((Example) exampleValue).getValue().toString();
+            } else if (exampleValue instanceof Map) {
                 switch (exampleEntry.getKey()) {
                     case "application/json":
                         exampleResponse = MapUtil.JSON_MAPPER.writeValueAsString(exampleValue);
@@ -356,7 +415,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
                         break;
 
                     default:
-                        LOGGER.warn("Unsupported response MIME type - returning example as string");
+                        LOGGER.warn("Unsupported response MIME type - returning example object as string");
                         exampleResponse = exampleValue.toString();
                         break;
                 }
@@ -379,18 +438,15 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
      *
      * @param routingContext the Vert.x routing context
      * @param config         the plugin configuration
-     * @param swagger        the OpenAPI specification
-     * @param operation      the specification operation    @return an optional example entry
      * @param examples       the specification response examples
      */
-    private Optional<Map.Entry<String, Object>> findExample(RoutingContext routingContext, OpenApiPluginConfig config,
-                                                            Swagger swagger, Operation operation,
+    private Optional<Map.Entry<String, Object>> findExample(RoutingContext routingContext,
+                                                            OpenApiPluginConfig config,
                                                             Map<String, Object> examples) {
 
-        // consolidate the produced content types
+        // the produced content types
         final Set<String> produces = Sets.newHashSet();
-        ofNullable(swagger.getProduces()).ifPresent(produces::addAll);
-        ofNullable(operation.getProduces()).ifPresent(produces::addAll);
+        produces.addAll(examples.keySet());
 
         // match accepted content types to those produced by this response operation
         final List<String> matchedContentTypes = HttpUtil.readAcceptedContentTypes(routingContext).parallelStream()

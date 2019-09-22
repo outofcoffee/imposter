@@ -6,14 +6,17 @@ import com.gatehill.imposter.server.BaseVerticleTest;
 import com.gatehill.imposter.util.HttpUtil;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.http.ContentType;
-import io.swagger.models.Swagger;
-import io.swagger.parser.SwaggerParser;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.parser.OpenAPIV3Parser;
+import io.swagger.v3.parser.core.models.ParseOptions;
+import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.function.Consumer;
 
 import static com.jayway.restassured.RestAssured.given;
@@ -60,18 +63,17 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
      * content type in the 'Accept' matches that in the specification example.
      *
      * @param testContext
-     * @throws Exception
      */
     @Test
-    public void testServeDefaultExampleMatchContentType(TestContext testContext) throws Exception {
+    public void testServeDefaultExampleMatchContentType(TestContext testContext) {
         final String body = given()
-                .log().everything()
+                .log().ifValidationFails()
                 // JSON content type in 'Accept' header matches specification example
                 .accept(ContentType.JSON)
                 .when()
                 .get("/simple/apis")
                 .then()
-                .log().everything()
+                .log().ifValidationFails()
                 .statusCode(HttpUtil.HTTP_OK)
                 .extract().asString();
 
@@ -80,19 +82,17 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
 
     /**
      * Should return the example from the specification when the script triggers an HTTP 201 Created status code.
-     *
-     * @throws Exception
      */
     @Test
-    public void testServeScriptedExample() throws Exception {
+    public void testServeScriptedExample() {
         given()
-                .log().everything()
+                .log().ifValidationFails()
                 // JSON content type in 'Accept' header matches specification example
                 .accept(ContentType.JSON)
                 .when()
                 .put("/simple/apis")
                 .then()
-                .log().everything()
+                .log().ifValidationFails()
                 .statusCode(HttpUtil.HTTP_CREATED)
                 .body("result", equalTo("success"))
                 .header("MyHeader", "MyHeaderValue");
@@ -103,19 +103,18 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
      * content type in the 'Accept' header does not match that in the specification example.
      *
      * @param testContext
-     * @throws Exception
      * @see OpenApiPluginConfig#isPickFirstIfNoneMatch()
      */
     @Test
-    public void testServeDefaultExampleNoExactMatch(TestContext testContext) throws Exception {
+    public void testServeDefaultExampleNoExactMatch(TestContext testContext) {
         final String body = given()
-                .log().everything()
+                .log().ifValidationFails()
                 // do not set JSON content type in 'Accept' header, to force mismatch against specification example
                 .accept(ContentType.TEXT)
                 .when()
                 .get("/simple/apis")
                 .then()
-                .log().everything()
+                .log().ifValidationFails()
                 .statusCode(HttpUtil.HTTP_OK)
                 .extract().asString();
 
@@ -126,17 +125,16 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
      * Should return the specification UI.
      *
      * @param testContext
-     * @throws Exception
      */
     @Test
-    public void testGetSpecUi(TestContext testContext) throws Exception {
+    public void testGetSpecUi(TestContext testContext) {
         final String body = given()
-                .log().everything()
+                .log().ifValidationFails()
                 .accept(ContentType.TEXT)
                 .when()
                 .get(OpenApiPluginImpl.SPECIFICATION_PATH + "/")
                 .then()
-                .log().everything()
+                .log().ifValidationFails()
                 .statusCode(HttpUtil.HTTP_OK)
                 .extract().asString();
 
@@ -147,30 +145,43 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
      * Should return a combined specification.
      *
      * @param testContext
-     * @throws Exception
      */
     @Test
-    public void testGetCombinedSpec(TestContext testContext) throws Exception {
+    public void testGetCombinedSpec(TestContext testContext) {
         final String body = given()
-                .log().everything()
+                .log().ifValidationFails()
                 .accept(ContentType.JSON)
                 .when()
                 .get(OpenApiPluginImpl.COMBINED_SPECIFICATION_PATH)
                 .then()
-                .log().everything()
+                .log().ifValidationFails()
                 .statusCode(HttpUtil.HTTP_OK)
                 .extract().asString();
 
         testContext.assertNotNull(body);
 
-        final Swagger combined = new SwaggerParser().parse(body);
+        final SwaggerParseResult parseResult = new OpenAPIV3Parser().readContents(body, Collections.emptyList(), new ParseOptions());
+        testContext.assertNotNull(parseResult);
+
+        final OpenAPI combined = parseResult.getOpenAPI();
+        testContext.assertNotNull(combined);
+
         testContext.assertNotNull(combined.getInfo());
         testContext.assertEquals("Imposter Mock APIs", combined.getInfo().getTitle());
 
-        // should contain combination of both specs' endpoints
-        testContext.assertEquals(5, combined.getPaths().size());
-        testContext.assertTrue(combined.getPaths().containsKey("/simple/apis"));
-        testContext.assertTrue(combined.getPaths().containsKey("/api/pets"));
+        // should contain combination of all specs' endpoints
+        testContext.assertEquals(7, combined.getPaths().size());
+
+        // OASv2
+        testContext.assertTrue(combined.getPaths().containsKey("/apis"));
+        testContext.assertTrue(combined.getPaths().containsKey("/v2"));
+        testContext.assertTrue(combined.getPaths().containsKey("/pets"));
+        testContext.assertTrue(combined.getPaths().containsKey("/pets/{id}"));
+        testContext.assertTrue(combined.getPaths().containsKey("/team"));
+
+        // OASv3
+        testContext.assertTrue(combined.getPaths().containsKey("/oas3/apis"));
+        testContext.assertTrue(combined.getPaths().containsKey("/oas3/v2"));
     }
 
     /**
@@ -180,6 +191,7 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
      */
     @Test
     public void testExamples(TestContext testContext) {
+        // OASv2
         queryEndpoint("/simple/apis", responseBody -> {
             final String trimmed = responseBody.trim();
             testContext.assertTrue(trimmed.startsWith("{"));
@@ -194,6 +206,15 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
             testContext.assertTrue(trimmed.endsWith("}"));
         });
 
+        // OASv3
+        queryEndpoint("/oas3/apis", responseBody -> {
+            final String trimmed = responseBody.trim();
+            testContext.assertTrue(trimmed.startsWith("{"));
+            testContext.assertTrue(trimmed.contains("CURRENT"));
+            testContext.assertTrue(trimmed.endsWith("}"));
+        });
+
+        // object example
         queryEndpoint("/objects/team", responseBody -> {
             final String trimmed = responseBody.trim();
             testContext.assertTrue(trimmed.startsWith("{"));
@@ -204,12 +225,12 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
 
     private void queryEndpoint(String url, Consumer<String> bodyConsumer) {
         final String body = given()
-                .log().everything()
+                .log().ifValidationFails()
                 .accept(ContentType.JSON)
                 .when()
                 .get(url)
                 .then()
-                .log().everything()
+                .log().ifValidationFails()
                 .statusCode(HttpUtil.HTTP_OK)
                 .extract().asString();
 
@@ -217,9 +238,9 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
     }
 
     @Test
-    public void testRequestWithHeaders() throws Exception {
+    public void testRequestWithHeaders() {
         given()
-                .log().everything()
+                .log().ifValidationFails()
                 .accept(ContentType.TEXT)
                 .when()
                 .header("Authorization", "AUTH_HEADER")

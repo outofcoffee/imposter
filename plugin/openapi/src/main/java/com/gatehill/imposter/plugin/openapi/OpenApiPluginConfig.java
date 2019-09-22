@@ -8,6 +8,7 @@ import com.gatehill.imposter.plugin.config.ContentTypedBaseConfig;
 public class OpenApiPluginConfig extends ContentTypedBaseConfig {
     private String specFile;
     private boolean pickFirstIfNoneMatch = true;
+    private boolean useServerPathAsBaseUrl = true;
 
     public String getSpecFile() {
         return specFile;
@@ -15,5 +16,9 @@ public class OpenApiPluginConfig extends ContentTypedBaseConfig {
 
     public boolean isPickFirstIfNoneMatch() {
         return pickFirstIfNoneMatch;
+    }
+
+    public boolean isUseServerPathAsBaseUrl() {
+        return useServerPathAsBaseUrl;
     }
 }

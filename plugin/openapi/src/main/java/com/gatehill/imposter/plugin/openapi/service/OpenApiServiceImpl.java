@@ -1,21 +1,32 @@
 package com.gatehill.imposter.plugin.openapi.service;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import io.swagger.models.*;
-import io.swagger.models.auth.SecuritySchemeDefinition;
-import io.swagger.models.parameters.Parameter;
+import io.swagger.models.Scheme;
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.ExternalDocumentation;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Paths;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.servers.Server;
+import io.swagger.v3.oas.models.tags.Tag;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Maps.newHashMap;
+import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
+import static org.apache.commons.io.IOUtils.LINE_SEPARATOR;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
@@ -25,48 +36,29 @@ public class OpenApiServiceImpl implements OpenApiService {
     private static final String DEFAULT_TITLE = "Imposter Mock APIs";
 
     @Override
-    public Swagger combineSpecifications(List<Swagger> specs, String basePath) {
-        return combineSpecifications(specs, basePath, null, null);
-    }
-
-    @Override
-    public Swagger combineSpecifications(List<Swagger> specs, String basePath, Scheme scheme, String title) {
+    public OpenAPI combineSpecifications(List<OpenAPI> specs, String basePath, Scheme scheme, String title) {
         requireNonNull(specs, "Input specifications must not be null");
         LOGGER.debug("Generating combined specification from {} inputs", specs.size());
 
-        final Swagger combined = new Swagger();
-        combined.basePath(basePath);
+        final OpenAPI combined = new OpenAPI();
 
         final Info info = new Info();
         combined.setInfo(info);
 
-        final List<Tag> tags = Lists.newArrayList();
-        combined.setTags(tags);
+        final List<Server> servers = newArrayList();
+        combined.setServers(servers);
 
-        // use set to force uniqueness
-        final Set<String> consumes = Sets.newHashSet();
-        final Set<String> produces = Sets.newHashSet();
-
-        // note: overridden by scheme parameter
-        final List<Scheme> childSchemes = Lists.newArrayList();
-
-        final List<SecurityRequirement> security = Lists.newArrayList();
+        final List<SecurityRequirement> security = newArrayList();
         combined.setSecurity(security);
 
-        final Map<String, Path> paths = Maps.newHashMap();
+        final Paths paths = new Paths();
         combined.setPaths(paths);
 
-        final Map<String, SecuritySchemeDefinition> securityDefinitions = Maps.newHashMap();
-        combined.setSecurityDefinitions(securityDefinitions);
+        final List<Tag> tags = newArrayList();
+        combined.setTags(tags);
 
-        final Map<String, Model> definitions = Maps.newHashMap();
-        combined.setDefinitions(definitions);
-
-        final Map<String, Parameter> parameters = Maps.newHashMap();
-        combined.setParameters(parameters);
-
-        final Map<String, Response> responses = Maps.newHashMap();
-        combined.setResponses(responses);
+        final List<ExternalDocumentation> allExternalDocs = newArrayList();
+        final List<Components> allComponents = newArrayList();
 
         final StringBuilder description = new StringBuilder()
                 .append("This specification includes the following APIs:");
@@ -78,35 +70,86 @@ public class OpenApiServiceImpl implements OpenApiService {
                     .append("**")
                     .append(ofNullable(specInfo.getDescription()).map(specDesc -> " - " + specDesc).orElse("")));
 
-            tags.addAll(getOrEmpty(spec.getTags()));
-            consumes.addAll(getOrEmpty(spec.getConsumes()));
-            produces.addAll(getOrEmpty(spec.getProduces()));
-            childSchemes.addAll(getOrEmpty(spec.getSchemes()));
+            servers.addAll(getOrEmpty(spec.getServers()));
             security.addAll(getOrEmpty(spec.getSecurity()));
-            securityDefinitions.putAll(getOrEmpty(spec.getSecurityDefinitions()));
-            definitions.putAll(getOrEmpty(spec.getDefinitions()));
-            parameters.putAll(getOrEmpty(spec.getParameters()));
-            responses.putAll(getOrEmpty(spec.getResponses()));
+            tags.addAll(getOrEmpty(spec.getTags()));
+
+            if (nonNull(spec.getExternalDocs())) {
+                allExternalDocs.add(spec.getExternalDocs());
+            }
+
+            if (nonNull(spec.getComponents())) {
+                allComponents.add(spec.getComponents());
+            }
 
             // prefix paths with base url
-            final String childBasePath = ofNullable(spec.getBasePath()).orElse("");
+            final String childBasePath = ofNullable(basePath).orElse("");
             getOrEmpty(spec.getPaths()).forEach((path, pathDetails) ->
                     paths.put(childBasePath + path, pathDetails));
         });
 
-        combined.setConsumes(Lists.newArrayList(consumes));
-        combined.setProduces(Lists.newArrayList(produces));
-
-        if (null != scheme) {
-            combined.scheme(scheme);
-        } else {
-            // use those derived from the child specifications
-            combined.setSchemes(childSchemes);
-        }
-
+        // info
         info.setTitle(ofNullable(title).orElse(DEFAULT_TITLE));
         info.setDescription(description.toString());
+
+        // external docs
+        final ExternalDocumentation externalDocs = new ExternalDocumentation();
+
+        externalDocs.setDescription(allExternalDocs.stream()
+                .map(externalDocumentation -> ofNullable(externalDocumentation.getDescription()).orElse(""))
+                .collect(Collectors.joining(LINE_SEPARATOR)));
+
+        // NOTE: The OAS spec only permits a single URL, so, to avoid confusion,
+        // we don't set it at all.
+
+        combined.setExternalDocs(externalDocs);
+
+        // components
+        final Components components = new Components();
+
+        components.setCallbacks(aggregate(allComponents, Components::getCallbacks));
+        components.setExamples(aggregate(allComponents, Components::getExamples));
+        components.setExtensions(aggregate(allComponents, Components::getExtensions));
+        components.setHeaders(aggregate(allComponents, Components::getHeaders));
+        components.setLinks(aggregate(allComponents, Components::getLinks));
+        components.setParameters(aggregate(allComponents, Components::getParameters));
+        components.setRequestBodies(aggregate(allComponents, Components::getRequestBodies));
+        components.setResponses(aggregate(allComponents, Components::getResponses));
+        components.setSchemas(aggregate(allComponents, Components::getSchemas));
+        components.setSecuritySchemes(aggregate(allComponents, Components::getSecuritySchemes));
+
+        combined.setComponents(components);
+
+        if (nonNull(scheme)) {
+            // override scheme if provided
+            servers.forEach(server -> overrideScheme(scheme.toValue(), server));
+        }
+        combined.setServers(servers);
+
+        combined.setPaths(paths);
+        combined.setSecurity(security);
+        combined.setTags(tags);
+
         return combined;
+    }
+
+    /**
+     * Override the scheme of the {@link Server} URL.
+     *
+     * @param requiredScheme the scheme to set
+     * @param server         the server to modify
+     */
+    private void overrideScheme(String requiredScheme, Server server) {
+        try {
+            final URI original = new URI(server.getUrl());
+            if (!original.getScheme().equalsIgnoreCase(requiredScheme)) {
+                final URI modified = new URI(requiredScheme, original.getUserInfo(), original.getHost(), original.getPort(),
+                        original.getPath(), original.getQuery(), original.getFragment());
+
+                server.setUrl(modified.toASCIIString());
+            }
+        } catch (URISyntaxException ignored) {
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -117,5 +160,16 @@ public class OpenApiServiceImpl implements OpenApiService {
     @SuppressWarnings("unchecked")
     private <K, V> Map<K, V> getOrEmpty(Map<K, V> list) {
         return ofNullable(list).orElse(Collections.EMPTY_MAP);
+    }
+
+    private <H, T> Map<String, T> aggregate(List<H> allHolders, Function<H, Map<String, T>> mapSupplier) {
+        final Map<String, T> all = newHashMap();
+
+        allHolders.stream()
+                .map(mapSupplier)
+                .filter(Objects::nonNull)
+                .forEach(all::putAll);
+
+        return all;
     }
 }
