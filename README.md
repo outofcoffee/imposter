@@ -31,7 +31,6 @@ The quickest way to get up and running is to use our free cloud-hosted version a
 
 Imposter uses plugins to control its behaviour and provide specialised mocks:
 
-
 * **[REST](docs/rest_plugin.md)** - Mocks RESTful or plain HTTP APIs.
 * **[OpenAPI (aka Swagger)](docs/openapi_plugin.md)** - Support for [OpenAPI](https://github.com/OAI/OpenAPI-Specification) (aka Swagger) API specifications.
 * **[HBase](docs/hbase_plugin.md)** - Basic HBase mock implementation.

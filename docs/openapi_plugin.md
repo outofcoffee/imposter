@@ -6,7 +6,7 @@ The plugin provides support for [OpenAPI](https://github.com/OAI/OpenAPI-Specifi
 
 ## Features
 
-* Creates mock endpoints from OpenAPI/Swagger 2 API specifications.
+* Creates mock endpoints from OpenAPI/Swagger v2 and OpenAPI v3 API specifications.
 * Serves response examples embedded in the specification.
 * Also supports static response files and script-driven responses, using status code, response files etc.
 * Provides an interactive API sandbox at `/_spec`
