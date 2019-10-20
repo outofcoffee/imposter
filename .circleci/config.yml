@@ -42,8 +42,7 @@ jobs:
           keys:
             - artifacts-{{ .Environment.CIRCLE_SHA1 }}
 
-      - setup_remote_docker:
-          docker_layer_caching: true
+      - setup_remote_docker
 
       - run:
           name: Build and push Docker image
