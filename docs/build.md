@@ -39,3 +39,7 @@ Build and run with Docker:
 Build and run with local JVM:
 
     ./scripts/dev-current.sh java
+
+## Embedding in your application
+
+To embed Imposter in your application see [this section](embed.md).
