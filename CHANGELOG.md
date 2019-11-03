@@ -5,7 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
-- ...
+- Adds support for YAML-formatted configuration files.
 
 ## [1.0.0] - 2019-10-20
 ### Added

@@ -1,11 +1,16 @@
 package com.gatehill.imposter.util;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
+import static com.gatehill.imposter.util.MapUtil.JSON_MAPPER;
+import static com.gatehill.imposter.util.MapUtil.YAML_MAPPER;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 
@@ -14,7 +19,12 @@ import static java.util.Optional.of;
  */
 public final class FileUtil {
     public static final String CLASSPATH_PREFIX = "classpath:";
-    public static final String CONFIG_FILE_SUFFIX = "-config.json";
+    public static final String CONFIG_FILE_SUFFIX = "-config";
+    public static final Map<String, ObjectMapper> CONFIG_FILE_MAPPERS = new HashMap<String, ObjectMapper>() {{
+        put(".json", JSON_MAPPER);
+        put(".yaml", YAML_MAPPER);
+        put(".yml", YAML_MAPPER);
+    }};
 
     private FileUtil() {
     }

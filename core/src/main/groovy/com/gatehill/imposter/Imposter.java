@@ -1,25 +1,21 @@
 package com.gatehill.imposter;
 
 import com.gatehill.imposter.plugin.*;
-import com.gatehill.imposter.plugin.config.BaseConfig;
 import com.gatehill.imposter.plugin.config.ConfigurablePlugin;
+import com.gatehill.imposter.util.ConfigUtil;
 import com.gatehill.imposter.util.InjectorUtil;
-import com.google.common.collect.Maps;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.gatehill.imposter.util.FileUtil.CONFIG_FILE_SUFFIX;
 import static com.gatehill.imposter.util.HttpUtil.BIND_ALL_HOSTS;
-import static com.gatehill.imposter.util.MapUtil.JSON_MAPPER;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
@@ -49,7 +45,7 @@ public class Imposter {
 
         // load config
         processConfiguration();
-        final Map<String, List<File>> pluginConfigs = loadPluginConfigs(imposterConfig.getConfigDirs());
+        final Map<String, List<File>> pluginConfigs = ConfigUtil.loadPluginConfigs(imposterConfig.getConfigDirs());
 
         // prepare plugins
         final List<PluginDependencies> dependencies = preparePluginsFromConfig(imposterConfig.getPluginClassNames(), pluginConfigs)
@@ -221,42 +217,5 @@ public class Imposter {
                             .orElse(Collections.emptyList());
                     plugin.loadConfiguration(configFiles);
                 });
-    }
-
-    private Map<String, List<File>> loadPluginConfigs(String[] configDirs) {
-        int configCount = 0;
-
-        // read all config files
-        final Map<String, List<File>> allPluginConfigs = Maps.newHashMap();
-        for (String configDir : configDirs) {
-            try {
-                final File[] configFiles = ofNullable(new File(configDir).listFiles((dir, name) -> name.endsWith(CONFIG_FILE_SUFFIX)))
-                        .orElse(new File[0]);
-
-                for (File configFile : configFiles) {
-                    LOGGER.debug("Loading configuration file: {}", configFile);
-                    configCount++;
-
-                    final BaseConfig config = JSON_MAPPER.readValue(configFile, BaseConfig.class);
-                    config.setParentDir(configFile.getParentFile());
-
-                    List<File> pluginConfigs = allPluginConfigs.get(config.getPluginClass());
-                    if (Objects.isNull(pluginConfigs)) {
-                        pluginConfigs = newArrayList();
-                        allPluginConfigs.put(config.getPluginClass(), pluginConfigs);
-                    }
-
-                    pluginConfigs.add(configFile);
-                }
-
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        LOGGER.info("Loaded {} plugin configuration files from: {}",
-                configCount, Arrays.toString(configDirs));
-
-        return allPluginConfigs;
     }
 }

@@ -4,9 +4,18 @@ Read this section to learn how to configure Imposter.
 
 ## Basics
 
-Imposter configuration files are in JSON format. They must be named with a `-config.json` suffix. For example: `mydata-config.json`.
+Imposter configuration files are in YAML or JSON format. They must be named with a `-config.yaml` or `-config.json` suffix. For example: `mymock-config.yaml`.
 
 Here is an example configuration file:
+
+    # simple-example-config.yaml
+    ---
+    plugin: com.gatehill.imposter.plugin.rest.RestPluginImpl
+    path: "/example"
+    response:
+      staticFile: example-data.json
+
+Or, in JSON format:
 
     {
       "plugin": "com.gatehill.imposter.plugin.rest.RestPluginImpl",
@@ -52,13 +61,12 @@ For more advanced scenarios, you can also control Imposter's responses using [Ja
 
 Here's an example configuration file that uses a script:
 
-    {
-      "plugin": "com.gatehill.imposter.plugin.rest.RestPluginImpl",
-      "path": "/example-two",
-      "response": {
-        "scriptFile": "example.groovy"
-      }
-    }
+    # scripted-example-config.yaml
+    ---
+    plugin: com.gatehill.imposter.plugin.rest.RestPluginImpl
+    path: "/example-two"
+    response:
+      scriptFile: example.groovy
 
 ...and here's the corresponding script (`example.groovy`):
 
@@ -177,7 +185,7 @@ The ResponseBehaviour object provides a number of methods to enable you to contr
 | --- | ---
 | `withStatusCode(int)` | Set the HTTP status code for the response
 | `withFile(String)` | Respond with the content of a static file
-| `withData(String)` | Respond with the content of the `String`
+| `withData(String)` | Respond with the content of a `String`
 | `withHeader(String, String)` | Set a response header
 | `withEmpty()` | Respond with empty content, or no records
 | `usingDefaultBehaviour()` | Use the plugin's default behaviour to respond
@@ -230,15 +238,14 @@ More specifically, to specify which response file to use, you can either:
 
 Here's an example of the static file approach:
 
-    {
-      "plugin": "com.gatehill.imposter.plugin.rest.RestPluginImpl",
-      "path": "/scripted",
-      "response": {
-        "scriptFile": "example.groovy",
-        "staticFile": "example-data.json"
-      },
-      "contentType": "application/json"
-    }
+    # file-example-config.yaml
+    ---
+    plugin: com.gatehill.imposter.plugin.rest.RestPluginImpl
+    path: "/scripted"
+    contentType: application/json
+    response:
+      scriptFile: example.groovy
+      staticFile: example-data.json
 
 Here, the response file `example-data.json` will be used, unless the script invokes the
 `withFile(String)` method with a different filename.
@@ -264,7 +271,6 @@ You can set response headers using the `withHeader(String, String)` method.
     respond {
         withHeader('X-Custom-Header', 'example value')
     }
-
 
 ### Returning raw data
 
