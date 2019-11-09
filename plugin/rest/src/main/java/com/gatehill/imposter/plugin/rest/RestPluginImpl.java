@@ -22,6 +22,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.gatehill.imposter.util.AsyncUtil.handleRoute;
+import static com.gatehill.imposter.util.HttpUtil.CONTENT_TYPE;
+import static com.gatehill.imposter.util.HttpUtil.CONTENT_TYPE_JSON;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -85,7 +87,7 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
     }
 
     private void addObjectHandler(Router router, String rootPath, ResourceConfig resourceConfig, String contentType) {
-        final String qualifiedPath = rootPath + resourceConfig.getPath();
+        final String qualifiedPath = buildQualifiedPath(rootPath, resourceConfig);
         LOGGER.debug("Adding REST object handler: {}", qualifiedPath);
 
         router.get(qualifiedPath).handler(handleRoute(imposterConfig, vertx, routingContext -> {
@@ -105,6 +107,12 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
                         LOGGER.info("Response file blank - returning empty response");
                         response.end();
 
+                    } else if (!Strings.isNullOrEmpty(responseBehaviour.getResponseData())) {
+                        // response data
+                        LOGGER.info("Response data is: {}", responseBehaviour.getResponseData());
+                        routingContext.response().putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON)
+                                .setStatusCode(responseBehaviour.getStatusCode()).end(responseBehaviour.getResponseData());
+
                     } else {
                         LOGGER.info("Responding with file: {}", responseBehaviour.getResponseFile());
                         response.sendFile(Paths.get(resourceConfig.getParentDir().getAbsolutePath(),
@@ -118,9 +126,14 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
         }));
     }
 
+    private String buildQualifiedPath(String rootPath, ResourceConfig resourceConfig) {
+        final String qualifiedPath = ofNullable(rootPath).orElse("") + ofNullable(resourceConfig.getPath()).orElse("");
+        return qualifiedPath.startsWith("/") ? qualifiedPath : "/" + qualifiedPath;
+    }
+
     private void addArrayHandler(Router router, RestPluginConfig rootConfig, ResourceConfig resourceConfig, String contentType) {
         final String resourcePath = resourceConfig.getPath();
-        final String qualifiedPath = rootConfig.getPath() + resourcePath;
+        final String qualifiedPath = buildQualifiedPath(rootConfig.getPath(), resourceConfig);
         LOGGER.debug("Adding REST array handler: {}", qualifiedPath);
 
         // validate path includes parameter

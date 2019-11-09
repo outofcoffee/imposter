@@ -70,7 +70,12 @@ public final class ConfigUtil {
                 .anyMatch(extension -> name.endsWith(CONFIG_FILE_SUFFIX + extension));
     }
 
-    private static ObjectMapper lookupMapper(File configFile) {
+    /**
+     * Determine the mapper to use based on the filename.
+     * @param configFile the configuration file
+     * @return the mapper
+     */
+    public static ObjectMapper lookupMapper(File configFile) {
         final String extension = configFile.getName().substring(configFile.getName().lastIndexOf("."));
         return ofNullable(CONFIG_FILE_MAPPERS.get(extension))
                 .orElseThrow(() -> new IllegalStateException("Unable to locate mapper for config file: " + configFile));

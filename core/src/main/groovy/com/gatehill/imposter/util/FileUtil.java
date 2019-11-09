@@ -11,16 +11,17 @@ import java.util.Optional;
 
 import static com.gatehill.imposter.util.MapUtil.JSON_MAPPER;
 import static com.gatehill.imposter.util.MapUtil.YAML_MAPPER;
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
+import static java.util.Optional.*;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public final class FileUtil {
     public static final String CLASSPATH_PREFIX = "classpath:";
-    public static final String CONFIG_FILE_SUFFIX = "-config";
-    public static final Map<String, ObjectMapper> CONFIG_FILE_MAPPERS = new HashMap<String, ObjectMapper>() {{
+
+    static final String CONFIG_FILE_SUFFIX = "-config";
+
+    static final Map<String, ObjectMapper> CONFIG_FILE_MAPPERS = new HashMap<String, ObjectMapper>() {{
         put(".json", JSON_MAPPER);
         put(".yaml", YAML_MAPPER);
         put(".yml", YAML_MAPPER);
@@ -44,7 +45,7 @@ public final class FileUtil {
 
         for (int i = 0; i < rows.size(); i++) {
             final JsonObject row = rows.getJsonObject(i);
-            if (row.getString(idFieldName).equalsIgnoreCase(rowId)) {
+            if (ofNullable(row.getValue(idFieldName).toString()).orElse("").equalsIgnoreCase(rowId)) {
                 return of(row);
             }
         }

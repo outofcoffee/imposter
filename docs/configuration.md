@@ -47,7 +47,7 @@ Using the configuration above, if we were to send an HTTP request to the `/examp
 
     HTTP GET http://localhost:8080/example
     ...
-    200 OK
+    HTTP/1.1 200 OK
     ...
     {
       "hello": "world"
@@ -124,7 +124,7 @@ For example:
 
     HTTP GET http://localhost:8080/example-two?action=fetch
     ...
-    200 OK
+    HTTP/1.1 200 OK
     ...
     {
       "hello": "world"

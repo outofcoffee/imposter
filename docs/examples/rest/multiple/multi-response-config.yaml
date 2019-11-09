@@ -1,0 +1,12 @@
+---
+plugin: com.gatehill.imposter.plugin.rest.RestPluginImpl
+contentType: application/json
+resources:
+  - path: "/cats/:id"
+    type: ARRAY
+    response:
+      staticFile: cats.json
+  - path: "/dogs/:id"
+    type: ARRAY
+    response:
+      staticFile: dogs.json
