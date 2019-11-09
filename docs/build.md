@@ -34,11 +34,15 @@ You can build and run locally using the `dev-current.sh` convenience script. Thi
     
 Build and run with Docker:
     
-    ./scripts/dev-current.sh docker
+    ./scripts/dev-current.sh -m docker
 
 Build and run with local JVM:
 
-    ./scripts/dev-current.sh java
+    ./scripts/dev-current.sh -m java
+
+More complete example specifying plugin and config directory:
+
+     ./scripts/dev-current.sh -m docker -p rest -c $(pwd)/docs/examples/rest/multiple 
 
 ## Embedding in your application
 
