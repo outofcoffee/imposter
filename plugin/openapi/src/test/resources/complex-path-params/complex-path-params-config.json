@@ -1,0 +1,7 @@
+{
+  "plugin": "com.gatehill.imposter.plugin.openapi.OpenApiPluginImpl",
+  "specFile": "kfp_api_single_file.json",
+  "response": {
+    "scriptFile": "behaviour.groovy"
+  }
+}

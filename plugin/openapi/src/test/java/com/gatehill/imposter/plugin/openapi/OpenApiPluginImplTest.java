@@ -1,6 +1,5 @@
 package com.gatehill.imposter.plugin.openapi;
 
-import com.gatehill.imposter.ImposterConfig;
 import com.gatehill.imposter.plugin.Plugin;
 import com.gatehill.imposter.server.BaseVerticleTest;
 import com.gatehill.imposter.util.HttpUtil;
@@ -36,13 +35,7 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
     @Before
     public void setUp(TestContext testContext) throws Exception {
         super.setUp(testContext);
-
         RestAssured.baseURI = "http://" + HOST + ":" + getListenPort();
-    }
-
-    @Override
-    protected void configure(ImposterConfig imposterConfig) throws Exception {
-        super.configure(imposterConfig);
     }
 
     private void assertBody(TestContext testContext, String body) {

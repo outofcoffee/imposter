@@ -103,20 +103,23 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
                 try {
                     response.setStatusCode(responseBehaviour.getStatusCode());
 
-                    if (Strings.isNullOrEmpty(responseBehaviour.getResponseFile())) {
-                        LOGGER.info("Response file blank - returning empty response");
-                        response.end();
+                    if (!Strings.isNullOrEmpty(responseBehaviour.getResponseFile())) {
+                        LOGGER.info("Responding with file: {}", responseBehaviour.getResponseFile());
+                        response.sendFile(Paths.get(resourceConfig.getParentDir().getAbsolutePath(),
+                                responseBehaviour.getResponseFile()).toString());
 
                     } else if (!Strings.isNullOrEmpty(responseBehaviour.getResponseData())) {
                         // response data
                         LOGGER.info("Response data is: {}", responseBehaviour.getResponseData());
-                        routingContext.response().putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON)
-                                .setStatusCode(responseBehaviour.getStatusCode()).end(responseBehaviour.getResponseData());
+                        if (!response.headers().contains(CONTENT_TYPE)) {
+                            LOGGER.debug("Guessing JSON content type");
+                            response.putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON);
+                        }
+                        response.end(responseBehaviour.getResponseData());
 
                     } else {
-                        LOGGER.info("Responding with file: {}", responseBehaviour.getResponseFile());
-                        response.sendFile(Paths.get(resourceConfig.getParentDir().getAbsolutePath(),
-                                responseBehaviour.getResponseFile()).toString());
+                        LOGGER.info("Response file and data are blank - returning empty response");
+                        response.end();
                     }
 
                 } catch (Exception e) {

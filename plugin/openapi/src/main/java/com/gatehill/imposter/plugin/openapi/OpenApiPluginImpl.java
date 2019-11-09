@@ -59,7 +59,7 @@ import static java.util.Optional.ofNullable;
 @RequireModules(OpenApiModule.class)
 public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> implements ScriptedPlugin<OpenApiPluginConfig> {
     private static final Logger LOGGER = LogManager.getLogger(OpenApiPluginImpl.class);
-    private static final Pattern PATH_PARAM_PLACEHOLDER = Pattern.compile("\\{([a-zA-Z]+)\\}");
+    private static final Pattern PATH_PARAM_PLACEHOLDER = Pattern.compile("\\{([a-zA-Z0-9._\\-]+)}");
     private static final String UI_WEB_ROOT = "swagger-ui";
     private static final String ARG_BASEPATH = "openapi.basepath";
     private static final String ARG_SCHEME = "openapi.scheme";
@@ -276,9 +276,9 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
         LOGGER.trace("Found mock response for URI {} and status code {}",
                 routingContext.request().absoluteURI(), responseBehaviour.getStatusCode());
 
+        final HttpServerResponse response = routingContext.response();
         if (!responseBehaviour.getResponseHeaders().isEmpty()) {
-            responseBehaviour.getResponseHeaders().forEach((header, value) ->
-                    routingContext.response().putHeader(header, value));
+            responseBehaviour.getResponseHeaders().forEach(response::putHeader);
         }
 
         if (!Strings.isNullOrEmpty(responseBehaviour.getResponseFile())) {
@@ -288,8 +288,11 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
         } else if (!Strings.isNullOrEmpty(responseBehaviour.getResponseData())) {
             // response data
             LOGGER.info("Response data is: {}", responseBehaviour.getResponseData());
-            routingContext.response().putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON)
-                    .setStatusCode(responseBehaviour.getStatusCode()).end(responseBehaviour.getResponseData());
+            if (!response.headers().contains(CONTENT_TYPE)) {
+                LOGGER.debug("Guessing JSON content type");
+                response.putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON);
+            }
+            response.setStatusCode(responseBehaviour.getStatusCode()).end(responseBehaviour.getResponseData());
 
         } else {
             // attempt to serve an example from the specification, falling back if not present
@@ -347,7 +350,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
                     // "The example field is mutually exclusive of the examples field."
                     // https://github.com/OAI/OpenAPI-Specification/blob/3.0.1/versions/3.0.1.md#mediaTypeObject
                     examples.put(mimeTypeName, mediaType.getExample());
-                } else {
+                } else if (nonNull(mediaType.getExamples())) {
                     mediaType.getExamples().forEach((exampleName, example) -> {
                         examples.put(mimeTypeName, example);
                     });
