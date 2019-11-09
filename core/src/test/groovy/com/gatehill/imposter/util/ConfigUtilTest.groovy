@@ -12,7 +12,7 @@ import static org.junit.Assert.assertEquals
 class ConfigUtilTest {
     @Test
     void testLoadPluginConfigs() {
-        def configDir = new File(ConfigUtilTest.class.getResource('/config/test-config.json').toURI()).parent
+        def configDir = new File(ConfigUtilTest.class.getResource('/config').toURI()).path
 
         def configs = ConfigUtil.loadPluginConfigs(configDir)
         assertEquals(1, configs.size())
