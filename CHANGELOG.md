@@ -3,9 +3,14 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [1.0.1] - 2019-11-17
 ### Added
 - Adds support for YAML-formatted configuration files.
+- Improves REST plugin examples and enables non-string ID comparision.
+
+### Fixed
+- Improves OpenAPI path parameter detection.
+- Improves error trapping when overriding OpenAPI scheme.
 
 ## [1.0.0] - 2019-10-20
 ### Added
@@ -28,13 +33,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Verticle startup no longer blocks the main thread.
+- HBase plugin tests now included in test reports.
 
 ### Changed
 - Moves core API into Maven-published 'api' module.
 - Sets SFDC plugin content type to JSON (thanks, pauturner).
-
-### Fixed
-- HBase plugin tests now included in test reports.
 
 ## [0.6.0] - 2017-10-14 
 ### Added
