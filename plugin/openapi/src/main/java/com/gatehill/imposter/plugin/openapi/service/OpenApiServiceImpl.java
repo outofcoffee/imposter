@@ -13,7 +13,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -142,13 +141,19 @@ public class OpenApiServiceImpl implements OpenApiService {
     private void overrideScheme(String requiredScheme, Server server) {
         try {
             final URI original = new URI(server.getUrl());
-            if (!original.getScheme().equalsIgnoreCase(requiredScheme)) {
-                final URI modified = new URI(requiredScheme, original.getUserInfo(), original.getHost(), original.getPort(),
-                        original.getPath(), original.getQuery(), original.getFragment());
-
+            if (nonNull(original.getScheme()) && !original.getScheme().equalsIgnoreCase(requiredScheme)) {
+                final URI modified = new URI(
+                        requiredScheme,
+                        original.getUserInfo(),
+                        original.getHost(),
+                        original.getPort(),
+                        original.getPath(),
+                        original.getQuery(),
+                        original.getFragment()
+                );
                 server.setUrl(modified.toASCIIString());
             }
-        } catch (URISyntaxException ignored) {
+        } catch (Exception ignored) {
         }
     }
 
