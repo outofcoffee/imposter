@@ -13,6 +13,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -81,10 +82,7 @@ public class OpenApiServiceImpl implements OpenApiService {
                 allComponents.add(spec.getComponents());
             }
 
-            // prefix paths with base url
-            final String childBasePath = ofNullable(basePath).orElse("");
-            getOrEmpty(spec.getPaths()).forEach((path, pathDetails) ->
-                    paths.put(childBasePath + path, pathDetails));
+            paths.putAll(getOrEmpty(spec.getPaths()));
         });
 
         // info
@@ -119,17 +117,27 @@ public class OpenApiServiceImpl implements OpenApiService {
 
         combined.setComponents(components);
 
-        if (nonNull(scheme)) {
-            // override scheme if provided
-            servers.forEach(server -> overrideScheme(scheme.toValue(), server));
-        }
-        combined.setServers(servers);
+        setServers(combined, servers, scheme, basePath);
 
         combined.setPaths(paths);
         combined.setSecurity(security);
         combined.setTags(tags);
 
         return combined;
+    }
+
+    private void setServers(OpenAPI combined, List<Server> servers, Scheme scheme, String basePath) {
+        if (nonNull(scheme)) {
+            servers.forEach(server -> overrideScheme(scheme.toValue(), server));
+        }
+        if (nonNull(basePath)) {
+            if (servers.isEmpty()) {
+                final Server server = new Server();
+                servers.add(server);
+            }
+            servers.forEach(server -> prefixPath(basePath, server));
+        }
+        combined.setServers(servers.stream().distinct().collect(Collectors.toList()));
     }
 
     /**
@@ -153,7 +161,34 @@ public class OpenApiServiceImpl implements OpenApiService {
                 );
                 server.setUrl(modified.toASCIIString());
             }
-        } catch (Exception ignored) {
+        } catch (URISyntaxException ignored) {
+        } catch (Exception e) {
+            LOGGER.warn("Error overriding scheme to '{}' for server URL: {}", requiredScheme, server.getUrl());
+        }
+    }
+
+    /**
+     * Prefix the path of the {@link Server} URL.
+     *
+     * @param basePath the path prefix
+     * @param server   the server to modify
+     */
+    private void prefixPath(String basePath, Server server) {
+        try {
+            final URI original = new URI(server.getUrl());
+            final URI modified = new URI(
+                    original.getScheme(),
+                    original.getUserInfo(),
+                    original.getHost(),
+                    original.getPort(),
+                    basePath + ofNullable(original.getPath()).orElse(""),
+                    original.getQuery(),
+                    original.getFragment()
+            );
+            server.setUrl(modified.toASCIIString());
+        } catch (URISyntaxException ignored) {
+        } catch (Exception e) {
+            LOGGER.warn("Error prefixing scheme with '{}' for server URL: {}", basePath, server.getUrl());
         }
     }
 
