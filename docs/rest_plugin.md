@@ -71,11 +71,11 @@ We can configure different responses at multiple paths as follows:
     contentType: application/json
     resources:
       - path: "/cats/:id"
-        type: ARRAY
+        type: array
         response:
           staticFile: cats.json
       - path: "/dogs/:id"
-        type: ARRAY
+        type: array
         response:
           staticFile: dogs.json
 

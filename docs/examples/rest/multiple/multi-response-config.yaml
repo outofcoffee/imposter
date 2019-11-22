@@ -3,10 +3,10 @@ plugin: com.gatehill.imposter.plugin.rest.RestPluginImpl
 contentType: application/json
 resources:
   - path: "/cats/:id"
-    type: ARRAY
+    type: array
     response:
       staticFile: cats.json
   - path: "/dogs/:id"
-    type: ARRAY
+    type: array
     response:
       staticFile: dogs.json
