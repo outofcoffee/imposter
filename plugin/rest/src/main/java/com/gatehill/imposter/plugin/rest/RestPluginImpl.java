@@ -71,7 +71,8 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
     }
 
     private void addResourceHandler(Router router, C rootConfig, RestResourceConfig resourceConfig, String contentType) {
-        switch (resourceConfig.getType()) {
+        final ResourceConfigType resourceType = ofNullable(resourceConfig.getType()).orElse(ResourceConfigType.OBJECT);
+        switch (resourceType) {
             case OBJECT:
                 addObjectHandler(router, rootConfig, resourceConfig, contentType);
                 break;
