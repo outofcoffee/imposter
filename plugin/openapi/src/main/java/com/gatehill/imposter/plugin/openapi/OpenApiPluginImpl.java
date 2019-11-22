@@ -251,7 +251,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
                     serveMockResponse(config, routingContext, responseBehaviour, optionalMockResponse.get());
 
                 } else {
-                    LOGGER.info("No explicit mock response found for URI {} and status code {}",
+                    LOGGER.info("No explicit mock response found for URI {} with status code {}",
                             routingContext.request().absoluteURI(), statusCode);
 
                     response.end();
@@ -273,7 +273,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
                                    ResponseBehaviour responseBehaviour,
                                    ApiResponse mockResponse) {
 
-        LOGGER.trace("Found mock response for URI {} and status code {}",
+        LOGGER.trace("Found mock response for URI {} with status code {}",
                 routingContext.request().absoluteURI(), responseBehaviour.getStatusCode());
 
         final HttpServerResponse response = routingContext.response();
@@ -310,7 +310,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
     private void serveResponseFile(OpenApiPluginConfig config, RoutingContext routingContext,
                                    ResponseBehaviour responseBehaviour) {
 
-        LOGGER.debug("Serving response file {} for URI {} and status code {}",
+        LOGGER.debug("Serving response file {} for URI {} with status code {}",
                 responseBehaviour.getResponseFile(),
                 routingContext.request().absoluteURI(),
                 responseBehaviour.getStatusCode());
@@ -359,7 +359,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
         }
 
         if (examples.size() > 0) {
-            LOGGER.trace("Checking for mock example in specification ({} candidates) for URI {} and status code {}",
+            LOGGER.trace("Checking for mock example in specification ({} candidates) for URI {} with status code {}",
                     examples.size(), routingContext.request().absoluteURI(), statusCode);
 
             final Optional<Map.Entry<String, Object>> example = findExample(
@@ -371,10 +371,10 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
 
                 final String exampleResponse = buildExampleResponse(exampleEntry);
                 if (LOGGER.isTraceEnabled()) {
-                    LOGGER.trace("Serving mock example for URI {} and status code {}: {}",
+                    LOGGER.trace("Serving mock example for URI {} with status code {}: {}",
                             routingContext.request().absoluteURI(), statusCode, exampleResponse);
                 } else {
-                    LOGGER.info("Serving mock example for URI {} and status code {} (response body {} bytes)",
+                    LOGGER.info("Serving mock example for URI {} with status code {} (response body {} bytes)",
                             routingContext.request().absoluteURI(), statusCode,
                             ofNullable(exampleResponse).map(String::length).orElse(0));
                 }
@@ -388,7 +388,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
             }
         }
 
-        LOGGER.trace("No example matches found in specification for URI {} and status code {}",
+        LOGGER.trace("No example matches found in specification for URI {} with status code {}",
                 routingContext.request().absoluteURI(), statusCode);
 
         // no matching example - use fallback
@@ -490,7 +490,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
      * @param responseBehaviour the response behaviour
      */
     private void fallback(RoutingContext routingContext, ResponseBehaviour responseBehaviour) {
-        LOGGER.warn("No example match found and no response file set for mock response for URI {} and status code {}" +
+        LOGGER.warn("No example match found and no response file set for mock response for URI {} with status code {}" +
                 " - sending empty response", routingContext.request().absoluteURI(), responseBehaviour.getStatusCode());
 
         routingContext.response().end();
