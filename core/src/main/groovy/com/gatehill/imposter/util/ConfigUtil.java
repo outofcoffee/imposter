@@ -1,7 +1,7 @@
 package com.gatehill.imposter.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gatehill.imposter.plugin.config.BaseConfig;
+import com.gatehill.imposter.plugin.config.PluginConfigImpl;
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -42,7 +42,7 @@ public final class ConfigUtil {
                     LOGGER.debug("Loading configuration file: {}", configFile);
                     configCount++;
 
-                    final BaseConfig config = lookupMapper(configFile).readValue(configFile, BaseConfig.class);
+                    final PluginConfigImpl config = lookupMapper(configFile).readValue(configFile, PluginConfigImpl.class);
                     config.setParentDir(configFile.getParentFile());
 
                     List<File> pluginConfigs = allPluginConfigs.get(config.getPluginClass());

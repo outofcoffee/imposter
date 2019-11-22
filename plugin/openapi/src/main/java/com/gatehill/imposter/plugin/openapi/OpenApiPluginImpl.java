@@ -6,12 +6,13 @@ import com.gatehill.imposter.ImposterConfig;
 import com.gatehill.imposter.plugin.RequireModules;
 import com.gatehill.imposter.plugin.ScriptedPlugin;
 import com.gatehill.imposter.plugin.config.ConfiguredPlugin;
+import com.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig;
 import com.gatehill.imposter.plugin.openapi.service.OpenApiService;
 import com.gatehill.imposter.plugin.openapi.util.OpenApiVersionUtil;
 import com.gatehill.imposter.script.ResponseBehaviour;
+import com.gatehill.imposter.service.ResponseService;
 import com.gatehill.imposter.util.HttpUtil;
 import com.gatehill.imposter.util.MapUtil;
-import com.google.common.base.Strings;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
@@ -35,8 +36,11 @@ import org.apache.logging.log4j.Logger;
 import javax.inject.Inject;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Paths;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
@@ -72,6 +76,9 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
 
     @Inject
     private OpenApiService openApiService;
+
+    @Inject
+    private ResponseService responseService;
 
     private List<OpenApiPluginConfig> configs;
 
@@ -273,57 +280,10 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
                                    ResponseBehaviour responseBehaviour,
                                    ApiResponse mockResponse) {
 
-        LOGGER.trace("Found mock response for URI {} with status code {}",
-                routingContext.request().absoluteURI(), responseBehaviour.getStatusCode());
-
-        final HttpServerResponse response = routingContext.response();
-        if (!responseBehaviour.getResponseHeaders().isEmpty()) {
-            responseBehaviour.getResponseHeaders().forEach(response::putHeader);
-        }
-
-        if (!Strings.isNullOrEmpty(responseBehaviour.getResponseFile())) {
-            // response file takes precedence
-            serveResponseFile(config, routingContext, responseBehaviour);
-
-        } else if (!Strings.isNullOrEmpty(responseBehaviour.getResponseData())) {
-            // response data
-            LOGGER.info("Response data is: {}", responseBehaviour.getResponseData());
-            if (!response.headers().contains(CONTENT_TYPE)) {
-                LOGGER.debug("Guessing JSON content type");
-                response.putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON);
-            }
-            response.setStatusCode(responseBehaviour.getStatusCode()).end(responseBehaviour.getResponseData());
-
-        } else {
+        responseService.sendResponse(config, config, routingContext, responseBehaviour, rc -> {
             // attempt to serve an example from the specification, falling back if not present
-            serveExample(config, routingContext, responseBehaviour, mockResponse, this::fallback);
-        }
-    }
-
-    /**
-     * Reply with a static response file.
-     *
-     * @param config            the plugin configuration
-     * @param routingContext    the Vert.x routing context
-     * @param responseBehaviour the response behaviour
-     */
-    private void serveResponseFile(OpenApiPluginConfig config, RoutingContext routingContext,
-                                   ResponseBehaviour responseBehaviour) {
-
-        LOGGER.debug("Serving response file {} for URI {} with status code {}",
-                responseBehaviour.getResponseFile(),
-                routingContext.request().absoluteURI(),
-                responseBehaviour.getStatusCode());
-
-        final HttpServerResponse response = routingContext.response();
-
-        // explicit content type
-        if (!Strings.isNullOrEmpty(config.getContentType())) {
-            response.putHeader(CONTENT_TYPE, config.getContentType());
-        }
-
-        response.sendFile(Paths.get(config.getParentDir().getAbsolutePath(),
-                responseBehaviour.getResponseFile()).toString());
+            serveExample(config, rc, responseBehaviour, mockResponse, this::fallback);
+        });
     }
 
     /**
@@ -335,9 +295,11 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
      * @param mockResponse      the specification response
      * @param fallback          callback to invoke if no example was served
      */
-    private void serveExample(OpenApiPluginConfig config, RoutingContext routingContext,
+    private void serveExample(OpenApiPluginConfig config,
+                              RoutingContext routingContext,
                               ResponseBehaviour responseBehaviour,
-                              ApiResponse mockResponse, BiConsumer<RoutingContext, ResponseBehaviour> fallback) {
+                              ApiResponse mockResponse,
+                              BiConsumer<RoutingContext, ResponseBehaviour> fallback) {
 
         final int statusCode = responseBehaviour.getStatusCode();
 

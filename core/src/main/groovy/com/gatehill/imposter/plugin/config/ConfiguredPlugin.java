@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public abstract class ConfiguredPlugin<T extends BaseConfig> implements Plugin, ConfigurablePlugin {
+public abstract class ConfiguredPlugin<T extends PluginConfigImpl> implements Plugin, ConfigurablePlugin {
     @Inject
     protected Vertx vertx;
 

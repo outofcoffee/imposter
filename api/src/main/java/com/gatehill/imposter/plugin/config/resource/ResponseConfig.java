@@ -1,4 +1,4 @@
-package com.gatehill.imposter.plugin.config;
+package com.gatehill.imposter.plugin.config.resource;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

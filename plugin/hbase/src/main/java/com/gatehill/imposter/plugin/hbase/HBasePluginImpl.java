@@ -4,6 +4,7 @@ import com.gatehill.imposter.ImposterConfig;
 import com.gatehill.imposter.plugin.RequireModules;
 import com.gatehill.imposter.plugin.ScriptedPlugin;
 import com.gatehill.imposter.plugin.config.ConfiguredPlugin;
+import com.gatehill.imposter.plugin.hbase.config.HBasePluginConfig;
 import com.gatehill.imposter.plugin.hbase.model.InMemoryScanner;
 import com.gatehill.imposter.plugin.hbase.model.MockScanner;
 import com.gatehill.imposter.plugin.hbase.model.RecordInfo;
@@ -252,7 +253,6 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
                     deserialiser.decodeScannerFilterPrefix(scanner.getScanner()));
 
             scriptHandler(config, routingContext, getInjector(), bindings, responseBehaviour -> {
-
                 // build results
                 final JsonArray results = responseService.loadResponseAsJsonArray(config, responseBehaviour);
                 final SerialisationService serialiser = findSerialiser(routingContext);

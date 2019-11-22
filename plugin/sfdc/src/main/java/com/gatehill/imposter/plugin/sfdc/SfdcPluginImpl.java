@@ -3,6 +3,7 @@ package com.gatehill.imposter.plugin.sfdc;
 import com.gatehill.imposter.ImposterConfig;
 import com.gatehill.imposter.plugin.ScriptedPlugin;
 import com.gatehill.imposter.plugin.config.ConfiguredPlugin;
+import com.gatehill.imposter.plugin.sfdc.config.SfdcPluginConfig;
 import com.gatehill.imposter.service.ResponseService;
 import com.gatehill.imposter.util.FileUtil;
 import com.gatehill.imposter.util.HttpUtil;

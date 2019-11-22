@@ -1,11 +1,11 @@
-package com.gatehill.imposter.plugin.openapi;
+package com.gatehill.imposter.plugin.openapi.config;
 
-import com.gatehill.imposter.plugin.config.ContentTypedBaseConfig;
+import com.gatehill.imposter.plugin.config.ContentTypedPluginConfigImpl;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public class OpenApiPluginConfig extends ContentTypedBaseConfig {
+public class OpenApiPluginConfig extends ContentTypedPluginConfigImpl {
     private String specFile;
     private boolean pickFirstIfNoneMatch = true;
     private boolean useServerPathAsBaseUrl = true;

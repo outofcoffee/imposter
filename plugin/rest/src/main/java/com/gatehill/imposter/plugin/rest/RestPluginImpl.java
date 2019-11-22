@@ -3,11 +3,16 @@ package com.gatehill.imposter.plugin.rest;
 import com.gatehill.imposter.ImposterConfig;
 import com.gatehill.imposter.plugin.ScriptedPlugin;
 import com.gatehill.imposter.plugin.config.ConfiguredPlugin;
-import com.gatehill.imposter.plugin.config.ResourceConfig;
+import com.gatehill.imposter.plugin.config.ContentTypedConfig;
+import com.gatehill.imposter.plugin.config.resource.ResourceConfig;
+import com.gatehill.imposter.plugin.rest.config.ResourceConfigType;
+import com.gatehill.imposter.plugin.rest.config.RestPluginConfig;
+import com.gatehill.imposter.plugin.rest.config.RestResourceConfig;
+import com.gatehill.imposter.plugin.rest.util.ResourceMethodConverter;
 import com.gatehill.imposter.service.ResponseService;
 import com.gatehill.imposter.util.FileUtil;
 import com.gatehill.imposter.util.HttpUtil;
-import com.google.common.base.Strings;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
@@ -15,14 +20,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.inject.Inject;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.gatehill.imposter.util.AsyncUtil.handleRoute;
-import static com.gatehill.imposter.util.HttpUtil.CONTENT_TYPE;
 import static com.gatehill.imposter.util.HttpUtil.CONTENT_TYPE_JSON;
 import static java.util.Optional.ofNullable;
 
@@ -31,7 +34,7 @@ import static java.util.Optional.ofNullable;
  *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin<C> implements ScriptedPlugin<ResourceConfig> {
+public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin<C> implements ScriptedPlugin<C> {
     private static final Logger LOGGER = LogManager.getLogger(RestPluginImpl.class);
 
     /**
@@ -62,83 +65,52 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
     public void configureRoutes(Router router) {
         configs.forEach(config -> {
             // add root handler
-            addObjectHandler(router, "", config, config.getContentType());
+            addObjectHandler(router, "", config, config);
 
             // add child resource handlers
             ofNullable(config.getResources()).ifPresent(resources -> resources.forEach(resource ->
-                    addResourceHandler(router, config, resource, config.getContentType())));
+                    addResourceHandler(router, config, resource)));
         });
     }
 
-    private void addResourceHandler(Router router, C rootConfig, RestResourceConfig resourceConfig, String contentType) {
-        final ResourceConfigType resourceType = ofNullable(resourceConfig.getType()).orElse(ResourceConfigType.OBJECT);
+    private void addResourceHandler(Router router, C rootConfig, RestResourceConfig resourceConfig) {
+        final ResourceConfigType resourceType = ofNullable(resourceConfig.getType())
+                .orElse(ResourceConfigType.OBJECT);
+
         switch (resourceType) {
             case OBJECT:
-                addObjectHandler(router, rootConfig, resourceConfig, contentType);
+                addObjectHandler(router, rootConfig, resourceConfig);
                 break;
 
             case ARRAY:
-                addArrayHandler(router, rootConfig, resourceConfig, contentType);
+                addArrayHandler(router, rootConfig, resourceConfig);
                 break;
         }
     }
 
-    private void addObjectHandler(Router router, RestPluginConfig rootConfig, ResourceConfig resourceConfig, String contentType) {
-        addObjectHandler(router, rootConfig.getPath(), resourceConfig, contentType);
+    private void addObjectHandler(Router router, C pluginConfig, ContentTypedConfig resourceConfig) {
+        addObjectHandler(router, pluginConfig.getPath(), pluginConfig, resourceConfig);
     }
 
-    private void addObjectHandler(Router router, String rootPath, ResourceConfig resourceConfig, String contentType) {
+    private void addObjectHandler(Router router, String rootPath, C pluginConfig, ContentTypedConfig resourceConfig) {
         final String qualifiedPath = buildQualifiedPath(rootPath, resourceConfig);
-        LOGGER.debug("Adding REST object handler: {}", qualifiedPath);
+        final HttpMethod method = ResourceMethodConverter.convertMethod(resourceConfig);
+        LOGGER.debug("Adding {} object handler: {}", method, qualifiedPath);
 
-        router.get(qualifiedPath).handler(handleRoute(imposterConfig, vertx, routingContext -> {
+        router.route(method, qualifiedPath).handler(handleRoute(imposterConfig, vertx, routingContext -> {
             // script should fire first
-            scriptHandler(resourceConfig, routingContext, getInjector(), responseBehaviour -> {
-                LOGGER.info("Handling object request for: {}", routingContext.request().absoluteURI());
-
-                final HttpServerResponse response = routingContext.response();
-
-                // add content type
-                ofNullable(contentType).ifPresent(ct -> response.putHeader(HttpUtil.CONTENT_TYPE, ct));
-
-                try {
-                    response.setStatusCode(responseBehaviour.getStatusCode());
-
-                    if (!Strings.isNullOrEmpty(responseBehaviour.getResponseFile())) {
-                        LOGGER.info("Responding with file: {}", responseBehaviour.getResponseFile());
-                        response.sendFile(Paths.get(resourceConfig.getParentDir().getAbsolutePath(),
-                                responseBehaviour.getResponseFile()).toString());
-
-                    } else if (!Strings.isNullOrEmpty(responseBehaviour.getResponseData())) {
-                        // response data
-                        LOGGER.info("Response data is: {}", responseBehaviour.getResponseData());
-                        if (!response.headers().contains(CONTENT_TYPE)) {
-                            LOGGER.debug("Guessing JSON content type");
-                            response.putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON);
-                        }
-                        response.end(responseBehaviour.getResponseData());
-
-                    } else {
-                        LOGGER.info("Response file and data are blank - returning empty response");
-                        response.end();
-                    }
-
-                } catch (Exception e) {
-                    routingContext.fail(e);
-                }
+            scriptHandler(pluginConfig, resourceConfig, routingContext, getInjector(), responseBehaviour -> {
+                LOGGER.info("Handling {} object request for: {}", method, routingContext.request().absoluteURI());
+                responseService.sendResponse(pluginConfig, resourceConfig, routingContext, responseBehaviour);
             });
         }));
     }
 
-    private String buildQualifiedPath(String rootPath, ResourceConfig resourceConfig) {
-        final String qualifiedPath = ofNullable(rootPath).orElse("") + ofNullable(resourceConfig.getPath()).orElse("");
-        return qualifiedPath.startsWith("/") ? qualifiedPath : "/" + qualifiedPath;
-    }
-
-    private void addArrayHandler(Router router, RestPluginConfig rootConfig, ResourceConfig resourceConfig, String contentType) {
+    private void addArrayHandler(Router router, C pluginConfig, RestResourceConfig resourceConfig) {
         final String resourcePath = resourceConfig.getPath();
-        final String qualifiedPath = buildQualifiedPath(rootConfig.getPath(), resourceConfig);
-        LOGGER.debug("Adding REST array handler: {}", qualifiedPath);
+        final String qualifiedPath = buildQualifiedPath(pluginConfig.getPath(), resourceConfig);
+        final HttpMethod method = ResourceMethodConverter.convertMethod(resourceConfig);
+        LOGGER.debug("Adding {} array handler: {}", method, qualifiedPath);
 
         // validate path includes parameter
         final Matcher matcher = PARAM_MATCHER.matcher(resourcePath);
@@ -147,10 +119,10 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
                     resourcePath));
         }
 
-        router.get(qualifiedPath).handler(handleRoute(imposterConfig, vertx, routingContext -> {
+        router.route(method, qualifiedPath).handler(handleRoute(imposterConfig, vertx, routingContext -> {
             // script should fire first
-            scriptHandler(resourceConfig, routingContext, getInjector(), responseBehaviour -> {
-                LOGGER.info("Handling array request for: {}", routingContext.request().absoluteURI());
+            scriptHandler(pluginConfig, resourceConfig, routingContext, getInjector(), responseBehaviour -> {
+                LOGGER.info("Handling {} array request for: {}", method, routingContext.request().absoluteURI());
 
                 // get the first param in the path
                 final String idFieldName = matcher.group(1);
@@ -158,24 +130,27 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
 
                 // find row
                 final Optional<JsonObject> result = FileUtil.findRow(idFieldName, idField,
-                        responseService.loadResponseAsJsonArray(rootConfig, responseBehaviour));
+                        responseService.loadResponseAsJsonArray(pluginConfig, responseBehaviour));
 
                 final HttpServerResponse response = routingContext.response();
 
-                // add content type
-                ofNullable(contentType).ifPresent(ct -> response.putHeader(HttpUtil.CONTENT_TYPE, ct));
-
                 if (result.isPresent()) {
-                    LOGGER.info("Returning single row for {}={}", idFieldName, idField);
+                    LOGGER.info("Returning single row for {}:{}", idFieldName, idField);
                     response.setStatusCode(HttpUtil.HTTP_OK)
+                            .putHeader(HttpUtil.CONTENT_TYPE, CONTENT_TYPE_JSON)
                             .end(result.get().encodePrettily());
                 } else {
                     // no such record
-                    LOGGER.error("No row found for {}={}", idFieldName, idField);
+                    LOGGER.error("No row found for {}:{}", idFieldName, idField);
                     response.setStatusCode(HttpUtil.HTTP_NOT_FOUND)
                             .end();
                 }
             });
         }));
+    }
+
+    private String buildQualifiedPath(String rootPath, ResourceConfig resourceConfig) {
+        final String qualifiedPath = ofNullable(rootPath).orElse("") + ofNullable(resourceConfig.getPath()).orElse("");
+        return qualifiedPath.startsWith("/") ? qualifiedPath : "/" + qualifiedPath;
     }
 }

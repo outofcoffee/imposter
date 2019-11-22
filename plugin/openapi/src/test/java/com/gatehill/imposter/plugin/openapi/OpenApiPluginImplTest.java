@@ -1,6 +1,7 @@
 package com.gatehill.imposter.plugin.openapi;
 
 import com.gatehill.imposter.plugin.Plugin;
+import com.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig;
 import com.gatehill.imposter.server.BaseVerticleTest;
 import com.gatehill.imposter.util.HttpUtil;
 import com.jayway.restassured.RestAssured;

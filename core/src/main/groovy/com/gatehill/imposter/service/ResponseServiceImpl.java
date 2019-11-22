@@ -1,7 +1,10 @@
 package com.gatehill.imposter.service;
 
-import com.gatehill.imposter.plugin.config.ResourceConfig;
-import com.gatehill.imposter.plugin.config.ResponseConfig;
+import com.gatehill.imposter.exception.ResponseException;
+import com.gatehill.imposter.plugin.config.ContentTypedConfig;
+import com.gatehill.imposter.plugin.config.PluginConfig;
+import com.gatehill.imposter.plugin.config.resource.ResourceConfig;
+import com.gatehill.imposter.plugin.config.resource.ResponseConfig;
 import com.gatehill.imposter.script.InternalResponseBehavior;
 import com.gatehill.imposter.script.ResponseBehaviour;
 import com.gatehill.imposter.script.ScriptUtil;
@@ -12,6 +15,7 @@ import com.gatehill.imposter.util.annotation.JavascriptImpl;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.common.io.CharStreams;
+import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.web.RoutingContext;
 import org.apache.logging.log4j.LogManager;
@@ -27,6 +31,8 @@ import java.util.Map;
 import java.util.Objects;
 
 import static com.gatehill.imposter.script.ResponseBehaviourType.DEFAULT_BEHAVIOUR;
+import static com.gatehill.imposter.util.HttpUtil.CONTENT_TYPE;
+import static com.gatehill.imposter.util.HttpUtil.CONTENT_TYPE_JSON;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Optional.ofNullable;
 
@@ -45,7 +51,9 @@ public class ResponseServiceImpl implements ResponseService {
     private ScriptService javascriptScriptService;
 
     @Override
-    public ResponseBehaviour getResponseBehaviour(RoutingContext routingContext, ResourceConfig config,
+    public ResponseBehaviour getResponseBehaviour(RoutingContext routingContext,
+                                                  PluginConfig pluginConfig,
+                                                  ResourceConfig config,
                                                   Map<String, Object> additionalContext,
                                                   Map<String, Object> additionalBindings) {
 
@@ -75,7 +83,7 @@ public class ResponseServiceImpl implements ResponseService {
 
             final Map<String, Object> bindings = Maps.newHashMap();
             bindings.put("logger", LogManager.getLogger(determineScriptName(responseConfig.getScriptFile())));
-            bindings.put("config", config);
+            bindings.put("config", pluginConfig);
             bindings.put("context", context);
 
             // add custom bindings
@@ -83,7 +91,7 @@ public class ResponseServiceImpl implements ResponseService {
 
             // execute the script and read response behaviour
             final InternalResponseBehavior responseBehaviour =
-                    fetchScriptService(config.getResponseConfig().getScriptFile()).executeScript(config, bindings);
+                    fetchScriptService(config.getResponseConfig().getScriptFile()).executeScript(pluginConfig, config, bindings);
 
             // use defaults if not set
             if (DEFAULT_BEHAVIOUR.equals(responseBehaviour.getBehaviourType())) {
@@ -100,6 +108,108 @@ public class ResponseServiceImpl implements ResponseService {
         } catch (Exception e) {
             throw new RuntimeException(String.format("Error executing script: %s", responseConfig.getScriptFile()), e);
         }
+    }
+
+    @Override
+    public void sendEmptyResponse(RoutingContext routingContext) {
+        LOGGER.info("Response file and data are blank - returning empty response");
+        routingContext.response().end();
+    }
+
+    @Override
+    public void sendResponse(PluginConfig pluginConfig,
+                             ContentTypedConfig resourceConfig,
+                             RoutingContext routingContext,
+                             ResponseBehaviour responseBehaviour) {
+        sendResponse(pluginConfig, resourceConfig, routingContext, responseBehaviour, this::sendEmptyResponse);
+    }
+
+    @Override
+    public void sendResponse(PluginConfig pluginConfig,
+                             ContentTypedConfig resourceConfig,
+                             RoutingContext routingContext,
+                             ResponseBehaviour responseBehaviour,
+                             ResponseSender missingResponseSender) {
+
+        LOGGER.trace("Sending mock response for URI {} with status code {}",
+                routingContext.request().absoluteURI(),
+                responseBehaviour.getStatusCode());
+
+        try {
+            final HttpServerResponse response = routingContext.response();
+            response.setStatusCode(responseBehaviour.getStatusCode());
+
+            if (!responseBehaviour.getResponseHeaders().isEmpty()) {
+                responseBehaviour.getResponseHeaders().forEach(response::putHeader);
+            }
+
+            if (!Strings.isNullOrEmpty(responseBehaviour.getResponseFile())) {
+                serveResponseFile(pluginConfig, routingContext, responseBehaviour);
+            } else if (!Strings.isNullOrEmpty(responseBehaviour.getResponseData())) {
+                serveResponseData(resourceConfig, routingContext, responseBehaviour);
+            } else {
+                missingResponseSender.send(routingContext);
+            }
+
+        } catch (Exception e) {
+            routingContext.fail(new ResponseException(String.format(
+                    "Error sending mock response for URI %s with status code %s",
+                    routingContext.request().absoluteURI(), responseBehaviour.getStatusCode()), e));
+        }
+    }
+
+    /**
+     * Reply with a static response file. Note that the content type is determined
+     * by the file being sent.
+     *
+     * @param pluginConfig      the plugin configuration
+     * @param routingContext    the Vert.x routing context
+     * @param responseBehaviour the response behaviour
+     */
+    private void serveResponseFile(PluginConfig pluginConfig,
+                                   RoutingContext routingContext,
+                                   ResponseBehaviour responseBehaviour) {
+
+        LOGGER.debug("Serving response file {} for URI {} with status code {}",
+                responseBehaviour.getResponseFile(),
+                routingContext.request().absoluteURI(),
+                responseBehaviour.getStatusCode());
+
+        routingContext.response().sendFile(
+                Paths.get(pluginConfig.getParentDir().getAbsolutePath(), responseBehaviour.getResponseFile()).toString());
+    }
+
+    /**
+     * Reply with the contents of a String. Content type should be provided, but if not
+     * JSON is assumed.
+     *
+     * @param resourceConfig    the resource configuration
+     * @param routingContext    the Vert.x routing context
+     * @param responseBehaviour the response behaviour
+     */
+    private void serveResponseData(ContentTypedConfig resourceConfig,
+                                   RoutingContext routingContext,
+                                   ResponseBehaviour responseBehaviour) {
+
+        LOGGER.info("Serving response data ({} bytes) for URI {} with status code {}",
+                responseBehaviour.getResponseData().length(),
+                routingContext.request().absoluteURI(),
+                responseBehaviour.getStatusCode());
+
+        final HttpServerResponse response = routingContext.response();
+
+        // explicit content type
+        if (!Strings.isNullOrEmpty(resourceConfig.getContentType())) {
+            response.putHeader(CONTENT_TYPE, resourceConfig.getContentType());
+        }
+
+        if (!response.headers().contains(CONTENT_TYPE)) {
+            // consider something like Tika to probe content type
+            LOGGER.debug("Guessing JSON content type");
+            response.putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON);
+        }
+
+        response.end(responseBehaviour.getResponseData());
     }
 
     private ScriptService fetchScriptService(String scriptFile) {
@@ -130,7 +240,7 @@ public class ResponseServiceImpl implements ResponseService {
         }
     }
 
-    private InputStream loadResponseAsStream(ResourceConfig config, String responseFile) throws IOException {
+    private InputStream loadResponseAsStream(PluginConfig config, String responseFile) throws IOException {
         if (null != responseFile) {
             return Files.newInputStream(Paths.get(config.getParentDir().getAbsolutePath(), responseFile));
         } else {
@@ -139,12 +249,12 @@ public class ResponseServiceImpl implements ResponseService {
     }
 
     @Override
-    public JsonArray loadResponseAsJsonArray(ResourceConfig config, ResponseBehaviour behaviour) {
+    public JsonArray loadResponseAsJsonArray(PluginConfig config, ResponseBehaviour behaviour) {
         return loadResponseAsJsonArray(config, behaviour.getResponseFile());
     }
 
     @Override
-    public JsonArray loadResponseAsJsonArray(ResourceConfig config, String responseFile) {
+    public JsonArray loadResponseAsJsonArray(PluginConfig config, String responseFile) {
         if (Strings.isNullOrEmpty(responseFile)) {
             LOGGER.debug("Response file blank - returning empty array");
             return new JsonArray();

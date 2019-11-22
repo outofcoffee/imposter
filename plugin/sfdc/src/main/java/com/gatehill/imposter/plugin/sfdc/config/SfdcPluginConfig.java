@@ -1,11 +1,11 @@
-package com.gatehill.imposter.plugin.sfdc;
+package com.gatehill.imposter.plugin.sfdc.config;
 
-import com.gatehill.imposter.plugin.config.BaseConfig;
+import com.gatehill.imposter.plugin.config.PluginConfigImpl;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public class SfdcPluginConfig extends BaseConfig {
+public class SfdcPluginConfig extends PluginConfigImpl {
     private String sObjectName;
 
     public String getsObjectName() {

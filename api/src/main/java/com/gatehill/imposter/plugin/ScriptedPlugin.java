@@ -1,6 +1,7 @@
 package com.gatehill.imposter.plugin;
 
-import com.gatehill.imposter.plugin.config.ResourceConfig;
+import com.gatehill.imposter.plugin.config.PluginConfigImpl;
+import com.gatehill.imposter.plugin.config.resource.ResourceConfig;
 import com.gatehill.imposter.script.ResponseBehaviour;
 import com.gatehill.imposter.script.ResponseBehaviourType;
 import com.gatehill.imposter.service.ResponseService;
@@ -14,14 +15,37 @@ import java.util.function.Consumer;
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public interface ScriptedPlugin<C extends ResourceConfig> {
-    default void scriptHandler(C config, RoutingContext routingContext,
-                               Injector injector, Consumer<ResponseBehaviour> defaultBehaviourHandler) {
+public interface ScriptedPlugin<C extends PluginConfigImpl> {
+    default void scriptHandler(C pluginConfig,
+                               RoutingContext routingContext,
+                               Injector injector,
+                               Consumer<ResponseBehaviour> defaultBehaviourHandler) {
 
-        scriptHandler(config, routingContext, injector, null, defaultBehaviourHandler);
+        scriptHandler(pluginConfig, pluginConfig, routingContext, injector, null, defaultBehaviourHandler);
     }
 
-    default void scriptHandler(C config, RoutingContext routingContext, Injector injector,
+    default void scriptHandler(C pluginConfig,
+                               ResourceConfig resourceConfig,
+                               RoutingContext routingContext,
+                               Injector injector,
+                               Consumer<ResponseBehaviour> defaultBehaviourHandler) {
+
+        scriptHandler(pluginConfig, resourceConfig, routingContext, injector, null, defaultBehaviourHandler);
+    }
+
+    default void scriptHandler(C pluginConfig,
+                               RoutingContext routingContext,
+                               Injector injector,
+                               Map<String, Object> additionalContext,
+                               Consumer<ResponseBehaviour> defaultBehaviourHandler) {
+
+        scriptHandler(pluginConfig, pluginConfig, routingContext, injector, additionalContext, defaultBehaviourHandler);
+    }
+
+    default void scriptHandler(C pluginConfig,
+                               ResourceConfig resourceConfig,
+                               RoutingContext routingContext,
+                               Injector injector,
                                Map<String, Object> additionalContext,
                                Consumer<ResponseBehaviour> defaultBehaviourHandler) {
 
@@ -29,7 +53,7 @@ public interface ScriptedPlugin<C extends ResourceConfig> {
 
         try {
             final ResponseBehaviour responseBehaviour = responseService.getResponseBehaviour(
-                    routingContext, config, additionalContext, Collections.emptyMap());
+                    routingContext, pluginConfig, resourceConfig, additionalContext, Collections.emptyMap());
 
             if (ResponseBehaviourType.IMMEDIATE_RESPONSE.equals(responseBehaviour.getBehaviourType())) {
                 routingContext.response()

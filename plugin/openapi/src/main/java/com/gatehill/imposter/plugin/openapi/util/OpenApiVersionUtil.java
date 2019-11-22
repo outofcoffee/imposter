@@ -1,7 +1,7 @@
 package com.gatehill.imposter.plugin.openapi.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gatehill.imposter.plugin.openapi.OpenApiPluginConfig;
+import com.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.converter.SwaggerConverter;
