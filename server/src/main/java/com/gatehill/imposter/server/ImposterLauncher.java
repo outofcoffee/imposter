@@ -41,8 +41,8 @@ public class ImposterLauncher extends Launcher {
     @Option(name = "--configDir", aliases = {"-c"}, usage = "Directory containing mock configuration files", required = true)
     private String[] configDirs = {};
 
-    @Option(name = "--plugin", aliases = {"-p"}, usage = "Plugin class name")
-    private String[] pluginClassNames = {};
+    @Option(name = "--plugin", aliases = {"-p"}, usage = "Plugin name (e.g. rest) or fully qualified class")
+    private String[] plugins = {};
 
     @Option(name = "--listenPort", aliases = {"-l"}, usage = "Listen port (default " + DEFAULT_HTTP_LISTEN_PORT + " unless TLS enabled, in which case default is " + DEFAULT_HTTPS_LISTEN_PORT + ")")
     private Integer listenPort;
@@ -114,11 +114,11 @@ public class ImposterLauncher extends Launcher {
     }
 
     private void startServer(String[] originalArgs) {
-        if (isNull(pluginClassNames) || 0 == pluginClassNames.length) {
-            LOGGER.debug("No plugins specified - attempting to load defaults");
+        if (isNull(plugins) || 0 == plugins.length) {
+            LOGGER.debug("Searching for default plugins");
 
             // check for list of comma-separated plugin classes to load if none specified
-            pluginClassNames = ofNullable(MetaUtil.readMetaProperties().getProperty("plugins"))
+            plugins = ofNullable(MetaUtil.readMetaProperties().getProperty("plugins"))
                     .map(plugin -> plugin.split(","))
                     .orElse(new String[0]);
         }
@@ -147,7 +147,7 @@ public class ImposterLauncher extends Launcher {
         imposterConfig.setKeystorePath(keystorePath);
         imposterConfig.setKeystorePassword(keystorePassword);
         imposterConfig.setConfigDirs(configDirs);
-        imposterConfig.setPluginClassNames(pluginClassNames);
+        imposterConfig.setPlugins(plugins);
         imposterConfig.setPluginArgs(splitArgs);
 
         final List<String> args = Lists.newArrayList(originalArgs);

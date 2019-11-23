@@ -40,15 +40,15 @@ See the [Build](build.md) section.
 
 Once, built, you can run the JAR as follows:
 
-    java -jar distro/build/libs/imposter.jar \
-        --plugin <plugin class> \
+    java -jar distro/all/build/libs/imposter-all.jar \
+        --plugin <plugin name> \
         --configDir <config dir> \
         [args]
 
 ...ensuring that you choose the right plugin class for the plugin you want to use, for example:
 
-    java -jar distro/build/libs/imposter.jar \
-        --plugin com.gatehill.imposter.plugin.rest.RestPluginImpl \
+    java -jar distro/all/build/libs/imposter-all.jar \
+        --plugin rest \
         --configDir /path/to/config \
         [args]
 

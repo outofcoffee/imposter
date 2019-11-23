@@ -1,6 +1,7 @@
 # SFDC (Salesforce) plugin
 
-Plugin class: `com.gatehill.imposter.plugin.sfdc.SfdcPluginImpl`
+* Plugin name: `sfdc`
+* Plugin class: `com.gatehill.imposter.plugin.sfdc.SfdcPluginImpl`
 
 ## Features
 
@@ -41,8 +42,8 @@ Docker example:
 
 Standalone Java example:
 
-    java -jar distro/build/libs/imposter.jar \
-        --plugin com.gatehill.imposter.plugin.sfdc.SfdcPluginImpl \
+    java -jar distro/sfdc/build/libs/imposter-sfdc.jar \
+        --plugin sfdc \
         --configDir ./config \
         --serverUrl http://localhost:8080
 

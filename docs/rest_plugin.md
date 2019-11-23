@@ -1,6 +1,7 @@
 # REST plugin
 
-Plugin class: `com.gatehill.imposter.plugin.rest.RestPluginImpl`
+* Plugin name: `rest`
+* Plugin class: `com.gatehill.imposter.plugin.rest.RestPluginImpl`
 
 ## Features
 
@@ -22,7 +23,7 @@ Here is an example configuration file:
 
     # simple-example-config.yaml
     ---
-    plugin: com.gatehill.imposter.plugin.rest.RestPluginImpl
+    plugin: rest
     path: "/example"
     response:
       staticFile: example-data.json
@@ -45,8 +46,8 @@ Docker example:
 
 Standalone Java example:
 
-    java -jar distro/build/libs/imposter.jar \
-        --plugin com.gatehill.imposter.plugin.rest.RestPluginImpl \
+    java -jar distro/rest/build/libs/imposter-rest.jar \
+        --plugin rest \
         --configDir ./docs/examples/rest/simple
 
 Send an HTTP request to the `/example` path defined in the configuration file to see the example response:
@@ -67,7 +68,7 @@ We can configure different responses at multiple paths as follows:
 
     # multi-response-config.yaml
     ---
-    plugin: com.gatehill.imposter.plugin.rest.RestPluginImpl
+    plugin: rest
     contentType: application/json
     resources:
       - path: "/cats/:id"

@@ -50,7 +50,7 @@ public abstract class BaseVerticleTest {
         imposterConfig.setHost(HOST);
         imposterConfig.setListenPort(findFreePort());
         imposterConfig.setConfigDirs(new String[]{Paths.get(getClass().getResource("/config").toURI()).toString()});
-        imposterConfig.setPluginClassNames(new String[]{getPluginClass().getCanonicalName()});
+        imposterConfig.setPlugins(new String[]{getPluginClass().getCanonicalName()});
         imposterConfig.setPluginArgs(emptyMap());
     }
 

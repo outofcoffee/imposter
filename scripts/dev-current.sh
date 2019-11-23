@@ -3,7 +3,7 @@ set -e
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT_DIR="${SCRIPT_DIR}/../"
-DEFAULT_DISTRO_NAME="openapi"
+DEFAULT_PLUGIN_NAME="openapi"
 JAVA_ARGS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000"
 
 while getopts ":m:p:c:" opt; do
@@ -12,7 +12,7 @@ while getopts ":m:p:c:" opt; do
       LAUNCH_MODE=$OPTARG
       ;;
     p )
-      DISTRO_NAME=$OPTARG
+      PLUGIN_NAME=$OPTARG
       ;;
     c )
       CONFIG_DIR=$OPTARG
@@ -35,8 +35,8 @@ function usage() {
 if [[ -z ${LAUNCH_MODE} ]]; then
   usage
 else
-  DISTRO_NAME="${DISTRO_NAME:-${DEFAULT_DISTRO_NAME}}"
-  CONFIG_DIR="${CONFIG_DIR:-$(pwd)/plugin/${DISTRO_NAME}/src/test/resources/config}"
+  PLUGIN_NAME="${PLUGIN_NAME:-${DEFAULT_PLUGIN_NAME}}"
+  CONFIG_DIR="${CONFIG_DIR:-$(pwd)/plugin/${PLUGIN_NAME}/src/test/resources/config}"
 fi
 
 pushd ${ROOT_DIR}
@@ -45,18 +45,18 @@ pushd ${ROOT_DIR}
 
 case ${LAUNCH_MODE} in
   docker)
-    export IMAGE_DIR="${DISTRO_NAME}"
+    export IMAGE_DIR="${PLUGIN_NAME}"
     ./scripts/docker-build.sh
 
     docker run -ti --rm -p 8080:8080 \
       -v "${CONFIG_DIR}":/opt/imposter/config \
       -e JAVA_ARGS="${JAVA_ARGS}" \
-      outofcoffee/imposter-${DISTRO_NAME}:dev
+      outofcoffee/imposter-${PLUGIN_NAME}:dev
     ;;
 
   java)
     java ${JAVA_ARGS} \
-      -jar distro/${DISTRO_NAME}/build/libs/imposter-${DISTRO_NAME}.jar \
+      -jar distro/${PLUGIN_NAME}/build/libs/imposter-${PLUGIN_NAME}.jar \
       --configDir ${CONFIG_DIR}
     ;;
 esac

@@ -50,8 +50,8 @@ Docker example:
 
 Standalone Java example:
 
-    java -jar distro/build/libs/imposter.jar \
-        --plugin com.gatehill.imposter.plugin.rest.RestPluginImpl \
+    java -jar distro/all/build/libs/imposter.jar \
+        --plugin rest \
         --configDir ./config
 
 Your mock server is now running!

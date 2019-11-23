@@ -6,7 +6,7 @@ import java.io.File;
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public interface PluginConfig {
-    String getPluginClass();
+    String getPlugin();
 
     File getParentDir();
 }

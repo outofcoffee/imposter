@@ -10,7 +10,7 @@ Here is an example configuration file:
 
     # simple-example-config.yaml
     ---
-    plugin: com.gatehill.imposter.plugin.rest.RestPluginImpl
+    plugin: rest
     path: "/example"
     response:
       staticFile: example-data.json
@@ -18,7 +18,7 @@ Here is an example configuration file:
 Or, in JSON format:
 
     {
-      "plugin": "com.gatehill.imposter.plugin.rest.RestPluginImpl",
+      "plugin": "rest",
       "path": "/example",
       "response": {
         "staticFile": "example-data.json"
@@ -63,7 +63,7 @@ Here's an example configuration file that uses a script:
 
     # scripted-example-config.yaml
     ---
-    plugin: com.gatehill.imposter.plugin.rest.RestPluginImpl
+    plugin: rest
     path: "/example-two"
     response:
       scriptFile: example.groovy
@@ -240,7 +240,7 @@ Here's an example of the static file approach:
 
     # file-example-config.yaml
     ---
-    plugin: com.gatehill.imposter.plugin.rest.RestPluginImpl
+    plugin: rest
     path: "/scripted"
     contentType: application/json
     response:

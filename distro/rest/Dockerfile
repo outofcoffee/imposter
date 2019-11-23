@@ -4,4 +4,4 @@ FROM outofcoffee/imposter-base:${BASE_IMAGE_TAG}
 
 LABEL MAINTAINER="Pete Cornish <outofcoffee@gmail.com>"
 
-CMD ["--plugin", "com.gatehill.imposter.plugin.rest.RestPluginImpl", "--configDir", "/opt/imposter/config"]
+CMD ["--plugin", "rest", "--configDir", "/opt/imposter/config"]

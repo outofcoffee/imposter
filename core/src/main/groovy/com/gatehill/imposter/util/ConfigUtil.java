@@ -1,6 +1,7 @@
 package com.gatehill.imposter.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gatehill.imposter.plugin.PluginManager;
 import com.gatehill.imposter.plugin.config.PluginConfigImpl;
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
@@ -9,13 +10,14 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
-import static com.gatehill.imposter.util.FileUtil.CONFIG_FILE_MAPPERS;
-import static com.gatehill.imposter.util.FileUtil.CONFIG_FILE_SUFFIX;
+import static com.gatehill.imposter.util.MapUtil.JSON_MAPPER;
+import static com.gatehill.imposter.util.MapUtil.YAML_MAPPER;
 import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -26,10 +28,18 @@ import static java.util.Optional.ofNullable;
 public final class ConfigUtil {
     private static final Logger LOGGER = LogManager.getLogger(ConfigUtil.class);
 
+    private static final String CONFIG_FILE_SUFFIX = "-config";
+
+    private static final Map<String, ObjectMapper> CONFIG_FILE_MAPPERS = new HashMap<String, ObjectMapper>() {{
+        put(".json", JSON_MAPPER);
+        put(".yaml", YAML_MAPPER);
+        put(".yml", YAML_MAPPER);
+    }};
+
     private ConfigUtil() {
     }
 
-    public static Map<String, List<File>> loadPluginConfigs(String[] configDirs) {
+    public static Map<String, List<File>> loadPluginConfigs(PluginManager pluginManager, String[] configDirs) {
         int configCount = 0;
 
         // read all config files
@@ -45,10 +55,11 @@ public final class ConfigUtil {
                     final PluginConfigImpl config = lookupMapper(configFile).readValue(configFile, PluginConfigImpl.class);
                     config.setParentDir(configFile.getParentFile());
 
-                    List<File> pluginConfigs = allPluginConfigs.get(config.getPluginClass());
-                    if (Objects.isNull(pluginConfigs)) {
+                    final String pluginClass = pluginManager.determinePluginClass(config.getPlugin());
+                    List<File> pluginConfigs = allPluginConfigs.get(pluginClass);
+                    if (isNull(pluginConfigs)) {
                         pluginConfigs = newArrayList();
-                        allPluginConfigs.put(config.getPluginClass(), pluginConfigs);
+                        allPluginConfigs.put(pluginClass, pluginConfigs);
                     }
 
                     pluginConfigs.add(configFile);
@@ -59,7 +70,7 @@ public final class ConfigUtil {
             }
         }
 
-        LOGGER.info("Loaded {} plugin configuration files from: {}",
+        LOGGER.info("Loaded {} plugin configuration file(s) from: {}",
                 configCount, Arrays.toString(configDirs));
 
         return allPluginConfigs;
@@ -72,6 +83,7 @@ public final class ConfigUtil {
 
     /**
      * Determine the mapper to use based on the filename.
+     *
      * @param configFile the configuration file
      * @return the mapper
      */

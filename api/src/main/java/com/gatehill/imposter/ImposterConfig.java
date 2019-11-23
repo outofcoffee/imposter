@@ -15,7 +15,7 @@ public class ImposterConfig {
     private boolean tlsEnabled;
     private String keystorePath;
     private String keystorePassword;
-    private String[] pluginClassNames;
+    private String[] plugins;
     private Map<String, String> pluginArgs;
     private String serverFactory;
     private RequestHandlingMode requestHandlingMode = RequestHandlingMode.ASYNC;
@@ -76,12 +76,12 @@ public class ImposterConfig {
         return keystorePassword;
     }
 
-    public void setPluginClassNames(String[] pluginClassNames) {
-        this.pluginClassNames = pluginClassNames;
+    public void setPlugins(String[] plugins) {
+        this.plugins = plugins;
     }
 
-    public String[] getPluginClassNames() {
-        return pluginClassNames;
+    public String[] getPlugins() {
+        return plugins;
     }
 
     public void setPluginArgs(Map<String, String> pluginArgs) {

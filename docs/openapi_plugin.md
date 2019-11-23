@@ -1,6 +1,7 @@
 # OpenAPI (aka Swagger) plugin
 
-Plugin class: `com.gatehill.imposter.plugin.openapi.OpenApiPluginImpl`
+* Plugin name: `openapi`
+* Plugin class: `com.gatehill.imposter.plugin.openapi.OpenApiPluginImpl`
 
 The plugin provides support for [OpenAPI](https://github.com/OAI/OpenAPI-Specification) (aka Swagger) specifications.
 
@@ -47,14 +48,12 @@ Docker example:
 
     docker run -ti -p 8080:8080 \
         -v $(pwd)/config:/opt/imposter/config \
-        outofcoffee/imposter-openapi \
-        --plugin com.gatehill.imposter.plugin.openapi.OpenApiPluginImpl \
-        --configDir /opt/imposter/config
+        outofcoffee/imposter-openapi
 
 Standalone Java example:
 
-    java -jar distro/build/libs/imposter.jar \
-        --plugin com.gatehill.imposter.plugin.openapi.OpenApiPluginImpl \
+    java -jar distro/openapi/build/libs/imposter-openapi.jar \
+        --plugin openapi \
         --configDir ./config
 
 This starts a mock server using the OpenAPI plugin. Responses are served based on the configuration files inside the `config` folder; in particular the Swagger specification `petstore-expanded.yaml`.

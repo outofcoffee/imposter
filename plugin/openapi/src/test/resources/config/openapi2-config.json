@@ -1,5 +1,5 @@
 {
-  "plugin": "com.gatehill.imposter.plugin.openapi.OpenApiPluginImpl",
+  "plugin": "openapi",
   "response": {
     "scriptFile": "custom.groovy"
   },

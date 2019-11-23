@@ -1,7 +1,7 @@
 package com.gatehill.imposter;
 
-import com.gatehill.imposter.plugin.*;
-import com.gatehill.imposter.plugin.config.ConfigurablePlugin;
+import com.gatehill.imposter.plugin.PluginDependencies;
+import com.gatehill.imposter.plugin.PluginManager;
 import com.gatehill.imposter.util.ConfigUtil;
 import com.gatehill.imposter.util.InjectorUtil;
 import com.google.inject.Injector;
@@ -12,7 +12,10 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.gatehill.imposter.util.HttpUtil.BIND_ALL_HOSTS;
@@ -45,10 +48,13 @@ public class Imposter {
 
         // load config
         processConfiguration();
-        final Map<String, List<File>> pluginConfigs = ConfigUtil.loadPluginConfigs(imposterConfig.getConfigDirs());
+        final Map<String, List<File>> pluginConfigs = ConfigUtil.loadPluginConfigs(pluginManager, imposterConfig.getConfigDirs());
 
         // prepare plugins
-        final List<PluginDependencies> dependencies = preparePluginsFromConfig(imposterConfig.getPluginClassNames(), pluginConfigs)
+        final List<String> pluginClassNames = Arrays.stream(imposterConfig.getPlugins())
+                .map(pluginManager::determinePluginClass).collect(Collectors.toList());
+
+        final List<PluginDependencies> dependencies = pluginManager.preparePluginsFromConfig(imposterConfig, pluginClassNames, pluginConfigs)
                 .stream()
                 .filter(deps -> nonNull(deps.getRequiredModules()))
                 .collect(Collectors.toList());
@@ -60,9 +66,8 @@ public class Imposter {
         // inject dependencies
         final Injector injector = InjectorUtil.create(allModules.toArray(new Module[0]));
         injector.injectMembers(this);
-        registerPlugins(injector);
-
-        configurePlugins(pluginConfigs);
+        pluginManager.registerPlugins(injector);
+        pluginManager.configurePlugins(pluginConfigs);
     }
 
     private void processConfiguration() {
@@ -98,124 +103,5 @@ public class Imposter {
         }
 
         return URI.create(scheme + host + port);
-    }
-
-    private List<PluginDependencies> preparePluginsFromConfig(String[] pluginClassNames, Map<String, List<File>> pluginConfigs) {
-        final List<PluginDependencies> dependencies = newArrayList();
-
-        ofNullable(pluginClassNames).ifPresent(classNames ->
-                Arrays.stream(classNames).forEach(this::registerPluginClass));
-
-        dependencies.addAll(pluginManager.getPluginClasses().stream()
-                .map(this::examinePlugin)
-                .collect(Collectors.toList()));
-
-        findUnregisteredProviders().forEach(providerClass -> {
-            pluginManager.registerProvider(providerClass);
-            final PluginProvider pluginProvider = createPluginProvider(providerClass);
-            final String[] provided = pluginProvider.providePlugins(imposterConfig, pluginConfigs);
-            LOGGER.debug("{} plugins provided by {}", provided.length, providerClass.getCanonicalName());
-
-            // recurse for new providers
-            if (provided.length > 0) {
-                dependencies.addAll(preparePluginsFromConfig(provided, pluginConfigs));
-            }
-        });
-
-        return dependencies;
-    }
-
-    @SuppressWarnings("unchecked")
-    private void registerPluginClass(String className) {
-        try {
-            if (pluginManager.registerClass((Class<? extends Plugin>) Class.forName(className))) {
-                LOGGER.debug("Registered plugin {}", className);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to register plugin: " + className, e);
-        }
-    }
-
-    /**
-     * Examine the plugin for any required dependencies.
-     *
-     * @param pluginClass the plugin to examine
-     * @return the plugin's dependencies
-     */
-    private PluginDependencies examinePlugin(Class<? extends Plugin> pluginClass) {
-        final PluginDependencies registration = new PluginDependencies();
-
-        final RequireModules moduleAnnotation = pluginClass.getAnnotation(RequireModules.class);
-        if (null != moduleAnnotation && moduleAnnotation.value().length > 0) {
-            registration.setRequiredModules(instantiateModules(moduleAnnotation));
-        }
-
-        return registration;
-    }
-
-    /**
-     * @return any {@link PluginProvider}s not yet registered with the plugin manager
-     */
-    @SuppressWarnings("unchecked")
-    private List<Class<PluginProvider>> findUnregisteredProviders() {
-        return pluginManager.getPluginClasses().stream()
-                .filter(PluginProvider.class::isAssignableFrom)
-                .map(pluginClass -> (Class<PluginProvider>) pluginClass.asSubclass(PluginProvider.class))
-                .filter(providerClass -> !pluginManager.isProviderRegistered(providerClass))
-                .collect(Collectors.toList());
-    }
-
-    private PluginProvider createPluginProvider(Class<PluginProvider> providerClass) {
-        try {
-            return providerClass.newInstance();
-        } catch (Exception e) {
-            throw new RuntimeException("Error instantiating plugin provider: " + providerClass.getCanonicalName(), e);
-        }
-    }
-
-    /**
-     * Instantiate all plugins and register them with the plugin manager.
-     *
-     * @param injector the injector from which the plugins can be instantiated
-     */
-    private void registerPlugins(Injector injector) {
-        pluginManager.getPluginClasses().forEach(pluginClass -> {
-            pluginManager.registerInstance(injector.getInstance(pluginClass));
-        });
-
-        final int pluginCount = pluginManager.getPlugins().size();
-        if (pluginCount > 0) {
-            LOGGER.info("Loaded {} plugins", pluginCount);
-        } else {
-            throw new IllegalStateException("No plugins were loaded");
-        }
-    }
-
-    private List<Module> instantiateModules(RequireModules moduleAnnotation) {
-        final List<Module> modules = newArrayList();
-        for (Class<? extends Module> moduleClass : moduleAnnotation.value()) {
-            try {
-                modules.add(moduleClass.newInstance());
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return modules;
-    }
-
-    /**
-     * Send config to plugins.
-     *
-     * @param pluginConfigs configurations keyed by plugin
-     */
-    private void configurePlugins(Map<String, List<File>> pluginConfigs) {
-        pluginManager.getPlugins().stream()
-                .filter(plugin -> plugin instanceof ConfigurablePlugin)
-                .map(plugin -> (ConfigurablePlugin) plugin)
-                .forEach(plugin -> {
-                    final List<File> configFiles = ofNullable(pluginConfigs.get(plugin.getClass().getCanonicalName()))
-                            .orElse(Collections.emptyList());
-                    plugin.loadConfiguration(configFiles);
-                });
     }
 }

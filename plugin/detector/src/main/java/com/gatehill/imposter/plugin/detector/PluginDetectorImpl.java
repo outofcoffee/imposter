@@ -8,6 +8,7 @@ import io.vertx.ext.web.Router;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Provides the plugin class names present in the configuration files.
@@ -21,9 +22,9 @@ public class PluginDetectorImpl implements Plugin, PluginProvider {
     }
 
     @Override
-    public String[] providePlugins(ImposterConfig imposterConfig, Map<String, List<File>> pluginConfigs) {
+    public List<String> providePlugins(ImposterConfig imposterConfig, Map<String, List<File>> pluginConfigs) {
         return pluginConfigs.keySet().stream()
                 .distinct()
-                .toArray(String[]::new);
+                .collect(Collectors.toList());
     }
 }

@@ -1,7 +1,6 @@
 package com.gatehill.imposter.plugin.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gatehill.imposter.plugin.config.resource.AbstractResourceConfig;
 
 import java.io.File;
@@ -13,12 +12,11 @@ import java.io.File;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PluginConfigImpl extends AbstractResourceConfig implements PluginConfig {
-    @JsonProperty("plugin")
-    private String pluginClass;
+    private String plugin;
 
     @Override
-    public String getPluginClass() {
-        return pluginClass;
+    public String getPlugin() {
+        return plugin;
     }
 
     private File parentDir;

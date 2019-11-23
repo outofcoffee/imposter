@@ -21,5 +21,5 @@ public interface PluginProvider {
      * @param pluginConfigs  plugin configurations
      * @return plugins
      */
-    String[] providePlugins(ImposterConfig imposterConfig, Map<String, List<File>> pluginConfigs);
+    List<String> providePlugins(ImposterConfig imposterConfig, Map<String, List<File>> pluginConfigs);
 }

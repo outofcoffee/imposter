@@ -3,6 +3,7 @@ package com.gatehill.imposter.plugin.openapi;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gatehill.imposter.ImposterConfig;
+import com.gatehill.imposter.plugin.PluginInfo;
 import com.gatehill.imposter.plugin.RequireModules;
 import com.gatehill.imposter.plugin.ScriptedPlugin;
 import com.gatehill.imposter.plugin.config.ConfiguredPlugin;
@@ -60,6 +61,7 @@ import static java.util.Optional.ofNullable;
  *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
+@PluginInfo("openapi")
 @RequireModules(OpenApiModule.class)
 public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> implements ScriptedPlugin<OpenApiPluginConfig> {
     private static final Logger LOGGER = LogManager.getLogger(OpenApiPluginImpl.class);

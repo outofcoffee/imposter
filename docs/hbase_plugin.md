@@ -1,6 +1,7 @@
 # HBase plugin
 
-Plugin class: `com.gatehill.imposter.plugin.hbase.HBasePluginImpl`
+* Plugin name: `hbase`
+* Plugin class: `com.gatehill.imposter.plugin.hbase.HBasePluginImpl`
 
 ## Features
 
@@ -43,8 +44,8 @@ Docker example:
 
 Standalone Java example:
 
-    java -jar distro/build/libs/imposter.jar \
-        --plugin com.gatehill.imposter.plugin.hbase.HBasePluginImpl \
+    java -jar distro/hbase/build/libs/imposter-hbase.jar \
+        --plugin hbase \
         --configDir ./config \
         --serverUrl http://localhost:8080
 

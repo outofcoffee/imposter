@@ -6,8 +6,8 @@ You can run Imposter with HTTPS enabled. To do this, enable the TLS option and p
 
 ### Example
 
-    java -jar distro/build/libs/imposter.jar \
-            --plugin com.gatehill.imposter.plugin.rest.RestPluginImpl \
+    java -jar distro/all/build/libs/imposter-all.jar \
+            --plugin rest \
             --configDir /path/to/config \
             --tlsEnabled \
             --keystorePath ./server/src/main/resources/keystore/ssl.jks \

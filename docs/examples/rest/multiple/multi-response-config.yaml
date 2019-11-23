@@ -1,5 +1,5 @@
 ---
-plugin: com.gatehill.imposter.plugin.rest.RestPluginImpl
+plugin: rest
 contentType: application/json
 resources:
   - path: "/cats/:id"

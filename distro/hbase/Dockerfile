@@ -4,4 +4,4 @@ FROM outofcoffee/imposter-base:${BASE_IMAGE_TAG}
 
 LABEL MAINTAINER="Pete Cornish <outofcoffee@gmail.com>"
 
-CMD ["--plugin", "com.gatehill.imposter.plugin.hbase.HBasePluginImpl", "--configDir", "/opt/imposter/config"]
+CMD ["--plugin", "hbase", "--configDir", "/opt/imposter/config"]

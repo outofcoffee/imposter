@@ -1,4 +1,4 @@
 {
-  "plugin": "com.gatehill.imposter.plugin.openapi.OpenApiPluginImpl",
+  "plugin": "openapi",
   "specFile": "petstore-expanded.yaml"
 }
