@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- ...
+
 ## [1.1.1] - 2019-11-25
 ### Added
 - (openapi, rest) Allows static responses to specify headers and inline data.
