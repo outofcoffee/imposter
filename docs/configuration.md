@@ -63,7 +63,7 @@ The plugin has returned the contents of the `staticFile` in the HTTP response.
 
 ### Response configuration options
 
-You can specify other properties of the response, such as status code and headers. Here are some more complete example:
+You can specify other properties of the response, such as status code and headers. Here is a more complete example:
 
 #### Single resource example
 
@@ -72,6 +72,7 @@ You can specify other properties of the response, such as status code and header
 ---
 plugin: rest
 path: "/example"
+method: POST
 contentType: "application/json"
 response:
   staticFile: data.json
@@ -80,9 +81,16 @@ response:
     X-Custom-Header: foo
 ```
 
+A few things to call out:
+
+* This endpoint will only be accessible via the `POST` HTTP method
+* We've indicated that status code 201 should be returned
+* We've set the content type of the response to JSON
+* A custom header will be returned
+
 #### Multiple resources example
 
-The [REST plugin](./rest_plugin.md) allows you to specify multiple resources, using the `resources` array:
+The [REST plugin](./rest_plugin.md) allows you to specify multiple resources, using the `resources` array. Each resource can have its own path, method, response behaviour etc.
 
 ```yaml
 # multi-response-config.yaml
