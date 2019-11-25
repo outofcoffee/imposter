@@ -2,8 +2,10 @@ package io.gatehill.imposter.plugin.openapi;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
-import io.gatehill.imposter.plugin.openapi.service.OpenApiService;
-import io.gatehill.imposter.plugin.openapi.service.OpenApiServiceImpl;
+import io.gatehill.imposter.plugin.openapi.service.ExampleService;
+import io.gatehill.imposter.plugin.openapi.service.ExampleServiceImpl;
+import io.gatehill.imposter.plugin.openapi.service.SpecificationService;
+import io.gatehill.imposter.plugin.openapi.service.SpecificationServiceImpl;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
@@ -11,6 +13,7 @@ import io.gatehill.imposter.plugin.openapi.service.OpenApiServiceImpl;
 public class OpenApiModule extends AbstractModule {
     @Override
     protected void configure() {
-        bind(OpenApiService.class).to(OpenApiServiceImpl.class).in(Singleton.class);
+        bind(SpecificationService.class).to(SpecificationServiceImpl.class).in(Singleton.class);
+        bind(ExampleService.class).to(ExampleServiceImpl.class).in(Singleton.class);
     }
 }

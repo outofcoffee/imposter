@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public interface OpenApiService {
+public interface SpecificationService {
     default OpenAPI combineSpecifications(List<OpenAPI> specs, String basePath) {
         return combineSpecifications(specs, basePath, null, null);
     }

@@ -31,8 +31,8 @@ import static org.apache.commons.io.IOUtils.LINE_SEPARATOR;
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public class OpenApiServiceImpl implements OpenApiService {
-    private static final Logger LOGGER = LogManager.getLogger(OpenApiServiceImpl.class);
+public class SpecificationServiceImpl implements SpecificationService {
+    private static final Logger LOGGER = LogManager.getLogger(SpecificationServiceImpl.class);
     private static final String DEFAULT_TITLE = "Imposter Mock APIs";
 
     @Override
