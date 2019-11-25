@@ -45,7 +45,6 @@ Docker example:
 Standalone Java example:
 
     java -jar distro/hbase/build/libs/imposter-hbase.jar \
-        --plugin hbase \
         --configDir ./config \
         --serverUrl http://localhost:8080
 

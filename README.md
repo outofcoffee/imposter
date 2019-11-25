@@ -19,7 +19,7 @@ Provide mock responses using static files or customise behaviour using JavaScrip
 
 # Getting started
 
-The quickest way to get up and running is to use our free cloud-hosted version at [https://www.remotebot.io/mocks](https://www.remotebot.io/mocks)
+The quickest way to get up and running is to use our free cloud-hosted version at [https://www.remotemock.io](https://www.remotemock.io)
 
 *****
 # Documentation
@@ -50,8 +50,7 @@ Docker example:
 
 Standalone Java example:
 
-    java -jar distro/all/build/libs/imposter.jar \
-        --plugin rest \
+    java -jar distro/rest/build/libs/imposter-rest.jar \
         --configDir ./config
 
 Your mock server is now running!

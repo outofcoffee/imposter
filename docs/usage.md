@@ -12,7 +12,7 @@ The following command line arguments can be used:
      --keystorePassword VAL : Password for the keystore (default: password)
      --keystorePath VAL     : Path to the keystore (default: classpath:/keystore/ssl.jks)
      --listenPort (-l) N    : Listen port (default: 8080)
-     --plugin (-p) VAL      : Plugin class name
+     --plugin (-p) VAL      : Plugin name (e.g. rest) or fully qualified class
      --serverUrl (-u) VAL   : Explicitly set the server address
      --tlsEnabled (-t)      : Whether TLS (HTTPS) is enabled (requires keystore to be configured) (default: false)
      --version (-v)         : Print version and exit

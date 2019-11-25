@@ -38,33 +38,119 @@ You can also use the interactive API sandbox at `/_spec`; e.g. [http://localhost
 
 ## Example
 
-For working examples, see:
+Here is an example configuration file:
 
-    plugin/openapi/src/test/resources/config
+    # petstore-config.yaml
+    ---
+    plugin: openapi
+    specFile: petstore.yaml
 
-Let's assume your configuration is in a folder named `config`.
+In this example, we are using an OpenAPI specification file (`petstore.yaml`) containing the following API:
+
+```yaml
+swagger: "2.0"
+info:
+  version: "1.0.0"
+  title: "Swagger Petstore"
+consumes:
+  - "application/json"
+produces:
+  - "application/json"
+paths:
+  /pets:
+    get:
+      description: "Returns all pets from the system"
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "A list of pets."
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Pet"
+          examples:
+            application/json: |-
+              [
+                {
+                  "id": 101,
+                  "name": "Cat"
+                },
+                {
+                  "id": 102,
+                  "name": "Dog"
+                }
+              ]
+definitions:
+  Pet:
+    type: "object"
+    required:
+      - "id"
+      - "name"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      name:
+        type: "string"
+```
+
+A few things to call out:
+
+* We’ve defined the endpoint `/pets` as expecting an HTTP GET request
+* We’ve said it will produce JSON responses
+* One response is defined for the HTTP 200 case
+* We’ve defined a basic data model in the definitions section — this is standard [JSON Schema](https://json-schema.org/)
+* We’ve provided an example response — the same JSON array described earlier
+
+### Start Imposter with the OpenAPI plugin
+
+Let's assume your configuration is in the directory: `docs/examples/openapi/simple`.
 
 Docker example:
 
-    docker run -ti -p 8080:8080 \
-        -v $(pwd)/config:/opt/imposter/config \
+    docker run --rm -ti -p 8080:8080 \
+        -v $(pwd)/docs/examples/openapi/simple:/opt/imposter/config \
         outofcoffee/imposter-openapi
 
 Standalone Java example:
 
-    java -jar distro/openapi/build/libs/imposter-openapi.jar \
-        --plugin openapi \
-        --configDir ./config
+    java -jar distro/rest/build/libs/imposter-openapi.jar \
+        --configDir ./docs/examples/openapi/simple
 
-This starts a mock server using the OpenAPI plugin. Responses are served based on the configuration files inside the `config` folder; in particular the Swagger specification `petstore-expanded.yaml`.
+This starts a mock server using the OpenAPI plugin. Responses are served based on the OpenAPI specification `petstore.yaml`.
 
 Using the example above, you can interact with the APIs with examples in the Swagger specification at their respective endpoints under `http://localhost:8080/<endpoint path>`.
 
+Send an HTTP request to the `/pets` path defined in the configuration file to see the example response:
+
+    $ curl -v "http://localhost:8080/pets"
+    ...
+    HTTP/1.1 200 OK
+    ...
+    [
+      {
+        "id": 101,
+        "name": "Cat"
+      },
+      {
+        "id": 102,
+        "name": "Dog"
+      }
+    ]
+
 For specific information about the endpoints, see the interactive sandbox at [http://localhost:8080/_spec](http://localhost:8080/_spec).
+
+Once you're finished, stop the server with CTRL+C.
+
+> For more working examples, see:
+>
+> * docs/examples/openapi
+> * plugin/openapi/src/test/resources/config
 
 ## Object response examples
 
-Imposter has limited support for response examples defined as objects, for example an API specification like [object-examples.yaml](../plugin/openapi/src/test/resources/config/object-examples.yaml).
+Imposter has basic support for response examples defined as objects, for example an API specification like [object-examples.yaml](../plugin/openapi/src/test/resources/config/object-examples.yaml).
 
 The salient part of the response is as follows:
 

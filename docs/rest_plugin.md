@@ -34,6 +34,12 @@ In this example, we are using a static response file (`example-data.json`) conta
       "hello": "world"
     }
 
+A few things to call out:
+
+* We’ve defined the endpoint `/cats` to return the contents of our sample JSON file; in other words an array of cats.
+* We’ve also said that, because the response file is a JSON array, we want to allow querying of individual items by their ID, under the `/cats/:id` endpoint.
+* This example assumes you’ve named the file containing your JSON array `cats.json` and that it is in the same directory as the configuration file.
+
 ### Start Imposter with the REST plugin
 
 Let's assume your configuration is in the directory: `docs/examples/rest/simple`.
@@ -47,7 +53,6 @@ Docker example:
 Standalone Java example:
 
     java -jar distro/rest/build/libs/imposter-rest.jar \
-        --plugin rest \
         --configDir ./docs/examples/rest/simple
 
 Send an HTTP request to the `/example` path defined in the configuration file to see the example response:

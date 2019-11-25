@@ -43,7 +43,6 @@ Docker example:
 Standalone Java example:
 
     java -jar distro/sfdc/build/libs/imposter-sfdc.jar \
-        --plugin sfdc \
         --configDir ./config \
         --serverUrl http://localhost:8080
 
