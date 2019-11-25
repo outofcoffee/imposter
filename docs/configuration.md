@@ -66,7 +66,7 @@ You can specify other properties of the response, such as status code and header
 #### Single resource example
 
 ```yaml
-# openapi-response-options-config.yaml
+# single-response-config.yaml
 ---
 plugin: rest
 path: "/example"
@@ -81,22 +81,24 @@ response:
 #### Multiple resources example
 
 ```yaml
-# rest-response-options-config.yaml
+# multi-response-config.yaml
 ---
 plugin: rest
 resources:
 - path: "/example1"
   contentType: "application/json"
+  method: GET
   response:
     staticFile: data1.json
-    statusCode: 201
+    statusCode: 200
     headers:
       X-Custom-Header: foo
 
-- path: "/example1"
-  contentType: "application/json"
+- path: "/example2"
+  contentType: "text/plain"
+  method: POST
   response:
-    statusCode: 202
+    statusCode: 201
     headers:
       X-Custom-Header: bar
     staticData: |
@@ -108,12 +110,14 @@ resources:
 
 Default values for response configuration are as follows:
 
-| Field        | Type                 | Default    |
-|--------------|----------------------|------------|
-| `statusCode` | Integer              | `200`      |
-| `staticData` | String               | empty      |
-| `staticFile` | String               | empty      |
-| `headers`    | Map of String:String | empty      |
+| Field                 | Plugins(s)    | Type                  | Default                                            |
+|-----------------------|---------------|-----------------------|----------------------------------------------------|
+| `contentType`         | all           | String                | `application/json`, or determined from static file |
+| `method`              | rest          | String (HTTP method)  | `GET`                                              |
+| `response.statusCode` | openapi, rest | Integer (HTTP status) | `200`                                              |
+| `response.staticData` | openapi, rest | String                | empty                                              |
+| `response.staticFile` | all           | String                | empty                                              |
+| `response.headers`    | openapi, rest | Map of String:String  | empty                                              |
 
 ## Scripted responses (advanced)
 

@@ -1,8 +1,8 @@
 package com.gatehill.imposter.plugin.rest.util;
 
 import com.gatehill.imposter.plugin.config.ContentTypedConfig;
+import com.gatehill.imposter.plugin.rest.config.MethodResourceConfig;
 import com.gatehill.imposter.plugin.rest.config.ResourceMethod;
-import com.gatehill.imposter.plugin.rest.config.RestResourceConfig;
 import io.vertx.core.http.HttpMethod;
 
 import static java.util.Optional.ofNullable;
@@ -14,8 +14,8 @@ import static java.util.Optional.ofNullable;
  */
 public final class ResourceMethodConverter {
     public static HttpMethod convertMethod(ContentTypedConfig resourceConfig) {
-        if (resourceConfig instanceof RestResourceConfig) {
-            final ResourceMethod method = ofNullable(((RestResourceConfig) resourceConfig).getMethod()).orElse(ResourceMethod.GET);
+        if (resourceConfig instanceof MethodResourceConfig) {
+            final ResourceMethod method = ofNullable(((MethodResourceConfig) resourceConfig).getMethod()).orElse(ResourceMethod.GET);
             switch (method) {
                 case GET:
                     return HttpMethod.GET;

@@ -4,6 +4,7 @@ import com.gatehill.imposter.plugin.Plugin;
 import com.gatehill.imposter.server.BaseVerticleTest;
 import com.gatehill.imposter.util.HttpUtil;
 import com.jayway.restassured.RestAssured;
+import com.jayway.restassured.config.RedirectConfig;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,10 +32,11 @@ public class RestPluginTest extends BaseVerticleTest {
         super.setUp(testContext);
 
         RestAssured.baseURI = "http://" + HOST + ":" + getListenPort();
+        RestAssured.config().redirect(RedirectConfig.redirectConfig().followRedirects(false));
     }
 
     @Test
-    public void testRequestStaticRootPathSuccess() throws Exception {
+    public void testRequestStaticRootPathSuccess() {
         given().when()
                 .get("/example")
                 .then()
@@ -47,7 +49,7 @@ public class RestPluginTest extends BaseVerticleTest {
     }
 
     @Test
-    public void testRequestStaticArrayResourceSuccess() throws Exception {
+    public void testRequestStaticArrayResourceSuccess() {
         fetchVerifyRow(1);
         fetchVerifyRow(2);
         fetchVerifyRow(3);
@@ -66,7 +68,7 @@ public class RestPluginTest extends BaseVerticleTest {
     }
 
     @Test
-    public void testRequestScriptedResponseFile() throws Exception {
+    public void testRequestScriptedResponseFile() {
         // default action should return static data file 1
         given().when()
                 .get("/scripted")
@@ -91,7 +93,7 @@ public class RestPluginTest extends BaseVerticleTest {
     }
 
     @Test
-    public void testRequestScriptedStatusCode() throws Exception {
+    public void testRequestScriptedStatusCode() {
         // script causes short circuit to 201
         given().when()
                 .get("/scripted?action=create")
@@ -121,7 +123,7 @@ public class RestPluginTest extends BaseVerticleTest {
     }
 
     @Test
-    public void testRequestNotFound() throws Exception {
+    public void testRequestNotFound() {
         given().when()
                 .get("/nonExistentEndpoint")
                 .then()
@@ -130,7 +132,7 @@ public class RestPluginTest extends BaseVerticleTest {
     }
 
     @Test
-    public void testRequestScriptedWithHeaders() throws Exception {
+    public void testRequestScriptedWithHeaders() {
         given().when()
                 .header("Authorization", "AUTH_HEADER")
                 .get("/scripted?with-auth")
@@ -139,13 +141,41 @@ public class RestPluginTest extends BaseVerticleTest {
                 .statusCode(equalTo(HttpUtil.HTTP_NO_CONTENT));
     }
 
+    /**
+     * Tests status code, headers, static data and method for a single resource.
+     */
     @Test
-    public void testRequestStaticWithHeaders() throws Exception {
+    public void testRequestStaticSingleFull() {
         given().when()
-                .get("/static-full")
+                .get("/static-single")
                 .then()
                 .log().ifValidationFails()
-                .statusCode(equalTo(HttpUtil.HTTP_CREATED))
+                .statusCode(equalTo(HttpUtil.HTTP_OK))
+                .header(CONTENT_TYPE, "text/html")
+                .header("X-Example", "foo")
+                .body(allOf(
+                        containsString("<html>"),
+                        containsString("Hello, world!")
+                ));
+    }
+
+    /**
+     * Tests status code, headers, static data and method for a single resource.
+     */
+    @Test
+    public void testRequestStaticMultiFull() {
+        given().when()
+                .post("/static-multi")
+                .then()
+                .log().ifValidationFails()
+                .statusCode(equalTo(HttpUtil.HTTP_MOVED_TEMP))
+                .body(isEmptyOrNullString());
+
+        given().when()
+                .get("/static-multi")
+                .then()
+                .log().ifValidationFails()
+                .statusCode(equalTo(HttpUtil.HTTP_OK))
                 .header(CONTENT_TYPE, "text/html")
                 .header("X-Example", "foo")
                 .body(allOf(

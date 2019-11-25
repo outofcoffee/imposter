@@ -5,7 +5,7 @@ import com.gatehill.imposter.plugin.config.resource.ContentTypedResourceConfigIm
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public class RestResourceConfig extends ContentTypedResourceConfigImpl {
+public class RestResourceConfig extends ContentTypedResourceConfigImpl implements MethodResourceConfig {
     private ResourceConfigType type;
     private ResourceMethod method;
 
@@ -13,6 +13,7 @@ public class RestResourceConfig extends ContentTypedResourceConfigImpl {
         return type;
     }
 
+    @Override
     public ResourceMethod getMethod() {
         return method;
     }

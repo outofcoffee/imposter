@@ -1,10 +1,11 @@
 # A static configuration, setting content type, headers, status code and data.
 ---
 plugin: rest
-path: /static-full
+path: /static-single
 contentType: "text/html"
+method: GET
 response:
-  statusCode: 201
+  statusCode: 200
   headers:
     X-Example: "foo"
   staticData: |
