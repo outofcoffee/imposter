@@ -4,14 +4,14 @@ Reliable, scriptable and extensible mock server for general REST APIs,
 [OpenAPI](https://github.com/OAI/OpenAPI-Specification) (aka Swagger) specifications,
 Salesforce and HBase APIs.
 
-Scripting support for both [JavaScript](https://www.javascript.com/) or [Groovy/Java](http://www.groovy-lang.org/).
+Scripting support for both JavaScript or [Groovy/Java](http://www.groovy-lang.org/).
 
 ## What's it for?
 
 Use Imposter to:
 
 * run standalone mocks in place of real systems
-* turn a Swagger file into a mock API for testing or QA
+* turn a OpenAPI/Swagger file into a mock API for testing or QA
 * quickly set up a temporary API for your mobile/web client teams whilst the real API is being built
 * decouple your integration tests from the cloud/various back-end systems and take control of your dependencies
 

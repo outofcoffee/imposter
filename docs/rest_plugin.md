@@ -140,10 +140,10 @@ Once you're finished, stop the server with CTRL+C.
 > * docs/examples/rest
 > * plugin/rest/src/test/resources/config
 
-### Scripted responses (advanced)
+## Scripted responses (advanced)
 
 For simple scenarios, use the `staticFile` property within the `response` object in your configuration.
 
-For more advanced scenarios, you can also control Imposter's responses using [JavaScript](https://www.javascript.com/) or [Groovy](http://www.groovy-lang.org/) scripts.
+For more advanced scenarios, you can also control Imposter's responses using JavaScript or Groovy scripts.
 
-See the [Configuration](configuration.md) section for more information.
+See the [Scripting](scripting.md) section for more information.

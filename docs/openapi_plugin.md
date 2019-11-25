@@ -18,9 +18,9 @@ Read the [Configuration](configuration.md) section to understand how to configur
 
 ### Additional context objects
 
-| Object | Type | Description
-| --- | --- | ---
-| `operation` | `io.swagger.models.Operation` | The OpenAPI operation for the request.
+| Object      | Type                          | Description                            |
+|-------------|-------------------------------|----------------------------------------|
+| `operation` | `io.swagger.models.Operation` | The OpenAPI operation for the request. |
 
 ## Using the plugin
 
@@ -40,10 +40,12 @@ You can also use the interactive API sandbox at `/_spec`; e.g. [http://localhost
 
 Here is an example configuration file:
 
-    # petstore-config.yaml
-    ---
-    plugin: openapi
-    specFile: petstore.yaml
+```yaml
+# petstore-config.yaml
+---
+plugin: openapi
+specFile: petstore.yaml
+```
 
 In this example, we are using an OpenAPI specification file (`petstore.yaml`) containing the following API:
 
@@ -171,3 +173,11 @@ responses:
 > Note: the JSON example is specified as an object.
 
 Imposter currently supports JSON and YAML serialised content types in the response if they are specified in this way. If you want to return a different format, return a literal string, such as those above.
+
+## Scripted responses (advanced)
+
+For simple scenarios, use the `staticFile` property within the `response` object in your configuration.
+
+For more advanced scenarios, you can also control Imposter's responses using JavaScript or Groovy scripts.
+
+See the [Scripting](scripting.md) section for more information.
