@@ -34,6 +34,7 @@ import static com.gatehill.imposter.script.ResponseBehaviourType.DEFAULT_BEHAVIO
 import static com.gatehill.imposter.util.HttpUtil.CONTENT_TYPE;
 import static com.gatehill.imposter.util.HttpUtil.CONTENT_TYPE_JSON;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Collections.emptyMap;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -70,7 +71,12 @@ public class ResponseServiceImpl implements ResponseService {
             responseBehaviour
                     .withStatusCode(statusCode)
                     .withFile(responseConfig.getStaticFile())
+                    .withData(responseConfig.getStaticData())
                     .usingDefaultBehaviour();
+
+            ofNullable(responseConfig.getHeaders()).orElse(emptyMap())
+                    .forEach(responseBehaviour::withHeader);
+
             return responseBehaviour;
         }
 
@@ -139,9 +145,7 @@ public class ResponseServiceImpl implements ResponseService {
             final HttpServerResponse response = routingContext.response();
             response.setStatusCode(responseBehaviour.getStatusCode());
 
-            if (!responseBehaviour.getResponseHeaders().isEmpty()) {
-                responseBehaviour.getResponseHeaders().forEach(response::putHeader);
-            }
+            responseBehaviour.getResponseHeaders().forEach(response::putHeader);
 
             if (!Strings.isNullOrEmpty(responseBehaviour.getResponseFile())) {
                 serveResponseFile(pluginConfig, routingContext, responseBehaviour);
@@ -170,10 +174,10 @@ public class ResponseServiceImpl implements ResponseService {
                                    RoutingContext routingContext,
                                    ResponseBehaviour responseBehaviour) {
 
-        LOGGER.debug("Serving response file {} for URI {} with status code {}",
+        LOGGER.info("Serving response file {} for URI {} with status code {}",
                 responseBehaviour.getResponseFile(),
                 routingContext.request().absoluteURI(),
-                responseBehaviour.getStatusCode());
+                routingContext.response().getStatusCode());
 
         routingContext.response().sendFile(
                 Paths.get(pluginConfig.getParentDir().getAbsolutePath(), responseBehaviour.getResponseFile()).toString());
@@ -194,7 +198,7 @@ public class ResponseServiceImpl implements ResponseService {
         LOGGER.info("Serving response data ({} bytes) for URI {} with status code {}",
                 responseBehaviour.getResponseData().length(),
                 routingContext.request().absoluteURI(),
-                responseBehaviour.getStatusCode());
+                routingContext.response().getStatusCode());
 
         final HttpServerResponse response = routingContext.response();
 

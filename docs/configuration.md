@@ -8,22 +8,26 @@ Imposter configuration files are in YAML or JSON format. They must be named with
 
 Here is an example configuration file:
 
-    # simple-example-config.yaml
-    ---
-    plugin: rest
-    path: "/example"
-    response:
-      staticFile: example-data.json
+```yaml
+# simple-example-config.yaml
+---
+plugin: rest
+path: "/example"
+response:
+  staticFile: example-data.json
+```
 
 Or, in JSON format:
 
-    {
-      "plugin": "rest",
-      "path": "/example",
-      "response": {
-        "staticFile": "example-data.json"
-      }
-    }
+```json
+{
+  "plugin": "rest",
+  "path": "/example",
+  "response": {
+    "staticFile": "example-data.json"
+  }
+}
+```
 
 **Note:** You must specify the plugin to use in the configuration file. See the list of [plugins](index.md#Plugins) for possible values.
 
@@ -53,7 +57,63 @@ Using the configuration above, if we were to send an HTTP request to the `/examp
       "hello": "world"
     }
 
-The plugin has returned the contents of the `staticFile` in the HTTP response. 
+The plugin has returned the contents of the `staticFile` in the HTTP response.
+
+### Response configuration options
+
+You can specify other properties of the response, such as status code and headers. Here are some more complete example:
+
+#### Single resource example
+
+```yaml
+# openapi-response-options-config.yaml
+---
+plugin: rest
+path: "/example"
+contentType: "application/json"
+response:
+  staticFile: data.json
+  statusCode: 201
+  headers:
+    X-Custom-Header: foo
+```
+
+#### Multiple resources example
+
+```yaml
+# rest-response-options-config.yaml
+---
+plugin: rest
+resources:
+- path: "/example1"
+  contentType: "application/json"
+  response:
+    staticFile: data1.json
+    statusCode: 201
+    headers:
+      X-Custom-Header: foo
+
+- path: "/example1"
+  contentType: "application/json"
+  response:
+    statusCode: 202
+    headers:
+      X-Custom-Header: bar
+    staticData: |
+      This is some
+      multiline response data.
+```
+
+#### Default values
+
+Default values for response configuration are as follows:
+
+| Field        | Type                 | Default    |
+|--------------|----------------------|------------|
+| `statusCode` | Integer              | `200`      |
+| `staticData` | String               | empty      |
+| `staticFile` | String               | empty      |
+| `headers`    | Map of String:String | empty      |
 
 ## Scripted responses (advanced)
 
@@ -61,12 +121,14 @@ For more advanced scenarios, you can also control Imposter's responses using [Ja
 
 Here's an example configuration file that uses a script:
 
-    # scripted-example-config.yaml
-    ---
-    plugin: rest
-    path: "/example-two"
-    response:
-      scriptFile: example.groovy
+```yaml
+# scripted-example-config.yaml
+---
+plugin: rest
+path: "/example-two"
+response:
+  scriptFile: example.groovy
+```
 
 ...and here's the corresponding script (`example.groovy`):
 
@@ -91,32 +153,34 @@ For example:
 
 Here's a more sophisticated example script:
 
-    switch (context.request.params.action) {
-        case 'create':
-            // HTTP Status-Code 201: Created.
-            respond {
-                withStatusCode 201
-                immediately()
-            }
-            break
+```groovy
+switch (context.request.params.action) {
+    case 'create':
+        // HTTP Status-Code 201: Created.
+        respond {
+            withStatusCode 201
+            immediately()
+        }
+        break
 
-        case 'fetch':
-            // use a static response file and the default plugin behaviour
-            respond {
-                withFile 'example-data.json'
-                and()
-                usingDefaultBehaviour()
-            }
-            break
+    case 'fetch':
+        // use a static response file and the default plugin behaviour
+        respond {
+            withFile 'example-data.json'
+            and()
+            usingDefaultBehaviour()
+        }
+        break
 
-        default:
-            // default to bad request
-            respond {
-                withStatusCode 400
-                immediately()
-            }
-            break
-    }
+    default:
+        // default to bad request
+        respond {
+            withStatusCode 400
+            immediately()
+        }
+        break
+}
+```
 
 In this example, the script causes the mock server to respond with HTTP status codes 200, 201 or 400 depending on the value of the `action` parameter in the request.
 
@@ -225,6 +289,7 @@ For example:
         and()
         usingDefaultBehaviour()
     }
+
 *****
 
 ### Returning data from a script
@@ -238,14 +303,16 @@ More specifically, to specify which response file to use, you can either:
 
 Here's an example of the static file approach:
 
-    # file-example-config.yaml
-    ---
-    plugin: rest
-    path: "/scripted"
-    contentType: application/json
-    response:
-      scriptFile: example.groovy
-      staticFile: example-data.json
+```yaml
+# file-example-config.yaml
+---
+plugin: rest
+path: "/scripted"
+contentType: application/json
+response:
+  scriptFile: example.groovy
+  staticFile: example-data.json
+```
 
 Here, the response file `example-data.json` will be used, unless the script invokes the
 `withFile(String)` method with a different filename.

@@ -1,0 +1,18 @@
+# A static configuration, setting content type, headers, status code and data.
+---
+plugin: rest
+path: /static-full
+contentType: "text/html"
+response:
+  statusCode: 201
+  headers:
+    X-Example: "foo"
+  staticData: |
+    <html>
+      <head>
+        <title>Example</title>
+      </head>
+      <body>
+        Hello, world!
+      </body>
+    </html>

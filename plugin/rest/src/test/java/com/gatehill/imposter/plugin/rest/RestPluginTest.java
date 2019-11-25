@@ -8,8 +8,13 @@ import io.vertx.ext.unit.TestContext;
 import org.junit.Before;
 import org.junit.Test;
 
+import static com.gatehill.imposter.util.HttpUtil.CONTENT_TYPE;
 import static com.jayway.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
 
 
 /**
@@ -29,10 +34,11 @@ public class RestPluginTest extends BaseVerticleTest {
     }
 
     @Test
-    public void testRequestRootPathSuccess() throws Exception {
+    public void testRequestStaticRootPathSuccess() throws Exception {
         given().when()
                 .get("/example")
                 .then()
+                .log().ifValidationFails()
                 .statusCode(equalTo(HttpUtil.HTTP_OK))
                 .and()
                 .contentType(equalTo("application/json"))
@@ -41,7 +47,7 @@ public class RestPluginTest extends BaseVerticleTest {
     }
 
     @Test
-    public void testRequestArrayResourceSuccess() throws Exception {
+    public void testRequestStaticArrayResourceSuccess() throws Exception {
         fetchVerifyRow(1);
         fetchVerifyRow(2);
         fetchVerifyRow(3);
@@ -51,6 +57,7 @@ public class RestPluginTest extends BaseVerticleTest {
         given().when()
                 .get("/example/" + rowId)
                 .then()
+                .log().ifValidationFails()
                 .statusCode(equalTo(HttpUtil.HTTP_OK))
                 .and()
                 .contentType(equalTo("application/json"))
@@ -64,6 +71,7 @@ public class RestPluginTest extends BaseVerticleTest {
         given().when()
                 .get("/scripted")
                 .then()
+                .log().ifValidationFails()
                 .statusCode(equalTo(HttpUtil.HTTP_OK))
                 .and()
                 .contentType(equalTo("application/json"))
@@ -74,6 +82,7 @@ public class RestPluginTest extends BaseVerticleTest {
         given().when()
                 .get("/scripted?action=fetch")
                 .then()
+                .log().ifValidationFails()
                 .statusCode(equalTo(HttpUtil.HTTP_OK))
                 .and()
                 .contentType(equalTo("application/json"))
@@ -87,6 +96,7 @@ public class RestPluginTest extends BaseVerticleTest {
         given().when()
                 .get("/scripted?action=create")
                 .then()
+                .log().ifValidationFails()
                 .statusCode(equalTo(HttpUtil.HTTP_CREATED))
                 .and()
                 .body(is(isEmptyOrNullString()));
@@ -95,6 +105,7 @@ public class RestPluginTest extends BaseVerticleTest {
         given().when()
                 .get("/scripted?action=delete")
                 .then()
+                .log().ifValidationFails()
                 .statusCode(equalTo(HttpUtil.HTTP_NO_CONTENT))
                 .and()
                 .body(is(isEmptyOrNullString()));
@@ -103,6 +114,7 @@ public class RestPluginTest extends BaseVerticleTest {
         given().when()
                 .get("/scripted?bad")
                 .then()
+                .log().ifValidationFails()
                 .statusCode(equalTo(HttpUtil.HTTP_BAD_REQUEST))
                 .and()
                 .body(is(isEmptyOrNullString()));
@@ -113,15 +125,32 @@ public class RestPluginTest extends BaseVerticleTest {
         given().when()
                 .get("/nonExistentEndpoint")
                 .then()
+                .log().ifValidationFails()
                 .statusCode(equalTo(HttpUtil.HTTP_NOT_FOUND));
     }
 
     @Test
-    public void testRequestWithHeaders() throws Exception {
+    public void testRequestScriptedWithHeaders() throws Exception {
         given().when()
                 .header("Authorization", "AUTH_HEADER")
                 .get("/scripted?with-auth")
                 .then()
+                .log().ifValidationFails()
                 .statusCode(equalTo(HttpUtil.HTTP_NO_CONTENT));
+    }
+
+    @Test
+    public void testRequestStaticWithHeaders() throws Exception {
+        given().when()
+                .get("/static-full")
+                .then()
+                .log().ifValidationFails()
+                .statusCode(equalTo(HttpUtil.HTTP_CREATED))
+                .header(CONTENT_TYPE, "text/html")
+                .header("X-Example", "foo")
+                .body(allOf(
+                        containsString("<html>"),
+                        containsString("Hello, world!")
+                ));
     }
 }
