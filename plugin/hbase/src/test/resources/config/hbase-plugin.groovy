@@ -1,4 +1,4 @@
-import com.gatehill.imposter.plugin.hbase.model.ResponsePhase
+import io.gatehill.imposter.plugin.hbase.model.ResponsePhase
 
 // Example of returning a specific status code or response file,
 // based on the scanner filter prefix (essentially the HBase query).

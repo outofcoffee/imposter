@@ -130,7 +130,7 @@ The request object is available on the `context`. It provides access to request 
 
 ## ResponseBehaviour object
 
-Your scripts have access to the methods on `com.gatehill.imposter.script.MutableResponseBehaviour`.
+Your scripts have access to the methods on `io.gatehill.imposter.script.MutableResponseBehaviour`.
 
 The ResponseBehaviour object provides a number of methods to enable you to control the mock server response:
 

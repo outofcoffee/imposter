@@ -20,9 +20,9 @@ repositories {
 
 dependencies {
     // imposter dependencies
-    compile "com.gatehill.imposter:imposter-core:$version_imposter_maven"
-    compile "com.gatehill.imposter:imposter-server:$version_imposter_maven"
-    compile "com.gatehill.imposter:openapi:$version_imposter_maven"
+    compile "io.gatehill.imposter:imposter-core:$version_imposter_maven"
+    compile "io.gatehill.imposter:imposter-server:$version_imposter_maven"
+    compile "io.gatehill.imposter:openapi:$version_imposter_maven"
 ```
 
-See `com.gatehill.imposter.server.ImposterVerticle` for an example of how to bootstrap the mock server.
+See `io.gatehill.imposter.server.ImposterVerticle` for an example of how to bootstrap the mock server.

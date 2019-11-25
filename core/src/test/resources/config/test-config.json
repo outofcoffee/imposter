@@ -1,5 +1,5 @@
 {
-  "plugin": "com.gatehill.imposter.core.test.ExamplePluginImpl",
+  "plugin": "io.gatehill.imposter.core.test.ExamplePluginImpl",
   "path": "/example",
   "contentType": "application/json",
   "resources": [

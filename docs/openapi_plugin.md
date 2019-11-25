@@ -1,7 +1,7 @@
 # OpenAPI (aka Swagger) plugin
 
 * Plugin name: `openapi`
-* Plugin class: `com.gatehill.imposter.plugin.openapi.OpenApiPluginImpl`
+* Plugin class: `io.gatehill.imposter.plugin.openapi.OpenApiPluginImpl`
 
 The plugin provides support for [OpenAPI](https://github.com/OAI/OpenAPI-Specification) (aka Swagger) specifications.
 

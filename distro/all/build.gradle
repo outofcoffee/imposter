@@ -22,8 +22,8 @@ shadowJar {
     classifier = ''
 
     manifest {
-        attributes 'Main-Class': 'com.gatehill.imposter.server.ImposterLauncher'
-        attributes 'Main-Verticle': 'com.gatehill.imposter.server.ImposterVerticle'
+        attributes 'Main-Class': 'io.gatehill.imposter.server.ImposterLauncher'
+        attributes 'Main-Verticle': 'io.gatehill.imposter.server.ImposterVerticle'
         attributes 'Imposter-Version': project.version
     }
 

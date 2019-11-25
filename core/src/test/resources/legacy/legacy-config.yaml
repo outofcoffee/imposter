@@ -1,0 +1,7 @@
+# A plugin specified using the legacy package.
+---
+plugin: com.gatehill.imposter.core.test.ExamplePluginImpl
+path: "/legacy"
+contentType: text/plain
+response:
+  staticData: Hello, world!

@@ -1,5 +1,5 @@
 {
-  "plugin": "com.gatehill.imposter.plugin.test.TestPluginImpl",
+  "plugin": "io.gatehill.imposter.plugin.test.TestPluginImpl",
   "path": "/example",
   "response": {
     "staticFile": "simple-plugin-data.json"

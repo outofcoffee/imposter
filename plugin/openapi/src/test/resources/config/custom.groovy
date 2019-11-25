@@ -6,30 +6,30 @@ import io.vertx.core.http.HttpHeaders
 // applies to URIs ending with '/apis'
 if (context.request.uri ==~ /(.*)\/apis$/) {
 
-        // applies to PUT requests only
-        switch (context.request.method) {
-            case 'PUT':
+    // applies to PUT requests only
+    switch (context.request.method) {
+        case 'PUT':
+            respond {
+                withStatusCode 201
+                withHeader("MyHeader", "MyHeaderValue")
+            }
+            break
+        case 'GET':
+            if (context.request.headers.get(HttpHeaders.AUTHORIZATION) == "AUTH_HEADER") {
                 respond {
-                    withStatusCode 201
-                    withHeader("MyHeader","MyHeaderValue")
+                    withStatusCode 204
                 }
-                break
-            case 'GET':
-                if(context.request.headers.get(HttpHeaders.AUTHORIZATION) == "AUTH_HEADER") {
-                    respond {
-                        withStatusCode 204
-                    }
-                } else {
-                    respond {
-                        usingDefaultBehaviour()
-                    }
-                }
-                break
-            default:
-                // fallback to specification examples
+            } else {
                 respond {
                     usingDefaultBehaviour()
                 }
-                break
-        }
+            }
+            break
+        default:
+            // fallback to specification examples
+            respond {
+                usingDefaultBehaviour()
+            }
+            break
+    }
 }

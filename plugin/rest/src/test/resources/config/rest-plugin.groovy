@@ -11,7 +11,7 @@ switch (context.request.uri) {
         }
         break
     case ~/.*with-auth/:
-        if(context.request.headers.get(HttpHeaders.AUTHORIZATION) == "AUTH_HEADER"){
+        if (context.request.headers.get(HttpHeaders.AUTHORIZATION) == "AUTH_HEADER") {
             // HTTP Status-Code 204: No Content.
             respond {
                 withStatusCode 204

@@ -12,6 +12,6 @@
         <Logger name="io.netty" level="warn" />
         <Logger name="httpclient.wire" level="warn" />
         <Logger name="org.apache" level="warn" />
-        <Logger name="com.gatehill.imposter" level="debug" />
+        <Logger name="io.gatehill.imposter" level="debug" />
     </Loggers>
 </Configuration>
