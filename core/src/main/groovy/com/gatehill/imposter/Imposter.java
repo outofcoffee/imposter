@@ -12,7 +12,6 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -20,6 +19,7 @@ import java.util.stream.Collectors;
 
 import static com.gatehill.imposter.util.HttpUtil.BIND_ALL_HOSTS;
 import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Collections.emptyList;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 
@@ -50,11 +50,11 @@ public class Imposter {
         processConfiguration();
         final Map<String, List<File>> pluginConfigs = ConfigUtil.loadPluginConfigs(pluginManager, imposterConfig.getConfigDirs());
 
-        // prepare plugins
-        final List<String> pluginClassNames = Arrays.stream(imposterConfig.getPlugins())
-                .map(pluginManager::determinePluginClass).collect(Collectors.toList());
+        final List<String> plugins = ofNullable(imposterConfig.getPlugins())
+                .map(it -> (List<String>) newArrayList(it))
+                .orElse(emptyList());
 
-        final List<PluginDependencies> dependencies = pluginManager.preparePluginsFromConfig(imposterConfig, pluginClassNames, pluginConfigs)
+        final List<PluginDependencies> dependencies = pluginManager.preparePluginsFromConfig(imposterConfig, plugins, pluginConfigs)
                 .stream()
                 .filter(deps -> nonNull(deps.getRequiredModules()))
                 .collect(Collectors.toList());

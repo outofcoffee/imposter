@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -123,21 +124,24 @@ public class PluginManager {
     }
 
     /**
-     * Discovers dependencies from configuration.
+     * Registers plugin providers and discovers dependencies from configuration.
      *
-     * @param imposterConfig   application configuration
-     * @param pluginClassNames configured plugins
-     * @param pluginConfigs    plugin configurations
+     * @param imposterConfig application configuration
+     * @param plugins        configured plugins
+     * @param pluginConfigs  plugin configurations
      * @return list of dependencies
      */
     public List<PluginDependencies> preparePluginsFromConfig(
             ImposterConfig imposterConfig,
-            List<String> pluginClassNames,
+            List<String> plugins,
             Map<String, List<File>> pluginConfigs) {
 
         final List<PluginDependencies> dependencies = newArrayList();
 
-        ofNullable(pluginClassNames).ifPresent(classNames -> classNames.forEach(this::registerPluginClass));
+        // prepare plugins
+        ofNullable(plugins).orElse(emptyList()).stream()
+                .map(this::determinePluginClass)
+                .forEach(this::registerPluginClass);
 
         dependencies.addAll(getPluginClasses().stream()
                 .map(this::examinePlugin)
@@ -147,7 +151,7 @@ public class PluginManager {
             registerProvider(providerClass);
             final PluginProvider pluginProvider = createPluginProvider(providerClass);
             final List<String> provided = pluginProvider.providePlugins(imposterConfig, pluginConfigs);
-            LOGGER.debug("{} plugin(s) provided by: {}", provided.size(), providerClass.getCanonicalName());
+            LOGGER.debug("{} plugin(s) provided by: {}", provided.size(), pluginProvider.getName());
 
             // recurse for new providers
             if (provided.size() > 0) {
@@ -161,8 +165,14 @@ public class PluginManager {
     @SuppressWarnings("unchecked")
     private void registerPluginClass(String className) {
         try {
-            if (registerClass((Class<? extends Plugin>) Class.forName(className))) {
-                LOGGER.debug("Registered plugin: {}", className);
+            final Class<? extends Plugin> clazz = (Class<? extends Plugin>) Class.forName(className);
+            if (registerClass(clazz)) {
+                final String pluginName = PluginMetadata.getPluginName(clazz);
+                if (LOGGER.isTraceEnabled()) {
+                    LOGGER.trace("Registered plugin: {} with class: {}", pluginName, className);
+                } else {
+                    LOGGER.debug("Registered plugin: {}", pluginName);
+                }
             }
         } catch (Exception e) {
             throw new RuntimeException("Failed to register plugin: " + className, e);
@@ -231,7 +241,7 @@ public class PluginManager {
         if (pluginCount > 0) {
             final String pluginNames = getPlugins().stream()
                     .map(Plugin::getName)
-                    .collect(Collectors.joining(","));
+                    .collect(Collectors.joining(", ", "[", "]"));
             LOGGER.info("Loaded {} plugin(s): {}", pluginCount, pluginNames);
         } else {
             throw new IllegalStateException("No plugins were loaded");
@@ -249,7 +259,7 @@ public class PluginManager {
                 .map(plugin -> (ConfigurablePlugin) plugin)
                 .forEach(plugin -> {
                     final List<File> configFiles = ofNullable(pluginConfigs.get(plugin.getClass().getCanonicalName()))
-                            .orElse(Collections.emptyList());
+                            .orElse(emptyList());
                     plugin.loadConfiguration(configFiles);
                 });
     }

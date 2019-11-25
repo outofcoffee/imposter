@@ -1,10 +1,10 @@
 package com.gatehill.imposter.server;
 
 import com.gatehill.imposter.ImposterConfig;
+import com.gatehill.imposter.plugin.internal.MetaInfPluginDetectorImpl;
 import com.gatehill.imposter.server.util.ConfigUtil;
 import com.gatehill.imposter.util.LogUtil;
 import com.gatehill.imposter.util.MetaUtil;
-import com.google.common.collect.Lists;
 import io.vertx.core.Launcher;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,7 +20,11 @@ import java.util.stream.Collectors;
 import static com.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PASSWORD;
 import static com.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PATH;
 import static com.gatehill.imposter.util.FileUtil.CLASSPATH_PREFIX;
-import static com.gatehill.imposter.util.HttpUtil.*;
+import static com.gatehill.imposter.util.HttpUtil.BIND_ALL_HOSTS;
+import static com.gatehill.imposter.util.HttpUtil.DEFAULT_HTTPS_LISTEN_PORT;
+import static com.gatehill.imposter.util.HttpUtil.DEFAULT_HTTP_LISTEN_PORT;
+import static com.gatehill.imposter.util.HttpUtil.DEFAULT_SERVER_FACTORY;
+import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;
 
@@ -115,12 +119,8 @@ public class ImposterLauncher extends Launcher {
 
     private void startServer(String[] originalArgs) {
         if (isNull(plugins) || 0 == plugins.length) {
-            LOGGER.debug("Searching for default plugins");
-
-            // check for list of comma-separated plugin classes to load if none specified
-            plugins = ofNullable(MetaUtil.readMetaProperties().getProperty("plugins"))
-                    .map(plugin -> plugin.split(","))
-                    .orElse(new String[0]);
+            LOGGER.debug("Searching metadata for plugins");
+            plugins = new String[]{MetaInfPluginDetectorImpl.class.getCanonicalName()};
         }
 
         final Map<String, String> splitArgs = Arrays.stream(ofNullable(pluginArgs).orElse(new String[0]))
@@ -150,7 +150,7 @@ public class ImposterLauncher extends Launcher {
         imposterConfig.setPlugins(plugins);
         imposterConfig.setPluginArgs(splitArgs);
 
-        final List<String> args = Lists.newArrayList(originalArgs);
+        final List<String> args = newArrayList(originalArgs);
         args.add(0, "run");
         args.add(1, ImposterVerticle.class.getCanonicalName());
         super.dispatch(args.toArray(new String[0]));

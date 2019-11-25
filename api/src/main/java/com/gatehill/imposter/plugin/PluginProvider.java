@@ -13,7 +13,7 @@ import java.util.Map;
  *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public interface PluginProvider {
+public interface PluginProvider extends PluginMetadata {
     /**
      * Provide class names of plugins.
      *

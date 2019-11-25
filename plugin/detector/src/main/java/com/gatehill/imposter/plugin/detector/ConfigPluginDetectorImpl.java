@@ -2,6 +2,7 @@ package com.gatehill.imposter.plugin.detector;
 
 import com.gatehill.imposter.ImposterConfig;
 import com.gatehill.imposter.plugin.Plugin;
+import com.gatehill.imposter.plugin.PluginInfo;
 import com.gatehill.imposter.plugin.PluginProvider;
 import io.vertx.ext.web.Router;
 
@@ -15,7 +16,8 @@ import java.util.stream.Collectors;
  *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public class PluginDetectorImpl implements Plugin, PluginProvider {
+@PluginInfo("config-detector")
+public class ConfigPluginDetectorImpl implements Plugin, PluginProvider {
     @Override
     public void configureRoutes(Router router) {
         // no op
