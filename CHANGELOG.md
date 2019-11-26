@@ -5,7 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
-- ...
+- (openapi) Adds experimental model example generator. Enable with `--pluginArg openapi.alpha.modelexamples=true`
 
 ## [1.1.1] - 2019-11-25
 ### Added

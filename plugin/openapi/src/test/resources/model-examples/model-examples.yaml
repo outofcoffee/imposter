@@ -1,0 +1,68 @@
+swagger: "2.0"
+info:
+  version: 1.0.0
+  title: Model examples
+  description: Specification with no API examples, but schema from which a sample response can be generated.
+basePath: /api
+schemes:
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /pets:
+    get:
+      description: Lists all pets in the system.
+      operationId: findPets
+      responses:
+        "200":
+          description: pet response
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Pet'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+definitions:
+  Pet:
+    allOf:
+      - $ref: '#/definitions/NewPet'
+      - required:
+          - id
+        properties:
+          id:
+            type: integer
+            format: int64
+
+  NewPet:
+    required:
+      - name
+    properties:
+      name:
+        type: string
+      breed:
+        type: string
+        example: Collie
+      misc:
+        type: object
+        properties:
+          population:
+            type: integer
+            example: 47435
+          nocturnal:
+            type: boolean
+
+  Error:
+    required:
+      - code
+      - message
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string

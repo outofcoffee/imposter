@@ -17,7 +17,7 @@ public interface PluginProvider extends PluginMetadata {
     /**
      * Provide class names of plugins.
      *
-     * @param imposterConfig core configuration
+     * @param imposterConfig the Imposter engine configuration
      * @param pluginConfigs  plugin configurations
      * @return plugins
      */

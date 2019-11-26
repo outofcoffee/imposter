@@ -27,9 +27,11 @@ public interface ResponseService {
      * Send an empty response to the client, typically used as a fallback when no
      * other response can be computed.
      *
-     * @param routingContext the Vert.x routing context
+     * @param routingContext    the Vert.x routing context
+     * @param responseBehaviour the response behaviour
+     * @return always {@code true}
      */
-    void sendEmptyResponse(RoutingContext routingContext);
+    boolean sendEmptyResponse(RoutingContext routingContext, ResponseBehaviour responseBehaviour);
 
     /**
      * Send a response to the client, if one can be computed. If a response cannot
@@ -47,25 +49,22 @@ public interface ResponseService {
 
     /**
      * Send a response to the client, if one can be computed. If a response cannot
-     * be computed, the missingResponseSender is invoked.
+     * be computed, each of the fallbackSenders is invoked until a response is sent.
      *
-     * @param pluginConfig          the plugin configuration
-     * @param resourceConfig        the resource configuration
-     * @param routingContext        the Vert.x routing context
-     * @param responseBehaviour     the response behaviour
-     * @param missingResponseSender the handler to invoke if a response cannot be computed
+     * @param pluginConfig      the plugin configuration
+     * @param resourceConfig    the resource configuration
+     * @param routingContext    the Vert.x routing context
+     * @param responseBehaviour the response behaviour
+     * @param fallbackSenders   the handler(s) to invoke in sequence if a response cannot be computed
      */
     void sendResponse(PluginConfig pluginConfig,
                       ContentTypedConfig resourceConfig,
                       RoutingContext routingContext,
                       ResponseBehaviour responseBehaviour,
-                      ResponseSender missingResponseSender);
+                      ResponseSender... fallbackSenders);
 
-    /**
-     * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
-     */
     @FunctionalInterface
     interface ResponseSender {
-        void send(RoutingContext routingContext) throws Exception;
+        boolean send(RoutingContext routingContext, ResponseBehaviour responseBehaviour) throws Exception;
     }
 }

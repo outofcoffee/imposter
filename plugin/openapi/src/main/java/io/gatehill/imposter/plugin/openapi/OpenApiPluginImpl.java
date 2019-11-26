@@ -61,6 +61,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
     private static final String ARG_BASEPATH = "openapi.basepath";
     private static final String ARG_SCHEME = "openapi.scheme";
     private static final String ARG_TITLE = "openapi.title";
+    public static final String ARG_MODEL_EXAMPLES = "openapi.alpha.modelexamples";
     static final String SPECIFICATION_PATH = "/_spec";
     static final String COMBINED_SPECIFICATION_PATH = SPECIFICATION_PATH + "/combined.json";
 
@@ -134,7 +135,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
 
             // convert an io.swagger.models.HttpMethod to an io.vertx.core.http.HttpMethod
             final HttpMethod method = HttpMethod.valueOf(httpMethod.name());
-            router.route(method, fullPath).handler(buildHandler(config, operation));
+            router.route(method, fullPath).handler(buildHandler(config, operation, swagger));
         });
     }
 
@@ -221,8 +222,9 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
      *
      * @param config    the plugin configuration
      * @param operation the specification operation  @return a route handler
+     * @param spec      the OpenAPI specification
      */
-    private Handler<RoutingContext> buildHandler(OpenApiPluginConfig config, Operation operation) {
+    private Handler<RoutingContext> buildHandler(OpenApiPluginConfig config, Operation operation, OpenAPI spec) {
         return AsyncUtil.handleRoute(imposterConfig, vertx, routingContext -> {
             final HashMap<String, Object> context = newHashMap();
             context.put("operation", operation);
@@ -241,10 +243,16 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
                         .setStatusCode(responseBehaviour.getStatusCode());
 
                 if (optionalMockResponse.isPresent()) {
-                    serveMockResponse(config, routingContext, responseBehaviour, optionalMockResponse.get());
+                    // build a response from the specification
+                    final ResponseService.ResponseSender exampleSender = (rc, rb) ->
+                            exampleService.serveExample(imposterConfig, config, rc, rb, optionalMockResponse.get(), spec);
+
+                    // attempt to serve an example from the specification, falling back if not present
+                    responseService.sendResponse(
+                            config, config, routingContext, responseBehaviour, exampleSender, this::fallback);
 
                 } else {
-                    LOGGER.info("No explicit mock response found for URI {} with status code {}",
+                    LOGGER.warn("No explicit mock response found for URI {} with status code {}",
                             routingContext.request().absoluteURI(), statusCode);
 
                     response.end();
@@ -254,34 +262,16 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
     }
 
     /**
-     * Build a response from the specification.
-     *
-     * @param config            the plugin configuration
-     * @param routingContext    the Vert.x routing context
-     * @param responseBehaviour the response behaviour
-     * @param mockResponse      the specification response
-     */
-    private void serveMockResponse(OpenApiPluginConfig config,
-                                   RoutingContext routingContext,
-                                   ResponseBehaviour responseBehaviour,
-                                   ApiResponse mockResponse) {
-
-        responseService.sendResponse(config, config, routingContext, responseBehaviour, rc -> {
-            // attempt to serve an example from the specification, falling back if not present
-            exampleService.serveExample(config, rc, responseBehaviour, mockResponse, this::fallback);
-        });
-    }
-
-    /**
      * Handles the scenario when no example is found.
      *
      * @param routingContext    the Vert.x routing context
      * @param responseBehaviour the response behaviour
      */
-    private void fallback(RoutingContext routingContext, ResponseBehaviour responseBehaviour) {
+    private boolean fallback(RoutingContext routingContext, ResponseBehaviour responseBehaviour) {
         LOGGER.warn("No example match found and no response file set for mock response for URI {} with status code {}" +
                 " - sending empty response", routingContext.request().absoluteURI(), responseBehaviour.getStatusCode());
 
         routingContext.response().end();
+        return true;
     }
 }

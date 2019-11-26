@@ -142,7 +142,7 @@ public class PluginManager {
     /**
      * Registers plugin providers and discovers dependencies from configuration.
      *
-     * @param imposterConfig application configuration
+     * @param imposterConfig the Imposter engine configuration
      * @param plugins        configured plugins
      * @param pluginConfigs  plugin configurations
      * @return list of dependencies

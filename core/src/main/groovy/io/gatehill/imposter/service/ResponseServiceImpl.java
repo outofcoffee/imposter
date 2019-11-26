@@ -33,6 +33,7 @@ import java.util.Objects;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Collections.emptyMap;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -115,9 +116,15 @@ public class ResponseServiceImpl implements ResponseService {
     }
 
     @Override
-    public void sendEmptyResponse(RoutingContext routingContext) {
-        LOGGER.info("Response file and data are blank - returning empty response");
-        routingContext.response().end();
+    public boolean sendEmptyResponse(RoutingContext routingContext, ResponseBehaviour responseBehaviour) {
+        try {
+            LOGGER.info("Response file and data are blank - returning empty response");
+            routingContext.response().end();
+            return true;
+        } catch (Exception e) {
+            LOGGER.warn("Error sending empty response", e);
+            return false;
+        }
     }
 
     @Override
@@ -133,7 +140,7 @@ public class ResponseServiceImpl implements ResponseService {
                              ContentTypedConfig resourceConfig,
                              RoutingContext routingContext,
                              ResponseBehaviour responseBehaviour,
-                             ResponseSender missingResponseSender) {
+                             ResponseSender... fallbackSenders) {
 
         LOGGER.trace("Sending mock response for URI {} with status code {}",
                 routingContext.request().absoluteURI(),
@@ -150,7 +157,7 @@ public class ResponseServiceImpl implements ResponseService {
             } else if (!Strings.isNullOrEmpty(responseBehaviour.getResponseData())) {
                 serveResponseData(resourceConfig, routingContext, responseBehaviour);
             } else {
-                missingResponseSender.send(routingContext);
+                fallback(routingContext, responseBehaviour, fallbackSenders);
             }
 
         } catch (Exception e) {
@@ -231,6 +238,24 @@ public class ResponseServiceImpl implements ResponseService {
             default:
                 throw new RuntimeException("Unable to determine script engine from script file name: " + scriptFile);
         }
+    }
+
+    private void fallback(RoutingContext routingContext,
+                          ResponseBehaviour responseBehaviour,
+                          ResponseSender[] missingResponseSenders) {
+
+        if (nonNull(missingResponseSenders)) {
+            for (ResponseSender sender : missingResponseSenders) {
+                try {
+                    if (sender.send(routingContext, responseBehaviour)) {
+                        return;
+                    }
+                } catch (Exception e) {
+                    LOGGER.warn("Error invoking response sender", e);
+                }
+            }
+        }
+        throw new ResponseException("All attempts to send a response failed");
     }
 
     private String determineScriptName(String scriptFile) {
