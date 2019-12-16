@@ -5,6 +5,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT_DIR="$( cd "${SCRIPT_DIR}/../" && pwd )"
 DOCKER_LOGIN_ARGS=""
 IMAGE_REPOSITORY="outofcoffee/"
+ARCH="${ARCH-x86}"
 IMAGE_DIRS=(
     "base"
     "hbase"
@@ -39,9 +40,14 @@ function buildImage()
     else
         BUILD_ARGS=""
     fi
-
-    echo -e "\nBuilding Docker image: ${IMAGE_NAME}"
-    docker build --file ${IMAGE_PATH}/Dockerfile ${BUILD_ARGS} --tag ${FULL_IMAGE_NAME} .
+    
+    DOCKERFILE="Dockerfile"
+    if [[ "base" == "${IMAGE_NAME}" ]] && [[ "x86" != "${ARCH}" ]]; then
+        DOCKERFILE="${DOCKERFILE}.${ARCH}" 
+    fi
+    
+    echo -e "\nBuilding Docker image: ${IMAGE_NAME} for arch: ${ARCH}"
+    docker build --file ${IMAGE_PATH}/${DOCKERFILE} ${BUILD_ARGS} --tag ${FULL_IMAGE_NAME} .
 }
 
 function pushImage()
