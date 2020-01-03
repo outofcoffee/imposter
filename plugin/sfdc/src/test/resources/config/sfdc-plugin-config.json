@@ -1,5 +1,5 @@
 {
-  "plugin": "com.gatehill.imposter.plugin.sfdc.SfdcPluginImpl",
+  "plugin": "sfdc",
   "response": {
     "staticFile": "sfdc-plugin-data.json"
   },

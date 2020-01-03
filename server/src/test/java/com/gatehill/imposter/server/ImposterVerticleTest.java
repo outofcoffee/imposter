@@ -51,7 +51,7 @@ public class ImposterVerticleTest extends BaseVerticleTest {
     }
 
     @Test
-    public void testPluginLoadAndConfig(TestContext testContext) throws Exception {
+    public void testPluginLoadAndConfig(TestContext testContext) {
         final PluginManager pluginManager = InjectorUtil.getInjector().getInstance(PluginManager.class);
 
         final TestPluginImpl plugin = pluginManager.getPlugin(TestPluginImpl.class.getCanonicalName());

@@ -1,4 +1,5 @@
 apply plugin: 'java'
+apply plugin: 'maven-publish'
 
 compileJava {
     sourceCompatibility = 1.8
@@ -12,10 +13,38 @@ task copyStaticUi(type: Copy) {
 tasks.processResources.dependsOn copyStaticUi
 
 dependencies {
-    compile project(':core')
-    compile 'io.swagger:swagger-parser:1.0.32'
+    compile project(':imposter-core')
+    compile "io.swagger.parser.v3:swagger-parser:$version_swaggerParser"
 
     // test
-    testCompile project(':test')
+    testCompile project(':imposter-test')
     testCompile "com.jayway.restassured:rest-assured:$version_restAssured"
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    archiveClassifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives sourcesJar
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+
+            repositories {
+                maven {
+                    url = version.endsWith('SNAPSHOT') ? mavenSnapshotRepository : mavenReleaseRepository
+                    credentials(AwsCredentials) {
+                        accessKey awsAccessKey
+                        secretKey awsSecretKey
+                    }
+                }
+            }
+        }
+    }
 }

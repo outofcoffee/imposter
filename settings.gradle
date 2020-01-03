@@ -1,3 +1,48 @@
 rootProject.name = 'imposter'
 
-include ':core', ':server', ':distro', ':test', ':plugin:detector', ':plugin:rest', ':plugin:openapi', ':plugin:hbase', ':plugin:sfdc'
+include ':api'
+project(':api').name = 'imposter-api'
+
+include ':core'
+project(':core').name = 'imposter-core'
+
+include ':server'
+project(':server').name = 'imposter-server'
+
+include ':test'
+project(':test').name = 'imposter-test'
+
+// plugins
+include ':plugin:detector'
+project(':plugin:detector').name = 'plugin-detector'
+
+include ':plugin:rest'
+project(':plugin:rest').name = 'plugin-rest'
+
+include ':plugin:openapi'
+project(':plugin:openapi').name = 'plugin-openapi'
+
+include ':plugin:hbase'
+project(':plugin:hbase').name = 'plugin-hbase'
+
+include ':plugin:sfdc'
+project(':plugin:sfdc').name = 'plugin-sfdc'
+
+// distributions
+include ':distro:all'
+project(':distro:all').name = 'distro-all'
+
+include ':distro:base'
+project(':distro:base').name = 'distro-base'
+
+include ':distro:hbase'
+project(':distro:hbase').name = 'distro-hbase'
+
+include ':distro:openapi'
+project(':distro:openapi').name = 'distro-openapi'
+
+include ':distro:rest'
+project(':distro:rest').name = 'distro-rest'
+
+include ':distro:sfdc'
+project(':distro:sfdc').name = 'distro-sfdc'

@@ -4,9 +4,7 @@ Welcome to the Imposter documentation.
 
 ## Introduction
 
-Imposter is a reliable, scriptable and extensible mock server for general REST APIs,
-[OpenAPI](https://github.com/OAI/OpenAPI-Specification) (aka Swagger) specifications,
-Salesforce and HBase APIs.
+Imposter is a reliable, scriptable and extensible mock server for general REST APIs, [OpenAPI](https://github.com/OAI/OpenAPI-Specification) (aka Swagger) specifications, Salesforce and HBase APIs.
 
 ## What's it for?
 

@@ -4,8 +4,7 @@ This section provides more ideas on how to use Imposter as part of your project.
 
 ## Waiting for the server to be ready
 
-The mock server exposes an endpoint at `/system/status` that will return HTTP 200 when the mock server is up and running.
-You can use this in your tests to know when the mock server is ready.
+The mock server exposes an endpoint at `/system/status` that will return HTTP 200 when the mock server is up and running. You can use this in your tests to know when the mock server is ready.
 
 ## Script logging
 
@@ -21,14 +20,11 @@ Here's a simple overview:
 2. Add your mock configuration and mock data to `/opt/imposter/config` within the Docker image.
 3. Build an image from your _Dockerfile_.
 
-Now, when you start a container from your image, your standalone mock container will start, load your configuration and
-mock data, and listen for connections.
+Now, when you start a container from your image, your standalone mock container will start, load your configuration and mock data, and listen for connections.
 
 ## JUnit integration
 
-You can make use of Imposter mocks in your [JUnit](http://junit.org) tests using the excellent
-[testcontainers](http://testcontainers.org) library. This will enable your mocks to start/stop before/after your
-tests run.
+You can make use of Imposter mocks in your [JUnit](http://junit.org) tests using the excellent [testcontainers](http://testcontainers.org) library. This will enable your mocks to start/stop before/after your tests run.
 
 Here's a simple overview:
 
@@ -38,5 +34,4 @@ Here's a simple overview:
 4. Configure your `GenericContainer` to mount the directory containing your configuration and data (e.g. `src/test/resources`) to `/opt/imposter/config`.
 5. Configure your `GenericContainer` to wait for the `/system/status` HTTP endpoint to be accessible so your tests don't start before the mock is ready.
 
-Now, when you run your test, your custom mock container will start, load your configuration and mock data, ready
-for your test methods to use it!
+Now, when you run your test, your custom mock container will start, load your configuration and mock data, ready for your test methods to use it!

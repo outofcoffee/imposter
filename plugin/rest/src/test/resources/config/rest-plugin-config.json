@@ -1,5 +1,5 @@
 {
-  "plugin": "com.gatehill.imposter.plugin.rest.RestPluginImpl",
+  "plugin": "rest",
   "path": "/example",
   "resources": [
     {

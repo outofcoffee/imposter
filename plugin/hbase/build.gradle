@@ -1,11 +1,12 @@
-apply plugin: 'java'
+apply plugin: 'groovy'
+apply plugin: 'maven-publish'
 
 compileJava {
     sourceCompatibility = 1.8
 }
 
 dependencies {
-    compile project(':core')
+    compile project(':imposter-core')
 
     // hbase
     compile("org.apache.hbase:hbase-client:$version_hbaseApi") {
@@ -16,5 +17,33 @@ dependencies {
     }
 
     // test
-    testCompile project(':test')
+    testCompile project(':imposter-test')
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    archiveClassifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives sourcesJar
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+
+            repositories {
+                maven {
+                    url = version.endsWith('SNAPSHOT') ? mavenSnapshotRepository : mavenReleaseRepository
+                    credentials(AwsCredentials) {
+                        accessKey awsAccessKey
+                        secretKey awsSecretKey
+                    }
+                }
+            }
+        }
+    }
 }

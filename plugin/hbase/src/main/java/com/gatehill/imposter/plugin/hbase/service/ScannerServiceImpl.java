@@ -1,6 +1,6 @@
 package com.gatehill.imposter.plugin.hbase.service;
 
-import com.gatehill.imposter.plugin.hbase.HBasePluginConfig;
+import com.gatehill.imposter.plugin.hbase.config.HBasePluginConfig;
 import com.gatehill.imposter.plugin.hbase.model.InMemoryScanner;
 import com.gatehill.imposter.plugin.hbase.model.MockScanner;
 import com.google.common.cache.Cache;

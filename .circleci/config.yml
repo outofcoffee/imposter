@@ -19,6 +19,10 @@ jobs:
           name: Run gradle build
           command: ./gradlew test shadowJar --info --stacktrace
 
+      - run:
+          name: Publish maven artifacts
+          command: ./gradlew publish --info --stacktrace
+
       - save_cache:
           key: gradle-cache
           paths:
@@ -27,8 +31,7 @@ jobs:
       - save_cache:
           key: artifacts-{{ .Environment.CIRCLE_SHA1 }}
           paths:
-            - distro/build/libs
-            - docker
+            - distro
             - scripts
 
   deploy:
@@ -39,18 +42,16 @@ jobs:
           keys:
             - artifacts-{{ .Environment.CIRCLE_SHA1 }}
 
-      - setup_remote_docker:
-          docker_layer_caching: true
+      - setup_remote_docker
 
       - run:
           name: Build and push Docker image
           command: |
-            cd ./scripts
-            chmod +x *.sh
+            chmod +x ./scripts/*.sh
 
-            IMAGE_TAG_NAME="$( ./branch-to-tag-name.sh ${CIRCLE_BRANCH} )"
+            IMAGE_TAG_NAME="$( ./scripts/branch-to-tag-name.sh ${CIRCLE_BRANCH} )"
             if [[ ! -z ${IMAGE_TAG_NAME} ]]; then
-              ./docker-build.sh "${IMAGE_TAG_NAME}"
+              ./scripts/docker-build.sh "${IMAGE_TAG_NAME}"
             fi
 
 workflows:

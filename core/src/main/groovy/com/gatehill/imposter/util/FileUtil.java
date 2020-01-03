@@ -8,13 +8,13 @@ import java.util.Optional;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public final class FileUtil {
     public static final String CLASSPATH_PREFIX = "classpath:";
-    public static final String CONFIG_FILE_SUFFIX = "-config.json";
 
     private FileUtil() {
     }
@@ -34,7 +34,7 @@ public final class FileUtil {
 
         for (int i = 0; i < rows.size(); i++) {
             final JsonObject row = rows.getJsonObject(i);
-            if (row.getString(idFieldName).equalsIgnoreCase(rowId)) {
+            if (ofNullable(row.getValue(idFieldName).toString()).orElse("").equalsIgnoreCase(rowId)) {
                 return of(row);
             }
         }

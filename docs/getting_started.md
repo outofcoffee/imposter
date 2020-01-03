@@ -1,12 +1,12 @@
 # Getting started
 
-Note: See the [Usage](docs/usage.md) section for the required arguments, and the examples below.
+Note: See the [Usage](usage.md) section for the required arguments, and the examples below.
 
 ## Running as a Docker container
 
 The easiest way to get started is to use an Imposter Docker container, such as:
 
-    docker run -ti -p 8443:8443 outofcoffee/imposter-rest [args]
+    docker run -ti -p 8080:8080 outofcoffee/imposter-rest [args]
 
 ### Docker images
 
@@ -27,7 +27,7 @@ You can use the base image to create your own custom images.
 
 If you want to run Imposter using Docker, use:
 
-    docker run -ti -p 8443:8443 \
+    docker run -ti -p 8080:8080 \
         -v /path/to/config:/opt/imposter/config \
         outofcoffee/imposter-rest [args]
 
@@ -40,15 +40,15 @@ See the [Build](build.md) section.
 
 Once, built, you can run the JAR as follows:
 
-    java -jar distro/build/libs/imposter.jar \
-        --plugin <plugin class> \
+    java -jar distro/all/build/libs/imposter-all.jar \
+        --plugin <plugin name> \
         --configDir <config dir> \
         [args]
 
 ...ensuring that you choose the right plugin class for the plugin you want to use, for example:
 
-    java -jar distro/build/libs/imposter.jar \
-        --plugin com.gatehill.imposter.plugin.rest.RestPluginImpl \
+    java -jar distro/all/build/libs/imposter-all.jar \
+        --plugin rest \
         --configDir /path/to/config \
         [args]
 

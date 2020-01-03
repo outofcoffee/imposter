@@ -1,6 +1,7 @@
 package com.gatehill.imposter.service
 
-import com.gatehill.imposter.plugin.config.ResourceConfig
+import com.gatehill.imposter.plugin.config.PluginConfig
+import com.gatehill.imposter.plugin.config.resource.ResourceConfig
 import com.gatehill.imposter.script.InternalResponseBehavior
 import com.gatehill.imposter.script.MutableResponseBehaviour
 import com.gatehill.imposter.script.impl.RunnableResponseBehaviourImpl
@@ -18,15 +19,15 @@ import java.nio.file.Paths
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public class NashhornScriptServiceImpl implements ScriptService {
+class NashhornScriptServiceImpl implements ScriptService {
     private static final Logger LOGGER = LogManager.getLogger(NashhornScriptServiceImpl.class);
 
     @Inject
     private ScriptEngineManager scriptEngineManager;
 
     @Override
-    public InternalResponseBehavior executeScript(ResourceConfig config, Map<String, Object> bindings) {
-        final Path scriptFile = Paths.get(config.getParentDir().getAbsolutePath(), config.getResponseConfig().getScriptFile());
+    InternalResponseBehavior executeScript(PluginConfig pluginConfig, ResourceConfig resourceConfig, Map<String, Object> bindings) {
+        final Path scriptFile = Paths.get(pluginConfig.getParentDir().getAbsolutePath(), resourceConfig.getResponseConfig().getScriptFile());
         LOGGER.trace("Executing script file: {}", scriptFile);
 
         final ScriptEngine scriptEngine = scriptEngineManager.getEngineByName("nashorn");

@@ -1,10 +1,30 @@
+import com.amazonaws.auth.profile.ProfileCredentialsProvider
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.amazonaws:aws-java-sdk-core:1.11.656'
+    }
+}
+
+ext {
+    try {
+        awsCredentials = new ProfileCredentialsProvider().credentials
+    } catch(ignored) {
+        awsCredentials = null
+    }
+}
+
 subprojects {
-    group 'com.gatehill'
-    version '0.6.0'
+    group 'com.gatehill.imposter'
+    version '1.1.1'
 
     buildscript {
-        ext.version_shadow = '2.0.1'
-
+        ext {
+            version_shadow = '5.1.0'
+        }
         repositories {
             mavenCentral()
             maven {
@@ -21,6 +41,12 @@ subprojects {
     }
 
     ext {
+        mavenSnapshotRepository = 's3://gatehillsoftware-maven/snapshots'
+        mavenReleaseRepository = 's3://gatehillsoftware-maven/releases'
+
+        awsAccessKey = awsCredentials?.AWSAccessKeyId ?: System.getenv('AWS_ACCESS_KEY_ID') ?: project.findProperty('AWS_ACCESS_KEY_ID')
+        awsSecretKey = awsCredentials?.AWSSecretKey ?: System.getenv('AWS_SECRET_ACCESS_KEY') ?: project.findProperty('AWS_SECRET_ACCESS_KEY')
+
         version_vertx = '3.4.2'
         version_log4j = '2.9.1'
         version_guice = '4.1.0'
@@ -29,9 +55,11 @@ subprojects {
         version_restAssured = '2.9.0'
         version_groovy = '2.4.12'
         version_args4j = '2.33'
+        version_jackson = '2.9.9'
+        version_swaggerParser = '2.0.13'
     }
 }
 
 wrapper {
-    gradleVersion = '4.2.1'
+    gradleVersion = '5.6.3'
 }

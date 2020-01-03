@@ -4,14 +4,14 @@ Reliable, scriptable and extensible mock server for general REST APIs,
 [OpenAPI](https://github.com/OAI/OpenAPI-Specification) (aka Swagger) specifications,
 Salesforce and HBase APIs.
 
-Scripting support for both [JavaScript](https://www.javascript.com/) or [Groovy/Java](http://www.groovy-lang.org/).
+Scripting support for both JavaScript or [Groovy/Java](http://www.groovy-lang.org/).
 
 ## What's it for?
 
 Use Imposter to:
 
 * run standalone mocks in place of real systems
-* turn a Swagger file into a mock API for testing or QA
+* turn a OpenAPI/Swagger file into a mock API for testing or QA
 * quickly set up a temporary API for your mobile/web client teams whilst the real API is being built
 * decouple your integration tests from the cloud/various back-end systems and take control of your dependencies
 
@@ -19,7 +19,7 @@ Provide mock responses using static files or customise behaviour using JavaScrip
 
 # Getting started
 
-The quickest way to get up and running is to use our free cloud-hosted version at [https://www.remotebot.io/mocks](https://www.remotebot.io/mocks)
+The quickest way to get up and running is to use our free cloud-hosted version at [https://www.remotemock.io](https://www.remotemock.io)
 
 *****
 # Documentation
@@ -30,7 +30,6 @@ The quickest way to get up and running is to use our free cloud-hosted version a
 # Plugins
 
 Imposter uses plugins to control its behaviour and provide specialised mocks:
-
 
 * **[REST](docs/rest_plugin.md)** - Mocks RESTful or plain HTTP APIs.
 * **[OpenAPI (aka Swagger)](docs/openapi_plugin.md)** - Support for [OpenAPI](https://github.com/OAI/OpenAPI-Specification) (aka Swagger) API specifications.
@@ -45,14 +44,13 @@ Let's assume your [configuration](docs/configuration.md) is in a folder named `c
 
 Docker example:
 
-    docker run -ti -p 8443:8443 \
+    docker run -ti -p 8080:8080 \
         -v $(pwd)/config:/opt/imposter/config \
         outofcoffee/imposter-rest
 
 Standalone Java example:
 
-    java -jar distro/build/libs/imposter.jar \
-        --plugin com.gatehill.imposter.plugin.rest.RestPluginImpl \
+    java -jar distro/rest/build/libs/imposter-rest.jar \
         --configDir ./config
 
 Your mock server is now running!
@@ -60,7 +58,7 @@ Your mock server is now running!
 This example starts a mock server using the simple
 [REST plugin](docs/rest_plugin.md), serving responses based on the configuration files
 inside the `config` folder. You can hit the URL
-[http://localhost:8443/example](http://localhost:8443/example) to see the mock response.
+[http://localhost:8080/example](http://localhost:8080/example) to see the mock response.
 
 # Recent changes and Roadmap
   

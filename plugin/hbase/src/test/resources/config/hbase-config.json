@@ -1,5 +1,5 @@
 {
-  "plugin": "com.gatehill.imposter.plugin.hbase.HBasePluginImpl",
+  "plugin": "hbase",
   "tableName": "exampleTable",
   "prefix": "examplePrefix",
   "idField": "abc:id",
