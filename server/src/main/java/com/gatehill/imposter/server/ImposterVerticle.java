@@ -57,7 +57,6 @@ public class ImposterVerticle extends AbstractVerticle {
     @Override
     public void start(Future<Void> startFuture) {
         LOGGER.debug("Initialising mock server");
-        final Router router = configureRoutes();
 
         FileWatcher fw = new FileWatcher();
         Thread t = new Thread(fw);
