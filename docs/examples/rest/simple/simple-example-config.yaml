@@ -1,0 +1,5 @@
+---
+plugin: rest
+path: "/example"
+response:
+  staticFile: example-data.json

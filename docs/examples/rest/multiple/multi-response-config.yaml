@@ -1,0 +1,12 @@
+---
+plugin: rest
+contentType: application/json
+resources:
+  - path: "/cats/:id"
+    type: array
+    response:
+      staticFile: cats.json
+  - path: "/dogs/:id"
+    type: array
+    response:
+      staticFile: dogs.json

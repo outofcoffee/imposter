@@ -1,0 +1,4 @@
+{
+  "plugin": "openapi",
+  "specFile": "openapi3-with-examples.yaml"
+}
