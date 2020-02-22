@@ -1,0 +1,4 @@
+{
+  "plugin": "openapi",
+  "specFile": "slash-base-path-with-host.yaml"
+}

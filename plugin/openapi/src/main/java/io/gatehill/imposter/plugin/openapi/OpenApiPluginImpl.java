@@ -130,13 +130,37 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
      */
     private void handlePathOperations(Router router, OpenApiPluginConfig config, OpenAPI swagger, String path, PathItem pathConfig) {
         pathConfig.readOperationsMap().forEach((httpMethod, operation) -> {
-            final String fullPath = buildBasePath(config, swagger) + convertPath(path);
+            final String fullPath = buildFullPath(buildBasePath(config, swagger), path);
             LOGGER.debug("Adding mock endpoint: {} -> {}", httpMethod, fullPath);
 
             // convert an io.swagger.models.HttpMethod to an io.vertx.core.http.HttpMethod
             final HttpMethod method = HttpMethod.valueOf(httpMethod.name());
             router.route(method, fullPath).handler(buildHandler(config, operation, swagger));
         });
+    }
+
+    /**
+     * Construct the full path from the base path and the operation path.
+     *
+     * @param basePath          the base path
+     * @param specOperationPath the operation path from the OpenAPI specification
+     * @return the full path
+     */
+    private String buildFullPath(String basePath, String specOperationPath) {
+        final String operationPath = convertPath(specOperationPath);
+        if (basePath.endsWith("/")) {
+            if (operationPath.startsWith("/")) {
+                return basePath + operationPath.substring(1);
+            } else {
+                return basePath + operationPath;
+            }
+        } else {
+            if (operationPath.startsWith("/")) {
+                return basePath + operationPath;
+            } else {
+                return basePath + "/" + operationPath;
+            }
+        }
     }
 
     /**

@@ -164,14 +164,13 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
         testContext.assertEquals("Imposter Mock APIs", combined.getInfo().getTitle());
 
         // should contain combination of all specs' endpoints
-        testContext.assertEquals(7, combined.getPaths().size());
+        testContext.assertEquals(6, combined.getPaths().size());
 
         // OASv2
         testContext.assertTrue(combined.getPaths().containsKey("/apis"));
         testContext.assertTrue(combined.getPaths().containsKey("/v2"));
         testContext.assertTrue(combined.getPaths().containsKey("/pets"));
         testContext.assertTrue(combined.getPaths().containsKey("/pets/{id}"));
-        testContext.assertTrue(combined.getPaths().containsKey("/team"));
 
         // OASv3
         testContext.assertTrue(combined.getPaths().containsKey("/oas3/apis"));
@@ -205,14 +204,6 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
             final String trimmed = responseBody.trim();
             testContext.assertTrue(trimmed.startsWith("{"));
             testContext.assertTrue(trimmed.contains("CURRENT"));
-            testContext.assertTrue(trimmed.endsWith("}"));
-        });
-
-        // object example
-        queryEndpoint("/objects/team", responseBody -> {
-            final String trimmed = responseBody.trim();
-            testContext.assertTrue(trimmed.startsWith("{"));
-            testContext.assertTrue(trimmed.contains("Engineering"));
             testContext.assertTrue(trimmed.endsWith("}"));
         });
     }
