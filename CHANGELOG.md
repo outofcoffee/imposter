@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [1.1.2] - 2020-02-22
 ### Added
 - (openapi) Adds experimental model example generator. Enable with `--pluginArg openapi.alpha.modelexamples=true`
 - (openapi) Improves base path handling to remove double slashes at the start of full paths.

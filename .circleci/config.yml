@@ -15,6 +15,16 @@ jobs:
           name: Fetch dependencies
           command: ./gradlew dependencies --refresh-dependencies
 
+      - setup_remote_docker
+
+      - run:
+          name: Release if required
+          command: |
+            chmod +x ./scripts/*.sh
+            if [[ "${CIRCLE_BRANCH}" == "master" ]]; then
+              ./scripts/release-trigger.sh
+            fi
+
       - run:
           name: Run gradle build
           command: ./gradlew test shadowJar --info --stacktrace
@@ -48,7 +58,6 @@ jobs:
           name: Build and push Docker image
           command: |
             chmod +x ./scripts/*.sh
-
             IMAGE_TAG_NAME="$( ./scripts/branch-to-tag-name.sh ${CIRCLE_BRANCH} )"
             if [[ ! -z ${IMAGE_TAG_NAME} ]]; then
               ./scripts/docker-build.sh "${IMAGE_TAG_NAME}"
