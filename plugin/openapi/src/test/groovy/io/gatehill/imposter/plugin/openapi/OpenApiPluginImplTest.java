@@ -1,5 +1,6 @@
 package io.gatehill.imposter.plugin.openapi;
 
+import com.google.common.collect.Lists;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.http.ContentType;
 import io.gatehill.imposter.plugin.Plugin;
@@ -17,6 +18,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.function.Consumer;
 
 import static com.jayway.restassured.RestAssured.given;
@@ -37,6 +39,14 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
     public void setUp(TestContext testContext) throws Exception {
         super.setUp(testContext);
         RestAssured.baseURI = "http://" + HOST + ":" + getListenPort();
+    }
+
+    @Override
+    protected List<String> getTestConfigDirs() {
+        return Lists.newArrayList(
+             "/openapi2/simple",
+             "/openapi3/simple"
+        );
     }
 
     private void assertBody(TestContext testContext, String body) {

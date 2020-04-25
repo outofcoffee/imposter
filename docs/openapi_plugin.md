@@ -30,7 +30,7 @@ A great way to use this plugin is to take advantage of the built in `examples` f
 * matching content type in `Accept` HTTP request header to the `produces` property of the response
 * matching status code to the response
 
-Typically you will use a simple script (see `plugin/openapi/src/test/resources/config` for working example) to control the status code, and thus the content of the response.
+Typically you will use a simple script (see `plugin/openapi/src/test/resources/openapi2/simple` for working example) to control the status code, and thus the content of the response.
 
 You can also use the interactive API sandbox at `/_spec`; e.g. [http://localhost:8080/_spec](http://localhost:8080/_spec), which looks like this:
 
@@ -148,11 +148,11 @@ Once you're finished, stop the server with CTRL+C.
 > For more working examples, see:
 >
 > * docs/examples/openapi
-> * plugin/openapi/src/test/resources/config
+> * plugin/openapi/src/test/resources/openapi2/simple
 
 ## Object response examples
 
-Imposter has basic support for response examples defined as objects, for example an API specification like [object-examples.yaml](../plugin/openapi/src/test/resources/config/object-examples.yaml).
+Imposter has basic support for response examples defined as objects, for example an API specification like [object-examples.yaml](../plugin/openapi/src/test/resources/openapi2/object-examples.yaml).
 
 The salient part of the response is as follows:
 

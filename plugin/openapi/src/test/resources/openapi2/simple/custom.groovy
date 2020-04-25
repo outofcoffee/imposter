@@ -1,3 +1,5 @@
+package openapi2.simple
+
 import io.vertx.core.http.HttpHeaders
 
 // Example of returning a specific status code, to control which

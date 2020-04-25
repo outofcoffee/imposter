@@ -1,8 +1,8 @@
 package io.gatehill.imposter.plugin.openapi;
 
+import com.google.common.collect.Lists;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.http.ContentType;
-import io.gatehill.imposter.ImposterConfig;
 import io.gatehill.imposter.plugin.Plugin;
 import io.gatehill.imposter.server.BaseVerticleTest;
 import io.gatehill.imposter.util.HttpUtil;
@@ -10,7 +10,7 @@ import io.vertx.ext.unit.TestContext;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.nio.file.Paths;
+import java.util.List;
 
 import static com.jayway.restassured.RestAssured.given;
 
@@ -32,9 +32,10 @@ public class ComplexPathParamsTest extends BaseVerticleTest {
     }
 
     @Override
-    protected void configure(ImposterConfig imposterConfig) throws Exception {
-        super.configure(imposterConfig);
-        imposterConfig.setConfigDirs(new String[]{Paths.get(getClass().getResource("/complex-path-params").toURI()).toString()});
+    protected List<String> getTestConfigDirs() {
+        return Lists.newArrayList(
+                "/openapi2/complex-path-params"
+        );
     }
 
     /**

@@ -1,5 +1,6 @@
 package io.gatehill.imposter.plugin.openapi
 
+import com.google.common.collect.Lists
 import com.jayway.restassured.RestAssured
 import com.jayway.restassured.http.ContentType
 import io.gatehill.imposter.ImposterConfig
@@ -10,8 +11,6 @@ import io.vertx.core.json.JsonArray
 import io.vertx.ext.unit.TestContext
 import org.junit.Before
 import org.junit.Test
-
-import java.nio.file.Paths
 
 import static com.jayway.restassured.RestAssured.given
 
@@ -35,8 +34,14 @@ class ModelExamplesTest extends BaseVerticleTest {
     @Override
     protected void configure(ImposterConfig imposterConfig) throws Exception {
         super.configure(imposterConfig)
-        imposterConfig.configDirs = [Paths.get(getClass().getResource('/model-examples').toURI()).toString()]
         imposterConfig.setPluginArgs([(OpenApiPluginImpl.ARG_MODEL_EXAMPLES): 'true'])
+    }
+
+    @Override
+    protected List<String> getTestConfigDirs() {
+        Lists.newArrayList(
+                '/openapi2/model-examples'
+        )
     }
 
     @Test

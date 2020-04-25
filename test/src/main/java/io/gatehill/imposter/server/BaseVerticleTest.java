@@ -1,5 +1,6 @@
 package io.gatehill.imposter.server;
 
+import com.google.common.collect.Lists;
 import io.gatehill.imposter.ImposterConfig;
 import io.gatehill.imposter.plugin.Plugin;
 import io.gatehill.imposter.server.util.ConfigUtil;
@@ -13,7 +14,9 @@ import org.junit.runner.RunWith;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.util.List;
 
 import static io.gatehill.imposter.util.HttpUtil.DEFAULT_SERVER_FACTORY;
 import static java.util.Collections.emptyMap;
@@ -49,9 +52,25 @@ public abstract class BaseVerticleTest {
         imposterConfig.setServerFactory(DEFAULT_SERVER_FACTORY);
         imposterConfig.setHost(HOST);
         imposterConfig.setListenPort(findFreePort());
-        imposterConfig.setConfigDirs(new String[]{Paths.get(getClass().getResource("/config").toURI()).toString()});
         imposterConfig.setPlugins(new String[]{getPluginClass().getCanonicalName()});
         imposterConfig.setPluginArgs(emptyMap());
+
+        imposterConfig.setConfigDirs(getTestConfigDirs().stream().map(dir -> {
+            try {
+                return Paths.get(getClass().getResource(dir).toURI()).toString();
+            } catch (URISyntaxException e) {
+                throw new RuntimeException("Error parsing directory: " + dir, e);
+            }
+        }).toArray(String[]::new));
+    }
+
+    /**
+     * @return the relative path under the test resources directory, starting with a slash, e.g "/my-config"
+     */
+    protected List<String> getTestConfigDirs() {
+        return Lists.newArrayList(
+                "/config"
+        );
     }
 
     private int findFreePort() throws IOException {
