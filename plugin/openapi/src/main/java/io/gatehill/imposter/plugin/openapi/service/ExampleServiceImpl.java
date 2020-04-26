@@ -40,7 +40,7 @@ public class ExampleServiceImpl implements ExampleService {
     private static final String REF_PREFIX_RESPONSES = "#/components/responses/";
 
     @Inject
-    private ModelService modelService;
+    private SchemaService schemaService;
 
     /**
      * {@inheritDoc}
@@ -103,7 +103,7 @@ public class ExampleServiceImpl implements ExampleService {
             final String schemaName = response.get$ref().substring(REF_PREFIX_RESPONSES.length());
             return spec.getComponents().getResponses().get(schemaName);
         } else {
-            throw new IllegalStateException("Unsupported $ref: " + response.get$ref());
+            throw new IllegalStateException("Unsupported response $ref: " + response.get$ref());
         }
     }
 
@@ -155,7 +155,7 @@ public class ExampleServiceImpl implements ExampleService {
     }
 
     private boolean serveFromSchema(RoutingContext routingContext, OpenAPI spec, Map.Entry<String, Object> schema) {
-        final Object dynamicExamples = modelService.collectExample(spec, (Schema) schema.getValue());
+        final Object dynamicExamples = schemaService.collectExample(spec, (Schema) schema.getValue());
         try {
             final String jsonString = JSON_MAPPER.writeValueAsString(dynamicExamples);
 

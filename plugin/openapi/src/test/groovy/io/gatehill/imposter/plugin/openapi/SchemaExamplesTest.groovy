@@ -14,11 +14,11 @@ import org.junit.Test
 import static com.jayway.restassured.RestAssured.given
 
 /**
- * Tests for model examples.
+ * Tests for schema examples.
  *
  * @author benjvoigt
  */
-class ModelExamplesTest extends BaseVerticleTest {
+class SchemaExamplesTest extends BaseVerticleTest {
     @Override
     protected Class<? extends Plugin> getPluginClass() {
         return OpenApiPluginImpl.class
@@ -38,7 +38,7 @@ class ModelExamplesTest extends BaseVerticleTest {
     }
 
     @Test
-    void testServeModelExamples(TestContext testContext) {
+    void testServeSchemaExamples(TestContext testContext) {
         final String body = given()
                 .log().ifValidationFails()
                 .accept(ContentType.JSON) // JSON content type in 'Accept' header matches specification example
