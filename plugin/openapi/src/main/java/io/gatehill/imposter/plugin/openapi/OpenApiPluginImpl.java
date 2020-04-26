@@ -36,7 +36,6 @@ import org.apache.logging.log4j.Logger;
 import javax.inject.Inject;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -61,7 +60,6 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
     private static final String ARG_BASEPATH = "openapi.basepath";
     private static final String ARG_SCHEME = "openapi.scheme";
     private static final String ARG_TITLE = "openapi.title";
-    public static final String ARG_MODEL_EXAMPLES = "openapi.alpha.modelexamples";
     static final String SPECIFICATION_PATH = "/_spec";
     static final String COMBINED_SPECIFICATION_PATH = SPECIFICATION_PATH + "/combined.json";
 
@@ -250,17 +248,12 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
      */
     private Handler<RoutingContext> buildHandler(OpenApiPluginConfig config, Operation operation, OpenAPI spec) {
         return AsyncUtil.handleRoute(imposterConfig, vertx, routingContext -> {
-            final HashMap<String, Object> context = newHashMap();
+            final Map<String, Object> context = newHashMap();
             context.put("operation", operation);
 
             scriptHandler(config, routingContext, getInjector(), context, responseBehaviour -> {
                 final String statusCode = String.valueOf(responseBehaviour.getStatusCode());
-
-                // look for a specification response based on the status code
-                final Optional<ApiResponse> optionalMockResponse = operation.getResponses().entrySet().parallelStream()
-                        .filter(mockResponse -> mockResponse.getKey().equals(statusCode))
-                        .map(Map.Entry::getValue)
-                        .findAny();
+                final Optional<ApiResponse> optionalMockResponse = findApiResponse(operation, statusCode);
 
                 // set status code regardless of response strategy
                 final HttpServerResponse response = routingContext.response()
@@ -283,6 +276,22 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
                 }
             });
         });
+    }
+
+    private Optional<ApiResponse> findApiResponse(Operation operation, String statusCode) {
+        // look for a specification response based on the status code
+        final Optional<ApiResponse> optionalMockResponse = operation.getResponses().entrySet().parallelStream()
+                .filter(mockResponse -> mockResponse.getKey().equals(statusCode))
+                .map(Map.Entry::getValue)
+                .findAny();
+
+        if (optionalMockResponse.isPresent()) {
+            return optionalMockResponse;
+        } else {
+            // fall back to default
+            LOGGER.debug("No response found for status code {}; falling back to default response if present", statusCode);
+            return ofNullable(operation.getResponses().getDefault());
+        }
     }
 
     /**

@@ -3,7 +3,6 @@ package io.gatehill.imposter.plugin.openapi
 import com.google.common.collect.Lists
 import com.jayway.restassured.RestAssured
 import com.jayway.restassured.http.ContentType
-import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.server.BaseVerticleTest
 import io.gatehill.imposter.util.HttpUtil
@@ -29,12 +28,6 @@ class ModelExamplesTest extends BaseVerticleTest {
     void setUp(TestContext testContext) throws Exception {
         super.setUp(testContext)
         RestAssured.baseURI = "http://$HOST:$listenPort"
-    }
-
-    @Override
-    protected void configure(ImposterConfig imposterConfig) throws Exception {
-        super.configure(imposterConfig)
-        imposterConfig.setPluginArgs([(OpenApiPluginImpl.ARG_MODEL_EXAMPLES): 'true'])
     }
 
     @Override

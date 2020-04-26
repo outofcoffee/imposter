@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static java.util.Objects.nonNull;
+
 /**
  * Collects examples from model definitions.
  *
@@ -31,13 +33,33 @@ public class ModelServiceImpl implements ModelService {
     }
 
     private Object collectExampleInternal(OpenAPI spec, Schema schema) {
+        // $ref takes precedence, per spec:
+        //   "Any sibling elements of a $ref are ignored. This is because
+        //   $ref works by replacing itself and everything on its level
+        //   with the definition it is pointing at."
+        // See: https://swagger.io/docs/specification/using-ref/
+        final Schema schemaToExamine;
+        if (nonNull(schema.get$ref())) {
+            schemaToExamine = lookupSchemaRef(spec, schema);
+        } else {
+            schemaToExamine = schema;
+        }
+        return collectSchemaExample(spec, schemaToExamine);
+    }
+
+    private Object collectSchemaExample(OpenAPI spec, Schema schema) {
         final Object example;
 
-        if (null != schema.getExample()) {
-            example = schema.getExample();
+        // $ref takes precedence, per spec:
+        //   "Any sibling elements of a $ref are ignored. This is because
+        //   $ref works by replacing itself and everything on its level
+        //   with the definition it is pointing at."
+        // See: https://swagger.io/docs/specification/using-ref/
+        if (nonNull(schema.get$ref())) {
+            example = lookupSchemaRefModel(spec, schema);
 
-        } else if (null != schema.get$ref()) {
-            example = lookupSchemaRef(spec, schema);
+        } else if (nonNull(schema.getExample())) {
+            example = schema.getExample();
 
         } else if (ObjectSchema.class.isAssignableFrom(schema.getClass())) {
             final ObjectSchema objectSchema = (ObjectSchema) schema;
@@ -56,25 +78,34 @@ public class ModelServiceImpl implements ModelService {
         return example;
     }
 
-    private Map<String, Object> lookupSchemaRef(OpenAPI spec, Schema schema) {
+    private Schema lookupSchemaRef(OpenAPI spec, Schema schema) {
         if (schema.get$ref().startsWith(REF_PREFIX_SCHEMAS)) {
             final String schemaName = schema.get$ref().substring(REF_PREFIX_SCHEMAS.length());
-            final Schema model = spec.getComponents().getSchemas().get(schemaName);
-            return collectModel(spec, model);
+            return spec.getComponents().getSchemas().get(schemaName);
         } else {
             throw new IllegalStateException("Unsupported $ref: " + schema.get$ref());
         }
+    }
+
+    private Map<String, Object> lookupSchemaRefModel(OpenAPI spec, Schema schema) {
+        final Schema model = lookupSchemaRef(spec, schema);
+        return collectModel(spec, model);
     }
 
     @SuppressWarnings("unchecked")
     private Map<String, Object> collectModel(OpenAPI spec, Schema model) {
         final Map<String, Object> map = new HashMap<>();
 
-        if (null != model.getProperties()) {
-            return collectProperties(spec, model.getProperties());
+        // $ref takes precedence, per spec:
+        //   "Any sibling elements of a $ref are ignored. This is because
+        //   $ref works by replacing itself and everything on its level
+        //   with the definition it is pointing at."
+        // See: https://swagger.io/docs/specification/using-ref/
+        if (null != model.get$ref()) {
+            return lookupSchemaRefModel(spec, model);
 
-        } else if (null != model.get$ref()) {
-            return lookupSchemaRef(spec, model);
+        } else if (null != model.getProperties()) {
+            return collectProperties(spec, model.getProperties());
 
         } else if (ComposedSchema.class.isAssignableFrom(model.getClass())) {
             final ComposedSchema composedSchema = (ComposedSchema) model;

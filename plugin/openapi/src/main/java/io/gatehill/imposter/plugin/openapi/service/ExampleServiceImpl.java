@@ -3,7 +3,6 @@ package io.gatehill.imposter.plugin.openapi.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Sets;
 import io.gatehill.imposter.ImposterConfig;
-import io.gatehill.imposter.plugin.openapi.OpenApiPluginImpl;
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig;
 import io.gatehill.imposter.script.ResponseBehaviour;
 import io.gatehill.imposter.util.HttpUtil;
@@ -30,6 +29,7 @@ import static io.gatehill.imposter.util.HttpUtil.CONTENT_TYPE_JSON;
 import static io.gatehill.imposter.util.MapUtil.JSON_MAPPER;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -37,6 +37,7 @@ import static java.util.Optional.ofNullable;
  */
 public class ExampleServiceImpl implements ExampleService {
     private static final Logger LOGGER = LogManager.getLogger(ExampleServiceImpl.class);
+    private static final String REF_PREFIX_RESPONSES = "#/components/responses/";
 
     @Inject
     private ModelService modelService;
@@ -45,23 +46,25 @@ public class ExampleServiceImpl implements ExampleService {
      * {@inheritDoc}
      */
     @Override
-    public boolean serveExample(ImposterConfig imposterConfig, OpenApiPluginConfig config,
-                                RoutingContext routingContext,
-                                ResponseBehaviour responseBehaviour,
-                                ApiResponse mockResponse,
-                                OpenAPI spec) {
+    public boolean serveExample(
+            ImposterConfig imposterConfig,
+            OpenApiPluginConfig config,
+            RoutingContext routingContext,
+            ResponseBehaviour responseBehaviour,
+            ApiResponse mockResponse,
+            OpenAPI spec
+    ) {
+        final Optional<Content> optionalContent = findContent(spec, mockResponse);
+        if (optionalContent.isPresent()) {
+            final Content responseContent = optionalContent.get();
 
-        final Content responseContent = mockResponse.getContent();
-        if (nonNull(responseContent)) {
-            final Optional<Map.Entry<String, Object>> example = seekExample(config, routingContext, responseContent);
-            if (example.isPresent()) {
-                serveExample(routingContext, example.get());
-                return true;
-            }
+            final Optional<Map.Entry<String, Object>> inlineExample = findInlineExample(config, routingContext, responseContent);
+            if (inlineExample.isPresent()) {
+                serveExample(routingContext, inlineExample.get());
 
-            if (Boolean.parseBoolean(imposterConfig.getPluginArgs().get(OpenApiPluginImpl.ARG_MODEL_EXAMPLES))) {
-                LOGGER.warn("Using experimental model example generator");
-                final Optional<Map.Entry<String, Object>> schema = seekSchema(config, routingContext, responseContent);
+            } else {
+                LOGGER.debug("No inline examples found; checking schema");
+                final Optional<Map.Entry<String, Object>> schema = findSchemaExample(config, routingContext, responseContent);
                 if (schema.isPresent()) {
                     if (serveFromSchema(routingContext, spec, schema.get())) {
                         return true;
@@ -77,17 +80,46 @@ public class ExampleServiceImpl implements ExampleService {
         return false;
     }
 
-    private Optional<Map.Entry<String, Object>> seekExample(OpenApiPluginConfig config,
-                                                            RoutingContext routingContext,
-                                                            Content responseContent) {
+    private Optional<Content> findContent(OpenAPI spec, ApiResponse response) {
+        // $ref takes precedence, per spec:
+        //   "Any sibling elements of a $ref are ignored. This is because
+        //   $ref works by replacing itself and everything on its level
+        //   with the definition it is pointing at."
+        // See: https://swagger.io/docs/specification/using-ref/
+        if (nonNull(response.get$ref())) {
+            LOGGER.trace("Using response from component reference: {}", response.get$ref());
+            final ApiResponse resolvedResponse = lookupResponseRef(spec, response);
+            return ofNullable(resolvedResponse.getContent());
+        } else if (nonNull(response.getContent())) {
+            LOGGER.trace("Using inline response");
+            return of(response.getContent());
+        } else {
+            return empty();
+        }
+    }
 
+    private ApiResponse lookupResponseRef(OpenAPI spec, ApiResponse response) {
+        if (response.get$ref().startsWith(REF_PREFIX_RESPONSES)) {
+            final String schemaName = response.get$ref().substring(REF_PREFIX_RESPONSES.length());
+            return spec.getComponents().getResponses().get(schemaName);
+        } else {
+            throw new IllegalStateException("Unsupported $ref: " + response.get$ref());
+        }
+    }
+
+    private Optional<Map.Entry<String, Object>> findInlineExample(
+            OpenApiPluginConfig config,
+            RoutingContext routingContext,
+            Content responseContent
+    ) {
         final Map<String, Object> examples = newHashMap();
 
         // fetch all examples
         responseContent.forEach((mimeTypeName, mediaType) -> {
+            // Example field takes precedence, per spec:
+            //  "The example field is mutually exclusive of the examples field."
+            // See: https://github.com/OAI/OpenAPI-Specification/blob/3.0.1/versions/3.0.1.md#mediaTypeObject
             if (nonNull(mediaType.getExample())) {
-                // "The example field is mutually exclusive of the examples field."
-                // https://github.com/OAI/OpenAPI-Specification/blob/3.0.1/versions/3.0.1.md#mediaTypeObject
                 examples.put(mimeTypeName, mediaType.getExample());
             } else if (nonNull(mediaType.getExamples())) {
                 mediaType.getExamples().forEach((exampleName, example) -> {
@@ -108,7 +140,11 @@ public class ExampleServiceImpl implements ExampleService {
         return example;
     }
 
-    private Optional<Map.Entry<String, Object>> seekSchema(OpenApiPluginConfig config, RoutingContext routingContext, Content responseContent) {
+    private Optional<Map.Entry<String, Object>> findSchemaExample(
+            OpenApiPluginConfig config,
+            RoutingContext routingContext,
+            Content responseContent
+    ) {
         final Map<String, Object> schemas = newHashMap();
         responseContent.forEach((mimeTypeName, mediaType) -> {
             if (nonNull(mediaType.getSchema())) {
@@ -142,10 +178,11 @@ public class ExampleServiceImpl implements ExampleService {
      * @param config         the plugin configuration
      * @param examples       the specification response examples, keyed by content type
      */
-    private Optional<Map.Entry<String, Object>> matchByContentType(RoutingContext routingContext,
-                                                                   OpenApiPluginConfig config,
-                                                                   Map<String, Object> examples) {
-
+    private Optional<Map.Entry<String, Object>> matchByContentType(
+            RoutingContext routingContext,
+            OpenApiPluginConfig config,
+            Map<String, Object> examples
+    ) {
         // the produced content types
         final Set<String> produces = Sets.newHashSet();
         produces.addAll(examples.keySet());
@@ -165,7 +202,7 @@ public class ExampleServiceImpl implements ExampleService {
                 final Map.Entry<String, Object> example = firstMatchingExample.get();
                 LOGGER.debug("Exact example match found ({}) from specification", example.getKey());
 
-                return Optional.of(example);
+                return of(example);
             }
         }
 
@@ -175,7 +212,7 @@ public class ExampleServiceImpl implements ExampleService {
             LOGGER.debug("No exact example match found - choosing one example ({}) from specification." +
                     " You can switch off this behaviour by setting configuration option: pickFirstIfNoneMatch=false", example.getKey());
 
-            return Optional.of(example);
+            return of(example);
         }
 
         // no matching example
