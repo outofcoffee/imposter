@@ -1,5 +1,7 @@
 package io.gatehill.imposter.plugin.openapi.service;
 
+import io.gatehill.imposter.plugin.openapi.model.ContentTypedHolder;
+import io.gatehill.imposter.plugin.openapi.util.RefUtil;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.ComposedSchema;
@@ -24,16 +26,15 @@ import static java.util.Objects.nonNull;
  */
 public class SchemaServiceImpl implements SchemaService {
     private static final Logger LOGGER = LogManager.getLogger(SchemaServiceImpl.class);
-    private static final String REF_PREFIX_SCHEMAS = "#/components/schemas/";
 
     @Override
-    public Object collectExample(OpenAPI spec, Schema schema) {
-        final Object example = collectSchemaExample(spec, schema);
+    public ContentTypedHolder<?> collectExamples(OpenAPI spec, ContentTypedHolder<Schema<?>> schema) {
+        final Object example = collectSchemaExample(spec, schema.getValue());
         LOGGER.debug("Collected example from schema: {}", example);
-        return example;
+        return new ContentTypedHolder<>(schema.getContentType(), example);
     }
 
-    private Object collectSchemaExample(OpenAPI spec, Schema schema) {
+    private Object collectSchemaExample(OpenAPI spec, Schema<?> schema) {
         final Object example;
 
         // $ref takes precedence, per spec:
@@ -42,7 +43,7 @@ public class SchemaServiceImpl implements SchemaService {
         //   with the definition it is pointing at."
         // See: https://swagger.io/docs/specification/using-ref/
         if (nonNull(schema.get$ref())) {
-            final Schema referent = lookupSchemaRef(spec, schema);
+            final Schema<?> referent = RefUtil.lookupSchemaRef(spec, schema);
             example = collectSchemaExample(spec, referent);
 
         } else if (nonNull(schema.getExample())) {
@@ -66,15 +67,6 @@ public class SchemaServiceImpl implements SchemaService {
         }
 
         return example;
-    }
-
-    private Schema lookupSchemaRef(OpenAPI spec, Schema referringSchema) {
-        if (referringSchema.get$ref().startsWith(REF_PREFIX_SCHEMAS)) {
-            final String schemaName = referringSchema.get$ref().substring(REF_PREFIX_SCHEMAS.length());
-            return spec.getComponents().getSchemas().get(schemaName);
-        } else {
-            throw new IllegalStateException("Unsupported schema $ref: " + referringSchema.get$ref());
-        }
     }
 
     private List<Object> buildFromArraySchema(OpenAPI spec, ArraySchema schema) {

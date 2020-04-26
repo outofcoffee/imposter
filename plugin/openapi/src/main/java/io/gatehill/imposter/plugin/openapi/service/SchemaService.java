@@ -1,5 +1,6 @@
 package io.gatehill.imposter.plugin.openapi.service;
 
+import io.gatehill.imposter.plugin.openapi.model.ContentTypedHolder;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.Schema;
 
@@ -9,5 +10,5 @@ import io.swagger.v3.oas.models.media.Schema;
  * @author benjvoigt
  */
 public interface SchemaService {
-    Object collectExample(OpenAPI spec, Schema schema);
+    ContentTypedHolder<?> collectExamples(OpenAPI spec, ContentTypedHolder<Schema<?>> schema);
 }
