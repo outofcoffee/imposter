@@ -24,6 +24,9 @@ paths:
             application/json:
               id: 10
               name: Engineering
+            application/x-yaml:
+              id: 20
+              name: Product
 
 definitions:
   Team:

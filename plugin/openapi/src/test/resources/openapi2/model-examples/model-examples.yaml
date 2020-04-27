@@ -10,6 +10,7 @@ consumes:
   - application/json
 produces:
   - application/json
+  - application/x-yaml
 paths:
   /pets:
     get:

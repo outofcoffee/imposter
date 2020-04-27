@@ -10,7 +10,6 @@ import io.gatehill.imposter.util.HttpUtil;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Before;
 import org.junit.Test;
-import org.yaml.snakeyaml.Yaml;
 
 import java.util.List;
 import java.util.Map;
@@ -18,13 +17,11 @@ import java.util.Map;
 import static com.jayway.restassured.RestAssured.given;
 
 /**
- * Tests for OpenAPI definitions with object examples.
+ * Tests for OpenAPI definitions with reference responses.
  *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public class ObjectExamplesTest extends BaseVerticleTest {
-    private static final Yaml YAML_PARSER = new Yaml();
-
+public class ReferenceResponseTest extends BaseVerticleTest {
     @Override
     protected Class<? extends Plugin> getPluginClass() {
         return OpenApiPluginImpl.class;
@@ -39,46 +36,31 @@ public class ObjectExamplesTest extends BaseVerticleTest {
     @Override
     protected List<String> getTestConfigDirs() {
         return Lists.newArrayList(
-                "/openapi2/object-examples"
+                "/openapi3/reference-response"
         );
     }
 
     /**
-     * Should return object example formatted as JSON.
+     * Should return example from reference response.
+     *
+     * @param testContext
      */
     @Test
-    public void testObjectExampleAsJson(TestContext testContext) {
+    public void testReferenceObjectExample(TestContext testContext) {
         final JsonPath body = given()
                 .log().ifValidationFails()
                 .accept(ContentType.JSON)
                 .when()
-                .get("/objects/team")
+                .get("/v1/pets")
                 .then()
                 .log().ifValidationFails()
                 .statusCode(HttpUtil.HTTP_OK)
                 .extract().jsonPath();
 
-        testContext.assertEquals(10, body.get("id"));
-        testContext.assertEquals("Engineering", body.get("name"));
-    }
-
-    /**
-     * Should return object example formatted as YAML.
-     */
-    @Test
-    public void testObjectExampleAsYaml(TestContext testContext) {
-        final String rawBody = given()
-                .log().ifValidationFails()
-                .accept("application/x-yaml")
-                .when()
-                .get("/objects/team")
-                .then()
-                .log().ifValidationFails()
-                .statusCode(HttpUtil.HTTP_OK)
-                .extract().asString();
-
-        final Map<String, ?> yamlBody = YAML_PARSER.load(rawBody);
-        testContext.assertEquals(20, yamlBody.get("id"));
-        testContext.assertEquals("Product", yamlBody.get("name"));
+        final List<Object> pets = body.getList("");
+        testContext.assertEquals(2, pets.size());
+        final Map<Object, Object> firstPet = body.getMap("[0]");
+        testContext.assertEquals(101, firstPet.get("id"));
+        testContext.assertEquals("Cat", firstPet.get("name"));
     }
 }

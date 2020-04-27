@@ -3,7 +3,6 @@ package io.gatehill.imposter.plugin.openapi
 import com.google.common.collect.Lists
 import com.jayway.restassured.RestAssured
 import com.jayway.restassured.http.ContentType
-import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.server.BaseVerticleTest
 import io.gatehill.imposter.util.HttpUtil
@@ -11,15 +10,18 @@ import io.vertx.core.json.JsonArray
 import io.vertx.ext.unit.TestContext
 import org.junit.Before
 import org.junit.Test
+import org.yaml.snakeyaml.Yaml
 
 import static com.jayway.restassured.RestAssured.given
 
 /**
- * Tests for model examples.
+ * Tests for schema examples.
  *
  * @author benjvoigt
  */
-class ModelExamplesTest extends BaseVerticleTest {
+class SchemaExamplesTest extends BaseVerticleTest {
+    private static final Yaml YAML_PARSER = new Yaml();
+
     @Override
     protected Class<? extends Plugin> getPluginClass() {
         return OpenApiPluginImpl.class
@@ -32,12 +34,6 @@ class ModelExamplesTest extends BaseVerticleTest {
     }
 
     @Override
-    protected void configure(ImposterConfig imposterConfig) throws Exception {
-        super.configure(imposterConfig)
-        imposterConfig.setPluginArgs([(OpenApiPluginImpl.ARG_MODEL_EXAMPLES): 'true'])
-    }
-
-    @Override
     protected List<String> getTestConfigDirs() {
         Lists.newArrayList(
                 '/openapi2/model-examples'
@@ -45,7 +41,7 @@ class ModelExamplesTest extends BaseVerticleTest {
     }
 
     @Test
-    void testServeModelExamples(TestContext testContext) {
+    void testServeSchemaExamplesAsJson(TestContext testContext) {
         final String body = given()
                 .log().ifValidationFails()
                 .accept(ContentType.JSON) // JSON content type in 'Accept' header matches specification example
@@ -72,5 +68,31 @@ class ModelExamplesTest extends BaseVerticleTest {
         """)
 
         testContext.assertEquals(expected, actual)
+    }
+
+    @Test
+    void testServeSchemaExamplesAsYaml(TestContext testContext) {
+        final String rawBody = given()
+                .log().ifValidationFails()
+                .accept("application/x-yaml") // YAML content type in 'Accept' header matches specification example
+                .when()
+                .get('/api/pets')
+                .then()
+                .log().ifValidationFails()
+                .statusCode(HttpUtil.HTTP_OK)
+                .extract().asString()
+
+        final List<Map<String, ?>> yamlBody = YAML_PARSER.load(rawBody);
+        testContext.assertEquals(1, yamlBody.size());
+
+        final first = yamlBody.first()
+        testContext.assertEquals("", first.get("name"));
+        testContext.assertEquals(0, first.get("id"));
+        testContext.assertEquals("Collie", first.get("breed"));
+
+        final misc = first.get("misc") as Map<String, ?>
+        testContext.assertNotNull(misc, "misc property should not be null");
+        testContext.assertEquals(false, misc.get("nocturnal"));
+        testContext.assertEquals(47435, misc.get("population"));
     }
 }
