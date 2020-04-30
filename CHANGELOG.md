@@ -3,13 +3,16 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [1.2.0] - 2020-04-30
 ### Added
-- ...
+- (openapi) Adds support for response refs.
+- (openapi) Enables schema model ref lookup by default.
+- (openapi) Improves array example serialisation.
+- (openapi) Improves test coverage for object and schema examples, including YAML serialisations.
 
 ## [1.1.2] - 2020-02-22
 ### Added
-- (openapi) Adds experimental model example generator. Enable with `--pluginArg openapi.alpha.modelexamples=true`
+- (openapi) Adds experimental model example generator.
 - (openapi) Improves base path handling to remove double slashes at the start of full paths.
 
 ## [1.1.1] - 2019-11-25
