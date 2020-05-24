@@ -5,7 +5,8 @@ import groovy.lang.GroovyCodeSource;
 import groovy.lang.GroovyShell;
 import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig;
-import io.gatehill.imposter.script.InternalResponseBehavior;
+import io.gatehill.imposter.script.ScriptedResponseBehavior;
+import io.gatehill.imposter.script.RuntimeContext;
 import io.gatehill.imposter.script.impl.GroovyResponseBehaviourImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,7 +14,6 @@ import org.codehaus.groovy.control.CompilerConfiguration;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Map;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
@@ -22,14 +22,14 @@ public class GroovyScriptServiceImpl implements ScriptService {
     private static final Logger LOGGER = LogManager.getLogger(GroovyScriptServiceImpl.class);
 
     @Override
-    public InternalResponseBehavior executeScript(PluginConfig pluginConfig, ResourceConfig resourceConfig, Map<String, Object> bindings) {
+    public ScriptedResponseBehavior executeScript(PluginConfig pluginConfig, ResourceConfig resourceConfig, RuntimeContext runtimeContext) {
         final Path scriptFile = Paths.get(pluginConfig.getParentDir().getAbsolutePath(), resourceConfig.getResponseConfig().getScriptFile());
         LOGGER.trace("Executing script file: {}", scriptFile);
 
         // the script class will be a subclass of AbstractResponseBehaviour
         final CompilerConfiguration compilerConfig = new CompilerConfiguration();
         compilerConfig.setScriptBaseClass(GroovyResponseBehaviourImpl.class.getCanonicalName());
-        final GroovyShell groovyShell = new GroovyShell(convertBindings(bindings), compilerConfig);
+        final GroovyShell groovyShell = new GroovyShell(convertBindings(runtimeContext), compilerConfig);
 
         try {
             final GroovyResponseBehaviourImpl script = (GroovyResponseBehaviourImpl) groovyShell.parse(
@@ -43,9 +43,9 @@ public class GroovyScriptServiceImpl implements ScriptService {
         }
     }
 
-    private static Binding convertBindings(Map<String, Object> bindings) {
+    private static Binding convertBindings(RuntimeContext runtimeContext) {
         final Binding binding = new Binding();
-        bindings.forEach(binding::setVariable);
+        runtimeContext.asMap().forEach(binding::setVariable);
         return binding;
     }
 }

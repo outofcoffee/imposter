@@ -4,7 +4,6 @@ import io.vertx.ext.web.RoutingContext
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 
-import static java.util.Collections.unmodifiableMap
 import static java.util.Optional.ofNullable
 
 /**
@@ -16,26 +15,20 @@ class ScriptUtil {
     private static final Logger LOGGER = LogManager.getLogger(ScriptUtil)
 
     /**
-     * Build the {@code context} {@link Map}, containing lazily-evaluated values.
+     * Build the {@code context}, containing lazily-evaluated values.
      *
      * @param routingContext
      * @param additionalContext
      * @return the context
      */
-    static Map<String, Object> buildContext(RoutingContext routingContext, Map<String, Object> additionalContext) {
-        def lazyParams = { key ->
-            if ("params" == key) {
-                routingContext.request().params().entries().collectEntries { entry -> [entry.key, entry.value] }
-            } else {
-                null
-            }
+    static ExecutionContext buildContext(RoutingContext routingContext, Map<String, Object> additionalContext) {
+        def lazyParams = {
+            routingContext.request().params().entries().collectEntries { entry -> [entry.key, entry.value] }
         }
 
         def deprecatedParams = {
-            if ("params" == it) {
-                LOGGER.warn("Deprecation notice: 'context.params' is deprecated and will be removed " +
-                        "in a future version. Use 'context.request.params' instead.")
-            }
+            LOGGER.warn("Deprecation notice: 'context.params' is deprecated and will be removed " +
+                    "in a future version. Use 'context.request.params' instead.")
             lazyParams(it)
         }
 
@@ -46,21 +39,26 @@ class ScriptUtil {
         }
 
         // root context
+        def executionContext = new ExecutionContext()
+
         // NOTE: params and uri present for legacy script support
-        final Map<String, Object> context = [:].withDefault deprecatedParams
-        context.put "uri", "${-> deprecatedUri()}"
+        executionContext.metaClass.getParams = deprecatedParams
+        executionContext.metaClass.uri = "${-> deprecatedUri()}"
 
         // request information
-        final Map<String, Object> request = [:].withDefault lazyParams
-        request.put "method", "${-> routingContext.request().method().name()}"
-        request.put "uri", "${-> routingContext.request().absoluteURI()}"
-        request.put "body", "${-> routingContext.getBodyAsString()}"
-        request.put "headers", routingContext.request().headers()
-        context.put "request", unmodifiableMap(request)
+        def request = new ExecutionContext.Request()
+        request.method = "${-> routingContext.request().method().name()}"
+        request.uri = "${-> routingContext.request().absoluteURI()}"
+        request.body = "${-> routingContext.getBodyAsString()}"
+        request.headers = routingContext.request().headers()
+        request.metaClass.getParams = lazyParams
+        executionContext.request = request
 
         // additional context
-        ofNullable(additionalContext).ifPresent({ additional -> context.putAll(additional) })
+        ofNullable(additionalContext).ifPresent({ additional ->
+            additional.each { executionContext.metaClass[it.key] = it.value }
+        })
 
-        return unmodifiableMap(context)
+        return executionContext
     }
 }

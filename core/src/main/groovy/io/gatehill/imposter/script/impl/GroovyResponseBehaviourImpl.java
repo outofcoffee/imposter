@@ -1,7 +1,7 @@
 package io.gatehill.imposter.script.impl;
 
 import groovy.lang.Script;
-import io.gatehill.imposter.script.InternalResponseBehavior;
+import io.gatehill.imposter.script.ScriptedResponseBehavior;
 import io.gatehill.imposter.script.MutableResponseBehaviour;
 import io.gatehill.imposter.script.ResponseBehaviourType;
 
@@ -10,8 +10,8 @@ import java.util.Map;
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public abstract class GroovyResponseBehaviourImpl extends Script implements InternalResponseBehavior {
-    private final InternalResponseBehavior delegate = new InternalResponseBehaviorImpl();
+public abstract class GroovyResponseBehaviourImpl extends Script implements ScriptedResponseBehavior {
+    private final ScriptedResponseBehavior delegate = new ScriptedResponseBehaviorImpl();
 
     @Override
     public Map<String, String> getResponseHeaders() {

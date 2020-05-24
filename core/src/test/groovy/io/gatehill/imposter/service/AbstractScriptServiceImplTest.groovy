@@ -5,6 +5,7 @@ import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.PluginConfigImpl
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig
 import io.gatehill.imposter.script.ResponseBehaviourType
+import io.gatehill.imposter.script.RuntimeContext
 import org.junit.Before
 import org.junit.Test
 
@@ -44,10 +45,11 @@ abstract class AbstractScriptServiceImplTest {
         def pluginConfig = config as PluginConfig
         def resourceConfig = config as ResourceConfig
 
-        def bindings = [
+        def additionalBindings = [
                 'hello': 'world'
         ]
-        def actual = service.executeScript(pluginConfig, resourceConfig, bindings)
+        def runtimeContext = new RuntimeContext(null, null, additionalBindings, null)
+        def actual = service.executeScript(pluginConfig, resourceConfig, runtimeContext)
 
         assertNotNull actual
         assertEquals 201, actual.statusCode
@@ -64,10 +66,11 @@ abstract class AbstractScriptServiceImplTest {
         def pluginConfig = config as PluginConfig
         def resourceConfig = config as ResourceConfig
 
-        def bindings = [
+        def additionalBindings = [
                 'hello': 'should not match'
         ]
-        def actual = service.executeScript(pluginConfig, resourceConfig, bindings)
+        def runtimeContext = new RuntimeContext(null, null, additionalBindings, null)
+        def actual = service.executeScript(pluginConfig, resourceConfig, runtimeContext)
 
         assertNotNull actual
         assertEquals 200, actual.statusCode

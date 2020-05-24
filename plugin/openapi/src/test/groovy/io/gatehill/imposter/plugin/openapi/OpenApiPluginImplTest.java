@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import static com.jayway.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.equalTo;
 
 /**
  * Tests for {@link OpenApiPluginImpl}.
@@ -44,8 +43,8 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
     @Override
     protected List<String> getTestConfigDirs() {
         return Lists.newArrayList(
-             "/openapi2/simple",
-             "/openapi3/simple"
+                "/openapi2/simple",
+                "/openapi3/simple"
         );
     }
 
@@ -82,24 +81,6 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
                 .extract().asString();
 
         assertBody(testContext, body);
-    }
-
-    /**
-     * Should return the example from the specification when the script triggers an HTTP 201 Created status code.
-     */
-    @Test
-    public void testServeScriptedExample() {
-        given()
-                .log().ifValidationFails()
-                // JSON content type in 'Accept' header matches specification example
-                .accept(ContentType.JSON)
-                .when()
-                .put("/simple/apis")
-                .then()
-                .log().ifValidationFails()
-                .statusCode(HttpUtil.HTTP_CREATED)
-                .body("result", equalTo("success"))
-                .header("MyHeader", "MyHeaderValue");
     }
 
     /**
@@ -230,17 +211,5 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
                 .extract().asString();
 
         bodyConsumer.accept(body);
-    }
-
-    @Test
-    public void testRequestWithHeaders() {
-        given()
-                .log().ifValidationFails()
-                .accept(ContentType.TEXT)
-                .when()
-                .header("Authorization", "AUTH_HEADER")
-                .get("/simple/apis")
-                .then()
-                .statusCode(equalTo(HttpUtil.HTTP_NO_CONTENT));
     }
 }

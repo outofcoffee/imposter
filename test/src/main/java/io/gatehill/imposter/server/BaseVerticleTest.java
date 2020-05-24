@@ -58,7 +58,7 @@ public abstract class BaseVerticleTest {
         imposterConfig.setConfigDirs(getTestConfigDirs().stream().map(dir -> {
             try {
                 return Paths.get(getClass().getResource(dir).toURI()).toString();
-            } catch (URISyntaxException e) {
+            } catch (Exception e) {
                 throw new RuntimeException("Error parsing directory: " + dir, e);
             }
         }).toArray(String[]::new));

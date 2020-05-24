@@ -1,6 +1,6 @@
 package io.gatehill.imposter.script.impl;
 
-import io.gatehill.imposter.script.InternalResponseBehavior;
+import io.gatehill.imposter.script.ScriptedResponseBehavior;
 import io.gatehill.imposter.script.MutableResponseBehaviour;
 import io.gatehill.imposter.script.ResponseBehaviourType;
 import io.gatehill.imposter.util.HttpUtil;
@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public class InternalResponseBehaviorImpl implements InternalResponseBehavior {
+public class ScriptedResponseBehaviorImpl implements ScriptedResponseBehavior {
     private ResponseBehaviourType behaviourType = ResponseBehaviourType.DEFAULT_BEHAVIOUR;
     private int statusCode = HttpUtil.HTTP_OK;
     private String responseFile;

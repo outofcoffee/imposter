@@ -1,18 +1,19 @@
 package io.gatehill.imposter.service;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.Maps;
 import com.google.common.io.CharStreams;
 import io.gatehill.imposter.exception.ResponseException;
 import io.gatehill.imposter.plugin.config.ContentTypedConfig;
 import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfig;
-import io.gatehill.imposter.script.InternalResponseBehavior;
+import io.gatehill.imposter.script.ExecutionContext;
+import io.gatehill.imposter.script.ScriptedResponseBehavior;
 import io.gatehill.imposter.script.ResponseBehaviour;
 import io.gatehill.imposter.script.ResponseBehaviourType;
+import io.gatehill.imposter.script.RuntimeContext;
 import io.gatehill.imposter.script.ScriptUtil;
-import io.gatehill.imposter.script.impl.InternalResponseBehaviorImpl;
+import io.gatehill.imposter.script.impl.ScriptedResponseBehaviorImpl;
 import io.gatehill.imposter.util.HttpUtil;
 import io.gatehill.imposter.util.annotation.GroovyImpl;
 import io.gatehill.imposter.util.annotation.JavascriptImpl;
@@ -66,7 +67,7 @@ public class ResponseServiceImpl implements ResponseService {
             // default behaviour is to use a static response file
             LOGGER.debug("Using default response behaviour for request: {}", routingContext.request().absoluteURI());
 
-            final InternalResponseBehaviorImpl responseBehaviour = new InternalResponseBehaviorImpl();
+            final ScriptedResponseBehaviorImpl responseBehaviour = new ScriptedResponseBehaviorImpl();
             responseBehaviour
                     .withStatusCode(statusCode)
                     .withFile(responseConfig.getStaticFile())
@@ -83,20 +84,19 @@ public class ResponseServiceImpl implements ResponseService {
             LOGGER.debug("Executing script '{}' for request: {}",
                     responseConfig.getScriptFile(), routingContext.request().absoluteURI());
 
-            final Map<String, Object> context = ScriptUtil.buildContext(routingContext, additionalContext);
-            LOGGER.trace("Context for request: {}", () -> context);
+            final ExecutionContext executionContext = ScriptUtil.buildContext(routingContext, additionalContext);
+            LOGGER.trace("Context for request: {}", () -> executionContext);
 
-            final Map<String, Object> bindings = Maps.newHashMap();
-            bindings.put("logger", LogManager.getLogger(determineScriptName(responseConfig.getScriptFile())));
-            bindings.put("config", pluginConfig);
-            bindings.put("context", context);
-
-            // add custom bindings
-            ofNullable(additionalBindings).ifPresent(bindings::putAll);
+            final RuntimeContext runtimeContext = new RuntimeContext(
+                    LogManager.getLogger(determineScriptName(responseConfig.getScriptFile())),
+                    pluginConfig,
+                    additionalBindings,
+                    executionContext
+            );
 
             // execute the script and read response behaviour
-            final InternalResponseBehavior responseBehaviour =
-                    fetchScriptService(config.getResponseConfig().getScriptFile()).executeScript(pluginConfig, config, bindings);
+            final ScriptedResponseBehavior responseBehaviour =
+                    fetchScriptService(config.getResponseConfig().getScriptFile()).executeScript(pluginConfig, config, runtimeContext);
 
             // use defaults if not set
             if (ResponseBehaviourType.DEFAULT_BEHAVIOUR.equals(responseBehaviour.getBehaviourType())) {
