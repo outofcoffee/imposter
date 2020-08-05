@@ -48,6 +48,14 @@ definitions:
       breed:
         type: string
         example: Collie
+      bornAt:
+        type: string
+        format: date-time
+        example: "2015-02-01T08:00:00Z"
+      lastVetVisitAt:
+        type: string
+        format: date
+        example: "2020-03-15"
       misc:
         type: object
         properties:

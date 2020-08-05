@@ -56,7 +56,7 @@ subprojects {
         version_groovy = '2.4.12'
         version_args4j = '2.33'
         version_jackson = '2.9.9'
-        version_swaggerParser = '2.0.13'
+        version_swaggerParser = '2.0.21'
     }
 }
 

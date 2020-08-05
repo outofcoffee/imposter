@@ -3,17 +3,14 @@ package io.gatehill.imposter.plugin.openapi.service;
 import io.gatehill.imposter.plugin.openapi.model.ContentTypedHolder;
 import io.gatehill.imposter.plugin.openapi.util.RefUtil;
 import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.media.ArraySchema;
-import io.swagger.v3.oas.models.media.ComposedSchema;
-import io.swagger.v3.oas.models.media.ObjectSchema;
-import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.nonNull;
@@ -26,6 +23,7 @@ import static java.util.Objects.nonNull;
  */
 public class SchemaServiceImpl implements SchemaService {
     private static final Logger LOGGER = LogManager.getLogger(SchemaServiceImpl.class);
+    private static final SimpleDateFormat ISO_FULL_DATE = new SimpleDateFormat("yyyy-MM-dd");
 
     @Override
     public ContentTypedHolder<?> collectExamples(OpenAPI spec, ContentTypedHolder<Schema<?>> schema) {
@@ -47,7 +45,13 @@ public class SchemaServiceImpl implements SchemaService {
             example = collectSchemaExample(spec, referent);
 
         } else if (nonNull(schema.getExample())) {
-            example = schema.getExample();
+            if (schema instanceof DateTimeSchema) {
+                example = ((OffsetDateTime) schema.getExample()).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+            } else if (schema instanceof DateSchema) {
+                example = ISO_FULL_DATE.format(((Date) schema.getExample()));
+            } else {
+                example = schema.getExample();
+            }
 
         } else if (nonNull(schema.getProperties())) {
             example = buildFromProperties(spec, schema.getProperties());
