@@ -1,5 +1,8 @@
 package io.gatehill.imposter.service
 
+import io.gatehill.imposter.scripting.AbstractScriptServiceImplTest
+import io.gatehill.imposter.scripting.groovy.service.GroovyScriptServiceImpl
+
 import javax.inject.Inject
 
 /**

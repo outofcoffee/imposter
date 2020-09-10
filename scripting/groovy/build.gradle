@@ -1,4 +1,4 @@
-apply plugin: 'java'
+apply plugin: 'groovy'
 apply plugin: 'maven-publish'
 
 compileJava {
@@ -7,18 +7,6 @@ compileJava {
 
 dependencies {
     compile project(':imposter-core')
-
-    // scripting
-    compile project (':scripting:scripting-groovy')
-    compile project (':scripting:scripting-nashorn')
-
-    // logging
-    compile "org.apache.logging.log4j:log4j-core:$version_log4j"
-    compile "org.apache.logging.log4j:log4j-jcl:$version_log4j"
-    compile "org.apache.logging.log4j:log4j-slf4j-impl:$version_log4j"
-    compile "org.apache.logging.log4j:log4j-1.2-api:$version_log4j"
-    compile "org.apache.logging.log4j:log4j-jul:$version_log4j"
-    compile "args4j:args4j:$version_args4j"
 
     // test
     testCompile project(':imposter-test')

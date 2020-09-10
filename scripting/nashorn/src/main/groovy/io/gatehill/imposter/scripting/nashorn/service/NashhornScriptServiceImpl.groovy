@@ -1,4 +1,4 @@
-package io.gatehill.imposter.service
+package io.gatehill.imposter.scripting.nashorn.service
 
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig
@@ -6,6 +6,7 @@ import io.gatehill.imposter.script.ScriptedResponseBehavior
 import io.gatehill.imposter.script.MutableResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.impl.RunnableResponseBehaviourImpl
+import io.gatehill.imposter.service.ScriptService
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 

@@ -1,9 +1,10 @@
-package io.gatehill.imposter.script.impl;
+package io.gatehill.imposter.scripting.groovy.impl;
 
 import groovy.lang.Script;
 import io.gatehill.imposter.script.ScriptedResponseBehavior;
 import io.gatehill.imposter.script.MutableResponseBehaviour;
 import io.gatehill.imposter.script.ResponseBehaviourType;
+import io.gatehill.imposter.script.impl.ScriptedResponseBehaviorImpl;
 
 import java.util.Map;
 

@@ -12,6 +12,13 @@ project(':server').name = 'imposter-server'
 include ':test'
 project(':test').name = 'imposter-test'
 
+// scripting
+include ':scripting:groovy'
+project(':scripting:groovy').name = 'scripting-groovy'
+
+include ':scripting:nashorn'
+project(':scripting:nashorn').name = 'scripting-nashorn'
+
 // plugins
 include ':plugin:detector'
 project(':plugin:detector').name = 'plugin-detector'

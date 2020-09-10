@@ -1,8 +1,11 @@
 package io.gatehill.imposter.server;
 
+import com.google.inject.Module;
 import io.gatehill.imposter.Imposter;
 import io.gatehill.imposter.ImposterConfig;
 import io.gatehill.imposter.plugin.PluginManager;
+import io.gatehill.imposter.scripting.groovy.GroovyScriptingModule;
+import io.gatehill.imposter.scripting.nashorn.NashornScriptingModule;
 import io.gatehill.imposter.server.util.ConfigUtil;
 import io.gatehill.imposter.util.AsyncUtil;
 import io.gatehill.imposter.util.HttpUtil;
@@ -62,8 +65,12 @@ public class ImposterVerticle extends AbstractVerticle {
     }
 
     private void startEngine() {
-        final BootstrapModule bootstrapModule = new BootstrapModule(vertx, imposterConfig.getServerFactory());
-        final Imposter imposter = new Imposter(imposterConfig, bootstrapModule);
+        final Module[] bootstrapModules = new Module[]{
+                new BootstrapModule(vertx, imposterConfig.getServerFactory()),
+                new GroovyScriptingModule(),
+                new NashornScriptingModule()
+        };
+        final Imposter imposter = new Imposter(imposterConfig, bootstrapModules);
         imposter.start();
     }
 

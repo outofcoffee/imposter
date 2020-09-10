@@ -1,4 +1,4 @@
-package io.gatehill.imposter.service
+package io.gatehill.imposter.scripting
 
 import com.google.inject.Guice
 import io.gatehill.imposter.plugin.config.PluginConfig
@@ -6,6 +6,7 @@ import io.gatehill.imposter.plugin.config.PluginConfigImpl
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig
 import io.gatehill.imposter.script.ResponseBehaviourType
 import io.gatehill.imposter.script.RuntimeContext
+import io.gatehill.imposter.service.ScriptService
 import org.junit.Before
 import org.junit.Test
 

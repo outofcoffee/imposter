@@ -1,5 +1,8 @@
 package io.gatehill.imposter.service
 
+import io.gatehill.imposter.scripting.AbstractScriptServiceImplTest
+import io.gatehill.imposter.scripting.nashorn.service.NashhornScriptServiceImpl
+
 import javax.inject.Inject
 
 /**
