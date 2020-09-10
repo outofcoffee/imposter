@@ -21,10 +21,9 @@ response:
 
 ```groovy
 if (context.request.params.action == 'create') {
-    respond {
-        withStatusCode 201
-        immediately()
-    }
+    respond()
+        .withStatusCode(201)
+        .immediately()
 }
 ```
     
@@ -46,27 +45,23 @@ Here's a more sophisticated example script:
 switch (context.request.params.action) {
     case 'create':
         // HTTP Status-Code 201: Created.
-        respond {
-            withStatusCode 201
-            immediately()
-        }
+        respond()
+            .withStatusCode(201)
+            .immediately()
         break
 
     case 'fetch':
         // use a static response file and the default plugin behaviour
-        respond {
-            withFile 'example-data.json'
-            and()
-            usingDefaultBehaviour()
-        }
+        respond()
+            .withFile('example-data.json')
+            .usingDefaultBehaviour()
         break
 
     default:
         // default to bad request
-        respond {
-            withStatusCode 400
-            immediately()
-        }
+        respond()
+            .withStatusCode(400)
+            .immediately()
         break
 }
 ```
@@ -156,7 +151,7 @@ For example:
 ```groovy
 respond()
     .withStatusCode(201)
-    .immediately();
+    .immediately()
 ```
 
 Or:
@@ -164,32 +159,8 @@ Or:
 ```groovy
 respond()
     .withFile('static-data.json')
-    .and()
-    .usingDefaultBehaviour();
+    .usingDefaultBehaviour()
 ```
-
-*****
-**Tip for Groovy users**
-
-Groovy users can also use this special syntax, for improved readability:
-
-```groovy
-respond {
-    // behaviours go here
-}
-```
-
-For example:
-
-```groovy
-respond {
-    withStatusCode 201
-    and()
-    usingDefaultBehaviour()
-}
-```
-
-*****
 
 ### Returning data from a script
 
@@ -221,17 +192,15 @@ In order for the mock server to return the response file in an appropriate forma
 Whilst not required, your script could invoke `usingDefaultBehaviour()` for readability to indicate that you want the plugin to handle the response file for you. See the *rest* plugin tests for a working example. To this end, the following blocks are semantically identical:
 
 ```groovy
-respond {
-    withFile 'static-data.json' and() usingDefaultBehaviour()
-}
+respond()
+    .withFile('static-data.json')
+    .usingDefaultBehaviour()
 ```
 
 and:
 
 ```groovy
-respond {
-    withFile 'static-data.json'
-}
+respond().withFile('static-data.json')
 ```
 
 ### Setting response headers
@@ -239,16 +208,33 @@ respond {
 You can set response headers using the `withHeader(String, String)` method. 
 
 ```groovy
-respond {
-    withHeader('X-Custom-Header', 'example value')
-}
+respond().withHeader('X-Custom-Header', 'example value')
 ```
 ### Returning raw data
 
 You can return raw data using the `withData(String)` method.
 
 ```groovy
+respond().withData('{ "someKey": "someValue" }')
+```
+
+*****
+**Tip for Groovy users**
+
+Groovy users can also use this special block syntax, for improved readability:
+
+```groovy
 respond {
-    withData '{ "someKey": "someValue" }'
+    // behaviours go here
+}
+```
+
+For example:
+
+```groovy
+respond {
+    withStatusCode 201
+    and()
+    usingDefaultBehaviour()
 }
 ```
