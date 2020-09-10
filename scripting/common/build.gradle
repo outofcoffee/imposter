@@ -7,7 +7,6 @@ compileJava {
 
 dependencies {
     compile project(':imposter-core')
-    compile project(':scripting:scripting-common')
 
     // test
     testCompile project(':imposter-test')

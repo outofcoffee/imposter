@@ -13,6 +13,12 @@ include ':test'
 project(':test').name = 'imposter-test'
 
 // scripting
+include ':scripting:common'
+project(':scripting:common').name = 'scripting-common'
+
+include ':scripting:graalvm'
+project(':scripting:graalvm').name = 'scripting-graalvm'
+
 include ':scripting:groovy'
 project(':scripting:groovy').name = 'scripting-groovy'
 
