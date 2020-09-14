@@ -1,0 +1,21 @@
+apply plugin: 'java'
+
+compileJava {
+    sourceCompatibility = 1.8
+}
+
+dependencies {
+    compile project (':distro:distro-base')
+
+    // plugins
+    compile project (':plugin:plugin-detector')
+
+    // examples
+    testCompile project (':plugin:plugin-openapi')
+    testCompile project (':plugin:plugin-rest')
+
+    // test
+    testCompile project(':imposter-test')
+    testCompile "com.jayway.restassured:rest-assured:$version_restAssured"
+    testCompile group: 'org.hamcrest', name: 'hamcrest-all', version: '1.3'
+}
