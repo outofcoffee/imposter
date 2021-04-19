@@ -16,7 +16,8 @@ public class ScriptedResponseBehaviorImpl implements ScriptedResponseBehavior {
     private int statusCode = HttpUtil.HTTP_OK;
     private String responseFile;
     private String responseData;
-    private Map<String, String> responseHeaders = new HashMap<>();
+    private String exampleName;
+    private final Map<String, String> responseHeaders = new HashMap<>();
     private boolean behaviourConfigured;
 
     @Override
@@ -37,6 +38,11 @@ public class ScriptedResponseBehaviorImpl implements ScriptedResponseBehavior {
     @Override
     public String getResponseData() {
         return responseData;
+    }
+
+    @Override
+    public String getExampleName() {
+        return exampleName;
     }
 
     @Override
@@ -86,6 +92,18 @@ public class ScriptedResponseBehaviorImpl implements ScriptedResponseBehavior {
     @Override
     public MutableResponseBehaviour withEmpty() {
         this.responseFile = null;
+        return this;
+    }
+
+    @Override
+    public MutableResponseBehaviour withData(String responseData) {
+        this.responseData = responseData;
+        return this;
+    }
+
+    @Override
+    public MutableResponseBehaviour withExampleName(String exampleName) {
+        this.exampleName = exampleName;
         return this;
     }
 
@@ -151,12 +169,6 @@ public class ScriptedResponseBehaviorImpl implements ScriptedResponseBehavior {
      */
     @Override
     public MutableResponseBehaviour and() {
-        return this;
-    }
-
-    @Override
-    public MutableResponseBehaviour withData(String responseData) {
-        this.responseData = responseData;
         return this;
     }
 }

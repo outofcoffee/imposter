@@ -40,6 +40,11 @@ public abstract class GroovyResponseBehaviourImpl extends Script implements Scri
     }
 
     @Override
+    public String getExampleName() {
+        return delegate.getExampleName();
+    }
+
+    @Override
     public MutableResponseBehaviour withHeader(String header, String value) {
         delegate.withHeader(header, value);
         return this;
@@ -60,6 +65,12 @@ public abstract class GroovyResponseBehaviourImpl extends Script implements Scri
     @Override
     public MutableResponseBehaviour withData(String responseData) {
         delegate.withData(responseData);
+        return this;
+    }
+
+    @Override
+    public MutableResponseBehaviour withExampleName(String exampleName) {
+        delegate.withExampleName(exampleName);
         return this;
     }
 

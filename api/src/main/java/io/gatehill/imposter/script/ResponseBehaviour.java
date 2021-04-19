@@ -14,5 +14,7 @@ public interface ResponseBehaviour {
 
     String getResponseData();
 
+    String getExampleName();
+
     ResponseBehaviourType getBehaviourType();
 }

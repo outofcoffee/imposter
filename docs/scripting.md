@@ -134,6 +134,7 @@ The ResponseBehaviour object provides a number of methods to enable you to contr
 | `withStatusCode(int)`        | Set the HTTP status code for the response                      |
 | `withFile(String)`           | Respond with the content of a static file                      |
 | `withData(String)`           | Respond with the content of a `String`                         |
+| `withExampleName(String)`    | Respond with the specification example with a given name       |
 | `withHeader(String, String)` | Set a response header                                          |
 | `withEmpty()`                | Respond with empty content, or no records                      |
 | `usingDefaultBehaviour()`    | Use the plugin's default behaviour to respond                  |
@@ -210,6 +211,7 @@ You can set response headers using the `withHeader(String, String)` method.
 ```groovy
 respond().withHeader('X-Custom-Header', 'example value')
 ```
+
 ### Returning raw data
 
 You can return raw data using the `withData(String)` method.
@@ -217,6 +219,16 @@ You can return raw data using the `withData(String)` method.
 ```groovy
 respond().withData('{ "someKey": "someValue" }')
 ```
+
+### Returning a specific example
+
+When using the OpenAPI plugin, you can return a specific named example from the specification using the `withExampleName(String)` method.
+
+```groovy
+respond().withExampleName('example1')
+```
+
+This selects the example from the OpenAPI `examples` section for the API response.
 
 *****
 **Tip for Groovy users**

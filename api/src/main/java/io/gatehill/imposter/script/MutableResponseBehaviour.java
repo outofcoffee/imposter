@@ -12,6 +12,10 @@ public interface MutableResponseBehaviour {
 
     MutableResponseBehaviour withEmpty();
 
+    MutableResponseBehaviour withData(String responseData);
+
+    MutableResponseBehaviour withExampleName(String exampleName);
+
     MutableResponseBehaviour usingDefaultBehaviour();
 
     MutableResponseBehaviour immediately();
@@ -21,6 +25,4 @@ public interface MutableResponseBehaviour {
     MutableResponseBehaviour respond(Runnable closure);
 
     MutableResponseBehaviour and();
-
-    MutableResponseBehaviour withData(String responseData);
 }

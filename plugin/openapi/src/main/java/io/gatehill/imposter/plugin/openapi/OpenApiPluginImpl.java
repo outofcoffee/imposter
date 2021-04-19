@@ -80,7 +80,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
     /**
      * Holds the specifications.
      */
-    private Cache<String, String> specCache = CacheBuilder.newBuilder().build();
+    private final Cache<String, String> specCache = CacheBuilder.newBuilder().build();
 
     @Override
     protected Class<OpenApiPluginConfig> getConfigClass() {
@@ -253,16 +253,16 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
 
             scriptHandler(config, routingContext, getInjector(), context, responseBehaviour -> {
                 final String statusCode = String.valueOf(responseBehaviour.getStatusCode());
-                final Optional<ApiResponse> optionalMockResponse = findApiResponse(operation, statusCode);
+                final Optional<ApiResponse> optionalResponse = findApiResponse(operation, statusCode);
 
                 // set status code regardless of response strategy
                 final HttpServerResponse response = routingContext.response()
                         .setStatusCode(responseBehaviour.getStatusCode());
 
-                if (optionalMockResponse.isPresent()) {
+                if (optionalResponse.isPresent()) {
                     // build a response from the specification
                     final ResponseService.ResponseSender exampleSender = (rc, rb) ->
-                            exampleService.serveExample(imposterConfig, config, rc, rb, optionalMockResponse.get(), spec);
+                            exampleService.serveExample(imposterConfig, config, rc, rb, optionalResponse.get(), spec);
 
                     // attempt to serve an example from the specification, falling back if not present
                     responseService.sendResponse(
@@ -280,13 +280,13 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
 
     private Optional<ApiResponse> findApiResponse(Operation operation, String statusCode) {
         // look for a specification response based on the status code
-        final Optional<ApiResponse> optionalMockResponse = operation.getResponses().entrySet().parallelStream()
+        final Optional<ApiResponse> optionalResponse = operation.getResponses().entrySet().parallelStream()
                 .filter(mockResponse -> mockResponse.getKey().equals(statusCode))
                 .map(Map.Entry::getValue)
                 .findAny();
 
-        if (optionalMockResponse.isPresent()) {
-            return optionalMockResponse;
+        if (optionalResponse.isPresent()) {
+            return optionalResponse;
         } else {
             // fall back to default
             LOGGER.debug("No response found for status code {}; falling back to default response if present", statusCode);

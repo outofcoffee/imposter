@@ -8,8 +8,8 @@ import com.google.common.base.Preconditions;
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public class ContentTypedHolder<T> {
-    private String contentType;
-    private T value;
+    private final String contentType;
+    private final T value;
 
     public ContentTypedHolder(String contentType, T value) {
         Preconditions.checkNotNull(contentType, "Content type cannot be null");

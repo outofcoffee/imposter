@@ -176,8 +176,70 @@ Imposter currently supports JSON and YAML serialised content types in the respon
 
 ## Scripted responses (advanced)
 
-For simple scenarios, use the `staticFile` property within the `response` object in your configuration.
-
 For more advanced scenarios, you can also control Imposter's responses using JavaScript or Groovy scripts.
 
-See the [Scripting](scripting.md) section for more information.
+> See the [Scripting](scripting.md) section for more information.
+
+### Example
+
+```yaml
+# scripted-openapi-config.yaml
+---
+plugin: openapi
+specFile: petstore.yaml
+response:
+  scriptFile: example.groovy
+```
+
+Here `example.groovy` can control the responses, such as:
+
+1. a specific example name to return
+
+```groovy
+respond().withExampleName('example1')
+```
+
+2. the content of a file to return
+
+```groovy
+respond().withFile('some-file.json')
+```
+
+3. a literal string to return
+
+```groovy
+respond().withContent('{ "foo": "bar" }')
+```
+
+### Returning a named example
+
+You can return a specific named example from the specification using the `withExampleName(String)` method.
+
+```groovy
+if (context.request.uri.endsWith('/pets/2')) {
+    respond().withExampleName('dogExample')
+}
+```
+
+This selects the example from the OpenAPI `examples` section for the API response.
+
+```yaml
+paths:
+  /pets/{petId}:
+    get:
+      # (...some parts of operation excluded for brevity)
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pet"
+              examples:
+                # the example to return is selected by the script
+                catExample:
+                  value: |-
+                    { "id": 1, "name": "Cat" }
+                dogExample:
+                  value: |-
+                    { "id": 2, "name": "Dog" }
+```

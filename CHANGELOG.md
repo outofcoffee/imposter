@@ -5,7 +5,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
-- ...
+- (openapi) Enables response examples to be selected by name.
+- (core) Adds GraalVM script engine as Nashorn is deprecated from Java 11. Nashorn is still the default.
+- (docs) Improves scripting documentation.
 
 ## [1.2.0] - 2020-04-30
 ### Added

@@ -63,7 +63,7 @@ public class OpenApiPluginImplTest extends BaseVerticleTest {
 
     /**
      * Should return the example from the specification for the default HTTP 200 status code, since the
-     * content type in the 'Accept' matches that in the specification example.
+     * content type in the 'Accept' header matches that in the specification example.
      *
      * @param testContext
      */
