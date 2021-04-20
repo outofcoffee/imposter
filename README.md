@@ -17,14 +17,16 @@ Use Imposter to:
 
 Provide mock responses using static files or customise behaviour using JavaScript or Java/Groovy. Power users can write their own plugins in a JVM language of their choice.
 
-# Getting started
-
-The quickest way to get up and running is to use our free cloud-hosted version at [https://www.remotemock.io](https://www.remotemock.io)
-
 *****
-# Documentation
+## Getting started
 
-**[Read the documentation here.](http://outofcoffee.viewdocs.io/imposter/)**
+* [Mocking APIs with Swagger and Imposter](https://medium.com/@outofcoffee/mocking-apis-with-swagger-and-imposter-3694bd1733c0)
+* [Mocking REST APIs with Imposter](https://medium.com/@outofcoffee/mocking-apis-with-imposter-53bd908632e5)
+
+## Documentation
+
+**[Read the full documentation here](http://outofcoffee.viewdocs.io/imposter/)**
+
 *****
 
 # Plugins
@@ -55,10 +57,7 @@ Standalone Java example:
 
 Your mock server is now running!
 
-This example starts a mock server using the simple
-[REST plugin](docs/rest_plugin.md), serving responses based on the configuration files
-inside the `config` folder. You can hit the URL
-[http://localhost:8080/example](http://localhost:8080/example) to see the mock response.
+This example starts a mock server using the simple [REST plugin](docs/rest_plugin.md), serving responses based on the configuration files inside the `config` folder. You can hit the URL [http://localhost:8080/example](http://localhost:8080/example) to see the mock response.
 
 # Recent changes and Roadmap
   
