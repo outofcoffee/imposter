@@ -252,8 +252,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
             context.put("operation", operation);
 
             scriptHandler(config, routingContext, getInjector(), context, responseBehaviour -> {
-                final String statusCode = String.valueOf(responseBehaviour.getStatusCode());
-                final Optional<ApiResponse> optionalResponse = findApiResponse(operation, statusCode);
+                final Optional<ApiResponse> optionalResponse = findApiResponse(operation, responseBehaviour.getStatusCode());
 
                 // set status code regardless of response strategy
                 final HttpServerResponse response = routingContext.response()
@@ -270,7 +269,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
 
                 } else {
                     LOGGER.warn("No explicit mock response found for URI {} with status code {}",
-                            routingContext.request().absoluteURI(), statusCode);
+                            routingContext.request().absoluteURI(), responseBehaviour.getStatusCode());
 
                     response.end();
                 }
@@ -278,10 +277,13 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
         });
     }
 
-    private Optional<ApiResponse> findApiResponse(Operation operation, String statusCode) {
+    private Optional<ApiResponse> findApiResponse(Operation operation, Integer statusCode) {
+        // openapi statuses are represented as strings
+        final String status = String.valueOf(statusCode);
+
         // look for a specification response based on the status code
         final Optional<ApiResponse> optionalResponse = operation.getResponses().entrySet().parallelStream()
-                .filter(mockResponse -> mockResponse.getKey().equals(statusCode))
+                .filter(mockResponse -> mockResponse.getKey().equals(status))
                 .map(Map.Entry::getValue)
                 .findAny();
 

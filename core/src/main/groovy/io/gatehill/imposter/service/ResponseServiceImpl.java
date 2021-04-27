@@ -4,17 +4,16 @@ import com.google.common.base.Strings;
 import com.google.common.io.CharStreams;
 import io.gatehill.imposter.exception.ResponseException;
 import io.gatehill.imposter.plugin.config.ContentTypedConfig;
+import io.gatehill.imposter.plugin.config.DefaultResourcesHolder;
 import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig;
+import io.gatehill.imposter.plugin.config.resource.ResourceMethod;
+import io.gatehill.imposter.plugin.config.resource.ResourceResponseConfig;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfig;
-import io.gatehill.imposter.script.ExecutionContext;
-import io.gatehill.imposter.script.ScriptedResponseBehavior;
-import io.gatehill.imposter.script.ResponseBehaviour;
-import io.gatehill.imposter.script.ResponseBehaviourType;
-import io.gatehill.imposter.script.RuntimeContext;
-import io.gatehill.imposter.script.ScriptUtil;
+import io.gatehill.imposter.script.*;
 import io.gatehill.imposter.script.impl.ScriptedResponseBehaviorImpl;
 import io.gatehill.imposter.util.HttpUtil;
+import io.gatehill.imposter.util.ResourceMethodConverter;
 import io.gatehill.imposter.util.annotation.GroovyImpl;
 import io.gatehill.imposter.util.annotation.JavascriptImpl;
 import io.vertx.core.http.HttpServerResponse;
@@ -30,11 +29,14 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Optional;
+import java.util.regex.Pattern;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Collections.emptyMap;
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -52,20 +54,21 @@ public class ResponseServiceImpl implements ResponseService {
     private ScriptService javascriptScriptService;
 
     @Override
-    public ResponseBehaviour getResponseBehaviour(RoutingContext routingContext,
-                                                  PluginConfig pluginConfig,
-                                                  ResourceConfig config,
-                                                  Map<String, Object> additionalContext,
-                                                  Map<String, Object> additionalBindings) {
-
-        final ResponseConfig responseConfig = config.getResponseConfig();
+    public ResponseBehaviour getResponseBehaviour(
+            RoutingContext routingContext,
+            PluginConfig pluginConfig,
+            ResourceConfig resourceConfig,
+            Map<String, Object> additionalContext,
+            Map<String, Object> additionalBindings
+    ) {
+        final ResponseConfig responseConfig = resourceConfig.getResponseConfig();
         checkNotNull(responseConfig);
 
-        final int statusCode = ofNullable(responseConfig.getStatusCode()).orElse(HttpUtil.HTTP_OK);
+        final int statusCode = determineStatusCode(pluginConfig, responseConfig, routingContext);
 
-        if (Objects.isNull(responseConfig.getScriptFile())) {
-            // default behaviour is to use a static response file
-            LOGGER.debug("Using default response behaviour for request: {}", routingContext.request().absoluteURI());
+        if (isNull(responseConfig.getScriptFile())) {
+            LOGGER.debug("Using default response behaviour for request: {} {}",
+                    routingContext.request().method(), routingContext.request().absoluteURI());
 
             final ScriptedResponseBehaviorImpl responseBehaviour = new ScriptedResponseBehaviorImpl();
             responseBehaviour
@@ -80,9 +83,60 @@ public class ResponseServiceImpl implements ResponseService {
             return responseBehaviour;
         }
 
+        return determineResponseFromScript(routingContext, pluginConfig, resourceConfig, additionalContext, additionalBindings, statusCode);
+    }
+
+    private Integer determineStatusCode(PluginConfig config, ResponseConfig responseConfig, RoutingContext routingContext) {
+        final Optional<ResourceResponseConfig> defaultConfig = findDefaultConfig(config, routingContext);
+        if (defaultConfig.isPresent() && nonNull(defaultConfig.get().getStatusCode())) {
+            return defaultConfig.get().getStatusCode();
+        }
+        return ofNullable(responseConfig.getStatusCode()).orElse(HttpUtil.HTTP_OK);
+    }
+
+    /**
+     * Search for a default resource configuration matching the current request.
+     *
+     * @param config         the response configuration
+     * @param routingContext the Vert.x routing context
+     * @return a matching resource configuration or else empty
+     */
+    private Optional<ResourceResponseConfig> findDefaultConfig(PluginConfig config, RoutingContext routingContext) {
+        if (config instanceof DefaultResourcesHolder) {
+            final DefaultResourcesHolder defaultResources = (DefaultResourcesHolder) config;
+
+            final String path = routingContext.request().path();
+            final ResourceMethod method = ResourceMethodConverter.convertMethodFromVertx(routingContext.request().method());
+
+            if (nonNull(defaultResources.getDefaults())) {
+                final Optional<ResourceResponseConfig> defaultConfig = defaultResources.getDefaults().stream()
+                        .filter(res -> !Strings.isNullOrEmpty(res.getPath()) && Pattern.compile(res.getPath()).matcher(path).matches())
+                        .filter(res -> method.equals(res.getMethod()))
+                        .findAny();
+
+                if (defaultConfig.isPresent()) {
+                    LOGGER.debug("Matched default response config for {} {}", method, routingContext.request().path());
+                }
+
+                return defaultConfig;
+            }
+        }
+        return empty();
+    }
+
+    private ScriptedResponseBehavior determineResponseFromScript(
+            RoutingContext routingContext,
+            PluginConfig pluginConfig,
+            ResourceConfig resourceConfig,
+            Map<String, Object> additionalContext,
+            Map<String, Object> additionalBindings,
+            int statusCode
+    ) {
+        final ResponseConfig responseConfig = resourceConfig.getResponseConfig();
+
         try {
-            LOGGER.debug("Executing script '{}' for request: {}",
-                    responseConfig.getScriptFile(), routingContext.request().absoluteURI());
+            LOGGER.debug("Executing script '{}' for request: {} {}",
+                    responseConfig.getScriptFile(), routingContext.request().method(), routingContext.request().absoluteURI());
 
             final ExecutionContext executionContext = ScriptUtil.buildContext(routingContext, additionalContext);
             LOGGER.trace("Context for request: {}", () -> executionContext);
@@ -96,7 +150,7 @@ public class ResponseServiceImpl implements ResponseService {
 
             // execute the script and read response behaviour
             final ScriptedResponseBehavior responseBehaviour =
-                    fetchScriptService(config.getResponseConfig().getScriptFile()).executeScript(pluginConfig, config, runtimeContext);
+                    fetchScriptService(responseConfig.getScriptFile()).executeScript(pluginConfig, resourceConfig, runtimeContext);
 
             // use defaults if not set
             if (ResponseBehaviourType.DEFAULT_BEHAVIOUR.equals(responseBehaviour.getBehaviourType())) {

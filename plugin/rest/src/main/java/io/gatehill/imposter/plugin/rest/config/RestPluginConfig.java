@@ -1,6 +1,8 @@
 package io.gatehill.imposter.plugin.rest.config;
 
 import io.gatehill.imposter.plugin.config.ContentTypedPluginConfigImpl;
+import io.gatehill.imposter.plugin.config.resource.MethodResourceConfig;
+import io.gatehill.imposter.plugin.config.resource.ResourceMethod;
 
 import java.util.List;
 
@@ -8,10 +10,10 @@ import java.util.List;
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public class RestPluginConfig extends ContentTypedPluginConfigImpl implements MethodResourceConfig {
-    private List<RestResourceConfig> resources;
+    private List<RestPluginResourceConfig> resources;
     private ResourceMethod method;
 
-    public List<RestResourceConfig> getResources() {
+    public List<RestPluginResourceConfig> getResources() {
         return resources;
     }
 

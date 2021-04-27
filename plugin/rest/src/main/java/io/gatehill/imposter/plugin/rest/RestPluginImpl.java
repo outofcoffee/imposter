@@ -8,8 +8,8 @@ import io.gatehill.imposter.plugin.config.ContentTypedConfig;
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig;
 import io.gatehill.imposter.plugin.rest.config.ResourceConfigType;
 import io.gatehill.imposter.plugin.rest.config.RestPluginConfig;
-import io.gatehill.imposter.plugin.rest.config.RestResourceConfig;
-import io.gatehill.imposter.plugin.rest.util.ResourceMethodConverter;
+import io.gatehill.imposter.plugin.rest.config.RestPluginResourceConfig;
+import io.gatehill.imposter.util.ResourceMethodConverter;
 import io.gatehill.imposter.service.ResponseService;
 import io.gatehill.imposter.util.AsyncUtil;
 import io.gatehill.imposter.util.FileUtil;
@@ -75,7 +75,7 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
         });
     }
 
-    private void addResourceHandler(Router router, C rootConfig, RestResourceConfig resourceConfig) {
+    private void addResourceHandler(Router router, C rootConfig, RestPluginResourceConfig resourceConfig) {
         final ResourceConfigType resourceType = ofNullable(resourceConfig.getType())
                 .orElse(ResourceConfigType.OBJECT);
 
@@ -96,7 +96,7 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
 
     private void addObjectHandler(Router router, String rootPath, C pluginConfig, ContentTypedConfig resourceConfig) {
         final String qualifiedPath = buildQualifiedPath(rootPath, resourceConfig);
-        final HttpMethod method = ResourceMethodConverter.convertMethod(resourceConfig);
+        final HttpMethod method = ResourceMethodConverter.convertMethodToVertx(resourceConfig);
         LOGGER.debug("Adding {} object handler: {}", method, qualifiedPath);
 
         router.route(method, qualifiedPath).handler(AsyncUtil.handleRoute(imposterConfig, vertx, routingContext -> {
@@ -108,10 +108,10 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
         }));
     }
 
-    private void addArrayHandler(Router router, C pluginConfig, RestResourceConfig resourceConfig) {
+    private void addArrayHandler(Router router, C pluginConfig, RestPluginResourceConfig resourceConfig) {
         final String resourcePath = resourceConfig.getPath();
         final String qualifiedPath = buildQualifiedPath(pluginConfig.getPath(), resourceConfig);
-        final HttpMethod method = ResourceMethodConverter.convertMethod(resourceConfig);
+        final HttpMethod method = ResourceMethodConverter.convertMethodToVertx(resourceConfig);
         LOGGER.debug("Adding {} array handler: {}", method, qualifiedPath);
 
         // validate path includes parameter

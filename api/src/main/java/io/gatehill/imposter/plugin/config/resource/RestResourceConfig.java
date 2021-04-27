@@ -5,11 +5,11 @@ import io.gatehill.imposter.plugin.config.ContentTypedConfig;
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public class ContentTypedResourceConfigImpl extends AbstractResourceConfig implements ContentTypedConfig {
-    protected String contentType;
+public class RestResourceConfig extends AbstractResourceConfig implements MethodResourceConfig {
+    private ResourceMethod method;
 
     @Override
-    public String getContentType() {
-        return contentType;
+    public ResourceMethod getMethod() {
+        return method;
     }
 }
