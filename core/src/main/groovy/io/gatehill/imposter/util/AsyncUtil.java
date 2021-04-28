@@ -37,9 +37,11 @@ public class AsyncUtil {
      * @param routingContextConsumer the consumer of the {@link RoutingContext}
      * @return the handler
      */
-    public static Handler<RoutingContext> handleRoute(ImposterConfig imposterConfig, Vertx vertx,
-                                                      Consumer<RoutingContext> routingContextConsumer) {
-
+    public static Handler<RoutingContext> handleRoute(
+            ImposterConfig imposterConfig,
+            Vertx vertx,
+            Consumer<RoutingContext> routingContextConsumer
+    ) {
         switch (imposterConfig.getRequestHandlingMode()) {
             case SYNC:
                 return routingContext -> {

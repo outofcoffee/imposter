@@ -3,6 +3,7 @@ package io.gatehill.imposter.plugin;
 import com.google.inject.Injector;
 import io.gatehill.imposter.plugin.config.PluginConfigImpl;
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig;
+import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
 import io.gatehill.imposter.script.ResponseBehaviour;
 import io.gatehill.imposter.script.ResponseBehaviourType;
 import io.gatehill.imposter.service.ResponseService;
@@ -43,7 +44,7 @@ public interface ScriptedPlugin<C extends PluginConfigImpl> {
     }
 
     default void scriptHandler(C pluginConfig,
-                               ResourceConfig resourceConfig,
+                               ResponseConfigHolder resourceConfig,
                                RoutingContext routingContext,
                                Injector injector,
                                Map<String, Object> additionalContext,
@@ -52,7 +53,7 @@ public interface ScriptedPlugin<C extends PluginConfigImpl> {
         final ResponseService responseService = injector.getInstance(ResponseService.class);
 
         try {
-            final ResponseBehaviour responseBehaviour = responseService.getResponseBehaviour(
+            final ResponseBehaviour responseBehaviour = responseService.buildResponseBehaviour(
                     routingContext, pluginConfig, resourceConfig, additionalContext, Collections.emptyMap());
 
             if (ResponseBehaviourType.IMMEDIATE_RESPONSE.equals(responseBehaviour.getBehaviourType())) {

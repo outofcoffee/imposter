@@ -1,7 +1,7 @@
 package io.gatehill.imposter.service;
 
 import io.gatehill.imposter.plugin.config.PluginConfig;
-import io.gatehill.imposter.plugin.config.resource.ResourceConfig;
+import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
 import io.gatehill.imposter.script.ScriptedResponseBehavior;
 import io.gatehill.imposter.script.RuntimeContext;
 
@@ -17,5 +17,5 @@ public interface ScriptService {
      * @param runtimeContext the script engine runtime context
      * @return the response behaviour
      */
-    ScriptedResponseBehavior executeScript(PluginConfig pluginConfig, ResourceConfig resourceConfig, RuntimeContext runtimeContext);
+    ScriptedResponseBehavior executeScript(PluginConfig pluginConfig, ResponseConfigHolder resourceConfig, RuntimeContext runtimeContext);
 }

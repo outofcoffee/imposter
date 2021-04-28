@@ -4,18 +4,19 @@ import com.google.common.base.Strings;
 import com.google.common.io.CharStreams;
 import io.gatehill.imposter.exception.ResponseException;
 import io.gatehill.imposter.plugin.config.ContentTypedConfig;
-import io.gatehill.imposter.plugin.config.DefaultResourcesHolder;
 import io.gatehill.imposter.plugin.config.PluginConfig;
-import io.gatehill.imposter.plugin.config.resource.ResourceConfig;
+import io.gatehill.imposter.plugin.config.ResourcesHolder;
 import io.gatehill.imposter.plugin.config.resource.ResourceMethod;
-import io.gatehill.imposter.plugin.config.resource.ResourceResponseConfig;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfig;
+import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
+import io.gatehill.imposter.plugin.config.resource.RestResourceConfig;
 import io.gatehill.imposter.script.*;
 import io.gatehill.imposter.script.impl.ScriptedResponseBehaviorImpl;
 import io.gatehill.imposter.util.HttpUtil;
 import io.gatehill.imposter.util.ResourceMethodConverter;
 import io.gatehill.imposter.util.annotation.GroovyImpl;
 import io.gatehill.imposter.util.annotation.JavascriptImpl;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.web.RoutingContext;
@@ -30,7 +31,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Optional;
-import java.util.regex.Pattern;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Collections.emptyMap;
@@ -54,17 +54,17 @@ public class ResponseServiceImpl implements ResponseService {
     private ScriptService javascriptScriptService;
 
     @Override
-    public ResponseBehaviour getResponseBehaviour(
+    public ResponseBehaviour buildResponseBehaviour(
             RoutingContext routingContext,
             PluginConfig pluginConfig,
-            ResourceConfig resourceConfig,
+            ResponseConfigHolder resourceConfig,
             Map<String, Object> additionalContext,
             Map<String, Object> additionalBindings
     ) {
         final ResponseConfig responseConfig = resourceConfig.getResponseConfig();
         checkNotNull(responseConfig);
 
-        final int statusCode = determineStatusCode(pluginConfig, responseConfig, routingContext);
+        final int statusCode = ofNullable(responseConfig.getStatusCode()).orElse(HttpUtil.HTTP_OK);
 
         if (isNull(responseConfig.getScriptFile())) {
             LOGGER.debug("Using default response behaviour for request: {} {}",
@@ -86,39 +86,33 @@ public class ResponseServiceImpl implements ResponseService {
         return determineResponseFromScript(routingContext, pluginConfig, resourceConfig, additionalContext, additionalBindings, statusCode);
     }
 
-    private Integer determineStatusCode(PluginConfig config, ResponseConfig responseConfig, RoutingContext routingContext) {
-        final Optional<ResourceResponseConfig> defaultConfig = findDefaultConfig(config, routingContext);
-        if (defaultConfig.isPresent() && nonNull(defaultConfig.get().getStatusCode())) {
-            return defaultConfig.get().getStatusCode();
-        }
-        return ofNullable(responseConfig.getStatusCode()).orElse(HttpUtil.HTTP_OK);
-    }
-
     /**
-     * Search for a default resource configuration matching the current request.
+     * Search for a resource configuration matching the request.
      *
-     * @param config         the response configuration
-     * @param routingContext the Vert.x routing context
+     * @param config the response configuration
+     * @param path   the request path
+     * @param method the HTTP method
      * @return a matching resource configuration or else empty
      */
-    private Optional<ResourceResponseConfig> findDefaultConfig(PluginConfig config, RoutingContext routingContext) {
-        if (config instanceof DefaultResourcesHolder) {
-            final DefaultResourcesHolder defaultResources = (DefaultResourcesHolder) config;
+    @Override
+    public Optional<ResponseConfigHolder> findResourceConfig(PluginConfig config, String path, HttpMethod method) {
+        if (config instanceof ResourcesHolder) {
+            @SuppressWarnings("unchecked")
+            final ResourcesHolder<RestResourceConfig> resources = (ResourcesHolder<RestResourceConfig>) config;
+            final ResourceMethod resourceMethod = ResourceMethodConverter.convertMethodFromVertx(method);
 
-            final String path = routingContext.request().path();
-            final ResourceMethod method = ResourceMethodConverter.convertMethodFromVertx(routingContext.request().method());
-
-            if (nonNull(defaultResources.getDefaults())) {
-                final Optional<ResourceResponseConfig> defaultConfig = defaultResources.getDefaults().stream()
-                        .filter(res -> !Strings.isNullOrEmpty(res.getPath()) && Pattern.compile(res.getPath()).matcher(path).matches())
-                        .filter(res -> method.equals(res.getMethod()))
+            if (nonNull(resources.getResources())) {
+                final Optional<ResponseConfigHolder> resourceConfig = resources.getResources().stream()
+                        .filter(res -> path.equals(res.getPath()))
+                        .filter(res -> resourceMethod.equals(res.getMethod()))
+                        .map(res -> (ResponseConfigHolder) res)
                         .findAny();
 
-                if (defaultConfig.isPresent()) {
-                    LOGGER.debug("Matched default response config for {} {}", method, routingContext.request().path());
+                if (resourceConfig.isPresent()) {
+                    LOGGER.debug("Matched default response config for {} {}", resourceMethod, path);
                 }
 
-                return defaultConfig;
+                return resourceConfig;
             }
         }
         return empty();
@@ -127,7 +121,7 @@ public class ResponseServiceImpl implements ResponseService {
     private ScriptedResponseBehavior determineResponseFromScript(
             RoutingContext routingContext,
             PluginConfig pluginConfig,
-            ResourceConfig resourceConfig,
+            ResponseConfigHolder resourceConfig,
             Map<String, Object> additionalContext,
             Map<String, Object> additionalBindings,
             int statusCode

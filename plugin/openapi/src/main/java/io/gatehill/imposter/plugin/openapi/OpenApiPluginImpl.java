@@ -9,6 +9,7 @@ import io.gatehill.imposter.plugin.PluginInfo;
 import io.gatehill.imposter.plugin.RequireModules;
 import io.gatehill.imposter.plugin.ScriptedPlugin;
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin;
+import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig;
 import io.gatehill.imposter.plugin.openapi.service.ExampleService;
 import io.gatehill.imposter.plugin.openapi.service.SpecificationService;
@@ -133,7 +134,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
 
             // convert an io.swagger.models.HttpMethod to an io.vertx.core.http.HttpMethod
             final HttpMethod method = HttpMethod.valueOf(httpMethod.name());
-            router.route(method, fullPath).handler(buildHandler(config, operation, swagger));
+            router.route(method, fullPath).handler(buildHandler(config, fullPath, method, operation, swagger));
         });
     }
 
@@ -242,16 +243,20 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
     /**
      * Build a handler for the given operation.
      *
-     * @param config    the plugin configuration
-     * @param operation the specification operation  @return a route handler
-     * @param spec      the OpenAPI specification
+     * @param pluginConfig the plugin configuration
+     * @param path         the request path
+     * @param method       the HTTP method
+     * @param operation    the specification operation  @return a route handler
+     * @param spec         the OpenAPI specification
      */
-    private Handler<RoutingContext> buildHandler(OpenApiPluginConfig config, Operation operation, OpenAPI spec) {
+    private Handler<RoutingContext> buildHandler(OpenApiPluginConfig pluginConfig, String path, HttpMethod method, Operation operation, OpenAPI spec) {
+        final ResponseConfigHolder resourceConfig = responseService.findResourceConfig(pluginConfig, path, method).orElse(pluginConfig);
+
         return AsyncUtil.handleRoute(imposterConfig, vertx, routingContext -> {
             final Map<String, Object> context = newHashMap();
             context.put("operation", operation);
 
-            scriptHandler(config, routingContext, getInjector(), context, responseBehaviour -> {
+            scriptHandler(pluginConfig, resourceConfig, routingContext, getInjector(), context, responseBehaviour -> {
                 final Optional<ApiResponse> optionalResponse = findApiResponse(operation, responseBehaviour.getStatusCode());
 
                 // set status code regardless of response strategy
@@ -261,11 +266,11 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
                 if (optionalResponse.isPresent()) {
                     // build a response from the specification
                     final ResponseService.ResponseSender exampleSender = (rc, rb) ->
-                            exampleService.serveExample(imposterConfig, config, rc, rb, optionalResponse.get(), spec);
+                            exampleService.serveExample(imposterConfig, pluginConfig, rc, rb, optionalResponse.get(), spec);
 
                     // attempt to serve an example from the specification, falling back if not present
                     responseService.sendResponse(
-                            config, config, routingContext, responseBehaviour, exampleSender, this::fallback);
+                            pluginConfig, pluginConfig, routingContext, responseBehaviour, exampleSender, this::fallback);
 
                 } else {
                     LOGGER.warn("No explicit mock response found for URI {} with status code {}",

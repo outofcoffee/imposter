@@ -1,7 +1,7 @@
 package io.gatehill.imposter.scripting.graalvm.service
 
 import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.config.resource.ResourceConfig
+import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.ScriptedResponseBehavior
 import io.gatehill.imposter.scripting.common.JavaScriptUtil
@@ -33,7 +33,7 @@ class GraalvmScriptServiceImpl implements ScriptService {
     }
 
     @Override
-    ScriptedResponseBehavior executeScript(PluginConfig pluginConfig, ResourceConfig resourceConfig, RuntimeContext runtimeContext) {
+    ScriptedResponseBehavior executeScript(PluginConfig pluginConfig, ResponseConfigHolder resourceConfig, RuntimeContext runtimeContext) {
         final Path scriptFile = Paths.get(pluginConfig.getParentDir().getAbsolutePath(), resourceConfig.getResponseConfig().getScriptFile());
         LOGGER.trace("Executing script file: {}", scriptFile);
 

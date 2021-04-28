@@ -174,6 +174,32 @@ responses:
 
 Imposter currently supports JSON and YAML serialised content types in the response if they are specified in this way. If you want to return a different format, return a literal string, such as those above.
 
+## Overriding default response behaviours
+
+Sometimes you might want to force a particular status code to be returned, or use other path-specific behaviours. To do this, you can use the `resources` configuration:
+
+```yaml
+# default-status-code.yaml
+---
+plugin: "openapi"
+specFile: "openapi3-with-multiple-status-codes.yaml"
+
+resources:
+  - path: "/pets"
+    method: "post"
+    response:
+      statusCode: 201
+
+  - path: "/pets/:petId"
+    method: "put"
+    response:
+      statusCode: 202
+```
+
+Here, POST requests to the `/pets` endpoint will default to the HTTP 201 status code. If there is a corresponding response example for the 201 status, this will be returned in the HTTP response.
+
+The `path` property supports placeholders, using the Vert.x Web colon format, so in the second example above, PUT requests to the endpoint `/pets/<some ID>` will return a 202 status. 
+
 ## Scripted responses (advanced)
 
 For more advanced scenarios, you can also control Imposter's responses using JavaScript or Groovy scripts.

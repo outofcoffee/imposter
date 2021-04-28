@@ -54,10 +54,10 @@ public class DefaultStatusCodeTest extends BaseVerticleTest {
     }
 
     /**
-     * Should return a specific status code for a regex matched request path.
+     * Should return a specific status code for a path with a placeholder.
      */
     @Test
-    public void testDefaultStatusCodesForRegexPath(TestContext testContext) {
+    public void testDefaultStatusCodesForPathWithPlaceholder(TestContext testContext) {
         given()
                 .log().ifValidationFails()
                 .accept(ContentType.JSON)
