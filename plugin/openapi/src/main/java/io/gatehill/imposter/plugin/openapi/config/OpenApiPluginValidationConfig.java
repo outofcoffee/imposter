@@ -6,6 +6,7 @@ package io.gatehill.imposter.plugin.openapi.config;
 public class OpenApiPluginValidationConfig {
     private Boolean request;
     private Boolean response;
+    private Boolean returnErrorsInResponse = true;
 
     public Boolean getRequest() {
         return request;
@@ -13,5 +14,9 @@ public class OpenApiPluginValidationConfig {
 
     public Boolean getResponse() {
         return response;
+    }
+
+    public Boolean getReturnErrorsInResponse() {
+        return returnErrorsInResponse;
     }
 }

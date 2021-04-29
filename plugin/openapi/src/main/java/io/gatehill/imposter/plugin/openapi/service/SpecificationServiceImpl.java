@@ -20,6 +20,7 @@ import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.oas.models.tags.Tag;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -36,7 +37,9 @@ import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
-import static java.util.Objects.*;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.io.IOUtils.LINE_SEPARATOR;
 
@@ -50,16 +53,12 @@ public class SpecificationServiceImpl implements SpecificationService {
     private static final String ARG_SCHEME = "openapi.scheme";
     private static final String ARG_TITLE = "openapi.title";
 
-    /**
-     * Holds the specifications.
-     */
-    private final Cache<String, Object> specCache = CacheBuilder.newBuilder().build();
-
+    private final Cache<String, Object> cache = CacheBuilder.newBuilder().build();
     private final SimpleValidationReportFormat reportFormater = SimpleValidationReportFormat.getInstance();
 
     @Override
     public OpenAPI getCombinedSpec(ImposterConfig imposterConfig, List<OpenAPI> allSpecs) throws ExecutionException {
-        return (OpenAPI) specCache.get("combinedSpecObject", () -> {
+        return (OpenAPI) cache.get("combinedSpecObject", () -> {
             try {
                 final Scheme scheme = Scheme.forValue(imposterConfig.getPluginArgs().get(ARG_SCHEME));
                 final String basePath = imposterConfig.getPluginArgs().get(ARG_BASEPATH);
@@ -75,7 +74,7 @@ public class SpecificationServiceImpl implements SpecificationService {
 
     @Override
     public String getCombinedSpecSerialised(ImposterConfig imposterConfig, List<OpenAPI> allSpecs) throws ExecutionException {
-        return (String) specCache.get("combinedSpecSerialised", () -> {
+        return (String) cache.get("combinedSpecSerialised", () -> {
             try {
                 return MapUtil.JSON_MAPPER.writeValueAsString(getCombinedSpec(imposterConfig, allSpecs));
             } catch (JsonGenerationException e) {
@@ -182,7 +181,11 @@ public class SpecificationServiceImpl implements SpecificationService {
             RoutingContext routingContext,
             List<OpenAPI> allSpecs
     ) {
-        if (isNull(pluginConfig.getValidation()) || !Boolean.TRUE.equals(pluginConfig.getValidation().getRequest())) {
+        if (isNull(pluginConfig.getValidation())) {
+            LOGGER.trace("Validation is disabled");
+            return true;
+        }
+        if (!Boolean.TRUE.equals(pluginConfig.getValidation().getRequest())) {
             LOGGER.trace("Request validation is disabled");
             return true;
         }
@@ -190,11 +193,11 @@ public class SpecificationServiceImpl implements SpecificationService {
             throw new UnsupportedOperationException("Response validation is not supported");
         }
 
-        final OpenAPI combined;
+        final OpenApiInteractionValidator validator;
         try {
-            combined = getCombinedSpec(imposterConfig, allSpecs);
+            validator = getValidator(imposterConfig, allSpecs);
         } catch (ExecutionException e) {
-            routingContext.fail(e);
+            routingContext.fail(new RuntimeException("Error building spec validator", e));
             return false;
         }
 
@@ -204,20 +207,39 @@ public class SpecificationServiceImpl implements SpecificationService {
 
         request.headers().forEach(h -> requestBuilder.withHeader(h.getKey(), h.getValue()));
 
-        final OpenApiInteractionValidator validator = OpenApiInteractionValidator.createFor(combined).build();
         final ValidationReport report = validator.validateRequest(requestBuilder.build());
-
-        if (report.hasErrors()) {
+        if (!report.getMessages().isEmpty()) {
             final String reportMessages = reportFormater.apply(report);
-            LOGGER.warn(reportMessages);
-            routingContext.response()
-                    .setStatusCode(400)
-                    .putHeader("Content-Type", "text/html")
-                    .end(buildResponseReport(reportMessages));
-            return false;
+            LOGGER.warn("Validation failed for {} {}: {}", request.method(), request.path(), reportMessages);
+
+            // only respond with 400 if validation failures are at error level
+            if (report.hasErrors()) {
+                final HttpServerResponse response = routingContext.response();
+                response.setStatusCode(400);
+
+                if (pluginConfig.getValidation().getReturnErrorsInResponse()) {
+                    response.putHeader("Content-Type", "text/html")
+                            .end(buildResponseReport(reportMessages));
+                } else {
+                    response.end();
+                }
+                return false;
+            }
+        } else {
+            LOGGER.trace("Validation passed for {} {}", request.method(), request.path());
         }
 
         return true;
+    }
+
+    /**
+     * Returns the specification validator from cache, creating it first on cache miss.
+     */
+    private OpenApiInteractionValidator getValidator(ImposterConfig imposterConfig, List<OpenAPI> allSpecs) throws ExecutionException {
+        return (OpenApiInteractionValidator) cache.get("specValidator", () -> {
+            final OpenAPI combined = getCombinedSpec(imposterConfig, allSpecs);
+            return OpenApiInteractionValidator.createFor(combined).build();
+        });
     }
 
     private String buildResponseReport(String reportMessages) {

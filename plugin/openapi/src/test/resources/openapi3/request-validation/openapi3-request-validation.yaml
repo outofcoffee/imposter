@@ -33,7 +33,7 @@ paths:
       parameters:
         - in: path
           name: petId
-          required: false
+          required: true
           schema:
             type: integer
       requestBody:
