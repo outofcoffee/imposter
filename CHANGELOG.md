@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- ...
+
 ## [1.4.0] - 2021-04-29
 ### Added
 - (openapi) Enables default status codes to be defined for OpenAPI paths.
