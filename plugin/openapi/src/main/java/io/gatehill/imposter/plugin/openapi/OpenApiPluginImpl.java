@@ -2,6 +2,7 @@ package io.gatehill.imposter.plugin.openapi;
 
 import com.google.common.collect.Lists;
 import io.gatehill.imposter.ImposterConfig;
+import io.gatehill.imposter.http.StatusCodeCalculator;
 import io.gatehill.imposter.plugin.PluginInfo;
 import io.gatehill.imposter.plugin.RequireModules;
 import io.gatehill.imposter.plugin.ScriptedPlugin;
@@ -19,6 +20,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.responses.ApiResponse;
+import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.servers.Server;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
@@ -39,6 +41,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.google.common.collect.Maps.newHashMap;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -52,6 +55,12 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
     private static final Logger LOGGER = LogManager.getLogger(OpenApiPluginImpl.class);
     private static final Pattern PATH_PARAM_PLACEHOLDER = Pattern.compile("\\{([a-zA-Z0-9._\\-]+)}");
     private static final String UI_WEB_ROOT = "swagger-ui";
+
+    /**
+     * 'default' is a special case in OpenAPI that does not have a status code.
+     */
+    private static final String DEFAULT_RESPONSE_KEY = "default";
+
     static final String SPECIFICATION_PATH = "/_spec";
     static final String COMBINED_SPECIFICATION_PATH = SPECIFICATION_PATH + "/combined.json";
 
@@ -236,7 +245,26 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
             final Map<String, Object> context = newHashMap();
             context.put("operation", operation);
 
-            scriptHandler(pluginConfig, resourceConfig, routingContext, getInjector(), context, responseBehaviour -> {
+            final StatusCodeCalculator statusCodeCalculator = rc -> {
+                if (nonNull(rc.getResponseConfig().getStatusCode())) {
+                    return rc.getResponseConfig().getStatusCode();
+                } else {
+                    // Choose the first response for this operation.
+                    // Note: responses are keyed on their status code.
+                    final ApiResponses responses = operation.getResponses();
+                    if (nonNull(responses) && !responses.isEmpty()) {
+                        final String firstStatus = responses.keySet().iterator().next();
+
+                        // default is a special case in OpenAPI that does not have a status code
+                        if (!DEFAULT_RESPONSE_KEY.equalsIgnoreCase(firstStatus)) {
+                            return Integer.parseInt(firstStatus);
+                        }
+                    }
+                }
+                return HttpUtil.HTTP_OK;
+            };
+
+            scriptHandler(pluginConfig, resourceConfig, routingContext, getInjector(), context, statusCodeCalculator, responseBehaviour -> {
                 final Optional<ApiResponse> optionalResponse = findApiResponse(operation, responseBehaviour.getStatusCode());
 
                 // set status code regardless of response strategy

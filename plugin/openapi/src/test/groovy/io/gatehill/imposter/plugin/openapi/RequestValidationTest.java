@@ -54,7 +54,7 @@ public class RequestValidationTest extends BaseVerticleTest {
                 .post("/pets")
                 .then()
                 .log().ifValidationFails()
-                .statusCode(200);
+                .statusCode(201);
     }
 
     /**

@@ -1,9 +1,9 @@
 package io.gatehill.imposter.service;
 
+import io.gatehill.imposter.http.StatusCodeCalculator;
 import io.gatehill.imposter.plugin.config.ContentTypedConfig;
 import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
-import io.gatehill.imposter.plugin.config.resource.RestResourceConfig;
 import io.gatehill.imposter.script.ResponseBehaviour;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonArray;
@@ -24,7 +24,8 @@ public interface ResponseService {
                                              PluginConfig pluginConfig,
                                              ResponseConfigHolder config,
                                              Map<String, Object> additionalContext,
-                                             Map<String, Object> additionalBindings);
+                                             Map<String, Object> additionalBindings,
+                                             StatusCodeCalculator statusCodeCalculator);
 
     /**
      * Search for a resource configuration matching the current request.

@@ -26,6 +26,10 @@ paths:
       responses:
         '201':
           description: Indicates pet added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pet"
   /pets/{petId}:
     put:
       summary: Update a specific pet

@@ -225,7 +225,7 @@ public class ExampleServiceImpl implements ExampleService {
         if (config.isPickFirstIfNoneMatch()) {
             final ResponseExample<T> example = entriesToSearch.iterator().next();
             LOGGER.debug("No exact example match found for content type - choosing one example ({}) from specification." +
-                    " You can switch off this behaviour by setting configuration option: pickFirstIfNoneMatch=false", example.contentType);
+                    " You can switch off this behaviour by setting configuration option 'pickFirstIfNoneMatch: false'", example.contentType);
 
             return convertToContentTypedExample(example);
         }

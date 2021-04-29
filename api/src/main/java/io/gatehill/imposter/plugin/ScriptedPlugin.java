@@ -1,6 +1,8 @@
 package io.gatehill.imposter.plugin;
 
 import com.google.inject.Injector;
+import io.gatehill.imposter.http.DefaultStatusCodeCalculator;
+import io.gatehill.imposter.http.StatusCodeCalculator;
 import io.gatehill.imposter.plugin.config.PluginConfigImpl;
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
@@ -22,7 +24,13 @@ public interface ScriptedPlugin<C extends PluginConfigImpl> {
                                Injector injector,
                                Consumer<ResponseBehaviour> defaultBehaviourHandler) {
 
-        scriptHandler(pluginConfig, pluginConfig, routingContext, injector, null, defaultBehaviourHandler);
+        scriptHandler(pluginConfig,
+                pluginConfig,
+                routingContext,
+                injector,
+                null,
+                DefaultStatusCodeCalculator.getInstance(),
+                defaultBehaviourHandler);
     }
 
     default void scriptHandler(C pluginConfig,
@@ -31,7 +39,13 @@ public interface ScriptedPlugin<C extends PluginConfigImpl> {
                                Injector injector,
                                Consumer<ResponseBehaviour> defaultBehaviourHandler) {
 
-        scriptHandler(pluginConfig, resourceConfig, routingContext, injector, null, defaultBehaviourHandler);
+        scriptHandler(pluginConfig,
+                resourceConfig,
+                routingContext,
+                injector,
+                null,
+                DefaultStatusCodeCalculator.getInstance(),
+                defaultBehaviourHandler);
     }
 
     default void scriptHandler(C pluginConfig,
@@ -40,7 +54,13 @@ public interface ScriptedPlugin<C extends PluginConfigImpl> {
                                Map<String, Object> additionalContext,
                                Consumer<ResponseBehaviour> defaultBehaviourHandler) {
 
-        scriptHandler(pluginConfig, pluginConfig, routingContext, injector, additionalContext, defaultBehaviourHandler);
+        scriptHandler(pluginConfig,
+                pluginConfig,
+                routingContext,
+                injector,
+                additionalContext,
+                DefaultStatusCodeCalculator.getInstance(),
+                defaultBehaviourHandler);
     }
 
     default void scriptHandler(C pluginConfig,
@@ -48,13 +68,14 @@ public interface ScriptedPlugin<C extends PluginConfigImpl> {
                                RoutingContext routingContext,
                                Injector injector,
                                Map<String, Object> additionalContext,
+                               StatusCodeCalculator statusCodeCalculator,
                                Consumer<ResponseBehaviour> defaultBehaviourHandler) {
 
         final ResponseService responseService = injector.getInstance(ResponseService.class);
 
         try {
             final ResponseBehaviour responseBehaviour = responseService.buildResponseBehaviour(
-                    routingContext, pluginConfig, resourceConfig, additionalContext, Collections.emptyMap());
+                    routingContext, pluginConfig, resourceConfig, additionalContext, Collections.emptyMap(), statusCodeCalculator);
 
             if (ResponseBehaviourType.IMMEDIATE_RESPONSE.equals(responseBehaviour.getBehaviourType())) {
                 routingContext.response()

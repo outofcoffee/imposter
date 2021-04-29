@@ -3,6 +3,7 @@ package io.gatehill.imposter.service;
 import com.google.common.base.Strings;
 import com.google.common.io.CharStreams;
 import io.gatehill.imposter.exception.ResponseException;
+import io.gatehill.imposter.http.StatusCodeCalculator;
 import io.gatehill.imposter.plugin.config.ContentTypedConfig;
 import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.plugin.config.ResourcesHolder;
@@ -10,7 +11,12 @@ import io.gatehill.imposter.plugin.config.resource.ResourceMethod;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfig;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
 import io.gatehill.imposter.plugin.config.resource.RestResourceConfig;
-import io.gatehill.imposter.script.*;
+import io.gatehill.imposter.script.ExecutionContext;
+import io.gatehill.imposter.script.ResponseBehaviour;
+import io.gatehill.imposter.script.ResponseBehaviourType;
+import io.gatehill.imposter.script.RuntimeContext;
+import io.gatehill.imposter.script.ScriptUtil;
+import io.gatehill.imposter.script.ScriptedResponseBehavior;
 import io.gatehill.imposter.script.impl.ScriptedResponseBehaviorImpl;
 import io.gatehill.imposter.util.HttpUtil;
 import io.gatehill.imposter.util.ResourceMethodConverter;
@@ -59,16 +65,17 @@ public class ResponseServiceImpl implements ResponseService {
             PluginConfig pluginConfig,
             ResponseConfigHolder resourceConfig,
             Map<String, Object> additionalContext,
-            Map<String, Object> additionalBindings
+            Map<String, Object> additionalBindings,
+            StatusCodeCalculator statusCodeCalculator
     ) {
         final ResponseConfig responseConfig = resourceConfig.getResponseConfig();
-        checkNotNull(responseConfig);
 
-        final int statusCode = ofNullable(responseConfig.getStatusCode()).orElse(HttpUtil.HTTP_OK);
+        checkNotNull(responseConfig, "Response configuration must not be null");
+        final int statusCode = statusCodeCalculator.calculateStatus(resourceConfig);
 
         if (isNull(responseConfig.getScriptFile())) {
-            LOGGER.debug("Using default response behaviour for request: {} {}",
-                    routingContext.request().method(), routingContext.request().absoluteURI());
+            LOGGER.debug("Using default HTTP {} response behaviour for request: {} {}",
+                    statusCode, routingContext.request().method(), routingContext.request().absoluteURI());
 
             final ScriptedResponseBehaviorImpl responseBehaviour = new ScriptedResponseBehaviorImpl();
             responseBehaviour
