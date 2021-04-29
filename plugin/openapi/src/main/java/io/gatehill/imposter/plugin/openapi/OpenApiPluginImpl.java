@@ -1,8 +1,5 @@
 package io.gatehill.imposter.plugin.openapi;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import io.gatehill.imposter.ImposterConfig;
 import io.gatehill.imposter.plugin.PluginInfo;
@@ -18,8 +15,6 @@ import io.gatehill.imposter.script.ResponseBehaviour;
 import io.gatehill.imposter.service.ResponseService;
 import io.gatehill.imposter.util.AsyncUtil;
 import io.gatehill.imposter.util.HttpUtil;
-import io.gatehill.imposter.util.MapUtil;
-import io.swagger.models.Scheme;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
@@ -40,7 +35,6 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -58,9 +52,6 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
     private static final Logger LOGGER = LogManager.getLogger(OpenApiPluginImpl.class);
     private static final Pattern PATH_PARAM_PLACEHOLDER = Pattern.compile("\\{([a-zA-Z0-9._\\-]+)}");
     private static final String UI_WEB_ROOT = "swagger-ui";
-    private static final String ARG_BASEPATH = "openapi.basepath";
-    private static final String ARG_SCHEME = "openapi.scheme";
-    private static final String ARG_TITLE = "openapi.title";
     static final String SPECIFICATION_PATH = "/_spec";
     static final String COMBINED_SPECIFICATION_PATH = SPECIFICATION_PATH + "/combined.json";
 
@@ -77,11 +68,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
     private ResponseService responseService;
 
     private List<OpenApiPluginConfig> configs;
-
-    /**
-     * Holds the specifications.
-     */
-    private final Cache<String, String> specCache = CacheBuilder.newBuilder().build();
+    private List<OpenAPI> allSpecs;
 
     @Override
     protected Class<OpenApiPluginConfig> getConfigClass() {
@@ -95,27 +82,31 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
 
     @Override
     public void configureRoutes(Router router) {
-        final List<OpenAPI> allSpecs = Lists.newArrayListWithExpectedSize(configs.size());
+        parseSpecs(router);
+
+        // serve specification and UI
+        LOGGER.debug("Adding specification UI at: {}", SPECIFICATION_PATH);
+        router.get(COMBINED_SPECIFICATION_PATH).handler(AsyncUtil.handleRoute(imposterConfig, vertx, this::handleCombinedSpec));
+        router.getWithRegex(SPECIFICATION_PATH + "$").handler(AsyncUtil.handleRoute(imposterConfig, vertx, routingContext -> routingContext.response().putHeader("Location", SPECIFICATION_PATH + "/").setStatusCode(HttpUtil.HTTP_MOVED_PERM).end()));
+        router.get(SPECIFICATION_PATH + "/*").handler(StaticHandler.create(UI_WEB_ROOT));
+    }
+
+    private void parseSpecs(Router router) {
+        allSpecs = Lists.newArrayListWithExpectedSize(configs.size());
 
         // specification mock endpoints
         configs.forEach(config -> {
-            final OpenAPI swagger = OpenApiVersionUtil.parseSpecification(config);
+            final OpenAPI spec = OpenApiVersionUtil.parseSpecification(config);
 
-            if (null != swagger) {
-                allSpecs.add(swagger);
-                swagger.getPaths().forEach((path, pathConfig) ->
-                        handlePathOperations(router, config, swagger, path, pathConfig));
+            if (null != spec) {
+                allSpecs.add(spec);
+                spec.getPaths().forEach((path, pathConfig) ->
+                        handlePathOperations(router, config, spec, path, pathConfig));
 
             } else {
                 throw new RuntimeException(String.format("Unable to load API specification: %s", config.getSpecFile()));
             }
         });
-
-        // serve specification and UI
-        LOGGER.debug("Adding specification UI at: {}", SPECIFICATION_PATH);
-        router.get(COMBINED_SPECIFICATION_PATH).handler(AsyncUtil.handleRoute(imposterConfig, vertx, routingContext -> handleCombinedSpec(routingContext, allSpecs)));
-        router.getWithRegex(SPECIFICATION_PATH + "$").handler(AsyncUtil.handleRoute(imposterConfig, vertx, routingContext -> routingContext.response().putHeader("Location", SPECIFICATION_PATH + "/").setStatusCode(HttpUtil.HTTP_MOVED_PERM).end()));
-        router.get(SPECIFICATION_PATH + "/*").handler(StaticHandler.create(UI_WEB_ROOT));
     }
 
     /**
@@ -123,18 +114,18 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
      *
      * @param router     the Vert.x router
      * @param config     the plugin configuration
-     * @param swagger    the OpenAPI specification
+     * @param spec       the OpenAPI specification
      * @param path       the mock path
      * @param pathConfig the path configuration
      */
-    private void handlePathOperations(Router router, OpenApiPluginConfig config, OpenAPI swagger, String path, PathItem pathConfig) {
+    private void handlePathOperations(Router router, OpenApiPluginConfig config, OpenAPI spec, String path, PathItem pathConfig) {
         pathConfig.readOperationsMap().forEach((httpMethod, operation) -> {
-            final String fullPath = buildFullPath(buildBasePath(config, swagger), path);
+            final String fullPath = buildFullPath(buildBasePath(config, spec), path);
             LOGGER.debug("Adding mock endpoint: {} -> {}", httpMethod, fullPath);
 
             // convert an io.swagger.models.HttpMethod to an io.vertx.core.http.HttpMethod
             final HttpMethod method = HttpMethod.valueOf(httpMethod.name());
-            router.route(method, fullPath).handler(buildHandler(config, fullPath, method, operation, swagger));
+            router.route(method, fullPath).handler(buildHandler(config, fullPath, method, operation, spec));
         });
     }
 
@@ -166,16 +157,16 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
      * Construct the base path, optionally dependent on the server path,
      * from which the example response will be served.
      *
-     * @param config  the mock configuration
-     * @param swagger the OpenAPI specification
+     * @param config the mock configuration
+     * @param spec   the OpenAPI specification
      * @return the base path
      */
-    private String buildBasePath(OpenApiPluginConfig config, OpenAPI swagger) {
+    private String buildBasePath(OpenApiPluginConfig config, OpenAPI spec) {
         if (config.isUseServerPathAsBaseUrl()) {
             // Treat the mock server as substitute for 'the' server.
             // Note: OASv2 'basePath' is converted to OASv3 'server' entries.
 
-            final Optional<Server> firstServer = swagger.getServers().stream().findFirst();
+            final Optional<Server> firstServer = spec.getServers().stream().findFirst();
             if (firstServer.isPresent()) {
                 final String url = ofNullable(firstServer.get().getUrl()).orElse("");
                 if (url.length() > 1) {
@@ -194,27 +185,12 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
      * Returns an OpenAPI specification combining all the given specifications.
      *
      * @param routingContext the Vert.x routing context
-     * @param allSpecs       all specifications
      */
-    private void handleCombinedSpec(RoutingContext routingContext, List<OpenAPI> allSpecs) {
+    private void handleCombinedSpec(RoutingContext routingContext) {
         try {
-            final String combinedJson = specCache.get("combinedSpec", () -> {
-                try {
-                    final Scheme scheme = Scheme.forValue(imposterConfig.getPluginArgs().get(ARG_SCHEME));
-                    final String basePath = imposterConfig.getPluginArgs().get(ARG_BASEPATH);
-                    final String title = imposterConfig.getPluginArgs().get(ARG_TITLE);
-
-                    final OpenAPI combined = specificationService.combineSpecifications(allSpecs, basePath, scheme, title);
-                    return MapUtil.JSON_MAPPER.writeValueAsString(combined);
-
-                } catch (JsonGenerationException e) {
-                    throw new ExecutionException(e);
-                }
-            });
-
             routingContext.response()
                     .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_JSON)
-                    .end(combinedJson);
+                    .end(specificationService.getCombinedSpecSerialised(imposterConfig, allSpecs));
 
         } catch (Exception e) {
             routingContext.fail(e);
@@ -253,6 +229,10 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
         final ResponseConfigHolder resourceConfig = responseService.findResourceConfig(pluginConfig, path, method).orElse(pluginConfig);
 
         return AsyncUtil.handleRoute(imposterConfig, vertx, routingContext -> {
+            if (!specificationService.isValidRequest(imposterConfig, pluginConfig, routingContext, allSpecs)) {
+                return;
+            }
+
             final Map<String, Object> context = newHashMap();
             context.put("operation", operation);
 
@@ -273,8 +253,11 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
                             pluginConfig, pluginConfig, routingContext, responseBehaviour, exampleSender, this::fallback);
 
                 } else {
-                    LOGGER.warn("No explicit mock response found for URI {} with status code {}",
-                            routingContext.request().absoluteURI(), responseBehaviour.getStatusCode());
+                    LOGGER.warn("No explicit mock response found for {} {} with status code {}",
+                            routingContext.request().method(),
+                            routingContext.request().absoluteURI(),
+                            responseBehaviour.getStatusCode()
+                    );
 
                     response.end();
                 }

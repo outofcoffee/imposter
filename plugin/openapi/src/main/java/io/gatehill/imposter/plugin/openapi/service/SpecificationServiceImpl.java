@@ -1,5 +1,15 @@
 package io.gatehill.imposter.plugin.openapi.service;
 
+import com.atlassian.oai.validator.OpenApiInteractionValidator;
+import com.atlassian.oai.validator.model.SimpleRequest;
+import com.atlassian.oai.validator.report.SimpleValidationReportFormat;
+import com.atlassian.oai.validator.report.ValidationReport;
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import io.gatehill.imposter.ImposterConfig;
+import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig;
+import io.gatehill.imposter.util.MapUtil;
 import io.swagger.models.Scheme;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.ExternalDocumentation;
@@ -9,6 +19,8 @@ import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.oas.models.tags.Tag;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.ext.web.RoutingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -18,13 +30,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
-import static java.util.Objects.nonNull;
-import static java.util.Objects.requireNonNull;
+import static java.util.Objects.*;
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.io.IOUtils.LINE_SEPARATOR;
 
@@ -34,6 +46,43 @@ import static org.apache.commons.io.IOUtils.LINE_SEPARATOR;
 public class SpecificationServiceImpl implements SpecificationService {
     private static final Logger LOGGER = LogManager.getLogger(SpecificationServiceImpl.class);
     private static final String DEFAULT_TITLE = "Imposter Mock APIs";
+    private static final String ARG_BASEPATH = "openapi.basepath";
+    private static final String ARG_SCHEME = "openapi.scheme";
+    private static final String ARG_TITLE = "openapi.title";
+
+    /**
+     * Holds the specifications.
+     */
+    private final Cache<String, Object> specCache = CacheBuilder.newBuilder().build();
+
+    private final SimpleValidationReportFormat reportFormater = SimpleValidationReportFormat.getInstance();
+
+    @Override
+    public OpenAPI getCombinedSpec(ImposterConfig imposterConfig, List<OpenAPI> allSpecs) throws ExecutionException {
+        return (OpenAPI) specCache.get("combinedSpecObject", () -> {
+            try {
+                final Scheme scheme = Scheme.forValue(imposterConfig.getPluginArgs().get(ARG_SCHEME));
+                final String basePath = imposterConfig.getPluginArgs().get(ARG_BASEPATH);
+                final String title = imposterConfig.getPluginArgs().get(ARG_TITLE);
+
+                return combineSpecifications(allSpecs, basePath, scheme, title);
+
+            } catch (Exception e) {
+                throw new ExecutionException(e);
+            }
+        });
+    }
+
+    @Override
+    public String getCombinedSpecSerialised(ImposterConfig imposterConfig, List<OpenAPI> allSpecs) throws ExecutionException {
+        return (String) specCache.get("combinedSpecSerialised", () -> {
+            try {
+                return MapUtil.JSON_MAPPER.writeValueAsString(getCombinedSpec(imposterConfig, allSpecs));
+            } catch (JsonGenerationException e) {
+                throw new ExecutionException(e);
+            }
+        });
+    }
 
     @Override
     public OpenAPI combineSpecifications(List<OpenAPI> specs, String basePath, Scheme scheme, String title) {
@@ -124,6 +173,58 @@ public class SpecificationServiceImpl implements SpecificationService {
         combined.setTags(tags);
 
         return combined;
+    }
+
+    @Override
+    public boolean isValidRequest(
+            ImposterConfig imposterConfig,
+            OpenApiPluginConfig pluginConfig,
+            RoutingContext routingContext,
+            List<OpenAPI> allSpecs
+    ) {
+        if (isNull(pluginConfig.getValidation()) || !Boolean.TRUE.equals(pluginConfig.getValidation().getRequest())) {
+            LOGGER.trace("Request validation is disabled");
+            return true;
+        }
+        if (Boolean.TRUE.equals(pluginConfig.getValidation().getResponse())) {
+            throw new UnsupportedOperationException("Response validation is not supported");
+        }
+
+        final OpenAPI combined;
+        try {
+            combined = getCombinedSpec(imposterConfig, allSpecs);
+        } catch (ExecutionException e) {
+            routingContext.fail(e);
+            return false;
+        }
+
+        final HttpServerRequest request = routingContext.request();
+        final SimpleRequest.Builder requestBuilder = new SimpleRequest.Builder(request.method().toString(), request.path())
+                .withBody(routingContext.getBodyAsString());
+
+        request.headers().forEach(h -> requestBuilder.withHeader(h.getKey(), h.getValue()));
+
+        final OpenApiInteractionValidator validator = OpenApiInteractionValidator.createFor(combined).build();
+        final ValidationReport report = validator.validateRequest(requestBuilder.build());
+
+        if (report.hasErrors()) {
+            final String reportMessages = reportFormater.apply(report);
+            LOGGER.warn(reportMessages);
+            routingContext.response()
+                    .setStatusCode(400)
+                    .putHeader("Content-Type", "text/html")
+                    .end(buildResponseReport(reportMessages));
+            return false;
+        }
+
+        return true;
+    }
+
+    private String buildResponseReport(String reportMessages) {
+        return "<html>\n" +
+                "<head><title>Invalid request</title></head>\n" +
+                "<body><h1>Request validation failed</h1><br/><pre>" + reportMessages + "</pre></body>\n" +
+                "</html>\n";
     }
 
     private void setServers(OpenAPI combined, List<Server> servers, Scheme scheme, String basePath) {

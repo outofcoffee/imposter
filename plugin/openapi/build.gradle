@@ -13,8 +13,9 @@ task copyStaticUi(type: Copy) {
 tasks.processResources.dependsOn copyStaticUi
 
 dependencies {
-    compile project(':imposter-core')
-    compile "io.swagger.parser.v3:swagger-parser:$version_swaggerParser"
+    implementation project(':imposter-core')
+    implementation "io.swagger.parser.v3:swagger-parser:$version_swaggerParser"
+    implementation group: 'com.atlassian.oai', name: 'swagger-request-validator-core', version: '2.18.0'
 
     // test
     testCompile project(':imposter-test')

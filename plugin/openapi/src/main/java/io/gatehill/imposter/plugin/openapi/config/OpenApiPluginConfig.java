@@ -24,6 +24,8 @@ public class OpenApiPluginConfig extends ContentTypedPluginConfigImpl implements
     @JsonProperty("useServerPathAsBaseUrl")
     private boolean useServerPathAsBaseUrl = true;
 
+    private OpenApiPluginValidationConfig validation;
+
     public String getSpecFile() {
         return specFile;
     }
@@ -39,5 +41,9 @@ public class OpenApiPluginConfig extends ContentTypedPluginConfigImpl implements
 
     public boolean isUseServerPathAsBaseUrl() {
         return useServerPathAsBaseUrl;
+    }
+
+    public OpenApiPluginValidationConfig getValidation() {
+        return validation;
     }
 }

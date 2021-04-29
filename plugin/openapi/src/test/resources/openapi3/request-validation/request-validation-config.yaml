@@ -1,0 +1,4 @@
+plugin: "openapi"
+specFile: "openapi3-request-validation.yaml"
+validation:
+  request: true

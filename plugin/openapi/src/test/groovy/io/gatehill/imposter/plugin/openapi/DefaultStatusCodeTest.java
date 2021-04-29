@@ -14,7 +14,7 @@ import java.util.List;
 import static com.jayway.restassured.RestAssured.given;
 
 /**
- * Tests for OpenAPI definitions with reference responses.
+ * Tests for returning specific status codes from OpenAPI mocks.
  *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
@@ -44,6 +44,7 @@ public class DefaultStatusCodeTest extends BaseVerticleTest {
     public void testDefaultStatusCodesForSimplePath(TestContext testContext) {
         given()
                 .log().ifValidationFails()
+                .contentType(ContentType.JSON)
                 .accept(ContentType.JSON)
                 .when()
                 .body("{ \"id\": 1, \"name\": \"Cat\" }")
@@ -60,6 +61,7 @@ public class DefaultStatusCodeTest extends BaseVerticleTest {
     public void testDefaultStatusCodesForPathWithPlaceholder(TestContext testContext) {
         given()
                 .log().ifValidationFails()
+                .contentType(ContentType.JSON)
                 .accept(ContentType.JSON)
                 .when()
                 .body("{ \"id\": 1, \"name\": \"Cat\" }")
