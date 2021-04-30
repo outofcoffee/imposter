@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.emptyMap;
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 /**
@@ -86,9 +88,11 @@ public class SchemaServiceImpl implements SchemaService {
             // See: https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/
             final Map<String, Object> combinedExampleProperties = new HashMap<>();
             allOf.forEach(s -> {
-                // FIXME code defensively around this cast
-                final Map<String, Object> exampleMap = (Map<String, Object>) collectSchemaExample(spec, s);
-                combinedExampleProperties.putAll(exampleMap);
+                final Object exampleMap = collectSchemaExample(spec, s);
+                if (nonNull(exampleMap) && exampleMap instanceof Map) {
+                    // FIXME code defensively around this cast
+                    combinedExampleProperties.putAll((Map<String, Object>) exampleMap);
+                }
             });
             example = combinedExampleProperties;
 
@@ -113,6 +117,9 @@ public class SchemaServiceImpl implements SchemaService {
     }
 
     private Map<String, Object> buildFromProperties(OpenAPI spec, Map<String, Schema> properties) {
+        if (isNull(properties)) {
+            return emptyMap();
+        }
         return properties.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> collectSchemaExample(spec, e.getValue())));
     }
