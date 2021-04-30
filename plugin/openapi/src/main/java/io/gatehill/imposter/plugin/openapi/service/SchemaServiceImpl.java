@@ -125,6 +125,11 @@ public class SchemaServiceImpl implements SchemaService {
     }
 
     private Object getPropertyDefault(Schema schema) {
+        // choose the first enum value if one exists
+        if (nonNull(schema.getEnum()) && !schema.getEnum().isEmpty()) {
+            return schema.getEnum().get(0);
+        }
+
         if (nonNull(schema.getType())) {
             // TODO make these configurable
             switch (schema.getType()) {
