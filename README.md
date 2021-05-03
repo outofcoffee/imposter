@@ -33,8 +33,8 @@ Provide mock responses using static files or customise behaviour using JavaScrip
 
 Imposter uses plugins to control its behaviour and provide specialised mocks:
 
-* **[REST](docs/rest_plugin.md)** - Mocks RESTful or plain HTTP APIs.
 * **[OpenAPI (aka Swagger)](docs/openapi_plugin.md)** - Support for [OpenAPI](https://github.com/OAI/OpenAPI-Specification) (aka Swagger) API specifications.
+* **[REST](docs/rest_plugin.md)** - Mocks RESTful or plain HTTP APIs.
 * **[HBase](docs/hbase_plugin.md)** - Basic HBase mock implementation.
 * **[SFDC (Salesforce) plugin](docs/sfdc_plugin.md)** - Basic Salesforce mock implementation.
 

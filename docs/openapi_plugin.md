@@ -28,10 +28,13 @@ Read the [Configuration](configuration.md) section to understand how to configur
 A great way to use this plugin is to take advantage of the built in `examples` feature of OpenAPI/Swagger files. These provide a standard way to document sample responses for each API response. This plugin will match the example to serve using a combination of:
 
 * matching URI/path
+* matching method
 * matching content type in `Accept` HTTP request header to the `produces` property of the response
 * matching status code to the response
 
-Typically, you will use a simple script (see `plugin/openapi/src/test/resources/openapi2/simple` for working example) to control the status code, and thus the content of the response.
+Imposter will return the first response found that matches the path and method. You can override the behaviour by setting the status code for a given combination of path and method (see below).
+
+Typically, you will use the configuration file `<something>-config.yaml` to override the status code, and thus the content of the response, however, you can use the in-built script engine to gain further control of the response data, headers etc. (see below). 
 
 You can also use the interactive API sandbox at `/_spec`; e.g. [http://localhost:8080/_spec](http://localhost:8080/_spec), which looks like this:
 
@@ -277,7 +280,11 @@ For more advanced scenarios, you can also control Imposter's responses using Jav
 
 > See the [Scripting](scripting.md) section for more information.
 
+For a simple script, see `plugin/openapi/src/test/resources/openapi3/simple` for a working example.
+
 ### Example
+
+Here we set the `response.scriptFile` property in the configuration file:
 
 ```yaml
 # scripted-openapi-config.yaml
@@ -288,7 +295,9 @@ response:
   scriptFile: example.groovy
 ```
 
-Here `example.groovy` can control the responses, such as:
+> As a reminder, you can use either JavaScript (`.js`) or Groovy (`.groovy`) languages for your scripts.
+
+Now, `example.groovy` can control the responses, such as:
 
 1. a specific example name to return
 
@@ -340,3 +349,5 @@ paths:
                   value: |-
                     { "id": 2, "name": "Dog" }
 ```
+
+See `plugin/openapi/src/test/resources/openapi3/named-example` for a working example.
