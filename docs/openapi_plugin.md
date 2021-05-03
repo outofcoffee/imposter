@@ -9,6 +9,7 @@ The plugin provides support for [OpenAPI](https://github.com/OAI/OpenAPI-Specifi
 
 * Creates mock endpoints from OpenAPI/Swagger v2 and OpenAPI v3 API specifications.
 * Serves response examples embedded in the specification.
+* Optionally validates your HTTP requests to ensure they match the OpenAPI specification.
 * Also supports static response files and script-driven responses, using status code, response files etc.
 * Provides an interactive API sandbox at `/_spec`
 
@@ -30,7 +31,7 @@ A great way to use this plugin is to take advantage of the built in `examples` f
 * matching content type in `Accept` HTTP request header to the `produces` property of the response
 * matching status code to the response
 
-Typically you will use a simple script (see `plugin/openapi/src/test/resources/openapi2/simple` for working example) to control the status code, and thus the content of the response.
+Typically, you will use a simple script (see `plugin/openapi/src/test/resources/openapi2/simple` for working example) to control the status code, and thus the content of the response.
 
 You can also use the interactive API sandbox at `/_spec`; e.g. [http://localhost:8080/_spec](http://localhost:8080/_spec), which looks like this:
 
@@ -150,9 +151,105 @@ Once you're finished, stop the server with CTRL+C.
 > * docs/examples/openapi
 > * plugin/openapi/src/test/resources/openapi2/simple
 
+## Validating requests against the specification
+
+Imposter allows you to optionally validate your HTTP requests to ensure they match the OpenAPI specification.
+
+To enable this, set the `validation.request` configuration option to `true`:
+
+```yaml
+# validating-request-config.yaml
+---
+plugin: "openapi"
+specFile: "example-spec.yaml"
+
+validation:
+  request: true
+```
+
+Now, for every incoming request to a valid combination of path and HTTP method, the request parameters, headers and body will be validated against the corresponding part of the specification.
+
+If a request fails validation, Imposter logs the validation errors then responds with an HTTP 400 status and, optionally, a report of the errors.
+
+For example, if we make an HTTP request to and endpoint that requires a header, named 'X-Correlation-ID' and requires a request body:
+
+```shell
+$ curl -v -X POST http://localhost:8080/pets
+```
+
+This results in the following log entries:
+
+```
+WARN  i.g.i.p.o.s.SpecificationServiceImpl - Validation failed for POST /pets: Validation failed.
+[ERROR][REQUEST][POST /pets @header.X-CorrelationID] Header parameter 'X-CorrelationID' is required on path '/pets' but not found in request.
+[ERROR][REQUEST][POST /pets @body] A request body is required but none found.
+```
+
+...and the following HTTP response:
+
+```shell
+HTTP/1.1 400 Bad Request
+Content-Type: text/html
+Content-Length: 361
+
+<html>
+<head><title>Invalid request</title></head>
+<body><h1>Request validation failed</h1><br/><pre>Validation failed.
+[ERROR][REQUEST][POST /pets @header.X-CorrelationID] Header parameter 'X-CorrelationID' is required on path '/pets' but not found in request.
+[ERROR][REQUEST][POST /pets @body] A request body is required but none found.</pre></body>
+</html>
+```
+
+This is because in the corresponding part of the OpenAPI specification, both the header and request body are marked as required:
+
+```yaml
+/pets/{petId}:
+  put:
+    summary: Update a specific pet
+    operationId: updatePet
+    parameters:
+      - in: path
+        name: petId
+        required: true
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Pet" 
+```
+
+Note that if the request body were provided, its structure would be validated against the corresponding schema entry.
+
+## Overriding status code
+
+Sometimes you might want to force a particular status code to be returned, or use other path-specific behaviours. To do this, you can use the `resources` configuration:
+
+```yaml
+# override-status-code-config.yaml
+---
+plugin: "openapi"
+specFile: "spec-with-multiple-status-codes.yaml"
+
+resources:
+  - path: "/pets"
+    method: "post"
+    response:
+      statusCode: 201
+
+  - path: "/pets/:petId"
+    method: "put"
+    response:
+      statusCode: 202
+```
+
+Here, POST requests to the `/pets` endpoint will default to the HTTP 201 status code. If there is a corresponding response example for the 201 status, this will be returned in the HTTP response.
+
+The `path` property supports placeholders, using the Vert.x Web colon format, so in the second example above, PUT requests to the endpoint `/pets/<some ID>` will return a 202 status. 
+
 ## Object response examples
 
-Imposter has basic support for response examples defined as objects, for example an API specification like [object-examples.yaml](../plugin/openapi/src/test/resources/openapi2/object-examples.yaml).
+Imposter has basic support for response examples defined as objects, for example an API specification like `object-examples.yaml` (see `/plugin/openapi/src/test/resources/openapi2/`).
 
 The salient part of the response is as follows:
 
@@ -173,32 +270,6 @@ responses:
 > Note: the JSON example is specified as an object.
 
 Imposter currently supports JSON and YAML serialised content types in the response if they are specified in this way. If you want to return a different format, return a literal string, such as those above.
-
-## Overriding default response behaviours
-
-Sometimes you might want to force a particular status code to be returned, or use other path-specific behaviours. To do this, you can use the `resources` configuration:
-
-```yaml
-# default-status-code.yaml
----
-plugin: "openapi"
-specFile: "openapi3-with-multiple-status-codes.yaml"
-
-resources:
-  - path: "/pets"
-    method: "post"
-    response:
-      statusCode: 201
-
-  - path: "/pets/:petId"
-    method: "put"
-    response:
-      statusCode: 202
-```
-
-Here, POST requests to the `/pets` endpoint will default to the HTTP 201 status code. If there is a corresponding response example for the 201 status, this will be returned in the HTTP response.
-
-The `path` property supports placeholders, using the Vert.x Web colon format, so in the second example above, PUT requests to the endpoint `/pets/<some ID>` will return a 202 status. 
 
 ## Scripted responses (advanced)
 

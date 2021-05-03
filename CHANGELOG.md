@@ -3,9 +3,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [1.5.0] - 2021-05-03
 ### Added
-- ...
+- (openapi) Allows request validation to be enabled via OpenAPI plugin configuration.
+
+### Changed
+- (openapi) OpenAPI plugin returns first status code for operation if none set explicitly. 
+- (openapi) Returns the first value of an enum when building an example from an OpenAPI schema.
 
 ## [1.4.0] - 2021-04-29
 ### Added
