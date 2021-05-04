@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -44,7 +45,7 @@ public final class OpenApiVersionUtil {
         final String specData;
         final Map parsed;
         try {
-            specData = FileUtils.readFileToString(specPath.toFile());
+            specData = FileUtils.readFileToString(specPath.toFile(), Charset.defaultCharset());
 
             // determine serialisation
             final ObjectMapper mapper = determineMapper(specPath, specData);
