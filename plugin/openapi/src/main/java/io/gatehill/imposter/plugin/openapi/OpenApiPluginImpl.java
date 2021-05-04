@@ -16,6 +16,7 @@ import io.gatehill.imposter.script.ResponseBehaviour;
 import io.gatehill.imposter.service.ResponseService;
 import io.gatehill.imposter.util.AsyncUtil;
 import io.gatehill.imposter.util.HttpUtil;
+import io.gatehill.imposter.util.MapUtil;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
@@ -87,6 +88,10 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
     @Override
     protected void configurePlugin(List<OpenApiPluginConfig> configs) {
         this.configs = configs;
+    }
+
+    static {
+        MapUtil.addJavaTimeSupport(io.swagger.util.Json.mapper());
     }
 
     @Override
