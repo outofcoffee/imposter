@@ -2,8 +2,8 @@ package io.gatehill.imposter.service;
 
 import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
-import io.gatehill.imposter.script.ScriptedResponseBehavior;
 import io.gatehill.imposter.script.RuntimeContext;
+import io.gatehill.imposter.script.ScriptedResponseBehavior;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}

@@ -6,7 +6,6 @@ import com.jayway.restassured.http.ContentType;
 import io.gatehill.imposter.plugin.Plugin;
 import io.gatehill.imposter.server.BaseVerticleTest;
 import io.vertx.ext.unit.TestContext;
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 

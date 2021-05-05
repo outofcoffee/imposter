@@ -11,10 +11,14 @@ import io.vertx.core.http.HttpServerRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyMap;
@@ -29,6 +33,13 @@ import static java.util.Objects.nonNull;
  */
 public class SchemaServiceImpl implements SchemaService {
     private static final Logger LOGGER = LogManager.getLogger(SchemaServiceImpl.class);
+
+    private static final Map<String, DefaultValueProvider<?>> DEFAULT_VALUE_PROVIDERS = new HashMap<String, DefaultValueProvider<?>>() {{
+        put("string", new StringDefaultValueProvider());
+        put("number", new NumberDefaultValueProvider());
+        put("integer", new IntegerDefaultValueProvider());
+        put("boolean", new BooleanDefaultValueProvider());
+    }};
 
     @Override
     public ContentTypedHolder<?> collectExamples(HttpServerRequest request, OpenAPI spec, ContentTypedHolder<Schema<?>> schema) {
@@ -75,7 +86,7 @@ public class SchemaServiceImpl implements SchemaService {
 
     private List<Object> buildFromArraySchema(OpenAPI spec, ArraySchema schema) {
         // items may be a schema type with multiple children
-        final Schema items = schema.getItems();
+        final Schema<?> items = schema.getItems();
         final List<Object> examples = new ArrayList<>();
         examples.add(collectSchemaExample(spec, items));
         return examples;
@@ -126,28 +137,76 @@ public class SchemaServiceImpl implements SchemaService {
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> collectSchemaExample(spec, e.getValue())));
     }
 
-    private Object getPropertyDefault(Schema schema) {
-        // choose the first enum value if one exists
+    private Object getPropertyDefault(Schema<?> schema) {
+        // if a non-empty enum exists, choose the first value
         if (nonNull(schema.getEnum()) && !schema.getEnum().isEmpty()) {
             return schema.getEnum().get(0);
         }
 
+        // fall back to a default for the type
         if (nonNull(schema.getType())) {
-            // TODO make these configurable
-            switch (schema.getType()) {
-                case "string":
-                    return "";
-                case "number":
-                case "integer":
-                    return 0;
-                case "boolean":
-                    return false;
-                default:
-                    LOGGER.warn("Unknown type: {} for schema: {} - returning null for example property", schema.getType(), schema.getName());
-                    return null;
+            final DefaultValueProvider<?> defaultValueProvider = DEFAULT_VALUE_PROVIDERS.get(schema.getType());
+            if (nonNull(defaultValueProvider)) {
+                return defaultValueProvider.provide(schema);
+            } else {
+                LOGGER.warn("Unknown type: {} for schema: {} - returning null for example property", schema.getType(), schema.getName());
+                return null;
             }
         }
+
         LOGGER.warn("Missing type for schema: {} - returning null for example property", schema.getName());
         return null;
+    }
+
+    private interface DefaultValueProvider<T> {
+        T provide(Schema<?> schema);
+    }
+
+    private static class StringDefaultValueProvider implements DefaultValueProvider<String> {
+        @Override
+        public String provide(Schema<?> schema) {
+            // TODO make these configurable
+            if (nonNull(schema.getFormat())) {
+                // see https://swagger.io/docs/specification/data-models/data-types/
+                switch (schema.getFormat()) {
+                    case "date":
+                        return DateTimeFormatter.ISO_DATE.format(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
+                    case "date-time":
+                        return DateTimeFormatter.ISO_DATE_TIME.format(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
+                    case "password":
+                        return "changeme";
+                    case "byte":
+                        // base64-encoded characters
+                        return "SW1wb3N0ZXI0bGlmZQo=";
+                    case "email":
+                        return "test@example.com";
+                    case "uuid":
+                    case "guid":
+                        return UUID.randomUUID().toString();
+                }
+            }
+            return "";
+        }
+    }
+
+    private static class NumberDefaultValueProvider implements DefaultValueProvider<Double> {
+        @Override
+        public Double provide(Schema<?> schema) {
+            return 0.0;
+        }
+    }
+
+    private static class IntegerDefaultValueProvider implements DefaultValueProvider<Integer> {
+        @Override
+        public Integer provide(Schema<?> schema) {
+            return 0;
+        }
+    }
+
+    private static class BooleanDefaultValueProvider implements DefaultValueProvider<Boolean> {
+        @Override
+        public Boolean provide(Schema<?> schema) {
+            return false;
+        }
     }
 }

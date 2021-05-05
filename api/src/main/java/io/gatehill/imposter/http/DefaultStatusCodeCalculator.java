@@ -10,7 +10,8 @@ import static java.util.Optional.ofNullable;
 public class DefaultStatusCodeCalculator implements StatusCodeCalculator {
     private static final DefaultStatusCodeCalculator INSTANCE = new DefaultStatusCodeCalculator();
 
-    private DefaultStatusCodeCalculator() {}
+    private DefaultStatusCodeCalculator() {
+    }
 
     public static DefaultStatusCodeCalculator getInstance() {
         return INSTANCE;

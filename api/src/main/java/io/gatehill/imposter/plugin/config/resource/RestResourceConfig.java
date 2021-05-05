@@ -1,7 +1,5 @@
 package io.gatehill.imposter.plugin.config.resource;
 
-import io.gatehill.imposter.plugin.config.ContentTypedConfig;
-
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */

@@ -104,8 +104,7 @@ public class ResponseServiceImpl implements ResponseService {
     @Override
     public Optional<ResponseConfigHolder> findResourceConfig(PluginConfig config, String path, HttpMethod method) {
         if (config instanceof ResourcesHolder) {
-            @SuppressWarnings("unchecked")
-            final ResourcesHolder<RestResourceConfig> resources = (ResourcesHolder<RestResourceConfig>) config;
+            @SuppressWarnings("unchecked") final ResourcesHolder<RestResourceConfig> resources = (ResourcesHolder<RestResourceConfig>) config;
             final ResourceMethod resourceMethod = ResourceMethodConverter.convertMethodFromVertx(method);
 
             if (nonNull(resources.getResources())) {

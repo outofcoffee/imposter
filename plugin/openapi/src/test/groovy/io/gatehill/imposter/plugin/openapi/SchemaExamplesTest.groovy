@@ -59,6 +59,8 @@ class SchemaExamplesTest extends BaseVerticleTest {
                 "name": "",
                 "id": 0,
                 "breed": "Collie",
+                "ownerEmail": "test@example.com",
+                "secret": "changeme",
                 "misc": {
                     "nocturnal": false,
                     "population": 47435
@@ -89,6 +91,8 @@ class SchemaExamplesTest extends BaseVerticleTest {
         testContext.assertEquals("", first.get("name"));
         testContext.assertEquals(0, first.get("id"));
         testContext.assertEquals("Collie", first.get("breed"));
+        testContext.assertEquals("test@example.com", first.get("ownerEmail"));
+        testContext.assertEquals("changeme", first.get("secret"));
 
         final misc = first.get("misc") as Map<String, ?>
         testContext.assertNotNull(misc, "misc property should not be null");

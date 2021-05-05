@@ -1,8 +1,8 @@
 package io.gatehill.imposter.script.impl;
 
-import io.gatehill.imposter.script.ScriptedResponseBehavior;
 import io.gatehill.imposter.script.MutableResponseBehaviour;
 import io.gatehill.imposter.script.ResponseBehaviourType;
+import io.gatehill.imposter.script.ScriptedResponseBehavior;
 import io.gatehill.imposter.util.HttpUtil;
 
 import java.util.HashMap;

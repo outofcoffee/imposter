@@ -48,6 +48,12 @@ definitions:
       breed:
         type: string
         example: Collie
+      ownerEmail:
+        type: string
+        format: email
+      secret:
+        type: string
+        format: password
       misc:
         type: object
         properties:

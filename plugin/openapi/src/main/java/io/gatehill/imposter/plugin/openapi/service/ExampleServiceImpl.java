@@ -23,7 +23,9 @@ import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Objects.nonNull;
-import static java.util.Optional.*;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
@@ -182,9 +184,9 @@ public class ExampleServiceImpl implements ExampleService {
      * Locate an entity of type {@link T}, first by searching the matched content types, then, optionally,
      * falling back to the first found.
      *
-     * @param routingContext    the Vert.x routing context
-     * @param config            the plugin configuration
-     * @param entriesToSearch   the examples
+     * @param routingContext  the Vert.x routing context
+     * @param config          the plugin configuration
+     * @param entriesToSearch the examples
      * @return an optional, containing the object for the given content type
      */
     private <T> Optional<ContentTypedHolder<T>> matchByContentType(

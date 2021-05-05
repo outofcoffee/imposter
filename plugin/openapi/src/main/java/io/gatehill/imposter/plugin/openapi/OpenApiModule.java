@@ -4,10 +4,10 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
 import io.gatehill.imposter.plugin.openapi.service.ExampleService;
 import io.gatehill.imposter.plugin.openapi.service.ExampleServiceImpl;
-import io.gatehill.imposter.plugin.openapi.service.SchemaService;
-import io.gatehill.imposter.plugin.openapi.service.SchemaServiceImpl;
 import io.gatehill.imposter.plugin.openapi.service.ResponseTransmissionService;
 import io.gatehill.imposter.plugin.openapi.service.ResponseTransmissionServiceImpl;
+import io.gatehill.imposter.plugin.openapi.service.SchemaService;
+import io.gatehill.imposter.plugin.openapi.service.SchemaServiceImpl;
 import io.gatehill.imposter.plugin.openapi.service.SpecificationService;
 import io.gatehill.imposter.plugin.openapi.service.SpecificationServiceImpl;
 
