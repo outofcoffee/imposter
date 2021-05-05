@@ -5,12 +5,19 @@ import io.gatehill.imposter.plugin.openapi.util.RefUtil;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.ComposedSchema;
+import io.swagger.v3.oas.models.media.DateSchema;
+import io.swagger.v3.oas.models.media.DateTimeSchema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +35,8 @@ import static java.util.Objects.nonNull;
  */
 public class SchemaServiceImpl implements SchemaService {
     private static final Logger LOGGER = LogManager.getLogger(SchemaServiceImpl.class);
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE.withZone(ZoneId.from(ZoneOffset.UTC));
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_OFFSET_DATE_TIME.withZone(ZoneId.from(ZoneOffset.UTC));
 
     @Override
     public ContentTypedHolder<?> collectExamples(OpenAPI spec, ContentTypedHolder<Schema<?>> schema) {
@@ -49,7 +58,13 @@ public class SchemaServiceImpl implements SchemaService {
             example = collectSchemaExample(spec, referent);
 
         } else if (nonNull(schema.getExample())) {
-            example = schema.getExample();
+            if (schema instanceof DateTimeSchema) {
+                example = DATE_TIME_FORMATTER.format((OffsetDateTime) schema.getExample());
+            } else if (schema instanceof DateSchema) {
+                example = DATE_FORMATTER.format(((Date) schema.getExample()).toInstant());
+            } else {
+                example = schema.getExample();
+            }
 
         } else if (nonNull(schema.getProperties())) {
             example = buildFromProperties(spec, schema.getProperties());

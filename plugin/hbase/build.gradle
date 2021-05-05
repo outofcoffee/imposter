@@ -1,6 +1,10 @@
 apply plugin: 'groovy'
 apply plugin: 'maven-publish'
 
+ext {
+    version_hbaseApi = '0.98.18-hadoop2'
+}
+
 compileJava {
     sourceCompatibility = 1.8
 }
