@@ -186,7 +186,7 @@ public class SchemaServiceImpl implements SchemaService {
                     case "date":
                         return DATE_FORMATTER.format(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
                     case "date-time":
-                        return DATE_TIME_FORMATTER.format(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
+                        return DATE_TIME_FORMATTER.format(OffsetDateTime.now().truncatedTo(ChronoUnit.SECONDS));
                     case "password":
                         return "changeme";
                     case "byte":
