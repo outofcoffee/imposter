@@ -152,11 +152,11 @@ Once you're finished, stop the server with CTRL+C.
 > For more working examples, see:
 >
 > * docs/examples/openapi
-> * plugin/openapi/src/test/resources/openapi2/simple
+> * plugin/openapi/src/test/resources/openapi3/simple
 
 ## Validating requests against the specification
 
-Imposter allows you to optionally validate your HTTP requests to ensure they match the OpenAPI specification.
+Imposter allows you to validate your HTTP requests to ensure they match the OpenAPI specification.
 
 To enable this, set the `validation.request` configuration option to `true`:
 
@@ -170,15 +170,17 @@ validation:
   request: true
 ```
 
-Now, for every incoming request to a valid combination of path and HTTP method, the request parameters, headers and body will be validated against the corresponding part of the specification.
+Now, for every incoming request to a valid combination of path and HTTP method, Imposter will validate the request parameters, headers and body against the corresponding part of the specification.
 
 If a request fails validation, Imposter logs the validation errors then responds with an HTTP 400 status and, optionally, a report of the errors.
 
-For example, if we make an HTTP request to and endpoint that requires a header, named 'X-Correlation-ID' and requires a request body:
+For example, let's make an HTTP request to an endpoint whose specification requires a request body and also requires a header, named 'X-Correlation-ID':
 
 ```shell
 $ curl -v -X POST http://localhost:8080/pets
 ```
+
+> Note that our request does not provide either a request body or header.
 
 This results in the following log entries:
 
@@ -192,37 +194,19 @@ WARN  i.g.i.p.o.s.SpecificationServiceImpl - Validation failed for POST /pets: V
 
 ```shell
 HTTP/1.1 400 Bad Request
-Content-Type: text/html
-Content-Length: 361
+Content-Type: text/plain
+Content-Length: 261
 
-<html>
-<head><title>Invalid request</title></head>
-<body><h1>Request validation failed</h1><br/><pre>Validation failed.
+Request validation failed:
 [ERROR][REQUEST][POST /pets @header.X-CorrelationID] Header parameter 'X-CorrelationID' is required on path '/pets' but not found in request.
-[ERROR][REQUEST][POST /pets @body] A request body is required but none found.</pre></body>
-</html>
+[ERROR][REQUEST][POST /pets @body] A request body is required but none found.
 ```
 
-This is because in the corresponding part of the OpenAPI specification, both the header and request body are marked as required:
-
-```yaml
-/pets/{petId}:
-  put:
-    summary: Update a specific pet
-    operationId: updatePet
-    parameters:
-      - in: path
-        name: petId
-        required: true
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/Pet" 
-```
+This is because in the corresponding part of the OpenAPI specification, both the header and request body are marked as required.
 
 Note that if the request body were provided, its structure would be validated against the corresponding schema entry.
+
+For more information about validation, including how to ignore certain conditions, see the [OpenAPI validation](./openapi_validation.md) document.
 
 ## Overriding status code
 
@@ -252,7 +236,7 @@ The `path` property supports placeholders, using the Vert.x Web colon format, so
 
 ## Object response examples
 
-Imposter has basic support for response examples defined as objects, for example an API specification like `object-examples.yaml` (see `/plugin/openapi/src/test/resources/openapi2/`).
+Imposter has basic support for response examples defined as objects, for example an API specification like `object-examples.yaml` (see `/plugin/openapi/src/test/resources/openapi3/`).
 
 The salient part of the response is as follows:
 
