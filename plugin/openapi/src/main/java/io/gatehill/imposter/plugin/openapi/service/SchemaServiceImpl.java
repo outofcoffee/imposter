@@ -7,6 +7,7 @@ import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.ComposedSchema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
+import io.vertx.core.http.HttpServerRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -30,9 +31,10 @@ public class SchemaServiceImpl implements SchemaService {
     private static final Logger LOGGER = LogManager.getLogger(SchemaServiceImpl.class);
 
     @Override
-    public ContentTypedHolder<?> collectExamples(OpenAPI spec, ContentTypedHolder<Schema<?>> schema) {
+    public ContentTypedHolder<?> collectExamples(HttpServerRequest request, OpenAPI spec, ContentTypedHolder<Schema<?>> schema) {
         final Object example = collectSchemaExample(spec, schema.getValue());
-        LOGGER.debug("Collected example from schema: {}", example);
+        LOGGER.trace("Collected example from {} schema for {} {}: {}", schema.getContentType(), request.method(), request.path(), example);
+
         return new ContentTypedHolder<>(schema.getContentType(), example);
     }
 

@@ -1,7 +1,6 @@
 package io.gatehill.imposter.plugin.openapi.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.gatehill.imposter.plugin.config.ContentTypedPluginConfigImpl;
 import io.gatehill.imposter.plugin.config.ResourcesHolder;
 import io.gatehill.imposter.plugin.config.resource.RestResourceConfig;

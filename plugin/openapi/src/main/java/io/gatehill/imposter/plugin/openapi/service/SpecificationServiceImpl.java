@@ -2,6 +2,7 @@ package io.gatehill.imposter.plugin.openapi.service;
 
 import com.atlassian.oai.validator.OpenApiInteractionValidator;
 import com.atlassian.oai.validator.model.SimpleRequest;
+import com.atlassian.oai.validator.report.LevelResolver;
 import com.atlassian.oai.validator.report.SimpleValidationReportFormat;
 import com.atlassian.oai.validator.report.ValidationReport;
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -9,6 +10,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import io.gatehill.imposter.ImposterConfig;
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig;
+import io.gatehill.imposter.plugin.openapi.util.ValidationReportUtil;
 import io.gatehill.imposter.util.MapUtil;
 import io.swagger.models.Scheme;
 import io.swagger.v3.oas.models.Components;
@@ -195,7 +197,7 @@ public class SpecificationServiceImpl implements SpecificationService {
 
         final OpenApiInteractionValidator validator;
         try {
-            validator = getValidator(imposterConfig, allSpecs);
+            validator = getValidator(imposterConfig, pluginConfig, allSpecs);
         } catch (ExecutionException e) {
             routingContext.fail(new RuntimeException("Error building spec validator", e));
             return false;
@@ -218,15 +220,14 @@ public class SpecificationServiceImpl implements SpecificationService {
                 response.setStatusCode(400);
 
                 if (pluginConfig.getValidation().getReturnErrorsInResponse()) {
-                    response.putHeader("Content-Type", "text/html")
-                            .end(buildResponseReport(reportMessages));
+                    ValidationReportUtil.sendValidationReport(routingContext, reportMessages);
                 } else {
                     response.end();
                 }
                 return false;
             }
         } else {
-            LOGGER.trace("Validation passed for {} {}", request.method(), request.path());
+            LOGGER.debug("Validation passed for {} {}", request.method(), request.path());
         }
 
         return true;
@@ -235,18 +236,22 @@ public class SpecificationServiceImpl implements SpecificationService {
     /**
      * Returns the specification validator from cache, creating it first on cache miss.
      */
-    private OpenApiInteractionValidator getValidator(ImposterConfig imposterConfig, List<OpenAPI> allSpecs) throws ExecutionException {
+    private OpenApiInteractionValidator getValidator(ImposterConfig imposterConfig, OpenApiPluginConfig pluginConfig, List<OpenAPI> allSpecs) throws ExecutionException {
         return (OpenApiInteractionValidator) cache.get("specValidator", () -> {
             final OpenAPI combined = getCombinedSpec(imposterConfig, allSpecs);
-            return OpenApiInteractionValidator.createFor(combined).build();
-        });
-    }
 
-    private String buildResponseReport(String reportMessages) {
-        return "<html>\n" +
-                "<head><title>Invalid request</title></head>\n" +
-                "<body><h1>Request validation failed</h1><br/><pre>" + reportMessages + "</pre></body>\n" +
-                "</html>\n";
+            final OpenApiInteractionValidator.Builder builder = OpenApiInteractionValidator.createFor(combined);
+
+            // custom validation levels
+            if (nonNull(pluginConfig.getValidation().getLevels())) {
+                LOGGER.trace("Using custom validation levels: {}", pluginConfig.getValidation().getLevels());
+                final LevelResolver.Builder levelBuilder = LevelResolver.create();
+                pluginConfig.getValidation().getLevels().forEach((key, value) -> levelBuilder.withLevel(key, ValidationReport.Level.valueOf(value)));
+                builder.withLevelResolver(levelBuilder.build());
+            }
+
+            return builder.build();
+        });
     }
 
     private void setServers(OpenAPI combined, List<Server> servers, Scheme scheme, String basePath) {

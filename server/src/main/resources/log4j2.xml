@@ -12,7 +12,7 @@
         <Logger name="io.netty" level="warn" />
         <Logger name="httpclient.wire" level="warn" />
         <Logger name="org.apache" level="warn" />
-        <Logger name="org.atlassian.oai" level="warn" />
+        <Logger name="com.atlassian.oai" level="warn" />
         <Logger name="io.gatehill.imposter" level="debug" />
     </Loggers>
 </Configuration>

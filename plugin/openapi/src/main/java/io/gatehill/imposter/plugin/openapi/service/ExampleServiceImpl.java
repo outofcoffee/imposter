@@ -61,7 +61,7 @@ public class ExampleServiceImpl implements ExampleService {
                 return true;
 
             } else {
-                LOGGER.debug("No inline examples found; checking schema");
+                LOGGER.trace("No inline examples found; checking schema");
                 final Optional<ContentTypedHolder<Schema<?>>> schema = findResponseSchema(
                         config, routingContext, responseContent
                 );
@@ -102,7 +102,7 @@ public class ExampleServiceImpl implements ExampleService {
             ResponseBehaviour responseBehaviour,
             Content responseContent
     ) {
-        final List<ResponseExample<Object>> examples = newArrayList();
+        final List<ResponseEntities<Object>> examples = newArrayList();
 
         // fetch all examples
         responseContent.forEach((mimeTypeName, mediaType) -> {
@@ -110,10 +110,10 @@ public class ExampleServiceImpl implements ExampleService {
             //  "The example field is mutually exclusive of the examples field."
             // See: https://github.com/OAI/OpenAPI-Specification/blob/3.0.1/versions/3.0.1.md#mediaTypeObject
             if (nonNull(mediaType.getExample())) {
-                examples.add(ResponseExample.of(mimeTypeName, mediaType.getExample()));
+                examples.add(ResponseEntities.of("inline example", mimeTypeName, mediaType.getExample()));
             } else if (nonNull(mediaType.getExamples())) {
                 mediaType.getExamples().forEach((exampleName, example) -> {
-                    examples.add(ResponseExample.of(mimeTypeName, example, exampleName));
+                    examples.add(ResponseEntities.of("inline example", mimeTypeName, example, exampleName));
                 });
             }
         });
@@ -135,10 +135,10 @@ public class ExampleServiceImpl implements ExampleService {
             RoutingContext routingContext,
             Content responseContent
     ) {
-        final List<ResponseExample<Schema<?>>> schemas = newArrayList();
+        final List<ResponseEntities<Schema<?>>> schemas = newArrayList();
         responseContent.forEach((mimeTypeName, mediaType) -> {
             if (nonNull(mediaType.getSchema())) {
-                schemas.add(ResponseExample.of(mimeTypeName, mediaType.getSchema()));
+                schemas.add(ResponseEntities.of("response schema", mimeTypeName, mediaType.getSchema()));
             }
         });
         return matchByContentType(routingContext, config, schemas);
@@ -158,18 +158,18 @@ public class ExampleServiceImpl implements ExampleService {
             RoutingContext routingContext,
             OpenApiPluginConfig config,
             ResponseBehaviour responseBehaviour,
-            List<ResponseExample<T>> entriesToSearch
+            List<ResponseEntities<T>> entriesToSearch
     ) {
         // a specific example has been selected
         if (!Strings.isNullOrEmpty(responseBehaviour.getExampleName())) {
-            final Optional<ResponseExample<T>> candidateExample = entriesToSearch.stream()
+            final Optional<ResponseEntities<T>> candidateExample = entriesToSearch.stream()
                     .filter(entry -> responseBehaviour.getExampleName().equals(entry.name))
                     .findFirst();
 
             if (candidateExample.isPresent()) {
                 LOGGER.debug("Exact example selected: {}", responseBehaviour.getExampleName());
-                final ResponseExample<T> responseExample = candidateExample.get();
-                return convertToContentTypedExample(responseExample);
+                final ResponseEntities<T> responseEntities = candidateExample.get();
+                return convertToContentTypedExample(responseEntities);
             } else {
                 LOGGER.warn("No example named '{}' was present", responseBehaviour.getExampleName());
             }
@@ -179,7 +179,7 @@ public class ExampleServiceImpl implements ExampleService {
     }
 
     /**
-     * Locate an item of type {@link T}, first by searching the matched content types, then, optionally,
+     * Locate an entity of type {@link T}, first by searching the matched content types, then, optionally,
      * falling back to the first found.
      *
      * @param routingContext    the Vert.x routing context
@@ -190,7 +190,7 @@ public class ExampleServiceImpl implements ExampleService {
     private <T> Optional<ContentTypedHolder<T>> matchByContentType(
             RoutingContext routingContext,
             OpenApiPluginConfig config,
-            List<ResponseExample<T>> entriesToSearch
+            List<ResponseEntities<T>> entriesToSearch
     ) {
         // the produced content types
         final Set<String> produces = entriesToSearch.stream()
@@ -204,27 +204,27 @@ public class ExampleServiceImpl implements ExampleService {
 
         // match example by produced and accepted content types, assuming example name is a content type
         if (matchedContentTypes.size() > 0) {
-            final List<ResponseExample<T>> candidateExamples = entriesToSearch.stream()
+            final List<ResponseEntities<T>> candidateEntities = entriesToSearch.stream()
                     .filter(example -> matchedContentTypes.contains(example.contentType))
                     .collect(Collectors.toList());
 
-            if (!candidateExamples.isEmpty()) {
-                final ResponseExample<T> example = candidateExamples.get(0);
+            if (!candidateEntities.isEmpty()) {
+                final ResponseEntities<T> entity = candidateEntities.get(0);
 
-                if (candidateExamples.size() > 1) {
-                    LOGGER.warn("More than one example found matching accepted content types ({}), but no example name specified. Selecting first entry: {}", matchedContentTypes, example.contentType);
+                if (candidateEntities.size() > 1) {
+                    LOGGER.warn("More than one {} found matching accepted content types ({}), but no example name specified. Selecting first entry: {}", entity.entityDescription, matchedContentTypes, entity.contentType);
                 } else {
-                    LOGGER.debug("Exact example match found for content type ({}) from specification", example.contentType);
+                    LOGGER.debug("Exact {} match found for accepted content type ({}) from specification", entity.entityDescription, entity.contentType);
                 }
 
-                return convertToContentTypedExample(example);
+                return convertToContentTypedExample(entity);
             }
         }
 
         // fallback to first example found
-        if (config.isPickFirstIfNoneMatch()) {
-            final ResponseExample<T> example = entriesToSearch.iterator().next();
-            LOGGER.debug("No exact example match found for content type - choosing one example ({}) from specification." +
+        if (config.isPickFirstIfNoneMatch() && !entriesToSearch.isEmpty()) {
+            final ResponseEntities<T> example = entriesToSearch.iterator().next();
+            LOGGER.debug("No exact match found for accepted content types - choosing first item found ({}) from specification." +
                     " You can switch off this behaviour by setting configuration option 'pickFirstIfNoneMatch: false'", example.contentType);
 
             return convertToContentTypedExample(example);
@@ -234,13 +234,13 @@ public class ExampleServiceImpl implements ExampleService {
         return empty();
     }
 
-    private static <T> Optional<ContentTypedHolder<T>> convertToContentTypedExample(ResponseExample<T> entry) {
+    private static <T> Optional<ContentTypedHolder<T>> convertToContentTypedExample(ResponseEntities<T> entry) {
         return of(new ContentTypedHolder<T>(entry.contentType, entry.item));
     }
 
     private boolean serveFromSchema(RoutingContext routingContext, OpenAPI spec, ContentTypedHolder<Schema<?>> schema) {
         try {
-            final ContentTypedHolder<?> dynamicExamples = schemaService.collectExamples(spec, schema);
+            final ContentTypedHolder<?> dynamicExamples = schemaService.collectExamples(routingContext.request(), spec, schema);
             responseTransmissionService.transmitExample(routingContext, dynamicExamples);
             return true;
         } catch (Exception e) {
@@ -249,23 +249,25 @@ public class ExampleServiceImpl implements ExampleService {
         }
     }
 
-    private static class ResponseExample<T> {
+    private static class ResponseEntities<T> {
+        public String entityDescription;
         public String name;
         public T item;
         public String contentType;
 
-        private ResponseExample(String contentType, T item, String name) {
+        private ResponseEntities(String entityDescription, String contentType, T item, String name) {
+            this.entityDescription = entityDescription;
             this.contentType = contentType;
             this.item = item;
             this.name = name;
         }
 
-        public static <T> ResponseExample<T> of(String contentType, T item) {
-            return of(contentType, item, null);
+        public static <T> ResponseEntities<T> of(String entityDescription, String contentType, T item) {
+            return of(entityDescription, contentType, item, null);
         }
 
-        public static <T> ResponseExample<T> of(String contentType, T item, String name) {
-            return new ResponseExample<>(contentType, item, name);
+        public static <T> ResponseEntities<T> of(String entityDescription, String contentType, T item, String name) {
+            return new ResponseEntities<>(entityDescription, contentType, item, name);
         }
     }
 }
