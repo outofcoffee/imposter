@@ -50,13 +50,11 @@ subprojects {
         version_vertx = '3.4.2'
         version_log4j = '2.9.1'
         version_guice = '4.1.0'
-        version_hbaseApi = '0.98.18-hadoop2'
         version_junit = '4.12'
         version_restAssured = '2.9.0'
         version_groovy = '2.4.12'
         version_args4j = '2.33'
         version_jackson = '2.12.3'
-        version_swaggerParser = '2.0.13'
     }
 }
 

@@ -1,6 +1,10 @@
 apply plugin: 'groovy'
 apply plugin: 'maven-publish'
 
+ext {
+    version_swaggerParser = '2.0.25'
+}
+
 compileJava {
     sourceCompatibility = 1.8
 }
