@@ -31,6 +31,7 @@ public class ResponseTransmissionServiceImpl implements ResponseTransmissionServ
         if (isNull(exampleValue)) {
             LOGGER.info("No example found - returning empty response");
             routingContext.response().end();
+            return;
         }
         final String exampleResponse = buildExampleResponse(example.getContentType(), example.getValue());
 

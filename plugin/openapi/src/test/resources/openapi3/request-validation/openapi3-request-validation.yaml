@@ -49,6 +49,24 @@ paths:
       responses:
         '202':
           description: Indicates pet updated
+  /vets:
+    get:
+      summary: List all veterinarians
+      operationId: listVets
+      parameters:
+        - name: limit
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: list of vets
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vets"
 components:
   schemas:
     Pet:
@@ -62,3 +80,34 @@ components:
           format: int64
         name:
           type: string
+    Vet:
+      type: object
+      required:
+        - name
+        - address
+      properties:
+        name:
+          type: string
+          example: SupaVets
+        address:
+          $ref: "#/components/schemas/Address"
+    Vets:
+      type: array
+      items:
+        $ref: "#/components/schemas/Vet"
+    Address:
+      type: object
+      required:
+        - firstLine
+        - city
+        - postCode
+      properties:
+        firstLine:
+          type: string
+          example: 10 Petal Lane
+        city:
+          type: string
+          example: London
+        postCode:
+          type: string
+          example: EC1A 2BC

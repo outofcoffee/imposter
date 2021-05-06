@@ -13,6 +13,9 @@ import java.util.List;
 
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 
 /**
  * Tests for request validation for OpenAPI mocks.
@@ -130,5 +133,40 @@ public class RequestValidationTest extends BaseVerticleTest {
                 .log().ifValidationFails()
                 .statusCode(400)
                 .body(containsString("Instance type (string) does not match any allowed primitive type (allowed: [\"integer\"])"));
+    }
+
+    /**
+     * Request should fail request validation due to missing request parameter.
+     */
+    @Test
+    public void testMissingRequestParameter(TestContext testContext) {
+        given()
+                .log().ifValidationFails()
+                .accept(ContentType.JSON)
+                .when()
+                .get("/vets")
+                .then()
+                .log().ifValidationFails()
+                .statusCode(400)
+                .body(containsString("Query parameter 'limit' is required on path '/vets' but not found in request"));
+    }
+
+    /**
+     * Request should pass request validation due to provided request parameter.
+     */
+    @Test
+    public void testValidRequestParameter(TestContext testContext) {
+        given()
+                .log().ifValidationFails()
+                .accept(ContentType.JSON)
+                .when()
+                .get("/vets?limit=1")
+                .then()
+                .log().ifValidationFails()
+                .statusCode(200)
+                .body("$", hasSize(1))
+                .body("$", hasItem(
+                    hasEntry("name", "SupaVets")
+                ));
     }
 }
