@@ -207,6 +207,7 @@ public class SpecificationServiceImpl implements SpecificationService {
         final SimpleRequest.Builder requestBuilder = new SimpleRequest.Builder(request.method().toString(), request.path())
                 .withBody(routingContext.getBodyAsString());
 
+        request.params().forEach(p -> requestBuilder.withQueryParam(p.getKey(), p.getValue()));
         request.headers().forEach(h -> requestBuilder.withHeader(h.getKey(), h.getValue()));
 
         final ValidationReport report = validator.validateRequest(requestBuilder.build());
