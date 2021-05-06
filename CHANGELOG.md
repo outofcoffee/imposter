@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- ...
+
 ## [1.6.1] - 2021-05-06
 ### Fixed
 - (openapi) Correctly validates request query parameters.
