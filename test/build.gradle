@@ -11,4 +11,10 @@ dependencies {
     // test
     compile "junit:junit:$version_junit"
     compile "io.vertx:vertx-unit:$version_vertx"
+
+    // mocking
+    implementation "org.mockito:mockito-core:3.+"
+
+    // required to mock vertx interfaces
+    compile "io.vertx:vertx-codegen:$version_vertx"
 }

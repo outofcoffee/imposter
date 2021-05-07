@@ -1,5 +1,3 @@
-import io.vertx.core.http.HttpHeaders
-
 // Example of returning a specific status code, to control which
 // specification example is returned in the response.
 
@@ -39,8 +37,9 @@ if (context.request.uri ==~ /(.*)\/apis$/) {
                 withHeader("MyHeader", "MyHeaderValue")
             }
             break
+
         case 'GET':
-            if (context.request.headers.get(HttpHeaders.AUTHORIZATION) == "AUTH_HEADER") {
+            if (context.request.headers.Authorization == "AUTH_HEADER") {
                 respond {
                     withStatusCode 204
                 }
@@ -50,6 +49,7 @@ if (context.request.uri ==~ /(.*)\/apis$/) {
                 }
             }
             break
+
         default:
             // fallback to specification examples
             respond {

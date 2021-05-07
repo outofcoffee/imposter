@@ -22,14 +22,13 @@ class ScriptUtil {
      * @return the context
      */
     static ExecutionContext buildContext(RoutingContext routingContext, Map<String, Object> additionalContext) {
-        def lazyParams = {
-            routingContext.request().params().entries().collectEntries { entry -> [entry.key, entry.value] }
-        }
+        final Map<String, String> params = routingContext.request().params().entries().collectEntries()
+        final Map<String, String> headers = routingContext.request().headers().collectEntries()
 
         def deprecatedParams = {
             LOGGER.warn("Deprecation notice: 'context.params' is deprecated and will be removed " +
                     "in a future version. Use 'context.request.params' instead.")
-            lazyParams(it)
+            params
         }
 
         def deprecatedUri = {
@@ -50,8 +49,8 @@ class ScriptUtil {
         request.method = "${-> routingContext.request().method().name()}"
         request.uri = "${-> routingContext.request().absoluteURI()}"
         request.body = "${-> routingContext.getBodyAsString()}"
-        request.headers = routingContext.request().headers()
-        request.metaClass.getParams = lazyParams
+        request.headers = headers
+        request.params = params
         executionContext.request = request
 
         // additional context

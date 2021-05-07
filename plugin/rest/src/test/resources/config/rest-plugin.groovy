@@ -1,6 +1,5 @@
 // Example of returning a specific status code or response file,
 // based on URI parameters or the absolute URI.
-import io.vertx.core.http.HttpHeaders
 
 switch (context.request.uri) {
     case ~/.*bad/:
@@ -10,8 +9,9 @@ switch (context.request.uri) {
             immediately()
         }
         break
+
     case ~/.*with-auth/:
-        if (context.request.headers.get(HttpHeaders.AUTHORIZATION) == "AUTH_HEADER") {
+        if (context.request.headers.Authorization == "AUTH_HEADER") {
             // HTTP Status-Code 204: No Content.
             respond {
                 withStatusCode 204
