@@ -10,12 +10,12 @@ import java.util.List;
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public class OpenApiPluginConfig extends ContentTypedPluginConfigImpl implements ResourcesHolder<RestResourceConfig> {
+public class OpenApiPluginConfig extends ContentTypedPluginConfigImpl implements ResourcesHolder<OpenApiPluginResourceConfig> {
     @JsonProperty("specFile")
     private String specFile;
 
     @JsonProperty("resources")
-    private List<RestResourceConfig> resources;
+    private List<OpenApiPluginResourceConfig> resources;
 
     @JsonProperty("pickFirstIfNoneMatch")
     private boolean pickFirstIfNoneMatch = true;
@@ -30,7 +30,7 @@ public class OpenApiPluginConfig extends ContentTypedPluginConfigImpl implements
     }
 
     @Override
-    public List<RestResourceConfig> getResources() {
+    public List<OpenApiPluginResourceConfig> getResources() {
         return resources;
     }
 

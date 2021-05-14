@@ -4,6 +4,8 @@ import io.gatehill.imposter.plugin.config.ContentTypedConfig;
 import io.gatehill.imposter.plugin.config.resource.RestResourceConfig;
 
 /**
+ * Extends a REST resource configuration with a content type and resource type.
+ *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public class RestPluginResourceConfig extends RestResourceConfig implements ContentTypedConfig {

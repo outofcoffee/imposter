@@ -18,7 +18,7 @@ import static com.jayway.restassured.RestAssured.given;
  *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public class DefaultStatusCodeTest extends BaseVerticleTest {
+public class OverrideStatusCodeTest extends BaseVerticleTest {
     @Override
     protected Class<? extends Plugin> getPluginClass() {
         return OpenApiPluginImpl.class;
@@ -33,7 +33,7 @@ public class DefaultStatusCodeTest extends BaseVerticleTest {
     @Override
     protected List<String> getTestConfigDirs() {
         return Lists.newArrayList(
-                "/openapi3/default-status-code"
+                "/openapi3/override-status-code"
         );
     }
 
@@ -41,7 +41,7 @@ public class DefaultStatusCodeTest extends BaseVerticleTest {
      * Should return a specific status code for a simple request path.
      */
     @Test
-    public void testDefaultStatusCodesForSimplePath(TestContext testContext) {
+    public void testOverrideStatusCodesForSimplePath(TestContext testContext) {
         given()
                 .log().ifValidationFails()
                 .contentType(ContentType.JSON)
@@ -55,10 +55,27 @@ public class DefaultStatusCodeTest extends BaseVerticleTest {
     }
 
     /**
+     * Should return a specific status code for a query parameter.
+     */
+    @Test
+    public void testOverrideStatusCodesForQueryParam(TestContext testContext) {
+        given()
+                .log().ifValidationFails()
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .when()
+                .body("{ \"id\": 1, \"name\": \"Cat\" }")
+                .get("/pets?foo=bar")
+                .then()
+                .log().ifValidationFails()
+                .statusCode(204);
+    }
+
+    /**
      * Should return a specific status code for a path with a placeholder.
      */
     @Test
-    public void testDefaultStatusCodesForPathWithPlaceholder(TestContext testContext) {
+    public void testOverrideStatusCodesForPathWithPlaceholder(TestContext testContext) {
         given()
                 .log().ifValidationFails()
                 .contentType(ContentType.JSON)

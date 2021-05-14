@@ -25,6 +25,7 @@ import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.servers.Server;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
@@ -239,8 +240,14 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
      * @param operation    the specification operation  @return a route handler
      * @param spec         the OpenAPI specification
      */
-    private Handler<RoutingContext> buildHandler(OpenApiPluginConfig pluginConfig, String path, HttpMethod method, Operation operation, OpenAPI spec) {
-        final ResponseConfigHolder resourceConfig = responseService.findResourceConfig(pluginConfig, path, method).orElse(pluginConfig);
+    private Handler<RoutingContext> buildHandler(
+            OpenApiPluginConfig pluginConfig,
+            String path,
+            HttpMethod method,
+            Operation operation,
+            OpenAPI spec
+    ) {
+        final StatusCodeCalculator statusCodeCalculator = buildStatusCodeCalculator(operation);
 
         return AsyncUtil.handleRoute(imposterConfig, vertx, routingContext -> {
             if (!specificationService.isValidRequest(imposterConfig, pluginConfig, routingContext, allSpecs)) {
@@ -250,24 +257,8 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
             final Map<String, Object> context = newHashMap();
             context.put("operation", operation);
 
-            final StatusCodeCalculator statusCodeCalculator = rc -> {
-                if (nonNull(rc.getResponseConfig().getStatusCode())) {
-                    return rc.getResponseConfig().getStatusCode();
-                } else {
-                    // Choose the first response for this operation.
-                    // Note: responses are keyed on their status code.
-                    final ApiResponses responses = operation.getResponses();
-                    if (nonNull(responses) && !responses.isEmpty()) {
-                        final String firstStatus = responses.keySet().iterator().next();
-
-                        // default is a special case in OpenAPI that does not have a status code
-                        if (!DEFAULT_RESPONSE_KEY.equalsIgnoreCase(firstStatus)) {
-                            return Integer.parseInt(firstStatus);
-                        }
-                    }
-                }
-                return HttpUtil.HTTP_OK;
-            };
+            final HttpServerRequest request = routingContext.request();
+            final ResponseConfigHolder resourceConfig = responseService.findResourceConfig(pluginConfig, path, method, request.params()).orElse(pluginConfig);
 
             scriptHandler(pluginConfig, resourceConfig, routingContext, getInjector(), context, statusCodeCalculator, responseBehaviour -> {
                 final Optional<ApiResponse> optionalResponse = findApiResponse(operation, responseBehaviour.getStatusCode());
@@ -287,8 +278,8 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
 
                 } else {
                     LOGGER.warn("No explicit mock response found for {} {} with status code {}",
-                            routingContext.request().method(),
-                            routingContext.request().absoluteURI(),
+                            request.method(),
+                            request.absoluteURI(),
                             responseBehaviour.getStatusCode()
                     );
 
@@ -296,6 +287,27 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
                 }
             });
         });
+    }
+
+    private StatusCodeCalculator buildStatusCodeCalculator(Operation operation) {
+        return rc -> {
+            if (nonNull(rc.getResponseConfig().getStatusCode())) {
+                return rc.getResponseConfig().getStatusCode();
+            } else {
+                // Choose the first response for this operation.
+                // Note: responses are keyed on their status code.
+                final ApiResponses responses = operation.getResponses();
+                if (nonNull(responses) && !responses.isEmpty()) {
+                    final String firstStatus = responses.keySet().iterator().next();
+
+                    // default is a special case in OpenAPI that does not have a status code
+                    if (!DEFAULT_RESPONSE_KEY.equalsIgnoreCase(firstStatus)) {
+                        return Integer.parseInt(firstStatus);
+                    }
+                }
+            }
+            return HttpUtil.HTTP_OK;
+        };
     }
 
     private Optional<ApiResponse> findApiResponse(Operation operation, Integer statusCode) {

@@ -5,6 +5,7 @@ import io.gatehill.imposter.plugin.config.ContentTypedConfig;
 import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
 import io.gatehill.imposter.script.ResponseBehaviour;
+import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.web.RoutingContext;
@@ -33,9 +34,10 @@ public interface ResponseService {
      * @param config the response configuration
      * @param path   request path
      * @param method HTTP method
+     * @param queryParams request query parameters
      * @return a matching resource configuration or else empty
      */
-    Optional<ResponseConfigHolder> findResourceConfig(PluginConfig config, String path, HttpMethod method);
+    Optional<ResponseConfigHolder> findResourceConfig(PluginConfig config, String path, HttpMethod method, MultiMap queryParams);
 
     /**
      * Send an empty response to the client, typically used as a fallback when no

@@ -7,6 +7,7 @@ import io.gatehill.imposter.http.StatusCodeCalculator;
 import io.gatehill.imposter.plugin.config.ContentTypedConfig;
 import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.plugin.config.ResourcesHolder;
+import io.gatehill.imposter.plugin.config.resource.ParamsResourceConfig;
 import io.gatehill.imposter.plugin.config.resource.ResourceMethod;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfig;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
@@ -22,6 +23,7 @@ import io.gatehill.imposter.util.HttpUtil;
 import io.gatehill.imposter.util.ResourceMethodConverter;
 import io.gatehill.imposter.util.annotation.GroovyImpl;
 import io.gatehill.imposter.util.annotation.JavascriptImpl;
+import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
@@ -35,14 +37,17 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Collections.emptyMap;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -96,32 +101,83 @@ public class ResponseServiceImpl implements ResponseService {
     /**
      * Search for a resource configuration matching the request.
      *
-     * @param config the response configuration
-     * @param path   the request path
-     * @param method the HTTP method
+     * @param config      the response configuration
+     * @param path        the request path
+     * @param method      the HTTP method
+     * @param queryParams request query parameters
      * @return a matching resource configuration or else empty
      */
     @Override
-    public Optional<ResponseConfigHolder> findResourceConfig(PluginConfig config, String path, HttpMethod method) {
+    public Optional<ResponseConfigHolder> findResourceConfig(PluginConfig config, String path, HttpMethod method, MultiMap queryParams) {
         if (config instanceof ResourcesHolder) {
             @SuppressWarnings("unchecked") final ResourcesHolder<RestResourceConfig> resources = (ResourcesHolder<RestResourceConfig>) config;
             final ResourceMethod resourceMethod = ResourceMethodConverter.convertMethodFromVertx(method);
 
             if (nonNull(resources.getResources())) {
-                final Optional<ResponseConfigHolder> resourceConfig = resources.getResources().stream()
-                        .filter(res -> path.equals(res.getPath()))
-                        .filter(res -> resourceMethod.equals(res.getMethod()))
-                        .map(res -> (ResponseConfigHolder) res)
-                        .findAny();
+                List<RestResourceConfig> resourceConfigs = resources.getResources().stream()
+                        .filter(res -> isRequestMatch(res, path, resourceMethod, queryParams))
+                        .collect(Collectors.toList());
 
-                if (resourceConfig.isPresent()) {
-                    LOGGER.debug("Matched default response config for {} {}", resourceMethod, path);
+                if (resourceConfigs.size() > 1) {
+                    // find the most specific, if some have parameters
+                    resourceConfigs = resourceConfigs.stream()
+                            .filter(this::hasRequestParameters)
+                            .collect(Collectors.toList());
                 }
 
-                return resourceConfig;
+                if (resourceConfigs.isEmpty()) {
+                    return empty();
+                }
+
+                if (resourceConfigs.size() == 1) {
+                    LOGGER.debug("Matched default response config for {} {}", resourceMethod, path);
+                } else {
+                    LOGGER.warn("More than one response config found for {} {} - this is probably a configuration error. Choosing first response configuration.", resourceMethod, path);
+                }
+                return of(resourceConfigs.get(0));
             }
         }
         return empty();
+    }
+
+    private boolean hasRequestParameters(ResponseConfigHolder responseConfigHolder) {
+        if (responseConfigHolder instanceof ParamsResourceConfig) {
+            final Map<String, String> params = ((ParamsResourceConfig) responseConfigHolder).getParams();
+            return (nonNull(params) && !params.isEmpty());
+        }
+        return false;
+    }
+
+    /**
+     * Determine if the resource configuration matches the current request.
+     *
+     * @param resourceConfig the resource configuration
+     * @param path           the request path
+     * @param resourceMethod the HTTP method
+     * @param queryParams    the request query parameters
+     * @return {@code true} if the the resource matches the request, otherwise {@code false}
+     */
+    private boolean isRequestMatch(RestResourceConfig resourceConfig, String path, ResourceMethod resourceMethod, MultiMap queryParams) {
+        if (path.equals(resourceConfig.getPath()) && resourceMethod.equals(resourceConfig.getMethod())) {
+            // If the resource contains parameter configuration, check they are all present.
+            // Note that additional request parameters not in the configuration are ignored.
+            if (resourceConfig instanceof ParamsResourceConfig) {
+                final Map<String, String> params = ((ParamsResourceConfig) resourceConfig).getParams();
+                return (isNull(params) || params.entrySet().stream().allMatch(paramConfig ->
+                        safeEquals(queryParams.get(paramConfig.getKey()), paramConfig.getValue())));
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean safeEquals(String a, String b) {
+        if (nonNull(a)) {
+            return a.equals(b);
+        } else {
+            return isNull(b);
+        }
     }
 
     private ScriptedResponseBehavior determineResponseFromScript(

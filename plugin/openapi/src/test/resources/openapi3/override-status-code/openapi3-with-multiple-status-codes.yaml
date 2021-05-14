@@ -8,6 +8,26 @@ servers:
   - url: http://petstore.swagger.io
 paths:
   /pets:
+    get:
+      summary: Get pets
+      operationId: getPets
+      parameters:
+        - name: foo
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Indicates pets found
+        '204':
+          description: Lists pets found
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Pet"
     post:
       summary: Add a new pet
       operationId: addPet
