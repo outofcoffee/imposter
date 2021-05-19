@@ -13,7 +13,7 @@ dependencies {
     compile "io.vertx:vertx-unit:$version_vertx"
 
     // mocking
-    implementation "org.mockito:mockito-core:3.+"
+    implementation "org.mockito:mockito-core:$version_mockito"
 
     // required to mock vertx interfaces
     compile "io.vertx:vertx-codegen:$version_vertx"

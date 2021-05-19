@@ -1,5 +1,6 @@
 package io.gatehill.imposter.service;
 
+import io.gatehill.imposter.config.ResolvedResourceConfig;
 import io.gatehill.imposter.http.StatusCodeCalculator;
 import io.gatehill.imposter.plugin.config.ContentTypedConfig;
 import io.gatehill.imposter.plugin.config.PluginConfig;
@@ -10,6 +11,7 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.web.RoutingContext;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -28,16 +30,18 @@ public interface ResponseService {
                                              Map<String, Object> additionalBindings,
                                              StatusCodeCalculator statusCodeCalculator);
 
+    List<ResolvedResourceConfig> resolveResourceConfigs(ResponseConfigHolder config);
+
     /**
      * Search for a resource configuration matching the current request.
      *
-     * @param config the response configuration
-     * @param path   request path
-     * @param method HTTP method
+     * @param resources   the resources from the response configuration
+     * @param method      HTTP method
+     * @param path        request path
      * @param queryParams request query parameters
      * @return a matching resource configuration or else empty
      */
-    Optional<ResponseConfigHolder> findResourceConfig(PluginConfig config, String path, HttpMethod method, MultiMap queryParams);
+    Optional<ResponseConfigHolder> matchResourceConfig(List<ResolvedResourceConfig> resources, HttpMethod method, String path, MultiMap queryParams);
 
     /**
      * Send an empty response to the client, typically used as a fallback when no

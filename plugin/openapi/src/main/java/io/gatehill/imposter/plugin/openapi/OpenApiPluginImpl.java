@@ -2,6 +2,7 @@ package io.gatehill.imposter.plugin.openapi;
 
 import com.google.common.collect.Lists;
 import io.gatehill.imposter.ImposterConfig;
+import io.gatehill.imposter.config.ResolvedResourceConfig;
 import io.gatehill.imposter.http.StatusCodeCalculator;
 import io.gatehill.imposter.plugin.PluginInfo;
 import io.gatehill.imposter.plugin.RequireModules;
@@ -247,7 +248,9 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
             Operation operation,
             OpenAPI spec
     ) {
+        // statically calculate as much as possible
         final StatusCodeCalculator statusCodeCalculator = buildStatusCodeCalculator(operation);
+        final List<ResolvedResourceConfig> resolvedResourceConfigs = responseService.resolveResourceConfigs(pluginConfig);
 
         return AsyncUtil.handleRoute(imposterConfig, vertx, routingContext -> {
             if (!specificationService.isValidRequest(imposterConfig, pluginConfig, routingContext, allSpecs)) {
@@ -258,7 +261,8 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
             context.put("operation", operation);
 
             final HttpServerRequest request = routingContext.request();
-            final ResponseConfigHolder resourceConfig = responseService.findResourceConfig(pluginConfig, path, method, request.params()).orElse(pluginConfig);
+            final ResponseConfigHolder resourceConfig = responseService.matchResourceConfig(resolvedResourceConfigs, method, path, request.params())
+                    .orElse(pluginConfig);
 
             scriptHandler(pluginConfig, resourceConfig, routingContext, getInjector(), context, statusCodeCalculator, responseBehaviour -> {
                 final Optional<ApiResponse> optionalResponse = findApiResponse(operation, responseBehaviour.getStatusCode());

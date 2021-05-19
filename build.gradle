@@ -48,14 +48,15 @@ subprojects {
         awsAccessKey = awsCredentials?.AWSAccessKeyId ?: System.getenv('AWS_ACCESS_KEY_ID') ?: project.findProperty('AWS_ACCESS_KEY_ID')
         awsSecretKey = awsCredentials?.AWSSecretKey ?: System.getenv('AWS_SECRET_ACCESS_KEY') ?: project.findProperty('AWS_SECRET_ACCESS_KEY')
 
-        version_vertx = '3.4.2'
-        version_log4j = '2.9.1'
-        version_guice = '4.1.0'
-        version_junit = '4.12'
-        version_restAssured = '2.9.0'
-        version_groovy = '2.4.12'
         version_args4j = '2.33'
+        version_groovy = '2.4.12'
+        version_guice = '4.1.0'
         version_jackson = '2.12.3'
+        version_junit = '4.12'
+        version_log4j = '2.9.1'
+        version_mockito = '3.10.0'
+        version_restAssured = '2.9.0'
+        version_vertx = '3.4.2'
     }
 }
 

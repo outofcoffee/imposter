@@ -2,6 +2,7 @@ package io.gatehill.imposter.service;
 
 import com.google.common.base.Strings;
 import com.google.common.io.CharStreams;
+import io.gatehill.imposter.config.ResolvedResourceConfig;
 import io.gatehill.imposter.exception.ResponseException;
 import io.gatehill.imposter.http.StatusCodeCalculator;
 import io.gatehill.imposter.plugin.config.ContentTypedConfig;
@@ -43,6 +44,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -98,78 +100,84 @@ public class ResponseServiceImpl implements ResponseService {
         return determineResponseFromScript(routingContext, pluginConfig, resourceConfig, additionalContext, additionalBindings, statusCode);
     }
 
+    @Override
+    public List<ResolvedResourceConfig> resolveResourceConfigs(ResponseConfigHolder config) {
+        if (config instanceof ResourcesHolder) {
+            @SuppressWarnings("unchecked") final ResourcesHolder<RestResourceConfig> resources = (ResourcesHolder<RestResourceConfig>) config;
+
+            if (nonNull(resources.getResources())) {
+                return resources.getResources().stream()
+                        .map(res -> new ResolvedResourceConfig(res, findRequestParameters(res)))
+                        .collect(Collectors.toList());
+            }
+        }
+        return emptyList();
+    }
+
     /**
      * Search for a resource configuration matching the request.
      *
-     * @param config      the response configuration
+     * @param resources   the resources from the response configuration
      * @param path        the request path
      * @param method      the HTTP method
      * @param queryParams request query parameters
      * @return a matching resource configuration or else empty
      */
     @Override
-    public Optional<ResponseConfigHolder> findResourceConfig(PluginConfig config, String path, HttpMethod method, MultiMap queryParams) {
-        if (config instanceof ResourcesHolder) {
-            @SuppressWarnings("unchecked") final ResourcesHolder<RestResourceConfig> resources = (ResourcesHolder<RestResourceConfig>) config;
-            final ResourceMethod resourceMethod = ResourceMethodConverter.convertMethodFromVertx(method);
+    public Optional<ResponseConfigHolder> matchResourceConfig(List<ResolvedResourceConfig> resources, HttpMethod method, String path, MultiMap queryParams) {
+        final ResourceMethod resourceMethod = ResourceMethodConverter.convertMethodFromVertx(method);
 
-            if (nonNull(resources.getResources())) {
-                List<RestResourceConfig> resourceConfigs = resources.getResources().stream()
-                        .filter(res -> isRequestMatch(res, path, resourceMethod, queryParams))
-                        .collect(Collectors.toList());
+        List<ResolvedResourceConfig> resourceConfigs = resources.stream()
+                .filter(res -> isRequestMatch(res, resourceMethod, path, queryParams))
+                .collect(Collectors.toList());
 
-                if (resourceConfigs.size() > 1) {
-                    // find the most specific, if some have parameters
-                    resourceConfigs = resourceConfigs.stream()
-                            .filter(this::hasRequestParameters)
-                            .collect(Collectors.toList());
-                }
+        if (resourceConfigs.size() > 1) {
+            // find the most specific, by looking for those specifying
+            final List<ResolvedResourceConfig> configsWithParams = resourceConfigs.stream()
+                    .filter(res -> !res.getQueryParams().isEmpty())
+                    .collect(Collectors.toList());
 
-                if (resourceConfigs.isEmpty()) {
-                    return empty();
-                }
-
-                if (resourceConfigs.size() == 1) {
-                    LOGGER.debug("Matched default response config for {} {}", resourceMethod, path);
-                } else {
-                    LOGGER.warn("More than one response config found for {} {} - this is probably a configuration error. Choosing first response configuration.", resourceMethod, path);
-                }
-                return of(resourceConfigs.get(0));
+            if (!configsWithParams.isEmpty()) {
+                resourceConfigs = configsWithParams;
             }
         }
-        return empty();
-    }
 
-    private boolean hasRequestParameters(ResponseConfigHolder responseConfigHolder) {
-        if (responseConfigHolder instanceof ParamsResourceConfig) {
-            final Map<String, String> params = ((ParamsResourceConfig) responseConfigHolder).getParams();
-            return (nonNull(params) && !params.isEmpty());
+        if (resourceConfigs.isEmpty()) {
+            return empty();
         }
-        return false;
+
+        if (resourceConfigs.size() == 1) {
+            LOGGER.debug("Matched default response config for {} {}", resourceMethod, path);
+        } else {
+            LOGGER.warn("More than one response config found for {} {} - this is probably a configuration error. Choosing first response configuration.", resourceMethod, path);
+        }
+        return of(resourceConfigs.get(0).getConfig());
     }
 
     /**
      * Determine if the resource configuration matches the current request.
      *
-     * @param resourceConfig the resource configuration
-     * @param path           the request path
-     * @param resourceMethod the HTTP method
-     * @param queryParams    the request query parameters
+     * @param resource    the resource configuration
+     * @param path        the request path
+     * @param queryParams the request query parameters
      * @return {@code true} if the the resource matches the request, otherwise {@code false}
      */
-    private boolean isRequestMatch(RestResourceConfig resourceConfig, String path, ResourceMethod resourceMethod, MultiMap queryParams) {
-        if (path.equals(resourceConfig.getPath()) && resourceMethod.equals(resourceConfig.getMethod())) {
+    private boolean isRequestMatch(ResolvedResourceConfig resource, ResourceMethod resourceMethod, String path, MultiMap queryParams) {
+        if (path.equals(resource.getConfig().getPath()) && resourceMethod.equals(resource.getConfig().getMethod())) {
             // If the resource contains parameter configuration, check they are all present.
             // Note that additional request parameters not in the configuration are ignored.
-            if (resourceConfig instanceof ParamsResourceConfig) {
-                final Map<String, String> params = ((ParamsResourceConfig) resourceConfig).getParams();
-                return (isNull(params) || params.entrySet().stream().allMatch(paramConfig ->
-                        safeEquals(queryParams.get(paramConfig.getKey()), paramConfig.getValue())));
-            } else {
-                return true;
-            }
+            return resource.getQueryParams().entrySet().stream().allMatch(paramConfig ->
+                    safeEquals(queryParams.get(paramConfig.getKey()), paramConfig.getValue()));
         }
         return false;
+    }
+
+    private Map<String, String> findRequestParameters(ResponseConfigHolder responseConfigHolder) {
+        if (responseConfigHolder instanceof ParamsResourceConfig) {
+            final Map<String, String> params = ((ParamsResourceConfig) responseConfigHolder).getParams();
+            return ofNullable(params).orElse(emptyMap());
+        }
+        return emptyMap();
     }
 
     private boolean safeEquals(String a, String b) {
