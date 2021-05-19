@@ -4,7 +4,8 @@ import com.google.common.base.Strings;
 import com.google.common.io.CharStreams;
 import io.gatehill.imposter.config.ResolvedResourceConfig;
 import io.gatehill.imposter.exception.ResponseException;
-import io.gatehill.imposter.http.StatusCodeCalculator;
+import io.gatehill.imposter.http.ResponseBehaviourFactory;
+import io.gatehill.imposter.http.StatusCodeFactory;
 import io.gatehill.imposter.plugin.config.ContentTypedConfig;
 import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.plugin.config.ResourcesHolder;
@@ -19,7 +20,6 @@ import io.gatehill.imposter.script.ResponseBehaviourType;
 import io.gatehill.imposter.script.RuntimeContext;
 import io.gatehill.imposter.script.ScriptUtil;
 import io.gatehill.imposter.script.ScriptedResponseBehavior;
-import io.gatehill.imposter.script.impl.ScriptedResponseBehaviorImpl;
 import io.gatehill.imposter.util.HttpUtil;
 import io.gatehill.imposter.util.ResourceMethodConverter;
 import io.gatehill.imposter.util.annotation.GroovyImpl;
@@ -73,28 +73,19 @@ public class ResponseServiceImpl implements ResponseService {
             ResponseConfigHolder resourceConfig,
             Map<String, Object> additionalContext,
             Map<String, Object> additionalBindings,
-            StatusCodeCalculator statusCodeCalculator
+            StatusCodeFactory statusCodeFactory,
+            ResponseBehaviourFactory responseBehaviourFactory
     ) {
         final ResponseConfig responseConfig = resourceConfig.getResponseConfig();
 
         checkNotNull(responseConfig, "Response configuration must not be null");
-        final int statusCode = statusCodeCalculator.calculateStatus(resourceConfig);
+        final int statusCode = statusCodeFactory.calculateStatus(resourceConfig);
 
         if (isNull(responseConfig.getScriptFile())) {
             LOGGER.debug("Using default HTTP {} response behaviour for request: {} {}",
                     statusCode, routingContext.request().method(), routingContext.request().absoluteURI());
 
-            final ScriptedResponseBehaviorImpl responseBehaviour = new ScriptedResponseBehaviorImpl();
-            responseBehaviour
-                    .withStatusCode(statusCode)
-                    .withFile(responseConfig.getStaticFile())
-                    .withData(responseConfig.getStaticData())
-                    .usingDefaultBehaviour();
-
-            ofNullable(responseConfig.getHeaders()).orElse(emptyMap())
-                    .forEach(responseBehaviour::withHeader);
-
-            return responseBehaviour;
+            return responseBehaviourFactory.build(statusCode, responseConfig);
         }
 
         return determineResponseFromScript(routingContext, pluginConfig, resourceConfig, additionalContext, additionalBindings, statusCode);
@@ -117,18 +108,25 @@ public class ResponseServiceImpl implements ResponseService {
     /**
      * Search for a resource configuration matching the request.
      *
-     * @param resources   the resources from the response configuration
-     * @param path        the request path
-     * @param method      the HTTP method
-     * @param queryParams request query parameters
+     * @param resources    the resources from the response configuration
+     * @param method       the HTTP method of the current request
+     * @param pathTemplate request path template
+     * @param path         the path of the current request
+     * @param queryParams  the query parameters of the current request
      * @return a matching resource configuration or else empty
      */
     @Override
-    public Optional<ResponseConfigHolder> matchResourceConfig(List<ResolvedResourceConfig> resources, HttpMethod method, String path, MultiMap queryParams) {
+    public Optional<ResponseConfigHolder> matchResourceConfig(
+            List<ResolvedResourceConfig> resources,
+            HttpMethod method,
+            String pathTemplate,
+            String path,
+            MultiMap queryParams
+    ) {
         final ResourceMethod resourceMethod = ResourceMethodConverter.convertMethodFromVertx(method);
 
         List<ResolvedResourceConfig> resourceConfigs = resources.stream()
-                .filter(res -> isRequestMatch(res, resourceMethod, path, queryParams))
+                .filter(res -> isRequestMatch(res, resourceMethod, pathTemplate, path, queryParams))
                 .collect(Collectors.toList());
 
         if (resourceConfigs.size() > 1) {
@@ -157,15 +155,28 @@ public class ResponseServiceImpl implements ResponseService {
     /**
      * Determine if the resource configuration matches the current request.
      *
-     * @param resource    the resource configuration
-     * @param path        the request path
-     * @param queryParams the request query parameters
+     * @param resource       the resource configuration
+     * @param resourceMethod the HTTP method of the current request
+     * @param pathTemplate   request path template
+     * @param path           the path of the current request
+     * @param queryParams    the query parameters of the current request
      * @return {@code true} if the the resource matches the request, otherwise {@code false}
      */
-    private boolean isRequestMatch(ResolvedResourceConfig resource, ResourceMethod resourceMethod, String path, MultiMap queryParams) {
-        if (path.equals(resource.getConfig().getPath()) && resourceMethod.equals(resource.getConfig().getMethod())) {
+    private boolean isRequestMatch(
+            ResolvedResourceConfig resource,
+            ResourceMethod resourceMethod,
+            String pathTemplate,
+            String path,
+            MultiMap queryParams
+    ) {
+        final RestResourceConfig resourceConfig = resource.getConfig();
+
+        if ((path.equals(resourceConfig.getPath()) || pathTemplate.equals(resourceConfig.getPath()))
+                && resourceMethod.equals(resourceConfig.getMethod())) {
+
             // If the resource contains parameter configuration, check they are all present.
-            // Note that additional request parameters not in the configuration are ignored.
+            // If the configuration contains no parameters, then this evaluates to true.
+            // Additional request parameters not in the configuration are ignored.
             return resource.getQueryParams().entrySet().stream().allMatch(paramConfig ->
                     safeEquals(queryParams.get(paramConfig.getKey()), paramConfig.getValue()));
         }

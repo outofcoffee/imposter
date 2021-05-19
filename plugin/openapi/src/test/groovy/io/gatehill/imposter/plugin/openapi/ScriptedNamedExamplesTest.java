@@ -20,7 +20,7 @@ import static org.hamcrest.Matchers.equalTo;
  *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public class NamedExamplesTest extends BaseVerticleTest {
+public class ScriptedNamedExamplesTest extends BaseVerticleTest {
     @Override
     protected Class<? extends Plugin> getPluginClass() {
         return OpenApiPluginImpl.class;
@@ -35,7 +35,7 @@ public class NamedExamplesTest extends BaseVerticleTest {
     @Override
     protected List<String> getTestConfigDirs() {
         return Lists.newArrayList(
-                "/openapi3/named-example"
+                "/openapi3/scripted-named-example"
         );
     }
 

@@ -7,13 +7,13 @@ import static java.util.Optional.ofNullable;
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public class DefaultStatusCodeCalculator implements StatusCodeCalculator {
-    private static final DefaultStatusCodeCalculator INSTANCE = new DefaultStatusCodeCalculator();
+public class DefaultStatusCodeFactory implements StatusCodeFactory {
+    private static final DefaultStatusCodeFactory INSTANCE = new DefaultStatusCodeFactory();
 
-    private DefaultStatusCodeCalculator() {
+    private DefaultStatusCodeFactory() {
     }
 
-    public static DefaultStatusCodeCalculator getInstance() {
+    public static DefaultStatusCodeFactory getInstance() {
         return INSTANCE;
     }
 

@@ -3,13 +3,14 @@ package io.gatehill.imposter.plugin.openapi;
 import com.google.common.collect.Lists;
 import io.gatehill.imposter.ImposterConfig;
 import io.gatehill.imposter.config.ResolvedResourceConfig;
-import io.gatehill.imposter.http.StatusCodeCalculator;
+import io.gatehill.imposter.http.StatusCodeFactory;
 import io.gatehill.imposter.plugin.PluginInfo;
 import io.gatehill.imposter.plugin.RequireModules;
 import io.gatehill.imposter.plugin.ScriptedPlugin;
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig;
+import io.gatehill.imposter.plugin.openapi.http.OpenApiResponseBehaviourFactory;
 import io.gatehill.imposter.plugin.openapi.service.ExampleService;
 import io.gatehill.imposter.plugin.openapi.service.SpecificationService;
 import io.gatehill.imposter.plugin.openapi.util.OpenApiVersionUtil;
@@ -78,6 +79,9 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
 
     @Inject
     private ResponseService responseService;
+
+    @Inject
+    private OpenApiResponseBehaviourFactory openApiResponseBehaviourFactory;
 
     private List<OpenApiPluginConfig> configs;
     private List<OpenAPI> allSpecs;
@@ -236,20 +240,20 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
      * Build a handler for the given operation.
      *
      * @param pluginConfig the plugin configuration
-     * @param path         the request path
+     * @param pathTemplate the request path
      * @param method       the HTTP method
      * @param operation    the specification operation  @return a route handler
      * @param spec         the OpenAPI specification
      */
     private Handler<RoutingContext> buildHandler(
             OpenApiPluginConfig pluginConfig,
-            String path,
+            String pathTemplate,
             HttpMethod method,
             Operation operation,
             OpenAPI spec
     ) {
         // statically calculate as much as possible
-        final StatusCodeCalculator statusCodeCalculator = buildStatusCodeCalculator(operation);
+        final StatusCodeFactory statusCodeFactory = buildStatusCodeCalculator(operation);
         final List<ResolvedResourceConfig> resolvedResourceConfigs = responseService.resolveResourceConfigs(pluginConfig);
 
         return AsyncUtil.handleRoute(imposterConfig, vertx, routingContext -> {
@@ -261,10 +265,15 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
             context.put("operation", operation);
 
             final HttpServerRequest request = routingContext.request();
-            final ResponseConfigHolder resourceConfig = responseService.matchResourceConfig(resolvedResourceConfigs, method, path, request.params())
-                    .orElse(pluginConfig);
+            final ResponseConfigHolder resourceConfig = responseService.matchResourceConfig(
+                    resolvedResourceConfigs,
+                    method,
+                    pathTemplate,
+                    request.path(),
+                    request.params()
+            ).orElse(pluginConfig);
 
-            scriptHandler(pluginConfig, resourceConfig, routingContext, getInjector(), context, statusCodeCalculator, responseBehaviour -> {
+            scriptHandler(pluginConfig, resourceConfig, routingContext, getInjector(), context, statusCodeFactory, openApiResponseBehaviourFactory, responseBehaviour -> {
                 final Optional<ApiResponse> optionalResponse = findApiResponse(operation, responseBehaviour.getStatusCode());
 
                 // set status code regardless of response strategy
@@ -293,7 +302,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
         });
     }
 
-    private StatusCodeCalculator buildStatusCodeCalculator(Operation operation) {
+    private StatusCodeFactory buildStatusCodeCalculator(Operation operation) {
         return rc -> {
             if (nonNull(rc.getResponseConfig().getStatusCode())) {
                 return rc.getResponseConfig().getStatusCode();

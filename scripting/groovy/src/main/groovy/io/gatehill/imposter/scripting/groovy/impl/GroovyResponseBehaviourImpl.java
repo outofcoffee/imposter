@@ -4,7 +4,7 @@ import groovy.lang.Script;
 import io.gatehill.imposter.script.MutableResponseBehaviour;
 import io.gatehill.imposter.script.ResponseBehaviourType;
 import io.gatehill.imposter.script.ScriptedResponseBehavior;
-import io.gatehill.imposter.script.impl.ScriptedResponseBehaviorImpl;
+import io.gatehill.imposter.script.MutableResponseBehaviourImpl;
 
 import java.util.Map;
 
@@ -12,7 +12,7 @@ import java.util.Map;
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public abstract class GroovyResponseBehaviourImpl extends Script implements ScriptedResponseBehavior {
-    private final ScriptedResponseBehavior delegate = new ScriptedResponseBehaviorImpl();
+    private final ScriptedResponseBehavior delegate = new MutableResponseBehaviourImpl();
 
     @Override
     public Map<String, String> getResponseHeaders() {

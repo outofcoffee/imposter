@@ -1,9 +1,4 @@
-package io.gatehill.imposter.script.impl;
-
-import io.gatehill.imposter.script.MutableResponseBehaviour;
-import io.gatehill.imposter.script.ResponseBehaviourType;
-import io.gatehill.imposter.script.ScriptedResponseBehavior;
-import io.gatehill.imposter.util.HttpUtil;
+package io.gatehill.imposter.script;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,9 +6,9 @@ import java.util.Map;
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public class ScriptedResponseBehaviorImpl implements ScriptedResponseBehavior {
+public class MutableResponseBehaviourImpl implements ScriptedResponseBehavior {
     private ResponseBehaviourType behaviourType = ResponseBehaviourType.DEFAULT_BEHAVIOUR;
-    private int statusCode = HttpUtil.HTTP_OK;
+    private int statusCode = 200;
     private String responseFile;
     private String responseData;
     private String exampleName;

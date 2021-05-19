@@ -1,8 +1,10 @@
 package io.gatehill.imposter.plugin;
 
 import com.google.inject.Injector;
-import io.gatehill.imposter.http.DefaultStatusCodeCalculator;
-import io.gatehill.imposter.http.StatusCodeCalculator;
+import io.gatehill.imposter.http.DefaultResponseBehaviourFactory;
+import io.gatehill.imposter.http.DefaultStatusCodeFactory;
+import io.gatehill.imposter.http.ResponseBehaviourFactory;
+import io.gatehill.imposter.http.StatusCodeFactory;
 import io.gatehill.imposter.plugin.config.PluginConfigImpl;
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
@@ -19,63 +21,84 @@ import java.util.function.Consumer;
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public interface ScriptedPlugin<C extends PluginConfigImpl> {
-    default void scriptHandler(C pluginConfig,
-                               RoutingContext routingContext,
-                               Injector injector,
-                               Consumer<ResponseBehaviour> defaultBehaviourHandler) {
-
-        scriptHandler(pluginConfig,
+    default void scriptHandler(
+            C pluginConfig,
+            RoutingContext routingContext,
+            Injector injector,
+            Consumer<ResponseBehaviour> defaultBehaviourHandler
+    ) {
+        scriptHandler(
+                pluginConfig,
                 pluginConfig,
                 routingContext,
                 injector,
                 null,
-                DefaultStatusCodeCalculator.getInstance(),
-                defaultBehaviourHandler);
+                DefaultStatusCodeFactory.getInstance(),
+                DefaultResponseBehaviourFactory.getInstance(),
+                defaultBehaviourHandler
+        );
     }
 
-    default void scriptHandler(C pluginConfig,
-                               ResourceConfig resourceConfig,
-                               RoutingContext routingContext,
-                               Injector injector,
-                               Consumer<ResponseBehaviour> defaultBehaviourHandler) {
-
-        scriptHandler(pluginConfig,
+    default void scriptHandler(
+            C pluginConfig,
+            ResourceConfig resourceConfig,
+            RoutingContext routingContext,
+            Injector injector,
+            Consumer<ResponseBehaviour> defaultBehaviourHandler
+    ) {
+        scriptHandler(
+                pluginConfig,
                 resourceConfig,
                 routingContext,
                 injector,
                 null,
-                DefaultStatusCodeCalculator.getInstance(),
-                defaultBehaviourHandler);
+                DefaultStatusCodeFactory.getInstance(),
+                DefaultResponseBehaviourFactory.getInstance(),
+                defaultBehaviourHandler
+        );
     }
 
-    default void scriptHandler(C pluginConfig,
-                               RoutingContext routingContext,
-                               Injector injector,
-                               Map<String, Object> additionalContext,
-                               Consumer<ResponseBehaviour> defaultBehaviourHandler) {
-
-        scriptHandler(pluginConfig,
+    default void scriptHandler(
+            C pluginConfig,
+            RoutingContext routingContext,
+            Injector injector,
+            Map<String, Object> additionalContext,
+            Consumer<ResponseBehaviour> defaultBehaviourHandler
+    ) {
+        scriptHandler(
+                pluginConfig,
                 pluginConfig,
                 routingContext,
                 injector,
                 additionalContext,
-                DefaultStatusCodeCalculator.getInstance(),
-                defaultBehaviourHandler);
+                DefaultStatusCodeFactory.getInstance(),
+                DefaultResponseBehaviourFactory.getInstance(),
+                defaultBehaviourHandler
+        );
     }
 
-    default void scriptHandler(C pluginConfig,
-                               ResponseConfigHolder resourceConfig,
-                               RoutingContext routingContext,
-                               Injector injector,
-                               Map<String, Object> additionalContext,
-                               StatusCodeCalculator statusCodeCalculator,
-                               Consumer<ResponseBehaviour> defaultBehaviourHandler) {
-
+    default void scriptHandler(
+            C pluginConfig,
+            ResponseConfigHolder resourceConfig,
+            RoutingContext routingContext,
+            Injector injector,
+            Map<String, Object> additionalContext,
+            StatusCodeFactory statusCodeFactory,
+            ResponseBehaviourFactory responseBehaviourFactory,
+            Consumer<ResponseBehaviour> defaultBehaviourHandler
+    ) {
         final ResponseService responseService = injector.getInstance(ResponseService.class);
 
         try {
             final ResponseBehaviour responseBehaviour = responseService.buildResponseBehaviour(
-                    routingContext, pluginConfig, resourceConfig, additionalContext, Collections.emptyMap(), statusCodeCalculator);
+                    routingContext,
+                    pluginConfig,
+                    resourceConfig,
+                    additionalContext,
+                    Collections.emptyMap(),
+                    statusCodeFactory,
+                    responseBehaviourFactory
+            );
 
             if (ResponseBehaviourType.IMMEDIATE_RESPONSE.equals(responseBehaviour.getBehaviourType())) {
                 routingContext.response()
