@@ -1,10 +1,14 @@
 package io.gatehill.imposter.script;
 
 import java.util.Map;
+import java.util.function.Supplier;
 
+import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;
 
 /**
+ * Representation of the request, supporting lazily-initialised collections for params and headers.
+ *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public class ExecutionContext {
@@ -30,8 +34,17 @@ public class ExecutionContext {
         private String method;
         private String uri;
         private String body;
+
+        private final Supplier<Map<String, String>> headersSupplier;
         private Map<String, String> headers;
+
+        private final Supplier<Map<String, String>> paramsSupplier;
         private Map<String, String> params;
+
+        public Request(Supplier<Map<String, String>> headersSupplier, Supplier<Map<String, String>> paramsSupplier) {
+            this.headersSupplier = headersSupplier;
+            this.paramsSupplier = paramsSupplier;
+        }
 
         public void setPath(String path) {
             this.path = path;
@@ -66,6 +79,9 @@ public class ExecutionContext {
         }
 
         public Map<String, String> getHeaders() {
+            if (isNull(headers)) {
+                headers = headersSupplier.get();
+            }
             return headers;
         }
 
@@ -74,6 +90,9 @@ public class ExecutionContext {
         }
 
         public Map<String, String> getParams() {
+            if (isNull(params)) {
+                params = paramsSupplier.get();
+            }
             return params;
         }
 
