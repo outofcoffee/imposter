@@ -3,7 +3,7 @@ package io.gatehill.imposter.script;
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public interface MutableResponseBehaviour extends ResponseBehaviour {
+public interface MutableResponseBehaviour {
     MutableResponseBehaviour withHeader(String header, String value);
 
     MutableResponseBehaviour withStatusCode(int statusCode);

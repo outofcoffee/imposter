@@ -1,16 +1,16 @@
 package io.gatehill.imposter.script.impl;
 
-import io.gatehill.imposter.script.MutableResponseBehaviourImpl;
+import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class MutableResponseBehaviourImplTest {
+public class ReadWriteResponseBehaviourImplTest {
 
     @Test
     public void shouldAddHeaderWithValue() throws Exception {
-        MutableResponseBehaviourImpl scriptedResponseBehavior = new MutableResponseBehaviourImpl();
+        ReadWriteResponseBehaviourImpl scriptedResponseBehavior = new ReadWriteResponseBehaviourImpl();
         scriptedResponseBehavior.withHeader("MyHeader", "MyValue");
 
         assertEquals(1, scriptedResponseBehavior.getResponseHeaders().size());
@@ -20,7 +20,7 @@ public class MutableResponseBehaviourImplTest {
 
     @Test
     public void shouldRemoveHeaderWithValueNull() throws Exception {
-        MutableResponseBehaviourImpl scriptedResponseBehavior = new MutableResponseBehaviourImpl();
+        ReadWriteResponseBehaviourImpl scriptedResponseBehavior = new ReadWriteResponseBehaviourImpl();
         scriptedResponseBehavior.getResponseHeaders().put("MyHeader", "MyValue");
 
         scriptedResponseBehavior.withHeader("MyHeader", null);

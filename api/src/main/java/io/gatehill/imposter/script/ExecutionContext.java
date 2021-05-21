@@ -1,7 +1,5 @@
 package io.gatehill.imposter.script;
 
-import io.vertx.core.MultiMap;
-
 import java.util.Map;
 
 import static java.util.Optional.ofNullable;
@@ -28,11 +26,20 @@ public class ExecutionContext {
     }
 
     public static class Request {
+        private String path;
         private String method;
         private String uri;
         private String body;
         private Map<String, String> headers;
         private Map<String, String> params;
+
+        public void setPath(String path) {
+            this.path = path;
+        }
+
+        public String getPath() {
+            return path;
+        }
 
         public String getMethod() {
             return method;
@@ -77,7 +84,8 @@ public class ExecutionContext {
         @Override
         public String toString() {
             return "Request{" +
-                    "method='" + method + '\'' +
+                    "path='" + path + '\'' +
+                    ", method='" + method + '\'' +
                     ", uri='" + uri + '\'' +
                     ", body=<" + ofNullable(body).map(b -> b.length() + " bytes").orElse("null") + '>' +
                     ", headers=" + headers +

@@ -1,5 +1,6 @@
 package io.gatehill.imposter.script
 
+
 import io.vertx.ext.web.RoutingContext
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -22,8 +23,9 @@ class ScriptUtil {
      * @return the context
      */
     static ExecutionContext buildContext(RoutingContext routingContext, Map<String, Object> additionalContext) {
-        final Map<String, String> params = routingContext.request().params().entries().collectEntries()
-        final Map<String, String> headers = routingContext.request().headers().collectEntries()
+        final vertxRequest = routingContext.request()
+        final Map<String, String> params = vertxRequest.params().collectEntries()
+        final Map<String, String> headers = vertxRequest.headers().collectEntries()
 
         def deprecatedParams = {
             LOGGER.warn("Deprecation notice: 'context.params' is deprecated and will be removed " +
@@ -34,7 +36,7 @@ class ScriptUtil {
         def deprecatedUri = {
             LOGGER.warn("Deprecation notice: 'context.uri' is deprecated and will be removed " +
                     "in a future version. Use 'context.request.uri' instead.")
-            routingContext.request().absoluteURI()
+            vertxRequest.absoluteURI()
         }
 
         // root context
@@ -46,8 +48,9 @@ class ScriptUtil {
 
         // request information
         def request = new ExecutionContext.Request()
-        request.method = "${-> routingContext.request().method().name()}"
-        request.uri = "${-> routingContext.request().absoluteURI()}"
+        request.path = "${-> vertxRequest.path()}"
+        request.method = "${-> vertxRequest.method().name()}"
+        request.uri = "${-> vertxRequest.absoluteURI()}"
         request.body = "${-> routingContext.getBodyAsString()}"
         request.headers = headers
         request.params = params

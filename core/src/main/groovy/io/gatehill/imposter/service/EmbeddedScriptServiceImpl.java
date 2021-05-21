@@ -4,8 +4,8 @@ import com.google.common.base.Preconditions;
 import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
 import io.gatehill.imposter.script.RuntimeContext;
-import io.gatehill.imposter.script.ScriptedResponseBehavior;
-import io.gatehill.imposter.script.MutableResponseBehaviourImpl;
+import io.gatehill.imposter.script.ReadWriteResponseBehaviour;
+import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl;
 import io.gatehill.imposter.script.listener.ScriptListener;
 
 /**
@@ -15,9 +15,9 @@ public class EmbeddedScriptServiceImpl implements ScriptService {
     private ScriptListener listener;
 
     @Override
-    public ScriptedResponseBehavior executeScript(PluginConfig pluginConfig, ResponseConfigHolder resourceConfig, RuntimeContext runtimeContext) {
+    public ReadWriteResponseBehaviour executeScript(PluginConfig pluginConfig, ResponseConfigHolder resourceConfig, RuntimeContext runtimeContext) {
         Preconditions.checkNotNull(listener, "ScriptListener is not set");
-        final ScriptedResponseBehavior responseBehaviour = new MutableResponseBehaviourImpl();
+        final ReadWriteResponseBehaviour responseBehaviour = new ReadWriteResponseBehaviourImpl();
         listener.hear(runtimeContext.getExecutionContext(), responseBehaviour);
         return responseBehaviour;
     }

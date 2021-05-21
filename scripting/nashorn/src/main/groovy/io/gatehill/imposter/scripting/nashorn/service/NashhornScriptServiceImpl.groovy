@@ -3,7 +3,7 @@ package io.gatehill.imposter.scripting.nashorn.service
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.script.RuntimeContext
-import io.gatehill.imposter.script.ScriptedResponseBehavior
+import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.scripting.common.JavaScriptUtil
 import io.gatehill.imposter.service.ScriptService
 import org.apache.logging.log4j.LogManager
@@ -26,14 +26,14 @@ class NashhornScriptServiceImpl implements ScriptService {
     private ScriptEngineManager scriptEngineManager;
 
     @Override
-    ScriptedResponseBehavior executeScript(PluginConfig pluginConfig, ResponseConfigHolder resourceConfig, RuntimeContext runtimeContext) {
+    ReadWriteResponseBehaviour executeScript(PluginConfig pluginConfig, ResponseConfigHolder resourceConfig, RuntimeContext runtimeContext) {
         final Path scriptFile = Paths.get(pluginConfig.getParentDir().getAbsolutePath(), resourceConfig.getResponseConfig().getScriptFile());
         LOGGER.trace("Executing script file: {}", scriptFile);
 
         final ScriptEngine scriptEngine = scriptEngineManager.getEngineByName("nashorn");
 
         try {
-            return (ScriptedResponseBehavior) scriptEngine.eval(JavaScriptUtil.wrapScript(scriptFile), new SimpleBindings(runtimeContext.asMap()));
+            return (ReadWriteResponseBehaviour) scriptEngine.eval(JavaScriptUtil.wrapScript(scriptFile), new SimpleBindings(runtimeContext.asMap()));
 
         } catch (Exception e) {
             throw new RuntimeException("Script execution terminated abnormally", e);

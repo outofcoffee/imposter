@@ -6,7 +6,7 @@ import java.util.Map;
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public class MutableResponseBehaviourImpl implements ScriptedResponseBehavior {
+public class ReadWriteResponseBehaviourImpl implements ReadWriteResponseBehaviour {
     private ResponseBehaviourType behaviourType = ResponseBehaviourType.DEFAULT_BEHAVIOUR;
     private int statusCode = 200;
     private String responseFile;

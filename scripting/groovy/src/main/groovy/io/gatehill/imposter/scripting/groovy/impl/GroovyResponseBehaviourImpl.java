@@ -3,16 +3,16 @@ package io.gatehill.imposter.scripting.groovy.impl;
 import groovy.lang.Script;
 import io.gatehill.imposter.script.MutableResponseBehaviour;
 import io.gatehill.imposter.script.ResponseBehaviourType;
-import io.gatehill.imposter.script.ScriptedResponseBehavior;
-import io.gatehill.imposter.script.MutableResponseBehaviourImpl;
+import io.gatehill.imposter.script.ReadWriteResponseBehaviour;
+import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl;
 
 import java.util.Map;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public abstract class GroovyResponseBehaviourImpl extends Script implements ScriptedResponseBehavior {
-    private final ScriptedResponseBehavior delegate = new MutableResponseBehaviourImpl();
+public abstract class GroovyResponseBehaviourImpl extends Script implements ReadWriteResponseBehaviour {
+    private final ReadWriteResponseBehaviour delegate = new ReadWriteResponseBehaviourImpl();
 
     @Override
     public Map<String, String> getResponseHeaders() {

@@ -19,7 +19,7 @@ import io.gatehill.imposter.script.ResponseBehaviour;
 import io.gatehill.imposter.script.ResponseBehaviourType;
 import io.gatehill.imposter.script.RuntimeContext;
 import io.gatehill.imposter.script.ScriptUtil;
-import io.gatehill.imposter.script.ScriptedResponseBehavior;
+import io.gatehill.imposter.script.ReadWriteResponseBehaviour;
 import io.gatehill.imposter.util.HttpUtil;
 import io.gatehill.imposter.util.ResourceMethodConverter;
 import io.gatehill.imposter.util.annotation.GroovyImpl;
@@ -199,7 +199,7 @@ public class ResponseServiceImpl implements ResponseService {
         }
     }
 
-    private ScriptedResponseBehavior determineResponseFromScript(
+    private ReadWriteResponseBehaviour determineResponseFromScript(
             RoutingContext routingContext,
             PluginConfig pluginConfig,
             ResponseConfigHolder resourceConfig,
@@ -224,7 +224,7 @@ public class ResponseServiceImpl implements ResponseService {
             );
 
             // execute the script and read response behaviour
-            final ScriptedResponseBehavior responseBehaviour =
+            final ReadWriteResponseBehaviour responseBehaviour =
                     fetchScriptService(responseConfig.getScriptFile()).executeScript(pluginConfig, resourceConfig, runtimeContext);
 
             // use defaults if not set

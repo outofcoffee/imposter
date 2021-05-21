@@ -3,7 +3,7 @@ package io.gatehill.imposter.scripting.graalvm.service
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.script.RuntimeContext
-import io.gatehill.imposter.script.ScriptedResponseBehavior
+import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.scripting.common.JavaScriptUtil
 import io.gatehill.imposter.service.ScriptService
 import org.apache.logging.log4j.LogManager
@@ -33,7 +33,7 @@ class GraalvmScriptServiceImpl implements ScriptService {
     }
 
     @Override
-    ScriptedResponseBehavior executeScript(PluginConfig pluginConfig, ResponseConfigHolder resourceConfig, RuntimeContext runtimeContext) {
+    ReadWriteResponseBehaviour executeScript(PluginConfig pluginConfig, ResponseConfigHolder resourceConfig, RuntimeContext runtimeContext) {
         final Path scriptFile = Paths.get(pluginConfig.getParentDir().getAbsolutePath(), resourceConfig.getResponseConfig().getScriptFile());
         LOGGER.trace("Executing script file: {}", scriptFile);
 
@@ -42,7 +42,7 @@ class GraalvmScriptServiceImpl implements ScriptService {
         bindings.put("polyglot.js.allowAllAccess", true);
 
         try {
-            return (ScriptedResponseBehavior) scriptEngine.eval(JavaScriptUtil.wrapScript(scriptFile), new SimpleBindings(runtimeContext.asMap()));
+            return (ReadWriteResponseBehaviour) scriptEngine.eval(JavaScriptUtil.wrapScript(scriptFile), new SimpleBindings(runtimeContext.asMap()));
 
         } catch (Exception e) {
             throw new RuntimeException("Script execution terminated abnormally", e);

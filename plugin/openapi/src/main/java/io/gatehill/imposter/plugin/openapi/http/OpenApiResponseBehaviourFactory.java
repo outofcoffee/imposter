@@ -3,7 +3,7 @@ package io.gatehill.imposter.plugin.openapi.http;
 import io.gatehill.imposter.http.DefaultResponseBehaviourFactory;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfig;
 import io.gatehill.imposter.plugin.openapi.config.OpenApiResponseConfig;
-import io.gatehill.imposter.script.MutableResponseBehaviour;
+import io.gatehill.imposter.script.ReadWriteResponseBehaviour;
 
 /**
  * Extends base response behaviour population with specific
@@ -13,7 +13,7 @@ import io.gatehill.imposter.script.MutableResponseBehaviour;
  */
 public class OpenApiResponseBehaviourFactory extends DefaultResponseBehaviourFactory {
     @Override
-    protected void populate(int statusCode, ResponseConfig responseConfig, MutableResponseBehaviour responseBehaviour) {
+    protected void populate(int statusCode, ResponseConfig responseConfig, ReadWriteResponseBehaviour responseBehaviour) {
         super.populate(statusCode, responseConfig, responseBehaviour);
         responseBehaviour.withExampleName(((OpenApiResponseConfig) responseConfig).getExampleName());
     }

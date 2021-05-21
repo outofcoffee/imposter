@@ -6,7 +6,7 @@ import groovy.lang.GroovyShell;
 import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
 import io.gatehill.imposter.script.RuntimeContext;
-import io.gatehill.imposter.script.ScriptedResponseBehavior;
+import io.gatehill.imposter.script.ReadWriteResponseBehaviour;
 import io.gatehill.imposter.scripting.groovy.impl.GroovyResponseBehaviourImpl;
 import io.gatehill.imposter.service.ScriptService;
 import org.apache.logging.log4j.LogManager;
@@ -23,7 +23,7 @@ public class GroovyScriptServiceImpl implements ScriptService {
     private static final Logger LOGGER = LogManager.getLogger(GroovyScriptServiceImpl.class);
 
     @Override
-    public ScriptedResponseBehavior executeScript(PluginConfig pluginConfig, ResponseConfigHolder resourceConfig, RuntimeContext runtimeContext) {
+    public ReadWriteResponseBehaviour executeScript(PluginConfig pluginConfig, ResponseConfigHolder resourceConfig, RuntimeContext runtimeContext) {
         final Path scriptFile = Paths.get(pluginConfig.getParentDir().getAbsolutePath(), resourceConfig.getResponseConfig().getScriptFile());
         LOGGER.trace("Executing script file: {}", scriptFile);
 

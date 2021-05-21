@@ -13,7 +13,7 @@ dependencies {
     compile "com.fasterxml.jackson.core:jackson-databind:$version_jackson"
     compile "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$version_jackson"
     compile "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$version_jackson"
-    implementation 'io.github.classgraph:classgraph:4.8.54'
+    compile 'io.github.classgraph:classgraph:4.8.54'
 
     testCompile "junit:junit:$version_junit"
 }
