@@ -11,3 +11,9 @@ resources:
     method: get
     response:
       exampleName: dogExample
+
+  - path: /pets/3
+    method: get
+    response:
+      staticFile: tortoise.json
+      statusCode: 200
