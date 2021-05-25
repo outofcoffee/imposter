@@ -116,12 +116,13 @@ plugin provides a `tableName` object, which you can use to determine the HBase t
 
 The request object is available on the `context`. It provides access to request parameters, method, URI etc.
 
-| Property | Description                                | Example                                |
-|----------|--------------------------------------------|----------------------------------------|
-| `method` | The HTTP method of the request.            | `"GET"`                                |
-| `uri`    | The absolute URI of the request.           | `"http://example.com?foo=bar&baz=qux"` |
-| `params` | A `Map` containing the request parameters. | `[ "foo": "bar", "baz": "qux" ]`       |
-| `body`   | A `String` containing the request body.    | `"Hello world."`                       |
+| Property | Description                                    | Example                                |
+|----------|------------------------------------------------|----------------------------------------|
+| `path`   | The path of the request.                       | `"/example"`                           |
+| `method` | The HTTP method of the request.                | `"GET"`                                |
+| `params` | A map containing the request query parameters. | `[ "foo": "bar", "baz": "qux" ]`       |
+| `uri`    | The absolute URI of the request.               | `"http://example.com?foo=bar&baz=qux"` |
+| `body`   | A string containing the request body.          | `"Hello world."`                       |
 
 ## ResponseBehaviour object
 
@@ -129,17 +130,17 @@ Your scripts have access to the methods on `io.gatehill.imposter.script.MutableR
 
 The ResponseBehaviour object provides a number of methods to enable you to control the mock server response:
 
-| Method                       | Description                                                    |
-|------------------------------|----------------------------------------------------------------|
-| `withStatusCode(int)`        | Set the HTTP status code for the response                      |
-| `withFile(String)`           | Respond with the content of a static file                      |
-| `withData(String)`           | Respond with the content of a `String`                         |
-| `withExampleName(String)`    | Respond with the specification example with a given name       |
-| `withHeader(String, String)` | Set a response header                                          |
-| `withEmpty()`                | Respond with empty content, or no records                      |
-| `usingDefaultBehaviour()`    | Use the plugin's default behaviour to respond                  |
-| `immediately()`              | Skip the plugin's default behaviour and respond immediately    |
-| `and()`                      | Syntactic sugar to improve readability of `respond` statements |
+| Method                       | Description                                                                    |
+|------------------------------|--------------------------------------------------------------------------------|
+| `withStatusCode(int)`        | Set the HTTP status code for the response                                      |
+| `withFile(String)`           | Respond with the content of a static file                                      |
+| `withData(String)`           | Respond with the content of a `String`                                         |
+| `withExampleName(String)`    | Respond with the specification example with a given name. OpenAPI plugin only. |
+| `withHeader(String, String)` | Set a response header                                                          |
+| `withEmpty()`                | Respond with empty content, or no records                                      |
+| `usingDefaultBehaviour()`    | Use the plugin's default behaviour to respond                                  |
+| `immediately()`              | Skip the plugin's default behaviour and respond immediately                    |
+| `and()`                      | Syntactic sugar to improve readability of `respond` statements                 |
 
 You structure your response behaviours like so:
 
@@ -222,7 +223,7 @@ respond().withData('{ "someKey": "someValue" }')
 
 ### Returning a specific example
 
-When using the OpenAPI plugin, you can return a specific named example from the specification using the `withExampleName(String)` method.
+When using the [OpenAPI plugin](./openapi_plugin.md), you can return a specific named example from the specification using the `withExampleName(String)` method.
 
 ```groovy
 respond().withExampleName('example1')

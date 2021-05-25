@@ -1,0 +1,25 @@
+plugin: "openapi"
+specFile: "openapi3-with-multiple-status-codes.yaml"
+
+resources:
+  - path: "/pets"
+    method: "get"
+    response:
+      statusCode: 200
+
+  - path: "/pets"
+    method: "get"
+    params:
+      foo: bar
+    response:
+      statusCode: 204
+
+  - path: "/pets"
+    method: "post"
+    response:
+      statusCode: 201
+
+  - path: "/pets/:petId"
+    method: "put"
+    response:
+      statusCode: 202

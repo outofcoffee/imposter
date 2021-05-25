@@ -106,7 +106,7 @@ A few things to call out:
 * We’ve defined the endpoint `/pets` as expecting an HTTP GET request
 * We’ve said it will produce JSON responses
 * One response is defined for the HTTP 200 case
-* We’ve defined a basic data model in the definitions section — this is standard [JSON Schema](https://json-schema.org/)
+* We’ve defined a data model in the definitions section
 * We’ve provided an example response — the same JSON array described earlier
 
 ### Start Imposter with the OpenAPI plugin
@@ -210,7 +210,7 @@ For more information about validation, including how to ignore certain condition
 
 ## Overriding status code
 
-Sometimes you might want to force a particular status code to be returned, or use other path-specific behaviours. To do this, you can use the `resources` configuration:
+Sometimes you might want to force a particular status code to be returned, or use other specific behaviours. To do this, you can use the `resources` configuration:
 
 ```yaml
 # override-status-code-config.yaml
@@ -233,6 +233,74 @@ resources:
 Here, POST requests to the `/pets` endpoint will default to the HTTP 201 status code. If there is a corresponding response example for the 201 status, this will be returned in the HTTP response.
 
 The `path` property supports placeholders, using the Vert.x Web colon format, so in the second example above, PUT requests to the endpoint `/pets/<some ID>` will return a 202 status. 
+
+## Overriding examples
+
+You can make Imposter select a specific example to use as the response body.
+
+```yaml
+# override-examples-config.yaml
+---
+plugin: "openapi"
+specFile: "spec-with-multiple-examples.yaml"
+
+resources:
+  - path: /pets/1
+    method: get
+    response:
+      exampleName: catExample
+
+  - path: /pets/2
+    method: get
+    response:
+      exampleName: dogExample
+```
+
+As with the standard [scripting functionality](./scripting.md), you can also specify a static response file to use instead of an example:
+
+```yaml
+# ... as above ...
+
+  - path: /pets/3
+    method: get
+    response:
+      staticFile: tortoise.json
+      statusCode: 200
+```
+
+## Conditional responses based on query parameters
+
+You can control response behaviour based on the value of query parameters
+
+```yaml
+# override-examples-config.yaml
+---
+plugin: "openapi"
+specFile: "spec-with-multiple-status-codes.yaml"
+
+resources:
+  # default to HTTP 400 response
+  - path: "/pets"
+    method: "get"
+    response:
+      statusCode: 400
+
+  # return HTTP 200 if request includes query parameter 'foo=bar'
+  - path: "/pets"
+    method: "get"
+    params:
+      foo: bar
+    response:
+      statusCode: 200
+```
+
+```shell
+$ curl -v -X POST http://localhost:8080/pets
+HTTP/1.1 400 Bad Request
+
+$ curl -v -X POST http://localhost:8080/pets?foo=bar
+HTTP/1.1 200 OK
+```
 
 ## Object response examples
 
