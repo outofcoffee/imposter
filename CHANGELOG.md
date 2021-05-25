@@ -3,9 +3,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [1.7.0] - 2021-05-25
 ### Added
-- ...
+- (openapi) Allows matching of response behaviours based on request parameters in static configuration.
+- (openapi) Allows specification of example name in static configuration.
+- (core) Exposes request path to scripts for easier conditional logic.
 
 ## [1.6.2] - 2021-05-07
 ### Fixed
