@@ -15,27 +15,34 @@ import java.util.stream.Collectors;
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public abstract class ConfiguredPlugin<T extends PluginConfigImpl> implements Plugin, ConfigurablePlugin {
+public abstract class ConfiguredPlugin<T extends PluginConfigImpl> implements Plugin, ConfigurablePlugin<T> {
     @Inject
     protected Vertx vertx;
+
+    private List<T> configs;
 
     protected abstract Class<T> getConfigClass();
 
     @Override
     public void loadConfiguration(List<File> configFiles) {
-        final List<T> configs = configFiles.stream()
-                .map(file -> {
-                    try {
-                        final T config = ConfigUtil.lookupMapper(file).readValue(file, getConfigClass());
-                        config.setParentDir(file.getParentFile());
-                        return config;
+        final List<T> configs = configFiles.stream().map(file -> {
+            try {
+                final T config = ConfigUtil.lookupMapper(file).readValue(file, getConfigClass());
+                config.setParentDir(file.getParentFile());
+                return config;
 
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }).collect(Collectors.toList());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }).collect(Collectors.toList());
 
+        this.configs = configs;
         this.configurePlugin(configs);
+    }
+
+    @Override
+    public List<T> getConfigs() {
+        return configs;
     }
 
     /**

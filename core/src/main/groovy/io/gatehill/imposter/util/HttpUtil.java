@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -267,6 +269,14 @@ public final class HttpUtil {
             entry.weight = (sEntry.length > 1 && sEntry[1].toLowerCase().startsWith("q=") ? Float.valueOf(sEntry[1].substring(2)) : 0);
 
             return entry;
+        }
+    }
+
+    public static boolean safeEquals(String a, String b) {
+        if (nonNull(a)) {
+            return a.equals(b);
+        } else {
+            return isNull(b);
         }
     }
 }

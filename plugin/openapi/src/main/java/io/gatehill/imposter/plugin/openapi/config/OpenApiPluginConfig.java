@@ -25,6 +25,7 @@ public class OpenApiPluginConfig extends ContentTypedPluginConfigImpl implements
     @JsonProperty("response")
     private OpenApiResponseConfig responseConfig = new OpenApiResponseConfig();
 
+    @JsonProperty("validation")
     private OpenApiPluginValidationConfig validation;
 
     public String getSpecFile() {

@@ -5,6 +5,8 @@ import com.google.inject.Singleton;
 import io.gatehill.imposter.plugin.PluginManager;
 import io.gatehill.imposter.service.ResponseService;
 import io.gatehill.imposter.service.ResponseServiceImpl;
+import io.gatehill.imposter.service.SecurityService;
+import io.gatehill.imposter.service.SecurityServiceImpl;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
@@ -23,5 +25,6 @@ class ImposterModule extends AbstractModule {
         bind(ImposterConfig.class).toInstance(imposterConfig);
         bind(PluginManager.class).toInstance(pluginManager);
         bind(ResponseService.class).to(ResponseServiceImpl.class).in(Singleton.class);
+        bind(SecurityService.class).to(SecurityServiceImpl.class).in(Singleton.class);
     }
 }

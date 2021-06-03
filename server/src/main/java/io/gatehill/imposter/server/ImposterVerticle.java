@@ -4,9 +4,12 @@ import com.google.inject.Module;
 import io.gatehill.imposter.Imposter;
 import io.gatehill.imposter.ImposterConfig;
 import io.gatehill.imposter.plugin.PluginManager;
+import io.gatehill.imposter.plugin.config.ConfigurablePlugin;
+import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.scripting.groovy.GroovyScriptingModule;
 import io.gatehill.imposter.scripting.nashorn.NashornScriptingModule;
 import io.gatehill.imposter.server.util.ConfigUtil;
+import io.gatehill.imposter.service.SecurityService;
 import io.gatehill.imposter.util.AsyncUtil;
 import io.gatehill.imposter.util.HttpUtil;
 import io.gatehill.imposter.util.InjectorUtil;
@@ -19,6 +22,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.inject.Inject;
+import java.util.List;
 
 import static java.util.Optional.ofNullable;
 
@@ -33,6 +37,9 @@ public class ImposterVerticle extends AbstractVerticle {
 
     @Inject
     private ServerFactory serverFactory;
+
+    @Inject
+    private SecurityService securityService;
 
     private final ImposterConfig imposterConfig;
 
@@ -84,6 +91,14 @@ public class ImposterVerticle extends AbstractVerticle {
         final Router router = Router.router(vertx);
 
         router.route().handler(new BodyHandlerImpl());
+
+        // enforce security on all requests
+        pluginManager.getPlugins().forEach(plugin -> {
+            if (plugin instanceof ConfigurablePlugin) {
+                @SuppressWarnings("unchecked") final List<PluginConfig> configs = ((ConfigurablePlugin<PluginConfig>) plugin).getConfigs();
+                configs.forEach(pluginConfig -> securityService.enforce(imposterConfig, vertx, router, pluginConfig));
+            }
+        });
 
         // status check to indicate when server is up
         router.get("/system/status").handler(routingContext -> routingContext.response()

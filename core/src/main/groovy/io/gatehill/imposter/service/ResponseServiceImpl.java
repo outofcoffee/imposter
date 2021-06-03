@@ -178,7 +178,7 @@ public class ResponseServiceImpl implements ResponseService {
             // If the configuration contains no parameters, then this evaluates to true.
             // Additional request parameters not in the configuration are ignored.
             return resource.getQueryParams().entrySet().stream().allMatch(paramConfig ->
-                    safeEquals(queryParams.get(paramConfig.getKey()), paramConfig.getValue()));
+                    HttpUtil.safeEquals(queryParams.get(paramConfig.getKey()), paramConfig.getValue()));
         }
         return false;
     }
@@ -189,14 +189,6 @@ public class ResponseServiceImpl implements ResponseService {
             return ofNullable(params).orElse(emptyMap());
         }
         return emptyMap();
-    }
-
-    private boolean safeEquals(String a, String b) {
-        if (nonNull(a)) {
-            return a.equals(b);
-        } else {
-            return isNull(b);
-        }
     }
 
     private ReadWriteResponseBehaviour determineResponseFromScript(
