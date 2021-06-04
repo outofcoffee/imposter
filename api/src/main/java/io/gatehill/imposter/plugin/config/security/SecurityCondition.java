@@ -3,7 +3,6 @@ package io.gatehill.imposter.plugin.config.security;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -23,7 +22,7 @@ public class SecurityCondition {
     private Map<String, Object> requestHeaders = emptyMap();
 
     @JsonIgnore
-    private List<HttpHeader> parsedHeaders;
+    private Map<String, HttpHeader> parsedHeaders;
 
     public SecurityEffect getEffect() {
         return effect;
@@ -33,24 +32,30 @@ public class SecurityCondition {
         return requestHeaders;
     }
 
-    public List<HttpHeader> getParsedHeaders() {
+    public Map<String, HttpHeader> getParsedHeaders() {
         if (isNull(parsedHeaders)) {
             parsedHeaders = requestHeaders.entrySet().stream()
-                    .map(this::parseHttpHeaderMatch)
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toMap(Map.Entry::getKey, this::parseHttpHeaderMatch));
         }
         return parsedHeaders;
     }
 
     private HttpHeader parseHttpHeaderMatch(Map.Entry<String, Object> h) {
-        if (h.getValue() instanceof Map) {
-            @SuppressWarnings("unchecked") final Map<String, String> structuredMatch = (Map<String, String>) h.getValue();
-            return new HttpHeader(
-                    h.getKey(),
-                    structuredMatch.get("value"),
-                    Enum.valueOf(MatchOperator.class, structuredMatch.get("operator"))
-            );
+        // String configuration form.
+        // Header-Name: <value>
+        if (h.getValue() instanceof String) {
+            return new HttpHeader(h.getKey(), (String) h.getValue(), MatchOperator.EqualTo);
         }
-        return new HttpHeader(h.getKey(), (String) h.getValue(), MatchOperator.EqualTo);
+
+        // Extended configuration form.
+        // Header-Name:
+        //   value: <value>
+        //   operator: <operator>
+        @SuppressWarnings("unchecked") final Map<String, String> structuredMatch = (Map<String, String>) h.getValue();
+        return new HttpHeader(
+                h.getKey(),
+                structuredMatch.get("value"),
+                Enum.valueOf(MatchOperator.class, structuredMatch.get("operator"))
+        );
     }
 }

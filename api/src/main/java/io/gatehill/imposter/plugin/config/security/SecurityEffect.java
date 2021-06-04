@@ -5,5 +5,9 @@ package io.gatehill.imposter.plugin.config.security;
  */
 public enum SecurityEffect {
     Permit,
-    Deny
+    Deny;
+
+    public SecurityEffect invert() {
+        return this == Deny ? Permit : Deny;
+    }
 }

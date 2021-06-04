@@ -5,7 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
-- ...
+- (core) Allows request security to be controlled via plugin configuration. This supports authentication using request header values.
+- (core) Allows substitution of environment variables in plugin configuration.
 
 ## [1.7.0] - 2021-05-25
 ### Added

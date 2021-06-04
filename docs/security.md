@@ -89,11 +89,12 @@ conditions:
     X-Custom-Api-Key: s3cr3t
 ```
 
-### Logical operations
+### Combining conditions
 
-The presence of more than one header in a condition is a logical 'AND' - in other words, both header values must match in order for a request to be permitted.
+The presence of more than one header in a condition requires all header values match in order for the condition to be satisfied.
 
 ```yaml
+# requests are permitted if both headers match
 conditions:
 - effect: Permit
   requestHeaders:
@@ -101,18 +102,18 @@ conditions:
     X-Another-Example: someothervalue
 ```
 
-If you wish to model a logical 'OR', then use two conditions, as follows:
+If you need different effects, use multiple conditions, as follows:
 
 ```yaml
-# requests are permitted if either (1) or (2) is present
+# requests are permitted if both (1) and (2) are satisfied
 conditions:
-# (1) either this header must be present...
+# (1) this header must match
 - effect: Permit
   requestHeaders:
     X-Custom-Api-Key: s3cr3t
 
-# (2) ...or this header must be present
-- effect: Permit
+# (2) this header must not match
+- effect: Deny
   requestHeaders:
     X-Another-Example: someothervalue
 ```

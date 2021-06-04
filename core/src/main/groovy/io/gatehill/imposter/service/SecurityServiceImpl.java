@@ -2,7 +2,7 @@ package io.gatehill.imposter.service;
 
 import io.gatehill.imposter.ImposterConfig;
 import io.gatehill.imposter.plugin.config.PluginConfig;
-import io.gatehill.imposter.plugin.config.security.HttpHeader;
+import io.gatehill.imposter.plugin.config.security.MatchOperator;
 import io.gatehill.imposter.plugin.config.security.SecurityCondition;
 import io.gatehill.imposter.plugin.config.security.SecurityConfig;
 import io.gatehill.imposter.plugin.config.security.SecurityConfigHolder;
@@ -19,6 +19,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Objects.isNull;
 
@@ -58,7 +59,7 @@ public class SecurityServiceImpl implements SecurityService {
         final MultiMap requestHeaders = rc.request().headers();
 
         final List<SecurityCondition> failed = security.getConditions().stream()
-                .filter(c -> !checkCondition(requestHeaders, c))
+                .filter(c -> !checkCondition(c, requestHeaders))
                 .collect(Collectors.toList());
 
         final SecurityEffect permitted;
@@ -68,24 +69,31 @@ public class SecurityServiceImpl implements SecurityService {
             policySource = "all conditions";
         } else {
             permitted = SecurityEffect.Deny;
-            policySource = describeCondition(failed.get(0));
+            policySource = failed.stream()
+                    .map(this::describeCondition)
+                    .collect(Collectors.joining(", "));
         }
 
         return new PolicyOutcome(permitted, policySource);
     }
 
-    private boolean checkCondition(MultiMap requestHeaders, SecurityCondition condition) {
-        return condition.getParsedHeaders().stream().allMatch(h -> {
-            final boolean headerMatch = HttpUtil.safeEquals(requestHeaders.get(h.getName()), h.getValue());
-            switch (h.getOperator()) {
-                case EqualTo:
-                    return headerMatch;
-                case NotEqualTo:
-                    return !headerMatch;
-                default:
-                    throw new IllegalStateException("Unsupported header match operator: " + h.getOperator());
+    private boolean checkCondition(SecurityCondition condition, MultiMap requestHeaders) {
+        final Stream<SecurityEffect> results = condition.getParsedHeaders().values().stream().map(conditionHeader -> {
+            final String requestHeaderValue = requestHeaders.get(conditionHeader.getName());
+
+            final boolean headerMatch = HttpUtil.safeEquals(requestHeaderValue, conditionHeader.getValue());
+
+            final boolean matched = ((conditionHeader.getOperator() == MatchOperator.EqualTo) && headerMatch) ||
+                    ((conditionHeader.getOperator() == MatchOperator.NotEqualTo) && !headerMatch);
+
+            if (matched) {
+                return condition.getEffect();
+            } else {
+                return condition.getEffect().invert();
             }
         });
+
+        return results.allMatch(SecurityEffect.Permit::equals);
     }
 
     private void enforceEffect(RoutingContext routingContext, PolicyOutcome outcome) {
@@ -107,9 +115,7 @@ public class SecurityServiceImpl implements SecurityService {
 
     private String describeCondition(SecurityCondition condition) {
         return "header condition mismatch: [" +
-                condition.getParsedHeaders().stream()
-                        .map(HttpHeader::getName)
-                        .collect(Collectors.joining(", ")) +
+                String.join(", ", condition.getParsedHeaders().keySet()) +
                 "]";
     }
 
