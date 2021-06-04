@@ -131,6 +131,10 @@ Default values for response configuration are as follows:
 | `response.staticFile` | all           | String                | empty                                              | `data.json`                         |
 | `response.headers`    | openapi, rest | Map of String:String  | empty                                              | `X-Custom-Header: value`            |
 
+## Security
+
+Imposter can require specific header values to authenticate incoming HTTP requests. [Read about how to do this](./security.md).
+
 ## Scripted responses (advanced)
 
 For more advanced scenarios, you can also control Imposter's responses using JavaScript or Groovy scripts.
