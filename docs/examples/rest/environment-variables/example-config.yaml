@@ -1,0 +1,6 @@
+# A plugin configuration using an environment variable.
+---
+plugin: rest
+path: /example
+response:
+  staticData: "${env.EXAMPLE_RESPONSE}"

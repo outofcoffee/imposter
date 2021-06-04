@@ -132,6 +132,17 @@ conditions:
 
 Here, the `value` of the `Authorization` header is specified as a child property. The `operator` can also be specified in this form, such as `EqualTo` or `NotEqualTo`. 
 
+### Externalising values to environment variables
+
+You can use environment variables to avoid including secrets in your configuration files. For example:
+
+```yaml
+conditions:
+- effect: Permit
+  requestHeaders:
+    X-Custom-Api-Key: "${env.API_KEY}"
+```
+
 ### More examples
 
 See the `docs/examples` directory for working sample configurations, such as:

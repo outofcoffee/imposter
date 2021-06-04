@@ -131,6 +131,29 @@ Default values for response configuration are as follows:
 | `response.staticFile` | all           | String                | empty                                              | `data.json`                         |
 | `response.headers`    | openapi, rest | Map of String:String  | empty                                              | `X-Custom-Header: value`            |
 
+## Environment variables
+
+You can use environment variables as placeholders in plugin configuration files.
+
+```yaml
+# A plugin configuration using an environment variable.
+---
+plugin: rest
+path: /example
+response:
+  staticData: "${env.EXAMPLE_RESPONSE}"
+```
+
+Here the environment variable `EXAMPLE_RESPONSE` will be substituted into the configuration. For example, if the variable was set as follows:
+
+```
+EXAMPLE_RESPONSE="Hello"
+```
+
+...then the static data `Hello` will be returned.
+
+> You can use environment variables anywhere within your configuration files, for example, in the `security` section to avoid including secrets in your configuration files. 
+
 ## Security
 
 Imposter can require specific header values to authenticate incoming HTTP requests. [Read about how to do this](./security.md).

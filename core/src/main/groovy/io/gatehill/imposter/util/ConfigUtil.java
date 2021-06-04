@@ -4,15 +4,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import io.gatehill.imposter.plugin.PluginManager;
 import io.gatehill.imposter.plugin.config.PluginConfigImpl;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.text.StringSubstitutor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static io.gatehill.imposter.util.MapUtil.JSON_MAPPER;
@@ -38,7 +42,21 @@ public final class ConfigUtil {
         put(".yml", YAML_MAPPER);
     }};
 
+    private static StringSubstitutor placeholderSubstitutor;
+
+    static {
+        initInterpolators(System.getenv());
+    }
+
     private ConfigUtil() {
+    }
+
+    public static void initInterpolators(Map<String, String> environment) {
+        // prefix all environment vars with 'env.'
+        final Map<String, String> environmentVars = environment.entrySet().stream()
+                .collect(Collectors.toMap(e -> "env." + e.getKey(), Map.Entry::getValue));
+
+        placeholderSubstitutor = new StringSubstitutor(environmentVars);
     }
 
     public static Map<String, List<File>> loadPluginConfigs(PluginManager pluginManager, String[] configDirs) {
@@ -54,8 +72,7 @@ public final class ConfigUtil {
                     LOGGER.debug("Loading configuration file: {}", configFile);
                     configCount++;
 
-                    final PluginConfigImpl config = lookupMapper(configFile).readValue(configFile, PluginConfigImpl.class);
-                    config.setParentDir(configFile.getParentFile());
+                    final PluginConfigImpl config = loadPluginConfig(configFile, PluginConfigImpl.class);
 
                     final String pluginClass = pluginManager.determinePluginClass(config.getPlugin());
                     List<File> pluginConfigs = allPluginConfigs.get(pluginClass);
@@ -67,7 +84,7 @@ public final class ConfigUtil {
                     pluginConfigs.add(configFile);
                 }
 
-            } catch (IOException e) {
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
@@ -76,6 +93,32 @@ public final class ConfigUtil {
                 configCount, Arrays.toString(configDirs));
 
         return allPluginConfigs;
+    }
+
+    public static <T extends PluginConfigImpl> T loadPluginConfig(File configFile, Class<T> configClass) {
+        try {
+            final String parsedContents = readConfigFile(configFile);
+            final T config = lookupMapper(configFile).readValue(parsedContents, configClass);
+            config.setParentDir(configFile.getParentFile());
+            return config;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Reads the contents of the configuration file, performing necessary string substitutions.
+     *
+     * @param configFile the configuration file
+     * @return the configuration
+     */
+    private static String readConfigFile(File configFile) {
+        try {
+            final String rawContents = FileUtils.readFileToString(configFile, StandardCharsets.UTF_8);
+            return placeholderSubstitutor.replace(rawContents);
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading configuration file: " + configFile.getAbsolutePath(), e);
+        }
     }
 
     private static boolean isConfigFile(File dir, String name) {

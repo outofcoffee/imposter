@@ -1,5 +1,6 @@
 package io.gatehill.imposter.server;
 
+import com.google.common.collect.Lists;
 import com.jayway.restassured.RestAssured;
 import io.gatehill.imposter.ImposterConfig;
 import io.gatehill.imposter.plugin.Plugin;
@@ -14,6 +15,8 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.List;
 
 import static com.jayway.restassured.RestAssured.given;
 import static io.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PASSWORD;
@@ -41,6 +44,13 @@ public class ImposterVerticleTest extends BaseVerticleTest {
     }
 
     @Override
+    protected List<String> getTestConfigDirs() {
+        return Lists.newArrayList(
+                "/simple-config"
+        );
+    }
+
+    @Override
     protected void configure(ImposterConfig imposterConfig) throws Exception {
         super.configure(imposterConfig);
 
@@ -62,7 +72,7 @@ public class ImposterVerticleTest extends BaseVerticleTest {
 
         final TestPluginConfig pluginConfig = plugin.getConfigs().get(0);
         testContext.assertEquals("/example", pluginConfig.getPath());
-        testContext.assertEquals("simple-plugin-data.json", pluginConfig.getResponseConfig().getStaticFile());
+        testContext.assertEquals("test-plugin-data.json", pluginConfig.getResponseConfig().getStaticFile());
         testContext.assertEquals("testValue", pluginConfig.getCustomProperty());
     }
 

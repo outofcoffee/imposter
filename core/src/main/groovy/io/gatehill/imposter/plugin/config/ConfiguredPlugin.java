@@ -8,7 +8,6 @@ import io.vertx.core.Vertx;
 
 import javax.inject.Inject;
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,18 +24,10 @@ public abstract class ConfiguredPlugin<T extends PluginConfigImpl> implements Pl
 
     @Override
     public void loadConfiguration(List<File> configFiles) {
-        final List<T> configs = configFiles.stream().map(file -> {
-            try {
-                final T config = ConfigUtil.lookupMapper(file).readValue(file, getConfigClass());
-                config.setParentDir(file.getParentFile());
-                return config;
+        configs = configFiles.stream()
+                .map(file -> ConfigUtil.loadPluginConfig(file, getConfigClass()))
+                .collect(Collectors.toList());
 
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }).collect(Collectors.toList());
-
-        this.configs = configs;
         this.configurePlugin(configs);
     }
 

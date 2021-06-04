@@ -2,7 +2,7 @@
   "plugin": "io.gatehill.imposter.plugin.test.TestPluginImpl",
   "path": "/example",
   "response": {
-    "staticFile": "simple-plugin-data.json"
+    "staticFile": "test-plugin-data.json"
   },
   "customProperty": "testValue"
 }

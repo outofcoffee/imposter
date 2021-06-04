@@ -2,6 +2,7 @@ package io.gatehill.imposter.util
 
 
 import io.gatehill.imposter.plugin.PluginManager
+import io.gatehill.imposter.plugin.config.PluginConfigImpl
 import org.junit.Before
 import org.junit.Test
 
@@ -40,5 +41,18 @@ class ConfigUtilTest {
 
         def configFiles = configs['io.gatehill.imposter.core.test.ExamplePluginImpl']
         assertEquals(1, configFiles.size())
+    }
+
+    @Test
+    void testLoadInterpolatedPluginConfig() {
+        // override environment variables in string interpolators
+        def environment = ["EXAMPLE_PATH" : "/test"]
+        ConfigUtil.initInterpolators(environment)
+
+        def configFile = new File(ConfigUtilTest.class.getResource('/interpolated/test-config.yaml').toURI())
+
+        def config = ConfigUtil.loadPluginConfig(configFile, PluginConfigImpl.class)
+
+        assertEquals("/test", config.path)
     }
 }
