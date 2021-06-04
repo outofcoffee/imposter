@@ -95,27 +95,20 @@ public final class ConfigUtil {
         return allPluginConfigs;
     }
 
-    public static <T extends PluginConfigImpl> T loadPluginConfig(File configFile, Class<T> configClass) {
-        try {
-            final String parsedContents = readConfigFile(configFile);
-            final T config = lookupMapper(configFile).readValue(parsedContents, configClass);
-            config.setParentDir(configFile.getParentFile());
-            return config;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     /**
      * Reads the contents of the configuration file, performing necessary string substitutions.
      *
-     * @param configFile the configuration file
+     * @param configFile  the configuration file
+     * @param configClass the configuration class
      * @return the configuration
      */
-    private static String readConfigFile(File configFile) {
+    public static <T extends PluginConfigImpl> T loadPluginConfig(File configFile, Class<T> configClass) {
         try {
             final String rawContents = FileUtils.readFileToString(configFile, StandardCharsets.UTF_8);
-            return placeholderSubstitutor.replace(rawContents);
+            final String parsedContents = placeholderSubstitutor.replace(rawContents);
+            final T config = lookupMapper(configFile).readValue(parsedContents, configClass);
+            config.setParentDir(configFile.getParentFile());
+            return config;
         } catch (IOException e) {
             throw new RuntimeException("Error reading configuration file: " + configFile.getAbsolutePath(), e);
         }

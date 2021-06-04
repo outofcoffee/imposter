@@ -106,6 +106,7 @@ public class SchemaServiceImpl implements SchemaService {
         return examples;
     }
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
     private Object buildFromComposedSchema(OpenAPI spec, ComposedSchema schema) {
         final Object example;
         if (nonNull(schema.getAllOf()) && !schema.getAllOf().isEmpty()) {
@@ -143,6 +144,7 @@ public class SchemaServiceImpl implements SchemaService {
         return example;
     }
 
+    @SuppressWarnings("rawtypes")
     private Map<String, Object> buildFromProperties(OpenAPI spec, Map<String, Schema> properties) {
         if (isNull(properties)) {
             return emptyMap();

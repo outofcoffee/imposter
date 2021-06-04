@@ -272,7 +272,7 @@ public class PluginManager {
     public void configurePlugins(Map<String, List<File>> pluginConfigs) {
         getPlugins().stream()
                 .filter(plugin -> plugin instanceof ConfigurablePlugin)
-                .map(plugin -> (ConfigurablePlugin) plugin)
+                .map(plugin -> (ConfigurablePlugin<?>) plugin)
                 .forEach(plugin -> {
                     final List<File> configFiles = ofNullable(pluginConfigs.get(plugin.getClass().getCanonicalName()))
                             .orElse(emptyList());
