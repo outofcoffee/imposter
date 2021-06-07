@@ -122,7 +122,7 @@ resources:
 
 Default values for response configuration are as follows:
 
-| Field                 | Plugins(s)    | Type                  | Default                                            | Example                             |
+| Field                 | Plugin(s)     | Type                  | Default                                            | Example                             |
 |-----------------------|---------------|-----------------------|----------------------------------------------------|-------------------------------------|
 | `contentType`         | all           | String                | `application/json`, or determined from static file | `text/plain`                        |
 | `response.statusCode` | openapi, rest | Integer (HTTP status) | `200`                                              | `201`                               |
@@ -136,20 +136,20 @@ You can make Imposter respond with different values based on certain properties 
 
 > For information about the script engine, see the [Scripting](./scripting.md) documentation.
 
-The [OpenAPI plugin](./openapi_plugin.md) and [REST plugin](./rest_plugin.md) allow you to specify different response behavior based on the following request attributes:
+Configure different response behaviours based on the following request attributes:
 
-| Field         | Plugins(s)    | Type                  | Example            |
-|---------------|---------------|-----------------------|--------------------|
-| `method`      | openapi, rest | String (HTTP method)  | `POST`             |
-| `path`        | all           | String                | `/example/path`    |
-| `pathParams`  | openapi       | Map of String:String  | `productCode: abc` |
-| `queryParams` | openapi       | Map of String:String  | `limit: 10`        |
+| Field         | Plugin(s)     | Type                  | Example                    |
+|---------------|---------------|-----------------------|----------------------------|
+| `method`      | openapi, rest | String (HTTP method)  | `POST`                     |
+| `path`        | all           | String                | `/example/path`            |
+| `pathParams`  | openapi       | Map of String:String  | `[ "productCode": "abc" ]` |
+| `queryParams` | openapi       | Map of String:String  | `[ "limit": "10" ]`        |
 
 Here is an example showing all fields:
 
 ```yaml
-plugin: "openapi"
-specFile: "apispec.yaml"
+plugin: openapi
+specFile: apispec.yaml
 
 resources:
   # handles GET /pets?page=1

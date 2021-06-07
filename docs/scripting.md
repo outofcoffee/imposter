@@ -116,31 +116,32 @@ plugin provides a `tableName` object, which you can use to determine the HBase t
 
 The request object is available on the `context`. It provides access to request parameters, method, URI etc.
 
-| Property | Description                                    | Example                                |
-|----------|------------------------------------------------|----------------------------------------|
-| `path`   | The path of the request.                       | `"/example"`                           |
-| `method` | The HTTP method of the request.                | `"GET"`                                |
-| `params` | A map containing the request query parameters. | `[ "foo": "bar", "baz": "qux" ]`       |
-| `uri`    | The absolute URI of the request.               | `"http://example.com?foo=bar&baz=qux"` |
-| `body`   | A string containing the request body.          | `"Hello world."`                       |
+| Property      | Description                                    | Example                                  |
+|---------------|------------------------------------------------|------------------------------------------|
+| `path`        | The path of the request.                       | `"/example"`                             |
+| `method`      | The HTTP method of the request.                | `"GET"`                                  |
+| `pathParams`  | A map containing the request path parameters.  | `[ "productCode": "abc", "foo": "bar" ]` |
+| `queryParams` | A map containing the request query parameters. | `[ "limit": "10", "foo": "bar" ]`        |
+| `uri`         | The absolute URI of the request.               | `"http://example.com?foo=bar&baz=qux"`   |
+| `body`        | A string containing the request body.          | `"Hello world."`                         |
 
-## ResponseBehaviour object
+## Response object
 
 Your scripts have access to the methods on `io.gatehill.imposter.script.MutableResponseBehaviour`.
 
-The ResponseBehaviour object provides a number of methods to enable you to control the mock server response:
+The response behaviour object provides a number of methods to enable you to control the response:
 
-| Method                       | Description                                                                    |
-|------------------------------|--------------------------------------------------------------------------------|
-| `withStatusCode(int)`        | Set the HTTP status code for the response                                      |
-| `withFile(String)`           | Respond with the content of a static file                                      |
-| `withData(String)`           | Respond with the content of a `String`                                         |
-| `withExampleName(String)`    | Respond with the specification example with a given name. OpenAPI plugin only. |
-| `withHeader(String, String)` | Set a response header                                                          |
-| `withEmpty()`                | Respond with empty content, or no records                                      |
-| `usingDefaultBehaviour()`    | Use the plugin's default behaviour to respond                                  |
-| `immediately()`              | Skip the plugin's default behaviour and respond immediately                    |
-| `and()`                      | Syntactic sugar to improve readability of `respond` statements                 |
+| Method                       | Plugin(s) | Description                                                                    |
+|------------------------------|-----------|--------------------------------------------------------------------------------|
+| `withStatusCode(int)`        | all       | Set the HTTP status code for the response                                      |
+| `withFile(String)`           | all       | Respond with the content of a static file                                      |
+| `withData(String)`           | all       | Respond with the content of a `String`                                         |
+| `withExampleName(String)`    | openapi   | Respond with the specification example with a given name        |
+| `withHeader(String, String)` | all       | Set a response header                                                          |
+| `withEmpty()`                | all       | Respond with empty content, or no records                                      |
+| `usingDefaultBehaviour()`    | all       | Use the plugin's default behaviour to respond                                  |
+| `immediately()`              | all       | Skip the plugin's default behaviour and respond immediately                    |
+| `and()`                      | all       | Syntactic sugar to improve readability of `respond` statements                 |
 
 You structure your response behaviours like so:
 
