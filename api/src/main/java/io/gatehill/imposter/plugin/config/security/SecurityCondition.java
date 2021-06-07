@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyMap;
 import static java.util.Objects.isNull;
@@ -17,45 +16,41 @@ public class SecurityCondition {
     @SuppressWarnings("FieldMayBeFinal")
     private SecurityEffect effect = SecurityEffect.Deny;
 
+    /**
+     * Raw configuration. Use {@link #getQueryParams()} instead.
+     */
+    @JsonProperty("queryParams")
+    @SuppressWarnings("FieldMayBeFinal")
+    private Map<String, Object> queryParams = emptyMap();
+
+    /**
+     * Raw configuration. Use {@link #getRequestHeaders()} instead.
+     */
     @JsonProperty("requestHeaders")
     @SuppressWarnings("FieldMayBeFinal")
     private Map<String, Object> requestHeaders = emptyMap();
 
     @JsonIgnore
-    private Map<String, HttpHeader> parsedHeaders;
+    private Map<String, ConditionalNameValuePair> parsedQueryParams;
+
+    @JsonIgnore
+    private Map<String, ConditionalNameValuePair> parsedHeaders;
 
     public SecurityEffect getEffect() {
         return effect;
     }
 
-    public Map<String, Object> getRequestHeaders() {
-        return requestHeaders;
+    public Map<String, ConditionalNameValuePair> getQueryParams() {
+        if (isNull(parsedQueryParams)) {
+            parsedQueryParams = ConditionalNameValuePair.parse(queryParams);
+        }
+        return parsedQueryParams;
     }
 
-    public Map<String, HttpHeader> getParsedHeaders() {
+    public Map<String, ConditionalNameValuePair> getRequestHeaders() {
         if (isNull(parsedHeaders)) {
-            parsedHeaders = requestHeaders.entrySet().stream()
-                    .collect(Collectors.toMap(Map.Entry::getKey, this::parseHttpHeaderMatch));
+            parsedHeaders = ConditionalNameValuePair.parse(requestHeaders);
         }
         return parsedHeaders;
-    }
-
-    private HttpHeader parseHttpHeaderMatch(Map.Entry<String, Object> h) {
-        // String configuration form.
-        // Header-Name: <value>
-        if (h.getValue() instanceof String) {
-            return new HttpHeader(h.getKey(), (String) h.getValue(), MatchOperator.EqualTo);
-        }
-
-        // Extended configuration form.
-        // Header-Name:
-        //   value: <value>
-        //   operator: <operator>
-        @SuppressWarnings("unchecked") final Map<String, String> structuredMatch = (Map<String, String>) h.getValue();
-        return new HttpHeader(
-                h.getKey(),
-                structuredMatch.get("value"),
-                Enum.valueOf(MatchOperator.class, structuredMatch.get("operator"))
-        );
     }
 }

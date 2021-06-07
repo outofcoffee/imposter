@@ -2,6 +2,7 @@ package io.gatehill.imposter.plugin.openapi.config;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.gatehill.imposter.plugin.config.resource.LegacyQueryParamsResourceConfig;
 import io.gatehill.imposter.plugin.config.resource.PathParamsResourceConfig;
 import io.gatehill.imposter.plugin.config.resource.QueryParamsResourceConfig;
 import io.gatehill.imposter.plugin.config.resource.RestResourceConfig;
@@ -13,7 +14,9 @@ import java.util.Map;
  *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public class OpenApiResourceConfig extends RestResourceConfig implements PathParamsResourceConfig, QueryParamsResourceConfig {
+public class OpenApiResourceConfig extends RestResourceConfig implements
+        PathParamsResourceConfig, QueryParamsResourceConfig, LegacyQueryParamsResourceConfig {
+
     @JsonProperty("pathParams")
     private Map<String, String> pathParams;
 

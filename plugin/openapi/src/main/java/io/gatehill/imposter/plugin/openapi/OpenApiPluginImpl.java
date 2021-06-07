@@ -45,6 +45,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.google.common.collect.Maps.newHashMap;
+import static io.gatehill.imposter.util.HttpUtil.convertMultiMapToHashMap;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 
@@ -271,7 +272,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
                     pathTemplate,
                     request.path(),
                     routingContext.pathParams(),
-                    HttpUtil.convertMultiMapToHashMap(request.params())
+                    convertMultiMapToHashMap(request.params())
             ).orElse(pluginConfig);
 
             scriptHandler(pluginConfig, resourceConfig, routingContext, getInjector(), context, statusCodeFactory, openApiResponseBehaviourFactory, responseBehaviour -> {

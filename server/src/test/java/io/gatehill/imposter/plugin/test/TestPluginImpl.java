@@ -31,7 +31,8 @@ public class TestPluginImpl extends ConfiguredPlugin<TestPluginConfig> {
     @Override
     public void configureRoutes(Router router) {
         router.get("/example").handler(AsyncUtil.handleRoute(imposterConfig, vertx, routingContext ->
-                routingContext.response().setStatusCode(HttpUtil.HTTP_OK).end()));
+                routingContext.response().setStatusCode(HttpUtil.HTTP_OK).end()
+        ));
     }
 
     public List<TestPluginConfig> getConfigs() {

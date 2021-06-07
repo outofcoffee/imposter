@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import com.jayway.restassured.RestAssured;
 import io.gatehill.imposter.plugin.Plugin;
 import io.gatehill.imposter.plugin.PluginManager;
-import io.gatehill.imposter.plugin.config.security.HttpHeader;
+import io.gatehill.imposter.plugin.config.security.ConditionalNameValuePair;
 import io.gatehill.imposter.plugin.config.security.SecurityCondition;
 import io.gatehill.imposter.plugin.config.security.SecurityConfig;
 import io.gatehill.imposter.plugin.config.security.SecurityEffect;
@@ -70,14 +70,14 @@ public class SecurityConfigTest extends BaseVerticleTest {
         // check short configuration option
         final SecurityCondition condition1 = securityConfig.getConditions().get(0);
         testContext.assertEquals(SecurityEffect.Permit, condition1.getEffect());
-        final Map<String, HttpHeader> parsedHeaders1 = condition1.getParsedHeaders();
+        final Map<String, ConditionalNameValuePair> parsedHeaders1 = condition1.getRequestHeaders();
         testContext.assertEquals(1, parsedHeaders1.size());
         testContext.assertEquals("s3cr3t", parsedHeaders1.get("Authorization").getValue());
 
         // check long configuration option
         final SecurityCondition condition2 = securityConfig.getConditions().get(1);
         testContext.assertEquals(SecurityEffect.Deny, condition2.getEffect());
-        final Map<String, HttpHeader> parsedHeaders2 = condition2.getParsedHeaders();
+        final Map<String, ConditionalNameValuePair> parsedHeaders2 = condition2.getRequestHeaders();
         testContext.assertEquals(1, parsedHeaders2.size());
         testContext.assertEquals("opensesame", parsedHeaders2.get("X-Api-Key").getValue());
     }
