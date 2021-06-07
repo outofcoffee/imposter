@@ -89,6 +89,66 @@ conditions:
     X-Custom-Api-Key: s3cr3t
 ```
 
+### Supported conditions
+
+Imposter supports the following conditions:
+
+| Condition        | Meaning                   | Type              | Example              |
+|------------------|---------------------------|-------------------|----------------------|
+| `queryParams`    | Request query parameters. | Map String:String | `limit: 1`           |
+| `requestHeaders` | Request headers.          | Map String:String | `Authorization: foo` |
+
+Here's an example showing all conditions:
+
+```yaml
+conditions:
+- effect: Permit
+  requestHeaders:
+    X-Custom-Api-Key: s3cr3t
+
+- effect: Deny
+  requestHeaders:
+    X-Forwarded-For:
+      value: 1.2.3.4
+      operator: NotEqualTo
+
+- effect: Permit
+  queryParams:
+    apiKey:
+      value: opensesame
+      operator: EqualTo
+
+- effect: Deny
+  queryParams:
+    apiKey: someblockedkey
+```
+
+#### Simple and extended form
+
+For each condition you can use the simple form (`key: value`) or extended form, which allows customisation of matching behaviour.
+
+The simple form for conditions is as follows:
+
+```yaml
+- effect: Permit
+  queryParams:
+    example: foo
+```
+
+If you want to control the logical operator you can use the extended form as follows:
+
+```yaml
+- effect: Permit
+  queryParams:
+    example:
+      value: foo
+      operator: NotEqualTo
+```
+
+By default, conditions are matched using the `EqualTo` operator.
+
+Here, the value of the `example` query parameter is specified as a child property named `value`. The `operator` is also specified in this form, such as `EqualTo` or `NotEqualTo`.
+
 ### Combining conditions
 
 The presence of more than one header in a condition requires all header values match in order for the condition to be satisfied.
@@ -117,21 +177,6 @@ conditions:
   requestHeaders:
     X-Another-Example: someothervalue
 ```
-
-### Match operators
-
-By default, conditions are matched using the `EqualTo` operator. If you want to control this, you can use this form of configuration:
-
-```yaml
-conditions:
-- effect: Deny
-  requestHeaders:
-    Authorization:
-      value: s3cr3t
-      operator: NotEqualTo
-```
-
-Here, the `value` of the `Authorization` header is specified as a child property. The `operator` can also be specified in this form, such as `EqualTo` or `NotEqualTo`. 
 
 ### Externalising values to environment variables
 

@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 
 /**
  * Represents a name/value pair, such as an HTTP header or query parameter,
- * with an operator controlling the match behaviour.
+ * with a logical operator controlling the match behaviour.
  *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
