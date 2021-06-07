@@ -14,5 +14,8 @@
         <Logger name="org.apache" level="warn" />
         <Logger name="com.atlassian.oai" level="warn" />
         <Logger name="io.gatehill.imposter" level="debug" />
+
+        <!-- due to Netty Docker logging bug -->
+        <Logger name="io.netty.util.internal.MacAddressUtil" level="off" />
     </Loggers>
 </Configuration>
