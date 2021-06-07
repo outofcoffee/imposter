@@ -3,9 +3,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [1.9.0] - 2021-06-07
 ### Added
-- ...
+- (core) Adds path parameter support to declarative config and script engines.
+- (core) Adds query parameter support to security policy condition.
+
+### Changed
+- (core) Renames params to queryParams in configuration and script engine.
 
 ## [1.8.0] - 2021-06-05
 ### Added
