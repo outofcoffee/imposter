@@ -9,7 +9,7 @@ resources:
 
   - path: "/pets"
     method: "get"
-    params:
+    queryParams:
       foo: bar
     response:
       statusCode: 204

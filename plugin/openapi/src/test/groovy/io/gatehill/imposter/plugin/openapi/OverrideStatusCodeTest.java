@@ -55,16 +55,29 @@ public class OverrideStatusCodeTest extends BaseVerticleTest {
     }
 
     /**
+     * Should return a specific status code for a path parameter.
+     */
+    @Test
+    public void testOverrideStatusCodesForPathParam(TestContext testContext) {
+        given()
+                .log().ifValidationFails()
+                .accept(ContentType.JSON)
+                .when()
+                .get("/pets/{petId}", "1")
+                .then()
+                .log().ifValidationFails()
+                .statusCode(203);
+    }
+
+    /**
      * Should return a specific status code for a query parameter.
      */
     @Test
     public void testOverrideStatusCodesForQueryParam(TestContext testContext) {
         given()
                 .log().ifValidationFails()
-                .contentType(ContentType.JSON)
                 .accept(ContentType.JSON)
                 .when()
-                .body("{ \"id\": 1, \"name\": \"Cat\" }")
                 .get("/pets?foo=bar")
                 .then()
                 .log().ifValidationFails()

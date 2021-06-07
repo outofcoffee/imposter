@@ -1,9 +1,12 @@
 package io.gatehill.imposter.util;
 
 import io.gatehill.imposter.server.VertxWebServerFactoryImpl;
+import io.vertx.core.MultiMap;
 import io.vertx.ext.web.RoutingContext;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -254,6 +257,12 @@ public final class HttpUtil {
 
     public static String buildStatusResponse() {
         return "{\n  \"status\":\"ok\"\n  \"version\":\"" + MetaUtil.readVersion() + "\"\n}";
+    }
+
+    public static Map<String, String> convertMultiMapToHashMap(MultiMap params) {
+        final Map<String, String> destination = new HashMap<>();
+        params.entries().forEach(e -> destination.put(e.getKey(), e.getValue()));
+        return destination;
     }
 
     private static class WeightedAcceptEntry {

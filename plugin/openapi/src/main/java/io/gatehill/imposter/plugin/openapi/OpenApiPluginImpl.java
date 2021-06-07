@@ -270,7 +270,8 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
                     method,
                     pathTemplate,
                     request.path(),
-                    request.params()
+                    routingContext.pathParams(),
+                    HttpUtil.convertMultiMapToHashMap(request.params())
             ).orElse(pluginConfig);
 
             scriptHandler(pluginConfig, resourceConfig, routingContext, getInjector(), context, statusCodeFactory, openApiResponseBehaviourFactory, responseBehaviour -> {

@@ -7,7 +7,6 @@ import io.gatehill.imposter.plugin.config.ContentTypedConfig;
 import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
 import io.gatehill.imposter.script.ResponseBehaviour;
-import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.web.RoutingContext;
@@ -41,6 +40,7 @@ public interface ResponseService {
      * @param method       the HTTP method of the current request
      * @param pathTemplate request path template
      * @param path         the path of the current request
+     * @param pathParams   the path parameters of the current request
      * @param queryParams  the query parameters of the current request
      * @return a matching resource configuration or else empty
      */
@@ -48,7 +48,8 @@ public interface ResponseService {
                                                        HttpMethod method,
                                                        String pathTemplate,
                                                        String path,
-                                                       MultiMap queryParams);
+                                                       Map<String, String> pathParams,
+                                                       Map<String, String> queryParams);
 
     /**
      * Send an empty response to the client, typically used as a fallback when no

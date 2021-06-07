@@ -2,11 +2,17 @@ logger.info('context: ' + context);
 
 var request = context.request;
 
-if (request.params.foo) {
+if (request.pathParams.qux) {
+    // echo the value of the 'qux' path parameter as a response header
+    respond()
+        .withStatusCode(203)
+        .withHeader('X-Echo-Qux', request.pathParams.qux);
+
+} else if (request.queryParams.foo) {
     // echo the value of the 'foo' request parameter as a response header
     respond()
         .withStatusCode(200)
-        .withHeader('X-Echo-Foo', request.params.foo);
+        .withHeader('X-Echo-Foo', request.queryParams.foo);
 
 } else if (request.headers.baz) {
     // echo the value of the 'baz' request header as a response header

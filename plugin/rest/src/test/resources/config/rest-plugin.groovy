@@ -27,7 +27,7 @@ switch (context.request.uri) {
         break
 
     default:
-        switch (context.request.params.action) {
+        switch (context.request.queryParams.action) {
             case "create":
                 // HTTP Status-Code 201: Created.
                 respond {

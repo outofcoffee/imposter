@@ -220,12 +220,12 @@ specFile: "spec-with-multiple-status-codes.yaml"
 
 resources:
   - path: "/pets"
-    method: "post"
+    method: post
     response:
       statusCode: 201
 
   - path: "/pets/:petId"
-    method: "put"
+    method: put
     response:
       statusCode: 202
 ```
@@ -288,7 +288,7 @@ resources:
   # return HTTP 200 if request includes query parameter 'foo=bar'
   - path: "/pets"
     method: "get"
-    params:
+    queryParams:
       foo: bar
     response:
       statusCode: 200
@@ -374,7 +374,7 @@ respond().withContent('{ "foo": "bar" }')
 You can return a specific named example from the specification using the `withExampleName(String)` method.
 
 ```groovy
-if (context.request.uri.endsWith('/pets/2')) {
+if (context.request.pathParams.petId == '2') {
     respond().withExampleName('dogExample')
 }
 ```

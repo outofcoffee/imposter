@@ -5,6 +5,6 @@ import java.util.Map;
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public interface ParamsResourceConfig {
-    Map<String, String> getParams();
+public interface PathParamsResourceConfig {
+    Map<String, String> getPathParams();
 }

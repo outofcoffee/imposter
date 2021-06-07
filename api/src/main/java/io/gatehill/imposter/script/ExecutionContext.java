@@ -38,12 +38,20 @@ public class ExecutionContext {
         private final Supplier<Map<String, String>> headersSupplier;
         private Map<String, String> headers;
 
-        private final Supplier<Map<String, String>> paramsSupplier;
-        private Map<String, String> params;
+        private final Supplier<Map<String, String>> pathParamsSupplier;
+        private Map<String, String> pathParams;
 
-        public Request(Supplier<Map<String, String>> headersSupplier, Supplier<Map<String, String>> paramsSupplier) {
+        private final Supplier<Map<String, String>> queryParamsSupplier;
+        private Map<String, String> queryParams;
+
+        public Request(
+                Supplier<Map<String, String>> headersSupplier,
+                Supplier<Map<String, String>> pathParamsSupplier,
+                Supplier<Map<String, String>> queryParamsSupplier
+        ) {
             this.headersSupplier = headersSupplier;
-            this.paramsSupplier = paramsSupplier;
+            this.pathParamsSupplier = pathParamsSupplier;
+            this.queryParamsSupplier = queryParamsSupplier;
         }
 
         public void setPath(String path) {
@@ -89,15 +97,42 @@ public class ExecutionContext {
             this.headers = headers;
         }
 
-        public Map<String, String> getParams() {
-            if (isNull(params)) {
-                params = paramsSupplier.get();
+        /**
+         * @return the request path parameters
+         */
+        public Map<String, String> getPathParams() {
+            if (isNull(pathParams)) {
+                pathParams = pathParamsSupplier.get();
             }
-            return params;
+            return pathParams;
         }
 
-        public void setParams(Map<String, String> params) {
-            this.params = params;
+        public void setPathParams(Map<String, String> pathParams) {
+            this.pathParams = pathParams;
+        }
+
+        /**
+         * @return the request query parameters
+         */
+        public Map<String, String> getQueryParams() {
+            if (isNull(queryParams)) {
+                queryParams = queryParamsSupplier.get();
+            }
+            return queryParams;
+        }
+
+        public void setQueryParams(Map<String, String> queryParams) {
+            this.queryParams = queryParams;
+        }
+
+        /**
+         * Use {@link #getQueryParams()} instead.
+         *
+         * @return the request query parameters
+         */
+        @Deprecated
+        public Map<String, String> getParams() {
+            return getQueryParams();
         }
 
         @Override
@@ -106,9 +141,10 @@ public class ExecutionContext {
                     "path='" + path + '\'' +
                     ", method='" + method + '\'' +
                     ", uri='" + uri + '\'' +
-                    ", body=<" + ofNullable(body).map(b -> b.length() + " bytes").orElse("null") + '>' +
+                    ", pathParams=" + pathParams +
+                    ", queryParams=" + queryParams +
                     ", headers=" + headers +
-                    ", params=" + params +
+                    ", body=<" + ofNullable(body).map(b -> b.length() + " bytes").orElse("null") + '>' +
                     '}';
         }
     }

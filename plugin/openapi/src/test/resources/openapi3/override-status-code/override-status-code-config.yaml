@@ -3,23 +3,30 @@ specFile: "openapi3-with-multiple-status-codes.yaml"
 
 resources:
   - path: "/pets"
-    method: "get"
+    method: get
     response:
       statusCode: 200
 
+  - path: "/pets/:petId"
+    method: get
+    pathParams:
+      petId: 1
+    response:
+      statusCode: 203
+
   - path: "/pets"
-    method: "get"
-    params:
+    method: get
+    queryParams:
       foo: bar
     response:
       statusCode: 204
 
   - path: "/pets"
-    method: "post"
+    method: post
     response:
       statusCode: 201
 
   - path: "/pets/:petId"
-    method: "put"
+    method: put
     response:
       statusCode: 202

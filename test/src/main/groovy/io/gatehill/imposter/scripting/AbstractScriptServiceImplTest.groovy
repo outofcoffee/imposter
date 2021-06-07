@@ -51,7 +51,8 @@ abstract class AbstractScriptServiceImplTest {
     protected RuntimeContext buildRuntimeContext(
             Map<String, String> additionalBindings,
             Map<String, String> headers = [:],
-            Map<String, String> params = [:]
+            Map<String, String> pathParams = [:],
+            Map<String, String> queryParams = [:]
     ) {
         def logger = LogManager.getLogger('script-engine-test')
 
@@ -59,10 +60,11 @@ abstract class AbstractScriptServiceImplTest {
         when(mockRequest.method()).thenReturn(HttpMethod.GET)
         when(mockRequest.absoluteURI()).thenReturn('/example')
         when(mockRequest.headers()).thenReturn(new CaseInsensitiveHeaders().addAll(headers))
-        when(mockRequest.params()).thenReturn(new CaseInsensitiveHeaders().addAll(params))
+        when(mockRequest.params()).thenReturn(new CaseInsensitiveHeaders().addAll(queryParams))
 
         def mockRoutingContext = mock(RoutingContext.class)
         when(mockRoutingContext.request()).thenReturn(mockRequest)
+        when(mockRoutingContext.pathParams()).thenReturn(pathParams)
         when(mockRoutingContext.getBodyAsString()).thenReturn('')
 
         def executionContext = ScriptUtil.buildContext(mockRoutingContext, null)
@@ -110,7 +112,7 @@ abstract class AbstractScriptServiceImplTest {
     }
 
     @Test
-    void testExecuteScript_ParseRequestParams() throws Exception {
+    void testExecuteScript_ParsePathParams() throws Exception {
         def config = configureScript()
         def pluginConfig = config as PluginConfig
         def resourceConfig = config as ResourceConfig
@@ -118,9 +120,30 @@ abstract class AbstractScriptServiceImplTest {
         def additionalBindings = [
                 'hello': 'world'
         ]
-        def params = ['foo': 'bar']
+        def pathParams = ['qux': 'quux']
 
-        RuntimeContext runtimeContext = buildRuntimeContext(additionalBindings, [:], params)
+        RuntimeContext runtimeContext = buildRuntimeContext(additionalBindings, [:], pathParams, [:])
+        def actual = service.executeScript(pluginConfig, resourceConfig, runtimeContext)
+
+        assertNotNull actual
+        assertEquals 203, actual.statusCode
+        assertEquals ResponseBehaviourType.DEFAULT_BEHAVIOUR, actual.behaviourType
+        assertTrue actual.getResponseHeaders().containsKey('X-Echo-Qux')
+        assertEquals 'quux', actual.getResponseHeaders().get('X-Echo-Qux')
+    }
+
+    @Test
+    void testExecuteScript_ParseQueryParams() throws Exception {
+        def config = configureScript()
+        def pluginConfig = config as PluginConfig
+        def resourceConfig = config as ResourceConfig
+
+        def additionalBindings = [
+                'hello': 'world'
+        ]
+        def queryParams = ['foo': 'bar']
+
+        RuntimeContext runtimeContext = buildRuntimeContext(additionalBindings, [:], [:], queryParams)
         def actual = service.executeScript(pluginConfig, resourceConfig, runtimeContext)
 
         assertNotNull actual
@@ -141,7 +164,7 @@ abstract class AbstractScriptServiceImplTest {
         ]
         def headers = ['baz': 'qux']
 
-        RuntimeContext runtimeContext = buildRuntimeContext(additionalBindings, headers, [:])
+        RuntimeContext runtimeContext = buildRuntimeContext(additionalBindings, headers, [:], [:])
         def actual = service.executeScript(pluginConfig, resourceConfig, runtimeContext)
 
         assertNotNull actual

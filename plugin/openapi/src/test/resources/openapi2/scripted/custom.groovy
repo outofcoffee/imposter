@@ -2,18 +2,26 @@
 // specification example is returned in the response.
 
 // checks for a particular parameter
-logger.info("Request params: ${context.request.params}")
-if (context.request.params.param1 == 'foo') {
+logger.info("Query params: ${context.request.queryParams}")
+if (context.request.queryParams.param1 == 'foo') {
     respond {
         withStatusCode 202
         immediately()
     }
 }
 
-// check for deprecated params map
+// check for deprecated params map 1
 if (context.params.param1 == 'bar') {
     respond {
         withStatusCode 202
+        immediately()
+    }
+}
+
+// check for deprecated params map 2
+if (context.request.params.param1 == 'qux') {
+    respond {
+        withStatusCode 203
         immediately()
     }
 }

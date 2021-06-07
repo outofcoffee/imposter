@@ -20,7 +20,7 @@ response:
 ...and here's the corresponding script (`example.groovy`):
 
 ```groovy
-if (context.request.params.action == 'create') {
+if (context.request.queryParams.action == 'create') {
     respond()
         .withStatusCode(201)
         .immediately()
@@ -42,7 +42,7 @@ For example:
 Here's a more sophisticated example script:
 
 ```groovy
-switch (context.request.params.action) {
+switch (context.request.queryParams.action) {
     case 'create':
         // HTTP Status-Code 201: Created.
         respond()

@@ -4,10 +4,17 @@ const request = context.request;
 
 // Note: Graal.js doesn't have special Map accessor syntax:
 // see: https://github.com/oracle/graaljs/issues/107
-const fooParam = request.params.get('foo');
+const quxParam = request.pathParams.get('qux');
+const fooParam = request.queryParams.get('foo');
 const bazHeader = request.headers.get('baz');
 
-if (fooParam) {
+if (quxParam) {
+    // echo the value of the 'qux' path parameter as a response header
+    respond()
+        .withStatusCode(203)
+        .withHeader('X-Echo-Qux', quxParam);
+
+} else if (fooParam) {
     // echo the value of the 'foo' request parameter as a response header
     respond()
         .withStatusCode(200)
