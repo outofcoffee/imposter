@@ -104,7 +104,6 @@ public interface ScriptedPlugin<C extends PluginConfigImpl> {
                 routingContext.response()
                         .setStatusCode(responseBehaviour.getStatusCode())
                         .end();
-
             } else {
                 // default behaviour
                 defaultBehaviourHandler.accept(responseBehaviour);

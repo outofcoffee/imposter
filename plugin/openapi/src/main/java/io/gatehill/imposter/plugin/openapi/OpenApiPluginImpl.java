@@ -41,6 +41,7 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -275,7 +276,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
                     convertMultiMapToHashMap(request.params())
             ).orElse(pluginConfig);
 
-            scriptHandler(pluginConfig, resourceConfig, routingContext, getInjector(), context, statusCodeFactory, openApiResponseBehaviourFactory, responseBehaviour -> {
+            final Consumer<ResponseBehaviour> defaultBehaviourHandler = responseBehaviour -> {
                 final Optional<ApiResponse> optionalResponse = findApiResponse(operation, responseBehaviour.getStatusCode());
 
                 // set status code regardless of response strategy
@@ -300,7 +301,18 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
 
                     response.end();
                 }
-            });
+            };
+
+            scriptHandler(
+                    pluginConfig,
+                    resourceConfig,
+                    routingContext,
+                    getInjector(),
+                    context,
+                    statusCodeFactory,
+                    openApiResponseBehaviourFactory,
+                    defaultBehaviourHandler
+            );
         });
     }
 

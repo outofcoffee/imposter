@@ -6,6 +6,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
+ * Represents a name/value pair, such as an HTTP header or query parameter,
+ * with an operator controlling the match behaviour.
+ *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public class ConditionalNameValuePair {
@@ -39,10 +42,10 @@ public class ConditionalNameValuePair {
 
     public static Map<String, ConditionalNameValuePair> parse(Map<String, Object> requestHeaders) {
         return requestHeaders.entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, ConditionalNameValuePair::parseHttpHeaderMatch));
+                .collect(Collectors.toMap(Map.Entry::getKey, ConditionalNameValuePair::parsePair));
     }
 
-    private static ConditionalNameValuePair parseHttpHeaderMatch(Map.Entry<String, Object> pair) {
+    private static ConditionalNameValuePair parsePair(Map.Entry<String, Object> pair) {
         // String configuration form.
         // HeaderName: <value>
         if (pair.getValue() instanceof String) {

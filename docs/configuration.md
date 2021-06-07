@@ -90,7 +90,7 @@ A few things to call out:
 
 #### Multiple resources example
 
-The [REST plugin](./rest_plugin.md) allows you to specify multiple resources, using the `resources` array. Each resource can have its own path, method, response behaviour etc.
+The [OpenAPI plugin](./openapi_plugin.md) and [REST plugin](./rest_plugin.md) allow you to specify multiple resources, using the `resources` array. Each resource can have its own path, method, response behaviour etc.
 
 ```yaml
 # multi-response-config.yaml
@@ -118,18 +118,57 @@ resources:
       multiline response data.
 ```
 
-#### Default values
+#### Default response values
 
 Default values for response configuration are as follows:
 
 | Field                 | Plugins(s)    | Type                  | Default                                            | Example                             |
 |-----------------------|---------------|-----------------------|----------------------------------------------------|-------------------------------------|
 | `contentType`         | all           | String                | `application/json`, or determined from static file | `text/plain`                        |
-| `method`              | rest          | String (HTTP method)  | `GET`                                              | `POST`                              |
 | `response.statusCode` | openapi, rest | Integer (HTTP status) | `200`                                              | `201`                               |
 | `response.staticData` | openapi, rest | String                | empty                                              | `hello world`                       |
 | `response.staticFile` | all           | String                | empty                                              | `data.json`                         |
 | `response.headers`    | openapi, rest | Map of String:String  | empty                                              | `X-Custom-Header: value`            |
+
+## Conditional responses
+
+You can make Imposter respond with different values based on certain properties of the request in your configuration file, or using the script engine.
+
+> For information about the script engine, see the [Scripting](./scripting.md) documentation.
+
+The [OpenAPI plugin](./openapi_plugin.md) and [REST plugin](./rest_plugin.md) allow you to specify different response behavior based on the following request attributes:
+
+| Field         | Plugins(s)    | Type                  | Example            |
+|---------------|---------------|-----------------------|--------------------|
+| `method`      | openapi, rest | String (HTTP method)  | `POST`             |
+| `path`        | all           | String                | `/example/path`    |
+| `pathParams`  | openapi       | Map of String:String  | `productCode: abc` |
+| `queryParams` | openapi       | Map of String:String  | `limit: 10`        |
+
+Here is an example showing all fields:
+
+```yaml
+plugin: "openapi"
+specFile: "apispec.yaml"
+
+resources:
+  # handles GET /pets?page=1
+  - path: "/pets"
+    method: GET
+    queryParams:
+      page: 1
+    response:
+      statusCode: 200
+  
+  # handles GET /pets/10
+  - path: "/pets/:petId"
+    method: GET
+    pathParams:
+      petId: 10
+    response:
+      statusCode: 401
+      staticData: "You do not have permission to view this pet."
+```
 
 ## Environment variables
 

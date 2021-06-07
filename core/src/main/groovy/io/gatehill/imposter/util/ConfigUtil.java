@@ -72,7 +72,8 @@ public final class ConfigUtil {
                     LOGGER.debug("Loading configuration file: {}", configFile);
                     configCount++;
 
-                    final PluginConfigImpl config = loadPluginConfig(configFile, PluginConfigImpl.class);
+                    // load to determine plugin
+                    final PluginConfigImpl config = loadPluginConfig(configFile, PluginConfigImpl.class, false);
 
                     final String pluginClass = pluginManager.determinePluginClass(config.getPlugin());
                     List<File> pluginConfigs = allPluginConfigs.get(pluginClass);
@@ -95,28 +96,37 @@ public final class ConfigUtil {
         return allPluginConfigs;
     }
 
-    /**
-     * Reads the contents of the configuration file, performing necessary string substitutions.
-     *
-     * @param configFile  the configuration file
-     * @param configClass the configuration class
-     * @return the configuration
-     */
-    public static <T extends PluginConfigImpl> T loadPluginConfig(File configFile, Class<T> configClass) {
-        try {
-            final String rawContents = FileUtils.readFileToString(configFile, StandardCharsets.UTF_8);
-            final String parsedContents = placeholderSubstitutor.replace(rawContents);
-            final T config = lookupMapper(configFile).readValue(parsedContents, configClass);
-            config.setParentDir(configFile.getParentFile());
-            return config;
-        } catch (IOException e) {
-            throw new RuntimeException("Error reading configuration file: " + configFile.getAbsolutePath(), e);
-        }
-    }
-
     private static boolean isConfigFile(File dir, String name) {
         return CONFIG_FILE_MAPPERS.keySet().stream()
                 .anyMatch(extension -> name.endsWith(CONFIG_FILE_SUFFIX + extension));
+    }
+
+    /**
+     * Reads the contents of the configuration file, performing necessary string substitutions.
+     *
+     * @param configFile             the configuration file
+     * @param configClass            the configuration class
+     * @param substitutePlaceholders whether to substitute placeholders in the configuration
+     * @return the configuration
+     */
+    public static <T extends PluginConfigImpl> T loadPluginConfig(
+            File configFile,
+            Class<T> configClass,
+            boolean substitutePlaceholders
+    ) {
+        try {
+            final String rawContents = FileUtils.readFileToString(configFile, StandardCharsets.UTF_8);
+            final String parsedContents = substitutePlaceholders ?
+                    placeholderSubstitutor.replace(rawContents) :
+                    rawContents;
+
+            final T config = lookupMapper(configFile).readValue(parsedContents, configClass);
+            config.setParentDir(configFile.getParentFile());
+            return config;
+
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading configuration file: " + configFile.getAbsolutePath(), e);
+        }
     }
 
     /**
