@@ -3,9 +3,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [1.10.0] - 2021-06-09
 ### Added
-- ...
+- (openapi, rest) Adds security policy support to resources.
+
+### Changed
+- (openapi) Bumps Swagger UI version to 3.50.0.
 
 ## [1.9.0] - 2021-06-07
 ### Added
@@ -48,7 +51,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - (openapi) Allows request validation to be enabled via OpenAPI plugin configuration.
 
 ### Changed
-- (openapi) OpenAPI plugin returns first status code for operation if none set explicitly. 
+- (openapi) OpenAPI plugin returns first status code for operation if none set explicitly.
 - (openapi) Returns the first value of an enum when building an example from an OpenAPI schema.
 
 ## [1.4.0] - 2021-04-29
@@ -127,7 +130,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - (core) Moves core API into Maven-published 'api' module.
 - (sfdc) Sets SFDC plugin content type to JSON (thanks, pauturner).
 
-## [0.6.0] - 2017-10-14 
+## [0.6.0] - 2017-10-14
 ### Added
 - (core) Exposes request headers to scripts (thanks, kareem-habib).
 - (core) Adds withData response behaviour (thanks, yanan-l).
