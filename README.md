@@ -1,7 +1,7 @@
 # Imposter: A scriptable, multipurpose mock server [![CircleCI](https://circleci.com/gh/outofcoffee/imposter/tree/master.svg?style=svg)](https://circleci.com/gh/outofcoffee/imposter/tree/master)
 
 Reliable, scriptable and extensible mock server for general REST APIs,
-[OpenAPI](https://github.com/OAI/OpenAPI-Specification) (aka Swagger) specifications,
+[OpenAPI](https://github.com/OAI/OpenAPI-Specification) (and Swagger) specifications,
 Salesforce and HBase APIs.
 
 Scripting support for both JavaScript or [Groovy/Java](http://www.groovy-lang.org/).
@@ -15,17 +15,23 @@ Use Imposter to:
 * quickly set up a temporary API for your mobile/web client teams whilst the real API is being built
 * decouple your integration tests from the cloud/various back-end systems and take control of your dependencies
 
-Provide mock responses using static files or customise behaviour using JavaScript or Java/Groovy. Power users can write their own plugins in a JVM language of their choice.
+Provide mock responses using static files or customise behaviour based on characteristics of the request.
+Power users can control mock responses with JavaScript or Java/Groovy script engines.
+Advanced users can write their own plugins in a JVM language of their choice.
 
 *****
 ## Getting started
 
+The quickest way to get up and running is to use the free cloud-hosted service at **[mocks.cloud](https://www.mocks.cloud)**
+
+## Tutorials
+
 * [Mocking APIs with Swagger and Imposter](https://medium.com/@outofcoffee/mocking-apis-with-swagger-and-imposter-3694bd1733c0)
 * [Mocking REST APIs with Imposter](https://medium.com/@outofcoffee/mocking-apis-with-imposter-53bd908632e5)
 
-## Documentation
+## User documentation
 
-**[Read the full documentation here](http://outofcoffee.viewdocs.io/imposter/)**
+**[Read the user documentation here](http://outofcoffee.viewdocs.io/imposter/)**
 
 *****
 
@@ -33,7 +39,7 @@ Provide mock responses using static files or customise behaviour using JavaScrip
 
 Imposter uses plugins to control its behaviour and provide specialised mocks:
 
-* **[OpenAPI (aka Swagger)](docs/openapi_plugin.md)** - Support for [OpenAPI](https://github.com/OAI/OpenAPI-Specification) (aka Swagger) API specifications.
+* **[OpenAPI](docs/openapi_plugin.md)** - Support for [OpenAPI](https://github.com/OAI/OpenAPI-Specification) (and Swagger) API specifications.
 * **[REST](docs/rest_plugin.md)** - Mocks RESTful or plain HTTP APIs.
 * **[HBase](docs/hbase_plugin.md)** - Basic HBase mock implementation.
 * **[SFDC (Salesforce) plugin](docs/sfdc_plugin.md)** - Basic Salesforce mock implementation.

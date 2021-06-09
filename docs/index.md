@@ -34,7 +34,7 @@ Imposter uses plugins to control its behaviour and provide specialised mocks. Yo
 
 The following sections describe the built-in plugins. You can also write your own, if you want to customise behaviour further.
 
-* [OpenAPI (aka Swagger) plugin](openapi_plugin.md)
+* [OpenAPI (and Swagger) plugin](openapi_plugin.md)
 * [REST plugin](rest_plugin.md)
 * [HBase plugin](hbase_plugin.md)
 * [SFDC (Salesforce) plugin](sfdc_plugin.md)

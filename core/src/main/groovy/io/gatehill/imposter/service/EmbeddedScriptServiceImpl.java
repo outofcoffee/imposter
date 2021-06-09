@@ -3,9 +3,9 @@ package io.gatehill.imposter.service;
 import com.google.common.base.Preconditions;
 import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
-import io.gatehill.imposter.script.RuntimeContext;
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour;
 import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl;
+import io.gatehill.imposter.script.RuntimeContext;
 import io.gatehill.imposter.script.listener.ScriptListener;
 
 /**

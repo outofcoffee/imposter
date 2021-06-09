@@ -6,7 +6,6 @@ import io.gatehill.imposter.http.DefaultStatusCodeFactory;
 import io.gatehill.imposter.http.ResponseBehaviourFactory;
 import io.gatehill.imposter.http.StatusCodeFactory;
 import io.gatehill.imposter.plugin.config.PluginConfigImpl;
-import io.gatehill.imposter.plugin.config.resource.ResourceConfig;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
 import io.gatehill.imposter.script.ResponseBehaviour;
 import io.gatehill.imposter.script.ResponseBehaviourType;
@@ -41,7 +40,7 @@ public interface ScriptedPlugin<C extends PluginConfigImpl> {
 
     default void scriptHandler(
             C pluginConfig,
-            ResourceConfig resourceConfig,
+            ResponseConfigHolder resourceConfig,
             RoutingContext routingContext,
             Injector injector,
             Consumer<ResponseBehaviour> defaultBehaviourHandler

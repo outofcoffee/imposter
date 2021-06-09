@@ -7,7 +7,7 @@ import io.gatehill.imposter.plugin.config.security.SecurityConfigHolder;
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public abstract class AbstractResourceConfig implements ResourceConfig, SecurityConfigHolder {
+public abstract class AbstractResourceConfig implements ResponseConfigHolder, SecurityConfigHolder {
     @JsonProperty("path")
     private String path;
 

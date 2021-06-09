@@ -1,20 +1,13 @@
 package io.gatehill.imposter.service;
 
 import com.google.common.base.Strings;
-import com.google.common.io.CharStreams;
-import io.gatehill.imposter.config.ResolvedResourceConfig;
 import io.gatehill.imposter.exception.ResponseException;
 import io.gatehill.imposter.http.ResponseBehaviourFactory;
 import io.gatehill.imposter.http.StatusCodeFactory;
 import io.gatehill.imposter.plugin.config.ContentTypedConfig;
 import io.gatehill.imposter.plugin.config.PluginConfig;
-import io.gatehill.imposter.plugin.config.ResourcesHolder;
-import io.gatehill.imposter.plugin.config.resource.PathParamsResourceConfig;
-import io.gatehill.imposter.plugin.config.resource.QueryParamsResourceConfig;
-import io.gatehill.imposter.plugin.config.resource.ResourceMethod;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfig;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
-import io.gatehill.imposter.plugin.config.resource.RestResourceConfig;
 import io.gatehill.imposter.script.ExecutionContext;
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour;
 import io.gatehill.imposter.script.ResponseBehaviour;
@@ -22,36 +15,26 @@ import io.gatehill.imposter.script.ResponseBehaviourType;
 import io.gatehill.imposter.script.RuntimeContext;
 import io.gatehill.imposter.script.ScriptUtil;
 import io.gatehill.imposter.util.HttpUtil;
-import io.gatehill.imposter.util.ResourceUtil;
 import io.gatehill.imposter.util.annotation.GroovyImpl;
 import io.gatehill.imposter.util.annotation.JavascriptImpl;
-import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.web.RoutingContext;
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.inject.Inject;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.file.Files;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
-import static java.util.Optional.ofNullable;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
@@ -90,141 +73,6 @@ public class ResponseServiceImpl implements ResponseService {
         }
 
         return determineResponseFromScript(routingContext, pluginConfig, resourceConfig, additionalContext, additionalBindings, statusCode);
-    }
-
-    @Override
-    public List<ResolvedResourceConfig> resolveResourceConfigs(ResponseConfigHolder config) {
-        if (config instanceof ResourcesHolder) {
-            @SuppressWarnings("unchecked") final ResourcesHolder<RestResourceConfig> resources = (ResourcesHolder<RestResourceConfig>) config;
-
-            if (nonNull(resources.getResources())) {
-                return resources.getResources().stream()
-                        .map(res -> new ResolvedResourceConfig(res, findPathParams(res), findQueryParams(res)))
-                        .collect(Collectors.toList());
-            }
-        }
-        return emptyList();
-    }
-
-    private Map<String, String> findPathParams(ResponseConfigHolder responseConfigHolder) {
-        if (responseConfigHolder instanceof PathParamsResourceConfig) {
-            final Map<String, String> params = ((PathParamsResourceConfig) responseConfigHolder).getPathParams();
-            return ofNullable(params).orElse(emptyMap());
-        }
-        return emptyMap();
-    }
-
-    private Map<String, String> findQueryParams(ResponseConfigHolder responseConfigHolder) {
-        if (responseConfigHolder instanceof QueryParamsResourceConfig) {
-            final Map<String, String> params = ((QueryParamsResourceConfig) responseConfigHolder).getQueryParams();
-            return ofNullable(params).orElse(emptyMap());
-        }
-        return emptyMap();
-    }
-
-    /**
-     * Search for a resource configuration matching the request.
-     *
-     * @param resources    the resources from the response configuration
-     * @param method       the HTTP method of the current request
-     * @param pathTemplate request path template
-     * @param path         the path of the current request
-     * @param pathParams   the path parameters of the current request
-     * @param queryParams  the query parameters of the current request
-     * @return a matching resource configuration or else empty
-     */
-    @Override
-    public Optional<ResponseConfigHolder> matchResourceConfig(
-            List<ResolvedResourceConfig> resources,
-            HttpMethod method,
-            String pathTemplate,
-            String path,
-            Map<String, String> pathParams,
-            Map<String, String> queryParams
-    ) {
-        final ResourceMethod resourceMethod = ResourceUtil.convertMethodFromVertx(method);
-
-        List<ResolvedResourceConfig> resourceConfigs = resources.stream()
-                .filter(res -> isRequestMatch(res, resourceMethod, pathTemplate, path, pathParams, queryParams))
-                .collect(Collectors.toList());
-
-        // find the most specific, by filter those that match for those that specify parameters
-        resourceConfigs = filterByParams(resourceConfigs, ResolvedResourceConfig::getPathParams);
-        resourceConfigs = filterByParams(resourceConfigs, ResolvedResourceConfig::getQueryParams);
-
-        if (resourceConfigs.isEmpty()) {
-            return empty();
-        }
-
-        if (resourceConfigs.size() == 1) {
-            LOGGER.debug("Matched response config for {} {}", resourceMethod, path);
-        } else {
-            LOGGER.warn("More than one response config found for {} {} - this is probably a configuration error. Choosing first response configuration.", resourceMethod, path);
-        }
-        return of(resourceConfigs.get(0).getConfig());
-    }
-
-    private List<ResolvedResourceConfig> filterByParams(
-            List<ResolvedResourceConfig> resourceConfigs,
-            Function<ResolvedResourceConfig, Map<String, String>> paramsSupplier
-    ) {
-        final List<ResolvedResourceConfig> configsWithParams = resourceConfigs.stream()
-                .filter(res -> !paramsSupplier.apply(res).isEmpty())
-                .collect(Collectors.toList());
-
-        if (configsWithParams.isEmpty()) {
-            // no resource configs specified params - don't filter
-            return resourceConfigs;
-        } else {
-            return configsWithParams;
-        }
-    }
-
-    /**
-     * Determine if the resource configuration matches the current request.
-     *
-     * @param resource       the resource configuration
-     * @param resourceMethod the HTTP method of the current request
-     * @param pathTemplate   request path template
-     * @param path           the path of the current request
-     * @param pathParams     the path parameters of the current request
-     * @param queryParams    the query parameters of the current request
-     * @return {@code true} if the the resource matches the request, otherwise {@code false}
-     */
-    private boolean isRequestMatch(
-            ResolvedResourceConfig resource,
-            ResourceMethod resourceMethod,
-            String pathTemplate,
-            String path,
-            Map<String, String> pathParams,
-            Map<String, String> queryParams
-    ) {
-        final RestResourceConfig resourceConfig = resource.getConfig();
-        final boolean pathMatch = path.equals(resourceConfig.getPath()) || pathTemplate.equals(resourceConfig.getPath());
-
-        return pathMatch &&
-                resourceMethod.equals(resourceConfig.getMethod()) &&
-                matchParams(pathParams, resource.getPathParams()) &&
-                matchParams(queryParams, resource.getQueryParams());
-    }
-
-    /**
-     * If the resource contains parameter configuration, check they are all present.
-     * If the configuration contains no parameters, then this evaluates to true.
-     * Additional parameters not in the configuration are ignored.
-     *
-     * @param resourceParams the configured parameters to match
-     * @param requestParams  the parameters from the request (e.g. query or path)
-     * @return {@code true} if the configured parameters match the request, otherwise {@code false}
-     */
-    private boolean matchParams(Map<String, String> requestParams, Map<String, String> resourceParams) {
-        // none configured - implies any match
-        if (resourceParams.isEmpty()) {
-            return true;
-        }
-        return resourceParams.entrySet().stream().allMatch(paramConfig ->
-                HttpUtil.safeEquals(requestParams.get(paramConfig.getKey()), paramConfig.getValue())
-        );
     }
 
     private ReadWriteResponseBehaviour determineResponseFromScript(
@@ -342,7 +190,8 @@ public class ResponseServiceImpl implements ResponseService {
                 routingContext.response().getStatusCode());
 
         routingContext.response().sendFile(
-                Paths.get(pluginConfig.getParentDir().getAbsolutePath(), responseBehaviour.getResponseFile()).toString());
+                normalisePath(pluginConfig, responseBehaviour.getResponseFile()).toString()
+        );
     }
 
     /**
@@ -424,12 +273,8 @@ public class ResponseServiceImpl implements ResponseService {
         }
     }
 
-    private InputStream loadResponseAsStream(PluginConfig config, String responseFile) throws IOException {
-        if (null != responseFile) {
-            return Files.newInputStream(Paths.get(config.getParentDir().getAbsolutePath(), responseFile));
-        } else {
-            throw new IllegalStateException("No response file set on ResponseBehaviour");
-        }
+    private Path normalisePath(PluginConfig config, String responseFile) {
+        return Paths.get(config.getParentDir().getAbsolutePath(), responseFile);
     }
 
     @Override
@@ -444,8 +289,9 @@ public class ResponseServiceImpl implements ResponseService {
             return new JsonArray();
         }
 
-        try (InputStream is = loadResponseAsStream(config, responseFile)) {
-            return new JsonArray(CharStreams.toString(new InputStreamReader(is)));
+        try {
+            final File configPath = normalisePath(config, responseFile).toFile();
+            return new JsonArray(FileUtils.readFileToString(configPath, StandardCharsets.UTF_8));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

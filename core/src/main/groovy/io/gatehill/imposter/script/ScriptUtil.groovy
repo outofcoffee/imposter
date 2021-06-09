@@ -25,9 +25,9 @@ class ScriptUtil {
     static ExecutionContext buildContext(RoutingContext routingContext, Map<String, Object> additionalContext) {
         final vertxRequest = routingContext.request()
 
-        final headersSupplier = {-> vertxRequest.headers().collectEntries()}
-        final pathParamsSupplier = {-> routingContext.pathParams() }
-        final queryParamsSupplier = {-> vertxRequest.params().collectEntries()}
+        final headersSupplier = { -> vertxRequest.headers().collectEntries() }
+        final pathParamsSupplier = { -> routingContext.pathParams() }
+        final queryParamsSupplier = { -> vertxRequest.params().collectEntries() }
 
         def deprecatedParams = {
             LOGGER.warn("Deprecation notice: 'context.params' is deprecated and will be removed " +

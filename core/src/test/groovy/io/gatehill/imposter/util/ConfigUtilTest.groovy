@@ -46,7 +46,7 @@ class ConfigUtilTest {
     @Test
     void testLoadInterpolatedPluginConfig() {
         // override environment variables in string interpolators
-        def environment = ["EXAMPLE_PATH" : "/test"]
+        def environment = ["EXAMPLE_PATH": "/test"]
         ConfigUtil.initInterpolators(environment)
 
         def configFile = new File(ConfigUtilTest.class.getResource('/interpolated/test-config.yaml').toURI())

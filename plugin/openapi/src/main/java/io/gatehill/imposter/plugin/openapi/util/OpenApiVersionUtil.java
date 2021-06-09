@@ -12,21 +12,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static io.gatehill.imposter.util.MapUtil.JSON_MAPPER;
 import static io.gatehill.imposter.util.MapUtil.YAML_MAPPER;
 import static java.util.Optional.ofNullable;
-import static org.apache.commons.io.IOUtils.LINE_SEPARATOR;
 
 /**
- * @author pete
+ * Utility functions to determine OpenAPI version and use the appropriate parser.
+ *
+ * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public final class OpenApiVersionUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(OpenApiVersionUtil.class);
@@ -43,9 +43,9 @@ public final class OpenApiVersionUtil {
         final Path specPath = Paths.get(config.getParentDir().getAbsolutePath(), config.getSpecFile());
 
         final String specData;
-        final Map parsed;
+        final Map<?, ?> parsed;
         try {
-            specData = FileUtils.readFileToString(specPath.toFile(), Charset.defaultCharset());
+            specData = FileUtils.readFileToString(specPath.toFile(), StandardCharsets.UTF_8);
 
             // determine serialisation
             final ObjectMapper mapper = determineMapper(specPath, specData);
@@ -84,7 +84,7 @@ public final class OpenApiVersionUtil {
 
         if (null != parseResult.getMessages() && !parseResult.getMessages().isEmpty()) {
             LOGGER.info("OpenAPI parser messages for: {}: {}", specPath,
-                    parseResult.getMessages().stream().collect(Collectors.joining(LINE_SEPARATOR)));
+                    String.join(System.lineSeparator(), parseResult.getMessages()));
         }
 
         if (null == parseResult.getOpenAPI()) {

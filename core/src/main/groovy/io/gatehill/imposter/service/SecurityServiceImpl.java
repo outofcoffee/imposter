@@ -1,9 +1,11 @@
 package io.gatehill.imposter.service;
 
+import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.plugin.config.security.ConditionalNameValuePair;
 import io.gatehill.imposter.plugin.config.security.MatchOperator;
 import io.gatehill.imposter.plugin.config.security.SecurityCondition;
 import io.gatehill.imposter.plugin.config.security.SecurityConfig;
+import io.gatehill.imposter.plugin.config.security.SecurityConfigHolder;
 import io.gatehill.imposter.plugin.config.security.SecurityEffect;
 import io.gatehill.imposter.util.HttpUtil;
 import io.vertx.core.http.HttpServerRequest;
@@ -17,6 +19,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static io.gatehill.imposter.util.HttpUtil.convertMultiMapToHashMap;
+import static java.util.Objects.nonNull;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
@@ -24,6 +27,32 @@ import static io.gatehill.imposter.util.HttpUtil.convertMultiMapToHashMap;
 public class SecurityServiceImpl implements SecurityService {
     private static final Logger LOGGER = LogManager.getLogger(SecurityServiceImpl.class);
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public PluginConfig findConfigPreferringSecurityPolicy(List<? extends PluginConfig> allPluginConfigs) {
+        final List<PluginConfig> configsWithSecurity = allPluginConfigs.stream().filter(c -> {
+            if (c instanceof SecurityConfigHolder) {
+                return nonNull(((SecurityConfigHolder) c).getSecurity());
+            }
+            return false;
+        }).collect(Collectors.toList());
+
+        final PluginConfig selectedConfig;
+        if (configsWithSecurity.isEmpty()) {
+            selectedConfig = allPluginConfigs.get(0);
+        } else if (configsWithSecurity.size() == 1) {
+            selectedConfig = configsWithSecurity.get(0);
+        } else {
+            throw new IllegalStateException("Cannot specify root 'security' configuration block more than once. Ensure only one configuration file contains the root 'security' block.");
+        }
+        return selectedConfig;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean enforce(SecurityConfig security, RoutingContext routingContext) {
         final PolicyOutcome outcome;
@@ -114,16 +143,16 @@ public class SecurityServiceImpl implements SecurityService {
     private boolean enforceEffect(RoutingContext routingContext, PolicyOutcome outcome) {
         final HttpServerRequest request = routingContext.request();
 
-        if (!SecurityEffect.Permit.equals(outcome.getEffect())) {
+        if (!SecurityEffect.Permit.equals(outcome.effect)) {
             LOGGER.warn("Denying request {} {} due to security policy - {}",
-                    request.method(), request.path(), outcome.getPolicySource());
+                    request.method(), request.path(), outcome.policySource);
 
             routingContext.fail(HttpUtil.HTTP_UNAUTHORIZED);
             return false;
 
         } else {
             LOGGER.trace("Permitting request {} {} due to security policy - {}",
-                    request.method(), request.path(), outcome.getPolicySource());
+                    request.method(), request.path(), outcome.policySource);
 
             return true;
         }
@@ -152,14 +181,6 @@ public class SecurityServiceImpl implements SecurityService {
         public PolicyOutcome(SecurityEffect effect, String policySource) {
             this.effect = effect;
             this.policySource = policySource;
-        }
-
-        public SecurityEffect getEffect() {
-            return effect;
-        }
-
-        public String getPolicySource() {
-            return policySource;
         }
     }
 }
