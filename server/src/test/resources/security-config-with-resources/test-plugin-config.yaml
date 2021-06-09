@@ -1,0 +1,22 @@
+plugin: "io.gatehill.imposter.plugin.test.TestPluginImpl"
+
+path: /
+response:
+  staticData: "Hello"
+
+security:
+  # no requests permitted by default
+  default: Deny
+
+  # only requests meeting these conditions are permitted
+  conditions:
+    - effect: Permit
+      queryParams:
+        apiKey: s3cr3t
+
+resources:
+  # no resource security: should fall back to root
+  - method: GET
+    path: /example
+    response:
+      staticData: "Hello"

@@ -189,6 +189,32 @@ conditions:
     X-Custom-Api-Key: "${env.API_KEY}"
 ```
 
+### Security and the status endpoint
+
+Imposter has a status endpoint `/system/status` that is useful as a healthcheck.
+
+When you apply a security policy with a default effect of `Deny`, it also applies to the status endpoint. This will cause requests to `/system/status` to be denied with `HTTP 401` status.
+
+In cases where you want to permit traffic to the status endpoint without authentication, you can add the following configuration to your OpenAPI plugin or REST plugin configuration:
+
+```yaml
+# example-config.yaml
+---
+plugin: openapi
+specFile: petstore.yaml
+
+security:
+  # no requests permitted by default
+  default: Deny
+
+resources:
+  # always permit status endpoint
+  - method: GET
+    path: /system/status
+    security:
+      default: Permit
+```
+
 ### More examples
 
 See the `docs/examples` directory for working sample configurations, such as:

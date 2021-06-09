@@ -9,7 +9,7 @@ import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.scripting.groovy.GroovyScriptingModule;
 import io.gatehill.imposter.scripting.nashorn.NashornScriptingModule;
 import io.gatehill.imposter.server.util.ConfigUtil;
-import io.gatehill.imposter.service.SecurityService;
+import io.gatehill.imposter.service.ResourceService;
 import io.gatehill.imposter.util.AsyncUtil;
 import io.gatehill.imposter.util.HttpUtil;
 import io.gatehill.imposter.util.InjectorUtil;
@@ -22,6 +22,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Optional.ofNullable;
@@ -39,7 +40,7 @@ public class ImposterVerticle extends AbstractVerticle {
     private ServerFactory serverFactory;
 
     @Inject
-    private SecurityService securityService;
+    private ResourceService resourceService;
 
     private final ImposterConfig imposterConfig;
 
@@ -89,21 +90,19 @@ public class ImposterVerticle extends AbstractVerticle {
 
     private Router configureRoutes() {
         final Router router = Router.router(vertx);
-
         router.route().handler(new BodyHandlerImpl());
 
-        // enforce security on all requests
-        pluginManager.getPlugins().forEach(plugin -> {
-            if (plugin instanceof ConfigurablePlugin) {
-                @SuppressWarnings("unchecked") final List<PluginConfig> configs = ((ConfigurablePlugin<PluginConfig>) plugin).getConfigs();
-                configs.forEach(pluginConfig -> securityService.enforce(imposterConfig, vertx, router, pluginConfig));
-            }
-        });
+        final List<PluginConfig> allConfigs = new ArrayList<>();
+        pluginManager.getPlugins().stream()
+                .filter(p -> p instanceof ConfigurablePlugin)
+                .forEach(p -> allConfigs.addAll(((ConfigurablePlugin<?>) p).getConfigs()));
 
         // status check to indicate when server is up
-        router.get("/system/status").handler(routingContext -> routingContext.response()
-                .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_JSON)
-                .end(HttpUtil.buildStatusResponse()));
+        router.get("/system/status").handler(resourceService.handleRoute(imposterConfig, allConfigs, vertx, routingContext -> {
+            routingContext.response()
+                    .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_JSON)
+                    .end(HttpUtil.buildStatusResponse());
+        }));
 
         pluginManager.getPlugins().forEach(plugin -> plugin.configureRoutes(router));
 

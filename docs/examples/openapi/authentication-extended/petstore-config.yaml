@@ -2,6 +2,13 @@
 plugin: openapi
 specFile: petstore.yaml
 
+resources:
+  # always permit status endpoint
+  - method: GET
+    path: /system/status
+    security:
+      default: Permit
+
 security:
   # no requests permitted by default
   default: Deny

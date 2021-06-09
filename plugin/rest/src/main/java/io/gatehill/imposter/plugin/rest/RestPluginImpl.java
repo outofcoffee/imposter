@@ -9,11 +9,11 @@ import io.gatehill.imposter.plugin.config.resource.ResourceConfig;
 import io.gatehill.imposter.plugin.rest.config.ResourceConfigType;
 import io.gatehill.imposter.plugin.rest.config.RestPluginConfig;
 import io.gatehill.imposter.plugin.rest.config.RestPluginResourceConfig;
+import io.gatehill.imposter.service.ResourceService;
 import io.gatehill.imposter.service.ResponseService;
-import io.gatehill.imposter.util.AsyncUtil;
 import io.gatehill.imposter.util.FileUtil;
 import io.gatehill.imposter.util.HttpUtil;
-import io.gatehill.imposter.util.ResourceMethodConverter;
+import io.gatehill.imposter.util.ResourceUtil;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
@@ -46,6 +46,9 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
 
     @Inject
     private ImposterConfig imposterConfig;
+
+    @Inject
+    private ResourceService resourceService;
 
     @Inject
     private ResponseService responseService;
@@ -96,10 +99,10 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
 
     private void addObjectHandler(Router router, String rootPath, C pluginConfig, ContentTypedConfig resourceConfig) {
         final String qualifiedPath = buildQualifiedPath(rootPath, resourceConfig);
-        final HttpMethod method = ResourceMethodConverter.convertMethodToVertx(resourceConfig);
+        final HttpMethod method = ResourceUtil.convertMethodToVertx(resourceConfig);
         LOGGER.debug("Adding {} object handler: {}", method, qualifiedPath);
 
-        router.route(method, qualifiedPath).handler(AsyncUtil.handleRoute(imposterConfig, vertx, routingContext -> {
+        router.route(method, qualifiedPath).handler(resourceService.handleRoute(imposterConfig, pluginConfig, vertx, routingContext -> {
             // script should fire first
             scriptHandler(pluginConfig, resourceConfig, routingContext, getInjector(), responseBehaviour -> {
                 LOGGER.info("Handling {} object request for: {}", method, routingContext.request().absoluteURI());
@@ -111,7 +114,7 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
     private void addArrayHandler(Router router, C pluginConfig, RestPluginResourceConfig resourceConfig) {
         final String resourcePath = resourceConfig.getPath();
         final String qualifiedPath = buildQualifiedPath(pluginConfig.getPath(), resourceConfig);
-        final HttpMethod method = ResourceMethodConverter.convertMethodToVertx(resourceConfig);
+        final HttpMethod method = ResourceUtil.convertMethodToVertx(resourceConfig);
         LOGGER.debug("Adding {} array handler: {}", method, qualifiedPath);
 
         // validate path includes parameter
@@ -121,7 +124,7 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
                     resourcePath));
         }
 
-        router.route(method, qualifiedPath).handler(AsyncUtil.handleRoute(imposterConfig, vertx, routingContext -> {
+        router.route(method, qualifiedPath).handler(resourceService.handleRoute(imposterConfig, pluginConfig, vertx, routingContext -> {
             // script should fire first
             scriptHandler(pluginConfig, resourceConfig, routingContext, getInjector(), responseBehaviour -> {
                 LOGGER.info("Handling {} array request for: {}", method, routingContext.request().absoluteURI());

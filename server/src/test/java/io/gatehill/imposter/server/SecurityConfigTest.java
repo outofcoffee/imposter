@@ -141,11 +141,22 @@ public class SecurityConfigTest extends BaseVerticleTest {
      * Permit - both conditions are satisfied.
      */
     @Test
-    public void testRequestPermitted() {
+    public void testResourceRequestPermitted() {
         given().when()
                 .header("Authorization", "s3cr3t")
                 .header("X-Api-Key", "opensesame")
                 .get("/example")
+                .then()
+                .statusCode(equalTo(HttpUtil.HTTP_OK));
+    }
+
+    /**
+     * Permit - status endpoint is explicitly permitted.
+     */
+    @Test
+    public void testStatusRequestPermitted() {
+        given().when()
+                .get("/system/status")
                 .then()
                 .statusCode(equalTo(HttpUtil.HTTP_OK));
     }

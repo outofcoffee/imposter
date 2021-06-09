@@ -2,7 +2,7 @@ package io.gatehill.imposter.plugin.test;
 
 import io.gatehill.imposter.ImposterConfig;
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin;
-import io.gatehill.imposter.util.AsyncUtil;
+import io.gatehill.imposter.service.ResourceService;
 import io.gatehill.imposter.util.HttpUtil;
 import io.vertx.ext.web.Router;
 
@@ -15,6 +15,9 @@ import java.util.List;
 public class TestPluginImpl extends ConfiguredPlugin<TestPluginConfig> {
     @Inject
     private ImposterConfig imposterConfig;
+
+    @Inject
+    private ResourceService resourceService;
 
     private List<TestPluginConfig> configs;
 
@@ -30,7 +33,7 @@ public class TestPluginImpl extends ConfiguredPlugin<TestPluginConfig> {
 
     @Override
     public void configureRoutes(Router router) {
-        router.get("/example").handler(AsyncUtil.handleRoute(imposterConfig, vertx, routingContext ->
+        router.get("/example").handler(resourceService.handleRoute(imposterConfig, configs, vertx, routingContext ->
                 routingContext.response().setStatusCode(HttpUtil.HTTP_OK).end()
         ));
     }

@@ -19,3 +19,10 @@ security:
         X-Api-Key:
           value: opensesame
           operator: NotEqualTo
+
+resources:
+  # always permit status endpoint
+  - method: GET
+    path: /system/status
+    security:
+      default: Permit

@@ -1,18 +1,12 @@
 package io.gatehill.imposter.service;
 
-import io.gatehill.imposter.ImposterConfig;
-import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.plugin.config.security.ConditionalNameValuePair;
 import io.gatehill.imposter.plugin.config.security.MatchOperator;
 import io.gatehill.imposter.plugin.config.security.SecurityCondition;
 import io.gatehill.imposter.plugin.config.security.SecurityConfig;
-import io.gatehill.imposter.plugin.config.security.SecurityConfigHolder;
 import io.gatehill.imposter.plugin.config.security.SecurityEffect;
-import io.gatehill.imposter.util.AsyncUtil;
 import io.gatehill.imposter.util.HttpUtil;
-import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,7 +17,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static io.gatehill.imposter.util.HttpUtil.convertMultiMapToHashMap;
-import static java.util.Objects.isNull;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
@@ -32,29 +25,14 @@ public class SecurityServiceImpl implements SecurityService {
     private static final Logger LOGGER = LogManager.getLogger(SecurityServiceImpl.class);
 
     @Override
-    public void enforce(ImposterConfig imposterConfig, Vertx vertx, Router router, PluginConfig config) {
-        if (!(config instanceof SecurityConfigHolder)) {
-            LOGGER.debug("No security policy found");
-            return;
+    public boolean enforce(SecurityConfig security, RoutingContext routingContext) {
+        final PolicyOutcome outcome;
+        if (security.getConditions().isEmpty()) {
+            outcome = new PolicyOutcome(security.getDefaultEffect(), "default effect");
+        } else {
+            outcome = evaluatePolicy(security, routingContext);
         }
-
-        final SecurityConfig security = ((SecurityConfigHolder) config).getSecurity();
-        if (isNull(security)) {
-            LOGGER.debug("No security policy found");
-            return;
-        }
-
-        LOGGER.debug("Enforcing security policy [{} conditions]", security.getConditions().size());
-
-        router.route().handler(AsyncUtil.handleRoute(imposterConfig, vertx, rc -> {
-            final PolicyOutcome outcome;
-            if (security.getConditions().isEmpty()) {
-                outcome = new PolicyOutcome(security.getDefaultEffect(), "default effect");
-            } else {
-                outcome = evaluatePolicy(security, rc);
-            }
-            enforceEffect(rc, outcome);
-        }));
+        return enforceEffect(routingContext, outcome);
     }
 
     private PolicyOutcome evaluatePolicy(SecurityConfig security, RoutingContext routingContext) {
@@ -133,7 +111,7 @@ public class SecurityServiceImpl implements SecurityService {
         }).collect(Collectors.toList());
     }
 
-    private void enforceEffect(RoutingContext routingContext, PolicyOutcome outcome) {
+    private boolean enforceEffect(RoutingContext routingContext, PolicyOutcome outcome) {
         final HttpServerRequest request = routingContext.request();
 
         if (!SecurityEffect.Permit.equals(outcome.getEffect())) {
@@ -141,12 +119,13 @@ public class SecurityServiceImpl implements SecurityService {
                     request.method(), request.path(), outcome.getPolicySource());
 
             routingContext.fail(HttpUtil.HTTP_UNAUTHORIZED);
+            return false;
 
         } else {
             LOGGER.trace("Permitting request {} {} due to security policy - {}",
                     request.method(), request.path(), outcome.getPolicySource());
 
-            routingContext.next();
+            return true;
         }
     }
 

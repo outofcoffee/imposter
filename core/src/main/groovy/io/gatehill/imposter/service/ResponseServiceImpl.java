@@ -22,7 +22,7 @@ import io.gatehill.imposter.script.ResponseBehaviourType;
 import io.gatehill.imposter.script.RuntimeContext;
 import io.gatehill.imposter.script.ScriptUtil;
 import io.gatehill.imposter.util.HttpUtil;
-import io.gatehill.imposter.util.ResourceMethodConverter;
+import io.gatehill.imposter.util.ResourceUtil;
 import io.gatehill.imposter.util.annotation.GroovyImpl;
 import io.gatehill.imposter.util.annotation.JavascriptImpl;
 import io.vertx.core.http.HttpMethod;
@@ -142,7 +142,7 @@ public class ResponseServiceImpl implements ResponseService {
             Map<String, String> pathParams,
             Map<String, String> queryParams
     ) {
-        final ResourceMethod resourceMethod = ResourceMethodConverter.convertMethodFromVertx(method);
+        final ResourceMethod resourceMethod = ResourceUtil.convertMethodFromVertx(method);
 
         List<ResolvedResourceConfig> resourceConfigs = resources.stream()
                 .filter(res -> isRequestMatch(res, resourceMethod, pathTemplate, path, pathParams, queryParams))

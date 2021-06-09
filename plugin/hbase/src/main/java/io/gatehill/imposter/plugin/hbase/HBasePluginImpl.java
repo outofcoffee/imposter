@@ -1,5 +1,6 @@
 package io.gatehill.imposter.plugin.hbase;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.inject.Key;
@@ -9,6 +10,7 @@ import io.gatehill.imposter.plugin.PluginInfo;
 import io.gatehill.imposter.plugin.RequireModules;
 import io.gatehill.imposter.plugin.ScriptedPlugin;
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin;
+import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.plugin.hbase.config.HBasePluginConfig;
 import io.gatehill.imposter.plugin.hbase.model.InMemoryScanner;
 import io.gatehill.imposter.plugin.hbase.model.MockScanner;
@@ -17,8 +19,8 @@ import io.gatehill.imposter.plugin.hbase.model.ResponsePhase;
 import io.gatehill.imposter.plugin.hbase.service.ScannerService;
 import io.gatehill.imposter.plugin.hbase.service.serialisation.DeserialisationService;
 import io.gatehill.imposter.plugin.hbase.service.serialisation.SerialisationService;
+import io.gatehill.imposter.service.ResourceService;
 import io.gatehill.imposter.service.ResponseService;
-import io.gatehill.imposter.util.AsyncUtil;
 import io.gatehill.imposter.util.FileUtil;
 import io.gatehill.imposter.util.HttpUtil;
 import io.vertx.core.buffer.Buffer;
@@ -54,6 +56,9 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
     private ImposterConfig imposterConfig;
 
     @Inject
+    private ResourceService resourceService;
+
+    @Inject
     private ResponseService responseService;
 
     @Inject
@@ -76,29 +81,30 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
     public void configureRoutes(Router router) {
         // add route for each distinct path
         tableConfigs.values().stream()
-                .map(config -> ofNullable(config.getPath()).orElse(""))
+                .map(config -> new ConfigAndPath(config, ofNullable(config.getPath()).orElse("")))
                 .distinct()
-                .forEach(path -> {
-                    LOGGER.debug("Adding routes for base path: {}", () -> (path.isEmpty() ? "<empty>" : path));
+                .forEach(configAndPath -> {
+                    LOGGER.debug("Adding routes for base path: {}", () -> (configAndPath.path.isEmpty() ? "<empty>" : configAndPath.path));
 
                     // endpoint to allow individual row retrieval
-                    addRowRetrievalRoute(router, path);
+                    addRowRetrievalRoute(configAndPath.config, router, configAndPath.path);
 
                     // Note: when scanning for results, the first call obtains a scanner:
-                    addCreateScannerRoute(router, path);
+                    addCreateScannerRoute(configAndPath.config, router, configAndPath.path);
                     // ...and the second call returns the results
-                    addReadScannerResultsRoute(router, path);
+                    addReadScannerResultsRoute(configAndPath.config, router, configAndPath.path);
                 });
     }
 
     /**
      * Handles a request for a particular row within a table.
      *
+     * @param pluginConfig
      * @param router
      * @param path
      */
-    private void addRowRetrievalRoute(Router router, String path) {
-        router.get(path + "/:tableName/:recordId/").handler(AsyncUtil.handleRoute(imposterConfig, vertx, routingContext -> {
+    private void addRowRetrievalRoute(PluginConfig pluginConfig, Router router, String path) {
+        router.get(path + "/:tableName/:recordId/").handler(resourceService.handleRoute(imposterConfig, pluginConfig, vertx, routingContext -> {
             final String tableName = routingContext.request().getParam("tableName");
             final String recordId = routingContext.request().getParam("recordId");
 
@@ -141,13 +147,14 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
 
     /**
      * Handles the first part of a request for results - creation of a scanner. Results are read from the scanner
-     * in the handler {@link #addReadScannerResultsRoute(Router, String)}.
+     * in the handler {@link #addReadScannerResultsRoute(HBasePluginConfig, Router, String)}.
      *
+     * @param pluginConfig
      * @param router
      * @param path
      */
-    private void addCreateScannerRoute(Router router, String path) {
-        router.post(path + "/:tableName/scanner").handler(AsyncUtil.handleRoute(imposterConfig, vertx, routingContext -> {
+    private void addCreateScannerRoute(PluginConfig pluginConfig, Router router, String path) {
+        router.post(path + "/:tableName/scanner").handler(resourceService.handleRoute(imposterConfig, pluginConfig, vertx, routingContext -> {
             final String tableName = routingContext.request().getParam("tableName");
 
             // check that the table is registered
@@ -208,13 +215,14 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
 
     /**
      * Handles the second part of a request for results - reading rows from the scanner created
-     * in {@link #addCreateScannerRoute(Router, String)}.
+     * in {@link #addCreateScannerRoute(PluginConfig, Router, String)}.
      *
+     * @param pluginConfig
      * @param router
      * @param path
      */
-    private void addReadScannerResultsRoute(Router router, String path) {
-        router.get(path + "/:tableName/scanner/:scannerId").handler(AsyncUtil.handleRoute(imposterConfig, vertx, routingContext -> {
+    private void addReadScannerResultsRoute(HBasePluginConfig pluginConfig, Router router, String path) {
+        router.get(path + "/:tableName/scanner/:scannerId").handler(resourceService.handleRoute(imposterConfig, pluginConfig, vertx, routingContext -> {
             final String tableName = routingContext.request().getParam("tableName");
             final String scannerId = routingContext.request().getParam("scannerId");
 
@@ -338,5 +346,34 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> impleme
         bindings.put("responsePhase", responsePhase);
         bindings.put("scannerFilterPrefix", scannerFilterPrefix.orElse(""));
         return bindings;
+    }
+
+    private static class ConfigAndPath {
+        final HBasePluginConfig config;
+        final String path;
+
+        public ConfigAndPath(HBasePluginConfig config, String path) {
+            this.config = config;
+            this.path = path;
+        }
+
+        /**
+         * Only path is used for equality/hash code.
+         */
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            ConfigAndPath that = (ConfigAndPath) o;
+            return Objects.equal(path, that.path);
+        }
+
+        /**
+         * Only path is used for equality/hash code.
+         */
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(path);
+        }
     }
 }

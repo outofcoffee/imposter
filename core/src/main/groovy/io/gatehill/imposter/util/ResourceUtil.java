@@ -10,11 +10,11 @@ import io.vertx.core.http.HttpMethod;
 import static java.util.Optional.ofNullable;
 
 /**
- * Converts {@link ResourceMethod}s to {@link HttpMethod}s.
- *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public final class ResourceMethodConverter {
+public final class ResourceUtil {
+    public static final String RESPONSE_CONFIG_HOLDER_KEY = "io.gatehill.imposter.responseConfigHolder";
+
     private static final BiMap<ResourceMethod, HttpMethod> METHODS = HashBiMap.create();
 
     static {
@@ -29,6 +29,9 @@ public final class ResourceMethodConverter {
         METHODS.put(ResourceMethod.TRACE, HttpMethod.TRACE);
     }
 
+    /**
+     * Converts {@link ResourceMethod}s to {@link HttpMethod}s.
+     */
     public static HttpMethod convertMethodToVertx(ContentTypedConfig resourceConfig) {
         if (resourceConfig instanceof MethodResourceConfig) {
             final ResourceMethod method = ofNullable(((MethodResourceConfig) resourceConfig).getMethod())

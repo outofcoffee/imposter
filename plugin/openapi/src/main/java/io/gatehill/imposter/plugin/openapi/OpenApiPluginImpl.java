@@ -2,7 +2,6 @@ package io.gatehill.imposter.plugin.openapi;
 
 import com.google.common.collect.Lists;
 import io.gatehill.imposter.ImposterConfig;
-import io.gatehill.imposter.config.ResolvedResourceConfig;
 import io.gatehill.imposter.http.StatusCodeFactory;
 import io.gatehill.imposter.plugin.PluginInfo;
 import io.gatehill.imposter.plugin.RequireModules;
@@ -15,10 +14,11 @@ import io.gatehill.imposter.plugin.openapi.service.ExampleService;
 import io.gatehill.imposter.plugin.openapi.service.SpecificationService;
 import io.gatehill.imposter.plugin.openapi.util.OpenApiVersionUtil;
 import io.gatehill.imposter.script.ResponseBehaviour;
+import io.gatehill.imposter.service.ResourceService;
 import io.gatehill.imposter.service.ResponseService;
-import io.gatehill.imposter.util.AsyncUtil;
 import io.gatehill.imposter.util.HttpUtil;
 import io.gatehill.imposter.util.MapUtil;
+import io.gatehill.imposter.util.ResourceUtil;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
@@ -46,7 +46,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.google.common.collect.Maps.newHashMap;
-import static io.gatehill.imposter.util.HttpUtil.convertMultiMapToHashMap;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 
@@ -72,6 +71,9 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
 
     @Inject
     private ImposterConfig imposterConfig;
+
+    @Inject
+    private ResourceService resourceService;
 
     @Inject
     private SpecificationService specificationService;
@@ -108,8 +110,8 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
 
         // serve specification and UI
         LOGGER.debug("Adding specification UI at: {}", SPECIFICATION_PATH);
-        router.get(COMBINED_SPECIFICATION_PATH).handler(AsyncUtil.handleRoute(imposterConfig, vertx, this::handleCombinedSpec));
-        router.getWithRegex(SPECIFICATION_PATH + "$").handler(AsyncUtil.handleRoute(imposterConfig, vertx, routingContext -> routingContext.response().putHeader("Location", SPECIFICATION_PATH + "/").setStatusCode(HttpUtil.HTTP_MOVED_PERM).end()));
+        router.get(COMBINED_SPECIFICATION_PATH).handler(resourceService.handleRoute(imposterConfig, configs, vertx, this::handleCombinedSpec));
+        router.getWithRegex(SPECIFICATION_PATH + "$").handler(resourceService.handleRoute(imposterConfig, configs, vertx, routingContext -> routingContext.response().putHeader("Location", SPECIFICATION_PATH + "/").setStatusCode(HttpUtil.HTTP_MOVED_PERM).end()));
         router.get(SPECIFICATION_PATH + "/*").handler(StaticHandler.create(UI_WEB_ROOT));
     }
 
@@ -123,7 +125,8 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
             if (null != spec) {
                 allSpecs.add(spec);
                 spec.getPaths().forEach((path, pathConfig) ->
-                        handlePathOperations(router, config, spec, path, pathConfig));
+                        handlePathOperations(router, config, spec, path, pathConfig)
+                );
 
             } else {
                 throw new RuntimeException(String.format("Unable to load API specification: %s", config.getSpecFile()));
@@ -147,7 +150,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
 
             // convert an io.swagger.models.HttpMethod to an io.vertx.core.http.HttpMethod
             final HttpMethod method = HttpMethod.valueOf(httpMethod.name());
-            router.route(method, fullPath).handler(buildHandler(config, fullPath, method, operation, spec));
+            router.route(method, fullPath).handler(buildHandler(config, operation, spec));
         });
     }
 
@@ -242,23 +245,15 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
      * Build a handler for the given operation.
      *
      * @param pluginConfig the plugin configuration
-     * @param pathTemplate the request path
-     * @param method       the HTTP method
-     * @param operation    the specification operation  @return a route handler
+     * @param operation    the specification operation
      * @param spec         the OpenAPI specification
+     * @return a route handler
      */
-    private Handler<RoutingContext> buildHandler(
-            OpenApiPluginConfig pluginConfig,
-            String pathTemplate,
-            HttpMethod method,
-            Operation operation,
-            OpenAPI spec
-    ) {
+    private Handler<RoutingContext> buildHandler(OpenApiPluginConfig pluginConfig, Operation operation, OpenAPI spec) {
         // statically calculate as much as possible
         final StatusCodeFactory statusCodeFactory = buildStatusCodeCalculator(operation);
-        final List<ResolvedResourceConfig> resolvedResourceConfigs = responseService.resolveResourceConfigs(pluginConfig);
 
-        return AsyncUtil.handleRoute(imposterConfig, vertx, routingContext -> {
+        return resourceService.handleRoute(imposterConfig, pluginConfig, vertx, routingContext -> {
             if (!specificationService.isValidRequest(imposterConfig, pluginConfig, routingContext, allSpecs)) {
                 return;
             }
@@ -267,14 +262,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
             context.put("operation", operation);
 
             final HttpServerRequest request = routingContext.request();
-            final ResponseConfigHolder resourceConfig = responseService.matchResourceConfig(
-                    resolvedResourceConfigs,
-                    method,
-                    pathTemplate,
-                    request.path(),
-                    routingContext.pathParams(),
-                    convertMultiMapToHashMap(request.params())
-            ).orElse(pluginConfig);
+            final ResponseConfigHolder resourceConfig = routingContext.get(ResourceUtil.RESPONSE_CONFIG_HOLDER_KEY);
 
             final Consumer<ResponseBehaviour> defaultBehaviourHandler = responseBehaviour -> {
                 final Optional<ApiResponse> optionalResponse = findApiResponse(operation, responseBehaviour.getStatusCode());
