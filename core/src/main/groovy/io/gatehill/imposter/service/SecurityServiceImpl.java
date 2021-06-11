@@ -8,6 +8,7 @@ import io.gatehill.imposter.plugin.config.security.SecurityConfig;
 import io.gatehill.imposter.plugin.config.security.SecurityConfigHolder;
 import io.gatehill.imposter.plugin.config.security.SecurityEffect;
 import io.gatehill.imposter.util.HttpUtil;
+import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.web.RoutingContext;
 import org.apache.logging.log4j.LogManager;
@@ -18,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static io.gatehill.imposter.util.HttpUtil.convertMultiMapToHashMap;
 import static java.util.Objects.nonNull;
 
 /**
@@ -92,12 +92,10 @@ public class SecurityServiceImpl implements SecurityService {
         final List<SecurityEffect> results = new ArrayList<>();
 
         // query params
-        final Map<String, String> requestQuery = convertMultiMapToHashMap(routingContext.request().params());
-        results.addAll(checkCondition(condition.getQueryParams(), requestQuery, condition.getEffect()));
+        results.addAll(checkCondition(condition.getQueryParams(), routingContext.request().params(), condition.getEffect()));
 
         // headers
-        final Map<String, String> requestHeaders = convertMultiMapToHashMap(routingContext.request().headers());
-        results.addAll(checkCondition(condition.getRequestHeaders(), requestHeaders, condition.getEffect()));
+        results.addAll(checkCondition(condition.getRequestHeaders(), routingContext.request().headers(), condition.getEffect()));
 
         // all must permit
         return results.stream().allMatch(SecurityEffect.Permit::equals);
@@ -105,15 +103,18 @@ public class SecurityServiceImpl implements SecurityService {
 
     /**
      * Determine the effect of each conditional name/value pair and operator.
+     * Keys in the request map may be compared in a case-insensitive manner, based
+     * on the underlying implementation of the {@link MultiMap}.
      *
      * @param conditionMap    the values from the condition
      * @param requestMap      the values from the request
      * @param conditionEffect the effect of the condition if it is true
      * @return the actual effect based on the values
      */
-    private List<SecurityEffect> checkCondition(Map<String, ConditionalNameValuePair> conditionMap,
-                                                Map<String, String> requestMap,
-                                                SecurityEffect conditionEffect
+    private List<SecurityEffect> checkCondition(
+            Map<String, ConditionalNameValuePair> conditionMap,
+            MultiMap requestMap,
+            SecurityEffect conditionEffect
     ) {
         return conditionMap.values().stream().map(conditionValue -> {
             final boolean valueMatch = HttpUtil.safeEquals(
@@ -132,8 +133,8 @@ public class SecurityServiceImpl implements SecurityService {
             }
 
             if (LOGGER.isTraceEnabled()) {
-                LOGGER.trace("Condition match for {} {} {}: {}. Request map: {}. Effect: {}",
-                        conditionValue.getName(), conditionValue.getOperator(), conditionValue.getValue(), matched, requestMap.entrySet(), finalEffect);
+                LOGGER.debug("Condition match for {} {} {}: {}. Request map: {}. Effect: {}",
+                        conditionValue.getName(), conditionValue.getOperator(), conditionValue.getValue(), matched, requestMap.entries(), finalEffect);
             }
             return finalEffect;
 

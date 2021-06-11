@@ -151,6 +151,27 @@ public class SecurityConfigTest extends BaseVerticleTest {
     }
 
     /**
+     * Permit - both conditions are satisfied, even though the case of the header
+     * name differs from that in the configuration.
+     */
+    @Test
+    public void testResourceRequestPermitted_CaseInsensitive() {
+        given().when()
+                .header("authorization", "s3cr3t")
+                .header("x-api-key", "opensesame")
+                .get("/example")
+                .then()
+                .statusCode(equalTo(HttpUtil.HTTP_OK));
+
+        given().when()
+                .header("AUTHORIZATION", "s3cr3t")
+                .header("X-API-KEY", "opensesame")
+                .get("/example")
+                .then()
+                .statusCode(equalTo(HttpUtil.HTTP_OK));
+    }
+
+    /**
      * Permit - status endpoint is explicitly permitted.
      */
     @Test
