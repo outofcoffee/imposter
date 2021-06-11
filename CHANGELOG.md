@@ -3,9 +3,9 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
-### Added
-- ...
+## [1.10.1] - 2021-06-11
+### Fixed
+- (core) Matches security policy headers in a case-insensitive manner.
 
 ## [1.10.0] - 2021-06-09
 ### Added
