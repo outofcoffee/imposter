@@ -56,7 +56,7 @@ subprojects {
         version_log4j = '2.9.1'
         version_mockito = '3.10.0'
         version_restAssured = '2.9.0'
-        version_vertx = '3.4.2'
+        version_vertx = '3.7.1'
     }
 }
 
