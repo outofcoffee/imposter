@@ -21,6 +21,7 @@ Arguments:
   -m <docker|java>  How to run Imposter, e.g. docker
   [-p plugin-name]  The plugin name, e.g. openapi
   [-c config-dir]   Fully qualified path to the Imposter configuration directory
+  [-l log-level]    Logging level, e.g. DEBUG or TRACE
 ```
 
 Example:
