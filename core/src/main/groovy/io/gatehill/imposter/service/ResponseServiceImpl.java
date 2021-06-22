@@ -93,6 +93,7 @@ public class ResponseServiceImpl implements ResponseService {
             LOGGER.trace("Context for request: {}", () -> executionContext);
 
             final RuntimeContext runtimeContext = new RuntimeContext(
+                    System.getenv(),
                     LogManager.getLogger(determineScriptName(responseConfig.getScriptFile())),
                     pluginConfig,
                     additionalBindings,

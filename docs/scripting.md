@@ -95,19 +95,20 @@ There are many other script objects you could use in order to decide what to ret
 
 In order to help you determine what action to take, Imposter makes certain objects available to your scripts.
 
-| Object    | Description                                                           |
-|-----------|-----------------------------------------------------------------------|
-| `context` | Convenience object for accessing request properties                   |
-| `config`  | The plugin configuration for the current request                      |
-| `logger`  | Logger, supporting levels such as `info(String)`, `warn(String)` etc. |
+| Object    | Description                                                                  |
+|-----------|------------------------------------------------------------------------------|
+| `context` | Parent object for accessing request properties                               |
+| `config`  | The plugin configuration for the current request                             |
+| `env`     | A map of environment variables, such as `[ "MY_VAR": "abc", "VAR2": "def" ]` |
+| `logger`  | Logger, supporting levels such as `info(String)`, `warn(String)` etc.        |
 
 ## Context object
 
 The `context` object is available to your scripts. It holds things you might like to interrogate, like the request object.
 
-| Property  | Description       |
-|-----------|-------------------|
-| `request` | The HTTP request. |
+| Property  | Description                     | Example                              |
+|-----------|---------------------------------|--------------------------------------|
+| `request` | The HTTP request.               | _See Request object._                |
 
 **Note:** Certain plugins will add additional properties to the `context`. For example, the _hbase_
 plugin provides a `tableName` object, which you can use to determine the HBase table for the request being served.

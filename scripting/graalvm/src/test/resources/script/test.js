@@ -7,6 +7,7 @@ const request = context.request;
 const quxParam = request.pathParams.get('qux');
 const fooParam = request.queryParams.get('foo');
 const bazHeader = request.headers.get('baz');
+const exampleEnvVar = env.get('example');
 
 if (quxParam) {
     // echo the value of the 'qux' path parameter as a response header
@@ -25,6 +26,12 @@ if (quxParam) {
     respond()
         .withStatusCode(202)
         .withHeader('X-Echo-Baz', bazHeader);
+
+} else if (exampleEnvVar) {
+    // echo the value of the 'example' environment variable as a response header
+    respond()
+        .withStatusCode(204)
+        .withHeader('X-Echo-Env-Var', exampleEnvVar);
 
 } else {
     // check bound variable

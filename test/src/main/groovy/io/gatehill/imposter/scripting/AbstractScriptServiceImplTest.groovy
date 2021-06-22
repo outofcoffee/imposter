@@ -52,7 +52,8 @@ abstract class AbstractScriptServiceImplTest {
             Map<String, String> additionalBindings,
             Map<String, String> headers = [:],
             Map<String, String> pathParams = [:],
-            Map<String, String> queryParams = [:]
+            Map<String, String> queryParams = [:],
+            Map<String, String> env = [:]
     ) {
         def logger = LogManager.getLogger('script-engine-test')
 
@@ -68,7 +69,7 @@ abstract class AbstractScriptServiceImplTest {
         when(mockRoutingContext.getBodyAsString()).thenReturn('')
 
         def executionContext = ScriptUtil.buildContext(mockRoutingContext, null)
-        def runtimeContext = new RuntimeContext(logger, null, additionalBindings, executionContext)
+        def runtimeContext = new RuntimeContext(env, logger, null, additionalBindings, executionContext)
         runtimeContext
     }
 
@@ -89,7 +90,6 @@ abstract class AbstractScriptServiceImplTest {
         assertEquals 'foo.bar', actual.responseFile
         assertEquals ResponseBehaviourType.IMMEDIATE_RESPONSE, actual.behaviourType
         assertEquals 1, actual.getResponseHeaders().size()
-        assertTrue actual.getResponseHeaders().containsKey("MyHeader")
         assertEquals "AwesomeHeader", actual.getResponseHeaders().get("MyHeader")
     }
 
@@ -122,13 +122,12 @@ abstract class AbstractScriptServiceImplTest {
         ]
         def pathParams = ['qux': 'quux']
 
-        RuntimeContext runtimeContext = buildRuntimeContext(additionalBindings, [:], pathParams, [:])
+        RuntimeContext runtimeContext = buildRuntimeContext(additionalBindings, [:], pathParams, [:], [:])
         def actual = service.executeScript(pluginConfig, resourceConfig, runtimeContext)
 
         assertNotNull actual
         assertEquals 203, actual.statusCode
         assertEquals ResponseBehaviourType.DEFAULT_BEHAVIOUR, actual.behaviourType
-        assertTrue actual.getResponseHeaders().containsKey('X-Echo-Qux')
         assertEquals 'quux', actual.getResponseHeaders().get('X-Echo-Qux')
     }
 
@@ -143,13 +142,12 @@ abstract class AbstractScriptServiceImplTest {
         ]
         def queryParams = ['foo': 'bar']
 
-        RuntimeContext runtimeContext = buildRuntimeContext(additionalBindings, [:], [:], queryParams)
+        RuntimeContext runtimeContext = buildRuntimeContext(additionalBindings, [:], [:], queryParams, [:])
         def actual = service.executeScript(pluginConfig, resourceConfig, runtimeContext)
 
         assertNotNull actual
         assertEquals 200, actual.statusCode
         assertEquals ResponseBehaviourType.DEFAULT_BEHAVIOUR, actual.behaviourType
-        assertTrue actual.getResponseHeaders().containsKey('X-Echo-Foo')
         assertEquals 'bar', actual.getResponseHeaders().get('X-Echo-Foo')
     }
 
@@ -164,13 +162,34 @@ abstract class AbstractScriptServiceImplTest {
         ]
         def headers = ['baz': 'qux']
 
-        RuntimeContext runtimeContext = buildRuntimeContext(additionalBindings, headers, [:], [:])
+        RuntimeContext runtimeContext = buildRuntimeContext(additionalBindings, headers, [:], [:], [:])
         def actual = service.executeScript(pluginConfig, resourceConfig, runtimeContext)
 
         assertNotNull actual
         assertEquals 202, actual.statusCode
         assertEquals ResponseBehaviourType.DEFAULT_BEHAVIOUR, actual.behaviourType
-        assertTrue actual.getResponseHeaders().containsKey('X-Echo-Baz')
         assertEquals 'qux', actual.getResponseHeaders().get('X-Echo-Baz')
+    }
+
+    @Test
+    void testExecuteScript_ReadEnvironmentVariable() throws Exception {
+        def config = configureScript()
+        def pluginConfig = config as PluginConfig
+        def resourceConfig = config as ResourceConfig
+
+        def additionalBindings = [
+                'hello': 'world'
+        ]
+        // override environment
+        def env = [
+                'example' : 'foo'
+        ]
+        RuntimeContext runtimeContext = buildRuntimeContext(additionalBindings, [:], [:], [:], env)
+        def actual = service.executeScript(pluginConfig, resourceConfig, runtimeContext)
+
+        assertNotNull actual
+        assertEquals 204, actual.statusCode
+        assertEquals ResponseBehaviourType.DEFAULT_BEHAVIOUR, actual.behaviourType
+        assertEquals 'foo', actual.getResponseHeaders().get('X-Echo-Env-Var')
     }
 }

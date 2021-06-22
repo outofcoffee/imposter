@@ -20,6 +20,12 @@ if (request.pathParams.qux) {
         .withStatusCode(202)
         .withHeader('X-Echo-Baz', request.headers.baz);
 
+} else if (env.example) {
+    // echo the value of the 'example' environment variable as a response header
+    respond()
+        .withStatusCode(204)
+        .withHeader('X-Echo-Env-Var', env.example);
+
 } else {
     // check bound variable
     if (hello === 'world') {
