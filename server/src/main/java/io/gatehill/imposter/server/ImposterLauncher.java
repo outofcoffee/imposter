@@ -6,6 +6,9 @@ import io.gatehill.imposter.server.util.ConfigUtil;
 import io.gatehill.imposter.util.LogUtil;
 import io.gatehill.imposter.util.MetaUtil;
 import io.vertx.core.Launcher;
+import io.vertx.core.VertxOptions;
+import io.vertx.micrometer.MicrometerMetricsOptions;
+import io.vertx.micrometer.VertxPrometheusOptions;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.kohsuke.args4j.CmdLineException;
@@ -85,6 +88,14 @@ public class ImposterLauncher extends Launcher {
     public static void main(String[] args) {
         LogUtil.configureLoggingFromEnvironment();
         new ImposterLauncher().dispatch(args);
+    }
+
+    @Override
+    public void beforeStartingVertx(VertxOptions options) {
+        options.setMetricsOptions(new MicrometerMetricsOptions()
+                .setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
+                .setEnabled(true)
+        );
     }
 
     @Override

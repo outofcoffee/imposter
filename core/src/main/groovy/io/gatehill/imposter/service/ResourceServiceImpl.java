@@ -233,6 +233,15 @@ public class ResourceServiceImpl implements ResourceService {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Handler<RoutingContext> passthroughRoute(ImposterConfig imposterConfig, List<? extends PluginConfig> allPluginConfigs, Vertx vertx, Handler<RoutingContext> routingContextHandler) {
+        final PluginConfig selectedConfig = securityService.findConfigPreferringSecurityPolicy(allPluginConfigs);
+        return handleRoute(imposterConfig, selectedConfig, vertx, routingContextHandler::handle);
+    }
+
     private void handleResource(
             PluginConfig pluginConfig,
             Consumer<RoutingContext> routingContextConsumer,

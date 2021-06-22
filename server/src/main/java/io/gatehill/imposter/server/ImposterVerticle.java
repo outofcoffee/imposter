@@ -18,6 +18,7 @@ import io.vertx.core.Future;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.impl.BodyHandlerImpl;
+import io.vertx.micrometer.PrometheusScrapingHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -96,6 +97,10 @@ public class ImposterVerticle extends AbstractVerticle {
         pluginManager.getPlugins().stream()
                 .filter(p -> p instanceof ConfigurablePlugin)
                 .forEach(p -> allConfigs.addAll(((ConfigurablePlugin<?>) p).getConfigs()));
+
+        router.route("/system/metrics").handler(
+                resourceService.passthroughRoute(imposterConfig, allConfigs, vertx, PrometheusScrapingHandler.create())
+        );
 
         // status check to indicate when server is up
         router.get("/system/status").handler(resourceService.handleRoute(imposterConfig, allConfigs, vertx, routingContext -> {

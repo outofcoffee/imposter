@@ -56,7 +56,7 @@ public class VertxWebServerFactoryImpl implements ServerFactory {
 
         LOGGER.info("Listening on {}", imposterConfig.getServerUrl());
         return vertx.createHttpServer(serverOptions)
-                .requestHandler(router::accept)
+                .requestHandler(router)
                 .listen(imposterConfig.getListenPort(), imposterConfig.getHost(), AsyncUtil.resolveFutureOnCompletion(startFuture));
     }
 }

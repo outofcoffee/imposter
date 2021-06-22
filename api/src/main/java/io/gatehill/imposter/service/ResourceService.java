@@ -103,4 +103,31 @@ public interface ResourceService {
             Vertx vertx,
             Consumer<RoutingContext> routingContextConsumer
     );
+
+    /**
+     * Builds a {@link Handler} that processes a request.
+     * <p>
+     * If {@code requestHandlingMode} is {@link io.gatehill.imposter.server.RequestHandlingMode#SYNC}, then the {@code routingContextHandler}
+     * is invoked on the calling thread.
+     * <p>
+     * If it is {@link io.gatehill.imposter.server.RequestHandlingMode#ASYNC}, then upon receiving a request,
+     * the {@code routingContextHandler} is invoked on a worker thread, passing the {@code routingContext}.
+     * <p>
+     * Example:
+     * <pre>
+     * router.get("/example").handler(handleRoute(imposterConfig, allPluginConfigs, vertx, routingContextHandler);
+     * </pre>
+     *
+     * @param imposterConfig        the Imposter configuration
+     * @param allPluginConfigs      all plugin configurations
+     * @param vertx                 the current Vert.x instance
+     * @param routingContextHandler the handler of the {@link RoutingContext}
+     * @return the handler
+     */
+    Handler<RoutingContext> passthroughRoute(
+            ImposterConfig imposterConfig,
+            List<? extends PluginConfig> allPluginConfigs,
+            Vertx vertx,
+            Handler<RoutingContext> routingContextHandler
+    );
 }
