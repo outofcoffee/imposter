@@ -66,7 +66,7 @@ public class ImposterLauncher extends Launcher {
     @Option(name = "--keystorePassword", usage = "Password for the keystore")
     private String keystorePassword = DEFAULT_KEYSTORE_PASSWORD;
 
-    @Option(name = "--pluginArg", usage = "Plugin arguments")
+    @Option(name = "--pluginArg", usage = "Plugin arguments (key=value)")
     private String[] pluginArgs = {};
 
     @Option(name = "--serverFactory", usage = "Fully qualified class for server factory")
@@ -83,7 +83,7 @@ public class ImposterLauncher extends Launcher {
      * @param args the user command line arguments.
      */
     public static void main(String[] args) {
-        LogUtil.configureLogging(System.getProperty(LogUtil.PROPERTY_LOG_LEVEL, "DEBUG"));
+        LogUtil.configureLoggingFromEnvironment();
         new ImposterLauncher().dispatch(args);
     }
 

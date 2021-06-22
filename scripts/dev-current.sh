@@ -50,11 +50,13 @@ case ${LAUNCH_MODE} in
 
     docker run -ti --rm -p 8080:8080 \
       -v "${CONFIG_DIR}":/opt/imposter/config \
+      -e IMPOSTER_LOG_LEVEL="DEBUG" \
       -e JAVA_ARGS="${JAVA_ARGS}" \
       outofcoffee/imposter-${PLUGIN_NAME}:dev
     ;;
 
   java)
+    export IMPOSTER_LOG_LEVEL="DEBUG"
     java ${JAVA_ARGS} \
       -jar distro/${PLUGIN_NAME}/build/libs/imposter-${PLUGIN_NAME}.jar \
       --configDir ${CONFIG_DIR}

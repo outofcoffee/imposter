@@ -5,6 +5,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 
+import static java.util.Optional.ofNullable;
+
 /**
  * Common logging functionality.
  *
@@ -12,7 +14,16 @@ import org.apache.logging.log4j.core.config.LoggerConfig;
  */
 public class LogUtil {
     private static final String LOGGER_BASE_PACKAGE = ConfigUtil.CURRENT_PACKAGE;
-    public static final String PROPERTY_LOG_LEVEL = LOGGER_BASE_PACKAGE + ".logLevel";
+    private static final String ENV_VAR_LOG_LEVEL = "IMPOSTER_LOG_LEVEL";
+    private static final Level DEFAULT_LOG_LEVEL = Level.DEBUG;
+
+    /**
+     * Configure the logging level using the value of {@link #ENV_VAR_LOG_LEVEL}, falling back
+     * to {@link #DEFAULT_LOG_LEVEL} if empty.
+     */
+    public static void configureLoggingFromEnvironment() {
+        configureLogging(ofNullable(System.getenv(LogUtil.ENV_VAR_LOG_LEVEL)).orElse(DEFAULT_LOG_LEVEL.toString()));
+    }
 
     /**
      * Configure the logging subsystem.

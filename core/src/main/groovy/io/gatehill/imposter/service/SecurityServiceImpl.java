@@ -133,7 +133,7 @@ public class SecurityServiceImpl implements SecurityService {
             }
 
             if (LOGGER.isTraceEnabled()) {
-                LOGGER.debug("Condition match for {} {} {}: {}. Request map: {}. Effect: {}",
+                LOGGER.trace("Condition match for {} {} {}: {}. Request map: {}. Effect: {}",
                         conditionValue.getName(), conditionValue.getOperator(), conditionValue.getValue(), matched, requestMap.entries(), finalEffect);
             }
             return finalEffect;

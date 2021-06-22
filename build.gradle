@@ -55,6 +55,7 @@ subprojects {
         version_junit = '4.12'
         version_log4j = '2.9.1'
         version_mockito = '3.10.0'
+        version_micrometer = '1.6.7'
         version_restAssured = '2.9.0'
         version_vertx = '3.7.1'
     }

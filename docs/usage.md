@@ -13,9 +13,18 @@ The following command line arguments can be used:
      --keystorePath VAL     : Path to the keystore (default: classpath:/keystore/ssl.jks)
      --listenPort (-l) N    : Listen port (default: 8080)
      --plugin (-p) VAL      : Plugin name (e.g. rest) or fully qualified class
+     --pluginArg VAL        : A plugin argument (key=value)
      --serverUrl (-u) VAL   : Explicitly set the server address
      --tlsEnabled (-t)      : Whether TLS (HTTPS) is enabled (requires keystore to be configured) (default: false)
      --version (-v)         : Print version and exit
+
+## Environment variables
+
+The following environment variables are supported:
+
+| Variable name      | Purpose             | Example(s)               |
+|--------------------|---------------------|--------------------------|
+| IMPOSTER_LOG_LEVEL | Sets logging level. | `INFO`, `DEBUG`, `TRACE` |
 
 ## Server URL
 
