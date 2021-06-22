@@ -2,7 +2,7 @@ package io.gatehill.imposter.scripting.nashorn;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
-import io.gatehill.imposter.scripting.nashorn.service.NashhornScriptServiceImpl;
+import io.gatehill.imposter.scripting.nashorn.service.NashornScriptServiceImpl;
 import io.gatehill.imposter.service.ScriptService;
 import io.gatehill.imposter.util.annotation.JavascriptImpl;
 
@@ -12,6 +12,6 @@ import io.gatehill.imposter.util.annotation.JavascriptImpl;
 public class NashornScriptingModule extends AbstractModule {
     @Override
     protected void configure() {
-        bind(ScriptService.class).annotatedWith(JavascriptImpl.class).to(NashhornScriptServiceImpl.class).in(Singleton.class);
+        bind(ScriptService.class).annotatedWith(JavascriptImpl.class).to(NashornScriptServiceImpl.class).in(Singleton.class);
     }
 }

@@ -283,12 +283,19 @@ public class ResourceServiceImpl implements ResourceService {
         final SecurityConfig security = getSecurityConfig(rootResourceConfig, resourceConfig);
         if (nonNull(security)) {
             if (LOGGER.isTraceEnabled()) {
-                LOGGER.trace("Enforcing security policy [{} conditions]", security.getConditions().size());
+                LOGGER.trace(
+                        "Enforcing security policy [{} conditions] for: {} {}",
+                        security.getConditions().size(),
+                        request.method(),
+                        request.path()
+                );
             }
             return securityService.enforce(security, routingContext);
 
         } else {
-            LOGGER.trace("No security policy found");
+            if (LOGGER.isTraceEnabled()) {
+                LOGGER.trace("No security policy found for: {} {}", request.method(), request.path());
+            }
             return true;
         }
     }

@@ -1,16 +1,16 @@
 package io.gatehill.imposter.service
 
 import io.gatehill.imposter.scripting.AbstractScriptServiceImplTest
-import io.gatehill.imposter.scripting.nashorn.service.NashhornScriptServiceImpl
+import io.gatehill.imposter.scripting.nashorn.service.NashornScriptServiceImpl
 
 import javax.inject.Inject
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public class NashhornScriptServiceImplTest extends AbstractScriptServiceImplTest {
+public class NashornScriptServiceImplTest extends AbstractScriptServiceImplTest {
     @Inject
-    private NashhornScriptServiceImpl service;
+    private NashornScriptServiceImpl service;
 
     @Override
     protected ScriptService getService() {
