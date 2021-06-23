@@ -1,6 +1,7 @@
 package io.gatehill.imposter.plugin.config.resource;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.gatehill.imposter.script.PerformanceSimulationConfig;
 
 import java.util.Map;
 
@@ -23,6 +24,9 @@ public class ResponseConfig {
     @JsonProperty("headers")
     private Map<String, String> headers;
 
+    @JsonProperty("delay")
+    private PerformanceSimulationConfig performanceDelay;
+
     public String getStaticFile() {
         return staticFile;
     }
@@ -41,5 +45,9 @@ public class ResponseConfig {
 
     public Map<String, String> getHeaders() {
         return headers;
+    }
+
+    public PerformanceSimulationConfig getPerformanceDelay() {
+        return performanceDelay;
     }
 }

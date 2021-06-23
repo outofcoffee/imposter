@@ -18,5 +18,5 @@ public interface ResponseBehaviour {
 
     ResponseBehaviourType getBehaviourType();
 
-    PerformanceSimulation getPerformanceSimulation();
+    PerformanceSimulationConfig getPerformanceSimulation();
 }

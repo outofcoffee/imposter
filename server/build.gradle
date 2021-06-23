@@ -27,6 +27,8 @@ dependencies {
     // test
     testCompile project(':imposter-test')
     testCompile "com.jayway.restassured:rest-assured:$version_restAssured"
+
+    testCompile('javax.xml.bind:jaxb-api:2.3.0')
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

@@ -3,8 +3,8 @@ package io.gatehill.imposter.service;
 import com.google.inject.Injector;
 import io.gatehill.imposter.http.ResponseBehaviourFactory;
 import io.gatehill.imposter.http.StatusCodeFactory;
-import io.gatehill.imposter.plugin.config.ContentTypedConfig;
 import io.gatehill.imposter.plugin.config.PluginConfig;
+import io.gatehill.imposter.plugin.config.resource.ResourceConfig;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
 import io.gatehill.imposter.script.ResponseBehaviour;
 import io.vertx.core.json.JsonArray;
@@ -32,16 +32,6 @@ public interface ResponseService {
             Consumer<ResponseBehaviour> defaultBehaviourHandler
     );
 
-    ResponseBehaviour buildResponseBehaviour(
-            RoutingContext routingContext,
-            PluginConfig pluginConfig,
-            ResponseConfigHolder config,
-            Map<String, Object> additionalContext,
-            Map<String, Object> additionalBindings,
-            StatusCodeFactory statusCodeFactory,
-            ResponseBehaviourFactory responseBehaviourFactory
-    );
-
     /**
      * Send an empty response to the client, typically used as a fallback when no
      * other response can be computed.
@@ -63,7 +53,7 @@ public interface ResponseService {
      */
     void sendResponse(
             PluginConfig pluginConfig,
-            ContentTypedConfig resourceConfig,
+            ResourceConfig resourceConfig,
             RoutingContext routingContext,
             ResponseBehaviour responseBehaviour
     );
@@ -80,7 +70,7 @@ public interface ResponseService {
      */
     void sendResponse(
             PluginConfig pluginConfig,
-            ContentTypedConfig resourceConfig,
+            ResourceConfig resourceConfig,
             RoutingContext routingContext,
             ResponseBehaviour responseBehaviour,
             ResponseSender... fallbackSenders

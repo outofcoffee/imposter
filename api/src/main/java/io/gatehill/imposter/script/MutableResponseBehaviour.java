@@ -33,6 +33,8 @@ public interface MutableResponseBehaviour {
 
     MutableResponseBehaviour and();
 
+    MutableResponseBehaviour withPerformance(PerformanceSimulationConfig performance);
+
     MutableResponseBehaviour withDelay(int exactDelayMs);
 
     MutableResponseBehaviour withDelayRange(int minDelayMs, int maxDelayMs);

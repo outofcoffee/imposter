@@ -70,6 +70,7 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
     public void configureRoutes(Router router) {
         configs.forEach(config -> {
             // add root handler
+            // TODO consider changing this to config.getPath() if non-null
             addObjectHandler(router, "", config, config);
 
             // add child resource handlers

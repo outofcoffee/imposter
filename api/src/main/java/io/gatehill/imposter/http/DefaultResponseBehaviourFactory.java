@@ -31,6 +31,7 @@ public class DefaultResponseBehaviourFactory implements ResponseBehaviourFactory
         responseBehaviour.withStatusCode(statusCode)
                 .withFile(responseConfig.getStaticFile())
                 .withData(responseConfig.getStaticData())
+                .withPerformance(responseConfig.getPerformanceDelay())
                 .usingDefaultBehaviour();
 
         ofNullable(responseConfig.getHeaders()).orElse(emptyMap())

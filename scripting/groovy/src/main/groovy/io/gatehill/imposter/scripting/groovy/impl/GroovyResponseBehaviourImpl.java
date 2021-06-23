@@ -2,6 +2,7 @@ package io.gatehill.imposter.scripting.groovy.impl;
 
 import groovy.lang.Script;
 import io.gatehill.imposter.script.MutableResponseBehaviour;
+import io.gatehill.imposter.script.PerformanceSimulationConfig;
 import io.gatehill.imposter.script.ResponseBehaviourType;
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour;
 import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl;
@@ -42,6 +43,11 @@ public abstract class GroovyResponseBehaviourImpl extends Script implements Read
     @Override
     public String getExampleName() {
         return delegate.getExampleName();
+    }
+
+    @Override
+    public PerformanceSimulationConfig getPerformanceSimulation() {
+        return delegate.getPerformanceSimulation();
     }
 
     @Override
@@ -117,6 +123,24 @@ public abstract class GroovyResponseBehaviourImpl extends Script implements Read
     @Override
     public MutableResponseBehaviour and() {
         delegate.and();
+        return this;
+    }
+
+    @Override
+    public MutableResponseBehaviour withPerformance(PerformanceSimulationConfig performance) {
+        delegate.withPerformance(performance);
+        return this;
+    }
+
+    @Override
+    public MutableResponseBehaviour withDelay(int exactDelayMs) {
+        delegate.withDelay(exactDelayMs);
+        return this;
+    }
+
+    @Override
+    public MutableResponseBehaviour withDelayRange(int minDelayMs, int maxDelayMs) {
+        delegate.withDelayRange(minDelayMs, maxDelayMs);
         return this;
     }
 }

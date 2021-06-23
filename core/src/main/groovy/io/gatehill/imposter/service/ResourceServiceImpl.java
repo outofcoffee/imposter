@@ -153,6 +153,10 @@ public class ResourceServiceImpl implements ResourceService {
         final RestResourceConfig resourceConfig = resource.getConfig();
         final boolean pathMatch = path.equals(resourceConfig.getPath()) || pathTemplate.equals(resourceConfig.getPath());
 
+        if (isNull(resourceConfig.getMethod())) {
+            LOGGER.warn("Resource configuration for '{}' is missing HTTP method - will not correctly match response behaviour", resourceConfig.getPath());
+        }
+
         return pathMatch &&
                 resourceMethod.equals(resourceConfig.getMethod()) &&
                 matchParams(pathParams, resource.getPathParams()) &&

@@ -7,10 +7,11 @@ import io.gatehill.imposter.http.ResponseBehaviourFactory;
 import io.gatehill.imposter.http.StatusCodeFactory;
 import io.gatehill.imposter.plugin.config.ContentTypedConfig;
 import io.gatehill.imposter.plugin.config.PluginConfig;
+import io.gatehill.imposter.plugin.config.resource.ResourceConfig;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfig;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
 import io.gatehill.imposter.script.ExecutionContext;
-import io.gatehill.imposter.script.PerformanceSimulation;
+import io.gatehill.imposter.script.PerformanceSimulationConfig;
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour;
 import io.gatehill.imposter.script.ResponseBehaviour;
 import io.gatehill.imposter.script.ResponseBehaviourType;
@@ -42,6 +43,7 @@ import java.util.function.Consumer;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
@@ -61,7 +63,16 @@ public class ResponseServiceImpl implements ResponseService {
     private Vertx vertx;
 
     @Override
-    public void handle(PluginConfig pluginConfig, ResponseConfigHolder resourceConfig, RoutingContext routingContext, Injector injector, Map<String, Object> additionalContext, StatusCodeFactory statusCodeFactory, ResponseBehaviourFactory responseBehaviourFactory, Consumer<ResponseBehaviour> defaultBehaviourHandler) {
+    public void handle(
+            PluginConfig pluginConfig,
+            ResponseConfigHolder resourceConfig,
+            RoutingContext routingContext,
+            Injector injector,
+            Map<String, Object> additionalContext,
+            StatusCodeFactory statusCodeFactory,
+            ResponseBehaviourFactory responseBehaviourFactory,
+            Consumer<ResponseBehaviour> defaultBehaviourHandler
+    ) {
         try {
             final ResponseBehaviour responseBehaviour = buildResponseBehaviour(
                     routingContext,
@@ -83,17 +94,13 @@ public class ResponseServiceImpl implements ResponseService {
             }
 
         } catch (Exception e) {
-            final ResponseException respEx = new ResponseException(String.format(
-                    "Error sending mock response for %s %s",
-                    routingContext.request().method(), routingContext.request().path()), e);
-
-            LOGGER.error(respEx);
-            routingContext.fail(respEx);
+            final String msg = String.format("Error sending mock response for %s %s", routingContext.request().method(), routingContext.request().path());
+            LOGGER.error(msg, e);
+            routingContext.fail(new ResponseException(msg, e));
         }
     }
 
-    @Override
-    public ResponseBehaviour buildResponseBehaviour(
+    private ResponseBehaviour buildResponseBehaviour(
             RoutingContext routingContext,
             PluginConfig pluginConfig,
             ResponseConfigHolder resourceConfig,
@@ -114,7 +121,14 @@ public class ResponseServiceImpl implements ResponseService {
             return responseBehaviourFactory.build(statusCode, responseConfig);
         }
 
-        return determineResponseFromScript(routingContext, pluginConfig, resourceConfig, additionalContext, additionalBindings, statusCode);
+        return determineResponseFromScript(
+                routingContext,
+                pluginConfig,
+                resourceConfig,
+                additionalContext,
+                additionalBindings,
+                statusCode
+        );
     }
 
     private ReadWriteResponseBehaviour determineResponseFromScript(
@@ -177,7 +191,7 @@ public class ResponseServiceImpl implements ResponseService {
 
     @Override
     public void sendResponse(PluginConfig pluginConfig,
-                             ContentTypedConfig resourceConfig,
+                             ResourceConfig resourceConfig,
                              RoutingContext routingContext,
                              ResponseBehaviour responseBehaviour) {
         sendResponse(pluginConfig, resourceConfig, routingContext, responseBehaviour, this::sendEmptyResponse);
@@ -185,7 +199,7 @@ public class ResponseServiceImpl implements ResponseService {
 
     @Override
     public void sendResponse(PluginConfig pluginConfig,
-                             ContentTypedConfig resourceConfig,
+                             ResourceConfig resourceConfig,
                              RoutingContext routingContext,
                              ResponseBehaviour responseBehaviour,
                              ResponseSender... fallbackSenders) {
@@ -196,25 +210,31 @@ public class ResponseServiceImpl implements ResponseService {
     }
 
     private void simulatePerformance(ResponseBehaviour responseBehaviour, HttpServerRequest request, Runnable completion) {
-        final PerformanceSimulation performance = responseBehaviour.getPerformanceSimulation();
-
+        final PerformanceSimulationConfig performance = responseBehaviour.getPerformanceSimulation();
         int delayMs = -1;
-        if (performance.getExactDelayMs() > 0) {
-            delayMs = performance.getExactDelayMs();
-        } else if (performance.getMinDelayMs() > 0 && performance.getMaxDelayMs() >= performance.getMinDelayMs()) {
-            delayMs = ThreadLocalRandom.current().nextInt(performance.getMaxDelayMs() - performance.getMinDelayMs()) + performance.getMinDelayMs();
+
+        if (nonNull(performance)) {
+            if (ofNullable(performance.getExactDelayMs()).orElse(0) > 0) {
+                delayMs = performance.getExactDelayMs();
+            } else {
+                final Integer minDelayMs = ofNullable(performance.getMinDelayMs()).orElse(0);
+                final Integer maxDelayMs = ofNullable(performance.getMaxDelayMs()).orElse(0);
+                if (minDelayMs > 0 && maxDelayMs >= minDelayMs) {
+                    delayMs = ThreadLocalRandom.current().nextInt(maxDelayMs - minDelayMs) + minDelayMs;
+                }
+            }
         }
 
         if (delayMs > 0) {
             LOGGER.debug("Delaying mock response for {} {} by {}ms", request.method(), request.path(), delayMs);
-            vertx.setTimer(performance.getExactDelayMs(), e -> completion.run());
+            vertx.setTimer(delayMs, e -> completion.run());
         } else {
             completion.run();
         }
     }
 
     private void sendResponseInternal(PluginConfig pluginConfig,
-                                      ContentTypedConfig resourceConfig,
+                                      ResourceConfig resourceConfig,
                                       RoutingContext routingContext,
                                       ResponseBehaviour responseBehaviour,
                                       ResponseSender[] fallbackSenders) {
@@ -274,7 +294,7 @@ public class ResponseServiceImpl implements ResponseService {
      * @param routingContext    the Vert.x routing context
      * @param responseBehaviour the response behaviour
      */
-    private void serveResponseData(ContentTypedConfig resourceConfig,
+    private void serveResponseData(ResourceConfig resourceConfig,
                                    RoutingContext routingContext,
                                    ResponseBehaviour responseBehaviour) {
 
@@ -286,8 +306,11 @@ public class ResponseServiceImpl implements ResponseService {
         final HttpServerResponse response = routingContext.response();
 
         // explicit content type
-        if (!Strings.isNullOrEmpty(resourceConfig.getContentType())) {
-            response.putHeader(HttpUtil.CONTENT_TYPE, resourceConfig.getContentType());
+        if (resourceConfig instanceof ContentTypedConfig) {
+            final ContentTypedConfig contentTypedConfig = (ContentTypedConfig) resourceConfig;
+            if (!Strings.isNullOrEmpty(contentTypedConfig.getContentType())) {
+                response.putHeader(HttpUtil.CONTENT_TYPE, contentTypedConfig.getContentType());
+            }
         }
 
         if (!response.headers().contains(HttpUtil.CONTENT_TYPE)) {

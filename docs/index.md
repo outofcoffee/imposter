@@ -26,6 +26,7 @@ To begin, check out our [Getting started](getting_started.md) guide.
 * [Getting started](getting_started.md)
 * [Configuration guide](configuration.md)
 * [Usage (command line arguments and environment variables)](usage.md)
+* [Performance simulation](performance_simulation.md)
 * [Metrics, logs and telemetry](metrics_logs_telemetry.md)
 * [Tips and tricks](tips_tricks.md)
 
