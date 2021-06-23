@@ -34,6 +34,6 @@ if (request.pathParams.qux) {
             .withStatusCode(201).and()
             .withFile("foo.bar")
             .withHeader("MyHeader", "AwesomeHeader")
-            .immediately()
+            .skipDefaultBehaviour()
     }
 }

@@ -6,7 +6,7 @@ switch (context.request.uri) {
         // HTTP Status-Code 400: Bad Request.
         respond {
             withStatusCode 400
-            immediately()
+            skipDefaultBehaviour()
         }
         break
 
@@ -15,13 +15,13 @@ switch (context.request.uri) {
             // HTTP Status-Code 204: No Content.
             respond {
                 withStatusCode 204
-                immediately()
+                skipDefaultBehaviour()
             }
         } else {
             // HTTP Status-Code 400: Bad Request.
             respond {
                 withStatusCode 400
-                immediately()
+                skipDefaultBehaviour()
             }
         }
         break
@@ -32,7 +32,7 @@ switch (context.request.uri) {
                 // HTTP Status-Code 201: Created.
                 respond {
                     withStatusCode 201
-                    immediately()
+                    skipDefaultBehaviour()
                 }
                 break
 
@@ -40,7 +40,7 @@ switch (context.request.uri) {
                 // HTTP Status-Code 204: No Content.
                 respond {
                     withStatusCode 204
-                    immediately()
+                    skipDefaultBehaviour()
                 }
                 break
 

@@ -6,8 +6,9 @@ ROOT_DIR="${SCRIPT_DIR}/../"
 DEFAULT_PLUGIN_NAME="openapi"
 JAVA_ARGS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000"
 IMPOSTER_LOG_LEVEL="DEBUG"
+RUN_TESTS="true"
 
-while getopts ":m:p:c:l:" opt; do
+while getopts ":m:p:c:l:t:" opt; do
   case ${opt} in
     m )
       LAUNCH_MODE=$OPTARG
@@ -21,6 +22,9 @@ while getopts ":m:p:c:l:" opt; do
     l )
       IMPOSTER_LOG_LEVEL=$OPTARG
       ;;
+    t )
+      RUN_TESTS=$OPTARG
+      ;;
     \? )
       echo "Invalid option: $OPTARG" 1>&2
       ;;
@@ -32,7 +36,7 @@ done
 shift $((OPTIND -1))
 
 function usage() {
-  echo -e "Usage:\n  $( basename $0 ) -m <docker|java> [-p plugin-name] [-c config-dir] [-l log-level]"
+  echo -e "Usage:\n  $( basename $0 ) -m <docker|java> [-p plugin-name] [-c config-dir] [-l log-level] [-t run-tests]"
   exit 1
 }
 
@@ -46,7 +50,11 @@ fi
 
 pushd ${ROOT_DIR}
 
-./gradlew shadowJar
+GRADLE_ARGS=
+if [[ "$RUN_TESTS" == "false" ]]; then
+  GRADLE_ARGS="-xtest"
+fi
+./gradlew shadowJar ${GRADLE_ARGS}
 
 case ${LAUNCH_MODE} in
   docker)

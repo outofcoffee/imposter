@@ -87,9 +87,19 @@ public abstract class GroovyResponseBehaviourImpl extends Script implements Read
     }
 
     @Override
-    public MutableResponseBehaviour immediately() {
-        delegate.immediately();
+    public MutableResponseBehaviour skipDefaultBehaviour() {
+        delegate.skipDefaultBehaviour();
         return this;
+    }
+
+    /**
+     * @deprecated use {@link #skipDefaultBehaviour()} instead
+     * @return this
+     */
+    @Deprecated
+    @Override
+    public MutableResponseBehaviour immediately() {
+        return skipDefaultBehaviour();
     }
 
     @Override

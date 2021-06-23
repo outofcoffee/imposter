@@ -1,5 +1,6 @@
 package io.gatehill.imposter.service;
 
+import com.google.inject.Injector;
 import io.gatehill.imposter.http.ResponseBehaviourFactory;
 import io.gatehill.imposter.http.StatusCodeFactory;
 import io.gatehill.imposter.plugin.config.ContentTypedConfig;
@@ -10,6 +11,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.ext.web.RoutingContext;
 
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
@@ -18,6 +20,17 @@ public interface ResponseService {
     JsonArray loadResponseAsJsonArray(PluginConfig config, ResponseBehaviour behaviour);
 
     JsonArray loadResponseAsJsonArray(PluginConfig config, String responseFile);
+
+    void handle(
+            PluginConfig pluginConfig,
+            ResponseConfigHolder resourceConfig,
+            RoutingContext routingContext,
+            Injector injector,
+            Map<String, Object> additionalContext,
+            StatusCodeFactory statusCodeFactory,
+            ResponseBehaviourFactory responseBehaviourFactory,
+            Consumer<ResponseBehaviour> defaultBehaviourHandler
+    );
 
     ResponseBehaviour buildResponseBehaviour(
             RoutingContext routingContext,

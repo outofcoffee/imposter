@@ -88,7 +88,7 @@ abstract class AbstractScriptServiceImplTest {
         assertNotNull actual
         assertEquals 201, actual.statusCode
         assertEquals 'foo.bar', actual.responseFile
-        assertEquals ResponseBehaviourType.IMMEDIATE_RESPONSE, actual.behaviourType
+        assertEquals ResponseBehaviourType.SHORT_CIRCUIT, actual.behaviourType
         assertEquals 1, actual.getResponseHeaders().size()
         assertEquals "AwesomeHeader", actual.getResponseHeaders().get("MyHeader")
     }

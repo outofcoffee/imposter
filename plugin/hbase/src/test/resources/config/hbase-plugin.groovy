@@ -10,7 +10,7 @@ switch (context.responsePhase) {
             logger.info("Matched 'fail' prefix - returning HTTP 400")
             respond {
                 withStatusCode 400
-                immediately()
+                skipDefaultBehaviour()
             }
         }
         break

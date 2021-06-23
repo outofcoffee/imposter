@@ -87,29 +87,15 @@ public interface ScriptedPlugin<C extends PluginConfigImpl> {
             Consumer<ResponseBehaviour> defaultBehaviourHandler
     ) {
         final ResponseService responseService = injector.getInstance(ResponseService.class);
-
-        try {
-            final ResponseBehaviour responseBehaviour = responseService.buildResponseBehaviour(
-                    routingContext,
-                    pluginConfig,
-                    resourceConfig,
-                    additionalContext,
-                    Collections.emptyMap(),
-                    statusCodeFactory,
-                    responseBehaviourFactory
-            );
-
-            if (ResponseBehaviourType.IMMEDIATE_RESPONSE.equals(responseBehaviour.getBehaviourType())) {
-                routingContext.response()
-                        .setStatusCode(responseBehaviour.getStatusCode())
-                        .end();
-            } else {
-                // default behaviour
-                defaultBehaviourHandler.accept(responseBehaviour);
-            }
-
-        } catch (Exception e) {
-            routingContext.fail(e);
-        }
+        responseService.handle(
+                pluginConfig,
+                resourceConfig,
+                routingContext,
+                injector,
+                additionalContext,
+                statusCodeFactory,
+                responseBehaviourFactory,
+                defaultBehaviourHandler
+        );
     }
 }

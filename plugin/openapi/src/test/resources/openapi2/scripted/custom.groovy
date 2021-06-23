@@ -6,7 +6,7 @@ logger.info("Query params: ${context.request.queryParams}")
 if (context.request.queryParams.param1 == 'foo') {
     respond {
         withStatusCode 202
-        immediately()
+        skipDefaultBehaviour()
     }
 }
 
@@ -14,7 +14,7 @@ if (context.request.queryParams.param1 == 'foo') {
 if (context.params.param1 == 'bar') {
     respond {
         withStatusCode 202
-        immediately()
+        skipDefaultBehaviour()
     }
 }
 
@@ -22,7 +22,7 @@ if (context.params.param1 == 'bar') {
 if (context.request.params.param1 == 'qux') {
     respond {
         withStatusCode 203
-        immediately()
+        skipDefaultBehaviour()
     }
 }
 
@@ -30,7 +30,7 @@ if (context.request.params.param1 == 'qux') {
 if (context.uri == 'baz') {
     respond {
         withStatusCode 400
-        immediately()
+        skipDefaultBehaviour()
     }
 }
 

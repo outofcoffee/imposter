@@ -22,6 +22,7 @@ Arguments:
   [-p plugin-name]  The plugin name, e.g. openapi
   [-c config-dir]   Fully qualified path to the Imposter configuration directory
   [-l log-level]    Logging level, e.g. DEBUG or TRACE
+  [-t run-tests]    Whether to run tests (true or false). Default is true
 ```
 
 Example:

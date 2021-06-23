@@ -120,20 +120,30 @@ public class ReadWriteResponseBehaviourImpl implements ReadWriteResponseBehaviou
     }
 
     /**
-     * Skip the plugin's default behaviour and respond immediately.
+     * Skip the plugin's default behaviour when responding.
      *
      * @return this
      */
     @Override
-    public MutableResponseBehaviour immediately() {
+    public MutableResponseBehaviour skipDefaultBehaviour() {
         if (behaviourConfigured) {
             throw new IllegalStateException("Response already handled");
         } else {
             behaviourConfigured = true;
         }
 
-        behaviourType = ResponseBehaviourType.IMMEDIATE_RESPONSE;
+        behaviourType = ResponseBehaviourType.SHORT_CIRCUIT;
         return this;
+    }
+
+    /**
+     * @deprecated use {@link #skipDefaultBehaviour()} instead
+     * @return this
+     */
+    @Deprecated
+    @Override
+    public MutableResponseBehaviour immediately() {
+        return skipDefaultBehaviour();
     }
 
     /**

@@ -18,6 +18,13 @@ public interface MutableResponseBehaviour {
 
     MutableResponseBehaviour usingDefaultBehaviour();
 
+    MutableResponseBehaviour skipDefaultBehaviour();
+
+    /**
+     * @deprecated use {@link #skipDefaultBehaviour()} instead
+     * @return this
+     */
+    @Deprecated
     MutableResponseBehaviour immediately();
 
     MutableResponseBehaviour respond();

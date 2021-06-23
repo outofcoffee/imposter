@@ -5,5 +5,5 @@ package io.gatehill.imposter.script;
  */
 public enum ResponseBehaviourType {
     DEFAULT_BEHAVIOUR,
-    IMMEDIATE_RESPONSE
+    SHORT_CIRCUIT
 }

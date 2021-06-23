@@ -23,7 +23,7 @@ response:
 if (context.request.queryParams.action == 'create') {
     respond()
         .withStatusCode(201)
-        .immediately()
+        .skipDefaultBehaviour()
 }
 ```
     
@@ -47,7 +47,7 @@ switch (context.request.queryParams.action) {
         // HTTP Status-Code 201: Created.
         respond()
             .withStatusCode(201)
-            .immediately()
+            .skipDefaultBehaviour()
         break
 
     case 'fetch':
@@ -61,7 +61,7 @@ switch (context.request.queryParams.action) {
         // default to bad request
         respond()
             .withStatusCode(400)
-            .immediately()
+            .skipDefaultBehaviour()
         break
 }
 ```
@@ -137,11 +137,11 @@ The response behaviour object provides a number of methods to enable you to cont
 | `withStatusCode(int)`        | all       | Set the HTTP status code for the response                                      |
 | `withFile(String)`           | all       | Respond with the content of a static file                                      |
 | `withData(String)`           | all       | Respond with the content of a `String`                                         |
-| `withExampleName(String)`    | openapi   | Respond with the specification example with a given name        |
+| `withExampleName(String)`    | openapi   | Respond with the specification example with a given name                       |
 | `withHeader(String, String)` | all       | Set a response header                                                          |
 | `withEmpty()`                | all       | Respond with empty content, or no records                                      |
 | `usingDefaultBehaviour()`    | all       | Use the plugin's default behaviour to respond                                  |
-| `immediately()`              | all       | Skip the plugin's default behaviour and respond immediately                    |
+| `skipDefaultBehaviour()`     | all       | Skip the plugin's default behaviour when responding                            |
 | `and()`                      | all       | Syntactic sugar to improve readability of `respond` statements                 |
 
 You structure your response behaviours like so:
@@ -155,7 +155,7 @@ For example:
 ```groovy
 respond()
     .withStatusCode(201)
-    .immediately()
+    .skipDefaultBehaviour()
 ```
 
 Or:
@@ -191,7 +191,7 @@ response:
 Here, the response file `example-data.json` will be used, unless the script invokes the
 `withFile(String)` method with a different filename.
 
-In order for the mock server to return the response file in an appropriate format, the plugin must be allowed to process it. That means you should not call `immediately()` unless you want to skip using a response file (e.g. if you want to send an error code back or a response without a body).
+In order for the mock server to return the response file in an appropriate format, the plugin must be allowed to process it. That means you should not call `skipDefaultBehaviour()` unless you want to skip using a response file (e.g. if you want to send an error code back or a response without a body).
 
 Whilst not required, your script could invoke `usingDefaultBehaviour()` for readability to indicate that you want the plugin to handle the response file for you. See the *rest* plugin tests for a working example. To this end, the following blocks are semantically identical:
 

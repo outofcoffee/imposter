@@ -1,6 +1,7 @@
 package io.gatehill.imposter.service;
 
 import com.google.common.base.Strings;
+import com.google.inject.Injector;
 import io.gatehill.imposter.exception.ResponseException;
 import io.gatehill.imposter.http.ResponseBehaviourFactory;
 import io.gatehill.imposter.http.StatusCodeFactory;
@@ -30,7 +31,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Objects.isNull;
@@ -49,6 +52,38 @@ public class ResponseServiceImpl implements ResponseService {
     @Inject
     @JavascriptImpl
     private ScriptService javascriptScriptService;
+
+    @Override
+    public void handle(PluginConfig pluginConfig, ResponseConfigHolder resourceConfig, RoutingContext routingContext, Injector injector, Map<String, Object> additionalContext, StatusCodeFactory statusCodeFactory, ResponseBehaviourFactory responseBehaviourFactory, Consumer<ResponseBehaviour> defaultBehaviourHandler) {
+        try {
+            final ResponseBehaviour responseBehaviour = buildResponseBehaviour(
+                    routingContext,
+                    pluginConfig,
+                    resourceConfig,
+                    additionalContext,
+                    Collections.emptyMap(),
+                    statusCodeFactory,
+                    responseBehaviourFactory
+            );
+
+            if (ResponseBehaviourType.SHORT_CIRCUIT.equals(responseBehaviour.getBehaviourType())) {
+                routingContext.response()
+                        .setStatusCode(responseBehaviour.getStatusCode())
+                        .end();
+            } else {
+                // default behaviour
+                defaultBehaviourHandler.accept(responseBehaviour);
+            }
+
+        } catch (Exception e) {
+            final ResponseException respEx = new ResponseException(String.format(
+                    "Error sending mock response for %s %s",
+                    routingContext.request().method(), routingContext.request().path()), e);
+
+            LOGGER.error(respEx);
+            routingContext.fail(respEx);
+        }
+    }
 
     @Override
     public ResponseBehaviour buildResponseBehaviour(

@@ -41,6 +41,6 @@ if (quxParam) {
             .withStatusCode(201).and()
             .withFile("foo.bar")
             .withHeader("MyHeader", "AwesomeHeader")
-            .immediately();
+            .skipDefaultBehaviour();
     }
 }
