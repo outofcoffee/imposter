@@ -1,12 +1,40 @@
 # Build
 
-## Prerequisites
+## Hacking locally
+
+You can build and run locally using the `dev-current.sh` convenience script. This will start Imposter in debug mode, with the debug port running on 8000.
+
+Build and run with Docker:
+
+    ./scripts/dev-current.sh -m docker
+
+Build and run with local JVM:
+
+    ./scripts/dev-current.sh -m java
+
+More complete example specifying plugin and config directory:
+
+     ./scripts/dev-current.sh -m docker -p rest -c $(pwd)/docs/examples/rest/multiple
+
+> See the [README](./hack/README.md) for more details about using this script.
+
+## Embedding in your application
+
+To embed Imposter in your application see [this section](embed.md).
+
+## Local build
+
+If you don't want to use the convenience script, then you can follow these steps.
+
+### Prerequisites
 
 * JDK 8
 
-## Steps
+### Steps
 
-For distribution, Imposter is built as a 'fat JAR' (aka 'shadow JAR'). To get started with the examples here, first run:
+For distribution, Imposter is built as an all-in-one JAR file. This is available as a Docker image, as well as in raw form.
+
+To get started with the examples here, first run:
 
     ./gradlew clean shadowJar
 
@@ -27,23 +55,3 @@ If you want to run tests:
 Build the Docker containers with:
 
     ./scripts/docker-build.sh
-
-## Hacking locally
-
-You can build and run locally using the `dev-current.sh` convenience script. This will start Imposter in debug mode, with the debug port running on 8000.
-    
-Build and run with Docker:
-    
-    ./scripts/dev-current.sh -m docker
-
-Build and run with local JVM:
-
-    ./scripts/dev-current.sh -m java
-
-More complete example specifying plugin and config directory:
-
-     ./scripts/dev-current.sh -m docker -p rest -c $(pwd)/docs/examples/rest/multiple 
-
-## Embedding in your application
-
-To embed Imposter in your application see [this section](embed.md).
