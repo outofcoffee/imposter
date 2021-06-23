@@ -3,7 +3,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [1.12.0] - 2021-06-23
+### Added
+- Allows configuration driven and script driven latency simulation.
+- Adds environment variables to runtime context.
+
 ### Changed
 - Deprecates confusing DSL method 'immediately()' in favour of a more descriptive name. This is a non-breaking change, but will be removed in a future major release.
 
