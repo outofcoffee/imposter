@@ -32,4 +32,8 @@ public interface MutableResponseBehaviour {
     MutableResponseBehaviour respond(Runnable closure);
 
     MutableResponseBehaviour and();
+
+    MutableResponseBehaviour withDelay(int exactDelayMs);
+
+    MutableResponseBehaviour withDelayRange(int minDelayMs, int maxDelayMs);
 }

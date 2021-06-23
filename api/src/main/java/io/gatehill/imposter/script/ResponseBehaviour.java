@@ -17,4 +17,6 @@ public interface ResponseBehaviour {
     String getExampleName();
 
     ResponseBehaviourType getBehaviourType();
+
+    PerformanceSimulation getPerformanceSimulation();
 }

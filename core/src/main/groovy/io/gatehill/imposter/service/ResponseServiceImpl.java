@@ -10,6 +10,7 @@ import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfig;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
 import io.gatehill.imposter.script.ExecutionContext;
+import io.gatehill.imposter.script.PerformanceSimulation;
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour;
 import io.gatehill.imposter.script.ResponseBehaviour;
 import io.gatehill.imposter.script.ResponseBehaviourType;
@@ -18,6 +19,8 @@ import io.gatehill.imposter.script.ScriptUtil;
 import io.gatehill.imposter.util.HttpUtil;
 import io.gatehill.imposter.util.annotation.GroovyImpl;
 import io.gatehill.imposter.util.annotation.JavascriptImpl;
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.web.RoutingContext;
@@ -33,6 +36,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -52,6 +56,9 @@ public class ResponseServiceImpl implements ResponseService {
     @Inject
     @JavascriptImpl
     private ScriptService javascriptScriptService;
+
+    @Inject
+    private Vertx vertx;
 
     @Override
     public void handle(PluginConfig pluginConfig, ResponseConfigHolder resourceConfig, RoutingContext routingContext, Injector injector, Map<String, Object> additionalContext, StatusCodeFactory statusCodeFactory, ResponseBehaviourFactory responseBehaviourFactory, Consumer<ResponseBehaviour> defaultBehaviourHandler) {
@@ -182,6 +189,35 @@ public class ResponseServiceImpl implements ResponseService {
                              RoutingContext routingContext,
                              ResponseBehaviour responseBehaviour,
                              ResponseSender... fallbackSenders) {
+
+        simulatePerformance(responseBehaviour, routingContext.request(), () ->
+                sendResponseInternal(pluginConfig, resourceConfig, routingContext, responseBehaviour, fallbackSenders)
+        );
+    }
+
+    private void simulatePerformance(ResponseBehaviour responseBehaviour, HttpServerRequest request, Runnable completion) {
+        final PerformanceSimulation performance = responseBehaviour.getPerformanceSimulation();
+
+        int delayMs = -1;
+        if (performance.getExactDelayMs() > 0) {
+            delayMs = performance.getExactDelayMs();
+        } else if (performance.getMinDelayMs() > 0 && performance.getMaxDelayMs() >= performance.getMinDelayMs()) {
+            delayMs = ThreadLocalRandom.current().nextInt(performance.getMaxDelayMs() - performance.getMinDelayMs()) + performance.getMinDelayMs();
+        }
+
+        if (delayMs > 0) {
+            LOGGER.debug("Delaying mock response for {} {} by {}ms", request.method(), request.path(), delayMs);
+            vertx.setTimer(performance.getExactDelayMs(), e -> completion.run());
+        } else {
+            completion.run();
+        }
+    }
+
+    private void sendResponseInternal(PluginConfig pluginConfig,
+                                      ContentTypedConfig resourceConfig,
+                                      RoutingContext routingContext,
+                                      ResponseBehaviour responseBehaviour,
+                                      ResponseSender[] fallbackSenders) {
 
         LOGGER.trace("Sending mock response for URI {} with status code {}",
                 routingContext.request().absoluteURI(),

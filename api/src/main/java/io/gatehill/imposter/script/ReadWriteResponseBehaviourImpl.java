@@ -14,6 +14,7 @@ public class ReadWriteResponseBehaviourImpl implements ReadWriteResponseBehaviou
     private String exampleName;
     private final Map<String, String> responseHeaders = new HashMap<>();
     private boolean behaviourConfigured;
+    private final PerformanceSimulation performanceSimulation = new PerformanceSimulation();
 
     @Override
     public Map<String, String> getResponseHeaders() {
@@ -43,6 +44,11 @@ public class ReadWriteResponseBehaviourImpl implements ReadWriteResponseBehaviou
     @Override
     public ResponseBehaviourType getBehaviourType() {
         return behaviourType;
+    }
+
+    @Override
+    public PerformanceSimulation getPerformanceSimulation() {
+        return performanceSimulation;
     }
 
     @Override
@@ -174,6 +180,19 @@ public class ReadWriteResponseBehaviourImpl implements ReadWriteResponseBehaviou
      */
     @Override
     public MutableResponseBehaviour and() {
+        return this;
+    }
+
+    @Override
+    public MutableResponseBehaviour withDelay(int exactDelayMs) {
+        performanceSimulation.exactDelayMs = exactDelayMs;
+        return this;
+    }
+
+    @Override
+    public MutableResponseBehaviour withDelayRange(int minDelayMs, int maxDelayMs) {
+        performanceSimulation.minDelayMs = minDelayMs;
+        performanceSimulation.maxDelayMs = maxDelayMs;
         return this;
     }
 }
