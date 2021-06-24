@@ -132,7 +132,7 @@ public class ImposterVerticle extends AbstractVerticle {
         final List<String> experimentalFeatures = listExperimentalFeatures();
         LOGGER.trace("Experimental features enabled: {}", experimentalFeatures);
 
-        if (experimentalFeatures.contains("store")) {
+        if (experimentalFeatures.contains("stores")) {
             experimentalModules.add(new StoreModule());
         }
 

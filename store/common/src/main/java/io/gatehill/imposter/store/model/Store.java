@@ -12,5 +12,7 @@ public interface Store {
 
     <T> T load(String key);
 
+    void delete(String key);
+
     Map<String, Object> loadAll();
 }

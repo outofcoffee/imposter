@@ -33,7 +33,7 @@ public class StoreTest extends BaseVerticleTest {
     @Before
     public void setUp(TestContext testContext) throws Exception {
         // enable store support before boot
-        System.setProperty("imposter.experimental", "store");
+        System.setProperty("imposter.experimental", "stores");
 
         super.setUp(testContext);
         RestAssured.baseURI = "http://" + HOST + ":" + getListenPort();
@@ -137,6 +137,37 @@ public class StoreTest extends BaseVerticleTest {
                 .then()
                 .statusCode(equalTo(HttpUtil.HTTP_OK))
                 .body(equalTo("quux"));
+    }
+
+    /**
+     * Delete an item from a store.
+     */
+    @Test
+    public void testDeleteFromStore() {
+        // save via system
+        given().when()
+                .pathParam("storeId", "test")
+                .pathParam("key", "corge")
+                .contentType(HttpUtil.CONTENT_TYPE_PLAIN_TEXT)
+                .body("quux")
+                .put("/system/store/{storeId}/{key}")
+                .then()
+                .statusCode(equalTo(HttpUtil.HTTP_OK));
+
+        given().when()
+                .pathParam("storeId", "test")
+                .pathParam("key", "corge")
+                .delete("/system/store/{storeId}/{key}")
+                .then()
+                .statusCode(equalTo(HttpUtil.HTTP_NO_CONTENT));
+
+        // should not exist
+        given().when()
+                .pathParam("storeId", "test")
+                .pathParam("key", "corge")
+                .get("/system/store/{storeId}/{key}")
+                .then()
+                .statusCode(equalTo(HttpUtil.HTTP_NOT_FOUND));
     }
 
     /**

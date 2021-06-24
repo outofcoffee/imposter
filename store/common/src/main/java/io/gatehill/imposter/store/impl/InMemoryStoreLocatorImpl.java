@@ -35,6 +35,11 @@ public class InMemoryStoreLocatorImpl extends AbstractStoreLocator {
         }
 
         @Override
+        public void delete(String key) {
+            store.remove(key);
+        }
+
+        @Override
         public Map<String, Object> loadAll() {
             return store;
         }

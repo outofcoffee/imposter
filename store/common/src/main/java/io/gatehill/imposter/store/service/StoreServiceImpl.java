@@ -63,6 +63,7 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
         router.delete("/system/store/:storeName").handler(handleDeleteStore(imposterConfig, allPluginConfigs));
         router.get("/system/store/:storeName/:key").handler(handleLoadSingle(imposterConfig, allPluginConfigs));
         router.put("/system/store/:storeName/:key").handler(handleSaveSingle(imposterConfig, allPluginConfigs));
+        router.delete("/system/store/:storeName/:key").handler(handleDeleteSingle(imposterConfig, allPluginConfigs));
     }
 
     private Handler<RoutingContext> handleLoadAll(ImposterConfig imposterConfig, List<PluginConfig> allPluginConfigs) {
@@ -141,6 +142,24 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
             LOGGER.debug("Saved item: {} to store: {}", key, storeName);
             routingContext.response()
                     .setStatusCode(HttpUtil.HTTP_OK)
+                    .end();
+        });
+    }
+
+    private Handler<RoutingContext> handleDeleteSingle(ImposterConfig imposterConfig, List<PluginConfig> allPluginConfigs) {
+        return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx, routingContext -> {
+            final String storeName = routingContext.pathParam("storeName");
+            final Store store = openStore(routingContext, storeName, true);
+            if (isNull(store)) {
+                return;
+            }
+
+            final String key = routingContext.pathParam("key");
+            store.delete(key);
+
+            LOGGER.debug("Deleted item: {} from store: {}", key, storeName);
+            routingContext.response()
+                    .setStatusCode(HttpUtil.HTTP_NO_CONTENT)
                     .end();
         });
     }
