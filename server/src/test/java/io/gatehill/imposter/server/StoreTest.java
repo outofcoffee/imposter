@@ -162,4 +162,34 @@ public class StoreTest extends BaseVerticleTest {
                 .statusCode(equalTo(HttpUtil.HTTP_OK))
                 .body("$", hasEntry("baz", "quuz"));
     }
+
+    /**
+     * Save and load from the store across multiple requests.
+     */
+    @Test
+    public void testDeleteStore() {
+        // save via system
+        given().when()
+                .pathParam("storeId", "example")
+                .pathParam("key", "baz")
+                .contentType(HttpUtil.CONTENT_TYPE_PLAIN_TEXT)
+                .body("quuz")
+                .put("/system/store/{storeId}/{key}")
+                .then()
+                .statusCode(equalTo(HttpUtil.HTTP_OK));
+
+        // delete
+        given().when()
+                .pathParam("storeId", "example")
+                .delete("/system/store/{storeId}")
+                .then()
+                .statusCode(equalTo(HttpUtil.HTTP_NO_CONTENT));
+
+        // should not exist
+        given().when()
+                .pathParam("storeId", "example")
+                .get("/system/store/{storeId}")
+                .then()
+                .statusCode(equalTo(HttpUtil.HTTP_NOT_FOUND));
+    }
 }

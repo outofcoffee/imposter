@@ -60,6 +60,7 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
     @Override
     public void afterRoutesConfigured(ImposterConfig imposterConfig, List<PluginConfig> allPluginConfigs, Router router) {
         router.get("/system/store/:storeName").handler(handleLoadAll(imposterConfig, allPluginConfigs));
+        router.delete("/system/store/:storeName").handler(handleDeleteStore(imposterConfig, allPluginConfigs));
         router.get("/system/store/:storeName/:key").handler(handleLoadSingle(imposterConfig, allPluginConfigs));
         router.put("/system/store/:storeName/:key").handler(handleSaveSingle(imposterConfig, allPluginConfigs));
     }
@@ -88,6 +89,19 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
         });
     }
 
+    private Handler<RoutingContext> handleDeleteStore(ImposterConfig imposterConfig, List<PluginConfig> allPluginConfigs) {
+        return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx, routingContext -> {
+            final String storeName = routingContext.pathParam("storeName");
+
+            storeLocator.deleteStoreByName(storeName);
+            LOGGER.debug("Deleted store: {}", storeName);
+
+            routingContext.response()
+                    .setStatusCode(HttpUtil.HTTP_NO_CONTENT)
+                    .end();
+        });
+    }
+
     private Handler<RoutingContext> handleLoadSingle(ImposterConfig imposterConfig, List<PluginConfig> allPluginConfigs) {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx, routingContext -> {
             final String storeName = routingContext.pathParam("storeName");
@@ -99,12 +113,12 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
             final String key = routingContext.pathParam("key");
             final String value = store.load(key);
             if (nonNull(value)) {
-                LOGGER.debug("Returning item: {} from store: {}", storeName, key);
+                LOGGER.debug("Returning item: {} from store: {}", key, storeName);
                 routingContext.response()
                         .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_PLAIN_TEXT)
                         .end(value);
             } else {
-                LOGGER.debug("Nonexistent item: {} in store: {}", storeName, key);
+                LOGGER.debug("Nonexistent item: {} in store: {}", key, storeName);
                 routingContext.response()
                         .setStatusCode(HttpUtil.HTTP_NOT_FOUND)
                         .end();
@@ -124,7 +138,7 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
             final String value = routingContext.getBodyAsString();
             store.save(key, value);
 
-            LOGGER.debug("Saved item: {} to store: {}", storeName, key);
+            LOGGER.debug("Saved item: {} to store: {}", key, storeName);
             routingContext.response()
                     .setStatusCode(HttpUtil.HTTP_OK)
                     .end();

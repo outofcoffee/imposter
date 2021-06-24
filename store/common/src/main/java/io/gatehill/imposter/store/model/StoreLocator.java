@@ -7,4 +7,6 @@ public interface StoreLocator {
     boolean hasStoreWithName(String storeName);
 
     Store getStoreByName(String storeName);
+
+    void deleteStoreByName(String storeName);
 }

@@ -35,5 +35,11 @@ public abstract class AbstractStoreLocator implements StoreLocator {
         return store;
     }
 
+    @Override
+    public void deleteStoreByName(String storeName) {
+        stores.remove(storeName);
+        LOGGER.trace("Deleted store: {}", storeName);
+    }
+
     protected abstract Store buildNewStore();
 }
