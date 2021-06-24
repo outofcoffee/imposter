@@ -1,0 +1,12 @@
+plugin: rest
+
+resources:
+- method: GET
+  path: /scripted-exact-delay
+  response:
+    scriptFile: delay.js
+
+- method: GET
+  path: /scripted-range-delay
+  response:
+    scriptFile: delay.js
