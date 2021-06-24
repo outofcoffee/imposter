@@ -35,7 +35,10 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
@@ -61,6 +64,13 @@ public class ResponseServiceImpl implements ResponseService {
 
     @Inject
     private Vertx vertx;
+
+    private final List<ScriptedResponseListener> scriptedResponseListeners = new ArrayList<>();
+
+    @Override
+    public void registerListener(ScriptedResponseListener listener) {
+        scriptedResponseListeners.add(listener);
+    }
 
     @Override
     public void handle(
@@ -148,17 +158,32 @@ public class ResponseServiceImpl implements ResponseService {
             final ExecutionContext executionContext = ScriptUtil.buildContext(routingContext, additionalContext);
             LOGGER.trace("Context for request: {}", () -> executionContext);
 
+            // fire pre-context build hooks
+            Map<String, Object> finalAdditionalBindings = additionalBindings;
+            if (!scriptedResponseListeners.isEmpty()) {
+                final Map<String, Object> listenerAdditionalBindings = new HashMap<>();
+                scriptedResponseListeners.forEach(listener -> listener.beforeBuildingRuntimeContext(listenerAdditionalBindings, executionContext));
+
+                if (!listenerAdditionalBindings.isEmpty()) {
+                    listenerAdditionalBindings.putAll(additionalBindings);
+                    finalAdditionalBindings = listenerAdditionalBindings;
+                }
+            }
+
             final RuntimeContext runtimeContext = new RuntimeContext(
                     System.getenv(),
                     LogManager.getLogger(determineScriptName(responseConfig.getScriptFile())),
                     pluginConfig,
-                    additionalBindings,
+                    finalAdditionalBindings,
                     executionContext
             );
 
             // execute the script and read response behaviour
             final ReadWriteResponseBehaviour responseBehaviour =
                     fetchScriptService(responseConfig.getScriptFile()).executeScript(pluginConfig, resourceConfig, runtimeContext);
+
+            // fire post execution hooks
+            scriptedResponseListeners.forEach(listener -> listener.afterSuccessfulExecution(additionalBindings, responseBehaviour));
 
             // use defaults if not set
             if (ResponseBehaviourType.DEFAULT_BEHAVIOUR.equals(responseBehaviour.getBehaviourType())) {

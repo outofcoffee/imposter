@@ -1,0 +1,12 @@
+plugin: "io.gatehill.imposter.plugin.test.TestPluginImpl"
+
+resources:
+- method: GET
+  path: /store
+  response:
+    scriptFile: store.js
+
+- method: GET
+  path: /load
+  response:
+    scriptFile: store.js

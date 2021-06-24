@@ -29,4 +29,3 @@ resources:
   path: /scripted-range-delay
   response:
     scriptFile: delay.js
-

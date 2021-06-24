@@ -6,6 +6,8 @@ import io.gatehill.imposter.http.StatusCodeFactory;
 import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
+import io.gatehill.imposter.script.ExecutionContext;
+import io.gatehill.imposter.script.ReadWriteResponseBehaviour;
 import io.gatehill.imposter.script.ResponseBehaviour;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.web.RoutingContext;
@@ -17,6 +19,8 @@ import java.util.function.Consumer;
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public interface ResponseService {
+    void registerListener(ScriptedResponseListener listener);
+
     JsonArray loadResponseAsJsonArray(PluginConfig config, ResponseBehaviour behaviour);
 
     JsonArray loadResponseAsJsonArray(PluginConfig config, String responseFile);
@@ -79,5 +83,26 @@ public interface ResponseService {
     @FunctionalInterface
     interface ResponseSender {
         boolean send(RoutingContext routingContext, ResponseBehaviour responseBehaviour) throws Exception;
+    }
+
+    /**
+     * Hooks for script lifecycle events.
+     */
+    interface ScriptedResponseListener {
+        /**
+         * Invoked before building the runtime context.
+         *
+         * @param additionalBindings the additional bindings that will be passed to the script
+         * @param executionContext   the script execution context
+         */
+        void beforeBuildingRuntimeContext(Map<String, Object> additionalBindings, ExecutionContext executionContext);
+
+        /**
+         * Invoked following successful execution of the script.
+         *
+         * @param additionalBindings the additional bindings that were passed to the script
+         * @param responseBehaviour  the result of the script execution
+         */
+        void afterSuccessfulExecution(Map<String, Object> additionalBindings, ReadWriteResponseBehaviour responseBehaviour);
     }
 }

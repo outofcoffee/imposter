@@ -12,6 +12,10 @@ project(':server').name = 'imposter-server'
 include ':test'
 project(':test').name = 'imposter-test'
 
+// store
+include ':store:common'
+project(':store:common').name = 'store-common'
+
 // scripting
 include ':scripting:common'
 project(':scripting:common').name = 'scripting-common'
