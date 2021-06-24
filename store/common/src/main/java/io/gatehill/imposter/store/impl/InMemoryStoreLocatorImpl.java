@@ -33,5 +33,10 @@ public class InMemoryStoreLocatorImpl extends AbstractStoreLocator {
         public <T> T load(String key) {
             return (T) store.get(key);
         }
+
+        @Override
+        public Map<String, Object> loadAll() {
+            return store;
+        }
     }
 }

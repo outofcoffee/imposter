@@ -1,7 +1,7 @@
 package io.gatehill.imposter.store.impl;
 
-import io.gatehill.imposter.store.model.StoreLocator;
 import io.gatehill.imposter.store.model.Store;
+import io.gatehill.imposter.store.model.StoreLocator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -17,6 +17,11 @@ public abstract class AbstractStoreLocator implements StoreLocator {
     private static final Logger LOGGER = LogManager.getLogger(AbstractStoreLocator.class);
 
     private final Map<String, Store> stores = newHashMap();
+
+    @Override
+    public boolean hasStoreWithName(String storeName) {
+        return stores.containsKey(storeName);
+    }
 
     @Override
     public Store getStoreByName(String storeName) {

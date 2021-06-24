@@ -12,10 +12,6 @@ project(':server').name = 'imposter-server'
 include ':test'
 project(':test').name = 'imposter-test'
 
-// store
-include ':store:common'
-project(':store:common').name = 'store-common'
-
 // scripting
 include ':scripting:common'
 project(':scripting:common').name = 'scripting-common'
@@ -28,6 +24,10 @@ project(':scripting:groovy').name = 'scripting-groovy'
 
 include ':scripting:nashorn'
 project(':scripting:nashorn').name = 'scripting-nashorn'
+
+// store
+include ':store:common'
+project(':store:common').name = 'store-common'
 
 // plugins
 include ':plugin:detector'

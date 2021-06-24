@@ -2,6 +2,7 @@ package io.gatehill.imposter.server;
 
 import com.google.common.collect.Lists;
 import com.jayway.restassured.RestAssured;
+import com.jayway.restassured.http.ContentType;
 import io.gatehill.imposter.plugin.Plugin;
 import io.gatehill.imposter.plugin.test.TestPluginImpl;
 import io.gatehill.imposter.util.HttpUtil;
@@ -15,6 +16,7 @@ import java.util.List;
 
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
 
 /**
  * Tests for storage.
@@ -48,17 +50,116 @@ public class StoreTest extends BaseVerticleTest {
      * Save and load from the store across multiple requests.
      */
     @Test
-    public void testSetAndGetFromStore() {
+    public void testSetAndGetFromStoreScripted() {
+        // save via script
         given().when()
-                .queryParam("foo", "bar")
+                .queryParam("foo", "qux")
                 .get("/store")
                 .then()
                 .statusCode(equalTo(HttpUtil.HTTP_CREATED));
 
+        // load via script
         given().when()
                 .get("/load")
                 .then()
                 .statusCode(equalTo(HttpUtil.HTTP_OK))
-                .body(equalTo("bar"));
+                .body(equalTo("qux"));
+    }
+
+    /**
+     * Fail to load a nonexistent store.
+     */
+    @Test
+    public void testNonexistentStore() {
+        given().when()
+                .pathParam("storeId", "nonexistent")
+                .get("/system/store/{storeId}")
+                .then()
+                .statusCode(equalTo(HttpUtil.HTTP_NOT_FOUND));
+    }
+
+    /**
+     * Fail to load a store with an incorrect Accept header.
+     */
+    @Test
+    public void testUnacceptableMimeType() {
+        // populate the store
+        given().when()
+                .queryParam("foo", "baz")
+                .get("/store")
+                .then()
+                .statusCode(equalTo(HttpUtil.HTTP_CREATED));
+
+        // incorrect mime type
+        given().when()
+                .pathParam("storeId", "test")
+                .accept(ContentType.XML)
+                .get("/system/store/{storeId}")
+                .then()
+                .statusCode(equalTo(HttpUtil.HTTP_NOT_ACCEPTABLE));
+
+        // correct mime type
+        given().when()
+                .pathParam("storeId", "test")
+                .accept(ContentType.JSON)
+                .get("/system/store/{storeId}")
+                .then()
+                .statusCode(equalTo(HttpUtil.HTTP_OK));
+    }
+
+    /**
+     * Save and load from the store across multiple requests.
+     */
+    @Test
+    public void testSetAndGetFromStore() {
+        // initially empty
+        given().when()
+                .pathParam("storeId", "test")
+                .pathParam("key", "bar")
+                .get("/system/store/{storeId}/{key}")
+                .then()
+                .statusCode(equalTo(HttpUtil.HTTP_NOT_FOUND));
+
+        // save via system
+        given().when()
+                .pathParam("storeId", "test")
+                .pathParam("key", "bar")
+                .contentType(HttpUtil.CONTENT_TYPE_PLAIN_TEXT)
+                .body("quux")
+                .put("/system/store/{storeId}/{key}")
+                .then()
+                .statusCode(equalTo(HttpUtil.HTTP_OK));
+
+        given().when()
+                .pathParam("storeId", "test")
+                .pathParam("key", "bar")
+                .get("/system/store/{storeId}/{key}")
+                .then()
+                .statusCode(equalTo(HttpUtil.HTTP_OK))
+                .body(equalTo("quux"));
+    }
+
+    /**
+     * Save and load from the store across multiple requests.
+     */
+    @Test
+    public void testSetAndGetAllFromStore() {
+        // save via system
+        given().when()
+                .pathParam("storeId", "test")
+                .pathParam("key", "baz")
+                .contentType(HttpUtil.CONTENT_TYPE_PLAIN_TEXT)
+                .body("quuz")
+                .put("/system/store/{storeId}/{key}")
+                .then()
+                .statusCode(equalTo(HttpUtil.HTTP_OK));
+
+        // load all
+        given().when()
+                .pathParam("storeId", "test")
+                .get("/system/store/{storeId}")
+                .then()
+                .statusCode(equalTo(HttpUtil.HTTP_OK))
+                .body("$", hasEntry("baz", "quuz"));
     }
 }

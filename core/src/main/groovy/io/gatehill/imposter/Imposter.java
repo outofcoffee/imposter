@@ -30,14 +30,18 @@ public class Imposter {
     private static final Logger LOGGER = LogManager.getLogger(Imposter.class);
 
     private final ImposterConfig imposterConfig;
-    private final Module[] bootstrapModules;
+    private final List<Module> bootstrapModules;
     private final PluginManager pluginManager;
 
     public Imposter(ImposterConfig imposterConfig, Module... bootstrapModules) {
+        this(imposterConfig, newArrayList(bootstrapModules));
+    }
+
+    public Imposter(ImposterConfig imposterConfig, List<Module> bootstrapModules) {
         this(imposterConfig, bootstrapModules, new PluginManager());
     }
 
-    public Imposter(ImposterConfig imposterConfig, Module[] bootstrapModules, PluginManager pluginManager) {
+    public Imposter(ImposterConfig imposterConfig, List<Module> bootstrapModules, PluginManager pluginManager) {
         this.imposterConfig = imposterConfig;
         this.bootstrapModules = bootstrapModules;
         this.pluginManager = pluginManager;
@@ -59,7 +63,7 @@ public class Imposter {
                 .filter(deps -> nonNull(deps.getRequiredModules()))
                 .collect(Collectors.toList());
 
-        final List<Module> allModules = newArrayList(bootstrapModules);
+        final List<Module> allModules = bootstrapModules;
         allModules.add(new ImposterModule(imposterConfig, pluginManager));
         dependencies.forEach(deps -> allModules.addAll(deps.getRequiredModules()));
 

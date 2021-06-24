@@ -9,6 +9,7 @@ switch (context.request.path) {
     case '/load':
         respond()
             .withStatusCode(200)
+            .withHeader('Content-Type', 'text/plain')
             .withData(testStore.load('foo'));
         break;
 }

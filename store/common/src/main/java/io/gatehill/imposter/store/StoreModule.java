@@ -2,9 +2,9 @@ package io.gatehill.imposter.store;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
-import io.gatehill.imposter.store.service.StoreService;
 import io.gatehill.imposter.store.impl.InMemoryStoreLocatorImpl;
 import io.gatehill.imposter.store.model.StoreLocator;
+import io.gatehill.imposter.store.service.StoreService;
 import io.gatehill.imposter.store.service.StoreServiceImpl;
 
 /**

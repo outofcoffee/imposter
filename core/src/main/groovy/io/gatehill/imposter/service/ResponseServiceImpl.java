@@ -5,6 +5,7 @@ import com.google.inject.Injector;
 import io.gatehill.imposter.exception.ResponseException;
 import io.gatehill.imposter.http.ResponseBehaviourFactory;
 import io.gatehill.imposter.http.StatusCodeFactory;
+import io.gatehill.imposter.lifecycle.ImposterLifecycleHooks;
 import io.gatehill.imposter.plugin.config.ContentTypedConfig;
 import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig;
@@ -35,10 +36,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
@@ -63,14 +62,10 @@ public class ResponseServiceImpl implements ResponseService {
     private ScriptService javascriptScriptService;
 
     @Inject
+    private ImposterLifecycleHooks lifecycleHooks;
+
+    @Inject
     private Vertx vertx;
-
-    private final List<ScriptedResponseListener> scriptedResponseListeners = new ArrayList<>();
-
-    @Override
-    public void registerListener(ScriptedResponseListener listener) {
-        scriptedResponseListeners.add(listener);
-    }
 
     @Override
     public void handle(
@@ -158,17 +153,7 @@ public class ResponseServiceImpl implements ResponseService {
             final ExecutionContext executionContext = ScriptUtil.buildContext(routingContext, additionalContext);
             LOGGER.trace("Context for request: {}", () -> executionContext);
 
-            // fire pre-context build hooks
-            Map<String, Object> finalAdditionalBindings = additionalBindings;
-            if (!scriptedResponseListeners.isEmpty()) {
-                final Map<String, Object> listenerAdditionalBindings = new HashMap<>();
-                scriptedResponseListeners.forEach(listener -> listener.beforeBuildingRuntimeContext(listenerAdditionalBindings, executionContext));
-
-                if (!listenerAdditionalBindings.isEmpty()) {
-                    listenerAdditionalBindings.putAll(additionalBindings);
-                    finalAdditionalBindings = listenerAdditionalBindings;
-                }
-            }
+            final Map<String, Object> finalAdditionalBindings = finaliseAdditionalBindings(additionalBindings, executionContext);
 
             final RuntimeContext runtimeContext = new RuntimeContext(
                     System.getenv(),
@@ -183,7 +168,7 @@ public class ResponseServiceImpl implements ResponseService {
                     fetchScriptService(responseConfig.getScriptFile()).executeScript(pluginConfig, resourceConfig, runtimeContext);
 
             // fire post execution hooks
-            scriptedResponseListeners.forEach(listener -> listener.afterSuccessfulExecution(additionalBindings, responseBehaviour));
+            lifecycleHooks.forEach(listener -> listener.afterSuccessfulScriptExecution(finalAdditionalBindings, responseBehaviour));
 
             // use defaults if not set
             if (ResponseBehaviourType.DEFAULT_BEHAVIOUR.equals(responseBehaviour.getBehaviourType())) {
@@ -200,6 +185,23 @@ public class ResponseServiceImpl implements ResponseService {
         } catch (Exception e) {
             throw new RuntimeException(String.format("Error executing script: %s", responseConfig.getScriptFile()), e);
         }
+    }
+
+    private Map<String, Object> finaliseAdditionalBindings(Map<String, Object> additionalBindings, ExecutionContext executionContext) {
+        Map<String, Object> finalAdditionalBindings = additionalBindings;
+
+        // fire pre-context build hooks
+        if (!lifecycleHooks.isEmpty()) {
+            final Map<String, Object> listenerAdditionalBindings = new HashMap<>();
+
+            lifecycleHooks.forEach(listener -> listener.beforeBuildingRuntimeContext(listenerAdditionalBindings, executionContext));
+
+            if (!listenerAdditionalBindings.isEmpty()) {
+                listenerAdditionalBindings.putAll(additionalBindings);
+                finalAdditionalBindings = listenerAdditionalBindings;
+            }
+        }
+        return finalAdditionalBindings;
     }
 
     @Override

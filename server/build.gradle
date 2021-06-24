@@ -16,6 +16,9 @@ dependencies {
     compile project (':scripting:scripting-groovy')
     compile project (':scripting:scripting-nashorn')
 
+    // store
+    compile project(':store:store-common')
+
     // logging
     compile "org.apache.logging.log4j:log4j-core:$version_log4j"
     compile "org.apache.logging.log4j:log4j-jcl:$version_log4j"
