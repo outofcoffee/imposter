@@ -226,7 +226,7 @@ public class ResponseServiceImpl implements ResponseService {
         }
 
         if (delayMs > 0) {
-            LOGGER.debug("Delaying mock response for {} {} by {}ms", request.method(), request.path(), delayMs);
+            LOGGER.info("Delaying mock response for {} {} by {}ms", request.method(), request.path(), delayMs);
             vertx.setTimer(delayMs, e -> completion.run());
         } else {
             completion.run();

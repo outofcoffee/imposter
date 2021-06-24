@@ -73,7 +73,7 @@ respond()
 You will see log entries similar to the following at `DEBUG` level:
 
 ```
-14:39:08 DEBUG i.g.i.s.ResponseServiceImpl - 
+14:39:08 INFO  i.g.i.s.ResponseServiceImpl - 
   Delaying mock response for GET /example-range-delay by 1000ms
 
 14:39:09 INFO  i.g.i.s.ResponseServiceImpl - 
