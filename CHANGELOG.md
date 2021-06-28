@@ -3,17 +3,21 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- ...
+
 ## [1.13.0] - 2021-06-28
 ### Added
-- Adds experimental Stores support.
+- (core) Adds experimental Stores support.
 
 ## [1.12.0] - 2021-06-23
 ### Added
-- Allows configuration driven and script driven latency simulation.
-- Adds environment variables to runtime context.
+- (core) Allows configuration driven and script driven latency simulation.
+- (core) Adds environment variables to runtime context.
 
 ### Changed
-- Deprecates confusing DSL method 'immediately()' in favour of a more descriptive name. This is a non-breaking change, but will be removed in a future major release.
+- (core) Deprecates confusing DSL method 'immediately()' in favour of a more descriptive name 'skipDefaultBehaviour()'. This is a non-breaking change, but will be removed in a future major release.
 
 ## [1.11.0] - 2021-06-22
 ### Added
