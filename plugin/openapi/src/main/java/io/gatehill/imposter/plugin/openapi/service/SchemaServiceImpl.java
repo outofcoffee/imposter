@@ -52,7 +52,7 @@ public class SchemaServiceImpl implements SchemaService {
     @Override
     public ContentTypedHolder<?> collectExamples(HttpServerRequest request, OpenAPI spec, ContentTypedHolder<Schema<?>> schema) {
         final Object example = collectSchemaExample(spec, schema.getValue());
-        LOGGER.trace("Collected example from {} schema for {} {}: {}", schema.getContentType(), request.method(), request.path(), example);
+        LOGGER.trace("Collected example from {} schema for {} {}: {}", schema.getContentType(), request.method(), request.absoluteURI(), example);
 
         return new ContentTypedHolder<>(schema.getContentType(), example);
     }

@@ -213,7 +213,7 @@ public class SpecificationServiceImpl implements SpecificationService {
         final ValidationReport report = validator.validateRequest(requestBuilder.build());
         if (!report.getMessages().isEmpty()) {
             final String reportMessages = reportFormater.apply(report);
-            LOGGER.warn("Validation failed for {} {}: {}", request.method(), request.path(), reportMessages);
+            LOGGER.warn("Validation failed for {} {}: {}", request.method(), request.absoluteURI(), reportMessages);
 
             // only respond with 400 if validation failures are at error level
             if (report.hasErrors()) {
@@ -228,7 +228,7 @@ public class SpecificationServiceImpl implements SpecificationService {
                 return false;
             }
         } else {
-            LOGGER.debug("Validation passed for {} {}", request.method(), request.path());
+            LOGGER.debug("Validation passed for {} {}", request.method(), request.absoluteURI());
         }
 
         return true;

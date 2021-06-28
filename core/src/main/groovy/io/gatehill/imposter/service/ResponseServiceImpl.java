@@ -99,7 +99,7 @@ public class ResponseServiceImpl implements ResponseService {
             }
 
         } catch (Exception e) {
-            final String msg = String.format("Error sending mock response for %s %s", routingContext.request().method(), routingContext.request().path());
+            final String msg = String.format("Error sending mock response for %s %s", routingContext.request().method(), routingContext.request().absoluteURI());
             LOGGER.error(msg, e);
             routingContext.fail(new ResponseException(msg, e));
         }
@@ -147,8 +147,13 @@ public class ResponseServiceImpl implements ResponseService {
         final ResponseConfig responseConfig = resourceConfig.getResponseConfig();
 
         try {
-            LOGGER.debug("Executing script '{}' for request: {} {}",
-                    responseConfig.getScriptFile(), routingContext.request().method(), routingContext.request().absoluteURI());
+            final long executionStart = System.nanoTime();
+            LOGGER.trace(
+                    "Executing script '{}' for request: {} {}",
+                    responseConfig.getScriptFile(),
+                    routingContext.request().method(),
+                    routingContext.request().absoluteURI()
+            );
 
             final ExecutionContext executionContext = ScriptUtil.buildContext(routingContext, additionalContext);
             LOGGER.trace("Context for request: {}", () -> executionContext);
@@ -180,10 +185,22 @@ public class ResponseServiceImpl implements ResponseService {
                 }
             }
 
+            LOGGER.debug(String.format(
+                    "Executed script '%s' for request: %s %s in %.2fms",
+                    responseConfig.getScriptFile(),
+                    routingContext.request().method(),
+                    routingContext.request().absoluteURI(),
+                    (System.nanoTime() - executionStart) / 1000000f
+            ));
             return responseBehaviour;
 
         } catch (Exception e) {
-            throw new RuntimeException(String.format("Error executing script: %s", responseConfig.getScriptFile()), e);
+            throw new RuntimeException(String.format(
+                    "Error executing script: '%s' for request: %s %s",
+                    responseConfig.getScriptFile(),
+                    routingContext.request().method(),
+                    routingContext.request().absoluteURI()
+            ), e);
         }
     }
 
@@ -253,7 +270,7 @@ public class ResponseServiceImpl implements ResponseService {
         }
 
         if (delayMs > 0) {
-            LOGGER.info("Delaying mock response for {} {} by {}ms", request.method(), request.path(), delayMs);
+            LOGGER.info("Delaying mock response for {} {} by {}ms", request.method(), request.absoluteURI(), delayMs);
             vertx.setTimer(delayMs, e -> completion.run());
         } else {
             completion.run();

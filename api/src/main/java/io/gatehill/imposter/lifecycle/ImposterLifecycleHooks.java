@@ -22,6 +22,9 @@ public class ImposterLifecycleHooks {
     }
 
     public void forEach(Consumer<ImposterLifecycleListener> listenerConsumer) {
+        if (listeners.isEmpty()) {
+            return;
+        }
         listeners.forEach(listenerConsumer);
     }
 

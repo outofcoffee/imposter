@@ -2,13 +2,13 @@
 
 > **Stores are experimental**
 >
-> This means the API is subject to change or removal in future versions.
+> This means the API is subject to change (or deprecation) in future versions.
 
-Imposter allows you to store data for use later. This can be useful for:
+Imposter allows you to store data for use later. Benefits:
 
-- use data from one request in the response to a later request
-- tests to verify what was sent to a mock
-- test data setup before a mock is used
+- use data from one request in a later request
+- your tests can verify what was sent to a mock by your application
+- set up/seed test data before a mock is used
 
 ## Enabling Stores
 
@@ -65,7 +65,7 @@ if (exampleStore.hasItemWithKey('example')) {
 
 ## The Stores API
 
-You can also retrieve or set store data through the `/system/store` API. This can be useful for tests to verify what was sent to a mock:
+You can also retrieve or save data to a store through the `/system/store` API. This can be useful for tests to verify what was sent to a mock:
 
 ```shell
 $ curl http://localhost:8080/system/store/test/foo
@@ -80,7 +80,7 @@ You can also set data via this API:
 $ curl -XPUT --data 'ada' http://localhost:8080/system/store/test/foo
 ```
 
-Your scripts can now use the data in the store - this can be useful for test data setup.
+Your scripts can now use the data in the store. This can be useful for test data setup/seeding.
 
 You can retrieve all the items in a store:
 
@@ -106,9 +106,9 @@ You can delete an entire store and all of its data:
 $ curl -XDELETE http://localhost:8080/system/store/test
 ```
 
-> This deletes the `test` store and all its data.
+> This deletes the whole `test` store and all its data.
 
-You can set multiple items at once via `POST`:
+You can set multiple items at once via a `POST` to the store resource:
 
 ```shell
 $ curl -XPOST http://localhost:8080/system/store/test --data '{ "foo": "bar", "baz": "qux" }'

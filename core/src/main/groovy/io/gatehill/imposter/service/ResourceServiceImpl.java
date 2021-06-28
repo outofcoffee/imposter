@@ -291,14 +291,14 @@ public class ResourceServiceImpl implements ResourceService {
                         "Enforcing security policy [{} conditions] for: {} {}",
                         security.getConditions().size(),
                         request.method(),
-                        request.path()
+                        request.absoluteURI()
                 );
             }
             return securityService.enforce(security, routingContext);
 
         } else {
             if (LOGGER.isTraceEnabled()) {
-                LOGGER.trace("No security policy found for: {} {}", request.method(), request.path());
+                LOGGER.trace("No security policy found for: {} {}", request.method(), request.absoluteURI());
             }
             return true;
         }

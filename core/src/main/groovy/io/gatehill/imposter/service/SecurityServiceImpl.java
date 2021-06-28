@@ -146,14 +146,14 @@ public class SecurityServiceImpl implements SecurityService {
 
         if (!SecurityEffect.Permit.equals(outcome.effect)) {
             LOGGER.warn("Denying request {} {} due to security policy - {}",
-                    request.method(), request.path(), outcome.policySource);
+                    request.method(), request.absoluteURI(), outcome.policySource);
 
             routingContext.fail(HttpUtil.HTTP_UNAUTHORIZED);
             return false;
 
         } else {
             LOGGER.trace("Permitting request {} {} due to security policy - {}",
-                    request.method(), request.path(), outcome.policySource);
+                    request.method(), request.absoluteURI(), outcome.policySource);
 
             return true;
         }
