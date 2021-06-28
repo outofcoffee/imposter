@@ -25,6 +25,7 @@ import org.apache.logging.log4j.Logger;
 import javax.inject.Inject;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -63,6 +64,7 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
         router.delete("/system/store/:storeName").handler(handleDeleteStore(imposterConfig, allPluginConfigs));
         router.get("/system/store/:storeName/:key").handler(handleLoadSingle(imposterConfig, allPluginConfigs));
         router.put("/system/store/:storeName/:key").handler(handleSaveSingle(imposterConfig, allPluginConfigs));
+        router.post("/system/store/:storeName").handler(handleSaveMultiple(imposterConfig, allPluginConfigs));
         router.delete("/system/store/:storeName/:key").handler(handleDeleteSingle(imposterConfig, allPluginConfigs));
     }
 
@@ -136,10 +138,37 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
             }
 
             final String key = routingContext.pathParam("key");
+
+            // "If the target resource does not have a current representation and the
+            // PUT successfully creates one, then the origin server MUST inform the
+            // user agent by sending a 201 (Created) response."
+            // See: https://datatracker.ietf.org/doc/html/rfc7231#section-4.3.4
+            final int statusCode = store.hasItemWithKey(key) ? HttpUtil.HTTP_OK : HttpUtil.HTTP_CREATED;
+
             final String value = routingContext.getBodyAsString();
             store.save(key, value);
 
             LOGGER.debug("Saved item: {} to store: {}", key, storeName);
+            routingContext.response()
+                    .setStatusCode(statusCode)
+                    .end();
+        });
+    }
+
+    private Handler<RoutingContext> handleSaveMultiple(ImposterConfig imposterConfig, List<PluginConfig> allPluginConfigs) {
+        return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx, routingContext -> {
+            final String storeName = routingContext.pathParam("storeName");
+            final Store store = openStore(routingContext, storeName, true);
+            if (isNull(store)) {
+                return;
+            }
+
+            final Map<String, Object> items = routingContext.getBodyAsJson().stream()
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+            items.forEach(store::save);
+            LOGGER.debug("Saved {} items to store: {}", items.size(), storeName);
+
             routingContext.response()
                     .setStatusCode(HttpUtil.HTTP_OK)
                     .end();

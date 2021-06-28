@@ -43,5 +43,10 @@ public class InMemoryStoreLocatorImpl extends AbstractStoreLocator {
         public Map<String, Object> loadAll() {
             return store;
         }
+
+        @Override
+        public boolean hasItemWithKey(String key) {
+            return store.containsKey(key);
+        }
     }
 }

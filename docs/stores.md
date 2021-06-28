@@ -55,6 +55,14 @@ logger.info('foo=' + storeData.foo);
 logger.info('bar=' + storeData.bar);
 ```
 
+You can check for the presence of an item by key:
+
+```js
+if (exampleStore.hasItemWithKey('example')) {
+    // ... there is an item with the key 'example'
+}
+```
+
 ## The Stores API
 
 You can also retrieve or set store data through the `/system/store` API. This can be useful for tests to verify what was sent to a mock:
@@ -99,3 +107,9 @@ $ curl -XDELETE http://localhost:8080/system/store/test
 ```
 
 > This deletes the `test` store and all its data.
+
+You can set multiple items at once via `POST`:
+
+```shell
+$ curl -XPOST http://localhost:8080/system/store/test --data '{ "foo": "bar", "baz": "qux" }'
+```

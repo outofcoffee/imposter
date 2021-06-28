@@ -12,9 +12,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.jayway.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 
@@ -37,6 +40,7 @@ public class StoreTest extends BaseVerticleTest {
 
         super.setUp(testContext);
         RestAssured.baseURI = "http://" + HOST + ":" + getListenPort();
+        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
     }
 
     @Override
@@ -85,14 +89,17 @@ public class StoreTest extends BaseVerticleTest {
     public void testUnacceptableMimeType() {
         // populate the store
         given().when()
-                .queryParam("foo", "baz")
-                .get("/store")
+                .pathParam("storeId", "umt")
+                .pathParam("key", "foo")
+                .contentType(HttpUtil.CONTENT_TYPE_PLAIN_TEXT)
+                .body("baz")
+                .put("/system/store/{storeId}/{key}")
                 .then()
                 .statusCode(equalTo(HttpUtil.HTTP_CREATED));
 
         // incorrect mime type
         given().when()
-                .pathParam("storeId", "test")
+                .pathParam("storeId", "umt")
                 .accept(ContentType.XML)
                 .get("/system/store/{storeId}")
                 .then()
@@ -100,7 +107,7 @@ public class StoreTest extends BaseVerticleTest {
 
         // correct mime type
         given().when()
-                .pathParam("storeId", "test")
+                .pathParam("storeId", "umt")
                 .accept(ContentType.JSON)
                 .get("/system/store/{storeId}")
                 .then()
@@ -111,18 +118,28 @@ public class StoreTest extends BaseVerticleTest {
      * Save and load from the store across multiple requests.
      */
     @Test
-    public void testSetAndGetFromStore() {
+    public void testSetAndGetSingleFromStore() {
         // initially empty
         given().when()
-                .pathParam("storeId", "test")
+                .pathParam("storeId", "sgs")
                 .pathParam("key", "bar")
                 .get("/system/store/{storeId}/{key}")
                 .then()
                 .statusCode(equalTo(HttpUtil.HTTP_NOT_FOUND));
 
-        // save via system
+        // create via system
         given().when()
-                .pathParam("storeId", "test")
+                .pathParam("storeId", "sgs")
+                .pathParam("key", "bar")
+                .contentType(HttpUtil.CONTENT_TYPE_PLAIN_TEXT)
+                .body("corge")
+                .put("/system/store/{storeId}/{key}")
+                .then()
+                .statusCode(equalTo(HttpUtil.HTTP_CREATED));
+
+        // update via system
+        given().when()
+                .pathParam("storeId", "sgs")
                 .pathParam("key", "bar")
                 .contentType(HttpUtil.CONTENT_TYPE_PLAIN_TEXT)
                 .body("quux")
@@ -131,12 +148,50 @@ public class StoreTest extends BaseVerticleTest {
                 .statusCode(equalTo(HttpUtil.HTTP_OK));
 
         given().when()
-                .pathParam("storeId", "test")
+                .pathParam("storeId", "sgs")
                 .pathParam("key", "bar")
                 .get("/system/store/{storeId}/{key}")
                 .then()
                 .statusCode(equalTo(HttpUtil.HTTP_OK))
                 .body(equalTo("quux"));
+    }
+
+    /**
+     * Save and load from the store across multiple requests.
+     */
+    @Test
+    public void testSetAndGetMultipleFromStore() {
+        // initially empty
+        given().when()
+                .pathParam("storeId", "sgm")
+                .get("/system/store/{storeId}")
+                .then()
+                .statusCode(equalTo(HttpUtil.HTTP_NOT_FOUND));
+
+        final Map<String, Object> body = new HashMap<String, Object>() {{
+            put("baz", "quuz");
+            put("corge", "grault");
+        }};
+
+        // save via system
+        given().when()
+                .pathParam("storeId", "sgm")
+                .contentType(ContentType.JSON)
+                .body(body)
+                .post("/system/store/{storeId}")
+                .then()
+                .statusCode(equalTo(HttpUtil.HTTP_OK));
+
+        // load all
+        given().when()
+                .pathParam("storeId", "sgm")
+                .get("/system/store/{storeId}")
+                .then()
+                .statusCode(equalTo(HttpUtil.HTTP_OK))
+                .body("$", allOf(
+                        hasEntry("baz", "quuz"),
+                        hasEntry("corge", "grault")
+                ));
     }
 
     /**
@@ -146,16 +201,16 @@ public class StoreTest extends BaseVerticleTest {
     public void testDeleteFromStore() {
         // save via system
         given().when()
-                .pathParam("storeId", "test")
+                .pathParam("storeId", "ditem")
                 .pathParam("key", "corge")
                 .contentType(HttpUtil.CONTENT_TYPE_PLAIN_TEXT)
                 .body("quux")
                 .put("/system/store/{storeId}/{key}")
                 .then()
-                .statusCode(equalTo(HttpUtil.HTTP_OK));
+                .statusCode(equalTo(HttpUtil.HTTP_CREATED));
 
         given().when()
-                .pathParam("storeId", "test")
+                .pathParam("storeId", "ditem")
                 .pathParam("key", "corge")
                 .delete("/system/store/{storeId}/{key}")
                 .then()
@@ -163,7 +218,7 @@ public class StoreTest extends BaseVerticleTest {
 
         // should not exist
         given().when()
-                .pathParam("storeId", "test")
+                .pathParam("storeId", "ditem")
                 .pathParam("key", "corge")
                 .get("/system/store/{storeId}/{key}")
                 .then()
@@ -177,17 +232,17 @@ public class StoreTest extends BaseVerticleTest {
     public void testSetAndGetAllFromStore() {
         // save via system
         given().when()
-                .pathParam("storeId", "test")
+                .pathParam("storeId", "sga")
                 .pathParam("key", "baz")
                 .contentType(HttpUtil.CONTENT_TYPE_PLAIN_TEXT)
                 .body("quuz")
                 .put("/system/store/{storeId}/{key}")
                 .then()
-                .statusCode(equalTo(HttpUtil.HTTP_OK));
+                .statusCode(equalTo(HttpUtil.HTTP_CREATED));
 
         // load all
         given().when()
-                .pathParam("storeId", "test")
+                .pathParam("storeId", "sga")
                 .get("/system/store/{storeId}")
                 .then()
                 .statusCode(equalTo(HttpUtil.HTTP_OK))
@@ -201,24 +256,24 @@ public class StoreTest extends BaseVerticleTest {
     public void testDeleteStore() {
         // save via system
         given().when()
-                .pathParam("storeId", "example")
+                .pathParam("storeId", "dstore")
                 .pathParam("key", "baz")
                 .contentType(HttpUtil.CONTENT_TYPE_PLAIN_TEXT)
                 .body("quuz")
                 .put("/system/store/{storeId}/{key}")
                 .then()
-                .statusCode(equalTo(HttpUtil.HTTP_OK));
+                .statusCode(equalTo(HttpUtil.HTTP_CREATED));
 
         // delete
         given().when()
-                .pathParam("storeId", "example")
+                .pathParam("storeId", "dstore")
                 .delete("/system/store/{storeId}")
                 .then()
                 .statusCode(equalTo(HttpUtil.HTTP_NO_CONTENT));
 
         // should not exist
         given().when()
-                .pathParam("storeId", "example")
+                .pathParam("storeId", "dstore")
                 .get("/system/store/{storeId}")
                 .then()
                 .statusCode(equalTo(HttpUtil.HTTP_NOT_FOUND));

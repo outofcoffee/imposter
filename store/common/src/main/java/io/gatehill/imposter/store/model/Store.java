@@ -15,4 +15,6 @@ public interface Store {
     void delete(String key);
 
     Map<String, Object> loadAll();
+
+    boolean hasItemWithKey(String key);
 }
