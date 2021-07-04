@@ -4,6 +4,8 @@ jobs:
   build:
     docker:
       - image: circleci/openjdk:8
+    environment:
+      TESTCONTAINERS_RYUK_DISABLED: "true"
     steps:
       - checkout
 
