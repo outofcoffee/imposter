@@ -10,7 +10,7 @@ import io.gatehill.imposter.script.ReadWriteResponseBehaviour;
 import io.gatehill.imposter.service.ResourceService;
 import io.gatehill.imposter.store.model.Store;
 import io.gatehill.imposter.store.model.StoreHolder;
-import io.gatehill.imposter.store.model.StoreLocator;
+import io.gatehill.imposter.store.model.StoreFactory;
 import io.gatehill.imposter.util.HttpUtil;
 import io.gatehill.imposter.util.MapUtil;
 import io.vertx.core.Handler;
@@ -39,7 +39,7 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
 
     private final Vertx vertx;
     private final ResourceService resourceService;
-    private final StoreLocator storeLocator;
+    private final StoreFactory storeFactory;
     private final StoreHolder storeHolder;
 
     @Inject
@@ -47,14 +47,14 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
             Vertx vertx,
             ImposterLifecycleHooks lifecycleHooks,
             ResourceService resourceService,
-            StoreLocator storeLocator
+            StoreFactory storeFactory
     ) {
         this.vertx = vertx;
         this.resourceService = resourceService;
-        this.storeLocator = storeLocator;
+        this.storeFactory = storeFactory;
 
         LOGGER.warn("Experimental store support enabled");
-        storeHolder = new StoreHolder(storeLocator);
+        storeHolder = new StoreHolder(storeFactory);
         lifecycleHooks.registerListener(this);
     }
 
@@ -96,7 +96,7 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx, routingContext -> {
             final String storeName = routingContext.pathParam("storeName");
 
-            storeLocator.deleteStoreByName(storeName);
+            storeFactory.deleteStoreByName(storeName);
             LOGGER.debug("Deleted store: {}", storeName);
 
             routingContext.response()
@@ -198,7 +198,7 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
     }
 
     private Store openStore(RoutingContext routingContext, String storeName, boolean createIfNotExist) {
-        if (!storeLocator.hasStoreWithName(storeName)) {
+        if (!storeFactory.hasStoreWithName(storeName)) {
             LOGGER.debug("No store found named: {}", storeName);
 
             if (!createIfNotExist) {
@@ -211,7 +211,7 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
             // ...otherwise fall through and implicitly create below
         }
 
-        return storeLocator.getStoreByName(storeName);
+        return storeFactory.getStoreByName(storeName);
     }
 
     private void serialiseBodyAsJson(RoutingContext routingContext, Object body) {

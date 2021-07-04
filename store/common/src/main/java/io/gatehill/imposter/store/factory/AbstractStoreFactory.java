@@ -1,7 +1,7 @@
-package io.gatehill.imposter.store.impl;
+package io.gatehill.imposter.store.factory;
 
 import io.gatehill.imposter.store.model.Store;
-import io.gatehill.imposter.store.model.StoreLocator;
+import io.gatehill.imposter.store.model.StoreFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -13,8 +13,8 @@ import static java.util.Objects.isNull;
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public abstract class AbstractStoreLocator implements StoreLocator {
-    private static final Logger LOGGER = LogManager.getLogger(AbstractStoreLocator.class);
+public abstract class AbstractStoreFactory implements StoreFactory {
+    private static final Logger LOGGER = LogManager.getLogger(AbstractStoreFactory.class);
 
     private final Map<String, Store> stores = newHashMap();
 
@@ -28,7 +28,7 @@ public abstract class AbstractStoreLocator implements StoreLocator {
         Store store;
         if (isNull(store = stores.get(storeName))) {
             LOGGER.debug("Initialising new store: {}", storeName);
-            store = buildNewStore();
+            store = buildNewStore(storeName);
             stores.put(storeName, store);
         }
         LOGGER.trace("Got store: {} (type: {})", storeName, store.getTypeDescription());
@@ -41,5 +41,5 @@ public abstract class AbstractStoreLocator implements StoreLocator {
         LOGGER.trace("Deleted store: {}", storeName);
     }
 
-    protected abstract Store buildNewStore();
+    public abstract Store buildNewStore(String storeName);
 }

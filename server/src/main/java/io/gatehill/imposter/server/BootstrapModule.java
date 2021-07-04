@@ -1,6 +1,7 @@
 package io.gatehill.imposter.server;
 
 import com.google.inject.AbstractModule;
+import io.gatehill.imposter.ImposterConfig;
 import io.gatehill.imposter.lifecycle.ImposterLifecycleHooks;
 import io.vertx.core.Vertx;
 
@@ -11,10 +12,12 @@ import javax.inject.Singleton;
  */
 public class BootstrapModule extends AbstractModule {
     private final Vertx vertx;
+    private final ImposterConfig imposterConfig;
     private final String serverFactory;
 
-    public BootstrapModule(Vertx vertx, String serverFactory) {
+    public BootstrapModule(Vertx vertx, ImposterConfig imposterConfig, String serverFactory) {
         this.vertx = vertx;
+        this.imposterConfig = imposterConfig;
         this.serverFactory = serverFactory;
     }
 
@@ -22,6 +25,7 @@ public class BootstrapModule extends AbstractModule {
     @SuppressWarnings("unchecked")
     protected void configure() {
         bind(Vertx.class).toInstance(vertx);
+        bind(ImposterConfig.class).toInstance(imposterConfig);
 
         try {
             final Class<? extends ServerFactory> serverFactoryClass =

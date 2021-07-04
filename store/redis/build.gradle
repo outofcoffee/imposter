@@ -1,0 +1,45 @@
+apply plugin: 'java'
+apply plugin: 'maven-publish'
+
+compileJava {
+    sourceCompatibility = 1.8
+}
+
+dependencies {
+    compile project(':store:store-common')
+    compile 'org.redisson:redisson:3.16.0'
+
+    // test
+    testCompile "junit:junit:$version_junit"
+    testCompile "org.testcontainers:testcontainers:1.15.3"
+    testCompile "org.apache.logging.log4j:log4j-core:$version_log4j"
+    testCompile "org.apache.logging.log4j:log4j-slf4j-impl:$version_log4j"
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    archiveClassifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives sourcesJar
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+
+            repositories {
+                maven {
+                    url = version.endsWith('SNAPSHOT') ? mavenSnapshotRepository : mavenReleaseRepository
+                    credentials(AwsCredentials) {
+                        accessKey awsAccessKey
+                        secretKey awsSecretKey
+                    }
+                }
+            }
+        }
+    }
+}

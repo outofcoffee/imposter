@@ -29,6 +29,9 @@ project(':scripting:nashorn').name = 'scripting-nashorn'
 include ':store:common'
 project(':store:common').name = 'store-common'
 
+include ':store:redis'
+project(':store:redis').name = 'store-redis'
+
 // plugins
 include ':plugin:detector'
 project(':plugin:detector').name = 'plugin-detector'

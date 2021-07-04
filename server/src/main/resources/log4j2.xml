@@ -17,5 +17,8 @@
 
         <!-- due to Netty Docker logging bug -->
         <Logger name="io.netty.util.internal.MacAddressUtil" level="off" />
+
+        <!-- quieten redisson -->
+        <Logger name="org.redisson" level="warn" />
     </Loggers>
 </Configuration>

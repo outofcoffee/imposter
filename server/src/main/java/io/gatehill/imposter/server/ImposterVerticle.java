@@ -82,7 +82,7 @@ public class ImposterVerticle extends AbstractVerticle {
 
     private void startEngine() {
         final List<Module> bootstrapModules = newArrayList(
-                new BootstrapModule(vertx, imposterConfig.getServerFactory()),
+                new BootstrapModule(vertx, imposterConfig, imposterConfig.getServerFactory()),
                 new GroovyScriptingModule(),
                 new NashornScriptingModule()
         );

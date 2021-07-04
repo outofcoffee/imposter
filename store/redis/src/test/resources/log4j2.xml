@@ -13,5 +13,7 @@
         <Logger name="httpclient.wire" level="warn"/>
         <Logger name="org.apache" level="warn"/>
         <Logger name="io.gatehill.imposter" level="trace"/>
+        <Logger name="org.testcontainers" level="warn"/>
+        <Logger name="org.redisson" level="warn"/>
     </Loggers>
 </Configuration>
