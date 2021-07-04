@@ -58,7 +58,7 @@ public class StoreTest extends BaseVerticleTest {
         // save via script
         given().when()
                 .queryParam("foo", "qux")
-                .get("/store")
+                .put("/store")
                 .then()
                 .statusCode(equalTo(HttpUtil.HTTP_CREATED));
 

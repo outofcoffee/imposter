@@ -14,7 +14,7 @@ Build and run with local JVM:
 
 More complete example specifying plugin and config directory:
 
-     ./scripts/dev-current.sh -m docker -p rest -c $(pwd)/docs/examples/rest/multiple
+     ./scripts/dev-current.sh -m docker -p rest -c $PWD/docs/examples/rest/multiple
 
 > See the [README](./hack/README.md) for more details about using this script.
 

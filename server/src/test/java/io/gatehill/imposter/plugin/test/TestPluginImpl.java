@@ -52,7 +52,7 @@ public class TestPluginImpl extends ConfiguredPlugin<TestPluginConfig> implement
     }
 
     private void configureRoute(TestPluginConfig pluginConfig, ResponseConfigHolder resourceConfig, Router router, String path) {
-        router.get(path).handler(resourceService.handleRoute(imposterConfig, pluginConfig, vertx, routingContext -> {
+        router.route(path).handler(resourceService.handleRoute(imposterConfig, pluginConfig, vertx, routingContext -> {
             final Consumer<ResponseBehaviour> defaultBehaviourHandler = responseBehaviour -> {
                 responseService.sendResponse(pluginConfig, resourceConfig, routingContext, responseBehaviour);
             };

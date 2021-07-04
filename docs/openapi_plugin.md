@@ -116,7 +116,7 @@ Let's assume your configuration is in the directory: `docs/examples/openapi/simp
 Docker example:
 
     docker run --rm -ti -p 8080:8080 \
-        -v $(pwd)/docs/examples/openapi/simple:/opt/imposter/config \
+        -v $PWD/docs/examples/openapi/simple:/opt/imposter/config \
         outofcoffee/imposter-openapi
 
 Standalone Java example:

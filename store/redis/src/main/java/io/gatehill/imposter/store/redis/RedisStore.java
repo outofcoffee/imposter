@@ -37,10 +37,10 @@ class RedisStore implements Store {
 
         if (expiration < 0) {
             expirationSecs = Integer.MAX_VALUE;
-            LOGGER.debug("Opened store: {} with no item expiry", storeName);
+            LOGGER.debug("Opened Redis store: {} with no item expiry", storeName);
         } else {
             expirationSecs = expiration;
-            LOGGER.debug("Opened store: {} with item expiry: {} seconds", storeName, expirationSecs);
+            LOGGER.debug("Opened Redis store: {} with item expiry: {} seconds", storeName, expirationSecs);
         }
     }
 

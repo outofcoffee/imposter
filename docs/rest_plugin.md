@@ -47,7 +47,7 @@ Let's assume your configuration is in the directory: `docs/examples/rest/simple`
 Docker example:
 
     docker run --rm -ti -p 8080:8080 \
-        -v $(pwd)/docs/examples/rest/simple:/opt/imposter/config \
+        -v $PWD/docs/examples/rest/simple:/opt/imposter/config \
         outofcoffee/imposter-rest
 
 Standalone Java example:
@@ -118,7 +118,7 @@ Let's return an array of data at each endpoint:
 Start the server:
 
     docker run --rm -ti -p 8080:8080 \
-        -v $(pwd)/docs/examples/rest/multiple:/opt/imposter/config \
+        -v $PWD/docs/examples/rest/multiple:/opt/imposter/config \
         outofcoffee/imposter-rest
 
 Send an HTTP request to the `/cats/1` path defined in the configuration file to see the first item in the array:

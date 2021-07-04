@@ -16,8 +16,22 @@ singleServerConfig:
   retryInterval: 1500
 ```
 
-> See [example Redisson configuration](./examples/redisson.yaml).
+> See [example Redisson configuration](example/redisson.yaml).
 > Refer to Redisson documentation for full details.
+
+## Example
+
+Run it:
+
+    export IMPOSTER_EXPERIMENTAL=stores
+    export IMPOSTER_STORE_MODULE=io.gatehill.imposter.store.redis.RedisStoreModule
+    docker run --rm -ti -p 8080:8080 -v $PWD/store/redis/example:/opt/imposter/config outofcoffee/imposter
+
+Test it:
+
+    $ curl -XPUT http://localhost:8080/store?foo=bar
+    $ curl http://localhost:8080/load
+    bar
 
 ## Expiration
 
@@ -27,4 +41,4 @@ Set an expiration (default 1,800 seconds) for store items using the environment 
 
 > This sets item expiration to 120 seconds.
 
-A negative value means no expiry.
+The unit is seconds. A negative value means no expiry.

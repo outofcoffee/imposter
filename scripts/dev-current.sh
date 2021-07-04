@@ -44,7 +44,7 @@ if [[ -z ${LAUNCH_MODE} ]]; then
   usage
 else
   PLUGIN_NAME="${PLUGIN_NAME:-${DEFAULT_PLUGIN_NAME}}"
-  CONFIG_DIR="${CONFIG_DIR:-$(pwd)/plugin/${PLUGIN_NAME}/src/test/resources/config}"
+  CONFIG_DIR="${CONFIG_DIR:-$PWD/plugin/${PLUGIN_NAME}/src/test/resources/config}"
   CONFIG_DIR="$( cd ${CONFIG_DIR} && pwd )"
 fi
 

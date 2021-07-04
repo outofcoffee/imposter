@@ -53,7 +53,7 @@ Let's assume your [configuration](docs/configuration.md) is in a folder named `c
 Docker example:
 
     docker run -ti -p 8080:8080 \
-        -v $(pwd)/config:/opt/imposter/config \
+        -v $PWD/config:/opt/imposter/config \
         outofcoffee/imposter-rest
 
 Standalone Java example:

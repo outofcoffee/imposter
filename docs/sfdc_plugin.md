@@ -36,7 +36,7 @@ Let's assume your configuration is in a folder named `config`.
 Docker example:
 
     docker run -ti -p 8080:8080 \
-        -v $(pwd)/config:/opt/imposter/config \
+        -v $PWD/config:/opt/imposter/config \
         outofcoffee/imposter-sfdc \
         --serverUrl http://localhost:8080
 
