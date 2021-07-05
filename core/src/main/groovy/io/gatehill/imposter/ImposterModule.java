@@ -28,6 +28,8 @@ class ImposterModule extends AbstractModule {
         bind(PluginManager.class).toInstance(pluginManager);
         bind(ResourceService.class).to(ResourceServiceImpl.class).in(Singleton.class);
         bind(ResponseService.class).to(ResponseServiceImpl.class).in(Singleton.class);
-        bind(SecurityService.class).to(SecurityServiceImpl.class).in(Singleton.class);
+
+        // needs to be eager to register lifecycle listener
+        bind(SecurityService.class).to(SecurityServiceImpl.class).asEagerSingleton();
     }
 }

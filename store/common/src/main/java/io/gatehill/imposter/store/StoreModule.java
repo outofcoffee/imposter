@@ -19,7 +19,9 @@ public class StoreModule extends AbstractModule {
 
     @Override
     protected void configure() {
+        // needs to be eager to register lifecycle listener
         bind(StoreService.class).to(StoreServiceImpl.class).asEagerSingleton();
+
         install(discoverStoreModule());
     }
 

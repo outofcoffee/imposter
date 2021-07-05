@@ -7,6 +7,9 @@ compileJava {
 
 dependencies {
     compile project(':imposter-core')
+
+    // test
+    testCompile "junit:junit:$version_junit"
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

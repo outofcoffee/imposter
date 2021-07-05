@@ -1,5 +1,11 @@
 singleServerConfig:
-  address: "redis://127.0.0.1:6379"
+  # specify the address of the Redis instance
+  #address: "redis://127.0.0.1:6379"
+
+  # assumes Imposter running within Docker container and Redis is on the Docker host
+  address: "redis://host.docker.internal:6379"
+
+  # other Redisson configuration options
   idleConnectionTimeout: 10000
   connectTimeout: 10000
   timeout: 3000

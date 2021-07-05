@@ -12,10 +12,14 @@ import java.util.concurrent.TimeUnit;
 import static java.util.Optional.ofNullable;
 
 /**
+ * A Redis store implementation. Supports configurable item expiry in seconds,
+ * by setting the {@link #ENV_VAR_EXPIRY} environment variable.
+ *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 class RedisStore implements Store {
     private static final String STORE_TYPE = "redis";
+    private static final String ENV_VAR_EXPIRY = "IMPOSTER_STORE_REDIS_EXPIRY";
     private static final Logger LOGGER = LogManager.getLogger(RedisStore.class);
 
     /**
@@ -29,9 +33,10 @@ class RedisStore implements Store {
 
     public RedisStore(String storeName, RedissonClient redisson) {
         this.storeName = storeName;
+
         store = redisson.getMapCache(storeName);
 
-        final int expiration = ofNullable(System.getenv("IMPOSTER_STORE_REDIS_EXPIRY"))
+        final int expiration = ofNullable(System.getenv(ENV_VAR_EXPIRY))
                 .map(Integer::parseInt)
                 .orElse(DEFAULT_EXPIRY_SECS);
 

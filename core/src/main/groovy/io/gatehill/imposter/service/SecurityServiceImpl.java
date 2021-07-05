@@ -1,5 +1,6 @@
 package io.gatehill.imposter.service;
 
+import io.gatehill.imposter.lifecycle.ImposterLifecycleHooks;
 import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.plugin.config.security.ConditionalNameValuePair;
 import io.gatehill.imposter.plugin.config.security.MatchOperator;
@@ -7,6 +8,7 @@ import io.gatehill.imposter.plugin.config.security.SecurityCondition;
 import io.gatehill.imposter.plugin.config.security.SecurityConfig;
 import io.gatehill.imposter.plugin.config.security.SecurityConfigHolder;
 import io.gatehill.imposter.plugin.config.security.SecurityEffect;
+import io.gatehill.imposter.service.security.SecurityLifecycleListener;
 import io.gatehill.imposter.util.HttpUtil;
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpServerRequest;
@@ -14,6 +16,7 @@ import io.vertx.ext.web.RoutingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +29,11 @@ import static java.util.Objects.nonNull;
  */
 public class SecurityServiceImpl implements SecurityService {
     private static final Logger LOGGER = LogManager.getLogger(SecurityServiceImpl.class);
+
+    @Inject
+    public SecurityServiceImpl(ImposterLifecycleHooks lifecycleHooks, SecurityLifecycleListener securityListener) {
+        lifecycleHooks.registerListener(securityListener);
+    }
 
     /**
      * {@inheritDoc}

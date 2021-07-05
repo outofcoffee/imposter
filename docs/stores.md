@@ -113,3 +113,19 @@ You can set multiple items at once via a `POST` to the store resource:
 ```shell
 $ curl -XPOST http://localhost:8080/system/store/test --data '{ "foo": "bar", "baz": "qux" }'
 ```
+
+## Environment variables
+
+The following environment variables are supported:
+
+| Variable name             | Purpose                                                              | Example(s)                                                                |
+|---------------------------|----------------------------------------------------------------------|---------------------------------------------------------------------------|
+| IMPOSTER_STORE_MODULE     | Sets the store implementation (see _Store implementations_ section). | `io.gatehill.imposter.store.redis.RedisStoreModule`                       |
+| IMPOSTER_STORE_KEY_PREFIX | Sets an optional prefix for all keys in the store, like a namespace. | A prefix of `foo` would result in the key `bar` being stored as `foo.bar` |
+
+## Store implementations
+
+Different store implementations exist:
+
+* In memory store (default)
+* [Redis store](../store/redis)

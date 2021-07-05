@@ -2,6 +2,7 @@ package io.gatehill.imposter.service;
 
 import io.gatehill.imposter.ImposterConfig;
 import io.gatehill.imposter.config.ResolvedResourceConfig;
+import io.gatehill.imposter.lifecycle.ImposterLifecycleHooks;
 import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.plugin.config.ResourcesHolder;
 import io.gatehill.imposter.plugin.config.resource.PathParamsResourceConfig;
@@ -10,8 +11,6 @@ import io.gatehill.imposter.plugin.config.resource.ResourceConfig;
 import io.gatehill.imposter.plugin.config.resource.ResourceMethod;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
 import io.gatehill.imposter.plugin.config.resource.RestResourceConfig;
-import io.gatehill.imposter.plugin.config.security.SecurityConfig;
-import io.gatehill.imposter.plugin.config.security.SecurityConfigHolder;
 import io.gatehill.imposter.util.HttpUtil;
 import io.gatehill.imposter.util.ResourceUtil;
 import io.vertx.core.Handler;
@@ -47,6 +46,9 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Inject
     private SecurityService securityService;
+
+    @Inject
+    private ImposterLifecycleHooks lifecycleHooks;
 
     /**
      * {@inheritDoc}
@@ -254,23 +256,6 @@ public class ResourceServiceImpl implements ResourceService {
     ) {
         final ResponseConfigHolder rootResourceConfig = (ResponseConfigHolder) pluginConfig;
 
-        if (handleResource(rootResourceConfig, routingContext, resolvedResourceConfigs)) {
-            // request is permitted to continue
-            routingContextConsumer.accept(routingContext);
-        }
-    }
-
-    /**
-     * @param rootResourceConfig
-     * @param resolvedResourceConfigs
-     * @param routingContext
-     * @return {@code true} if the request is permitted to continue, otherwise {@code false}
-     */
-    private boolean handleResource(
-            ResponseConfigHolder rootResourceConfig,
-            RoutingContext routingContext,
-            List<ResolvedResourceConfig> resolvedResourceConfigs
-    ) {
         final HttpServerRequest request = routingContext.request();
         final ResponseConfigHolder resourceConfig = matchResourceConfig(
                 resolvedResourceConfigs,
@@ -284,40 +269,10 @@ public class ResourceServiceImpl implements ResourceService {
         // allows plugins to customise behaviour
         routingContext.put(ResourceUtil.RESPONSE_CONFIG_HOLDER_KEY, resourceConfig);
 
-        final SecurityConfig security = getSecurityConfig(rootResourceConfig, resourceConfig);
-        if (nonNull(security)) {
-            if (LOGGER.isTraceEnabled()) {
-                LOGGER.trace(
-                        "Enforcing security policy [{} conditions] for: {} {}",
-                        security.getConditions().size(),
-                        request.method(),
-                        request.absoluteURI()
-                );
-            }
-            return securityService.enforce(security, routingContext);
-
-        } else {
-            if (LOGGER.isTraceEnabled()) {
-                LOGGER.trace("No security policy found for: {} {}", request.method(), request.absoluteURI());
-            }
-            return true;
+        if (lifecycleHooks.allMatch(listener -> listener.isRequestPermitted(rootResourceConfig, resourceConfig, resolvedResourceConfigs, routingContext))) {
+            // request is permitted to continue
+            routingContextConsumer.accept(routingContext);
         }
-    }
-
-    private SecurityConfig getSecurityConfig(ResponseConfigHolder rootResourceConfig, ResponseConfigHolder resourceConfig) {
-        SecurityConfig security = getSecurityConfig(resourceConfig);
-        if (isNull(security)) {
-            // IMPORTANT: if no resource security, fall back to root security
-            security = getSecurityConfig(rootResourceConfig);
-        }
-        return security;
-    }
-
-    private SecurityConfig getSecurityConfig(ResponseConfigHolder resourceConfig) {
-        if (!(resourceConfig instanceof SecurityConfigHolder)) {
-            return null;
-        }
-        return ((SecurityConfigHolder) resourceConfig).getSecurity();
     }
 
     private void handleFailure(RoutingContext routingContext, Throwable e) {

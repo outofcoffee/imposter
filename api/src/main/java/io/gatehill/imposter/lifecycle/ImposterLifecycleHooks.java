@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import static com.google.common.collect.Lists.newArrayList;
 
@@ -26,6 +27,13 @@ public class ImposterLifecycleHooks {
             return;
         }
         listeners.forEach(listenerConsumer);
+    }
+
+    public boolean allMatch(Predicate<ImposterLifecycleListener> listenerConsumer) {
+        if (listeners.isEmpty()) {
+            return true;
+        }
+        return listeners.stream().allMatch(listenerConsumer);
     }
 
     public boolean isEmpty() {

@@ -6,11 +6,10 @@ import io.gatehill.imposter.lifecycle.ImposterLifecycleHooks;
 import io.gatehill.imposter.lifecycle.ImposterLifecycleListener;
 import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.script.ExecutionContext;
-import io.gatehill.imposter.script.ReadWriteResponseBehaviour;
 import io.gatehill.imposter.service.ResourceService;
 import io.gatehill.imposter.store.model.Store;
-import io.gatehill.imposter.store.model.StoreHolder;
 import io.gatehill.imposter.store.model.StoreFactory;
+import io.gatehill.imposter.store.model.StoreHolder;
 import io.gatehill.imposter.util.HttpUtil;
 import io.gatehill.imposter.util.MapUtil;
 import io.vertx.core.Handler;
@@ -228,10 +227,5 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
     @Override
     public void beforeBuildingRuntimeContext(Map<String, Object> additionalBindings, ExecutionContext executionContext) {
         additionalBindings.put("stores", storeHolder);
-    }
-
-    @Override
-    public void afterSuccessfulScriptExecution(Map<String, Object> additionalBindings, ReadWriteResponseBehaviour responseBehaviour) {
-        // no op
     }
 }

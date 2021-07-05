@@ -4,6 +4,7 @@ import com.google.common.base.Charsets;
 import io.gatehill.imposter.ImposterConfig;
 import io.gatehill.imposter.store.model.Store;
 import io.gatehill.imposter.store.redis.RedisStoreFactoryImpl;
+import io.gatehill.imposter.util.TestEnvironmentUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,11 +19,9 @@ import java.nio.file.Path;
 import java.util.Map;
 
 import static java.util.Objects.nonNull;
-import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeThat;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
@@ -35,7 +34,10 @@ public class RedisStoreFactoryImplTest {
     @Before
     public void setUp() throws Exception {
         // Testcontainers hangs in CircleCI
-        assumeThat(System.getenv("CIRCLECI"), not("true"));
+        TestEnvironmentUtil.assumeNotInCircleCi();
+
+        // These tests need Docker
+        TestEnvironmentUtil.assumeDockerAccessible();
 
         startRedis();
 
