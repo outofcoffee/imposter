@@ -3,9 +3,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [1.14.0] - 2021-07-05
 ### Added
-- ...
+- (core) Adds Redis store implementation.
+- (core) Adds support for store key prefixes.
+
+### Changed
+- (core) Improves script execution time logging and URI logging.
 
 ## [1.13.0] - 2021-06-28
 ### Added
