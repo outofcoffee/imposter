@@ -6,7 +6,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.Map;
 
-import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Maps.newConcurrentMap;
 
 /**
  * An in-memory store implementation. Does not have any support for item expiration,
@@ -19,7 +19,7 @@ public class InMemoryStore implements Store {
     private static final Logger LOGGER = LogManager.getLogger(InMemoryStore.class);
 
     private final String storeName;
-    private final Map<String, Object> store = newHashMap();
+    private final Map<String, Object> store = newConcurrentMap();
 
     public InMemoryStore(String storeName) {
         this.storeName = storeName;
