@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- ...
+
 ## [1.14.1] - 2021-07-06
 ### Changed
 - (core) Switches in memory store implementation to concurrent map.
