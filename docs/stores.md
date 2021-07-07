@@ -1,8 +1,4 @@
-# Stores (Experimental)
-
-> **Stores are experimental**
->
-> This means the API is subject to change (or deprecation) in future versions.
+# Stores
 
 Imposter allows you to store data for use later. Benefits:
 
@@ -10,19 +6,9 @@ Imposter allows you to store data for use later. Benefits:
 - your tests can verify what was sent to a mock by your application
 - set up/seed test data before a mock is used
 
-## Enabling Stores
+## Summary
 
-To enable stores, set the following environment variable:
-
-    IMPOSTER_EXPERIMENTAL="stores"
-
-The following log entry will be printed on startup:
-
-```
-WARN  i.g.i.s.s.StoreServiceImpl - Experimental store support enabled
-```
-
-You will now have access to a new object in [scripts](./scripting.md), named `stores`, and the `/system/store` API will be available. 
+You can access Stores via an object in [scripts](./scripting.md), named `stores`, and the `/system/store` REST API. 
 
 ## Using stores in scripts
 

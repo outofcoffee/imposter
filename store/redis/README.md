@@ -31,7 +31,6 @@ Start Redis:
 Start Imposter:
 
     docker run --rm -ti -p 8080:8080 \
-        -e IMPOSTER_EXPERIMENTAL=stores \
         -e IMPOSTER_STORE_MODULE=io.gatehill.imposter.store.redis.RedisStoreModule \
         -v $PWD/store/redis/example:/opt/imposter/config \
         outofcoffee/imposter

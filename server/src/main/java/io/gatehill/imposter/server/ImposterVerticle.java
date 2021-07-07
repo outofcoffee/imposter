@@ -10,8 +10,8 @@ import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.scripting.groovy.GroovyScriptingModule;
 import io.gatehill.imposter.scripting.nashorn.NashornScriptingModule;
 import io.gatehill.imposter.server.util.ConfigUtil;
+import io.gatehill.imposter.server.util.FeatureUtil;
 import io.gatehill.imposter.service.ResourceService;
-import io.gatehill.imposter.store.StoreModule;
 import io.gatehill.imposter.util.AsyncUtil;
 import io.gatehill.imposter.util.HttpUtil;
 import io.gatehill.imposter.util.InjectorUtil;
@@ -26,7 +26,6 @@ import org.apache.logging.log4j.Logger;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -86,7 +85,7 @@ public class ImposterVerticle extends AbstractVerticle {
                 new GroovyScriptingModule(),
                 new NashornScriptingModule()
         );
-        bootstrapModules.addAll(discoverExperimentalModules());
+        bootstrapModules.addAll(FeatureUtil.discoverFeatureModules());
 
         final Imposter imposter = new Imposter(imposterConfig, bootstrapModules);
         imposter.start();
@@ -107,9 +106,13 @@ public class ImposterVerticle extends AbstractVerticle {
                 .filter(p -> p instanceof ConfigurablePlugin)
                 .forEach(p -> allConfigs.addAll(((ConfigurablePlugin<?>) p).getConfigs()));
 
-        router.route("/system/metrics").handler(
-                resourceService.passthroughRoute(imposterConfig, allConfigs, vertx, PrometheusScrapingHandler.create())
-        );
+        if (FeatureUtil.isFeatureEnabled("metrics")) {
+            LOGGER.debug("Metrics enabled");
+
+            router.route("/system/metrics").handler(
+                    resourceService.passthroughRoute(imposterConfig, allConfigs, vertx, PrometheusScrapingHandler.create())
+            );
+        }
 
         // status check to indicate when server is up
         router.get("/system/status").handler(resourceService.handleRoute(imposterConfig, allConfigs, vertx, routingContext ->
@@ -124,24 +127,5 @@ public class ImposterVerticle extends AbstractVerticle {
         lifecycleHooks.forEach(listener -> listener.afterRoutesConfigured(imposterConfig, allConfigs, router));
 
         return router;
-    }
-
-    private List<Module> discoverExperimentalModules() {
-        final List<Module> experimentalModules = newArrayList();
-
-        final List<String> experimentalFeatures = listExperimentalFeatures();
-        LOGGER.trace("Experimental features enabled: {}", experimentalFeatures);
-
-        if (experimentalFeatures.contains("stores")) {
-            experimentalModules.add(new StoreModule());
-        }
-
-        return experimentalModules;
-    }
-
-    private List<String> listExperimentalFeatures() {
-        return Arrays.asList(ofNullable(System.getenv("IMPOSTER_EXPERIMENTAL"))
-                .orElse(ofNullable(System.getProperty("imposter.experimental")).orElse(""))
-                .split(","));
     }
 }

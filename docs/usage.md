@@ -22,16 +22,20 @@ The following command line arguments can be used:
 
 The following environment variables are supported:
 
-| Variable name      | Purpose             | Example(s)               |
-|--------------------|---------------------|--------------------------|
-| IMPOSTER_LOG_LEVEL | Sets logging level. | `INFO`, `DEBUG`, `TRACE` |
+| Variable name                 | Purpose                                                                                                     | Default                                                | Description/example(s)      |
+|-------------------------------|-------------------------------------------------------------------------------------------------------------|--------------------------------------------------------|-----------------------------|
+| IMPOSTER_LOG_LEVEL            | Sets logging level.                                                                                         | `DEBUG`                                                | `INFO`, `DEBUG`, `TRACE`    |
+| IMPOSTER_FEATURES             | Enables or disables features. See [Features](features_plugins.md) documentation.                            | Per [default features](./features_plugins.md).         | `metrics=false,stores=true` |
+| IMPOSTER_STORE_MODULE         | Sets the store implementation.                                                                              | `io.gatehill.imposter.store.inmem.InMemoryStoreModule` | See [Stores](./stores.md).  |
+| IMPOSTER_STORE_KEY_PREFIX     | Sets a prefix for store keys.                                                                               | Empty                                                  | See [Stores](./stores.md).  |
+| IMPOSTER_SCRIPT_CACHE_ENTRIES | The number of precompiled scripts to cache. Precompiled scripts execute faster, but the cache uses memory.  | `20`                                                   | `30`                        |
+
+> Note: other features may include their own environment variables. See the feature specific documentation for more details.
 
 ## Server URL
 
-For some responses, such as from the [SFDC plugin](sfdc_plugin.md), Imposter uses the 'server URL',
-which is computed automatically from the `host` and `listenPort` command line arguments. If this
-is not the URL you wish to use, you can override this with the `serverUrl` command line argument.
+For some responses, such as from the [SFDC plugin](sfdc_plugin.md), Imposter uses the 'server URL', which is computed automatically from the `host` and `listenPort` command line arguments. If this is not the URL you wish to use, you can override this with the `serverUrl` command line argument.
 
-## TLS/SSL
+## Security
 
-See [TLS/SSL](tls_ssl.md).
+See [Security](security.md).

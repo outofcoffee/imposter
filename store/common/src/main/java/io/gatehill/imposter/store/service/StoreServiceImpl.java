@@ -52,7 +52,7 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
         this.resourceService = resourceService;
         this.storeFactory = storeFactory;
 
-        LOGGER.warn("Experimental store support enabled");
+        LOGGER.debug("Stores enabled");
         storeHolder = new StoreHolder(storeFactory);
         lifecycleHooks.registerListener(this);
     }
