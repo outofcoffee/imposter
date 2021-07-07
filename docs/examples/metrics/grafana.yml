@@ -1,0 +1,6 @@
+apiVersion: 1
+
+datasources:
+  - name: Imposter
+    url: http://host.docker.internal:9090
+    type: prometheus
