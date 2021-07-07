@@ -28,6 +28,7 @@ class ScriptUtil {
         final headersSupplier = { -> vertxRequest.headers().collectEntries() }
         final pathParamsSupplier = { -> routingContext.pathParams() }
         final queryParamsSupplier = { -> vertxRequest.params().collectEntries() }
+        final bodySupplier = { -> routingContext.getBodyAsString() }
 
         def deprecatedParams = {
             LOGGER.warn("Deprecation notice: 'context.params' is deprecated and will be removed " +
@@ -49,11 +50,10 @@ class ScriptUtil {
         executionContext.metaClass.uri = "${-> deprecatedUri()}"
 
         // request information
-        def request = new ExecutionContext.Request(headersSupplier, pathParamsSupplier, queryParamsSupplier)
+        def request = new ExecutionContext.Request(headersSupplier, pathParamsSupplier, queryParamsSupplier, bodySupplier)
         request.path = "${-> vertxRequest.path()}"
         request.method = "${-> vertxRequest.method().name()}"
         request.uri = "${-> vertxRequest.absoluteURI()}"
-        request.body = "${-> routingContext.getBodyAsString()}"
         executionContext.request = request
 
         // additional context

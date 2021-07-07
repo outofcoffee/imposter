@@ -33,7 +33,6 @@ public class ExecutionContext {
         private String path;
         private String method;
         private String uri;
-        private String body;
 
         private final Supplier<Map<String, String>> headersSupplier;
         private Map<String, String> headers;
@@ -44,14 +43,19 @@ public class ExecutionContext {
         private final Supplier<Map<String, String>> queryParamsSupplier;
         private Map<String, String> queryParams;
 
+        private final Supplier<String> bodySupplier;
+        private String body;
+
         public Request(
                 Supplier<Map<String, String>> headersSupplier,
                 Supplier<Map<String, String>> pathParamsSupplier,
-                Supplier<Map<String, String>> queryParamsSupplier
+                Supplier<Map<String, String>> queryParamsSupplier,
+                Supplier<String> bodySupplier
         ) {
             this.headersSupplier = headersSupplier;
             this.pathParamsSupplier = pathParamsSupplier;
             this.queryParamsSupplier = queryParamsSupplier;
+            this.bodySupplier = bodySupplier;
         }
 
         public void setPath(String path) {
@@ -79,6 +83,9 @@ public class ExecutionContext {
         }
 
         public String getBody() {
+            if (isNull(body)) {
+                body = bodySupplier.get();
+            }
             return body;
         }
 
@@ -141,10 +148,10 @@ public class ExecutionContext {
                     "path='" + path + '\'' +
                     ", method='" + method + '\'' +
                     ", uri='" + uri + '\'' +
-                    ", pathParams=" + pathParams +
-                    ", queryParams=" + queryParams +
-                    ", headers=" + headers +
-                    ", body=<" + ofNullable(body).map(b -> b.length() + " bytes").orElse("null") + '>' +
+                    ", pathParams=" + getPathParams() +
+                    ", queryParams=" + getQueryParams() +
+                    ", headers=" + getHeaders() +
+                    ", body=<" + ofNullable(getBody()).map(b -> b.length() + " bytes").orElse("null") + '>' +
                     '}';
         }
     }
