@@ -59,37 +59,37 @@ public final class OpenApiVersionUtil {
         final SpecVersion specVersion = determineVersion(specPath, parsed);
         LOGGER.debug("Using version: {} parser for: {}", specVersion, specPath);
 
+        final ParseOptions parseOptions = new ParseOptions();
+        parseOptions.setResolveFully(true);
+
         // convert or parse directly
         final SwaggerParseResult parseResult;
         switch (specVersion) {
             case V2:
-                parseResult = new SwaggerConverter().readContents(
-                        specData, Collections.emptyList(), new ParseOptions());
+                parseResult = new SwaggerConverter().readContents(specData, Collections.emptyList(), parseOptions);
                 break;
-
             case V3:
-                parseResult = new OpenAPIV3Parser().readContents(
-                        specData, Collections.emptyList(), new ParseOptions());
+                parseResult = new OpenAPIV3Parser().readContents(specData, Collections.emptyList(), parseOptions);
                 break;
-
             default:
-                throw new IllegalStateException(String.format("Unsupported version: %s for: %s",
-                        specVersion, specPath));
+                throw new IllegalStateException(
+                        String.format("Unsupported version: %s for: %s", specVersion, specPath)
+                );
         }
 
         if (null == parseResult) {
-            throw new IllegalStateException(String.format("Unable to parse specification: %s",
-                    specPath));
+            throw new IllegalStateException(String.format("Unable to parse specification: %s", specPath));
         }
 
         if (null != parseResult.getMessages() && !parseResult.getMessages().isEmpty()) {
-            LOGGER.info("OpenAPI parser messages for: {}: {}", specPath,
-                    String.join(System.lineSeparator(), parseResult.getMessages()));
+            LOGGER.info(
+                    "OpenAPI parser messages for: {}: {}",
+                    specPath, String.join(System.lineSeparator(), parseResult.getMessages())
+            );
         }
 
         if (null == parseResult.getOpenAPI()) {
-            throw new IllegalStateException(String.format("Unable to parse specification: %s",
-                    specPath));
+            throw new IllegalStateException(String.format("Unable to parse specification: %s", specPath));
         }
 
         return parseResult.getOpenAPI();

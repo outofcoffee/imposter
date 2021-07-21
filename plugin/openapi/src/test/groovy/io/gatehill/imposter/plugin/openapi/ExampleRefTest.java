@@ -16,11 +16,11 @@ import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 
 /**
- * Tests for named response examples controlled by config.
+ * Tests for examples referenced using '$ref' in spec.
  *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public class StaticNamedExamplesTest extends BaseVerticleTest {
+public class ExampleRefTest extends BaseVerticleTest {
     @Override
     protected Class<? extends Plugin> getPluginClass() {
         return OpenApiPluginImpl.class;
@@ -35,7 +35,7 @@ public class StaticNamedExamplesTest extends BaseVerticleTest {
     @Override
     protected List<String> getTestConfigDirs() {
         return Lists.newArrayList(
-                "/openapi3/static-named-example"
+                "/openapi3/example-ref"
         );
     }
 
@@ -43,8 +43,7 @@ public class StaticNamedExamplesTest extends BaseVerticleTest {
      * Expects that different request URIs return specific request examples.
      */
     @Test
-    public void testConditionalResponseExample() {
-        // pet with ID 1 is Cat
+    public void testExampleRefReturned() {
         given()
                 .log().ifValidationFails()
                 .accept(ContentType.JSON)
@@ -55,17 +54,5 @@ public class StaticNamedExamplesTest extends BaseVerticleTest {
                 .statusCode(HttpUtil.HTTP_OK)
                 .body("id", equalTo(1))
                 .body("name", equalTo("Cat"));
-
-        // pet with ID 2 is Dog
-        given()
-                .log().ifValidationFails()
-                .accept(ContentType.JSON)
-                .when()
-                .get("/pets/2")
-                .then()
-                .log().ifValidationFails()
-                .statusCode(HttpUtil.HTTP_OK)
-                .body("id", equalTo(2))
-                .body("name", equalTo("Dog"));
     }
 }

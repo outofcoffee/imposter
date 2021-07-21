@@ -1,0 +1,6 @@
+plugin: "openapi"
+specFile: "openapi3-example-ref.yaml"
+
+resources:
+  - path: /pets/1
+    method: get

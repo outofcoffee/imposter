@@ -28,13 +28,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/Pet"
               examples:
-                # the example to return is selected by the config
                 catExample:
-                  value: |-
-                    { "id": 1, "name": "Cat" }
-                dogExample:
-                  value: |-
-                    { "id": 2, "name": "Dog" }
+                  $ref: '#/components/examples/petExample'
         default:
           description: unexpected error
           content:
@@ -79,3 +74,7 @@ components:
           format: int32
         message:
           type: string
+  examples:
+    petExample:
+      value: |-
+        { "id": 1, "name": "Cat" }
