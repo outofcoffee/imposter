@@ -3,9 +3,16 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [1.15.0] - 2021-07-21
 ### Added
-- ...
+- (core) Graduates Stores to GA.
+- (docs) Improves metrics examples.
+
+### Changed
+- (openapi) Enables full resolution of OpenAPI references.
+
+### Fixed
+- (openapi) Supports example references in OpenAPI specifications.
 
 ## [1.14.1] - 2021-07-06
 ### Changed
