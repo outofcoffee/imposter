@@ -1,4 +1,4 @@
-FROM openjdk:8u212-jre-alpine
+FROM adoptopenjdk/openjdk8:x86_64-alpine-jre8u292-b10
 
 LABEL MAINTAINER="Pete Cornish <outofcoffee@gmail.com>"
 ENV JAVA_ARGS=""
