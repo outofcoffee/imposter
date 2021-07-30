@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- ...
+
 ## [1.15.1] - 2021-07-30
 ### Added
 - (core) Adds normalised headers map to script context request. This aids script portability, avoiding case-sensitivity for header keys.
