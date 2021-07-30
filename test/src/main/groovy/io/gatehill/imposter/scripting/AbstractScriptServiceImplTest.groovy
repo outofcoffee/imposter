@@ -172,6 +172,28 @@ abstract class AbstractScriptServiceImplTest {
     }
 
     @Test
+    void testExecuteScript_ParseNormalisedRequestHeaders() throws Exception {
+        def config = configureScript()
+        def pluginConfig = config as PluginConfig
+        def resourceConfig = config as ResourceConfig
+
+        def additionalBindings = [
+                'hello': 'world'
+        ]
+
+        // request header casing should be normalised by the script engine
+        def headers = ['CORGE': 'grault']
+
+        RuntimeContext runtimeContext = buildRuntimeContext(additionalBindings, headers, [:], [:], [:])
+        def actual = service.executeScript(pluginConfig, resourceConfig, runtimeContext)
+
+        assertNotNull actual
+        assertEquals 202, actual.statusCode
+        assertEquals ResponseBehaviourType.DEFAULT_BEHAVIOUR, actual.behaviourType
+        assertEquals 'grault', actual.getResponseHeaders().get('X-Echo-Corge')
+    }
+
+    @Test
     void testExecuteScript_ReadEnvironmentVariable() throws Exception {
         def config = configureScript()
         def pluginConfig = config as PluginConfig

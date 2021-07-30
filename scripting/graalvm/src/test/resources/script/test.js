@@ -7,6 +7,7 @@ const request = context.request;
 const quxParam = request.pathParams.get('qux');
 const fooParam = request.queryParams.get('foo');
 const bazHeader = request.headers.get('baz');
+const corgeHeader = request.normalisedHeaders.get('corge');
 const exampleEnvVar = env.get('example');
 
 if (quxParam) {
@@ -26,6 +27,13 @@ if (quxParam) {
     respond()
         .withStatusCode(202)
         .withHeader('X-Echo-Baz', bazHeader);
+
+} else if (corgeHeader) {
+    // echo the value of the 'corge' request header as a response header
+    // note: the key is lowercase in normalisedHeaders, regardless of the request header casing
+    respond()
+        .withStatusCode(202)
+        .withHeader('X-Echo-Corge', corgeHeader);
 
 } else if (exampleEnvVar) {
     // echo the value of the 'example' environment variable as a response header

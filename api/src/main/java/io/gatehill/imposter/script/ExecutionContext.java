@@ -2,6 +2,7 @@ package io.gatehill.imposter.script;
 
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;
@@ -102,6 +103,15 @@ public class ExecutionContext {
 
         public void setHeaders(Map<String, String> headers) {
             this.headers = headers;
+        }
+
+        /**
+         * @return the {@link #getHeaders()} map, but with all keys in lowercase
+         */
+        public Map<String, String> getNormalisedHeaders() {
+            return getHeaders().entrySet().stream().collect(
+                    Collectors.toMap(e -> e.getKey().toLowerCase(), Map.Entry::getValue)
+            );
         }
 
         /**

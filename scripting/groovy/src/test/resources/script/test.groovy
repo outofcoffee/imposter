@@ -20,6 +20,13 @@ if (request.pathParams.qux) {
         .withStatusCode(202)
         .withHeader('X-Echo-Baz', request.headers.baz)
 
+} else if (request.normalisedHeaders.corge) {
+    // echo the value of the 'corge' request header as a response header
+    // note: the key is lowercase in normalisedHeaders, regardless of the request header casing
+    respond()
+        .withStatusCode(202)
+        .withHeader('X-Echo-Corge', request.normalisedHeaders.corge)
+
 } else if (env.example) {
     // echo the value of the 'example' environment variable as a response header
     respond()
