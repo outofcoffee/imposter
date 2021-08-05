@@ -7,12 +7,13 @@ import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.plugin.config.ResourcesHolder;
 import io.gatehill.imposter.plugin.config.resource.PathParamsResourceConfig;
 import io.gatehill.imposter.plugin.config.resource.QueryParamsResourceConfig;
+import io.gatehill.imposter.plugin.config.resource.RequestHeadersResourceConfig;
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig;
 import io.gatehill.imposter.plugin.config.resource.ResourceMethod;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
 import io.gatehill.imposter.plugin.config.resource.RestResourceConfig;
-import io.gatehill.imposter.util.HttpUtil;
 import io.gatehill.imposter.util.ResourceUtil;
+import io.gatehill.imposter.util.StringUtil;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
@@ -60,7 +61,7 @@ public class ResourceServiceImpl implements ResourceService {
 
             if (nonNull(resources.getResources())) {
                 return resources.getResources().stream()
-                        .map(res -> new ResolvedResourceConfig(res, findPathParams(res), findQueryParams(res)))
+                        .map(res -> new ResolvedResourceConfig(res, findPathParams(res), findQueryParams(res), findRequestHeaders(res)))
                         .collect(Collectors.toList());
             }
         }
@@ -83,6 +84,14 @@ public class ResourceServiceImpl implements ResourceService {
         return emptyMap();
     }
 
+    private Map<String, String> findRequestHeaders(ResourceConfig resourceConfig) {
+        if (resourceConfig instanceof RequestHeadersResourceConfig) {
+            final Map<String, String> headers = ((RequestHeadersResourceConfig) resourceConfig).getRequestHeaders();
+            return ofNullable(headers).orElse(emptyMap());
+        }
+        return emptyMap();
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -93,17 +102,19 @@ public class ResourceServiceImpl implements ResourceService {
             String pathTemplate,
             String path,
             Map<String, String> pathParams,
-            Map<String, String> queryParams
+            Map<String, String> queryParams,
+            Map<String, String> requestHeaders
     ) {
         final ResourceMethod resourceMethod = ResourceUtil.convertMethodFromVertx(method);
 
         List<ResolvedResourceConfig> resourceConfigs = resources.stream()
-                .filter(res -> isRequestMatch(res, resourceMethod, pathTemplate, path, pathParams, queryParams))
+                .filter(res -> isRequestMatch(res, resourceMethod, pathTemplate, path, pathParams, queryParams, requestHeaders))
                 .collect(Collectors.toList());
 
         // find the most specific, by filter those that match for those that specify parameters
-        resourceConfigs = filterByParams(resourceConfigs, ResolvedResourceConfig::getPathParams);
-        resourceConfigs = filterByParams(resourceConfigs, ResolvedResourceConfig::getQueryParams);
+        resourceConfigs = filterByKeyValuePairs(resourceConfigs, ResolvedResourceConfig::getPathParams);
+        resourceConfigs = filterByKeyValuePairs(resourceConfigs, ResolvedResourceConfig::getQueryParams);
+        resourceConfigs = filterByKeyValuePairs(resourceConfigs, ResolvedResourceConfig::getRequestHeaders);
 
         if (resourceConfigs.isEmpty()) {
             return empty();
@@ -117,19 +128,19 @@ public class ResourceServiceImpl implements ResourceService {
         return of(resourceConfigs.get(0).getConfig());
     }
 
-    private List<ResolvedResourceConfig> filterByParams(
+    private List<ResolvedResourceConfig> filterByKeyValuePairs(
             List<ResolvedResourceConfig> resourceConfigs,
-            Function<ResolvedResourceConfig, Map<String, String>> paramsSupplier
+            Function<ResolvedResourceConfig, Map<String, String>> keyValuePairsSupplier
     ) {
-        final List<ResolvedResourceConfig> configsWithParams = resourceConfigs.stream()
-                .filter(res -> !paramsSupplier.apply(res).isEmpty())
+        final List<ResolvedResourceConfig> configsWithKeyValuePairs = resourceConfigs.stream()
+                .filter(res -> !keyValuePairsSupplier.apply(res).isEmpty())
                 .collect(Collectors.toList());
 
-        if (configsWithParams.isEmpty()) {
+        if (configsWithKeyValuePairs.isEmpty()) {
             // no resource configs specified params - don't filter
             return resourceConfigs;
         } else {
-            return configsWithParams;
+            return configsWithKeyValuePairs;
         }
     }
 
@@ -142,6 +153,7 @@ public class ResourceServiceImpl implements ResourceService {
      * @param path           the path of the current request
      * @param pathParams     the path parameters of the current request
      * @param queryParams    the query parameters of the current request
+     * @param requestHeaders the headers of the current request
      * @return {@code true} if the the resource matches the request, otherwise {@code false}
      */
     private boolean isRequestMatch(
@@ -150,7 +162,8 @@ public class ResourceServiceImpl implements ResourceService {
             String pathTemplate,
             String path,
             Map<String, String> pathParams,
-            Map<String, String> queryParams
+            Map<String, String> queryParams,
+            Map<String, String> requestHeaders
     ) {
         final RestResourceConfig resourceConfig = resource.getConfig();
         final boolean pathMatch = path.equals(resourceConfig.getPath()) || pathTemplate.equals(resourceConfig.getPath());
@@ -161,8 +174,9 @@ public class ResourceServiceImpl implements ResourceService {
 
         return pathMatch &&
                 resourceMethod.equals(resourceConfig.getMethod()) &&
-                matchParams(pathParams, resource.getPathParams()) &&
-                matchParams(queryParams, resource.getQueryParams());
+                matchParams(pathParams, resource.getPathParams(), false) &&
+                matchParams(queryParams, resource.getQueryParams(), false) &&
+                matchParams(requestHeaders, resource.getRequestHeaders(), true);
     }
 
     /**
@@ -170,18 +184,27 @@ public class ResourceServiceImpl implements ResourceService {
      * If the configuration contains no parameters, then this evaluates to true.
      * Additional parameters not in the configuration are ignored.
      *
-     * @param resourceParams the configured parameters to match
-     * @param requestParams  the parameters from the request (e.g. query or path)
+     * @param resourceKeyValuePairs      the configured parameters to match
+     * @param requestKeyValuePairs       the parameters from the request (e.g. query or path)
+     * @param caseInsensitiveKeyMatching whether to match keys case insensitively
      * @return {@code true} if the configured parameters match the request, otherwise {@code false}
      */
-    private boolean matchParams(Map<String, String> requestParams, Map<String, String> resourceParams) {
+    private boolean matchParams(
+            Map<String, String> requestKeyValuePairs,
+            Map<String, String> resourceKeyValuePairs,
+            boolean caseInsensitiveKeyMatching
+    ) {
         // none configured - implies any match
-        if (resourceParams.isEmpty()) {
+        if (resourceKeyValuePairs.isEmpty()) {
             return true;
         }
-        return resourceParams.entrySet().stream().allMatch(paramConfig ->
-                HttpUtil.safeEquals(requestParams.get(paramConfig.getKey()), paramConfig.getValue())
-        );
+
+        final Map<String, String> requestMap = caseInsensitiveKeyMatching ? StringUtil.convertKeysToLowerCase(requestKeyValuePairs) : requestKeyValuePairs;
+
+        return resourceKeyValuePairs.entrySet().stream().allMatch(keyValueConfig -> {
+            final String configKey = caseInsensitiveKeyMatching ? keyValueConfig.getKey().toLowerCase() : keyValueConfig.getKey();
+            return StringUtil.safeEquals(requestMap.get(configKey), keyValueConfig.getValue());
+        });
     }
 
     /**
@@ -263,7 +286,8 @@ public class ResourceServiceImpl implements ResourceService {
                 routingContext.currentRoute().getPath(),
                 request.path(),
                 routingContext.pathParams(),
-                convertMultiMapToHashMap(request.params())
+                convertMultiMapToHashMap(request.params()),
+                convertMultiMapToHashMap(request.headers())
         ).orElse(rootResourceConfig);
 
         // allows plugins to customise behaviour

@@ -35,7 +35,7 @@ For example:
     ...
     201 Created
 
-*Tip:* The `params` object used in the script is just a map of the request parameters, so you can use either `params.yourParamName` or `params['yourParamName']` syntax to access its members.
+*Tip:* The `queryParams` object used in the script is just a map of the request parameters, so you can use either `params.yourParamName` or `params['yourParamName']` syntax to access its members.
 
 ### Another example
 

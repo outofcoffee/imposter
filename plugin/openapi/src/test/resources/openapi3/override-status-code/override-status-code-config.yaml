@@ -7,13 +7,6 @@ resources:
     response:
       statusCode: 200
 
-  - path: "/pets/:petId"
-    method: get
-    pathParams:
-      petId: 1
-    response:
-      statusCode: 203
-
   - path: "/pets"
     method: get
     queryParams:
@@ -22,11 +15,33 @@ resources:
       statusCode: 204
 
   - path: "/pets"
+    method: get
+    requestHeaders:
+      X-Foo: bar
+    response:
+      statusCode: 205
+
+  - path: "/pets"
     method: post
     response:
       statusCode: 201
 
   - path: "/pets/:petId"
+    method: get
+    pathParams:
+      petId: 99
+    response:
+      statusCode: 203
+
+  - path: "/pets/:petId"
     method: put
     response:
       statusCode: 202
+
+  - path: "/pets/:petId"
+    method: put
+    requestHeaders:
+      # header key deliberately lowercase in config, but uppercase in request
+      x-lowercase-test: baz
+    response:
+      statusCode: 409

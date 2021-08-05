@@ -5,7 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
-- ...
+- (openapi) Allows resource matching based on request headers.
 
 ## [1.15.1] - 2021-07-30
 ### Added

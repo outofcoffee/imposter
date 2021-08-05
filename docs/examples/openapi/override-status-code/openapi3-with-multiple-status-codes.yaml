@@ -17,6 +17,11 @@ paths:
           required: true
           schema:
             type: string
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: string
       responses:
         '200':
           description: Indicates pets found
@@ -41,6 +46,31 @@ paths:
         '201':
           description: Indicates pet added
   /pets/{petId}:
+    parameters:
+      - name: petId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: X-Pet-Username
+        in: header
+        required: false
+        schema:
+          type: string
+    get:
+      summary: Get a specific pet
+      operationId: getPetById
+      responses:
+        '200':
+          description: A pet
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pet'
+        '203':
+          description: Non-authoratative pet
+        '401':
+          description: Unauthorised
     put:
       summary: Update a specific pet
       operationId: updatePet
@@ -53,6 +83,8 @@ paths:
       responses:
         '202':
           description: Indicates pet updated
+        '409':
+          description: Already exists
 components:
   schemas:
     Pet:

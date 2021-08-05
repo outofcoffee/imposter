@@ -17,6 +17,11 @@ paths:
           required: true
           schema:
             type: string
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: string
       responses:
         '200':
           description: Indicates pets found
@@ -28,6 +33,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Pet"
+        '205':
+          description: Accepted pet - client should reset view
     post:
       summary: Add a new pet
       operationId: addPet
@@ -47,6 +54,11 @@ paths:
         required: true
         schema:
           type: string
+      - name: X-Pet-Username
+        in: header
+        required: false
+        schema:
+          type: string
     get:
       summary: Get a specific pet
       operationId: getPetById
@@ -59,6 +71,8 @@ paths:
                 $ref: '#/components/schemas/Pet'
         '203':
           description: Non-authoratative pet
+        '401':
+          description: Unauthorised
     put:
       summary: Update a specific pet
       operationId: updatePet
@@ -71,6 +85,8 @@ paths:
       responses:
         '202':
           description: Indicates pet updated
+        '409':
+          description: Already exists
 components:
   schemas:
     Pet:

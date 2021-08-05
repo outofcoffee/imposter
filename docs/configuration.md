@@ -128,7 +128,7 @@ Default values for response configuration are as follows:
 | `response.statusCode` | openapi, rest | Integer (HTTP status) | `200`                                              | `201`                               |
 | `response.staticData` | openapi, rest | String                | empty                                              | `hello world`                       |
 | `response.staticFile` | all           | String                | empty                                              | `data.json`                         |
-| `response.headers`    | openapi, rest | Map of String:String  | empty                                              | `X-Custom-Header: value`            |
+| `response.headers`    | openapi, rest | Map of String:String  | empty                                              | `{ "X-Custom-Header": "value" }`            |
 
 ## Conditional responses
 
@@ -138,12 +138,13 @@ You can make Imposter respond with different values based on certain properties 
 
 Configure different response behaviours based on the following request attributes:
 
-| Field         | Plugin(s)     | Type                  | Example                    |
-|---------------|---------------|-----------------------|----------------------------|
-| `method`      | openapi, rest | String (HTTP method)  | `POST`                     |
-| `path`        | all           | String                | `/example/path`            |
-| `pathParams`  | openapi       | Map of String:String  | `[ "productCode": "abc" ]` |
-| `queryParams` | openapi       | Map of String:String  | `[ "limit": "10" ]`        |
+| Field            | Plugin(s)     | Type                  | Example                    |
+|------------------|---------------|-----------------------|----------------------------|
+| `method`         | openapi, rest | String (HTTP method)  | `POST`                     |
+| `path`           | all           | String                | `/example/path`            |
+| `pathParams`     | openapi       | Map of String:String  | `{ "productCode": "abc" }` |
+| `queryParams`    | openapi       | Map of String:String  | `{ "limit": "10" }`        |
+| `requestHeaders` | openapi       | Map of String:String  | `{ "User-Agent": "curl" }` |
 
 Here is an example showing all fields:
 
@@ -168,6 +169,15 @@ resources:
     response:
       statusCode: 401
       staticData: "You do not have permission to view this pet."
+  
+  # handles PUT /pets/:petId with a request header 'X-Pet-Username: foo'
+  - path: "/pets/:petId"
+    method: PUT
+    requestHeaders:
+      X-Pet-Username: foo
+    response:
+      statusCode: 409
+      staticData: "Username already exists."
 ```
 
 ## Environment variables

@@ -29,12 +29,13 @@ public interface ResourceService {
     /**
      * Search for a resource configuration matching the current request.
      *
-     * @param resources    the resources from the response configuration
-     * @param method       the HTTP method of the current request
-     * @param pathTemplate request path template
-     * @param path         the path of the current request
-     * @param pathParams   the path parameters of the current request
-     * @param queryParams  the query parameters of the current request
+     * @param resources      the resources from the response configuration
+     * @param method         the HTTP method of the current request
+     * @param pathTemplate   request path template
+     * @param path           the path of the current request
+     * @param pathParams     the path parameters of the current request
+     * @param queryParams    the query parameters of the current request
+     * @param requestHeaders the headers of the current request
      * @return a matching resource configuration or else empty
      */
     Optional<ResponseConfigHolder> matchResourceConfig(
@@ -43,7 +44,8 @@ public interface ResourceService {
             String pathTemplate,
             String path,
             Map<String, String> pathParams,
-            Map<String, String> queryParams
+            Map<String, String> queryParams,
+            Map<String, String> requestHeaders
     );
 
     /**

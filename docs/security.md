@@ -95,8 +95,8 @@ Imposter supports the following conditions:
 
 | Condition        | Meaning                   | Type                 | Example                      |
 |------------------|---------------------------|----------------------|------------------------------|
-| `queryParams`    | Request query parameters. | Map of String:String | `[ "limit": "1" ]`           |
-| `requestHeaders` | Request headers.          | Map of String:String | `[ "Authorization": "foo" ]` |
+| `queryParams`    | Request query parameters. | Map of String:String | `{ "limit": "1" }`           |
+| `requestHeaders` | Request headers.          | Map of String:String | `{ "Authorization": "foo" }` |
 
 Here's an example showing all conditions:
 

@@ -41,7 +41,7 @@ public class OverrideStatusCodeTest extends BaseVerticleTest {
      * Should return a specific status code for a simple request path.
      */
     @Test
-    public void testOverrideStatusCodesForSimplePath(TestContext testContext) {
+    public void testSetStatusCodeForSimplePath(TestContext testContext) {
         given()
                 .log().ifValidationFails()
                 .contentType(ContentType.JSON)
@@ -58,12 +58,12 @@ public class OverrideStatusCodeTest extends BaseVerticleTest {
      * Should return a specific status code for a path parameter.
      */
     @Test
-    public void testOverrideStatusCodesForPathParam(TestContext testContext) {
+    public void testSetStatusCodeForPathParam(TestContext testContext) {
         given()
                 .log().ifValidationFails()
                 .accept(ContentType.JSON)
                 .when()
-                .get("/pets/{petId}", "1")
+                .get("/pets/{petId}", "99")
                 .then()
                 .log().ifValidationFails()
                 .statusCode(203);
@@ -73,7 +73,7 @@ public class OverrideStatusCodeTest extends BaseVerticleTest {
      * Should return a specific status code for a query parameter.
      */
     @Test
-    public void testOverrideStatusCodesForQueryParam(TestContext testContext) {
+    public void testSetStatusCodeForQueryParam(TestContext testContext) {
         given()
                 .log().ifValidationFails()
                 .accept(ContentType.JSON)
@@ -85,17 +85,50 @@ public class OverrideStatusCodeTest extends BaseVerticleTest {
     }
 
     /**
+     * Should return a specific status code for a request header.
+     */
+    @Test
+    public void testSetStatusCodeForRequestHeader(TestContext testContext) {
+        given()
+                .log().ifValidationFails()
+                .when()
+                .header("X-Foo", "bar")
+                .get("/pets")
+                .then()
+                .log().ifValidationFails()
+                .statusCode(205);
+    }
+
+    /**
+     * Should return a specific status code for a request header, where
+     * the case of the request header key differs from that of the configuration.
+     */
+    @Test
+    public void testSetStatusCodeForRequestHeaderCaseInsensitive(TestContext testContext) {
+        given()
+                .log().ifValidationFails()
+                .when()
+                // header key deliberately uppercase in request, but lowercase in config
+                .header("X-LOWERCASE-TEST", "baz")
+                .body("{ \"id\": 1, \"name\": \"Cat\" }")
+                .put("/pets/{petId}", "1")
+                .then()
+                .log().ifValidationFails()
+                .statusCode(409);
+    }
+
+    /**
      * Should return a specific status code for a path with a placeholder.
      */
     @Test
-    public void testOverrideStatusCodesForPathWithPlaceholder(TestContext testContext) {
+    public void testSetStatusCodeForPathWithPlaceholder(TestContext testContext) {
         given()
                 .log().ifValidationFails()
                 .contentType(ContentType.JSON)
                 .accept(ContentType.JSON)
                 .when()
                 .body("{ \"id\": 1, \"name\": \"Cat\" }")
-                .put("/pets/1")
+                .put("/pets/{petId}", "1")
                 .then()
                 .log().ifValidationFails()
                 .statusCode(202);

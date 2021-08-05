@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.gatehill.imposter.plugin.config.resource.LegacyQueryParamsResourceConfig;
 import io.gatehill.imposter.plugin.config.resource.PathParamsResourceConfig;
 import io.gatehill.imposter.plugin.config.resource.QueryParamsResourceConfig;
+import io.gatehill.imposter.plugin.config.resource.RequestHeadersResourceConfig;
 import io.gatehill.imposter.plugin.config.resource.RestResourceConfig;
 
 import java.util.Map;
@@ -15,7 +16,7 @@ import java.util.Map;
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public class OpenApiResourceConfig extends RestResourceConfig implements
-        PathParamsResourceConfig, QueryParamsResourceConfig, LegacyQueryParamsResourceConfig {
+        PathParamsResourceConfig, QueryParamsResourceConfig, LegacyQueryParamsResourceConfig, RequestHeadersResourceConfig {
 
     @JsonProperty("pathParams")
     private Map<String, String> pathParams;
@@ -23,6 +24,9 @@ public class OpenApiResourceConfig extends RestResourceConfig implements
     @JsonProperty("queryParams")
     @JsonAlias("params")
     private Map<String, String> queryParams;
+
+    @JsonProperty("requestHeaders")
+    private Map<String, String> requestHeaders;
 
     @Override
     public Map<String, String> getPathParams() {
@@ -37,6 +41,11 @@ public class OpenApiResourceConfig extends RestResourceConfig implements
     @Override
     public Map<String, String> getQueryParams() {
         return queryParams;
+    }
+
+    @Override
+    public Map<String, String> getRequestHeaders() {
+        return requestHeaders;
     }
 
     @Override

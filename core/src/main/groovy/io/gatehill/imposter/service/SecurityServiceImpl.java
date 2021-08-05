@@ -10,6 +10,7 @@ import io.gatehill.imposter.plugin.config.security.SecurityConfigHolder;
 import io.gatehill.imposter.plugin.config.security.SecurityEffect;
 import io.gatehill.imposter.service.security.SecurityLifecycleListener;
 import io.gatehill.imposter.util.HttpUtil;
+import io.gatehill.imposter.util.StringUtil;
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.web.RoutingContext;
@@ -125,7 +126,7 @@ public class SecurityServiceImpl implements SecurityService {
             SecurityEffect conditionEffect
     ) {
         return conditionMap.values().stream().map(conditionValue -> {
-            final boolean valueMatch = HttpUtil.safeEquals(
+            final boolean valueMatch = StringUtil.safeEquals(
                     requestMap.get(conditionValue.getName()),
                     conditionValue.getValue()
             );

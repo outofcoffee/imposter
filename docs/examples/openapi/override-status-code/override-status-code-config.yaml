@@ -7,10 +7,11 @@ resources:
     response:
       statusCode: 200
 
+  # handles GET /pets?page=1
   - path: "/pets"
     method: "get"
     queryParams:
-      foo: bar
+      page: 1
     response:
       statusCode: 204
 
@@ -23,3 +24,21 @@ resources:
     method: "put"
     response:
       statusCode: 202
+
+  # handles GET /pets/10
+  - path: "/pets/:petId"
+    method: GET
+    pathParams:
+      petId: 10
+    response:
+      statusCode: 401
+      staticData: "You do not have permission to view this pet."
+
+  # handles PUT /pets/:petId with a request header 'X-Pet-Username: foo'
+  - path: "/pets/:petId"
+    method: PUT
+    requestHeaders:
+      X-Pet-Username: foo
+    response:
+      statusCode: 409
+      staticData: "Username already exists."
