@@ -3,9 +3,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [1.16.0] - 2021-08-09
 ### Added
 - (openapi) Allows resource matching based on request headers.
+- (openapi) Adds log-only option for OpenAPI validation.
+- (openapi) Allows configuration of default OpenAPI validation issue behaviour.
 
 ## [1.15.1] - 2021-07-30
 ### Added
