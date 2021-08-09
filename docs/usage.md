@@ -22,13 +22,14 @@ The following command line arguments can be used:
 
 The following environment variables are supported:
 
-| Variable name                 | Purpose                                                                                                     | Default                                                | Description/example(s)      |
-|-------------------------------|-------------------------------------------------------------------------------------------------------------|--------------------------------------------------------|-----------------------------|
-| IMPOSTER_LOG_LEVEL            | Sets logging level.                                                                                         | `DEBUG`                                                | `INFO`, `DEBUG`, `TRACE`    |
-| IMPOSTER_FEATURES             | Enables or disables features. See [Features](features_plugins.md) documentation.                            | Per [default features](./features_plugins.md).         | `metrics=false,stores=true` |
-| IMPOSTER_STORE_MODULE         | Sets the store implementation.                                                                              | `io.gatehill.imposter.store.inmem.InMemoryStoreModule` | See [Stores](./stores.md).  |
-| IMPOSTER_STORE_KEY_PREFIX     | Sets a prefix for store keys.                                                                               | Empty                                                  | See [Stores](./stores.md).  |
-| IMPOSTER_SCRIPT_CACHE_ENTRIES | The number of precompiled scripts to cache. Precompiled scripts execute faster, but the cache uses memory.  | `20`                                                   | `30`                        |
+| Variable name                                 | Purpose                                                                                                      | Default                                                | Description/example(s)                           |
+|-----------------------------------------------|--------------------------------------------------------------------------------------------------------------|--------------------------------------------------------|--------------------------------------------------|
+| IMPOSTER_LOG_LEVEL                            | Sets logging level.                                                                                          | `DEBUG`                                                | `INFO`, `DEBUG`, `TRACE`                         |
+| IMPOSTER_FEATURES                             | Enables or disables features. See [Features](features_plugins.md) documentation.                             | Per [default features](./features_plugins.md).         | `metrics=false,stores=true`                      |
+| IMPOSTER_STORE_MODULE                         | Sets the store implementation.                                                                               | `io.gatehill.imposter.store.inmem.InMemoryStoreModule` | See [Stores](./stores.md).                       |
+| IMPOSTER_STORE_KEY_PREFIX                     | Sets a prefix for store keys.                                                                                | Empty                                                  | See [Stores](./stores.md).                       |
+| IMPOSTER_SCRIPT_CACHE_ENTRIES                 | The number of precompiled scripts to cache. Precompiled scripts execute faster, but the cache uses memory.   | `20`                                                   | `30`                                             |
+| IMPOSTER_OPENAPI_VALIDATION_DEFAULT_BEHAVIOUR | The default behaviour for OpenAPI validation issues. See [OpenAPI validation](openapi_validation.md).        | `IGNORE`                                               | See [OpenAPI validation](openapi_validation.md). |
 
 > Note: other features may include their own environment variables. See the feature specific documentation for more details.
 

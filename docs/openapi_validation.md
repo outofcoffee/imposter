@@ -1,4 +1,4 @@
-# OpenAPI request vaildation
+# OpenAPI request validation
 
 This document describes how to validate HTTP requests against an OpenAPI specification when using the [OpenAPI plugin](./openapi_plugin.md).
 
@@ -72,6 +72,40 @@ This is because in the corresponding part of the OpenAPI specification, both the
 Note that if the request body were provided, its structure would be validated against the corresponding schema entry.
 
 See `plugin/openapi/src/test/resources/openapi3/request-validation` for a working example.
+
+## Configuring issue behaviour
+
+When validation issues occur, the possible behaviours are:
+
+- fail the request (`fail` or `true`)
+- log only (`log`)
+- ignore (`ignore` or `false`)
+
+### Fail the request
+
+```yaml
+# fail the request if validation issues occur
+validation:
+  request: fail
+```
+
+### Log only
+
+```yaml
+# just log if validation issues occur
+validation:
+  request: log
+```
+
+### Ignore
+
+```yaml
+# ignore validation issues
+validation:
+  request: ignore
+```
+
+If the `validation` block is not specified, validation issue behaviour is controlled by the `IMPOSTER_OPENAPI_VALIDATION_DEFAULT_BEHAVIOUR` environment variable. The default value is `ignore`. Possible values are the same as the configuration file (above).
 
 ## Configuring validation levels
 

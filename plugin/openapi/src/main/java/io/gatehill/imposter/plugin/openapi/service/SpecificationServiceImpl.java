@@ -10,6 +10,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import io.gatehill.imposter.ImposterConfig;
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig;
+import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginValidationConfig;
 import io.gatehill.imposter.plugin.openapi.util.ValidationReportUtil;
 import io.gatehill.imposter.util.MapUtil;
 import io.swagger.models.Scheme;
@@ -43,7 +44,6 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
-import static org.apache.commons.io.IOUtils.LINE_SEPARATOR;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
@@ -144,7 +144,7 @@ public class SpecificationServiceImpl implements SpecificationService {
 
         externalDocs.setDescription(allExternalDocs.stream()
                 .map(externalDocumentation -> ofNullable(externalDocumentation.getDescription()).orElse(""))
-                .collect(Collectors.joining(LINE_SEPARATOR)));
+                .collect(Collectors.joining(System.lineSeparator())));
 
         // NOTE: The OAS spec only permits a single URL, so, to avoid confusion,
         // we don't set it at all.
@@ -187,11 +187,11 @@ public class SpecificationServiceImpl implements SpecificationService {
             LOGGER.trace("Validation is disabled");
             return true;
         }
-        if (!Boolean.TRUE.equals(pluginConfig.getValidation().getRequest())) {
+        if (OpenApiPluginValidationConfig.ValidationIssueBehaviour.IGNORE.equals(pluginConfig.getValidation().getRequest())) {
             LOGGER.trace("Request validation is disabled");
             return true;
         }
-        if (Boolean.TRUE.equals(pluginConfig.getValidation().getResponse())) {
+        if (!OpenApiPluginValidationConfig.ValidationIssueBehaviour.IGNORE.equals(pluginConfig.getValidation().getResponse())) {
             throw new UnsupportedOperationException("Response validation is not supported");
         }
 
@@ -216,7 +216,7 @@ public class SpecificationServiceImpl implements SpecificationService {
             LOGGER.warn("Validation failed for {} {}: {}", request.method(), request.absoluteURI(), reportMessages);
 
             // only respond with 400 if validation failures are at error level
-            if (report.hasErrors()) {
+            if (report.hasErrors() && OpenApiPluginValidationConfig.ValidationIssueBehaviour.FAIL.equals(pluginConfig.getValidation().getRequest())) {
                 final HttpServerResponse response = routingContext.response();
                 response.setStatusCode(400);
 
