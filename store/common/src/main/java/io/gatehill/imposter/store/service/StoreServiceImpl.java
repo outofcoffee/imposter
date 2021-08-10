@@ -1,6 +1,9 @@
 package io.gatehill.imposter.store.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.base.Strings;
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.JsonPath;
 import io.gatehill.imposter.ImposterConfig;
 import io.gatehill.imposter.lifecycle.ImposterLifecycleHooks;
 import io.gatehill.imposter.lifecycle.ImposterLifecycleListener;
@@ -30,6 +33,7 @@ import org.apache.logging.log4j.Logger;
 import javax.inject.Inject;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
@@ -264,10 +268,19 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
         if (resourceConfig instanceof CaptureConfigHolder) {
             final Map<String, CaptureConfig> captureConfig = ((CaptureConfigHolder) resourceConfig).getCaptureConfig();
             if (nonNull(captureConfig)) {
+                final AtomicReference<DocumentContext> jsonPathContextHolder = new AtomicReference<>();
+
                 captureConfig.forEach((itemName, itemConfig) -> {
-                    final String itemValue = captureValue(routingContext, itemConfig);
+                    final String itemValue;
+                    try {
+                        itemValue = captureValue(routingContext, itemConfig, jsonPathContextHolder);
+                    } catch (Exception e) {
+                        throw new RuntimeException(String.format("Error capturing item: %s", itemName), e);
+                    }
+
                     final String storeName = ofNullable(itemConfig.getStore()).orElse(DEFAULT_CAPTURE_STORE_NAME);
-                    LOGGER.debug("Capturing item {} into {} store", itemName, storeName);
+                    LOGGER.debug("Capturing item: {} into store: {}", itemName, storeName);
+
                     final Store store = storeFactory.getStoreByName(storeName);
                     store.save(itemName, itemValue);
                 });
@@ -275,13 +288,20 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
         }
     }
 
-    private String captureValue(RoutingContext routingContext, CaptureConfig itemConfig) {
-        if (nonNull(itemConfig.getPathParam())) {
+    private String captureValue(RoutingContext routingContext, CaptureConfig itemConfig, AtomicReference<DocumentContext> jsonPathContextHolder) {
+        if (!Strings.isNullOrEmpty(itemConfig.getPathParam())) {
             return routingContext.pathParam(itemConfig.getPathParam());
-        } else if (nonNull(itemConfig.getQueryParam())) {
+        } else if (!Strings.isNullOrEmpty(itemConfig.getQueryParam())) {
             return routingContext.queryParam(itemConfig.getQueryParam()).stream().findFirst().orElse(null);
-        } else if (nonNull(itemConfig.getRequestHeader())) {
+        } else if (!Strings.isNullOrEmpty(itemConfig.getRequestHeader())) {
             return routingContext.request().getHeader(itemConfig.getRequestHeader());
+        } else if (!Strings.isNullOrEmpty(itemConfig.getJsonPath())) {
+            DocumentContext jsonPathContext = jsonPathContextHolder.get();
+            if (isNull(jsonPathContext)) {
+                jsonPathContext = JsonPath.parse(routingContext.getBodyAsString());
+                jsonPathContextHolder.set(jsonPathContext);
+            }
+            return jsonPathContext.read(itemConfig.getJsonPath());
         } else {
             return null;
         }

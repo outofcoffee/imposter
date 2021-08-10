@@ -15,3 +15,15 @@ resources:
       store: captureTest
   response:
     statusCode: 200
+
+- method: POST
+  path: /users
+  capture:
+    name:
+      jsonPath: "$.name"
+      store: captureTest
+    postCode:
+      jsonPath: "$.address.postCode"
+      store: captureTest
+  response:
+    statusCode: 200

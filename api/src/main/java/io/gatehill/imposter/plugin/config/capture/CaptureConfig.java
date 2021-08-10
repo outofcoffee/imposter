@@ -18,6 +18,9 @@ public class CaptureConfig {
     @JsonProperty("requestHeader")
     private String requestHeader;
 
+    @JsonProperty("jsonPath")
+    private String jsonPath;
+
     public String getStore() {
         return store;
     }
@@ -32,5 +35,9 @@ public class CaptureConfig {
 
     public String getRequestHeader() {
         return requestHeader;
+    }
+
+    public String getJsonPath() {
+        return jsonPath;
     }
 }

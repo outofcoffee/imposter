@@ -21,5 +21,8 @@
 
         <!-- quieten redisson -->
         <Logger name="org.redisson" level="warn" />
+
+        <!-- quieten jsonpath -->
+        <Logger name="com.jayway.jsonpath" level="warn" />
     </Loggers>
 </Configuration>
