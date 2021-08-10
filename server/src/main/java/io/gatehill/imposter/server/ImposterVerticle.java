@@ -106,6 +106,10 @@ public class ImposterVerticle extends AbstractVerticle {
                 .filter(p -> p instanceof ConfigurablePlugin)
                 .forEach(p -> allConfigs.addAll(((ConfigurablePlugin<?>) p).getConfigs()));
 
+        if (allConfigs.isEmpty()) {
+            throw new IllegalStateException("No plugin configurations were found. The configuration directory must contain one or more valid Imposter configuration files compatible with installed plugins.");
+        }
+
         if (FeatureUtil.isFeatureEnabled("metrics")) {
             LOGGER.debug("Metrics enabled");
 

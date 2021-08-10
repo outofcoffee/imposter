@@ -41,6 +41,11 @@ public class SecurityServiceImpl implements SecurityService {
      */
     @Override
     public PluginConfig findConfigPreferringSecurityPolicy(List<? extends PluginConfig> allPluginConfigs) {
+        // sanity check
+        if (allPluginConfigs.isEmpty()) {
+            throw new IllegalStateException("No plugin configurations");
+        }
+
         final List<PluginConfig> configsWithSecurity = allPluginConfigs.stream().filter(c -> {
             if (c instanceof SecurityConfigHolder) {
                 return nonNull(((SecurityConfigHolder) c).getSecurity());
@@ -50,7 +55,7 @@ public class SecurityServiceImpl implements SecurityService {
 
         final PluginConfig selectedConfig;
         if (configsWithSecurity.isEmpty()) {
-            selectedConfig = allPluginConfigs.get(0);
+                selectedConfig = allPluginConfigs.get(0);
         } else if (configsWithSecurity.size() == 1) {
             selectedConfig = configsWithSecurity.get(0);
         } else {
