@@ -15,6 +15,9 @@ public class ResponseConfig {
     @JsonProperty("staticData")
     private String staticData;
 
+    @JsonProperty("template")
+    private boolean template;
+
     @JsonProperty("scriptFile")
     private String scriptFile;
 
@@ -33,6 +36,10 @@ public class ResponseConfig {
 
     public String getStaticData() {
         return staticData;
+    }
+
+    public boolean isTemplate() {
+        return template;
     }
 
     public String getScriptFile() {

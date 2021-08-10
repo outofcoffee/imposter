@@ -41,6 +41,16 @@ public abstract class GroovyResponseBehaviourImpl extends Script implements Read
     }
 
     @Override
+    public MutableResponseBehaviour template() {
+        return delegate.template();
+    }
+
+    @Override
+    public boolean isTemplate() {
+        return delegate.isTemplate();
+    }
+
+    @Override
     public String getExampleName() {
         return delegate.getExampleName();
     }

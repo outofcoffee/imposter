@@ -14,6 +14,8 @@ public interface ResponseBehaviour {
 
     String getResponseData();
 
+    boolean isTemplate();
+
     String getExampleName();
 
     ResponseBehaviourType getBehaviourType();

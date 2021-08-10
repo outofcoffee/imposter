@@ -20,6 +20,7 @@ public final class HttpUtil {
 
     public static final String CONTENT_TYPE = "Content-Type";
     public static final String CONTENT_TYPE_JSON = "application/json";
+    public static final String CONTENT_TYPE_XML = "application/xml";
     public static final String CONTENT_TYPE_PLAIN_TEXT = "text/plain";
     public static final String BIND_ALL_HOSTS = "0.0.0.0";
     public static final int DEFAULT_HTTP_LISTEN_PORT = 8080;

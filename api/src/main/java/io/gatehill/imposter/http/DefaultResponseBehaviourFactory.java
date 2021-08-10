@@ -34,6 +34,10 @@ public class DefaultResponseBehaviourFactory implements ResponseBehaviourFactory
                 .withPerformance(responseConfig.getPerformanceDelay())
                 .usingDefaultBehaviour();
 
+        if (responseConfig.isTemplate()) {
+            responseBehaviour.template();
+        }
+
         ofNullable(responseConfig.getHeaders()).orElse(emptyMap())
                 .forEach(responseBehaviour::withHeader);
     }

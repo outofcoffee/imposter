@@ -14,6 +14,8 @@ public interface MutableResponseBehaviour {
 
     MutableResponseBehaviour withData(String responseData);
 
+    MutableResponseBehaviour template();
+
     MutableResponseBehaviour withExampleName(String exampleName);
 
     MutableResponseBehaviour usingDefaultBehaviour();

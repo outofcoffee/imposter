@@ -18,6 +18,9 @@ import io.vertx.ext.web.MIMEHeader;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.impl.ParsableMIMEValue;
+import org.apache.commons.text.StringSubstitutor;
+import org.apache.commons.text.lookup.StringLookup;
+import org.apache.commons.text.lookup.StringLookupFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -40,6 +43,7 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
     private final ResourceService resourceService;
     private final StoreFactory storeFactory;
     private final StoreHolder storeHolder;
+    private final StringSubstitutor storeItemSubstituter;
 
     @Inject
     public StoreServiceImpl(
@@ -54,7 +58,33 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
 
         LOGGER.debug("Stores enabled");
         storeHolder = new StoreHolder(storeFactory);
+        storeItemSubstituter = buildStoreItemSubstituter();
         lifecycleHooks.registerListener(this);
+    }
+
+    /**
+     * @return a string substituter that replaces placeholders like 'example.foo' with the value of the
+     * item 'foo' in the store 'example'.
+     */
+    private StringSubstitutor buildStoreItemSubstituter() {
+        final StringLookup variableResolver = StringLookupFactory.INSTANCE.functionStringLookup(key -> {
+            try {
+                final int dotIndex = key.indexOf(".");
+                if (dotIndex > 0) {
+                    final String storeName = key.substring(0, dotIndex);
+                    if (storeFactory.hasStoreWithName(storeName)) {
+                        final Store store = storeFactory.getStoreByName(storeName);
+                        final String itemKey = key.substring(dotIndex + 1);
+                        return store.load(itemKey);
+                    }
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(String.format("Error replacing template placeholder '%s' with store item", key), e);
+            }
+            throw new IllegalStateException("Unknown store for template placeholder: " + key);
+        });
+
+        return new StringSubstitutor(variableResolver);
     }
 
     @Override
@@ -227,5 +257,10 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
     @Override
     public void beforeBuildingRuntimeContext(Map<String, Object> additionalBindings, ExecutionContext executionContext) {
         additionalBindings.put("stores", storeHolder);
+    }
+
+    @Override
+    public String beforeTransmittingTemplate(RoutingContext routingContext, String responseTemplate) {
+        return storeItemSubstituter.replace(responseTemplate);
     }
 }

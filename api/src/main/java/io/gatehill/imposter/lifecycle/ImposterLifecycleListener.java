@@ -66,4 +66,9 @@ public interface ImposterLifecycleListener {
     default void afterSuccessfulScriptExecution(Map<String, Object> additionalBindings, ReadWriteResponseBehaviour responseBehaviour) {
         // no op
     }
+
+    default String beforeTransmittingTemplate(RoutingContext routingContext, String responseTemplate) {
+        // no op
+        return responseTemplate;
+    }
 }

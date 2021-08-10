@@ -1,6 +1,9 @@
 package io.gatehill.imposter.service;
 
 import com.google.common.base.Strings;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.io.Files;
 import com.google.inject.Injector;
 import io.gatehill.imposter.exception.ResponseException;
 import io.gatehill.imposter.http.ResponseBehaviourFactory;
@@ -18,10 +21,12 @@ import io.gatehill.imposter.script.ResponseBehaviour;
 import io.gatehill.imposter.script.ResponseBehaviourType;
 import io.gatehill.imposter.script.RuntimeContext;
 import io.gatehill.imposter.script.ScriptUtil;
+import io.gatehill.imposter.util.FileUtil;
 import io.gatehill.imposter.util.HttpUtil;
 import io.gatehill.imposter.util.annotation.GroovyImpl;
 import io.gatehill.imposter.util.annotation.JavascriptImpl;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
@@ -39,7 +44,9 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -66,6 +73,10 @@ public class ResponseServiceImpl implements ResponseService {
 
     @Inject
     private Vertx vertx;
+
+    private final Cache<Path, String> responseFileCache = CacheBuilder.newBuilder()
+            .maximumSize(10)
+            .build();
 
     @Override
     public void handle(
@@ -294,7 +305,7 @@ public class ResponseServiceImpl implements ResponseService {
             responseBehaviour.getResponseHeaders().forEach(response::putHeader);
 
             if (!Strings.isNullOrEmpty(responseBehaviour.getResponseFile())) {
-                serveResponseFile(pluginConfig, routingContext, responseBehaviour);
+                serveResponseFile(pluginConfig, resourceConfig, routingContext, responseBehaviour);
             } else if (!Strings.isNullOrEmpty(responseBehaviour.getResponseData())) {
                 serveResponseData(resourceConfig, routingContext, responseBehaviour);
             } else {
@@ -313,21 +324,46 @@ public class ResponseServiceImpl implements ResponseService {
      * by the file being sent.
      *
      * @param pluginConfig      the plugin configuration
+     * @param resourceConfig    the resource configuration
      * @param routingContext    the Vert.x routing context
      * @param responseBehaviour the response behaviour
      */
     private void serveResponseFile(PluginConfig pluginConfig,
+                                   ResourceConfig resourceConfig,
                                    RoutingContext routingContext,
-                                   ResponseBehaviour responseBehaviour) {
+                                   ResponseBehaviour responseBehaviour) throws ExecutionException {
+
+        final HttpServerResponse response = routingContext.response();
 
         LOGGER.info("Serving response file {} for URI {} with status code {}",
                 responseBehaviour.getResponseFile(),
                 routingContext.request().absoluteURI(),
-                routingContext.response().getStatusCode());
+                response.getStatusCode());
 
-        routingContext.response().sendFile(
-                normalisePath(pluginConfig, responseBehaviour.getResponseFile()).toString()
-        );
+        final Path normalisedPath = normalisePath(pluginConfig, responseBehaviour.getResponseFile());
+
+        if (responseBehaviour.isTemplate()) {
+            final String fileExtension = FileUtil.determineFileExtension(normalisedPath);
+            setContentTypeIfAbsent(resourceConfig, response, fileExtension);
+
+            String responseData = responseFileCache.get(normalisedPath, () ->
+                    Files.toString(normalisedPath.toFile(), StandardCharsets.UTF_8)
+            );
+
+            // listeners may transform response data
+            if (!lifecycleHooks.isEmpty()) {
+                final AtomicReference<String> dataHolder = new AtomicReference<>(responseData);
+                lifecycleHooks.forEach(listener ->
+                        dataHolder.set(listener.beforeTransmittingTemplate(routingContext, dataHolder.get()))
+                );
+                responseData = dataHolder.get();
+            }
+
+            response.end(Buffer.buffer(responseData));
+
+        } else {
+            response.sendFile(normalisedPath.toString());
+        }
     }
 
     /**
@@ -348,7 +384,11 @@ public class ResponseServiceImpl implements ResponseService {
                 routingContext.response().getStatusCode());
 
         final HttpServerResponse response = routingContext.response();
+        setContentTypeIfAbsent(resourceConfig, response, null);
+        response.end(responseBehaviour.getResponseData());
+    }
 
+    private void setContentTypeIfAbsent(ResourceConfig resourceConfig, HttpServerResponse response, String fileExtensionHint) {
         // explicit content type
         if (resourceConfig instanceof ContentTypedConfig) {
             final ContentTypedConfig contentTypedConfig = (ContentTypedConfig) resourceConfig;
@@ -358,12 +398,29 @@ public class ResponseServiceImpl implements ResponseService {
         }
 
         if (!response.headers().contains(HttpUtil.CONTENT_TYPE)) {
-            // consider something like Tika to probe content type
-            LOGGER.debug("Guessing JSON content type");
-            response.putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_JSON);
-        }
+            String contentType = null;
+            if (nonNull(fileExtensionHint)) {
+                switch (fileExtensionHint.toLowerCase()) {
+                    case "json":
+                        contentType = HttpUtil.CONTENT_TYPE_JSON;
+                        break;
+                    case "xml":
+                        contentType = HttpUtil.CONTENT_TYPE_XML;
+                        break;
+                    case "txt":
+                        contentType = HttpUtil.CONTENT_TYPE_PLAIN_TEXT;
+                        break;
+                }
+            }
 
-        response.end(responseBehaviour.getResponseData());
+            if (nonNull(contentType)) {
+                LOGGER.debug("Guessed {} content type", contentType);
+            } else {
+                // consider something like Tika to probe content type
+                LOGGER.debug("Guessing JSON content type");
+                response.putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_JSON);
+            }
+        }
     }
 
     private ScriptService fetchScriptService(String scriptFile) {

@@ -11,6 +11,7 @@ public class ReadWriteResponseBehaviourImpl implements ReadWriteResponseBehaviou
     private int statusCode = 200;
     private String responseFile;
     private String responseData;
+    private boolean template;
     private String exampleName;
     private final Map<String, String> responseHeaders = new HashMap<>();
     private boolean behaviourConfigured;
@@ -34,6 +35,17 @@ public class ReadWriteResponseBehaviourImpl implements ReadWriteResponseBehaviou
     @Override
     public String getResponseData() {
         return responseData;
+    }
+
+    @Override
+    public MutableResponseBehaviour template() {
+        this.template = true;
+        return this;
+    }
+
+    @Override
+    public boolean isTemplate() {
+        return template;
     }
 
     @Override
