@@ -2,16 +2,20 @@ package io.gatehill.imposter.server;
 
 import com.google.common.collect.Lists;
 import com.jayway.restassured.RestAssured;
+import com.jayway.restassured.http.ContentType;
 import io.gatehill.imposter.plugin.Plugin;
 import io.gatehill.imposter.plugin.test.TestPluginImpl;
 import io.gatehill.imposter.server.util.FeatureUtil;
 import io.gatehill.imposter.util.HttpUtil;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static com.jayway.restassured.RestAssured.given;
@@ -47,10 +51,10 @@ public class ResponseTemplateTest extends BaseVerticleTest {
     }
 
     /**
-     * Interpolate a template placeholder using a store value.
+     * Interpolate a simple template placeholder using a store value.
      */
     @Test
-    public void testReadInterpolatedTemplate() {
+    public void testSimpleInterpolatedTemplate() {
         // create item
         given().when()
                 .pathParam("storeId", "templateTest")
@@ -67,5 +71,24 @@ public class ResponseTemplateTest extends BaseVerticleTest {
                 .then()
                 .statusCode(equalTo(HttpUtil.HTTP_OK))
                 .body(equalTo("Hello bar!"));
+    }
+
+    /**
+     * Interpolate a JsonPath template placeholder using a store value.
+     */
+    @Test
+    public void testJsonPathInterpolatedTemplate() throws Exception {
+        final String user = FileUtils.readFileToString(
+                new File(CaptureTest.class.getResource("/response-template/user.json").toURI()),
+                StandardCharsets.UTF_8
+        );
+
+        given().when()
+                .body(user)
+                .contentType(ContentType.JSON)
+                .post("/users")
+                .then()
+                .statusCode(equalTo(HttpUtil.HTTP_OK))
+                .body(equalTo("Postcode: PO5 7CO"));
     }
 }

@@ -4,5 +4,15 @@ resources:
 - method: GET
   path: /example
   response:
-    staticFile: template.txt
+    staticFile: simpleTemplate.txt
+    template: true
+
+- method: POST
+  path: /users
+  capture:
+    address:
+      jsonPath: $.address
+      store: templateTest
+  response:
+    staticFile: jsonPathTemplate.txt
     template: true

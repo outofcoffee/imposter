@@ -2,8 +2,11 @@ package io.gatehill.imposter.store.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
+import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.ParseContext;
+import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 import io.gatehill.imposter.ImposterConfig;
 import io.gatehill.imposter.lifecycle.ImposterLifecycleHooks;
 import io.gatehill.imposter.lifecycle.ImposterLifecycleListener;
@@ -48,6 +51,10 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
     private static final ParsableMIMEValue JSON_MIME = new ParsableMIMEValue(HttpUtil.CONTENT_TYPE_JSON);
     private static final String DEFAULT_CAPTURE_STORE_NAME = "request";
 
+    private static final ParseContext JSONPATH_PARSE_CONTEXT = JsonPath.using(Configuration.builder()
+            .mappingProvider(new JacksonMappingProvider())
+            .build());
+
     private final Vertx vertx;
     private final ResourceService resourceService;
     private final StoreFactory storeFactory;
@@ -82,9 +89,27 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
                 if (dotIndex > 0) {
                     final String storeName = key.substring(0, dotIndex);
                     if (storeFactory.hasStoreWithName(storeName)) {
+
+                        String itemKey = key.substring(dotIndex + 1);
+
+                        // check for jsonpath expression
+                        final int colonIndex = itemKey.indexOf(":");
+                        final String jsonPath;
+                        if (colonIndex > 0) {
+                            jsonPath = itemKey.substring(colonIndex + 1);
+                            itemKey = itemKey.substring(0, colonIndex);
+                        } else {
+                            jsonPath = null;
+                        }
+
                         final Store store = storeFactory.getStoreByName(storeName);
-                        final String itemKey = key.substring(dotIndex + 1);
-                        return store.load(itemKey);
+                        final Object itemValue = store.load(itemKey);
+
+                        if (nonNull(jsonPath)) {
+                            return JSONPATH_PARSE_CONTEXT.parse(itemValue).read(jsonPath);
+                        } else {
+                            return itemValue;
+                        }
                     }
                 }
             } catch (Exception e) {
@@ -271,7 +296,7 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
                 final AtomicReference<DocumentContext> jsonPathContextHolder = new AtomicReference<>();
 
                 captureConfig.forEach((itemName, itemConfig) -> {
-                    final String itemValue;
+                    final Object itemValue;
                     try {
                         itemValue = captureValue(routingContext, itemConfig, jsonPathContextHolder);
                     } catch (Exception e) {
@@ -288,7 +313,7 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
         }
     }
 
-    private String captureValue(RoutingContext routingContext, CaptureConfig itemConfig, AtomicReference<DocumentContext> jsonPathContextHolder) {
+    private Object captureValue(RoutingContext routingContext, CaptureConfig itemConfig, AtomicReference<DocumentContext> jsonPathContextHolder) {
         if (!Strings.isNullOrEmpty(itemConfig.getPathParam())) {
             return routingContext.pathParam(itemConfig.getPathParam());
         } else if (!Strings.isNullOrEmpty(itemConfig.getQueryParam())) {
@@ -298,7 +323,7 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
         } else if (!Strings.isNullOrEmpty(itemConfig.getJsonPath())) {
             DocumentContext jsonPathContext = jsonPathContextHolder.get();
             if (isNull(jsonPathContext)) {
-                jsonPathContext = JsonPath.parse(routingContext.getBodyAsString());
+                jsonPathContext = JSONPATH_PARSE_CONTEXT.parse(routingContext.getBodyAsString());
                 jsonPathContextHolder.set(jsonPathContext);
             }
             return jsonPathContext.read(itemConfig.getJsonPath());
