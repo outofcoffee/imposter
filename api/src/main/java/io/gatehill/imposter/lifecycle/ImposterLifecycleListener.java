@@ -67,8 +67,25 @@ public interface ImposterLifecycleListener {
         // no op
     }
 
+    /**
+     * Invoked before sending response content when templating is enabled for the active resource.
+     *
+     * @param routingContext the routing context
+     * @param responseTemplate the response content
+     * @return the transformed response content
+     */
     default String beforeTransmittingTemplate(RoutingContext routingContext, String responseTemplate) {
         // no op
         return responseTemplate;
+    }
+
+    /**
+     * Invoked before building the response.
+     *
+     * @param routingContext the routing context
+     * @param resourceConfig the active resource
+     */
+    default void beforeBuildingResponse(RoutingContext routingContext, ResponseConfigHolder resourceConfig) {
+        // no op
     }
 }

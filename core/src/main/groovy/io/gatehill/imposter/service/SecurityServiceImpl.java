@@ -48,7 +48,7 @@ public class SecurityServiceImpl implements SecurityService {
 
         final List<PluginConfig> configsWithSecurity = allPluginConfigs.stream().filter(c -> {
             if (c instanceof SecurityConfigHolder) {
-                return nonNull(((SecurityConfigHolder) c).getSecurity());
+                return nonNull(((SecurityConfigHolder) c).getSecurityConfig());
             }
             return false;
         }).collect(Collectors.toList());

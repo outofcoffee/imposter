@@ -5,6 +5,9 @@ import io.gatehill.imposter.ImposterConfig;
 import io.gatehill.imposter.lifecycle.ImposterLifecycleHooks;
 import io.gatehill.imposter.lifecycle.ImposterLifecycleListener;
 import io.gatehill.imposter.plugin.config.PluginConfig;
+import io.gatehill.imposter.plugin.config.capture.CaptureConfig;
+import io.gatehill.imposter.plugin.config.capture.CaptureConfigHolder;
+import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
 import io.gatehill.imposter.script.ExecutionContext;
 import io.gatehill.imposter.service.ResourceService;
 import io.gatehill.imposter.store.model.Store;
@@ -31,6 +34,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
@@ -38,6 +42,7 @@ import static java.util.Objects.nonNull;
 public class StoreServiceImpl implements StoreService, ImposterLifecycleListener {
     private static final Logger LOGGER = LogManager.getLogger(StoreServiceImpl.class);
     private static final ParsableMIMEValue JSON_MIME = new ParsableMIMEValue(HttpUtil.CONTENT_TYPE_JSON);
+    private static final String DEFAULT_CAPTURE_STORE_NAME = "request";
 
     private final Vertx vertx;
     private final ResourceService resourceService;
@@ -251,6 +256,34 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
 
         } catch (JsonProcessingException e) {
             routingContext.fail(e);
+        }
+    }
+
+    @Override
+    public void beforeBuildingResponse(RoutingContext routingContext, ResponseConfigHolder resourceConfig) {
+        if (resourceConfig instanceof CaptureConfigHolder) {
+            final Map<String, CaptureConfig> captureConfig = ((CaptureConfigHolder) resourceConfig).getCaptureConfig();
+            if (nonNull(captureConfig)) {
+                captureConfig.forEach((itemName, itemConfig) -> {
+                    final String itemValue = captureValue(routingContext, itemConfig);
+                    final String storeName = ofNullable(itemConfig.getStore()).orElse(DEFAULT_CAPTURE_STORE_NAME);
+                    LOGGER.debug("Capturing item {} into {} store", itemName, storeName);
+                    final Store store = storeFactory.getStoreByName(storeName);
+                    store.save(itemName, itemValue);
+                });
+            }
+        }
+    }
+
+    private String captureValue(RoutingContext routingContext, CaptureConfig itemConfig) {
+        if (nonNull(itemConfig.getPathParam())) {
+            return routingContext.pathParam(itemConfig.getPathParam());
+        } else if (nonNull(itemConfig.getQueryParam())) {
+            return routingContext.queryParam(itemConfig.getQueryParam()).stream().findFirst().orElse(null);
+        } else if (nonNull(itemConfig.getRequestHeader())) {
+            return routingContext.request().getHeader(itemConfig.getRequestHeader());
+        } else {
+            return null;
         }
     }
 

@@ -1,0 +1,17 @@
+plugin: "io.gatehill.imposter.plugin.test.TestPluginImpl"
+
+resources:
+- method: GET
+  path: /users/:userId
+  capture:
+    userId:
+      pathParam: userId
+      store: captureTest
+    page:
+      queryParam: page
+      store: captureTest
+    correlationId:
+      requestHeader: X-Correlation-ID
+      store: captureTest
+  response:
+    statusCode: 200

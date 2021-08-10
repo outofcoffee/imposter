@@ -68,6 +68,6 @@ public class SecurityLifecycleListener implements ImposterLifecycleListener {
         if (!(resourceConfig instanceof SecurityConfigHolder)) {
             return null;
         }
-        return ((SecurityConfigHolder) resourceConfig).getSecurity();
+        return ((SecurityConfigHolder) resourceConfig).getSecurityConfig();
     }
 }

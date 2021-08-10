@@ -148,6 +148,7 @@ public class StoreTest extends BaseVerticleTest {
                 .then()
                 .statusCode(equalTo(HttpUtil.HTTP_OK));
 
+        // retrieve via system
         given().when()
                 .pathParam("storeId", "sgs")
                 .pathParam("key", "bar")

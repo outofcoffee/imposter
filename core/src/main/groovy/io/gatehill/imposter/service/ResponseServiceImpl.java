@@ -90,6 +90,8 @@ public class ResponseServiceImpl implements ResponseService {
             Consumer<ResponseBehaviour> defaultBehaviourHandler
     ) {
         try {
+            lifecycleHooks.forEach(listener -> listener.beforeBuildingResponse(routingContext, resourceConfig));
+
             final ResponseBehaviour responseBehaviour = buildResponseBehaviour(
                     routingContext,
                     pluginConfig,

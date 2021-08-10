@@ -18,12 +18,12 @@ import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 
 /**
- * Tests for response templates.
+ * Tests for item capture.
  *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 @RunWith(VertxUnitRunner.class)
-public class ResponseTemplateTest extends BaseVerticleTest {
+public class CaptureTest extends BaseVerticleTest {
     @Override
     protected Class<? extends Plugin> getPluginClass() {
         return TestPluginImpl.class;
@@ -42,7 +42,7 @@ public class ResponseTemplateTest extends BaseVerticleTest {
     @Override
     protected List<String> getTestConfigDirs() {
         return Lists.newArrayList(
-                "/response-template"
+                "/capture"
         );
     }
 
@@ -50,22 +50,39 @@ public class ResponseTemplateTest extends BaseVerticleTest {
      * Interpolate a template placeholder using a store value.
      */
     @Test
-    public void testReadInterpolatedTemplate() {
-        // create item
-        given().when()
-                .pathParam("storeId", "templateTest")
-                .pathParam("key", "foo")
-                .contentType(HttpUtil.CONTENT_TYPE_PLAIN_TEXT)
-                .body("bar")
-                .put("/system/store/{storeId}/{key}")
-                .then()
-                .statusCode(equalTo(HttpUtil.HTTP_CREATED));
-
+    public void testCaptureItems() {
         // read interpolated response
         given().when()
-                .get("/example")
+                .pathParam("userId", "foo")
+                .queryParam("page", 2)
+                .header("X-Correlation-ID", "abc123")
+                .get("/users/{userId}")
+                .then()
+                .statusCode(equalTo(HttpUtil.HTTP_OK));
+
+        // retrieve via system
+        given().when()
+                .pathParam("storeId", "captureTest")
+                .pathParam("key", "userId")
+                .get("/system/store/{storeId}/{key}")
                 .then()
                 .statusCode(equalTo(HttpUtil.HTTP_OK))
-                .body(equalTo("Hello bar!"));
+                .body(equalTo("foo"));
+
+        given().when()
+                .pathParam("storeId", "captureTest")
+                .pathParam("key", "page")
+                .get("/system/store/{storeId}/{key}")
+                .then()
+                .statusCode(equalTo(HttpUtil.HTTP_OK))
+                .body(equalTo("2"));
+
+        given().when()
+                .pathParam("storeId", "captureTest")
+                .pathParam("key", "correlationId")
+                .get("/system/store/{storeId}/{key}")
+                .then()
+                .statusCode(equalTo(HttpUtil.HTTP_OK))
+                .body(equalTo("abc123"));
     }
 }

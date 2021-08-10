@@ -60,7 +60,7 @@ public class SecurityConfigTest extends BaseVerticleTest {
         final TestPluginConfig pluginConfig = plugin.getConfigs().get(0);
 
         // check security config
-        final SecurityConfig securityConfig = pluginConfig.getSecurity();
+        final SecurityConfig securityConfig = pluginConfig.getSecurityConfig();
         testContext.assertNotNull(securityConfig);
         testContext.assertEquals(SecurityEffect.Deny, securityConfig.getDefaultEffect());
 
