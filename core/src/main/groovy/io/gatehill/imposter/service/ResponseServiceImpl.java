@@ -171,7 +171,7 @@ public class ResponseServiceImpl implements ResponseService {
             final ExecutionContext executionContext = ScriptUtil.buildContext(routingContext, additionalContext);
             LOGGER.trace("Context for request: {}", () -> executionContext);
 
-            final Map<String, Object> finalAdditionalBindings = finaliseAdditionalBindings(additionalBindings, executionContext);
+            final Map<String, Object> finalAdditionalBindings = finaliseAdditionalBindings(routingContext, additionalBindings, executionContext);
 
             final RuntimeContext runtimeContext = new RuntimeContext(
                     System.getenv(),
@@ -217,14 +217,14 @@ public class ResponseServiceImpl implements ResponseService {
         }
     }
 
-    private Map<String, Object> finaliseAdditionalBindings(Map<String, Object> additionalBindings, ExecutionContext executionContext) {
+    private Map<String, Object> finaliseAdditionalBindings(RoutingContext routingContext, Map<String, Object> additionalBindings, ExecutionContext executionContext) {
         Map<String, Object> finalAdditionalBindings = additionalBindings;
 
         // fire pre-context build hooks
         if (!lifecycleHooks.isEmpty()) {
             final Map<String, Object> listenerAdditionalBindings = new HashMap<>();
 
-            lifecycleHooks.forEach(listener -> listener.beforeBuildingRuntimeContext(listenerAdditionalBindings, executionContext));
+            lifecycleHooks.forEach(listener -> listener.beforeBuildingRuntimeContext(routingContext, listenerAdditionalBindings, executionContext));
 
             if (!listenerAdditionalBindings.isEmpty()) {
                 listenerAdditionalBindings.putAll(additionalBindings);

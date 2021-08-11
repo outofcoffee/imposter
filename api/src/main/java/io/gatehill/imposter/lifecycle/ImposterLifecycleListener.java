@@ -50,10 +50,11 @@ public interface ImposterLifecycleListener {
     /**
      * Invoked before building the script runtime context.
      *
+     * @param routingContext the routing context
      * @param additionalBindings the additional bindings that will be passed to the script
      * @param executionContext   the script execution context
      */
-    default void beforeBuildingRuntimeContext(Map<String, Object> additionalBindings, ExecutionContext executionContext) {
+    default void beforeBuildingRuntimeContext(RoutingContext routingContext, Map<String, Object> additionalBindings, ExecutionContext executionContext) {
         // no op
     }
 

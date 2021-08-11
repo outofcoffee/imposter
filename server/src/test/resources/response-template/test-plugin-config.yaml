@@ -7,6 +7,16 @@ resources:
     staticFile: simpleTemplate.txt
     template: true
 
+- method: PUT
+  path: /pets/:petId
+  capture:
+    petId:
+      pathParam: petId
+      store: request
+  response:
+    staticFile: petTemplate.txt
+    template: true
+
 - method: POST
   path: /users
   capture:

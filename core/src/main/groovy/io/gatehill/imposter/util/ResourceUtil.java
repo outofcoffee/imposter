@@ -14,6 +14,7 @@ import static java.util.Optional.ofNullable;
  */
 public final class ResourceUtil {
     public static final String RESPONSE_CONFIG_HOLDER_KEY = "io.gatehill.imposter.responseConfigHolder";
+    public static final String RC_REQUEST_ID_KEY = "request.id";
 
     private static final BiMap<ResourceMethod, HttpMethod> METHODS = HashBiMap.create();
 

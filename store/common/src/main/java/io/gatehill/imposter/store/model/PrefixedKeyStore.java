@@ -18,6 +18,11 @@ public class PrefixedKeyStore implements Store {
         this.delegate = delegate;
     }
 
+    @Override
+    public String getStoreName() {
+        return delegate.getStoreName();
+    }
+
     private String buildKey(String key) {
         return keyPrefix + key;
     }

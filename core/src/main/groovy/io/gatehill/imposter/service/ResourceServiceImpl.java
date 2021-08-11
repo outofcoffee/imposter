@@ -26,6 +26,7 @@ import javax.inject.Inject;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -277,6 +278,9 @@ public class ResourceServiceImpl implements ResourceService {
             RoutingContext routingContext,
             List<ResolvedResourceConfig> resolvedResourceConfigs
     ) {
+        // every request has a unique ID
+        routingContext.put(ResourceUtil.RC_REQUEST_ID_KEY, UUID.randomUUID().toString());
+
         final ResponseConfigHolder rootResourceConfig = (ResponseConfigHolder) pluginConfig;
 
         final HttpServerRequest request = routingContext.request();

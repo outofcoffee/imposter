@@ -6,6 +6,8 @@ import java.util.Map;
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public interface Store {
+    String getStoreName();
+
     String getTypeDescription();
 
     void save(String key, Object value);

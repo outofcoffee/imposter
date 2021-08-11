@@ -1,5 +1,6 @@
 package io.gatehill.imposter.store.factory;
 
+import io.gatehill.imposter.store.inmem.InMemoryStore;
 import io.gatehill.imposter.store.model.PrefixedKeyStore;
 import io.gatehill.imposter.store.model.Store;
 import io.gatehill.imposter.store.model.StoreFactory;
@@ -31,15 +32,22 @@ public abstract class AbstractStoreFactory implements StoreFactory {
 
     @Override
     public boolean hasStoreWithName(String storeName) {
+        if (REQUEST_SCOPED_STORE_NAME.equals(storeName)) {
+            return true;
+        }
         return stores.containsKey(storeName);
     }
 
     @Override
-    public Store getStoreByName(String storeName) {
+    public Store getStoreByName(String storeName, boolean forceInMemory) {
         Store store;
         if (isNull(store = stores.get(storeName))) {
-            LOGGER.debug("Initialising new store: {}", storeName);
-            store = new PrefixedKeyStore(keyPrefix, buildNewStore(storeName));
+            LOGGER.trace("Initialising new store: {}", storeName);
+            if (forceInMemory) {
+                store = new InMemoryStore(storeName);
+            } else {
+                store = new PrefixedKeyStore(keyPrefix, buildNewStore(storeName));
+            }
             stores.put(storeName, store);
         }
         LOGGER.trace("Got store: {} (type: {})", storeName, store.getTypeDescription());

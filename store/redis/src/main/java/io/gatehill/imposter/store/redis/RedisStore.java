@@ -50,6 +50,11 @@ class RedisStore implements Store {
     }
 
     @Override
+    public String getStoreName() {
+        return storeName;
+    }
+
+    @Override
     public String getTypeDescription() {
         return STORE_TYPE;
     }

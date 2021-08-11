@@ -21,6 +21,7 @@ import io.gatehill.imposter.store.model.StoreFactory;
 import io.gatehill.imposter.store.model.StoreHolder;
 import io.gatehill.imposter.util.HttpUtil;
 import io.gatehill.imposter.util.MapUtil;
+import io.gatehill.imposter.util.ResourceUtil;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.MIMEHeader;
@@ -49,7 +50,11 @@ import static java.util.Optional.ofNullable;
 public class StoreServiceImpl implements StoreService, ImposterLifecycleListener {
     private static final Logger LOGGER = LogManager.getLogger(StoreServiceImpl.class);
     private static final ParsableMIMEValue JSON_MIME = new ParsableMIMEValue(HttpUtil.CONTENT_TYPE_JSON);
-    private static final String DEFAULT_CAPTURE_STORE_NAME = "request";
+
+    /**
+     * Default to request scope unless specified.
+     */
+    private static final String DEFAULT_CAPTURE_STORE_NAME = StoreFactory.REQUEST_SCOPED_STORE_NAME;
 
     private static final ParseContext JSONPATH_PARSE_CONTEXT = JsonPath.using(Configuration.builder()
             .mappingProvider(new JacksonMappingProvider())
@@ -58,7 +63,6 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
     private final Vertx vertx;
     private final ResourceService resourceService;
     private final StoreFactory storeFactory;
-    private final StoreHolder storeHolder;
     private final StringSubstitutor storeItemSubstituter;
 
     @Inject
@@ -73,7 +77,6 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
         this.storeFactory = storeFactory;
 
         LOGGER.debug("Stores enabled");
-        storeHolder = new StoreHolder(storeFactory);
         storeItemSubstituter = buildStoreItemSubstituter();
         lifecycleHooks.registerListener(this);
     }
@@ -89,27 +92,8 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
                 if (dotIndex > 0) {
                     final String storeName = key.substring(0, dotIndex);
                     if (storeFactory.hasStoreWithName(storeName)) {
-
-                        String itemKey = key.substring(dotIndex + 1);
-
-                        // check for jsonpath expression
-                        final int colonIndex = itemKey.indexOf(":");
-                        final String jsonPath;
-                        if (colonIndex > 0) {
-                            jsonPath = itemKey.substring(colonIndex + 1);
-                            itemKey = itemKey.substring(0, colonIndex);
-                        } else {
-                            jsonPath = null;
-                        }
-
-                        final Store store = storeFactory.getStoreByName(storeName);
-                        final Object itemValue = store.load(itemKey);
-
-                        if (nonNull(jsonPath)) {
-                            return JSONPATH_PARSE_CONTEXT.parse(itemValue).read(jsonPath);
-                        } else {
-                            return itemValue;
-                        }
+                        final String itemKey = key.substring(dotIndex + 1);
+                        return loadItemFromStore(storeName, itemKey);
                     }
                 }
             } catch (Exception e) {
@@ -119,6 +103,27 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
         });
 
         return new StringSubstitutor(variableResolver);
+    }
+
+    private Object loadItemFromStore(String storeName, String itemKey) {
+        // check for jsonpath expression
+        final int colonIndex = itemKey.indexOf(":");
+        final String jsonPath;
+        if (colonIndex > 0) {
+            jsonPath = itemKey.substring(colonIndex + 1);
+            itemKey = itemKey.substring(0, colonIndex);
+        } else {
+            jsonPath = null;
+        }
+
+        final Store store = storeFactory.getStoreByName(storeName, false);
+        final Object itemValue = store.load(itemKey);
+
+        if (nonNull(jsonPath)) {
+            return JSONPATH_PARSE_CONTEXT.parse(itemValue).read(jsonPath);
+        } else {
+            return itemValue;
+        }
     }
 
     @Override
@@ -274,7 +279,7 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
             // ...otherwise fall through and implicitly create below
         }
 
-        return storeFactory.getStoreByName(storeName);
+        return storeFactory.getStoreByName(storeName, false);
     }
 
     private void serialiseBodyAsJson(RoutingContext routingContext, Object body) {
@@ -306,11 +311,29 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
                     final String storeName = ofNullable(itemConfig.getStore()).orElse(DEFAULT_CAPTURE_STORE_NAME);
                     LOGGER.debug("Capturing item: {} into store: {}", itemName, storeName);
 
-                    final Store store = storeFactory.getStoreByName(storeName);
+                    final Store store = openCaptureStore(routingContext, storeName);
                     store.save(itemName, itemValue);
                 });
             }
         }
+    }
+
+    private Store openCaptureStore(RoutingContext routingContext, String storeName) {
+        final Store store;
+        if (StoreFactory.REQUEST_SCOPED_STORE_NAME.equals(storeName)) {
+            final String uniqueRequestId = routingContext.get(ResourceUtil.RC_REQUEST_ID_KEY);
+            storeName = "request_" + uniqueRequestId;
+            store = storeFactory.getStoreByName(storeName, true);
+
+            // schedule store cleanup
+            routingContext.addHeadersEndHandler(event ->
+                storeFactory.deleteStoreByName(uniqueRequestId)
+            );
+
+        } else {
+            store = storeFactory.getStoreByName(storeName, false);
+        }
+        return store;
     }
 
     private Object captureValue(RoutingContext routingContext, CaptureConfig itemConfig, AtomicReference<DocumentContext> jsonPathContextHolder) {
@@ -333,12 +356,17 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
     }
 
     @Override
-    public void beforeBuildingRuntimeContext(Map<String, Object> additionalBindings, ExecutionContext executionContext) {
-        additionalBindings.put("stores", storeHolder);
+    public void beforeBuildingRuntimeContext(RoutingContext routingContext, Map<String, Object> additionalBindings, ExecutionContext executionContext) {
+        final String requestId = routingContext.get(ResourceUtil.RC_REQUEST_ID_KEY);
+        additionalBindings.put("stores", new StoreHolder(storeFactory, requestId));
     }
 
     @Override
     public String beforeTransmittingTemplate(RoutingContext routingContext, String responseTemplate) {
+        // shim for request scoped store
+        final String uniqueRequestId = routingContext.get(ResourceUtil.RC_REQUEST_ID_KEY);
+        responseTemplate = responseTemplate.replaceAll("\\$\\{request\\.", "\\${request_" + uniqueRequestId + ".");
+
         return storeItemSubstituter.replace(responseTemplate);
     }
 }

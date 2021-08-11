@@ -74,6 +74,20 @@ public class ResponseTemplateTest extends BaseVerticleTest {
     }
 
     /**
+     * Interpolate a request-scoped template placeholder.
+     */
+    @Test
+    public void testRequestScopedInterpolatedTemplate() {
+        given().when()
+                .contentType(ContentType.JSON)
+                .pathParam("petId", 99)
+                .put("/pets/{petId}")
+                .then()
+                .statusCode(equalTo(HttpUtil.HTTP_OK))
+                .body(equalTo("Pet ID: 99"));
+    }
+
+    /**
      * Interpolate a JsonPath template placeholder using a store value.
      */
     @Test
