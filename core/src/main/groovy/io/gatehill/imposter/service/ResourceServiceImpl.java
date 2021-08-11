@@ -280,6 +280,7 @@ public class ResourceServiceImpl implements ResourceService {
     ) {
         // every request has a unique ID
         routingContext.put(ResourceUtil.RC_REQUEST_ID_KEY, UUID.randomUUID().toString());
+        routingContext.response().putHeader("Server", "imposter");
 
         final ResponseConfigHolder rootResourceConfig = (ResponseConfigHolder) pluginConfig;
 
