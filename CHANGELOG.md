@@ -3,9 +3,20 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [1.17.0] - 2021-08-11
 ### Added
-- ...
+- (core) Improves detection of missing configuration files
+- (core) Allows store item lookup in response templates.
+- (core) Enables capture of path parameters, query parameters and request headers for resources.
+- (core) Enables capture of request body properties using JsonPath.
+- (core) Enables response template interpolation using JsonPath.
+- (core) Adds request scoped store.
+- (core) Adds server response header.
+- (core) Enables JVM metrics collection.
+- (core) Improves trapping and request ID logging for unhandled errors.
+
+### Fixed
+- (openapi) Fixes OpenAPI spec path redirect.
 
 ## [1.16.0] - 2021-08-09
 ### Added
