@@ -168,7 +168,10 @@ public class ResourceServiceImpl implements ResourceService {
             Map<String, String> requestHeaders
     ) {
         final RestResourceConfig resourceConfig = resource.getConfig();
-        final boolean pathMatch = path.equals(resourceConfig.getPath()) || pathTemplate.equals(resourceConfig.getPath());
+
+        // path template can be null when a regex route is used
+        final boolean pathMatch = path.equals(resourceConfig.getPath()) ||
+                ofNullable(pathTemplate).map(pt -> pt.equals(resourceConfig.getPath())).orElse(false);
 
         if (isNull(resourceConfig.getMethod())) {
             LOGGER.warn("Resource configuration for '{}' is missing HTTP method - will not correctly match response behaviour", resourceConfig.getPath());

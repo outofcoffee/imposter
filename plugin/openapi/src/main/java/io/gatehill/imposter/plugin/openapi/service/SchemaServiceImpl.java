@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import static java.util.Collections.emptyMap;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
 
 /**
  * Collects examples from schema definitions.
@@ -125,17 +126,17 @@ public class SchemaServiceImpl implements SchemaService {
             example = combinedExampleProperties;
 
         } else if (nonNull(schema.getOneOf()) && !schema.getOneOf().isEmpty()) {
-            LOGGER.debug("Found 'oneOf' in schema {} - using first schema example", schema.getName());
+            LOGGER.debug("Found 'oneOf' in schema {} - using first schema example", ofNullable(schema.getName()).orElse(""));
             final List<Schema> oneOf = schema.getOneOf();
             example = collectSchemaExample(spec, oneOf.get(0));
 
         } else if (nonNull(schema.getAnyOf()) && !schema.getAnyOf().isEmpty()) {
-            LOGGER.debug("Found 'anyOf' in schema {} - using first schema example", schema.getName());
+            LOGGER.debug("Found 'anyOf' in schema {} - using first schema example", ofNullable(schema.getName()).orElse(""));
             final List<Schema> anyOf = schema.getAnyOf();
             example = collectSchemaExample(spec, anyOf.get(0));
 
         } else if (nonNull(schema.getNot())) {
-            LOGGER.debug("Found 'not' in schema {} - using null for schema example", schema.getName());
+            LOGGER.debug("Found 'not' in schema {} - using null for schema example", ofNullable(schema.getName()).orElse(""));
             example = null;
 
         } else {

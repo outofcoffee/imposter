@@ -24,5 +24,8 @@
 
         <!-- quieten jsonpath -->
         <Logger name="com.jayway.jsonpath" level="warn" />
+
+        <!-- quieten swagger -->
+        <Logger name="io.swagger" level="warn" />
     </Loggers>
 </Configuration>
