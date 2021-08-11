@@ -18,6 +18,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -279,8 +280,12 @@ public class ResourceServiceImpl implements ResourceService {
             List<ResolvedResourceConfig> resolvedResourceConfigs
     ) {
         // every request has a unique ID
-        routingContext.put(ResourceUtil.RC_REQUEST_ID_KEY, UUID.randomUUID().toString());
-        routingContext.response().putHeader("Server", "imposter");
+        final String requestId = UUID.randomUUID().toString();
+        routingContext.put(ResourceUtil.RC_REQUEST_ID_KEY, requestId);
+
+        final HttpServerResponse response = routingContext.response();
+        response.putHeader("X-Imposter-Request", requestId);
+        response.putHeader("Server", "imposter");
 
         final ResponseConfigHolder rootResourceConfig = (ResponseConfigHolder) pluginConfig;
 

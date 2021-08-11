@@ -15,6 +15,7 @@ import io.gatehill.imposter.service.ResourceService;
 import io.gatehill.imposter.util.AsyncUtil;
 import io.gatehill.imposter.util.HttpUtil;
 import io.gatehill.imposter.util.InjectorUtil;
+import io.gatehill.imposter.util.ResourceUtil;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpServer;
@@ -99,6 +100,10 @@ public class ImposterVerticle extends AbstractVerticle {
 
     private Router configureRoutes() {
         final Router router = Router.router(vertx);
+        router.errorHandler(500, routingContext -> LOGGER.error(
+                "Unhandled routing exception for request: " + routingContext.get(ResourceUtil.RC_REQUEST_ID_KEY),
+                routingContext.failure()
+        ));
         router.route().handler(new BodyHandlerImpl());
 
         final List<PluginConfig> allConfigs = new ArrayList<>();
