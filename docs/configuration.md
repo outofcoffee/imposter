@@ -138,13 +138,14 @@ You can make Imposter respond with different values based on certain properties 
 
 Configure different response behaviours based on the following request attributes:
 
-| Field            | Plugin(s)     | Type                  | Example                    |
-|------------------|---------------|-----------------------|----------------------------|
-| `method`         | openapi, rest | String (HTTP method)  | `POST`                     |
-| `path`           | all           | String                | `/example/path`            |
-| `pathParams`     | openapi       | Map of String:String  | `{ "productCode": "abc" }` |
-| `queryParams`    | openapi       | Map of String:String  | `{ "limit": "10" }`        |
-| `requestHeaders` | openapi       | Map of String:String  | `{ "User-Agent": "curl" }` |
+| Field            | Plugin(s)     | Type                                | Example                                        |
+|------------------|---------------|-------------------------------------|------------------------------------------------|
+| `method`         | openapi, rest | String (HTTP method)                | `POST`                                         |
+| `path`           | all           | String                              | `/example/path`                                |
+| `pathParams`     | openapi       | Map of String:String                | `{ "productCode": "abc" }`                     |
+| `queryParams`    | openapi       | Map of String:String                | `{ "limit": "10" }`                            |
+| `requestHeaders` | openapi       | Map of String:String                | `{ "User-Agent": "curl" }`                     |
+| `requestBody`    | openapi, rest | Request body matching configuration | See [advanced matching](./request_matching.md) |
 
 Here is an example showing all fields:
 
