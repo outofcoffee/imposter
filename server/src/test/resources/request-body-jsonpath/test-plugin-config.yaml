@@ -1,0 +1,27 @@
+plugin: "io.gatehill.imposter.plugin.test.TestPluginImpl"
+
+resources:
+- method: GET
+  path: /example1
+  requestBody:
+    jsonPath: $.foo
+    value: bar
+  response:
+    statusCode: 204
+
+- method: GET
+  path: /example2
+  requestBody:
+    jsonPath: $.baz
+    value: 99
+  response:
+    statusCode: 302
+
+- method: GET
+  path: /example3
+  requestBody:
+    jsonPath: $.notmatching
+    # tilde is YAML for null
+    value: ~
+  response:
+    statusCode: 409

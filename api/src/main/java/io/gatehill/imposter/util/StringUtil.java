@@ -11,13 +11,13 @@ public final class StringUtil {
     }
 
     /**
-     * Checks if two strings match, where either input could be null.
+     * Checks if two objects match, where either input could be null.
      *
-     * @param a string to test, possibly {@code null}
-     * @param b string to test, possibly {@code null}
-     * @return {@code true} if the strings match, otherwise {@code false}
+     * @param a object to test, possibly {@code null}
+     * @param b object to test, possibly {@code null}
+     * @return {@code true} if the objects match, otherwise {@code false}
      */
-    public static boolean safeEquals(String a, String b) {
+    public static boolean safeEquals(Object a, Object b) {
         if (nonNull(a)) {
             return a.equals(b);
         } else {

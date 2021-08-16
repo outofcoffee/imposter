@@ -16,6 +16,7 @@ dependencies {
     compile 'io.github.classgraph:classgraph:4.8.54'
     compile 'commons-io:commons-io:2.9.0'
     compile 'org.apache.commons:commons-text:1.9'
+    compile 'com.jayway.jsonpath:json-path:2.6.0'
 
     testCompile "junit:junit:$version_junit"
 }

@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
@@ -36,6 +37,7 @@ public interface ResourceService {
      * @param pathParams     the path parameters of the current request
      * @param queryParams    the query parameters of the current request
      * @param requestHeaders the headers of the current request
+     * @param bodySupplier   supplies the request body
      * @return a matching resource configuration or else empty
      */
     Optional<ResponseConfigHolder> matchResourceConfig(
@@ -45,7 +47,8 @@ public interface ResourceService {
             String path,
             Map<String, String> pathParams,
             Map<String, String> queryParams,
-            Map<String, String> requestHeaders
+            Map<String, String> requestHeaders,
+            Supplier<String> bodySupplier
     );
 
     /**

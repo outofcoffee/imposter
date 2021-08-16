@@ -1,5 +1,8 @@
 package io.gatehill.imposter.service;
 
+import com.google.common.base.Strings;
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.PathNotFoundException;
 import io.gatehill.imposter.ImposterConfig;
 import io.gatehill.imposter.config.ResolvedResourceConfig;
 import io.gatehill.imposter.lifecycle.ImposterLifecycleHooks;
@@ -12,6 +15,7 @@ import io.gatehill.imposter.plugin.config.resource.ResourceConfig;
 import io.gatehill.imposter.plugin.config.resource.ResourceMethod;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
 import io.gatehill.imposter.plugin.config.resource.RestResourceConfig;
+import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyConfig;
 import io.gatehill.imposter.util.CollectionUtil;
 import io.gatehill.imposter.util.ResourceUtil;
 import io.gatehill.imposter.util.StringUtil;
@@ -31,6 +35,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static io.gatehill.imposter.util.HttpUtil.convertMultiMapToHashMap;
@@ -106,12 +111,13 @@ public class ResourceServiceImpl implements ResourceService {
             String path,
             Map<String, String> pathParams,
             Map<String, String> queryParams,
-            Map<String, String> requestHeaders
+            Map<String, String> requestHeaders,
+            Supplier<String> bodySupplier
     ) {
         final ResourceMethod resourceMethod = ResourceUtil.convertMethodFromVertx(method);
 
         List<ResolvedResourceConfig> resourceConfigs = resources.stream()
-                .filter(res -> isRequestMatch(res, resourceMethod, pathTemplate, path, pathParams, queryParams, requestHeaders))
+                .filter(res -> isRequestMatch(res, resourceMethod, pathTemplate, path, pathParams, queryParams, requestHeaders, bodySupplier))
                 .collect(Collectors.toList());
 
         // find the most specific, by filter those that match for those that specify parameters
@@ -157,7 +163,8 @@ public class ResourceServiceImpl implements ResourceService {
      * @param pathParams     the path parameters of the current request
      * @param queryParams    the query parameters of the current request
      * @param requestHeaders the headers of the current request
-     * @return {@code true} if the the resource matches the request, otherwise {@code false}
+     * @param bodySupplier   supplies the request body
+     * @return {@code true} if the resource matches the request, otherwise {@code false}
      */
     private boolean isRequestMatch(
             ResolvedResourceConfig resource,
@@ -166,7 +173,8 @@ public class ResourceServiceImpl implements ResourceService {
             String path,
             Map<String, String> pathParams,
             Map<String, String> queryParams,
-            Map<String, String> requestHeaders
+            Map<String, String> requestHeaders,
+            Supplier<String> bodySupplier
     ) {
         final RestResourceConfig resourceConfig = resource.getConfig();
 
@@ -182,7 +190,8 @@ public class ResourceServiceImpl implements ResourceService {
                 resourceMethod.equals(resourceConfig.getMethod()) &&
                 matchPairs(pathParams, resource.getPathParams(), true) &&
                 matchPairs(queryParams, resource.getQueryParams(), true) &&
-                matchPairs(requestHeaders, resource.getRequestHeaders(), false);
+                matchPairs(requestHeaders, resource.getRequestHeaders(), false) &&
+                matchRequestBody(bodySupplier, resource.getConfig().getRequestBody());
     }
 
     /**
@@ -213,6 +222,33 @@ public class ResourceServiceImpl implements ResourceService {
             final String configKey = caseSensitiveKeyMatch ? keyValueConfig.getKey() : keyValueConfig.getKey().toLowerCase();
             return StringUtil.safeEquals(comparisonMap.get(configKey), keyValueConfig.getValue());
         });
+    }
+
+    /**
+     * Match the request body against the supplied configuration.
+     *
+     * @param bodySupplier supplies the request body
+     * @param requestBodyConfig the match configuration
+     * @return {@code true} if the configuration is empty, or the request body matches the configuration, otherwise {@code false}
+     */
+    private boolean matchRequestBody(Supplier<String> bodySupplier, RequestBodyConfig requestBodyConfig) {
+        // none configured - implies any match
+        if (isNull(requestBodyConfig) || Strings.isNullOrEmpty(requestBodyConfig.getJsonPath())) {
+            return true;
+        }
+        final String body = bodySupplier.get();
+
+        Object bodyValue;
+        if (Strings.isNullOrEmpty(body)) {
+            bodyValue = null;
+        } else {
+            try {
+                bodyValue = JsonPath.read(body, requestBodyConfig.getJsonPath());
+            } catch (PathNotFoundException ignored) {
+                bodyValue = null;
+            }
+        }
+        return StringUtil.safeEquals(requestBodyConfig.getValue(), bodyValue);
     }
 
     /**
@@ -303,7 +339,8 @@ public class ResourceServiceImpl implements ResourceService {
                 request.path(),
                 routingContext.pathParams(),
                 convertMultiMapToHashMap(request.params()),
-                convertMultiMapToHashMap(request.headers())
+                convertMultiMapToHashMap(request.headers()),
+                routingContext::getBodyAsString
         ).orElse(rootResourceConfig);
 
         // allows plugins to customise behaviour
