@@ -12,6 +12,7 @@ import io.gatehill.imposter.plugin.config.resource.ResourceConfig;
 import io.gatehill.imposter.plugin.config.resource.ResourceMethod;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
 import io.gatehill.imposter.plugin.config.resource.RestResourceConfig;
+import io.gatehill.imposter.util.CollectionUtil;
 import io.gatehill.imposter.util.ResourceUtil;
 import io.gatehill.imposter.util.StringUtil;
 import io.vertx.core.Handler;
@@ -114,9 +115,9 @@ public class ResourceServiceImpl implements ResourceService {
                 .collect(Collectors.toList());
 
         // find the most specific, by filter those that match for those that specify parameters
-        resourceConfigs = filterByKeyValuePairs(resourceConfigs, ResolvedResourceConfig::getPathParams);
-        resourceConfigs = filterByKeyValuePairs(resourceConfigs, ResolvedResourceConfig::getQueryParams);
-        resourceConfigs = filterByKeyValuePairs(resourceConfigs, ResolvedResourceConfig::getRequestHeaders);
+        resourceConfigs = filterByPairs(resourceConfigs, ResolvedResourceConfig::getPathParams);
+        resourceConfigs = filterByPairs(resourceConfigs, ResolvedResourceConfig::getQueryParams);
+        resourceConfigs = filterByPairs(resourceConfigs, ResolvedResourceConfig::getRequestHeaders);
 
         if (resourceConfigs.isEmpty()) {
             return empty();
@@ -130,19 +131,19 @@ public class ResourceServiceImpl implements ResourceService {
         return of(resourceConfigs.get(0).getConfig());
     }
 
-    private List<ResolvedResourceConfig> filterByKeyValuePairs(
+    private List<ResolvedResourceConfig> filterByPairs(
             List<ResolvedResourceConfig> resourceConfigs,
-            Function<ResolvedResourceConfig, Map<String, String>> keyValuePairsSupplier
+            Function<ResolvedResourceConfig, Map<String, String>> pairsSupplier
     ) {
-        final List<ResolvedResourceConfig> configsWithKeyValuePairs = resourceConfigs.stream()
-                .filter(res -> !keyValuePairsSupplier.apply(res).isEmpty())
+        final List<ResolvedResourceConfig> configsWithPairs = resourceConfigs.stream()
+                .filter(res -> !pairsSupplier.apply(res).isEmpty())
                 .collect(Collectors.toList());
 
-        if (configsWithKeyValuePairs.isEmpty()) {
+        if (configsWithPairs.isEmpty()) {
             // no resource configs specified params - don't filter
             return resourceConfigs;
         } else {
-            return configsWithKeyValuePairs;
+            return configsWithPairs;
         }
     }
 
@@ -179,9 +180,9 @@ public class ResourceServiceImpl implements ResourceService {
 
         return pathMatch &&
                 resourceMethod.equals(resourceConfig.getMethod()) &&
-                matchParams(pathParams, resource.getPathParams(), false) &&
-                matchParams(queryParams, resource.getQueryParams(), false) &&
-                matchParams(requestHeaders, resource.getRequestHeaders(), true);
+                matchPairs(pathParams, resource.getPathParams(), true) &&
+                matchPairs(queryParams, resource.getQueryParams(), true) &&
+                matchPairs(requestHeaders, resource.getRequestHeaders(), false);
     }
 
     /**
@@ -189,26 +190,28 @@ public class ResourceServiceImpl implements ResourceService {
      * If the configuration contains no parameters, then this evaluates to true.
      * Additional parameters not in the configuration are ignored.
      *
-     * @param resourceKeyValuePairs      the configured parameters to match
-     * @param requestKeyValuePairs       the parameters from the request (e.g. query or path)
-     * @param caseInsensitiveKeyMatching whether to match keys case insensitively
+     * @param resourceMap           the configured parameters to match
+     * @param requestMap            the parameters from the request (e.g. query or path)
+     * @param caseSensitiveKeyMatch whether to match keys case-sensitively
      * @return {@code true} if the configured parameters match the request, otherwise {@code false}
      */
-    private boolean matchParams(
-            Map<String, String> requestKeyValuePairs,
-            Map<String, String> resourceKeyValuePairs,
-            boolean caseInsensitiveKeyMatching
+    private boolean matchPairs(
+            Map<String, String> requestMap,
+            Map<String, String> resourceMap,
+            boolean caseSensitiveKeyMatch
     ) {
         // none configured - implies any match
-        if (resourceKeyValuePairs.isEmpty()) {
+        if (resourceMap.isEmpty()) {
             return true;
         }
 
-        final Map<String, String> requestMap = caseInsensitiveKeyMatching ? StringUtil.convertKeysToLowerCase(requestKeyValuePairs) : requestKeyValuePairs;
+        final Map<String, String> comparisonMap = caseSensitiveKeyMatch ?
+                requestMap :
+                CollectionUtil.convertKeysToLowerCase(requestMap);
 
-        return resourceKeyValuePairs.entrySet().stream().allMatch(keyValueConfig -> {
-            final String configKey = caseInsensitiveKeyMatching ? keyValueConfig.getKey().toLowerCase() : keyValueConfig.getKey();
-            return StringUtil.safeEquals(requestMap.get(configKey), keyValueConfig.getValue());
+        return resourceMap.entrySet().stream().allMatch(keyValueConfig -> {
+            final String configKey = caseSensitiveKeyMatch ? keyValueConfig.getKey() : keyValueConfig.getKey().toLowerCase();
+            return StringUtil.safeEquals(comparisonMap.get(configKey), keyValueConfig.getValue());
         });
     }
 

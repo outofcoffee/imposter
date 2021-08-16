@@ -1,6 +1,6 @@
 package io.gatehill.imposter.script;
 
-import io.gatehill.imposter.util.StringUtil;
+import io.gatehill.imposter.util.CollectionUtil;
 
 import java.util.Map;
 import java.util.function.Supplier;
@@ -110,7 +110,7 @@ public class ExecutionContext {
          * @return the {@link #getHeaders()} map, but with all keys in lowercase
          */
         public Map<String, String> getNormalisedHeaders() {
-            return StringUtil.convertKeysToLowerCase(getHeaders());
+            return CollectionUtil.convertKeysToLowerCase(getHeaders());
         }
 
         /**

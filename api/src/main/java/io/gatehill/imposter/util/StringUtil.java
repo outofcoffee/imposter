@@ -1,8 +1,5 @@
 package io.gatehill.imposter.util;
 
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
@@ -11,15 +8,6 @@ import static java.util.Objects.nonNull;
  */
 public final class StringUtil {
     private StringUtil() {
-    }
-
-    /**
-     * @return a copy of the input map with all strings in lowercase
-     */
-    public static <V> Map<String, V> convertKeysToLowerCase(Map<String, V> input) {
-        return input.entrySet().stream().collect(
-                Collectors.toMap(e -> e.getKey().toLowerCase(), Map.Entry::getValue)
-        );
     }
 
     /**

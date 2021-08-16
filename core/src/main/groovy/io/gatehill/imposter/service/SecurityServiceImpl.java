@@ -9,6 +9,7 @@ import io.gatehill.imposter.plugin.config.security.SecurityConfig;
 import io.gatehill.imposter.plugin.config.security.SecurityConfigHolder;
 import io.gatehill.imposter.plugin.config.security.SecurityEffect;
 import io.gatehill.imposter.service.security.SecurityLifecycleListener;
+import io.gatehill.imposter.util.CollectionUtil;
 import io.gatehill.imposter.util.HttpUtil;
 import io.gatehill.imposter.util.StringUtil;
 import io.vertx.core.MultiMap;
@@ -118,7 +119,7 @@ public class SecurityServiceImpl implements SecurityService {
     /**
      * Determine the effect of each conditional name/value pair and operator.
      * Keys in the request map may be compared in a case-insensitive manner, based
-     * on the underlying implementation of the {@link MultiMap}.
+     * on the value of caseSensitiveKeyMatch.
      *
      * @param conditionMap          the values from the condition
      * @param requestMap            the values from the request
@@ -132,8 +133,9 @@ public class SecurityServiceImpl implements SecurityService {
             SecurityEffect conditionEffect,
             boolean caseSensitiveKeyMatch
     ) {
-        final Map<String, String> comparisonMap = requestMap.entries().stream()
-                .collect(Collectors.toMap(e -> caseSensitiveKeyMatch ? e.getKey() : e.getKey().toLowerCase(), Map.Entry::getValue));
+        final Map<String, String> comparisonMap = caseSensitiveKeyMatch ?
+                CollectionUtil.asMap(requestMap) :
+                CollectionUtil.convertKeysToLowerCase(requestMap);
 
         return conditionMap.values().stream().map(conditionValue -> {
             final boolean valueMatch = StringUtil.safeEquals(
