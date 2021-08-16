@@ -48,10 +48,10 @@ public class ExampleServiceImpl implements ExampleService {
             OpenApiPluginConfig config,
             RoutingContext routingContext,
             ResponseBehaviour responseBehaviour,
-            ApiResponse mockResponse,
+            ApiResponse specResponse,
             OpenAPI spec
     ) {
-        final Optional<Content> optionalContent = findContent(spec, mockResponse);
+        final Optional<Content> optionalContent = findContent(spec, specResponse);
         if (optionalContent.isPresent()) {
             final Content responseContent = optionalContent.get();
 

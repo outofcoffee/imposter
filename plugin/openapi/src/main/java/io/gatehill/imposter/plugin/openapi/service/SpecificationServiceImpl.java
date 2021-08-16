@@ -56,7 +56,7 @@ public class SpecificationServiceImpl implements SpecificationService {
     private static final String ARG_TITLE = "openapi.title";
 
     private final Cache<String, Object> cache = CacheBuilder.newBuilder().build();
-    private final SimpleValidationReportFormat reportFormater = SimpleValidationReportFormat.getInstance();
+    private final SimpleValidationReportFormat reportFormatter = SimpleValidationReportFormat.getInstance();
 
     @Override
     public OpenAPI getCombinedSpec(ImposterConfig imposterConfig, List<OpenAPI> allSpecs) throws ExecutionException {
@@ -212,7 +212,7 @@ public class SpecificationServiceImpl implements SpecificationService {
 
         final ValidationReport report = validator.validateRequest(requestBuilder.build());
         if (!report.getMessages().isEmpty()) {
-            final String reportMessages = reportFormater.apply(report);
+            final String reportMessages = reportFormatter.apply(report);
             LOGGER.warn("Validation failed for {} {}: {}", request.method(), request.absoluteURI(), reportMessages);
 
             // only respond with 400 if validation failures are at error level

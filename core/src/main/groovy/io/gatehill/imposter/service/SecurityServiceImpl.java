@@ -55,7 +55,7 @@ public class SecurityServiceImpl implements SecurityService {
 
         final PluginConfig selectedConfig;
         if (configsWithSecurity.isEmpty()) {
-                selectedConfig = allPluginConfigs.get(0);
+            selectedConfig = allPluginConfigs.get(0);
         } else if (configsWithSecurity.size() == 1) {
             selectedConfig = configsWithSecurity.get(0);
         } else {
@@ -106,10 +106,10 @@ public class SecurityServiceImpl implements SecurityService {
         final List<SecurityEffect> results = new ArrayList<>();
 
         // query params
-        results.addAll(checkCondition(condition.getQueryParams(), routingContext.request().params(), condition.getEffect()));
+        results.addAll(checkCondition(condition.getQueryParams(), routingContext.request().params(), condition.getEffect(), true));
 
         // headers
-        results.addAll(checkCondition(condition.getRequestHeaders(), routingContext.request().headers(), condition.getEffect()));
+        results.addAll(checkCondition(condition.getRequestHeaders(), routingContext.request().headers(), condition.getEffect(), false));
 
         // all must permit
         return results.stream().allMatch(SecurityEffect.Permit::equals);
@@ -120,19 +120,24 @@ public class SecurityServiceImpl implements SecurityService {
      * Keys in the request map may be compared in a case-insensitive manner, based
      * on the underlying implementation of the {@link MultiMap}.
      *
-     * @param conditionMap    the values from the condition
-     * @param requestMap      the values from the request
-     * @param conditionEffect the effect of the condition if it is true
+     * @param conditionMap          the values from the condition
+     * @param requestMap            the values from the request
+     * @param conditionEffect       the effect of the condition if it is true
+     * @param caseSensitiveKeyMatch whether to match the keys case-sensitively
      * @return the actual effect based on the values
      */
     private List<SecurityEffect> checkCondition(
             Map<String, ConditionalNameValuePair> conditionMap,
             MultiMap requestMap,
-            SecurityEffect conditionEffect
+            SecurityEffect conditionEffect,
+            boolean caseSensitiveKeyMatch
     ) {
+        final Map<String, String> comparisonMap = requestMap.entries().stream()
+                .collect(Collectors.toMap(e -> caseSensitiveKeyMatch ? e.getKey() : e.getKey().toLowerCase(), Map.Entry::getValue));
+
         return conditionMap.values().stream().map(conditionValue -> {
             final boolean valueMatch = StringUtil.safeEquals(
-                    requestMap.get(conditionValue.getName()),
+                    comparisonMap.get(caseSensitiveKeyMatch ? conditionValue.getName() : conditionValue.getName().toLowerCase()),
                     conditionValue.getValue()
             );
 
@@ -148,7 +153,7 @@ public class SecurityServiceImpl implements SecurityService {
 
             if (LOGGER.isTraceEnabled()) {
                 LOGGER.trace("Condition match for {} {} {}: {}. Request map: {}. Effect: {}",
-                        conditionValue.getName(), conditionValue.getOperator(), conditionValue.getValue(), matched, requestMap.entries(), finalEffect);
+                        conditionValue.getName(), conditionValue.getOperator(), conditionValue.getValue(), matched, comparisonMap.entrySet(), finalEffect);
             }
             return finalEffect;
 
