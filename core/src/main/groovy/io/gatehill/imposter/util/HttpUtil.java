@@ -256,7 +256,7 @@ public final class HttpUtil {
     }
 
     public static String buildStatusResponse() {
-        return "{\n  \"status\":\"ok\"\n  \"version\":\"" + MetaUtil.readVersion() + "\"\n}";
+        return "{\n  \"status\":\"ok\",\n  \"version\":\"" + MetaUtil.readVersion() + "\"\n}";
     }
 
     public static Map<String, String> convertMultiMapToHashMap(MultiMap params) {
