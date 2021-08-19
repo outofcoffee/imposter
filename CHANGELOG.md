@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- ...
+
 ## [1.18.0] - 2021-08-19
 ### Added
 - (openapi, rest) Allows resource matching against request body using JsonPath. See [request matching](./docs/request_matching.md).
