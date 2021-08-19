@@ -103,4 +103,4 @@ Templating incurs a performance penalty, but is often faster than dynamically ge
 
 Template files are cached in memory once read from disk, so they do not incur as high an I/O cost from storage on subsequent requests.
 
-Using JsonPath in placeholder templates is especially computationally intensive, as it requires parsing and querying of an item rather than just value substitution.
+Using JsonPath in placeholder templates is computationally expensive, as it requires parsing and querying of an item rather than just value substitution.
