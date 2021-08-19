@@ -99,7 +99,7 @@ In order to help you determine what action to take, Imposter makes certain objec
 |-----------|------------------------------------------------------------------------------|
 | `context` | Parent object for accessing request properties                               |
 | `config`  | The plugin configuration for the current request                             |
-| `env`     | A map of environment variables, such as `[ "MY_VAR": "abc", "VAR2": "def" ]` |
+| `env`     | A map of environment variables, such as `{ "MY_VAR": "abc", "VAR2": "def" }` |
 | `logger`  | Logger, supporting levels such as `info(String)`, `warn(String)` etc.        |
 
 ## Context object
@@ -121,11 +121,11 @@ The request object is available on the `context`. It provides access to request 
 |---------------------|------------------------------------------------------------------|-----------------------------------------------------------------|
 | `path`              | The path of the request.                                         | `"/example"`                                                    |
 | `method`            | The HTTP method of the request.                                  | `"GET"`                                                         |
-| `pathParams`        | A map containing the request path parameters.                    | `[ "productCode": "abc", "foo": "bar" ]`                        |
-| `queryParams`       | A map containing the request query parameters.                   | `[ "limit": "10", "foo": "bar" ]`                               |
+| `pathParams`        | A map containing the request path parameters.                    | `{ "productCode": "abc", "foo": "bar" }`                        |
+| `queryParams`       | A map containing the request query parameters.                   | `{ "limit": "10", "foo": "bar" }`                               |
 | `uri`               | The absolute URI of the request.                                 | `"http://example.com?foo=bar&baz=qux"`                          |
-| `headers`           | A map containing the request headers.                            | `[ "X-Example": "ABC123", "Content-Type": "text/plain" ]` |
-| `normalisedHeaders` | A map containing the request headers with all keys in lowercase. | `[ "x-example": "ABC123", "content-type": "text/plain" ]` |
+| `headers`           | A map containing the request headers.                            | `{ "X-Example": "ABC123", "Content-Type": "text/plain" }`       |
+| `normalisedHeaders` | A map containing the request headers with all keys in lowercase. | `{ "x-example": "ABC123", "content-type": "text/plain" }`       |
 | `body`              | A string containing the request body.                            | `"Hello world."`                                                |
 
 > Note: keys are always lowercase in `normalisedHeaders`, regardless of the request header casing. This aids script portability, avoiding case-sensitivity for header keys.

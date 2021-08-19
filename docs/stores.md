@@ -115,3 +115,9 @@ Different store implementations exist:
 
 * In memory store (default)
 * [Redis store](../store/redis)
+
+## Request scoped store
+
+There is a special request-scoped store, named `request`, which is accessible only to the current request. Its contents do not persist beyond the lifecycle of the request.
+
+The request scoped store is very useful when you need to [capture](./data_capture.md) an item for immediate use, such as in a [response template](./templates.md), but you don't need to persist it for later use.

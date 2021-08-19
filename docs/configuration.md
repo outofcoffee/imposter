@@ -61,6 +61,8 @@ Using the configuration above, if we were to send an HTTP request to the `/examp
 
 The plugin has returned the contents of the `staticFile` in the HTTP response.
 
+Your response files can also be templated - that is, contain placeholders for substituted at runtime. See [templates](./templates.md) for more information.
+
 ### Response configuration options
 
 You can specify other properties of the response, such as status code and headers. Here is a more complete example:
@@ -180,6 +182,10 @@ resources:
       statusCode: 409
       staticData: "Username already exists."
 ```
+
+## Capturing data
+
+Imposter allows you to capture elements of the request. You can use these elements in a [response template](./templates.md), a [script](./scripting.md) or add them to a [store](./stores.md) for later use. See [data capture](./data_capture.md) for more information.
 
 ## Environment variables
 
