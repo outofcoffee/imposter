@@ -1,5 +1,7 @@
 package io.gatehill.imposter.store.model;
 
+import io.gatehill.imposter.store.util.StoreUtil;
+
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
@@ -13,8 +15,8 @@ public class StoreHolder {
     }
 
     public Store open(String storeName) {
-        if (StoreFactory.REQUEST_SCOPED_STORE_NAME.equals(storeName)) {
-            storeName = "request_" + requestId;
+        if (StoreUtil.isRequestScopedStore(storeName)) {
+            storeName = StoreUtil.buildRequestStoreName(requestId);
             return storeFactory.getStoreByName(storeName, true);
         }
         return storeFactory.getStoreByName(storeName, false);

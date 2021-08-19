@@ -19,6 +19,7 @@ import io.gatehill.imposter.service.ResourceService;
 import io.gatehill.imposter.store.model.Store;
 import io.gatehill.imposter.store.model.StoreFactory;
 import io.gatehill.imposter.store.model.StoreHolder;
+import io.gatehill.imposter.store.util.StoreUtil;
 import io.gatehill.imposter.util.HttpUtil;
 import io.gatehill.imposter.util.MapUtil;
 import io.gatehill.imposter.util.ResourceUtil;
@@ -54,7 +55,7 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
     /**
      * Default to request scope unless specified.
      */
-    private static final String DEFAULT_CAPTURE_STORE_NAME = StoreFactory.REQUEST_SCOPED_STORE_NAME;
+    private static final String DEFAULT_CAPTURE_STORE_NAME = StoreUtil.REQUEST_SCOPED_STORE_NAME;
 
     private static final ParseContext JSONPATH_PARSE_CONTEXT = JsonPath.using(Configuration.builder()
             .mappingProvider(new JacksonMappingProvider())
@@ -320,16 +321,10 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
 
     private Store openCaptureStore(RoutingContext routingContext, String storeName) {
         final Store store;
-        if (StoreFactory.REQUEST_SCOPED_STORE_NAME.equals(storeName)) {
+        if (StoreUtil.isRequestScopedStore(storeName)) {
             final String uniqueRequestId = routingContext.get(ResourceUtil.RC_REQUEST_ID_KEY);
-            storeName = "request_" + uniqueRequestId;
+            storeName = StoreUtil.buildRequestStoreName(uniqueRequestId);
             store = storeFactory.getStoreByName(storeName, true);
-
-            // schedule store cleanup
-            routingContext.addHeadersEndHandler(event ->
-                storeFactory.deleteStoreByName(uniqueRequestId)
-            );
-
         } else {
             store = storeFactory.getStoreByName(storeName, false);
         }
@@ -368,5 +363,13 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
         responseTemplate = responseTemplate.replaceAll("\\$\\{request\\.", "\\${request_" + uniqueRequestId + ".");
 
         return storeItemSubstituter.replace(responseTemplate);
+    }
+
+    @Override
+    public void afterRoutingContextHandled(RoutingContext routingContext) {
+        // clean up request store if one exists
+        ofNullable((String) routingContext.get(ResourceUtil.RC_REQUEST_ID_KEY)).ifPresent(uniqueRequestId ->
+                storeFactory.deleteStoreByName(StoreUtil.buildRequestStoreName(uniqueRequestId))
+        );
     }
 }

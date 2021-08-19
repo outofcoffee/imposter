@@ -4,6 +4,7 @@ import io.gatehill.imposter.store.inmem.InMemoryStore;
 import io.gatehill.imposter.store.model.PrefixedKeyStore;
 import io.gatehill.imposter.store.model.Store;
 import io.gatehill.imposter.store.model.StoreFactory;
+import io.gatehill.imposter.store.util.StoreUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -11,6 +12,7 @@ import java.util.Map;
 
 import static com.google.common.collect.Maps.newHashMap;
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -32,7 +34,7 @@ public abstract class AbstractStoreFactory implements StoreFactory {
 
     @Override
     public boolean hasStoreWithName(String storeName) {
-        if (REQUEST_SCOPED_STORE_NAME.equals(storeName)) {
+        if (StoreUtil.isRequestScopedStore(storeName)) {
             return true;
         }
         return stores.containsKey(storeName);
@@ -56,8 +58,11 @@ public abstract class AbstractStoreFactory implements StoreFactory {
 
     @Override
     public void deleteStoreByName(String storeName) {
-        stores.remove(storeName);
-        LOGGER.trace("Deleted store: {}", storeName);
+        if (nonNull(stores.remove(storeName))) {
+            LOGGER.trace("Deleted store: {}", storeName);
+        } else {
+            LOGGER.trace("No store named: {} to delete", storeName);
+        }
     }
 
     public abstract Store buildNewStore(String storeName);

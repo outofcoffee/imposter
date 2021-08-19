@@ -120,7 +120,7 @@ public class ResourceServiceImpl implements ResourceService {
                 .filter(res -> isRequestMatch(res, resourceMethod, pathTemplate, path, pathParams, queryParams, requestHeaders, bodySupplier))
                 .collect(Collectors.toList());
 
-        // find the most specific, by filter those that match for those that specify parameters
+        // find the most specific, by filtering those that match by those that specify parameters
         resourceConfigs = filterByPairs(resourceConfigs, ResolvedResourceConfig::getPathParams);
         resourceConfigs = filterByPairs(resourceConfigs, ResolvedResourceConfig::getQueryParams);
         resourceConfigs = filterByPairs(resourceConfigs, ResolvedResourceConfig::getRequestHeaders);
@@ -227,7 +227,7 @@ public class ResourceServiceImpl implements ResourceService {
     /**
      * Match the request body against the supplied configuration.
      *
-     * @param bodySupplier supplies the request body
+     * @param bodySupplier      supplies the request body
      * @param requestBodyConfig the match configuration
      * @return {@code true} if the configuration is empty, or the request body matches the configuration, otherwise {@code false}
      */
@@ -348,7 +348,12 @@ public class ResourceServiceImpl implements ResourceService {
 
         if (lifecycleHooks.allMatch(listener -> listener.isRequestPermitted(rootResourceConfig, resourceConfig, resolvedResourceConfigs, routingContext))) {
             // request is permitted to continue
-            routingContextConsumer.accept(routingContext);
+            try {
+                routingContextConsumer.accept(routingContext);
+            } finally {
+                // always perform tidy up once handled, regardless of outcome
+                lifecycleHooks.forEach(listener -> listener.afterRoutingContextHandled(routingContext));
+            }
         }
     }
 

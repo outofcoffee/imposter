@@ -89,4 +89,14 @@ public interface ImposterLifecycleListener {
     default void beforeBuildingResponse(RoutingContext routingContext, ResponseConfigHolder resourceConfig) {
         // no op
     }
+
+    /**
+     * Invoked after the routing context handler has returned. This assumes that the handler has blocked
+     * until required processing is complete, and that it is safe to perform cleanup activities.
+     *
+     * @param routingContext the routing context
+     */
+    default void afterRoutingContextHandled(RoutingContext routingContext) {
+        // no op
+    }
 }
