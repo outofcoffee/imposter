@@ -278,7 +278,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
 
                     // attempt to serve an example from the specification, falling back if not present
                     responseService.sendResponse(
-                            pluginConfig, pluginConfig, routingContext, responseBehaviour, exampleSender, this::fallback);
+                            pluginConfig, resourceConfig, routingContext, responseBehaviour, exampleSender, this::fallback);
 
                 } else {
                     LOGGER.warn("No explicit mock response found for {} {} with status code {}",
