@@ -8,8 +8,8 @@ compileJava {
 dependencies {
     compile project(':imposter-core')
     compile project(':scripting:scripting-common')
-    compile "org.graalvm.js:js:20.1.0"
-    compile "org.graalvm.js:js-scriptengine:20.1.0"
+    compile "org.graalvm.js:js:21.2.0"
+    compile "org.graalvm.js:js-scriptengine:21.2.0"
 
     // test
     testCompile project(':imposter-test')

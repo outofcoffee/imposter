@@ -30,6 +30,10 @@ class GraalvmScriptServiceImpl implements ScriptService {
     GraalvmScriptServiceImpl() {
         // see https://www.graalvm.org/reference-manual/js/NashornMigrationGuide/#nashorn-compatibility-mode
         System.setProperty('polyglot.js.nashorn-compat', 'true');
+
+        // quieten interpreter mode warning until native graal compiler included in module path - see:
+        // https://www.graalvm.org/reference-manual/js/RunOnJDK/
+        System.setProperty('polyglot.engine.WarnInterpreterOnly', 'false')
     }
 
     @Override
