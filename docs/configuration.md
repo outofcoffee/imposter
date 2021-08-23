@@ -29,7 +29,7 @@ Or, in JSON format:
 }
 ```
 
-**Note:** You must specify the plugin to use in the configuration file. See the list of [plugins](index.md#Plugins) for possible values.
+**Note:** You must specify the plugin to use in the configuration file. See the list of [plugins](./features_plugins.md) for possible values.
 
 ### Returning data
 
@@ -120,9 +120,39 @@ resources:
       multiline response data.
 ```
 
+##### Default response configuration
+
+In some cases, you might want to define default response configuration, e.g. a header that should be sent in all responses. To do this, set the `defaultsFromRootResponse: true` option, as follows:
+
+```yaml
+plugin: rest
+
+# root response config should be inherited
+defaultsFromRootResponse: true
+
+response:
+  headers:
+    X-Always-Present: Yes
+
+resources:
+- method: GET
+  path: /example1
+  response:
+    staticData: "Hello world"
+
+- method: GET
+  path: /example2
+  response:
+    staticData: "Lorem ipsum"
+```
+
+In this example, responses to both `/example1` and `/example2` will have the header `X-Always-Present: Yes` set, as it is inherited from the root configuration.
+
+> See [default-response-config](./examples/rest/default-response-config) for an example.
+
 #### Default response values
 
-Default values for response configuration are as follows:
+If unset by configuration or a script, the default values for response configuration fields are as follows:
 
 | Field                 | Plugin(s)     | Type                  | Default                                            | Example                             |
 |-----------------------|---------------|-----------------------|----------------------------------------------------|-------------------------------------|
@@ -130,7 +160,7 @@ Default values for response configuration are as follows:
 | `response.statusCode` | openapi, rest | Integer (HTTP status) | `200`                                              | `201`                               |
 | `response.staticData` | openapi, rest | String                | empty                                              | `hello world`                       |
 | `response.staticFile` | all           | String                | empty                                              | `data.json`                         |
-| `response.headers`    | openapi, rest | Map of String:String  | empty                                              | `{ "X-Custom-Header": "value" }`            |
+| `response.headers`    | openapi, rest | Map of String:String  | empty                                              | `{ "X-Custom-Header": "value" }`    |
 
 ## Conditional responses
 

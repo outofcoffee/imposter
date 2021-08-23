@@ -1,0 +1,19 @@
+plugin: rest
+
+# root response config should be inherited
+defaultsFromRootResponse: true
+
+response:
+  headers:
+    X-Always-Present: Yes
+
+resources:
+  - method: GET
+    path: /example1
+    response:
+      staticData: "Hello world"
+
+  - method: GET
+    path: /example2
+    response:
+      staticData: "Lorem ipsum"

@@ -1,0 +1,28 @@
+plugin: rest
+
+resources:
+- method: GET
+  path: /example
+  response:
+    staticFile: simpleTemplate.txt
+    template: true
+
+- method: PUT
+  path: /pets/:petId
+  capture:
+    petId:
+      pathParam: petId
+      store: request
+  response:
+    staticFile: petTemplate.txt
+    template: true
+
+- method: POST
+  path: /users
+  capture:
+    address:
+      jsonPath: $.address
+      store: templateTest
+  response:
+    staticFile: jsonPathTemplate.txt
+    template: true

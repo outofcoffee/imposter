@@ -402,4 +402,8 @@ paths:
                     { "id": 2, "name": "Dog" }
 ```
 
-See `plugin/openapi/src/test/resources/openapi3/named-example` for a working example.
+#### Examples
+
+- [scripted-named-example](./examples/openapi/scripted-named-example)
+- [scripted-named-example-js](./examples/openapi/scripted-named-example-js)
+- [static-named-example](./examples/openapi/static-named-example)

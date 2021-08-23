@@ -1,0 +1,29 @@
+plugin: rest
+
+resources:
+- method: GET
+  path: /users/:userId
+  capture:
+    userId:
+      pathParam: userId
+      store: captureTest
+    page:
+      queryParam: page
+      store: captureTest
+    correlationId:
+      requestHeader: X-Correlation-ID
+      store: captureTest
+  response:
+    statusCode: 200
+
+- method: POST
+  path: /users
+  capture:
+    name:
+      jsonPath: "$.name"
+      store: captureTest
+    postCode:
+      jsonPath: "$.address.postCode"
+      store: captureTest
+  response:
+    statusCode: 200
