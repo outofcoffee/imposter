@@ -3,9 +3,16 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [1.18.1] - 2021-08-23
 ### Added
-- ...
+- (openapi, rest) Allows root response to be used as defaults for resource responses.
+
+### Changed
+- (core) Moves request scoped store cleanup to after routing context handler completes.
+
+### Fixed
+- (openapi) Fixes root resource being used instead of active resource when sending OpenAPI plugin response.
+- (core) Determines content type for response files in the same way regardless of whether template is used.
 
 ## [1.18.0] - 2021-08-19
 ### Added
