@@ -70,7 +70,7 @@ respond()
 
 ### Logs
 
-You will see log entries similar to the following at `DEBUG` level:
+You will see log entries similar to the following:
 
 ```
 14:39:08 INFO  i.g.i.s.ResponseServiceImpl - 

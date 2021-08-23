@@ -19,7 +19,7 @@ resources:
       template: true
 ```
 
-In this example, the template file ('example-template.txt') might look like this:
+In this example, the template file ('example-template.json') might look like this:
 
 ```
 {

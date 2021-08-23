@@ -148,8 +148,8 @@ For example, to capture the address from the example above, use the JsonPath exp
 
 You can retrieve this object in a script, by accessing the [store](./stores.md) named 'testStore', or you could use it in a JsonPath placeholder within a [template](./templates.md).
 
-## Templating performance
+## Capture performance
 
-Data capture can incur overhead on response times, depending on the speed of the store implementation used. If using the in-memory store, the performance impact is immaterial. For store providers backed by external datastores, requests will incur a synchronous write to the store when capturing data.
+Data capture can incur overhead on response times, depending on the speed of the store implementation used. If using the in-memory store, the performance impact is immaterial (with the caveat of JsonPath matching). For store providers backed by external datastores, requests will incur a synchronous write to the store when capturing data.
 
 Using JsonPath to capture the request body is computationally expensive, as it requires parsing and querying of the request body item rather than just copying a reference.
