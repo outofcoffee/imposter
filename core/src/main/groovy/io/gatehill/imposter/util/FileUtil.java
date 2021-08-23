@@ -4,7 +4,6 @@ import com.google.common.base.Strings;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import java.nio.file.Path;
 import java.util.Optional;
 
 import static java.util.Optional.empty;
@@ -40,14 +39,5 @@ public final class FileUtil {
             }
         }
         return empty();
-    }
-
-    public static String determineFileExtension(Path normalisedPath) {
-        String fileExtension = null;
-        final int dotIndex = normalisedPath.toString().indexOf(".");
-        if (dotIndex > 0) {
-            fileExtension = normalisedPath.toString().substring(dotIndex + 1);
-        }
-        return fileExtension;
     }
 }

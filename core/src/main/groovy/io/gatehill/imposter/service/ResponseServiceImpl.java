@@ -21,7 +21,6 @@ import io.gatehill.imposter.script.ResponseBehaviour;
 import io.gatehill.imposter.script.ResponseBehaviourType;
 import io.gatehill.imposter.script.RuntimeContext;
 import io.gatehill.imposter.script.ScriptUtil;
-import io.gatehill.imposter.util.FileUtil;
 import io.gatehill.imposter.util.HttpUtil;
 import io.gatehill.imposter.util.annotation.GroovyImpl;
 import io.gatehill.imposter.util.annotation.JavascriptImpl;
@@ -29,6 +28,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.http.impl.MimeMapping;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.web.RoutingContext;
 import org.apache.commons.io.FileUtils;
@@ -50,7 +50,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 
@@ -345,8 +344,7 @@ public class ResponseServiceImpl implements ResponseService {
         final Path normalisedPath = normalisePath(pluginConfig, responseBehaviour.getResponseFile());
 
         if (responseBehaviour.isTemplate()) {
-            final String fileExtension = FileUtil.determineFileExtension(normalisedPath);
-            setContentTypeIfAbsent(resourceConfig, response, fileExtension);
+            setContentTypeIfAbsent(resourceConfig, response, normalisedPath.getFileName().toString());
 
             String responseData = responseFileCache.get(normalisedPath, () ->
                     Files.toString(normalisedPath.toFile(), StandardCharsets.UTF_8)
@@ -390,7 +388,7 @@ public class ResponseServiceImpl implements ResponseService {
         response.end(responseBehaviour.getResponseData());
     }
 
-    private void setContentTypeIfAbsent(ResourceConfig resourceConfig, HttpServerResponse response, String fileExtensionHint) {
+    private void setContentTypeIfAbsent(ResourceConfig resourceConfig, HttpServerResponse response, String filenameHintForContentType) {
         // explicit content type
         if (resourceConfig instanceof ContentTypedConfig) {
             final ContentTypedConfig contentTypedConfig = (ContentTypedConfig) resourceConfig;
@@ -399,24 +397,12 @@ public class ResponseServiceImpl implements ResponseService {
             }
         }
 
-        if (!response.headers().contains(HttpUtil.CONTENT_TYPE)) {
-            String contentType = null;
-            if (nonNull(fileExtensionHint)) {
-                switch (fileExtensionHint.toLowerCase()) {
-                    case "json":
-                        contentType = HttpUtil.CONTENT_TYPE_JSON;
-                        break;
-                    case "xml":
-                        contentType = HttpUtil.CONTENT_TYPE_XML;
-                        break;
-                    case "txt":
-                        contentType = HttpUtil.CONTENT_TYPE_PLAIN_TEXT;
-                        break;
-                }
-            }
-
-            if (nonNull(contentType)) {
-                LOGGER.debug("Guessed {} content type", contentType);
+        // infer from filename hint
+        if (!response.headers().contains(HttpUtil.CONTENT_TYPE) && !Strings.isNullOrEmpty(filenameHintForContentType)) {
+            final String contentType = MimeMapping.getMimeTypeForFilename(filenameHintForContentType);
+            if (!Strings.isNullOrEmpty(contentType)) {
+                LOGGER.debug("Inferred {} content type", contentType);
+                response.putHeader(HttpUtil.CONTENT_TYPE, contentType);
             } else {
                 // consider something like Tika to probe content type
                 LOGGER.debug("Guessing JSON content type");

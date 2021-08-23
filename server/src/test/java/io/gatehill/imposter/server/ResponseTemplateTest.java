@@ -70,7 +70,9 @@ public class ResponseTemplateTest extends BaseVerticleTest {
                 .get("/example")
                 .then()
                 .statusCode(equalTo(HttpUtil.HTTP_OK))
-                .body(equalTo("Hello bar!"));
+                .body(equalTo("Hello bar!"))
+                // content type inferred from response file name
+                .contentType(ContentType.TEXT);
     }
 
     /**
@@ -84,7 +86,9 @@ public class ResponseTemplateTest extends BaseVerticleTest {
                 .put("/pets/{petId}")
                 .then()
                 .statusCode(equalTo(HttpUtil.HTTP_OK))
-                .body(equalTo("Pet ID: 99"));
+                .body(equalTo("Pet ID: 99"))
+                // content type inferred from response file name
+                .contentType(ContentType.TEXT);
     }
 
     /**
@@ -103,6 +107,8 @@ public class ResponseTemplateTest extends BaseVerticleTest {
                 .post("/users")
                 .then()
                 .statusCode(equalTo(HttpUtil.HTTP_OK))
-                .body(equalTo("Postcode: PO5 7CO"));
+                .body(equalTo("Postcode: PO5 7CO"))
+                // content type inferred from response file name
+                .contentType(ContentType.TEXT);
     }
 }
