@@ -1,10 +1,11 @@
 package io.gatehill.imposter.http;
 
+import com.google.common.base.Strings;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfig;
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour;
 import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl;
 
-import static java.util.Collections.emptyMap;
+import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -27,18 +28,27 @@ public class DefaultResponseBehaviourFactory implements ResponseBehaviourFactory
         return responseBehaviour;
     }
 
-    protected void populate(int statusCode, ResponseConfig responseConfig, ReadWriteResponseBehaviour responseBehaviour) {
-        responseBehaviour.withStatusCode(statusCode)
-                .withFile(responseConfig.getStaticFile())
-                .withData(responseConfig.getStaticData())
-                .withPerformance(responseConfig.getPerformanceDelay())
-                .usingDefaultBehaviour();
-
+    @Override
+    public void populate(int statusCode, ResponseConfig responseConfig, ReadWriteResponseBehaviour responseBehaviour) {
+        if (0 == responseBehaviour.getStatusCode()) {
+            responseBehaviour.withStatusCode(statusCode);
+        }
+        if (Strings.isNullOrEmpty(responseBehaviour.getResponseFile())) {
+            responseBehaviour.withFile(responseConfig.getStaticFile());
+        }
+        if (Strings.isNullOrEmpty(responseBehaviour.getResponseData())) {
+            responseBehaviour.withData(responseConfig.getStaticData());
+        }
         if (responseConfig.isTemplate()) {
             responseBehaviour.template();
         }
+        if (isNull(responseBehaviour.getPerformanceSimulation())) {
+            responseBehaviour
+                    .withPerformance(responseConfig.getPerformanceDelay());
+        }
 
-        ofNullable(responseConfig.getHeaders()).orElse(emptyMap())
-                .forEach(responseBehaviour::withHeader);
+        ofNullable(responseConfig.getHeaders()).ifPresent(headers ->
+                responseBehaviour.getResponseHeaders().putAll(headers)
+        );
     }
 }

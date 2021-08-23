@@ -106,7 +106,8 @@ abstract class AbstractScriptServiceImplTest {
         def actual = service.executeScript(pluginConfig, resourceConfig, runtimeContext)
 
         assertNotNull actual
-        assertEquals 200, actual.statusCode
+        // zero as un-set by script
+        assertEquals 0, actual.statusCode
         assertNull actual.responseFile
         assertEquals ResponseBehaviourType.DEFAULT_BEHAVIOUR, actual.behaviourType
     }

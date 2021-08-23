@@ -1,5 +1,6 @@
 package io.gatehill.imposter.plugin.openapi.http;
 
+import com.google.common.base.Strings;
 import io.gatehill.imposter.http.DefaultResponseBehaviourFactory;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfig;
 import io.gatehill.imposter.plugin.openapi.config.OpenApiResponseConfig;
@@ -13,8 +14,11 @@ import io.gatehill.imposter.script.ReadWriteResponseBehaviour;
  */
 public class OpenApiResponseBehaviourFactory extends DefaultResponseBehaviourFactory {
     @Override
-    protected void populate(int statusCode, ResponseConfig responseConfig, ReadWriteResponseBehaviour responseBehaviour) {
+    public void populate(int statusCode, ResponseConfig responseConfig, ReadWriteResponseBehaviour responseBehaviour) {
         super.populate(statusCode, responseConfig, responseBehaviour);
-        responseBehaviour.withExampleName(((OpenApiResponseConfig) responseConfig).getExampleName());
+
+        if (Strings.isNullOrEmpty(responseBehaviour.getExampleName())) {
+            responseBehaviour.withExampleName(((OpenApiResponseConfig) responseConfig).getExampleName());
+        }
     }
 }

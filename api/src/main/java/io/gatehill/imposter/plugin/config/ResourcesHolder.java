@@ -11,4 +11,6 @@ import java.util.List;
  */
 public interface ResourcesHolder<T extends RestResourceConfig> {
     List<T> getResources();
+
+    boolean isDefaultsFromRootResponse();
 }

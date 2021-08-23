@@ -16,6 +16,9 @@ public class OpenApiPluginConfig extends ContentTypedPluginConfigImpl implements
     @JsonProperty("resources")
     private List<OpenApiResourceConfig> resources;
 
+    @JsonProperty("defaultsFromRootResponse")
+    private boolean defaultsFromRootResponse;
+
     @JsonProperty("pickFirstIfNoneMatch")
     private boolean pickFirstIfNoneMatch = true;
 
@@ -35,6 +38,11 @@ public class OpenApiPluginConfig extends ContentTypedPluginConfigImpl implements
     @Override
     public List<OpenApiResourceConfig> getResources() {
         return resources;
+    }
+
+    @Override
+    public boolean isDefaultsFromRootResponse() {
+        return defaultsFromRootResponse;
     }
 
     public boolean isPickFirstIfNoneMatch() {

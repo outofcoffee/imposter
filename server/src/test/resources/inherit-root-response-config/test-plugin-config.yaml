@@ -1,0 +1,14 @@
+plugin: "io.gatehill.imposter.plugin.test.TestPluginImpl"
+
+# root response config should be inherited
+defaultsFromRootResponse: true
+
+response:
+  headers:
+    X-Always-Present: Yes
+
+resources:
+- method: GET
+  path: /example
+  response:
+    staticData: "Hello world"

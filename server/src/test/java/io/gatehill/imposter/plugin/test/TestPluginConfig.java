@@ -11,11 +11,17 @@ import java.util.List;
  */
 public class TestPluginConfig extends PluginConfigImpl implements ResourcesHolder<RestResourceConfig> {
     private List<RestResourceConfig> resources;
+    private boolean defaultsFromRootResponse;
     private String customProperty;
 
     @Override
     public List<RestResourceConfig> getResources() {
         return resources;
+    }
+
+    @Override
+    public boolean isDefaultsFromRootResponse() {
+        return defaultsFromRootResponse;
     }
 
     public String getCustomProperty() {

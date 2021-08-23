@@ -60,8 +60,6 @@ public abstract class AbstractStoreFactory implements StoreFactory {
     public void deleteStoreByName(String storeName) {
         if (nonNull(stores.remove(storeName))) {
             LOGGER.trace("Deleted store: {}", storeName);
-        } else {
-            LOGGER.trace("No store named: {} to delete", storeName);
         }
     }
 

@@ -11,6 +11,7 @@ import io.gatehill.imposter.http.StatusCodeFactory;
 import io.gatehill.imposter.lifecycle.ImposterLifecycleHooks;
 import io.gatehill.imposter.plugin.config.ContentTypedConfig;
 import io.gatehill.imposter.plugin.config.PluginConfig;
+import io.gatehill.imposter.plugin.config.ResourcesHolder;
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfig;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
@@ -131,21 +132,37 @@ public class ResponseServiceImpl implements ResponseService {
         checkNotNull(responseConfig, "Response configuration must not be null");
         final int statusCode = statusCodeFactory.calculateStatus(resourceConfig);
 
-        if (isNull(responseConfig.getScriptFile())) {
+        final ReadWriteResponseBehaviour responseBehaviour;
+        if (Strings.isNullOrEmpty(responseConfig.getScriptFile())) {
             LOGGER.debug("Using default HTTP {} response behaviour for request: {} {}",
                     statusCode, routingContext.request().method(), routingContext.request().absoluteURI());
 
-            return responseBehaviourFactory.build(statusCode, responseConfig);
+            responseBehaviour = responseBehaviourFactory.build(statusCode, responseConfig);
+
+        } else {
+            responseBehaviour = determineResponseFromScript(
+                    routingContext,
+                    pluginConfig,
+                    resourceConfig,
+                    additionalContext,
+                    additionalBindings
+            );
+
+            // use defaults if not set
+            if (ResponseBehaviourType.DEFAULT_BEHAVIOUR.equals(responseBehaviour.getBehaviourType())) {
+                responseBehaviourFactory.populate(statusCode, responseConfig, responseBehaviour);
+            }
         }
 
-        return determineResponseFromScript(
-                routingContext,
-                pluginConfig,
-                resourceConfig,
-                additionalContext,
-                additionalBindings,
-                statusCode
-        );
+        // explicitly check if the root resource should have its response config used as defaults for its child resources
+        if (pluginConfig instanceof ResourcesHolder && ((ResourcesHolder<?>) pluginConfig).isDefaultsFromRootResponse()) {
+            if (pluginConfig instanceof ResponseConfigHolder) {
+                LOGGER.trace("Inheriting root response configuration as defaults");
+                responseBehaviourFactory.populate(statusCode, ((ResponseConfigHolder) pluginConfig).getResponseConfig(), responseBehaviour);
+            }
+        }
+
+        return responseBehaviour;
     }
 
     private ReadWriteResponseBehaviour determineResponseFromScript(
@@ -153,8 +170,7 @@ public class ResponseServiceImpl implements ResponseService {
             PluginConfig pluginConfig,
             ResponseConfigHolder resourceConfig,
             Map<String, Object> additionalContext,
-            Map<String, Object> additionalBindings,
-            int statusCode
+            Map<String, Object> additionalBindings
     ) {
         final ResponseConfig responseConfig = resourceConfig.getResponseConfig();
 
@@ -186,16 +202,6 @@ public class ResponseServiceImpl implements ResponseService {
 
             // fire post execution hooks
             lifecycleHooks.forEach(listener -> listener.afterSuccessfulScriptExecution(finalAdditionalBindings, responseBehaviour));
-
-            // use defaults if not set
-            if (ResponseBehaviourType.DEFAULT_BEHAVIOUR.equals(responseBehaviour.getBehaviourType())) {
-                if (Strings.isNullOrEmpty(responseBehaviour.getResponseFile())) {
-                    responseBehaviour.withFile(responseConfig.getStaticFile());
-                }
-                if (0 == responseBehaviour.getStatusCode()) {
-                    responseBehaviour.withStatusCode(statusCode);
-                }
-            }
 
             LOGGER.debug(String.format(
                     "Executed script '%s' for request: %s %s in %.2fms",

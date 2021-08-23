@@ -8,7 +8,7 @@ import java.util.Map;
  */
 public class ReadWriteResponseBehaviourImpl implements ReadWriteResponseBehaviour {
     private ResponseBehaviourType behaviourType = ResponseBehaviourType.DEFAULT_BEHAVIOUR;
-    private int statusCode = 200;
+    private int statusCode;
     private String responseFile;
     private String responseData;
     private boolean template;
