@@ -25,7 +25,7 @@ public abstract class ConfiguredPlugin<T extends PluginConfigImpl> implements Pl
     @Override
     public void loadConfiguration(List<File> configFiles) {
         configs = configFiles.stream()
-                .map(file -> ConfigUtil.loadPluginConfig(file, getConfigClass(), true))
+                .map(file -> ConfigUtil.loadPluginConfig(file, getConfigClass(), true, true))
                 .collect(Collectors.toList());
 
         this.configurePlugin(configs);

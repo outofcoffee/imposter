@@ -42,8 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static com.google.common.collect.Maps.newHashMap;
 import static java.util.Objects.nonNull;
@@ -58,7 +56,6 @@ import static java.util.Optional.ofNullable;
 @RequireModules(OpenApiModule.class)
 public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> implements ScriptedPlugin<OpenApiPluginConfig> {
     private static final Logger LOGGER = LogManager.getLogger(OpenApiPluginImpl.class);
-    private static final Pattern PATH_PARAM_PLACEHOLDER = Pattern.compile("\\{([a-zA-Z0-9._\\-]+)}");
     private static final String UI_WEB_ROOT = "swagger-ui";
 
     /**
@@ -162,7 +159,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
      * @return the full path
      */
     private String buildFullPath(String basePath, String specOperationPath) {
-        final String operationPath = convertPath(specOperationPath);
+        final String operationPath = ResourceUtil.convertPathToVertx(specOperationPath);
         if (basePath.endsWith("/")) {
             if (operationPath.startsWith("/")) {
                 return basePath + operationPath.substring(1);
@@ -220,25 +217,6 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
         } catch (Exception e) {
             routingContext.fail(e);
         }
-    }
-
-    /**
-     * Convert the OpenAPI path to a Vert.x path, including any parameter placeholders.
-     *
-     * @param path the OpenAPI path
-     * @return the Vert.x path
-     */
-    private String convertPath(String path) {
-        boolean matchFound;
-        do {
-            final Matcher matcher = PATH_PARAM_PLACEHOLDER.matcher(path);
-            matchFound = matcher.find();
-            if (matchFound) {
-                path = matcher.replaceFirst(":" + matcher.group(1));
-            }
-        } while (matchFound);
-
-        return path;
     }
 
     /**

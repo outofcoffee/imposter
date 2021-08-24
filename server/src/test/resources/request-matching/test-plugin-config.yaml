@@ -1,0 +1,18 @@
+plugin: "io.gatehill.imposter.plugin.test.TestPluginImpl"
+
+resources:
+# Vert.x style path parameter
+- method: GET
+  path: /users/:userId
+  pathParams:
+    userId: 1
+  response:
+    statusCode: 204
+
+# OpenAPI style path parameter
+- method: GET
+  path: /orders/{orderId}
+  pathParams:
+    userId: 99
+  response:
+    statusCode: 203

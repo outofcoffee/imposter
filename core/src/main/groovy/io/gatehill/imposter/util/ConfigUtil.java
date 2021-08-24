@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import io.gatehill.imposter.plugin.PluginManager;
 import io.gatehill.imposter.plugin.config.PluginConfigImpl;
+import io.gatehill.imposter.plugin.config.ResourcesHolder;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.text.StringSubstitutor;
 import org.apache.logging.log4j.LogManager;
@@ -73,7 +74,7 @@ public final class ConfigUtil {
                     configCount++;
 
                     // load to determine plugin
-                    final PluginConfigImpl config = loadPluginConfig(configFile, PluginConfigImpl.class, false);
+                    final PluginConfigImpl config = loadPluginConfig(configFile, PluginConfigImpl.class, false, false);
 
                     final String pluginClass = pluginManager.determinePluginClass(config.getPlugin());
                     List<File> pluginConfigs = allPluginConfigs.get(pluginClass);
@@ -107,12 +108,14 @@ public final class ConfigUtil {
      * @param configFile             the configuration file
      * @param configClass            the configuration class
      * @param substitutePlaceholders whether to substitute placeholders in the configuration
+     * @param convertPathParameters  whether to convert path parameters from OpenAPI format to Vert.x format
      * @return the configuration
      */
     public static <T extends PluginConfigImpl> T loadPluginConfig(
             File configFile,
             Class<T> configClass,
-            boolean substitutePlaceholders
+            boolean substitutePlaceholders,
+            boolean convertPathParameters
     ) {
         try {
             final String rawContents = FileUtils.readFileToString(configFile, StandardCharsets.UTF_8);
@@ -122,6 +125,14 @@ public final class ConfigUtil {
 
             final T config = lookupMapper(configFile).readValue(parsedContents, configClass);
             config.setParentDir(configFile.getParentFile());
+
+            // convert OpenAPI format path parameters to Vert.x format
+            if (convertPathParameters && config instanceof ResourcesHolder) {
+                ofNullable(((ResourcesHolder<?>) config).getResources()).ifPresent(resources ->
+                        resources.forEach(resource -> resource.setPath(ResourceUtil.convertPathToVertx(resource.getPath())))
+                );
+            }
+
             return config;
 
         } catch (IOException e) {

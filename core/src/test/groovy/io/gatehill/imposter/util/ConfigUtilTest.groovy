@@ -51,7 +51,7 @@ class ConfigUtilTest {
 
         def configFile = new File(ConfigUtilTest.class.getResource('/interpolated/test-config.yaml').toURI())
 
-        def config = ConfigUtil.loadPluginConfig(configFile, PluginConfigImpl.class, true)
+        def config = ConfigUtil.loadPluginConfig(configFile, PluginConfigImpl.class, true, true)
 
         assertEquals("/test", config.path)
     }

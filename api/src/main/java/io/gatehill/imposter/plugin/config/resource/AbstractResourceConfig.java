@@ -25,6 +25,10 @@ public abstract class AbstractResourceConfig implements ResponseConfigHolder, Se
     @JsonProperty("response")
     private ResponseConfig responseConfig = new ResponseConfig();
 
+    public void setPath(String path) {
+        this.path = path;
+    }
+
     @Override
     public String getPath() {
         return path;
