@@ -9,7 +9,6 @@ import io.gatehill.imposter.plugin.config.ConfigurablePlugin;
 import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.scripting.groovy.GroovyScriptingModule;
 import io.gatehill.imposter.scripting.nashorn.NashornScriptingModule;
-import io.gatehill.imposter.server.util.ConfigUtil;
 import io.gatehill.imposter.server.util.FeatureUtil;
 import io.gatehill.imposter.service.ResourceService;
 import io.gatehill.imposter.util.AsyncUtil;
@@ -55,7 +54,7 @@ public class ImposterVerticle extends AbstractVerticle {
     private HttpServer httpServer;
 
     public ImposterVerticle() {
-        imposterConfig = ConfigUtil.getConfig();
+        imposterConfig = ConfigHolder.getConfig();
     }
 
     @Override

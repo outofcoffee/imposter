@@ -1,18 +1,20 @@
-package io.gatehill.imposter.server.util;
+package io.gatehill.imposter.server;
 
 import io.gatehill.imposter.ImposterConfig;
 
 /**
+ * Holds the global engine configuration.
+ *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public final class ConfigUtil {
+public final class ConfigHolder {
     private static ImposterConfig config;
 
     static {
         resetConfig();
     }
 
-    private ConfigUtil() {
+    private ConfigHolder() {
     }
 
     /**

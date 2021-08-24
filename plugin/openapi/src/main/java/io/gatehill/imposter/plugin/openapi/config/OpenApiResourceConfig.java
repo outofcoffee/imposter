@@ -1,52 +1,14 @@
 package io.gatehill.imposter.plugin.openapi.config;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.gatehill.imposter.plugin.config.resource.LegacyQueryParamsResourceConfig;
-import io.gatehill.imposter.plugin.config.resource.PathParamsResourceConfig;
-import io.gatehill.imposter.plugin.config.resource.QueryParamsResourceConfig;
-import io.gatehill.imposter.plugin.config.resource.RequestHeadersResourceConfig;
 import io.gatehill.imposter.plugin.config.resource.RestResourceConfig;
-
-import java.util.Map;
 
 /**
  * Extends a REST resource configuration with more specific matching criteria.
  *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public class OpenApiResourceConfig extends RestResourceConfig implements
-        PathParamsResourceConfig, QueryParamsResourceConfig, LegacyQueryParamsResourceConfig, RequestHeadersResourceConfig {
-
-    @JsonProperty("pathParams")
-    private Map<String, String> pathParams;
-
-    @JsonProperty("queryParams")
-    @JsonAlias("params")
-    private Map<String, String> queryParams;
-
-    @JsonProperty("requestHeaders")
-    private Map<String, String> requestHeaders;
-
-    @Override
-    public Map<String, String> getPathParams() {
-        return pathParams;
-    }
-
-    @Override
-    public Map<String, String> getParams() {
-        return getQueryParams();
-    }
-
-    @Override
-    public Map<String, String> getQueryParams() {
-        return queryParams;
-    }
-
-    @Override
-    public Map<String, String> getRequestHeaders() {
-        return requestHeaders;
-    }
+public class OpenApiResourceConfig extends RestResourceConfig {
 
     @Override
     public OpenApiResponseConfig getResponseConfig() {

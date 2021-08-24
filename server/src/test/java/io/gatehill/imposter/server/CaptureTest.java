@@ -57,7 +57,6 @@ public class CaptureTest extends BaseVerticleTest {
     public void testCaptureHeaderItems() {
         // send data for capture
         given().when()
-                .log().ifValidationFails()
                 .pathParam("userId", "foo")
                 .queryParam("page", 2)
                 .header("X-Correlation-ID", "abc123")
@@ -67,7 +66,6 @@ public class CaptureTest extends BaseVerticleTest {
 
         // retrieve via system
         given().when()
-                .log().ifValidationFails()
                 .pathParam("storeId", "captureTest")
                 .pathParam("key", "userId")
                 .get("/system/store/{storeId}/{key}")
@@ -76,7 +74,6 @@ public class CaptureTest extends BaseVerticleTest {
                 .body(equalTo("foo"));
 
         given().when()
-                .log().ifValidationFails()
                 .pathParam("storeId", "captureTest")
                 .pathParam("key", "page")
                 .get("/system/store/{storeId}/{key}")
@@ -85,7 +82,6 @@ public class CaptureTest extends BaseVerticleTest {
                 .body(equalTo("2"));
 
         given().when()
-                .log().ifValidationFails()
                 .pathParam("storeId", "captureTest")
                 .pathParam("key", "correlationId")
                 .get("/system/store/{storeId}/{key}")
@@ -106,7 +102,6 @@ public class CaptureTest extends BaseVerticleTest {
 
         // send data for capture
         given().when()
-                .log().ifValidationFails()
                 .body(user)
                 .contentType(ContentType.JSON)
                 .post("/users")
@@ -115,7 +110,6 @@ public class CaptureTest extends BaseVerticleTest {
 
         // retrieve via system
         given().when()
-                .log().ifValidationFails()
                 .pathParam("storeId", "captureTest")
                 .pathParam("key", "name")
                 .get("/system/store/{storeId}/{key}")
@@ -124,7 +118,6 @@ public class CaptureTest extends BaseVerticleTest {
                 .body(equalTo("Alice"));
 
         given().when()
-                .log().ifValidationFails()
                 .pathParam("storeId", "captureTest")
                 .pathParam("key", "postCode")
                 .get("/system/store/{storeId}/{key}")

@@ -14,6 +14,7 @@ import org.junit.runner.RunWith;
 
 import java.util.List;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -41,7 +42,7 @@ public class RequestBodyJsonPathTest extends BaseVerticleTest {
 
     @Override
     protected List<String> getTestConfigDirs() {
-        return Lists.newArrayList(
+        return newArrayList(
                 "/request-body-jsonpath"
         );
     }
@@ -52,7 +53,6 @@ public class RequestBodyJsonPathTest extends BaseVerticleTest {
     @Test
     public void testMatchStringInRequestBody() {
         given().when()
-                .log().ifValidationFails()
                 .body("{ \"foo\": \"bar\" }")
                 .get("/example1")
                 .then()
@@ -65,7 +65,6 @@ public class RequestBodyJsonPathTest extends BaseVerticleTest {
     @Test
     public void testMatchIntegerInRequestBody() {
         given().when()
-                .log().ifValidationFails()
                 .body("{ \"baz\": 99 }")
                 .get("/example2")
                 .then()
@@ -78,7 +77,6 @@ public class RequestBodyJsonPathTest extends BaseVerticleTest {
     @Test
     public void testMatchNullRequestBody() {
         given().when()
-                .log().ifValidationFails()
                 .body("{ \"foo\": \"bar\" }")
                 .get("/example3")
                 .then()

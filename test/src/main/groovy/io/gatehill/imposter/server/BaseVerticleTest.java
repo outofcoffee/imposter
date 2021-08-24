@@ -3,7 +3,6 @@ package io.gatehill.imposter.server;
 import com.google.common.collect.Lists;
 import io.gatehill.imposter.ImposterConfig;
 import io.gatehill.imposter.plugin.Plugin;
-import io.gatehill.imposter.server.util.ConfigUtil;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.RunTestOnContext;
@@ -35,8 +34,8 @@ public abstract class BaseVerticleTest {
         final Async async = testContext.async();
 
         // simulate ImposterLauncher bootstrap
-        ConfigUtil.resetConfig();
-        configure(ConfigUtil.getConfig());
+        ConfigHolder.resetConfig();
+        configure(ConfigHolder.getConfig());
 
         rule.vertx().deployVerticle(ImposterVerticle.class.getCanonicalName(), completion -> {
             if (completion.succeeded()) {
@@ -79,7 +78,7 @@ public abstract class BaseVerticleTest {
     }
 
     public int getListenPort() {
-        return ConfigUtil.getConfig().getListenPort();
+        return ConfigHolder.getConfig().getListenPort();
     }
 
     protected abstract Class<? extends Plugin> getPluginClass();

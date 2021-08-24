@@ -2,7 +2,6 @@ package io.gatehill.imposter.server;
 
 import io.gatehill.imposter.ImposterConfig;
 import io.gatehill.imposter.plugin.internal.MetaInfPluginDetectorImpl;
-import io.gatehill.imposter.server.util.ConfigUtil;
 import io.gatehill.imposter.server.util.FeatureUtil;
 import io.gatehill.imposter.util.LogUtil;
 import io.gatehill.imposter.util.MetaUtil;
@@ -153,7 +152,7 @@ public class ImposterLauncher extends Launcher {
             port = listenPort;
         }
 
-        final ImposterConfig imposterConfig = ConfigUtil.getConfig();
+        final ImposterConfig imposterConfig = ConfigHolder.getConfig();
         imposterConfig.setServerFactory(serverFactory);
         imposterConfig.setListenPort(port);
         imposterConfig.setHost(host);
