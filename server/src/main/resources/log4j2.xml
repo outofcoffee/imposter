@@ -19,13 +19,10 @@
         <!-- due to Netty Docker logging bug -->
         <Logger name="io.netty.util.internal.MacAddressUtil" level="off" />
 
-        <!-- quieten redisson -->
+        <!-- quieten -->
         <Logger name="org.redisson" level="warn" />
-
-        <!-- quieten jsonpath -->
         <Logger name="com.jayway.jsonpath" level="warn" />
-
-        <!-- quieten swagger -->
         <Logger name="io.swagger" level="warn" />
+        <Logger name="io.micrometer" level="warn" />
     </Loggers>
 </Configuration>
