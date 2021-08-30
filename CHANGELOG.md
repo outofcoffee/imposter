@@ -3,9 +3,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [1.19.0] - 2021-08-31
 ### Added
-- ...
+- (core) Adds support for OpenAPI style path parameter syntax.
+- (rest) Adds REST plugin resource support for matching path parameters, query parameters and request headers.
+
+### Changed
+- (core) Bumps base JRE image to 8u302.
 
 ## [1.18.1] - 2021-08-23
 ### Added

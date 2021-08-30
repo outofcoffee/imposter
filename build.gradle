@@ -19,7 +19,7 @@ ext {
 
 subprojects {
     group 'io.gatehill.imposter'
-    version '1.18.2-SNAPSHOT'
+    version '1.19.0'
 
     buildscript {
         ext {
