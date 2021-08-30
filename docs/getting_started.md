@@ -12,12 +12,12 @@ The easiest way to get started is to use an Imposter Docker container, such as:
 
 The following images are available:
 
-* `outofcoffee/imposter-rest`
 * `outofcoffee/imposter-openapi`
+* `outofcoffee/imposter-rest`
 * `outofcoffee/imposter-hbase`
 * `outofcoffee/imposter-sfdc`
 
-_Note:_ There is also a base container that does not enable any plugins:
+_Note:_ There is also a base container that supports all plugins:
 
     outofcoffee/imposter
 
