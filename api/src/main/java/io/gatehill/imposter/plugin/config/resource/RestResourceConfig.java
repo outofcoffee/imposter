@@ -34,6 +34,7 @@ public class RestResourceConfig extends AbstractResourceConfig implements
         return pathParams;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public Map<String, String> getParams() {
         return getQueryParams();

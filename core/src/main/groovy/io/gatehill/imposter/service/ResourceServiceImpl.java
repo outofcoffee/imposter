@@ -19,6 +19,8 @@ import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyConfig;
 import io.gatehill.imposter.util.CollectionUtil;
 import io.gatehill.imposter.util.ResourceUtil;
 import io.gatehill.imposter.util.StringUtil;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
@@ -288,18 +290,24 @@ public class ResourceServiceImpl implements ResourceService {
                 };
 
             case ASYNC:
-                return routingContext -> vertx.getOrCreateContext().executeBlocking(future -> {
-                    try {
-                        handleResource(pluginConfig, routingContextConsumer, routingContext, resolvedResourceConfigs);
-                        future.complete();
-                    } catch (Exception e) {
-                        future.fail(e);
-                    }
-                }, result -> {
-                    if (result.failed()) {
-                        handleFailure(routingContext, result.cause());
-                    }
-                });
+                return routingContext -> {
+                    final Handler<Future<Object>> handler = future -> {
+                        try {
+                            handleResource(pluginConfig, routingContextConsumer, routingContext, resolvedResourceConfigs);
+                            future.complete();
+                        } catch (Exception e) {
+                            future.fail(e);
+                        }
+                    };
+
+                    // explicitly disable ordered execution - responses should not block each other
+                    // as this causes head of line blocking performance issues
+                    vertx.getOrCreateContext().executeBlocking(handler, false, result -> {
+                        if (result.failed()) {
+                            handleFailure(routingContext, result.cause());
+                        }
+                    });
+                };
 
             default:
                 throw new UnsupportedOperationException("Unsupported request handling mode: " + imposterConfig.getRequestHandlingMode());
