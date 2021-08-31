@@ -1,5 +1,6 @@
 package io.gatehill.imposter.util;
 
+import io.vertx.ext.web.RoutingContext;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -35,5 +36,24 @@ public class LogUtil {
         final LoggerConfig logger = context.getConfiguration().getLoggerConfig(LOGGER_BASE_PACKAGE);
         logger.setLevel(Level.valueOf(logLevel));
         context.updateLoggers();
+    }
+
+    /**
+     * @param routingContext the routing context
+     * @return a description of the request
+     */
+    public static String describeRequest(RoutingContext routingContext) {
+        return describeRequest(routingContext, routingContext.get(ResourceUtil.RC_REQUEST_ID_KEY));
+    }
+
+    /**
+     * @param routingContext the routing context
+     * @param requestId      the request ID
+     * @return a description of the request
+     */
+    public static String describeRequest(RoutingContext routingContext, String requestId) {
+        return "[" + requestId + "]" +
+                " " + routingContext.request().method() +
+                " " + routingContext.request().absoluteURI();
     }
 }

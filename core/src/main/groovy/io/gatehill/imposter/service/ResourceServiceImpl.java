@@ -17,9 +17,9 @@ import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
 import io.gatehill.imposter.plugin.config.resource.RestResourceConfig;
 import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyConfig;
 import io.gatehill.imposter.util.CollectionUtil;
+import io.gatehill.imposter.util.LogUtil;
 import io.gatehill.imposter.util.ResourceUtil;
 import io.gatehill.imposter.util.StringUtil;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -323,6 +323,19 @@ public class ResourceServiceImpl implements ResourceService {
         return handleRoute(imposterConfig, selectedConfig, vertx, routingContextHandler::handle);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Handler<RoutingContext> buildUnhandledExceptionHandler() {
+        return routingContext -> {
+            LOGGER.error(
+                    "Unhandled routing exception for request " + LogUtil.describeRequest(routingContext),
+                    routingContext.failure()
+            );
+        };
+    }
+
     private void handleResource(
             PluginConfig pluginConfig,
             Consumer<RoutingContext> routingContextConsumer,
@@ -362,11 +375,13 @@ public class ResourceServiceImpl implements ResourceService {
                 // always perform tidy up once handled, regardless of outcome
                 lifecycleHooks.forEach(listener -> listener.afterRoutingContextHandled(routingContext));
             }
+        } else {
+            LOGGER.trace("Request {} was not permitted to continue", LogUtil.describeRequest(routingContext, requestId));
         }
     }
 
     private void handleFailure(RoutingContext routingContext, Throwable e) {
-        routingContext.fail(new RuntimeException(String.format("Unhandled exception processing %s request %s",
-                routingContext.request().method(), routingContext.request().absoluteURI()), e));
+        routingContext.fail(new RuntimeException(String.format("Unhandled exception processing request %s",
+                LogUtil.describeRequest(routingContext)), e));
     }
 }

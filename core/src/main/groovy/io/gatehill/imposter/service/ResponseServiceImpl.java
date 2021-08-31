@@ -20,6 +20,7 @@ import io.gatehill.imposter.script.ReadWriteResponseBehaviour;
 import io.gatehill.imposter.script.ResponseBehaviour;
 import io.gatehill.imposter.script.ResponseBehaviourType;
 import io.gatehill.imposter.util.HttpUtil;
+import io.gatehill.imposter.util.LogUtil;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
@@ -103,7 +104,7 @@ public class ResponseServiceImpl implements ResponseService {
             }
 
         } catch (Exception e) {
-            final String msg = String.format("Error sending mock response for %s %s", routingContext.request().method(), routingContext.request().absoluteURI());
+            final String msg = String.format("Error sending mock response for %s", LogUtil.describeRequest(routingContext));
             LOGGER.error(msg, e);
             routingContext.fail(new ResponseException(msg, e));
         }
@@ -159,11 +160,11 @@ public class ResponseServiceImpl implements ResponseService {
     @Override
     public boolean sendEmptyResponse(RoutingContext routingContext, ResponseBehaviour responseBehaviour) {
         try {
-            LOGGER.info("Response file and data are blank - returning empty response");
+            LOGGER.info("Response file and data are blank - returning empty response for {}", LogUtil.describeRequest(routingContext));
             routingContext.response().end();
             return true;
         } catch (Exception e) {
-            LOGGER.warn("Error sending empty response", e);
+            LOGGER.warn("Error sending empty response for " + LogUtil.describeRequest(routingContext), e);
             return false;
         }
     }
@@ -242,8 +243,8 @@ public class ResponseServiceImpl implements ResponseService {
 
         } catch (Exception e) {
             routingContext.fail(new ResponseException(String.format(
-                    "Error sending mock response for URI %s with status code %s",
-                    routingContext.request().absoluteURI(), responseBehaviour.getStatusCode()), e));
+                    "Error sending mock response with status code %s for %s",
+                    responseBehaviour.getStatusCode(), LogUtil.describeRequest(routingContext)), e));
         }
     }
 
@@ -338,9 +339,10 @@ public class ResponseServiceImpl implements ResponseService {
         }
     }
 
-    private void fallback(RoutingContext routingContext,
-                          ResponseBehaviour responseBehaviour,
-                          ResponseSender[] missingResponseSenders
+    private void fallback(
+            RoutingContext routingContext,
+            ResponseBehaviour responseBehaviour,
+            ResponseSender[] missingResponseSenders
     ) {
         if (nonNull(missingResponseSenders)) {
             for (ResponseSender sender : missingResponseSenders) {

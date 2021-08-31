@@ -135,4 +135,11 @@ public interface ResourceService {
             Vertx vertx,
             Handler<RoutingContext> routingContextHandler
     );
+
+    /**
+     * Catches unhandled exceptions.
+     *
+     * @return the exception handler
+     */
+    Handler<RoutingContext> buildUnhandledExceptionHandler();
 }

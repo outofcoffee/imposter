@@ -99,10 +99,7 @@ public class ImposterVerticle extends AbstractVerticle {
 
     private Router configureRoutes() {
         final Router router = Router.router(vertx);
-        router.errorHandler(500, routingContext -> LOGGER.error(
-                "Unhandled routing exception for request: " + routingContext.get(ResourceUtil.RC_REQUEST_ID_KEY),
-                routingContext.failure()
-        ));
+        router.errorHandler(500, resourceService.buildUnhandledExceptionHandler());
         router.route().handler(new BodyHandlerImpl());
 
         final List<PluginConfig> allConfigs = new ArrayList<>();
