@@ -8,6 +8,9 @@ import io.gatehill.imposter.script.ReadWriteResponseBehaviour;
 import io.gatehill.imposter.script.RuntimeContext;
 import io.gatehill.imposter.scripting.common.JavaScriptUtil;
 import io.gatehill.imposter.service.ScriptService;
+import io.gatehill.imposter.util.FeatureUtil;
+import io.micrometer.core.instrument.Gauge;
+import io.vertx.micrometer.backends.BackendRegistries;
 import jdk.nashorn.api.scripting.NashornScriptEngine;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,6 +32,7 @@ public class NashornScriptServiceImpl implements ScriptService {
     private static final Logger LOGGER = LogManager.getLogger(NashornScriptServiceImpl.class);
     private static final String ENV_SCRIPT_CACHE_ENTRIES = "IMPOSTER_SCRIPT_CACHE_ENTRIES";
     private static final int DEFAULT_SCRIPT_CACHE_ENTRIES = 20;
+    private static final String METRIC_SCRIPT_CACHE_ENTRIES = "script.cache.entries";
 
     private final NashornScriptEngine scriptEngine;
 
@@ -43,6 +47,12 @@ public class NashornScriptServiceImpl implements ScriptService {
     @Inject
     public NashornScriptServiceImpl(ScriptEngineManager scriptEngineManager) {
         scriptEngine = (NashornScriptEngine) scriptEngineManager.getEngineByName("nashorn");
+
+        if (FeatureUtil.isFeatureEnabled("metrics")) {
+            Gauge.builder(METRIC_SCRIPT_CACHE_ENTRIES, compiledScripts::size)
+                    .description("The number of cached compiled scripts")
+                    .register(BackendRegistries.getDefaultNow());
+        }
     }
 
     @Override

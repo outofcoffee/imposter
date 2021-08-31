@@ -9,12 +9,12 @@ import io.gatehill.imposter.plugin.config.ConfigurablePlugin;
 import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.scripting.groovy.GroovyScriptingModule;
 import io.gatehill.imposter.scripting.nashorn.NashornScriptingModule;
-import io.gatehill.imposter.server.util.FeatureUtil;
+import io.gatehill.imposter.server.util.FeatureModuleUtil;
 import io.gatehill.imposter.service.ResourceService;
 import io.gatehill.imposter.util.AsyncUtil;
+import io.gatehill.imposter.util.FeatureUtil;
 import io.gatehill.imposter.util.HttpUtil;
 import io.gatehill.imposter.util.InjectorUtil;
-import io.gatehill.imposter.util.ResourceUtil;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpServer;
@@ -66,7 +66,7 @@ public class ImposterVerticle extends AbstractVerticle {
                 startEngine();
                 InjectorUtil.getInjector().injectMembers(ImposterVerticle.this);
                 httpServer = serverFactory.provide(imposterConfig, future, vertx, configureRoutes());
-
+                LOGGER.info("Mock engine up and running");
             } catch (Exception e) {
                 future.fail(e);
             }
@@ -85,7 +85,7 @@ public class ImposterVerticle extends AbstractVerticle {
                 new GroovyScriptingModule(),
                 new NashornScriptingModule()
         );
-        bootstrapModules.addAll(FeatureUtil.discoverFeatureModules());
+        bootstrapModules.addAll(FeatureModuleUtil.discoverFeatureModules());
 
         final Imposter imposter = new Imposter(imposterConfig, bootstrapModules);
         imposter.start();

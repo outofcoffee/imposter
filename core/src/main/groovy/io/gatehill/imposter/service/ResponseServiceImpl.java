@@ -19,8 +19,10 @@ import io.gatehill.imposter.script.PerformanceSimulationConfig;
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour;
 import io.gatehill.imposter.script.ResponseBehaviour;
 import io.gatehill.imposter.script.ResponseBehaviourType;
+import io.gatehill.imposter.util.FeatureUtil;
 import io.gatehill.imposter.util.HttpUtil;
 import io.gatehill.imposter.util.LogUtil;
+import io.micrometer.core.instrument.Gauge;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
@@ -28,6 +30,7 @@ import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.http.impl.MimeMapping;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.micrometer.backends.BackendRegistries;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -56,6 +59,7 @@ public class ResponseServiceImpl implements ResponseService {
     private static final Logger LOGGER = LogManager.getLogger(ResponseServiceImpl.class);
     private static final String ENV_RESPONSE_FILE_CACHE_ENTRIES = "IMPOSTER_RESPONSE_FILE_CACHE_ENTRIES";
     private static final int DEFAULT_RESPONSE_FILE_CACHE_ENTRIES = 20;
+    private static final String METRIC_RESPONSE_FILE_CACHE_ENTRIES = "response.file.cache.entries";
 
     @Inject
     private ImposterLifecycleHooks lifecycleHooks;
@@ -66,9 +70,22 @@ public class ResponseServiceImpl implements ResponseService {
     @Inject
     private Vertx vertx;
 
+    /**
+     * Holds response files, with maximum number of entries determined by the environment
+     * variable {@link #ENV_RESPONSE_FILE_CACHE_ENTRIES}.
+     */
     private final Cache<Path, String> responseFileCache = CacheBuilder.newBuilder()
             .maximumSize(ofNullable(System.getenv(ENV_RESPONSE_FILE_CACHE_ENTRIES)).map(Integer::parseInt).orElse(DEFAULT_RESPONSE_FILE_CACHE_ENTRIES))
             .build();
+
+    @Inject
+    public ResponseServiceImpl() {
+        if (FeatureUtil.isFeatureEnabled("metrics")) {
+            Gauge.builder(METRIC_RESPONSE_FILE_CACHE_ENTRIES, responseFileCache::size)
+                    .description("The number of cached response files")
+                    .register(BackendRegistries.getDefaultNow());
+        }
+    }
 
     @Override
     public void handle(

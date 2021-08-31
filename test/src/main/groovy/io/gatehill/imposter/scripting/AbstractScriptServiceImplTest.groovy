@@ -8,24 +8,39 @@ import io.gatehill.imposter.script.ResponseBehaviourType
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.ScriptUtil
 import io.gatehill.imposter.service.ScriptService
+import io.gatehill.imposter.util.FeatureUtil
 import io.vertx.core.http.CaseInsensitiveHeaders
 import io.vertx.core.http.HttpMethod
 import io.vertx.core.http.HttpServerRequest
 import io.vertx.ext.web.RoutingContext
 import org.apache.logging.log4j.LogManager
+import org.junit.AfterClass
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Test
 
 import java.nio.file.Paths
 
 import static org.junit.Assert.*
 import static org.mockito.Mockito.mock
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.when
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 abstract class AbstractScriptServiceImplTest {
+    @BeforeClass
+    static void beforeClass() throws Exception {
+        System.setProperty(FeatureUtil.SYS_PROP_IMPOSTER_FEATURES, "metrics=false")
+        FeatureUtil.refresh()
+    }
+
+    @AfterClass
+    static void afterClass() throws Exception {
+        System.clearProperty(FeatureUtil.SYS_PROP_IMPOSTER_FEATURES)
+        FeatureUtil.refresh()
+    }
+
     @Before
     void setUp() throws Exception {
         Guice.createInjector().injectMembers(this)
@@ -205,7 +220,7 @@ abstract class AbstractScriptServiceImplTest {
         ]
         // override environment
         def env = [
-                'example' : 'foo'
+                'example': 'foo'
         ]
         RuntimeContext runtimeContext = buildRuntimeContext(additionalBindings, [:], [:], [:], env)
         def actual = service.executeScript(pluginConfig, resourceConfig, runtimeContext)

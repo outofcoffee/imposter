@@ -8,21 +8,28 @@ import io.gatehill.imposter.script.ExecutionContext;
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour;
 import io.gatehill.imposter.script.RuntimeContext;
 import io.gatehill.imposter.script.ScriptUtil;
+import io.gatehill.imposter.util.FeatureUtil;
 import io.gatehill.imposter.util.annotation.GroovyImpl;
 import io.gatehill.imposter.util.annotation.JavascriptImpl;
+import io.micrometer.core.instrument.Timer;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.micrometer.backends.BackendRegistries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
+
+import static java.util.Objects.nonNull;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public class ScriptedResponseServiceImpl implements ScriptedResponseService {
     private static final Logger LOGGER = LogManager.getLogger(ScriptedResponseServiceImpl.class);
+    private static final String METRIC_SCRIPT_EXECUTION_DURATION = "script.execution.duration";
 
     @Inject
     @GroovyImpl
@@ -35,8 +42,47 @@ public class ScriptedResponseServiceImpl implements ScriptedResponseService {
     @Inject
     private ImposterLifecycleHooks lifecycleHooks;
 
+    private final Timer executionTimer;
+
+    @Inject
+    public ScriptedResponseServiceImpl() {
+        if (FeatureUtil.isFeatureEnabled("metrics")) {
+            executionTimer = Timer
+                    .builder(METRIC_SCRIPT_EXECUTION_DURATION)
+                    .description("Script engine execution duration in seconds")
+                    .register(BackendRegistries.getDefaultNow());
+        } else {
+            executionTimer = null;
+        }
+    }
+
     @Override
     public ReadWriteResponseBehaviour determineResponseFromScript(
+            RoutingContext routingContext,
+            PluginConfig pluginConfig,
+            ResponseConfigHolder resourceConfig,
+            Map<String, Object> additionalContext,
+            Map<String, Object> additionalBindings
+    ) {
+        try {
+            final Callable<ReadWriteResponseBehaviour> scriptExecutor = () -> determineResponseFromScriptInternal(
+                    routingContext,
+                    pluginConfig,
+                    resourceConfig,
+                    additionalContext,
+                    additionalBindings
+            );
+            if (nonNull(executionTimer)) {
+                return executionTimer.recordCallable(scriptExecutor);
+            } else {
+                return scriptExecutor.call();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private ReadWriteResponseBehaviour determineResponseFromScriptInternal(
             RoutingContext routingContext,
             PluginConfig pluginConfig,
             ResponseConfigHolder resourceConfig,

@@ -3,7 +3,6 @@ package io.gatehill.imposter.server;
 import com.jayway.restassured.RestAssured;
 import io.gatehill.imposter.plugin.Plugin;
 import io.gatehill.imposter.plugin.test.TestPluginImpl;
-import io.gatehill.imposter.server.util.FeatureUtil;
 import io.gatehill.imposter.util.HttpUtil;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -31,9 +30,6 @@ public class RequestMatchingTest extends BaseVerticleTest {
 
     @Before
     public void setUp(TestContext testContext) throws Exception {
-        // enable store support before boot
-        System.setProperty(FeatureUtil.SYS_PROP_IMPOSTER_FEATURES, "stores");
-
         super.setUp(testContext);
         RestAssured.baseURI = "http://" + HOST + ":" + getListenPort();
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();

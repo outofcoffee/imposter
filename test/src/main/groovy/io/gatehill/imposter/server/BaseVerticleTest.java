@@ -3,6 +3,8 @@ package io.gatehill.imposter.server;
 import com.google.common.collect.Lists;
 import io.gatehill.imposter.ImposterConfig;
 import io.gatehill.imposter.plugin.Plugin;
+import io.gatehill.imposter.server.util.MetricsUtil;
+import io.vertx.core.VertxOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.RunTestOnContext;
@@ -27,7 +29,7 @@ public abstract class BaseVerticleTest {
     protected static final String HOST = "localhost";
 
     @Rule
-    public RunTestOnContext rule = new RunTestOnContext();
+    public RunTestOnContext rule = new RunTestOnContext(MetricsUtil.configureMetrics(new VertxOptions()));
 
     @Before
     public void setUp(TestContext testContext) throws Exception {

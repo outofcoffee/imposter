@@ -10,8 +10,8 @@ This is useful as a healthcheck endpoint, such as for liveness or readiness chec
 $ curl http://localhost:8080/system/status
 
 {
-  "status":"ok"
-  "version":"1.10.2-SNAPSHOT"
+  "status":"ok",
+  "version":"1.20.0"
 }
 ```
 
@@ -49,6 +49,14 @@ vertx_http_server_responseTime_seconds_max{code="200",method="GET",} 0.1039024
 For example, to calculate the average response time, use the following PromQL:
 
     vertx_http_server_responseTime_seconds_sum / vertx_http_server_responseTime_seconds_count
+
+Other useful metrics:
+
+| Metric name                 | Purpose                                     |
+|-----------------------------|---------------------------------------------|
+| response_file_cache_entries | The number of cached response files         |
+| script_execution_duration   | Script engine execution duration in seconds |
+| script_cache_entries        | The number of cached compiled scripts       |
 
 > Also see [the metrics example](./examples/metrics).
 

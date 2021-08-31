@@ -1,7 +1,5 @@
-package io.gatehill.imposter.server.util;
+package io.gatehill.imposter.util;
 
-import com.google.inject.Module;
-import io.gatehill.imposter.store.StoreModule;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -30,18 +28,18 @@ public final class FeatureUtil {
     }};
 
     /**
-     * Maps modules for specific features.
-     */
-    private static final Map<String, Class<? extends Module>> FEATURE_MODULES = new HashMap<String, Class<? extends Module>>() {{
-        put("stores", StoreModule.class);
-    }};
-
-    /**
      * Holds the enabled status of the features, keyed by name.
      */
-    private static final Map<String, Boolean> FEATURES;
+    private static Map<String, Boolean> FEATURES;
 
     static {
+        refresh();
+    }
+
+    private FeatureUtil() {
+    }
+
+    public static void refresh() {
         final Map<String, Boolean> overrides = listOverrides();
         FEATURES = DEFAULT_FEATURES.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry ->
                 ofNullable(overrides.get(entry.getKey())).orElse(entry.getValue()))
@@ -50,21 +48,8 @@ public final class FeatureUtil {
         LOGGER.trace("Features: {}", FEATURES);
     }
 
-    private FeatureUtil() {
-    }
-
     public static Boolean isFeatureEnabled(String featureName) {
         return FEATURES.getOrDefault(featureName, false);
-    }
-
-    /**
-     * @return a list of {@link Module} instances based on the enabled features
-     */
-    public static List<Module> discoverFeatureModules() {
-        return FEATURE_MODULES.entrySet().stream()
-                .filter(entry -> isFeatureEnabled(entry.getKey()))
-                .map(entry -> uncheckedInstantiate(entry.getValue()))
-                .collect(Collectors.toList());
     }
 
     /**
@@ -92,13 +77,5 @@ public final class FeatureUtil {
                 .filter(entry -> entry.contains("="))
                 .map(entry -> entry.trim().split("="))
                 .collect(Collectors.toMap(entry -> entry[0], entry -> Boolean.parseBoolean(entry[1])));
-    }
-
-    private static <T> T uncheckedInstantiate(Class<T> clazz) {
-        try {
-            return clazz.getDeclaredConstructor().newInstance();
-        } catch (Exception e) {
-            throw new RuntimeException("Unable to instantiate: " + clazz.getCanonicalName(), e);
-        }
     }
 }

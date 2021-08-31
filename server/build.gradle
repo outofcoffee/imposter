@@ -8,10 +8,6 @@ compileJava {
 dependencies {
     compile project(':imposter-core')
 
-    // metrics
-    compile "io.vertx:vertx-micrometer-metrics:$version_vertx"
-    compile "io.micrometer:micrometer-registry-prometheus:$version_micrometer"
-
     // scripting
     compile project (':scripting:scripting-groovy')
     compile project (':scripting:scripting-nashorn')
