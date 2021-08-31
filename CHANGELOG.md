@@ -3,9 +3,17 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [1.20.0] - 2021-08-31
 ### Added
-- ...
+- (core) Allows response file cache size to be configured.
+- (core) Improves request ID logging in exception handlers.
+- (core) Adds metric gauge for script cache.
+- (core) Adds metric gauge for response file cache.
+- (core) Adds metric timer for script execution duration.
+
+### Changed
+- (core) Disables ordered execution, as responses should not block each other. This provides up to a 2x throughput improvement under load.
+- (core) Increases default response file cache size to 20.
 
 ## [1.19.0] - 2021-08-31
 ### Added
