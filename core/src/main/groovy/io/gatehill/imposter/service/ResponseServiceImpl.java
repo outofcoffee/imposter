@@ -15,16 +15,11 @@ import io.gatehill.imposter.plugin.config.ResourcesHolder;
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfig;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
-import io.gatehill.imposter.script.ExecutionContext;
 import io.gatehill.imposter.script.PerformanceSimulationConfig;
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour;
 import io.gatehill.imposter.script.ResponseBehaviour;
 import io.gatehill.imposter.script.ResponseBehaviourType;
-import io.gatehill.imposter.script.RuntimeContext;
-import io.gatehill.imposter.script.ScriptUtil;
 import io.gatehill.imposter.util.HttpUtil;
-import io.gatehill.imposter.util.annotation.GroovyImpl;
-import io.gatehill.imposter.util.annotation.JavascriptImpl;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
@@ -43,7 +38,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadLocalRandom;
@@ -59,23 +53,20 @@ import static java.util.Optional.ofNullable;
  */
 public class ResponseServiceImpl implements ResponseService {
     private static final Logger LOGGER = LogManager.getLogger(ResponseServiceImpl.class);
-
-    @Inject
-    @GroovyImpl
-    private ScriptService groovyScriptService;
-
-    @Inject
-    @JavascriptImpl
-    private ScriptService javascriptScriptService;
+    private static final String ENV_RESPONSE_FILE_CACHE_ENTRIES = "IMPOSTER_RESPONSE_FILE_CACHE_ENTRIES";
+    private static final int DEFAULT_RESPONSE_FILE_CACHE_ENTRIES = 20;
 
     @Inject
     private ImposterLifecycleHooks lifecycleHooks;
 
     @Inject
+    private ScriptedResponseService scriptedResponseService;
+
+    @Inject
     private Vertx vertx;
 
     private final Cache<Path, String> responseFileCache = CacheBuilder.newBuilder()
-            .maximumSize(10)
+            .maximumSize(ofNullable(System.getenv(ENV_RESPONSE_FILE_CACHE_ENTRIES)).map(Integer::parseInt).orElse(DEFAULT_RESPONSE_FILE_CACHE_ENTRIES))
             .build();
 
     @Override
@@ -140,7 +131,7 @@ public class ResponseServiceImpl implements ResponseService {
             responseBehaviour = responseBehaviourFactory.build(statusCode, responseConfig);
 
         } else {
-            responseBehaviour = determineResponseFromScript(
+            responseBehaviour = scriptedResponseService.determineResponseFromScript(
                     routingContext,
                     pluginConfig,
                     resourceConfig,
@@ -165,80 +156,6 @@ public class ResponseServiceImpl implements ResponseService {
         return responseBehaviour;
     }
 
-    private ReadWriteResponseBehaviour determineResponseFromScript(
-            RoutingContext routingContext,
-            PluginConfig pluginConfig,
-            ResponseConfigHolder resourceConfig,
-            Map<String, Object> additionalContext,
-            Map<String, Object> additionalBindings
-    ) {
-        final ResponseConfig responseConfig = resourceConfig.getResponseConfig();
-
-        try {
-            final long executionStart = System.nanoTime();
-            LOGGER.trace(
-                    "Executing script '{}' for request: {} {}",
-                    responseConfig.getScriptFile(),
-                    routingContext.request().method(),
-                    routingContext.request().absoluteURI()
-            );
-
-            final ExecutionContext executionContext = ScriptUtil.buildContext(routingContext, additionalContext);
-            LOGGER.trace("Context for request: {}", () -> executionContext);
-
-            final Map<String, Object> finalAdditionalBindings = finaliseAdditionalBindings(routingContext, additionalBindings, executionContext);
-
-            final RuntimeContext runtimeContext = new RuntimeContext(
-                    System.getenv(),
-                    LogManager.getLogger(determineScriptName(responseConfig.getScriptFile())),
-                    pluginConfig,
-                    finalAdditionalBindings,
-                    executionContext
-            );
-
-            // execute the script and read response behaviour
-            final ReadWriteResponseBehaviour responseBehaviour =
-                    fetchScriptService(responseConfig.getScriptFile()).executeScript(pluginConfig, resourceConfig, runtimeContext);
-
-            // fire post execution hooks
-            lifecycleHooks.forEach(listener -> listener.afterSuccessfulScriptExecution(finalAdditionalBindings, responseBehaviour));
-
-            LOGGER.debug(String.format(
-                    "Executed script '%s' for request: %s %s in %.2fms",
-                    responseConfig.getScriptFile(),
-                    routingContext.request().method(),
-                    routingContext.request().absoluteURI(),
-                    (System.nanoTime() - executionStart) / 1000000f
-            ));
-            return responseBehaviour;
-
-        } catch (Exception e) {
-            throw new RuntimeException(String.format(
-                    "Error executing script: '%s' for request: %s %s",
-                    responseConfig.getScriptFile(),
-                    routingContext.request().method(),
-                    routingContext.request().absoluteURI()
-            ), e);
-        }
-    }
-
-    private Map<String, Object> finaliseAdditionalBindings(RoutingContext routingContext, Map<String, Object> additionalBindings, ExecutionContext executionContext) {
-        Map<String, Object> finalAdditionalBindings = additionalBindings;
-
-        // fire pre-context build hooks
-        if (!lifecycleHooks.isEmpty()) {
-            final Map<String, Object> listenerAdditionalBindings = new HashMap<>();
-
-            lifecycleHooks.forEach(listener -> listener.beforeBuildingRuntimeContext(routingContext, listenerAdditionalBindings, executionContext));
-
-            if (!listenerAdditionalBindings.isEmpty()) {
-                listenerAdditionalBindings.putAll(additionalBindings);
-                finalAdditionalBindings = listenerAdditionalBindings;
-            }
-        }
-        return finalAdditionalBindings;
-    }
-
     @Override
     public boolean sendEmptyResponse(RoutingContext routingContext, ResponseBehaviour responseBehaviour) {
         try {
@@ -252,20 +169,23 @@ public class ResponseServiceImpl implements ResponseService {
     }
 
     @Override
-    public void sendResponse(PluginConfig pluginConfig,
-                             ResourceConfig resourceConfig,
-                             RoutingContext routingContext,
-                             ResponseBehaviour responseBehaviour) {
+    public void sendResponse(
+            PluginConfig pluginConfig,
+            ResourceConfig resourceConfig,
+            RoutingContext routingContext,
+            ResponseBehaviour responseBehaviour
+    ) {
         sendResponse(pluginConfig, resourceConfig, routingContext, responseBehaviour, this::sendEmptyResponse);
     }
 
     @Override
-    public void sendResponse(PluginConfig pluginConfig,
-                             ResourceConfig resourceConfig,
-                             RoutingContext routingContext,
-                             ResponseBehaviour responseBehaviour,
-                             ResponseSender... fallbackSenders) {
-
+    public void sendResponse(
+            PluginConfig pluginConfig,
+            ResourceConfig resourceConfig,
+            RoutingContext routingContext,
+            ResponseBehaviour responseBehaviour,
+            ResponseSender... fallbackSenders
+    ) {
         simulatePerformance(responseBehaviour, routingContext.request(), () ->
                 sendResponseInternal(pluginConfig, resourceConfig, routingContext, responseBehaviour, fallbackSenders)
         );
@@ -295,12 +215,13 @@ public class ResponseServiceImpl implements ResponseService {
         }
     }
 
-    private void sendResponseInternal(PluginConfig pluginConfig,
-                                      ResourceConfig resourceConfig,
-                                      RoutingContext routingContext,
-                                      ResponseBehaviour responseBehaviour,
-                                      ResponseSender[] fallbackSenders) {
-
+    private void sendResponseInternal(
+            PluginConfig pluginConfig,
+            ResourceConfig resourceConfig,
+            RoutingContext routingContext,
+            ResponseBehaviour responseBehaviour,
+            ResponseSender[] fallbackSenders
+    ) {
         LOGGER.trace("Sending mock response for URI {} with status code {}",
                 routingContext.request().absoluteURI(),
                 responseBehaviour.getStatusCode());
@@ -382,8 +303,8 @@ public class ResponseServiceImpl implements ResponseService {
      */
     private void serveResponseData(ResourceConfig resourceConfig,
                                    RoutingContext routingContext,
-                                   ResponseBehaviour responseBehaviour) {
-
+                                   ResponseBehaviour responseBehaviour
+    ) {
         LOGGER.info("Serving response data ({} bytes) for URI {} with status code {}",
                 responseBehaviour.getResponseData().length(),
                 routingContext.request().absoluteURI(),
@@ -417,29 +338,10 @@ public class ResponseServiceImpl implements ResponseService {
         }
     }
 
-    private ScriptService fetchScriptService(String scriptFile) {
-        final String scriptExtension;
-        final int dotIndex = scriptFile.lastIndexOf('.');
-        if (dotIndex >= 1 && dotIndex < scriptFile.length() - 1) {
-            scriptExtension = scriptFile.substring(dotIndex + 1);
-        } else {
-            scriptExtension = "";
-        }
-
-        switch (scriptExtension.toLowerCase()) {
-            case "groovy":
-                return groovyScriptService;
-            case "js":
-                return javascriptScriptService;
-            default:
-                throw new RuntimeException("Unable to determine script engine from script file name: " + scriptFile);
-        }
-    }
-
     private void fallback(RoutingContext routingContext,
                           ResponseBehaviour responseBehaviour,
-                          ResponseSender[] missingResponseSenders) {
-
+                          ResponseSender[] missingResponseSenders
+    ) {
         if (nonNull(missingResponseSenders)) {
             for (ResponseSender sender : missingResponseSenders) {
                 try {
@@ -452,15 +354,6 @@ public class ResponseServiceImpl implements ResponseService {
             }
         }
         throw new ResponseException("All attempts to send a response failed");
-    }
-
-    private String determineScriptName(String scriptFile) {
-        final int dotIndex = scriptFile.lastIndexOf('.');
-        if (dotIndex >= 1 && dotIndex < scriptFile.length() - 1) {
-            return scriptFile.substring(0, dotIndex);
-        } else {
-            return scriptFile;
-        }
     }
 
     private Path normalisePath(PluginConfig config, String responseFile) {
