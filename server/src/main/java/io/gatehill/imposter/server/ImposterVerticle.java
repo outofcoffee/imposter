@@ -11,7 +11,6 @@ import io.gatehill.imposter.scripting.groovy.GroovyScriptingModule;
 import io.gatehill.imposter.scripting.nashorn.NashornScriptingModule;
 import io.gatehill.imposter.server.util.FeatureModuleUtil;
 import io.gatehill.imposter.service.ResourceService;
-import io.gatehill.imposter.util.AsyncUtil;
 import io.gatehill.imposter.util.FeatureUtil;
 import io.gatehill.imposter.util.HttpUtil;
 import io.gatehill.imposter.util.InjectorUtil;
@@ -29,7 +28,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static java.util.Optional.ofNullable;
 
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
@@ -41,7 +39,7 @@ public class ImposterVerticle extends AbstractVerticle {
     private PluginManager pluginManager;
 
     @Inject
-    private ServerFactory serverFactory;
+    private ServerManager serverManager;
 
     @Inject
     private ImposterLifecycleHooks lifecycleHooks;
@@ -51,7 +49,7 @@ public class ImposterVerticle extends AbstractVerticle {
 
     private final ImposterConfig imposterConfig;
 
-    private HttpServer httpServer;
+    private List<Future<HttpServer>> serverFutures;
 
     public ImposterVerticle() {
         imposterConfig = ConfigHolder.getConfig();
@@ -65,7 +63,7 @@ public class ImposterVerticle extends AbstractVerticle {
             try {
                 startEngine();
                 InjectorUtil.getInjector().injectMembers(ImposterVerticle.this);
-                httpServer = serverFactory.provide(imposterConfig, future, vertx, configureRoutes());
+                serverFutures = serverManager.provide(imposterConfig, future, vertx, configureRoutes());
                 LOGGER.info("Mock engine up and running");
             } catch (Exception e) {
                 future.fail(e);
@@ -94,7 +92,7 @@ public class ImposterVerticle extends AbstractVerticle {
     @Override
     public void stop(Future<Void> stopFuture) {
         LOGGER.info("Stopping mock server on {}:{}", imposterConfig.getHost(), imposterConfig.getListenPort());
-        ofNullable(httpServer).ifPresent(server -> server.close(AsyncUtil.resolveFutureOnCompletion(stopFuture)));
+        serverManager.stop(serverFutures, stopFuture);
     }
 
     private Router configureRoutes() {

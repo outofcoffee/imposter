@@ -1,6 +1,6 @@
 package io.gatehill.imposter.util;
 
-import io.gatehill.imposter.server.VertxWebServerFactoryImpl;
+import io.gatehill.imposter.server.VertxWebServerManagerImpl;
 import io.vertx.core.MultiMap;
 import io.vertx.ext.web.RoutingContext;
 
@@ -16,7 +16,7 @@ import static java.util.Optional.ofNullable;
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public final class HttpUtil {
-    public static final String DEFAULT_SERVER_FACTORY = VertxWebServerFactoryImpl.class.getCanonicalName();
+    public static final String DEFAULT_SERVER_FACTORY = VertxWebServerManagerImpl.class.getCanonicalName();
 
     public static final String CONTENT_TYPE = "Content-Type";
     public static final String CONTENT_TYPE_JSON = "application/json";

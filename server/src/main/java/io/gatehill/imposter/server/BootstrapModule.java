@@ -28,10 +28,10 @@ public class BootstrapModule extends AbstractModule {
         bind(ImposterConfig.class).toInstance(imposterConfig);
 
         try {
-            final Class<? extends ServerFactory> serverFactoryClass =
-                    (Class<? extends ServerFactory>) Class.forName(serverFactory);
+            final Class<? extends ServerManager> serverFactoryClass =
+                    (Class<? extends ServerManager>) Class.forName(serverFactory);
 
-            bind(ServerFactory.class).to(serverFactoryClass).in(Singleton.class);
+            bind(ServerManager.class).to(serverFactoryClass).in(Singleton.class);
             bind(ImposterLifecycleHooks.class).in(Singleton.class);
 
         } catch (ClassNotFoundException e) {
