@@ -407,3 +407,32 @@ paths:
 - [scripted-named-example](./examples/openapi/scripted-named-example)
 - [scripted-named-example-js](./examples/openapi/scripted-named-example-js)
 - [static-named-example](./examples/openapi/static-named-example)
+
+### OpenAPI specification locations
+
+OpenAPI files can be provided as a relative file, an HTTP(S) URL or a file in an S3 bucket.
+
+Some examples:
+
+A file in the same directory as the configuration file:
+
+```yaml
+plugin: openapi
+specFile: sample_spec.yaml
+```
+
+At a URL:
+
+```yaml
+plugin: openapi
+specFile: https://example.com/sample_spec.yaml
+```
+
+In an S3 bucket:
+
+```yaml
+plugin: openapi
+specFile: s3://example-bucket/sample_spec.yaml
+```
+
+When using S3, set up your AWS profile/region/credentials as normal (e.g. using an instance profile in EC2, environment variables or the various local environment options). 
