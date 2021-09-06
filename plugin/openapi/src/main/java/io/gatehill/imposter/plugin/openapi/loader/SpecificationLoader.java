@@ -1,4 +1,4 @@
-package io.gatehill.imposter.plugin.openapi.util;
+package io.gatehill.imposter.plugin.openapi.loader;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig;
@@ -25,14 +25,14 @@ import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
 
 /**
- * Utility functions to determine OpenAPI version and use the appropriate parser.
+ * Utility functions to load the OpenAPI specification, determining the version and use the appropriate parser.
  *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public final class SpecificationLoaderUtil {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SpecificationLoaderUtil.class);
+public final class SpecificationLoader {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SpecificationLoader.class);
 
-    private SpecificationLoaderUtil() {
+    private SpecificationLoader() {
     }
 
     private enum SpecVersion {
@@ -93,22 +93,33 @@ public final class SpecificationLoaderUtil {
     }
 
     private static String loadSpecData(OpenApiPluginConfig config) {
-        final String specData;
-        if (config.getSpecFile().startsWith("http://") || config.getSpecFile().startsWith("https://")) {
-            try {
-                specData = RemoteUrl.urlToString(config.getSpecFile(), emptyList());
-            } catch (Exception e) {
-                throw new RuntimeException(String.format("Error fetching remote specification from: %s", config.getSpecFile()), e);
-            }
+        final String specFile = config.getSpecFile();
+        if (specFile.startsWith("http://") || specFile.startsWith("https://")) {
+            return readSpecFromUrl(specFile);
+        } else if (specFile.startsWith("s3://")) {
+            return S3SpecificationLoader.getInstance().readSpecFromS3(specFile);
         } else {
-            final Path specPath = Paths.get(config.getParentDir().getAbsolutePath(), config.getSpecFile());
-            try {
-                specData = FileUtils.readFileToString(specPath.toFile(), StandardCharsets.UTF_8);
-            } catch (IOException e) {
-                throw new RuntimeException(String.format("Error reading specification: %s", specPath), e);
-            }
+            return readSpecFromFile(config, specFile);
         }
-        return specData;
+    }
+
+    private static String readSpecFromUrl(String specUrl) {
+        try {
+            final String specData = RemoteUrl.urlToString(specUrl, emptyList());
+            LOGGER.debug("Specification read [{} bytes] from URL: {}", specData.length(), specUrl);
+            return specData;
+        } catch (Exception e) {
+            throw new RuntimeException(String.format("Error fetching remote specification from: %s", specUrl), e);
+        }
+    }
+
+    private static String readSpecFromFile(OpenApiPluginConfig config, String specFile) {
+        final Path specPath = Paths.get(config.getParentDir().getAbsolutePath(), specFile);
+        try {
+            return FileUtils.readFileToString(specPath.toFile(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new RuntimeException(String.format("Error reading specification: %s", specPath), e);
+        }
     }
 
     private static ObjectMapper determineMapper(String specFile, String specData) {

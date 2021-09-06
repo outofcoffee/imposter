@@ -2,7 +2,9 @@ apply plugin: 'groovy'
 apply plugin: 'maven-publish'
 
 ext {
-    version_swaggerParser = '2.0.25'
+    version_aws_sdk = '1.11.1000'
+    version_swagger_parser = '2.0.25'
+    version_swagger_request_validator = '2.18.0'
 }
 
 compileJava {
@@ -18,12 +20,17 @@ tasks.processResources.dependsOn copyStaticUi
 
 dependencies {
     implementation project(':imposter-core')
-    implementation "io.swagger.parser.v3:swagger-parser:$version_swaggerParser"
-    implementation group: 'com.atlassian.oai', name: 'swagger-request-validator-core', version: '2.18.0'
+    implementation "io.swagger.parser.v3:swagger-parser:$version_swagger_parser"
+    implementation "com.atlassian.oai:swagger-request-validator-core:$version_swagger_request_validator"
+
+    implementation platform("com.amazonaws:aws-java-sdk-bom:$version_aws_sdk")
+    implementation 'com.amazonaws:aws-java-sdk-s3'
 
     // test
     testCompile project(':imposter-test')
     testCompile "com.jayway.restassured:rest-assured:$version_restAssured"
+    testCompile "org.testcontainers:testcontainers:$version_testcontainers"
+    testCompile "com.adobe.testing:s3mock-testcontainers:2.2.1"
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

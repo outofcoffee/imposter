@@ -10,9 +10,9 @@ import io.gatehill.imposter.plugin.config.ConfiguredPlugin;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig;
 import io.gatehill.imposter.plugin.openapi.http.OpenApiResponseBehaviourFactory;
+import io.gatehill.imposter.plugin.openapi.loader.SpecificationLoader;
 import io.gatehill.imposter.plugin.openapi.service.ExampleService;
 import io.gatehill.imposter.plugin.openapi.service.SpecificationService;
-import io.gatehill.imposter.plugin.openapi.util.SpecificationLoaderUtil;
 import io.gatehill.imposter.script.ResponseBehaviour;
 import io.gatehill.imposter.service.ResourceService;
 import io.gatehill.imposter.service.ResponseService;
@@ -117,7 +117,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
 
         // specification mock endpoints
         configs.forEach(config -> {
-            final OpenAPI spec = SpecificationLoaderUtil.parseSpecification(config);
+            final OpenAPI spec = SpecificationLoader.parseSpecification(config);
 
             if (null != spec) {
                 allSpecs.add(spec);

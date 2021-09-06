@@ -11,7 +11,7 @@ dependencies {
 
     // test
     testCompile project(':imposter-test')
-    testCompile "org.testcontainers:testcontainers:1.15.3"
+    testCompile "org.testcontainers:testcontainers:$version_testcontainers"
     testCompile "org.apache.logging.log4j:log4j-core:$version_log4j"
     testCompile "org.apache.logging.log4j:log4j-slf4j-impl:$version_log4j"
 }

@@ -59,6 +59,7 @@ subprojects {
         version_mockito = '3.10.0'
         version_micrometer = '1.6.7'
         version_restAssured = '2.9.0'
+        version_testcontainers = '1.15.3'
         version_vertx = '3.7.1'
     }
 }
