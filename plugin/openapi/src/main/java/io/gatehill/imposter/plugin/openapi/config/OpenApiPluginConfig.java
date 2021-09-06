@@ -31,6 +31,10 @@ public class OpenApiPluginConfig extends ContentTypedPluginConfigImpl implements
     @JsonProperty("validation")
     private OpenApiPluginValidationConfig validation;
 
+    public void setSpecFile(String specFile) {
+        this.specFile = specFile;
+    }
+
     public String getSpecFile() {
         return specFile;
     }
