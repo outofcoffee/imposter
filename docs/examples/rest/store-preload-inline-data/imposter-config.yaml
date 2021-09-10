@@ -1,0 +1,16 @@
+plugin: rest
+
+system:
+  stores:
+    # this store is preloaded from inline data
+    exampleStore:
+      preloadData:
+        foo: bar
+        baz: { "qux": "corge" }
+
+resources:
+  - path: /example
+    method: GET
+    response:
+      staticData: "Hello ${exampleStore.foo}"
+      template: true
