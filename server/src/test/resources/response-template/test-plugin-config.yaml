@@ -7,6 +7,13 @@ resources:
     staticFile: simpleTemplate.txt
     template: true
 
+- method: GET
+  path: /example-inline
+  contentType: "text/plain"
+  response:
+    staticData: "Inline ${templateTest.foo-inline}"
+    template: true
+
 - method: PUT
   path: /pets/:petId
   capture:

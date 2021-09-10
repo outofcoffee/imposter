@@ -288,23 +288,10 @@ public class ResponseServiceImpl implements ResponseService {
         final Path normalisedPath = normalisePath(pluginConfig, responseBehaviour.getResponseFile());
 
         if (responseBehaviour.isTemplate()) {
-            setContentTypeIfAbsent(resourceConfig, response, normalisedPath.getFileName().toString());
-
-            String responseData = responseFileCache.get(normalisedPath, () ->
+            final String responseData = responseFileCache.get(normalisedPath, () ->
                     FileUtils.readFileToString(normalisedPath.toFile(), StandardCharsets.UTF_8)
             );
-
-            // listeners may transform response data
-            if (!lifecycleHooks.isEmpty()) {
-                final AtomicReference<String> dataHolder = new AtomicReference<>(responseData);
-                lifecycleHooks.forEach(listener ->
-                        dataHolder.set(listener.beforeTransmittingTemplate(routingContext, dataHolder.get()))
-                );
-                responseData = dataHolder.get();
-            }
-
-            response.end(Buffer.buffer(responseData));
-
+            writeResponseData(resourceConfig, routingContext, normalisedPath.getFileName().toString(), responseData);
         } else {
             response.sendFile(normalisedPath.toString());
         }
@@ -318,18 +305,44 @@ public class ResponseServiceImpl implements ResponseService {
      * @param routingContext    the Vert.x routing context
      * @param responseBehaviour the response behaviour
      */
-    private void serveResponseData(ResourceConfig resourceConfig,
-                                   RoutingContext routingContext,
-                                   ResponseBehaviour responseBehaviour
+    private void serveResponseData(
+            ResourceConfig resourceConfig,
+            RoutingContext routingContext,
+            ResponseBehaviour responseBehaviour
     ) {
         LOGGER.info("Serving response data ({} bytes) for URI {} with status code {}",
                 responseBehaviour.getResponseData().length(),
                 routingContext.request().absoluteURI(),
                 routingContext.response().getStatusCode());
 
+        writeResponseData(resourceConfig, routingContext, null, responseBehaviour.getResponseData());
+    }
+
+    /**
+     * Write the response data, optionally resolving placeholders if templating is enabled.
+     *
+     * @param routingContext the Vert.x routing context
+     * @param responseData   the data
+     */
+    private void writeResponseData(
+            ResourceConfig resourceConfig,
+            RoutingContext routingContext,
+            String filenameHintForContentType,
+            String responseData
+    ) {
         final HttpServerResponse response = routingContext.response();
-        setContentTypeIfAbsent(resourceConfig, response, null);
-        response.end(responseBehaviour.getResponseData());
+        setContentTypeIfAbsent(resourceConfig, response, filenameHintForContentType);
+
+        // listeners may transform response data
+        if (!lifecycleHooks.isEmpty()) {
+            final AtomicReference<String> dataHolder = new AtomicReference<>(responseData);
+            lifecycleHooks.forEach(listener ->
+                    dataHolder.set(listener.beforeTransmittingTemplate(routingContext, dataHolder.get()))
+            );
+            responseData = dataHolder.get();
+        }
+
+        response.end(Buffer.buffer(responseData));
     }
 
     private void setContentTypeIfAbsent(ResourceConfig resourceConfig, HttpServerResponse response, String filenameHintForContentType) {

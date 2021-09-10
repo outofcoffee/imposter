@@ -47,10 +47,10 @@ public class ResponseTemplateTest extends BaseVerticleTest {
     }
 
     /**
-     * Interpolate a simple template placeholder using a store value.
+     * Interpolate a simple template placeholder in a file using a store value.
      */
     @Test
-    public void testSimpleInterpolatedTemplate() {
+    public void testSimpleInterpolatedTemplateFromFile() {
         // create item
         given().when()
                 .pathParam("storeId", "templateTest")
@@ -67,6 +67,31 @@ public class ResponseTemplateTest extends BaseVerticleTest {
                 .then()
                 .statusCode(equalTo(HttpUtil.HTTP_OK))
                 .body(equalTo("Hello bar!"))
+                // content type inferred from response file name
+                .contentType(ContentType.TEXT);
+    }
+
+    /**
+     * Interpolate a simple template placeholder from inline data using a store value.
+     */
+    @Test
+    public void testSimpleInterpolatedTemplateFromInlineData() {
+        // create item
+        given().when()
+                .pathParam("storeId", "templateTest")
+                .pathParam("key", "foo-inline")
+                .contentType(HttpUtil.CONTENT_TYPE_PLAIN_TEXT)
+                .body("bar")
+                .put("/system/store/{storeId}/{key}")
+                .then()
+                .statusCode(equalTo(HttpUtil.HTTP_CREATED));
+
+        // read interpolated response
+        given().when()
+                .get("/example-inline")
+                .then()
+                .statusCode(equalTo(HttpUtil.HTTP_OK))
+                .body(equalTo("Inline bar"))
                 // content type inferred from response file name
                 .contentType(ContentType.TEXT);
     }
