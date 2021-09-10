@@ -58,4 +58,9 @@ public class PrefixedKeyStore implements Store {
     public boolean hasItemWithKey(String key) {
         return delegate.hasItemWithKey(buildKey(key));
     }
+
+    @Override
+    public int count() {
+        return delegate.count();
+    }
 }

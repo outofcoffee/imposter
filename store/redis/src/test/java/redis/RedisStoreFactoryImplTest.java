@@ -5,6 +5,7 @@ import io.gatehill.imposter.ImposterConfig;
 import io.gatehill.imposter.store.model.Store;
 import io.gatehill.imposter.store.redis.RedisStoreFactoryImpl;
 import io.gatehill.imposter.util.TestEnvironmentUtil;
+import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -71,7 +72,7 @@ public class RedisStoreFactoryImplTest {
     private void writeRedissonConfig(Path configDir) throws IOException {
         final String redissonConfig = "singleServerConfig:\n  address: \"redis://" + redis.getHost() + ":" + redis.getMappedPort(6379) + "\"";
         final File redissonConfigFile = new File(configDir.toFile(), "redisson.yaml");
-        com.google.common.io.Files.write(redissonConfig, redissonConfigFile, Charsets.UTF_8);
+        FileUtils.write(redissonConfigFile, redissonConfig, Charsets.UTF_8);
     }
 
     @Test
@@ -91,6 +92,7 @@ public class RedisStoreFactoryImplTest {
         assertEquals(1, allItems.size());
         assertEquals("bar", allItems.get("foo"));
         assertTrue("Item should exist", store.hasItemWithKey("foo"));
+        assertEquals(1, store.count());
     }
 
     @Test

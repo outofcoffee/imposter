@@ -89,4 +89,11 @@ class RedisStore implements Store {
         LOGGER.trace("Checking for item with key: {} in store: {}", key, storeName);
         return store.containsKey(key);
     }
+
+    @Override
+    public int count() {
+        final int count = store.size();
+        LOGGER.trace("Returning item count {} from store: {}", count, storeName);
+        return count;
+    }
 }

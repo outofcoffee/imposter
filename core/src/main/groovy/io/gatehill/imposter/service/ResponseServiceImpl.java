@@ -3,7 +3,6 @@ package io.gatehill.imposter.service;
 import com.google.common.base.Strings;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.io.Files;
 import com.google.inject.Injector;
 import io.gatehill.imposter.exception.ResponseException;
 import io.gatehill.imposter.http.ResponseBehaviourFactory;
@@ -292,7 +291,7 @@ public class ResponseServiceImpl implements ResponseService {
             setContentTypeIfAbsent(resourceConfig, response, normalisedPath.getFileName().toString());
 
             String responseData = responseFileCache.get(normalisedPath, () ->
-                    Files.toString(normalisedPath.toFile(), StandardCharsets.UTF_8)
+                    FileUtils.readFileToString(normalisedPath.toFile(), StandardCharsets.UTF_8)
             );
 
             // listeners may transform response data

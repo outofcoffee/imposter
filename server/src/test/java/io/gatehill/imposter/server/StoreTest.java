@@ -22,7 +22,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 
 /**
- * Tests for storage.
+ * Tests for storage subsystem.
  *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */

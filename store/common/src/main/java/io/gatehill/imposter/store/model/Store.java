@@ -19,4 +19,6 @@ public interface Store {
     Map<String, Object> loadAll();
 
     boolean hasItemWithKey(String key);
+
+    int count();
 }

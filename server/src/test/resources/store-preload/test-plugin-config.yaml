@@ -1,0 +1,13 @@
+plugin: "io.gatehill.imposter.plugin.test.TestPluginImpl"
+
+system:
+  stores:
+    # this store is preloaded from file
+    preload-file-test:
+      preloadFile: initial-data.json
+
+    # this store is preloaded from inline data
+    preload-data-test:
+      preloadData:
+        foo: bar
+        baz: { "qux": "corge" }

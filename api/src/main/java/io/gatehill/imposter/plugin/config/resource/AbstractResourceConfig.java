@@ -9,6 +9,8 @@ import io.gatehill.imposter.plugin.config.security.SecurityConfigHolder;
 import java.util.Map;
 
 /**
+ * Base configuration for plugins and sub-resources.
+ *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public abstract class AbstractResourceConfig implements ResponseConfigHolder, SecurityConfigHolder, CaptureConfigHolder {
@@ -16,7 +18,7 @@ public abstract class AbstractResourceConfig implements ResponseConfigHolder, Se
     private String path;
 
     @JsonProperty("security")
-    private SecurityConfig security;
+    private SecurityConfig securityConfig;
 
     @JsonProperty("capture")
     private Map<String, CaptureConfig> capture;
@@ -36,7 +38,7 @@ public abstract class AbstractResourceConfig implements ResponseConfigHolder, Se
 
     @Override
     public SecurityConfig getSecurityConfig() {
-        return security;
+        return securityConfig;
     }
 
     @Override

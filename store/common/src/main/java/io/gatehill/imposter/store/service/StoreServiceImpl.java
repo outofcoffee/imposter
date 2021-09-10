@@ -14,6 +14,8 @@ import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.plugin.config.capture.CaptureConfig;
 import io.gatehill.imposter.plugin.config.capture.CaptureConfigHolder;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
+import io.gatehill.imposter.plugin.config.system.StoreConfig;
+import io.gatehill.imposter.plugin.config.system.SystemConfigHolder;
 import io.gatehill.imposter.script.ExecutionContext;
 import io.gatehill.imposter.service.ResourceService;
 import io.gatehill.imposter.store.model.Store;
@@ -36,6 +38,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.inject.Inject;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -135,6 +140,51 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
         router.put("/system/store/:storeName/:key").handler(handleSaveSingle(imposterConfig, allPluginConfigs));
         router.post("/system/store/:storeName").handler(handleSaveMultiple(imposterConfig, allPluginConfigs));
         router.delete("/system/store/:storeName/:key").handler(handleDeleteSingle(imposterConfig, allPluginConfigs));
+
+        preloadStores(allPluginConfigs);
+    }
+
+    private void preloadStores(List<PluginConfig> allPluginConfigs) {
+        allPluginConfigs.forEach(pluginConfig -> {
+            if (pluginConfig instanceof SystemConfigHolder) {
+                ofNullable(((SystemConfigHolder) pluginConfig).getSystemConfig())
+                        .flatMap(systemConfig -> ofNullable(systemConfig.getStoreConfigs()))
+                        .ifPresent(storeConfigs -> storeConfigs.forEach((storeName, storeConfig) -> preload(storeName, pluginConfig, storeConfig)));
+            }
+        });
+    }
+
+    private void preload(String storeName, PluginConfig pluginConfig, StoreConfig storeConfig) {
+        // validate config
+        if (StoreUtil.isRequestScopedStore(storeName)) {
+            throw new IllegalStateException("Cannot preload request scoped store: " + storeName);
+        }
+
+        final Store store = storeFactory.getStoreByName(storeName, false);
+        final Map<String, Object> preloadData = storeConfig.getPreloadData();
+        if (nonNull(preloadData)) {
+            LOGGER.trace("Preloading inline data into store: {}", storeName);
+            preloadData.forEach(store::save);
+            LOGGER.debug("Preloaded {} items from inline data into store: {}", preloadData.size(), storeName);
+
+        } else if (nonNull(storeConfig.getPreloadFile())) {
+            if (!storeConfig.getPreloadFile().endsWith(".json")) {
+                throw new IllegalStateException("Only JSON (.json) files containing a top-level object are supported for preloading");
+            }
+
+            final Path preloadPath = Paths.get(pluginConfig.getParentDir().getPath(), storeConfig.getPreloadFile()).toAbsolutePath();
+            LOGGER.trace("Preloading file {} into store: {}", preloadPath, storeName);
+
+            try {
+                @SuppressWarnings("unchecked")
+                final Map<String, Object> fileContents = MapUtil.JSON_MAPPER.readValue(preloadPath.toFile(), Map.class);
+                fileContents.forEach(store::save);
+                LOGGER.debug("Preloaded {} items from file {} into store: {}", fileContents.size(), preloadPath, storeName);
+
+            } catch (IOException e) {
+                throw new RuntimeException(String.format("Error preloading file %s into store: %s", preloadPath, storeName), e);
+            }
+        }
     }
 
     private Handler<RoutingContext> handleLoadAll(ImposterConfig imposterConfig, List<PluginConfig> allPluginConfigs) {
@@ -183,12 +233,17 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
             }
 
             final String key = routingContext.pathParam("key");
-            final String value = store.load(key);
+            final Object value = store.load(key);
             if (nonNull(value)) {
-                LOGGER.debug("Returning item: {} from store: {}", key, storeName);
-                routingContext.response()
-                        .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_PLAIN_TEXT)
-                        .end(value);
+                if (value instanceof String) {
+                    LOGGER.debug("Returning string item: {} from store: {}", key, storeName);
+                    routingContext.response()
+                            .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_PLAIN_TEXT)
+                            .end((String) value);
+                } else {
+                    LOGGER.debug("Returning object item: {} from store: {}", key, storeName);
+                    serialiseBodyAsJson(routingContext, value);
+                }
             } else {
                 LOGGER.debug("Nonexistent item: {} in store: {}", key, storeName);
                 routingContext.response()
