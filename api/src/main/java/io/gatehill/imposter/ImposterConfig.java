@@ -10,6 +10,7 @@ import java.util.Map;
 public class ImposterConfig {
     private String host;
     private int listenPort;
+    private boolean portSetExplicitly;
     private String[] configDirs;
     private String serverUrl;
     private boolean tlsEnabled;
@@ -34,6 +35,14 @@ public class ImposterConfig {
 
     public void setListenPort(int listenPort) {
         this.listenPort = listenPort;
+    }
+
+    public void setPortSetExplicitly(boolean portSetExplicitly) {
+        this.portSetExplicitly = portSetExplicitly;
+    }
+
+    public boolean getPortSetExplicitly() {
+        return portSetExplicitly;
     }
 
     public String[] getConfigDirs() {

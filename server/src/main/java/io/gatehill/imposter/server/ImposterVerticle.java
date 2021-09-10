@@ -7,6 +7,8 @@ import io.gatehill.imposter.lifecycle.ImposterLifecycleHooks;
 import io.gatehill.imposter.plugin.PluginManager;
 import io.gatehill.imposter.plugin.config.ConfigurablePlugin;
 import io.gatehill.imposter.plugin.config.PluginConfig;
+import io.gatehill.imposter.plugin.config.system.SystemConfig;
+import io.gatehill.imposter.plugin.config.system.SystemConfigHolder;
 import io.gatehill.imposter.scripting.groovy.GroovyScriptingModule;
 import io.gatehill.imposter.scripting.nashorn.NashornScriptingModule;
 import io.gatehill.imposter.server.util.FeatureModuleUtil;
@@ -29,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -63,10 +66,14 @@ public class ImposterVerticle extends AbstractVerticle {
 
         vertx.executeBlocking(future -> {
             try {
-                startEngine();
+                final Imposter imposter = startEngine();
                 InjectorUtil.getInjector().injectMembers(ImposterVerticle.this);
-                httpServer = serverFactory.provide(imposterConfig, future, vertx, configureRoutes());
+
+                final List<PluginConfig> allConfigs = parsePluginConfiguration(imposter);
+                final Router routes = configureRoutes(allConfigs);
+                httpServer = serverFactory.provide(imposterConfig, future, vertx, routes);
                 LOGGER.info("Mock engine up and running");
+
             } catch (Exception e) {
                 future.fail(e);
             }
@@ -79,7 +86,23 @@ public class ImposterVerticle extends AbstractVerticle {
         });
     }
 
-    private void startEngine() {
+    private List<PluginConfig> parsePluginConfiguration(Imposter imposter) {
+        final List<PluginConfig> allConfigs = new ArrayList<>();
+        pluginManager.getPlugins().stream()
+                .filter(p -> p instanceof ConfigurablePlugin)
+                .forEach(p -> allConfigs.addAll(((ConfigurablePlugin<?>) p).getConfigs()));
+
+        if (allConfigs.isEmpty()) {
+            throw new IllegalStateException("No plugin configurations were found. The configuration directory must contain one or more valid Imposter configuration files compatible with installed plugins.");
+        }
+
+        finaliseListenPort(allConfigs);
+        imposter.configureServerUrl();
+
+        return allConfigs;
+    }
+
+    private Imposter startEngine() {
         final List<Module> bootstrapModules = newArrayList(
                 new BootstrapModule(vertx, imposterConfig, imposterConfig.getServerFactory()),
                 new GroovyScriptingModule(),
@@ -89,6 +112,7 @@ public class ImposterVerticle extends AbstractVerticle {
 
         final Imposter imposter = new Imposter(imposterConfig, bootstrapModules);
         imposter.start();
+        return imposter;
     }
 
     @Override
@@ -97,19 +121,10 @@ public class ImposterVerticle extends AbstractVerticle {
         ofNullable(httpServer).ifPresent(server -> server.close(AsyncUtil.resolveFutureOnCompletion(stopFuture)));
     }
 
-    private Router configureRoutes() {
+    private Router configureRoutes(List<PluginConfig> allConfigs) {
         final Router router = Router.router(vertx);
         router.errorHandler(500, resourceService.buildUnhandledExceptionHandler());
         router.route().handler(new BodyHandlerImpl());
-
-        final List<PluginConfig> allConfigs = new ArrayList<>();
-        pluginManager.getPlugins().stream()
-                .filter(p -> p instanceof ConfigurablePlugin)
-                .forEach(p -> allConfigs.addAll(((ConfigurablePlugin<?>) p).getConfigs()));
-
-        if (allConfigs.isEmpty()) {
-            throw new IllegalStateException("No plugin configurations were found. The configuration directory must contain one or more valid Imposter configuration files compatible with installed plugins.");
-        }
 
         if (FeatureUtil.isFeatureEnabled("metrics")) {
             LOGGER.debug("Metrics enabled");
@@ -132,5 +147,37 @@ public class ImposterVerticle extends AbstractVerticle {
         lifecycleHooks.forEach(listener -> listener.afterRoutesConfigured(imposterConfig, allConfigs, router));
 
         return router;
+    }
+
+    /**
+     * Finalise the listen port.
+     * Falls back to plugin provided configuration if not explicitly set in imposter config.
+     *
+     * @param allConfigs all plugin configurations
+     */
+    private void finaliseListenPort(List<PluginConfig> allConfigs) {
+        if (!imposterConfig.getPortSetExplicitly()) {
+            final List<Integer> pluginProvidedListenPorts = newArrayList();
+            allConfigs.forEach(pluginConfig -> {
+                if (pluginConfig instanceof SystemConfigHolder) {
+                    final SystemConfig systemConfig = ((SystemConfigHolder) pluginConfig).getSystemConfig();
+                    if (nonNull(systemConfig) && nonNull(systemConfig.getServerConfig()) && nonNull(systemConfig.getServerConfig().getListenPort())) {
+                        pluginProvidedListenPorts.add(systemConfig.getServerConfig().getListenPort());
+                    }
+                }
+            });
+
+            switch (pluginProvidedListenPorts.size()) {
+                case 0:
+                    break;
+                case 1:
+                    final Integer pluginProvidedPort = pluginProvidedListenPorts.get(0);
+                    imposterConfig.setListenPort(pluginProvidedPort);
+                    LOGGER.trace("Set listen port to {} from plugin configuration", pluginProvidedPort);
+                    break;
+                default:
+                    throw new IllegalStateException("Cannot specify 'system.server.port' configuration more than once. Ensure only one configuration file contains the root 'system.server.port' configuration.");
+            }
+        }
     }
 }

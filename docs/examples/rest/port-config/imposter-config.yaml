@@ -1,0 +1,12 @@
+plugin: rest
+
+# set the port using configuration, instead of command line arguments
+system:
+  server:
+    port: 8081
+
+resources:
+  - path: /example
+    method: GET
+    response:
+      staticData: "Hello world"

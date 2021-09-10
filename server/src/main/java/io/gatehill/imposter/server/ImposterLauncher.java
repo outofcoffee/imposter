@@ -138,20 +138,8 @@ public class ImposterLauncher extends Launcher {
                 .map(arg -> arg.split("="))
                 .collect(Collectors.toMap(splitArg -> splitArg[0], splitArg -> splitArg[1]));
 
-        final int port;
-        if (isNull(listenPort)) {
-            if (tlsEnabled) {
-                port = DEFAULT_HTTPS_LISTEN_PORT;
-            } else {
-                port = DEFAULT_HTTP_LISTEN_PORT;
-            }
-        } else {
-            port = listenPort;
-        }
-
         final ImposterConfig imposterConfig = ConfigHolder.getConfig();
         imposterConfig.setServerFactory(serverFactory);
-        imposterConfig.setListenPort(port);
         imposterConfig.setHost(host);
         imposterConfig.setServerUrl(serverUrl);
         imposterConfig.setTlsEnabled(tlsEnabled);
@@ -161,10 +149,25 @@ public class ImposterLauncher extends Launcher {
         imposterConfig.setPlugins(plugins);
         imposterConfig.setPluginArgs(splitArgs);
 
+        setListenPort(imposterConfig);
+
         final List<String> args = newArrayList(originalArgs);
         args.add(0, "run");
         args.add(1, ImposterVerticle.class.getCanonicalName());
         super.dispatch(args.toArray(new String[0]));
+    }
+
+    private void setListenPort(ImposterConfig imposterConfig) {
+        if (isNull(listenPort)) {
+            if (tlsEnabled) {
+                imposterConfig.setListenPort(DEFAULT_HTTPS_LISTEN_PORT);
+            } else {
+                imposterConfig.setListenPort(DEFAULT_HTTP_LISTEN_PORT);
+            }
+        } else {
+            imposterConfig.setListenPort(listenPort);
+            imposterConfig.setPortSetExplicitly(true);
+        }
     }
 
     private void printVersion() {

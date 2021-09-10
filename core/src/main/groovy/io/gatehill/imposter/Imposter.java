@@ -74,9 +74,32 @@ public class Imposter {
         pluginManager.configurePlugins(pluginConfigs);
     }
 
-    private void processConfiguration() {
-        imposterConfig.setServerUrl(buildServerUrl().toString());
+    public void configureServerUrl() {
+        final URI serverUrl;
 
+        final Optional<String> explicitUrl = ofNullable(imposterConfig.getServerUrl());
+        if (explicitUrl.isPresent()) {
+            serverUrl = URI.create(explicitUrl.get());
+
+        } else {
+            // build based on configuration
+            final String scheme = (imposterConfig.isTlsEnabled() ? "https" : "http") + "://";
+            final String host = (BIND_ALL_HOSTS.equals(imposterConfig.getHost()) ? "localhost" : imposterConfig.getHost());
+
+            final String port;
+            if ((imposterConfig.isTlsEnabled() && 443 == imposterConfig.getListenPort())
+                    || (!imposterConfig.isTlsEnabled() && 80 == imposterConfig.getListenPort())) {
+                port = "";
+            } else {
+                port = ":" + imposterConfig.getListenPort();
+            }
+            serverUrl = URI.create(scheme + host + port);
+        }
+
+        imposterConfig.setServerUrl(serverUrl.toString());
+    }
+
+    private void processConfiguration() {
         final String[] configDirs = imposterConfig.getConfigDirs();
 
         // resolve relative config paths
@@ -85,27 +108,5 @@ public class Imposter {
                 configDirs[i] = Paths.get(System.getProperty("user.dir"), configDirs[i].substring(2)).toString();
             }
         }
-    }
-
-    private URI buildServerUrl() {
-        // might be set explicitly
-        final Optional<String> explicitUrl = ofNullable(imposterConfig.getServerUrl());
-        if (explicitUrl.isPresent()) {
-            return URI.create(explicitUrl.get());
-        }
-
-        // build based on configuration
-        final String scheme = (imposterConfig.isTlsEnabled() ? "https" : "http") + "://";
-        final String host = (BIND_ALL_HOSTS.equals(imposterConfig.getHost()) ? "localhost" : imposterConfig.getHost());
-
-        final String port;
-        if ((imposterConfig.isTlsEnabled() && 443 == imposterConfig.getListenPort())
-                || (!imposterConfig.isTlsEnabled() && 80 == imposterConfig.getListenPort())) {
-            port = "";
-        } else {
-            port = ":" + imposterConfig.getListenPort();
-        }
-
-        return URI.create(scheme + host + port);
     }
 }
