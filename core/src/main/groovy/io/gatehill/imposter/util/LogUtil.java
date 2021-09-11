@@ -40,6 +40,14 @@ public class LogUtil {
 
     /**
      * @param routingContext the routing context
+     * @return a short description of the request
+     */
+    public static String describeRequestShort(RoutingContext routingContext) {
+        return routingContext.request().method() + " " + routingContext.request().absoluteURI();
+    }
+
+    /**
+     * @param routingContext the routing context
      * @return a description of the request
      */
     public static String describeRequest(RoutingContext routingContext) {

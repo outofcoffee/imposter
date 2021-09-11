@@ -17,6 +17,7 @@ import io.gatehill.imposter.script.ResponseBehaviour;
 import io.gatehill.imposter.service.ResourceService;
 import io.gatehill.imposter.service.ResponseService;
 import io.gatehill.imposter.util.HttpUtil;
+import io.gatehill.imposter.util.LogUtil;
 import io.gatehill.imposter.util.MapUtil;
 import io.gatehill.imposter.util.ResourceUtil;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -250,6 +251,10 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
                         .setStatusCode(responseBehaviour.getStatusCode());
 
                 if (optionalResponse.isPresent()) {
+                    if (!responseBehaviour.getResponseHeaders().containsKey(HttpUtil.CONTENT_TYPE)) {
+                        setContentTypeFromSpec(routingContext, responseBehaviour, optionalResponse);
+                    }
+
                     // build a response from the specification
                     final ResponseService.ResponseSender exampleSender = (rc, rb) ->
                             exampleService.serveExample(imposterConfig, pluginConfig, rc, rb, optionalResponse.get(), spec);
@@ -259,9 +264,9 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
                             pluginConfig, resourceConfig, routingContext, responseBehaviour, exampleSender, this::fallback);
 
                 } else {
-                    LOGGER.warn("No explicit mock response found for {} {} with status code {}",
+                    LOGGER.warn("No response found in specification for {} {} and status code {}",
                             request.method(),
-                            request.absoluteURI(),
+                            request.path(),
                             responseBehaviour.getStatusCode()
                     );
 
@@ -279,6 +284,31 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
                     openApiResponseBehaviourFactory,
                     defaultBehaviourHandler
             );
+        });
+    }
+
+    private void setContentTypeFromSpec(RoutingContext routingContext, ResponseBehaviour responseBehaviour, Optional<ApiResponse> optionalResponse) {
+        ofNullable(optionalResponse.get().getContent()).ifPresent(responseContent -> {
+            final Optional<String> firstContentType = responseContent.keySet().stream().findFirst();
+            switch (responseContent.size()) {
+                case 0:
+                    return;
+                case 1:
+                    LOGGER.debug(
+                            "Setting content type [{}] from specification for {}",
+                            firstContentType.get(),
+                            LogUtil.describeRequestShort(routingContext)
+                    );
+                    break;
+                default:
+                    LOGGER.warn(
+                            "Multiple content types in specification - selecting first [{}] for {}",
+                            firstContentType.get(),
+                            LogUtil.describeRequestShort(routingContext)
+                    );
+                    break;
+            }
+            responseBehaviour.getResponseHeaders().put(HttpUtil.CONTENT_TYPE, firstContentType.get());
         });
     }
 
