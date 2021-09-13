@@ -9,6 +9,7 @@ import io.gatehill.imposter.script.RuntimeContext;
 import io.gatehill.imposter.scripting.common.JavaScriptUtil;
 import io.gatehill.imposter.service.ScriptService;
 import io.gatehill.imposter.util.FeatureUtil;
+import io.gatehill.imposter.util.MetricsUtil;
 import io.micrometer.core.instrument.Gauge;
 import io.vertx.micrometer.backends.BackendRegistries;
 import jdk.nashorn.api.scripting.NashornScriptEngine;
@@ -48,11 +49,11 @@ public class NashornScriptServiceImpl implements ScriptService {
     public NashornScriptServiceImpl(ScriptEngineManager scriptEngineManager) {
         scriptEngine = (NashornScriptEngine) scriptEngineManager.getEngineByName("nashorn");
 
-        if (FeatureUtil.isFeatureEnabled("metrics")) {
+        MetricsUtil.doIfMetricsEnabled(METRIC_SCRIPT_CACHE_ENTRIES, registry ->
             Gauge.builder(METRIC_SCRIPT_CACHE_ENTRIES, compiledScripts::size)
                     .description("The number of cached compiled scripts")
-                    .register(BackendRegistries.getDefaultNow());
-        }
+                    .register(registry)
+        );
     }
 
     @Override

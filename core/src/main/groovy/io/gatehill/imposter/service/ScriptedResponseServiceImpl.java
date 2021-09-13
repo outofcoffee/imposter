@@ -8,12 +8,11 @@ import io.gatehill.imposter.script.ExecutionContext;
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour;
 import io.gatehill.imposter.script.RuntimeContext;
 import io.gatehill.imposter.script.ScriptUtil;
-import io.gatehill.imposter.util.FeatureUtil;
+import io.gatehill.imposter.util.MetricsUtil;
 import io.gatehill.imposter.util.annotation.GroovyImpl;
 import io.gatehill.imposter.util.annotation.JavascriptImpl;
 import io.micrometer.core.instrument.Timer;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.micrometer.backends.BackendRegistries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -42,18 +41,19 @@ public class ScriptedResponseServiceImpl implements ScriptedResponseService {
     @Inject
     private ImposterLifecycleHooks lifecycleHooks;
 
-    private final Timer executionTimer;
+    private Timer executionTimer;
 
     @Inject
     public ScriptedResponseServiceImpl() {
-        if (FeatureUtil.isFeatureEnabled("metrics")) {
+        MetricsUtil.doIfMetricsEnabled(METRIC_SCRIPT_EXECUTION_DURATION, registry -> {
             executionTimer = Timer
                     .builder(METRIC_SCRIPT_EXECUTION_DURATION)
                     .description("Script engine execution duration in seconds")
-                    .register(BackendRegistries.getDefaultNow());
-        } else {
+                    .register(registry);
+
+        }).orElseDo(() -> {
             executionTimer = null;
-        }
+        });
     }
 
     @Override

@@ -3,7 +3,7 @@ package io.gatehill.imposter.server;
 import com.google.common.collect.Lists;
 import io.gatehill.imposter.ImposterConfig;
 import io.gatehill.imposter.plugin.Plugin;
-import io.gatehill.imposter.server.util.MetricsUtil;
+import io.gatehill.imposter.util.MetricsUtil;
 import io.vertx.core.VertxOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;

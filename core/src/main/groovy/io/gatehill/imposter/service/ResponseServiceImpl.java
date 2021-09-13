@@ -18,9 +18,9 @@ import io.gatehill.imposter.script.PerformanceSimulationConfig;
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour;
 import io.gatehill.imposter.script.ResponseBehaviour;
 import io.gatehill.imposter.script.ResponseBehaviourType;
-import io.gatehill.imposter.util.FeatureUtil;
 import io.gatehill.imposter.util.HttpUtil;
 import io.gatehill.imposter.util.LogUtil;
+import io.gatehill.imposter.util.MetricsUtil;
 import io.micrometer.core.instrument.Gauge;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -29,7 +29,6 @@ import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.http.impl.MimeMapping;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.micrometer.backends.BackendRegistries;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -79,11 +78,11 @@ public class ResponseServiceImpl implements ResponseService {
 
     @Inject
     public ResponseServiceImpl() {
-        if (FeatureUtil.isFeatureEnabled("metrics")) {
-            Gauge.builder(METRIC_RESPONSE_FILE_CACHE_ENTRIES, responseFileCache::size)
-                    .description("The number of cached response files")
-                    .register(BackendRegistries.getDefaultNow());
-        }
+        MetricsUtil.doIfMetricsEnabled(METRIC_RESPONSE_FILE_CACHE_ENTRIES, registry ->
+                Gauge.builder(METRIC_RESPONSE_FILE_CACHE_ENTRIES, responseFileCache::size)
+                        .description("The number of cached response files")
+                        .register(registry)
+        );
     }
 
     @Override

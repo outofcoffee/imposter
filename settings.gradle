@@ -55,6 +55,9 @@ project(':distro:all').name = 'distro-all'
 include ':distro:base'
 project(':distro:base').name = 'distro-base'
 
+include ':distro:embedded'
+project(':distro:embedded').name = 'distro-embedded'
+
 include ':distro:hbase'
 project(':distro:hbase').name = 'distro-hbase'
 
