@@ -9,7 +9,9 @@ import java.net.URL;
 import java.util.Arrays;
 
 /**
- * @author pete
+ * Wraps a mock engine instance, providing access to its URL.
+ *
+ * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public class MockEngine {
     protected static final Logger LOGGER = LogManager.getLogger(MockEngine.class);

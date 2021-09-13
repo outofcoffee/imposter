@@ -7,7 +7,9 @@ import java.net.URI;
 import java.util.Arrays;
 
 /**
- * @author pete
+ * Extends the base engine wrapper with functionality specific to the OpenAPI plugin.
+ *
+ * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public class OpenApiMockEngine extends MockEngine {
     public OpenApiMockEngine(ImposterConfig config) {

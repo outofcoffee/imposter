@@ -15,14 +15,25 @@ import static org.hamcrest.Matchers.equalTo;
 /**
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public class ImposterBuilderTest {
+public class OpenApiImposterBuilderTest {
     @Test
     public void testFullConfig() throws Exception {
-        final Path configDir = Paths.get(ImposterBuilderTest.class.getResource("/config").toURI());
+        final Path configDir = Paths.get(OpenApiImposterBuilderTest.class.getResource("/config").toURI());
 
-        final MockEngine imposter = new ImposterBuilder<>()
+        final MockEngine imposter = new OpenApiImposterBuilder<>()
                 .withPluginClass(OpenApiPluginImpl.class)
                 .withConfigurationDir(configDir)
+                .startBlocking();
+
+        invokeMockEndpoint(imposter);
+    }
+
+    @Test
+    public void testStandaloneSpec() throws Exception {
+        final Path specFile = Paths.get(OpenApiImposterBuilderTest.class.getResource("/config/petstore-simple.yaml").toURI());
+
+        final MockEngine imposter = new OpenApiImposterBuilder<>()
+                .withSpecificationFile(specFile)
                 .startBlocking();
 
         invokeMockEndpoint(imposter);

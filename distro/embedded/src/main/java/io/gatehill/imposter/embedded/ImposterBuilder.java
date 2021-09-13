@@ -2,8 +2,10 @@ package io.gatehill.imposter.embedded;
 
 import io.gatehill.imposter.ImposterConfig;
 import io.gatehill.imposter.plugin.Plugin;
+import io.gatehill.imposter.server.ConfigHolder;
 import io.gatehill.imposter.server.ImposterVerticle;
-import io.gatehill.imposter.server.util.ConfigUtil;
+import io.gatehill.imposter.util.FeatureUtil;
+import io.gatehill.imposter.util.MetricsUtil;
 import io.vertx.core.Vertx;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,7 +23,28 @@ import static java.util.Collections.emptyMap;
 import static java.util.Objects.isNull;
 
 /**
- * @author pete
+ * Convenience class for building Imposter mock engine instances.
+ * <p>
+ * Example using a directory containing an Imposter configuration file:
+ * <pre>
+ * MockEngine imposter = new ImposterBuilder<>()
+ *             .withPluginClass(OpenApiPluginImpl.class)
+ *             .withConfigurationDir(configDir)
+ *             .startBlocking();
+ *
+ * // mockEndpoint will look like http://localhost:5234/v1/pets
+ * String mockEndpoint = imposter.getBaseUrl() + "/v1/pets";
+ *
+ * // Your component under test can interact with this endpoint to get
+ * // simulated HTTP responses, in place of a real endpoint.
+ * </pre>
+ * Note the need to specify the plugin.
+ * <p>
+ * Typically, you will want to use a plugin-specific builder if it exists,
+ * such as {@link io.gatehill.imposter.openapi.embedded.OpenApiImposterBuilder}
+ *
+ * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @see io.gatehill.imposter.openapi.embedded.OpenApiImposterBuilder
  */
 public class ImposterBuilder<M extends MockEngine, SELF extends ImposterBuilder<M, SELF>> {
     protected static final Logger LOGGER = LogManager.getLogger(ImposterBuilder.class);
@@ -93,10 +116,12 @@ public class ImposterBuilder<M extends MockEngine, SELF extends ImposterBuilder<
     }
 
     private void bootMockEngine(CompletableFuture<M> future) {
+        FeatureUtil.disableFeature(MetricsUtil.FEATURE_NAME_METRICS);
+
         final int port = findFreePort();
 
-        ConfigUtil.resetConfig();
-        final ImposterConfig config = ConfigUtil.getConfig();
+        ConfigHolder.resetConfig();
+        final ImposterConfig config = ConfigHolder.getConfig();
         configure(config, port);
 
         final M mockEngine = buildEngine(config);

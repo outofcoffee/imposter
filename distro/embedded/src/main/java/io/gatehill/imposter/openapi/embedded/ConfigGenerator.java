@@ -12,7 +12,9 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * @author pete
+ * Generates Imposter configuration for the OpenAPI plugin.
+ *
+ * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 class ConfigGenerator {
     private static final Logger LOGGER = LogManager.getLogger(ConfigGenerator.class);

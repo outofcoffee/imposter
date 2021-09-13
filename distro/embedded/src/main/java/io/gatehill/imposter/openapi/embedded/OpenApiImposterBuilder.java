@@ -14,7 +14,22 @@ import java.util.concurrent.CompletableFuture;
 import static java.util.Objects.isNull;
 
 /**
- * @author pete
+ * Extends the base builder with options specific to the OpenAPI plugin.
+ * <p>
+ * Example using an OpenAPI spec as the source:
+ * <pre>
+ * MockEngine imposter = new OpenApiImposterBuilder<>()
+ *             .withSpecificationFile(specFile)
+ *             .startBlocking();
+ *
+ * // mockEndpoint will look like http://localhost:5234/v1/pets
+ * String mockEndpoint = imposter.getBaseUrl() + "/v1/pets";
+ *
+ * // Your component under test can interact with this endpoint to get
+ * // simulated HTTP responses, in place of a real endpoint.
+ * </pre>
+ *
+ * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public class OpenApiImposterBuilder<M extends OpenApiMockEngine, SELF extends OpenApiImposterBuilder<M, SELF>> extends ImposterBuilder<M, SELF> {
     private static final String PLUGIN_FQCN = "io.gatehill.imposter.plugin.openapi.OpenApiPluginImpl";
