@@ -3,9 +3,16 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [1.21.1] - 2021-09-13
 ### Added
-- ...
+- (openapi) Allows OpenAPI specification to be loaded from a URL.
+- (openapi) Allows OpenAPI specification to be loaded from an S3 bucket.
+- (core) Adds support for preloading stores from file or inline data.
+- (core) Adds store item count and allows retrieval of object items from store REST API.
+- (core) Allows inline data to be used as a response template.
+
+### Changed
+- (openapi) Sets response content type from OpenAPI mime type.
 
 ## [1.20.0] - 2021-08-31
 ### Added
