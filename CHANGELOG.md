@@ -3,11 +3,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [1.21.1] - 2021-09-16
 ### Added
-- ...
+- (core) Adds embedded JVM distribution. This allows use of Imposter in JUnit tests. See [JVM bindings](./distro/embedded/README.md).
+- (docs) Adds links to [Imposter CLI](./docs/run_imposter_cli.md) and [JavaScript bindings](https://github.com/gatehill/imposter-js).
 
-## [1.21.1] - 2021-09-13
+## [1.21.0] - 2021-09-13
 ### Added
 - (openapi) Allows OpenAPI specification to be loaded from a URL.
 - (openapi) Allows OpenAPI specification to be loaded from an S3 bucket.
