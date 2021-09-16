@@ -250,8 +250,13 @@ public class PluginManager {
      * @param injector the injector from which the plugins can be instantiated
      */
     public void registerPlugins(Injector injector) {
-        getPluginClasses().forEach(pluginClass ->
-                registerInstance(injector.getInstance(pluginClass)));
+        getPluginClasses().forEach(pluginClass -> {
+            try {
+                registerInstance(injector.getInstance(pluginClass));
+            } catch (Exception e) {
+                throw new RuntimeException("Error registering plugin: " + pluginClass, e);
+            }
+        });
 
         final int pluginCount = getPlugins().size();
         if (pluginCount > 0) {
@@ -274,9 +279,12 @@ public class PluginManager {
                 .filter(plugin -> plugin instanceof ConfigurablePlugin)
                 .map(plugin -> (ConfigurablePlugin<?>) plugin)
                 .forEach(plugin -> {
-                    final List<File> configFiles = ofNullable(pluginConfigs.get(plugin.getClass().getCanonicalName()))
-                            .orElse(emptyList());
-                    plugin.loadConfiguration(configFiles);
+                    try {
+                        final List<File> configFiles = ofNullable(pluginConfigs.get(plugin.getClass().getCanonicalName())).orElse(emptyList());
+                        plugin.loadConfiguration(configFiles);
+                    } catch (Exception e) {
+                        throw new RuntimeException("Error configuring plugin: " + ((Plugin) plugin).getName(), e);
+                    }
                 });
     }
 }

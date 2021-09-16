@@ -2,14 +2,12 @@ package io.gatehill.imposter.server;
 
 import io.gatehill.imposter.ImposterConfig;
 import io.gatehill.imposter.plugin.internal.MetaInfPluginDetectorImpl;
-import io.gatehill.imposter.server.util.MetricsUtil;
+import io.gatehill.imposter.util.MetricsUtil;
 import io.gatehill.imposter.util.FeatureUtil;
 import io.gatehill.imposter.util.LogUtil;
 import io.gatehill.imposter.util.MetaUtil;
 import io.vertx.core.Launcher;
 import io.vertx.core.VertxOptions;
-import io.vertx.micrometer.MicrometerMetricsOptions;
-import io.vertx.micrometer.VertxPrometheusOptions;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.kohsuke.args4j.CmdLineException;
@@ -93,7 +91,7 @@ public class ImposterLauncher extends Launcher {
 
     @Override
     public void beforeStartingVertx(VertxOptions options) {
-        if (FeatureUtil.isFeatureEnabled("metrics")) {
+        if (FeatureUtil.isFeatureEnabled(MetricsUtil.FEATURE_NAME_METRICS)) {
             MetricsUtil.configureMetrics(options);
         }
     }

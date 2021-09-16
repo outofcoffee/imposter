@@ -9,6 +9,7 @@ import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.ScriptUtil
 import io.gatehill.imposter.service.ScriptService
 import io.gatehill.imposter.util.FeatureUtil
+import io.gatehill.imposter.util.MetricsUtil
 import io.vertx.core.http.CaseInsensitiveHeaders
 import io.vertx.core.http.HttpMethod
 import io.vertx.core.http.HttpServerRequest
@@ -31,14 +32,12 @@ import static org.mockito.Mockito.when
 abstract class AbstractScriptServiceImplTest {
     @BeforeClass
     static void beforeClass() throws Exception {
-        System.setProperty(FeatureUtil.SYS_PROP_IMPOSTER_FEATURES, "metrics=false")
-        FeatureUtil.refresh()
+        FeatureUtil.disableFeature(MetricsUtil.FEATURE_NAME_METRICS)
     }
 
     @AfterClass
     static void afterClass() throws Exception {
-        System.clearProperty(FeatureUtil.SYS_PROP_IMPOSTER_FEATURES)
-        FeatureUtil.refresh()
+        FeatureUtil.clearSystemPropertyOverrides()
     }
 
     @Before

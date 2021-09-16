@@ -23,7 +23,7 @@ public final class FeatureUtil {
      * Determines which features are enabled by default.
      */
     private static final Map<String, Boolean> DEFAULT_FEATURES = new HashMap<String, Boolean>() {{
-        put("metrics", true);
+        put(MetricsUtil.FEATURE_NAME_METRICS, true);
         put("stores", true);
     }};
 
@@ -76,5 +76,27 @@ public final class FeatureUtil {
                 .filter(entry -> entry.contains("="))
                 .map(entry -> entry.trim().split("="))
                 .collect(Collectors.toMap(entry -> entry[0], entry -> Boolean.parseBoolean(entry[1])));
+    }
+
+    public static void disableFeature(String featureName) {
+        overrideFeature(featureName, false);
+    }
+
+    public static void overrideFeature(String featureName, boolean enabled) {
+        final Map<String, Boolean> overrides = listOverrides();
+        overrides.put(featureName, enabled);
+
+        System.setProperty(SYS_PROP_IMPOSTER_FEATURES, overrides.entrySet().stream()
+                .map(e -> e.getKey() + "=" + e.getValue())
+                .collect(Collectors.joining(",")));
+
+        LOGGER.debug("Overriding feature: {}={}", featureName, enabled);
+        refresh();
+    }
+
+    public static void clearSystemPropertyOverrides() {
+        LOGGER.debug("Clearing system property feature overrides");
+        System.clearProperty(FeatureUtil.SYS_PROP_IMPOSTER_FEATURES);
+        FeatureUtil.refresh();
     }
 }

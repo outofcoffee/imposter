@@ -15,6 +15,7 @@ import io.gatehill.imposter.util.AsyncUtil;
 import io.gatehill.imposter.util.FeatureUtil;
 import io.gatehill.imposter.util.HttpUtil;
 import io.gatehill.imposter.util.InjectorUtil;
+import io.gatehill.imposter.util.MetricsUtil;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpServer;
@@ -111,7 +112,7 @@ public class ImposterVerticle extends AbstractVerticle {
             throw new IllegalStateException("No plugin configurations were found. The configuration directory must contain one or more valid Imposter configuration files compatible with installed plugins.");
         }
 
-        if (FeatureUtil.isFeatureEnabled("metrics")) {
+        if (FeatureUtil.isFeatureEnabled(MetricsUtil.FEATURE_NAME_METRICS)) {
             LOGGER.debug("Metrics enabled");
 
             router.route("/system/metrics").handler(
