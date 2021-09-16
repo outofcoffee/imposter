@@ -10,6 +10,8 @@ Salesforce and HBase APIs.
 
 ## What's it for?
 
+Run standalone mock servers, or embed mocks within your JVM or Node.js tests.
+
 Use Imposter to:
 
 * run standalone mocks in place of real systems
@@ -17,12 +19,13 @@ Use Imposter to:
 * quickly set up a temporary API for your mobile/web client teams whilst the real API is being built
 * decouple your integration tests from the cloud/various back-end systems and take control of your dependencies
 * validate your API requests against an OpenAPI specification
+* capture data and use response templates to provide conditional responses
 
-Provide mock responses using static files or customise behaviour based on characteristics of the request.
-Capture data and use response templates to provide conditional responses.
+Send dynamic responses:
 
-Power users can control mock responses with JavaScript or Java/Groovy script engines.
-Advanced users can write their own plugins in a JVM language of their choice.
+- Provide mock responses using static files or customise behaviour based on characteristics of the request.
+- Power users can control mock responses with JavaScript or Java/Groovy script engines.
+- Advanced users can write their own plugins in a JVM language of their choice.
 
 ## Getting started
 

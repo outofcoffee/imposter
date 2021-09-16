@@ -1,56 +1,47 @@
 # Getting started
 
-Note: See the [Usage](usage.md) section for the required arguments, and the examples below.
+There are lots of way to run Imposter.
 
-## Running as a Docker container
+### Standalone mock server
 
-The easiest way to get started is to use an Imposter Docker container, such as:
+1. Using the command line client - see [Imposter CLI](./run_imposter_cli.md)
+2. As a Docker container - see [Imposter Docker container](./run_imposter_docker.md)
+3. As a JAR file on the JVM - see [Imposter JAR file](./run_imposter_jar.md)
 
-    docker run -ti -p 8080:8080 outofcoffee/imposter-rest [args]
+### Embedded in tests
 
-### Docker images
+4. Embedded within your **Java/Kotlin/Scala/JVM** unit tests - see [JVM bindings](../distro/embedded/README.md)
+5. Embedded within your **JavaScript/Node.js** unit tests - see [JavaScript bindings](https://github.com/gatehill/imposter-js)
 
-The following images are available:
+---
 
-* `outofcoffee/imposter-openapi`
-* `outofcoffee/imposter-rest`
-* `outofcoffee/imposter-hbase`
-* `outofcoffee/imposter-sfdc`
+## Choosing an approach
 
-_Note:_ There is also a base container that supports all plugins:
+If you are looking for a quick local development solution, use [the CLI](./run_imposter_cli.md).
 
-    outofcoffee/imposter
+If you want to run Imposter as a standalone mock server, you can run it as a [Docker container](./run_imposter_docker.md). If Docker isn't your thing, or you want to [build](./build.md) Imposter yourself, you can use it as a standalone [JAR file](./run_imposter_jar.md).
 
-You can use the base image to create your own custom images.
+You can also use it as a mock server for your unit tests on the [JVM](../distro/embedded/README.md) or [Node.js](https://github.com/gatehill/imposter-js), starting it before your tests, providing synthetic responses to your unit under test.
 
-### Example
+### Examples
 
-If you want to run Imposter using Docker, use:
+Let's assume your [configuration](./configuration.md) is in a folder named `config`.
 
-    docker run -ti -p 8080:8080 \
-        -v /path/to/config:/opt/imposter/config \
-        outofcoffee/imposter-rest [args]
+CLI example:
 
-...ensuring that you choose the right image for the plugin you wish to use.
+    imposter up ./config -p 8080
 
-## Running as a standalone Java application
+Docker example:
 
-If Docker isn't your thing, or you want to build Imposter yourself, you can create a standlone JAR file.
-See the [Build](build.md) section.
+    docker run -ti -p 8080:8080 -v $PWD/config:/opt/imposter/config outofcoffee/imposter-rest
 
-Once, built, you can run the JAR as follows:
+Standalone Java example:
 
-    java -jar distro/all/build/libs/imposter-all.jar \
-        --plugin <plugin name> \
-        --configDir <config dir> \
-        [args]
+    java -jar ./imposter.jar --configDir ./config
 
-...ensuring that you choose the right plugin class for the plugin you want to use, for example:
+Your mock server is now running!
 
-    java -jar distro/all/build/libs/imposter-all.jar \
-        --plugin rest \
-        --configDir /path/to/config \
-        [args]
+> These examples start a mock server using the simple [REST plugin](./rest_plugin.md), serving responses based on the configuration files inside the `config` folder. You can hit the URL [http://localhost:8080/example](http://localhost:8080/example) to see the mock response.
 
 ## What's next
 

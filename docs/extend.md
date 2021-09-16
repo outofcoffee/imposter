@@ -1,6 +1,6 @@
-# Embedding Imposter in your application
+# Extending Imposter in a custom application
 
-You can embed Imposter in other applications.
+You can extend Imposter to build a custom JVM application.
 
 To add dependencies on Imposter, using Gradle, add the following to your build configuration:
 

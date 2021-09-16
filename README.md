@@ -8,6 +8,8 @@ Scripting support for both JavaScript or [Groovy/Java](http://www.groovy-lang.or
 
 ## What's it for?
 
+Run standalone mock servers, or embed mocks within your JVM or Node.js tests.
+
 Use Imposter to:
 
 * run standalone mocks in place of real systems
@@ -15,12 +17,13 @@ Use Imposter to:
 * quickly set up a temporary API for your mobile/web client teams whilst the real API is being built
 * decouple your integration tests from the cloud/various back-end systems and take control of your dependencies
 * validate your API requests against an OpenAPI specification
+* capture data and use response templates to provide conditional responses
 
-Provide mock responses using static files or customise behaviour based on characteristics of the request.
-Capture data and use response templates to provide conditional responses.
+Send dynamic responses:
 
-Power users can control mock responses with JavaScript or Java/Groovy script engines.
-Advanced users can write their own plugins in a JVM language of their choice.
+- Provide mock responses using static files or customise behaviour based on characteristics of the request.
+- Power users can control mock responses with JavaScript or Java/Groovy script engines.
+- Advanced users can write their own plugins in a JVM language of their choice.
 
 *****
 ## Getting started
@@ -51,22 +54,42 @@ You can also create your own plugins, using a JVM language of your choice.
 
 # Example
 
-Let's assume your [configuration](docs/configuration.md) is in a folder named `config`.
+```shell
+$ imposter up
 
-Docker example:
-
-    docker run -ti -p 8080:8080 \
-        -v $PWD/config:/opt/imposter/config \
-        outofcoffee/imposter-rest
-
-Standalone Java example:
-
-    java -jar distro/rest/build/libs/imposter-rest.jar \
-        --configDir ./config
+Starting server on port 8080...
+Parsing configuration file: someapi-config.yaml
+...
+Mock server is up and running
+```
 
 Your mock server is now running!
 
-This example starts a mock server using the simple [REST plugin](docs/rest_plugin.md), serving responses based on the configuration files inside the `config` folder. You can hit the URL [http://localhost:8080/example](http://localhost:8080/example) to see the mock response.
+You can hit the URL [http://localhost:8080/users](http://localhost:8080/users) to see the mock response:
+
+```shell
+$ curl -v -X PUT http://localhost:8080/users/alice
+
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{ "userName": "alice" }
+```
+
+# How to run Imposter
+
+There are lots of way to run Imposter.
+
+### Standalone mock server
+
+1. Using the command line client - see [Imposter CLI](./docs/run_imposter_cli.md)
+2. As a Docker container - see [Imposter Docker container](./docs/run_imposter_docker.md)
+3. As a JAR file on the JVM - see [Imposter JAR file](./docs/run_imposter_jar.md)
+
+### Embedded in tests
+
+4. Embedded within your **Java/Kotlin/Scala/JVM** unit tests - see [JVM bindings](./distro/embedded/README.md)
+5. Embedded within your **JavaScript/Node.js** unit tests - see [JavaScript bindings](https://github.com/gatehill/imposter-js)
 
 # Recent changes and Roadmap
   

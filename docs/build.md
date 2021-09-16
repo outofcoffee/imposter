@@ -18,10 +18,6 @@ More complete example specifying plugin and config directory:
 
 > See the [README](./hack/README.md) for more details about using this script.
 
-## Embedding in your application
-
-To embed Imposter in your application see [this section](embed.md).
-
 ## Local build
 
 If you don't want to use the convenience script, then you can follow these steps.
@@ -55,3 +51,9 @@ If you want to run tests:
 Build the Docker containers with:
 
     ./scripts/docker-build.sh
+
+---
+
+## Extending to build a custom application
+
+To extend Imposter and build a custom application see [this section](extend.md).
