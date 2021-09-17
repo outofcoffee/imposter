@@ -140,6 +140,28 @@ resources:
 
 In this example, the `name` property of the body would be stored in the 'firstName' item in the store named 'testStore'.
 
+### Constant values
+
+In some scenarios, you may wish to capture a constant value.
+
+Example:
+
+```yaml
+plugin: rest
+
+- method: GET
+  path: /test
+  capture:
+    # constant value
+    receivedRequest:
+      store: example
+      const: yes
+  response:
+    statusCode: 200
+```
+
+In the example above, the value `yes` is stored in the 'example' store, with the name 'receivedRequest', when the given endpoint is hit.
+
 ### Capturing an object
 
 In some scenarios you may wish to capture an object instead of a single value.
@@ -147,6 +169,34 @@ In some scenarios you may wish to capture an object instead of a single value.
 For example, to capture the address from the example above, use the JsonPath expression `$.address` - this will result in the entire address object being captured.
 
 You can retrieve this object in a script, by accessing the [store](./stores.md) named 'testStore', or you could use it in a JsonPath placeholder within a [template](./templates.md).
+
+### Dynamic item names
+
+You do not have to specify a constant value for the item name - you can use a property of the request, such as a query or path parameter, header or body element as the item name.
+
+Dynamic item names are useful when you want to capture collections of items, each with their own name derived from the request.
+
+Example:
+
+```yaml
+plugin: rest
+
+- method: PUT
+  path: /users/admins/:userId
+  capture:
+    # constant value, but dynamic key
+    adminUser:
+      key:
+        pathParam: userId
+      store: adminUsers
+      const: admin
+  response:
+    statusCode: 200
+```
+
+In the example above, the an item corresponding to the `userId` parameter in the request is added to the 'adminUsers' store with the constant value `admin`.
+
+> Note: Values do not have to be constant - you can combine dynamic item names and captured data.
 
 ## Capture performance
 
