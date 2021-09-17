@@ -3,9 +3,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [1.23.0] - 2021-09-18
 ### Added
-- ...
+- (core) Adds support for dynamic capture names.
+- (core) Adds support for constant capture values.
+- (docs) Adds preloading documentation.
 
 ## [1.22.0] - 2021-09-17
 ### Added
