@@ -2,9 +2,10 @@
 
 Imposter allows you to store data for use later. Benefits:
 
-- use data from one request in a later request
-- your tests can verify what was sent to a mock by your application
-- set up/seed test data before a mock is used
+- use data from a request in a current or future response
+- store the data sent to a mock for later retrieval/verification
+- set up or seed test data before a mock is used
+- [capture](./data_capture.md) data (headers, body etc.) for use by a script
 
 ## Summary
 
@@ -109,15 +110,70 @@ The following environment variables are supported:
 | IMPOSTER_STORE_MODULE     | Sets the store implementation (see _Store implementations_ section). | `io.gatehill.imposter.store.redis.RedisStoreModule`                       |
 | IMPOSTER_STORE_KEY_PREFIX | Sets an optional prefix for all keys in the store, like a namespace. | A prefix of `foo` would result in the key `bar` being stored as `foo.bar` |
 
+## Request scoped store
+
+There is a special request-scoped store, named `request`, which is accessible only to the current request. Its contents do not persist beyond the lifecycle of the request.
+
+The request scoped store is very useful when you need to [capture](./data_capture.md) an item for immediate use, such as in a [response template](./templates.md), but you don't need to persist it for later use.
+
+## Preloading (pre-populating) data into a store
+
+You can preload data into a store when Imposter starts.
+
+To do this, use the `system.stores.preloadFile` or `system.stores.preloadData` key in a configuration file.
+
+### Preloading from file
+
+Typically, you will provide the data in a JSON file, and use the `preloadFile` key:
+
+```yaml
+plugin: rest
+
+system:
+  stores:
+    # this store is preloaded from file
+    example:
+      preloadFile: initial-data.json
+```
+
+In the above example, the contents of the file `initial-data.json` will be loaded into the store named 'example'.
+
+This file contains a JSON object, such as the following:
+
+```json
+{
+  "foo": "bar",
+  "baz": {
+    "qux": "corge"
+  }
+}
+```
+
+> Note that you can store child objects, but the top level keys must always be a string.
+
+### Preloading from inline data
+
+If you have a small amount of data, or you don't want to use a separate file, you can provide the preload data inline within a configuration file using the `preloadData` key:
+
+```yaml
+plugin: rest
+
+system:
+  stores:
+    # this store is preloaded from inline data
+    example:
+      preloadData:
+        foo: bar
+        baz: { "qux": "corge" }
+```
+
+In the above example, the items under `preloadData` block will be loaded into the store named 'example'.
+
+You must provide an object with key/value pairs, such as that shown above, or in the JSON file below. Top level keys must always be a string.
+
 ## Store implementations
 
 Different store implementations exist:
 
 * In memory store (default)
 * [Redis store](../store/redis)
-
-## Request scoped store
-
-There is a special request-scoped store, named `request`, which is accessible only to the current request. Its contents do not persist beyond the lifecycle of the request.
-
-The request scoped store is very useful when you need to [capture](./data_capture.md) an item for immediate use, such as in a [response template](./templates.md), but you don't need to persist it for later use.
