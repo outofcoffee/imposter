@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.22.0] - 2021-09-17
+### Added
+- (all) Applies license.
+
 ## [1.21.1] - 2021-09-16
 ### Added
 - (core) Adds embedded JVM distribution. This allows use of Imposter in JUnit tests. See [JVM bindings](./distro/embedded/README.md).
