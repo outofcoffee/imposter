@@ -46,44 +46,22 @@ package io.gatehill.imposter.plugin.config.capture;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * A capture configuration that supports path parameters, query parameters,
- * request headers and request body.
+ * A capture configuration for values, that allows the key and store to be overrriden.
  *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public class CaptureConfig {
-    @JsonProperty("pathParam")
-    private String pathParam;
+public class ItemCaptureConfig extends CaptureConfig {
+    @JsonProperty("key")
+    private CaptureConfig key;
 
-    @JsonProperty("queryParam")
-    private String queryParam;
+    @JsonProperty("store")
+    private String store;
 
-    @JsonProperty("requestHeader")
-    private String requestHeader;
-
-    @JsonProperty("jsonPath")
-    private String jsonPath;
-
-    @JsonProperty("const")
-    private String constValue;
-
-    public String getPathParam() {
-        return pathParam;
+    public CaptureConfig getKey() {
+        return key;
     }
 
-    public String getQueryParam() {
-        return queryParam;
-    }
-
-    public String getRequestHeader() {
-        return requestHeader;
-    }
-
-    public String getJsonPath() {
-        return jsonPath;
-    }
-
-    public String getConstValue() {
-        return constValue;
+    public String getStore() {
+        return store;
     }
 }

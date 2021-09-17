@@ -44,8 +44,8 @@
 package io.gatehill.imposter.plugin.config.resource;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.gatehill.imposter.plugin.config.capture.CaptureConfig;
 import io.gatehill.imposter.plugin.config.capture.CaptureConfigHolder;
+import io.gatehill.imposter.plugin.config.capture.ItemCaptureConfig;
 import io.gatehill.imposter.plugin.config.security.SecurityConfig;
 import io.gatehill.imposter.plugin.config.security.SecurityConfigHolder;
 
@@ -64,7 +64,7 @@ public abstract class AbstractResourceConfig implements ResponseConfigHolder, Se
     private SecurityConfig securityConfig;
 
     @JsonProperty("capture")
-    private Map<String, CaptureConfig> capture;
+    private Map<String, ItemCaptureConfig> capture;
 
     @SuppressWarnings("FieldMayBeFinal")
     @JsonProperty("response")
@@ -85,7 +85,7 @@ public abstract class AbstractResourceConfig implements ResponseConfigHolder, Se
     }
 
     @Override
-    public Map<String, CaptureConfig> getCaptureConfig() {
+    public Map<String, ItemCaptureConfig> getCaptureConfig() {
         return capture;
     }
 

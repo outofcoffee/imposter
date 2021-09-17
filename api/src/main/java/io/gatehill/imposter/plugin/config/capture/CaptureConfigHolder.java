@@ -49,5 +49,5 @@ import java.util.Map;
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public interface CaptureConfigHolder {
-    Map<String, CaptureConfig> getCaptureConfig();
+    Map<String, ItemCaptureConfig> getCaptureConfig();
 }

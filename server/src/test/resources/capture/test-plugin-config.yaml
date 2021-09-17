@@ -27,3 +27,15 @@ resources:
       store: captureTest
   response:
     statusCode: 200
+
+- method: PUT
+  path: /users/admins/:userId
+  capture:
+    # constant value, but dynamic key
+    adminUser:
+      key:
+        pathParam: userId
+      store: captureTestAdmins
+      const: admin
+  response:
+    statusCode: 200

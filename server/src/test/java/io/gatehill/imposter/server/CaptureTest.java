@@ -59,9 +59,14 @@ import org.junit.runner.RunWith;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 
 import static com.jayway.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertThat;
 
 /**
  * Tests for item capture.
@@ -163,5 +168,40 @@ public class CaptureTest extends BaseVerticleTest {
                 .then()
                 .statusCode(equalTo(HttpUtil.HTTP_OK))
                 .body(equalTo("PO5 7CO"));
+    }
+
+    /**
+     * Capture a constant value into a store with a dynamic key.
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testCaptureConstWithDynamicKey() {
+        // send data for capture
+        given().when()
+                .pathParam("userId", "alice")
+                .put("/users/admins/{userId}")
+                .then()
+                .statusCode(equalTo(HttpUtil.HTTP_OK));
+
+        given().when()
+                .pathParam("userId", "bob")
+                .put("/users/admins/{userId}")
+                .then()
+                .statusCode(equalTo(HttpUtil.HTTP_OK));
+
+        // retrieve via system
+        final Map<String, ?> body = given().when()
+                .pathParam("storeId", "captureTestAdmins")
+                .get("/system/store/{storeId}")
+                .then()
+                .statusCode(equalTo(HttpUtil.HTTP_OK))
+                .contentType(ContentType.JSON)
+                .extract().body().as(Map.class);
+
+        assertThat(body.entrySet(), hasSize(2));
+        assertThat(body, allOf(
+                hasEntry("alice", "admin"),
+                hasEntry("bob", "admin")
+        ));
     }
 }

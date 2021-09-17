@@ -56,6 +56,7 @@ import io.gatehill.imposter.lifecycle.ImposterLifecycleListener;
 import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.plugin.config.capture.CaptureConfig;
 import io.gatehill.imposter.plugin.config.capture.CaptureConfigHolder;
+import io.gatehill.imposter.plugin.config.capture.ItemCaptureConfig;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
 import io.gatehill.imposter.plugin.config.system.StoreConfig;
 import io.gatehill.imposter.plugin.config.system.SystemConfigHolder;
@@ -219,8 +220,7 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
             LOGGER.trace("Preloading file {} into store: {}", preloadPath, storeName);
 
             try {
-                @SuppressWarnings("unchecked")
-                final Map<String, Object> fileContents = MapUtil.JSON_MAPPER.readValue(preloadPath.toFile(), Map.class);
+                @SuppressWarnings("unchecked") final Map<String, Object> fileContents = MapUtil.JSON_MAPPER.readValue(preloadPath.toFile(), Map.class);
                 fileContents.forEach(store::save);
                 LOGGER.debug("Preloaded {} items from file {} into store: {}", fileContents.size(), preloadPath, storeName);
 
@@ -395,26 +395,50 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
     @Override
     public void beforeBuildingResponse(RoutingContext routingContext, ResponseConfigHolder resourceConfig) {
         if (resourceConfig instanceof CaptureConfigHolder) {
-            final Map<String, CaptureConfig> captureConfig = ((CaptureConfigHolder) resourceConfig).getCaptureConfig();
+            final Map<String, ItemCaptureConfig> captureConfig = ((CaptureConfigHolder) resourceConfig).getCaptureConfig();
             if (nonNull(captureConfig)) {
                 final AtomicReference<DocumentContext> jsonPathContextHolder = new AtomicReference<>();
 
-                captureConfig.forEach((itemName, itemConfig) -> {
-                    final Object itemValue;
-                    try {
-                        itemValue = captureValue(routingContext, itemConfig, jsonPathContextHolder);
-                    } catch (Exception e) {
-                        throw new RuntimeException(String.format("Error capturing item: %s", itemName), e);
-                    }
-
+                captureConfig.forEach((captureConfigKey, itemConfig) -> {
                     final String storeName = ofNullable(itemConfig.getStore()).orElse(DEFAULT_CAPTURE_STORE_NAME);
-                    LOGGER.debug("Capturing item: {} into store: {}", itemName, storeName);
+                    final String itemName = determineItemName(routingContext, jsonPathContextHolder, captureConfigKey, itemConfig, storeName);
+                    final Object itemValue = captureItemValue(routingContext, jsonPathContextHolder, captureConfigKey, itemConfig);
 
                     final Store store = openCaptureStore(routingContext, storeName);
                     store.save(itemName, itemValue);
                 });
             }
         }
+    }
+
+    private String determineItemName(RoutingContext routingContext, AtomicReference<DocumentContext> jsonPathContextHolder, String captureConfigKey, ItemCaptureConfig itemConfig, String storeName) {
+        final String itemName;
+        if (isNull(itemConfig.getKey())) {
+            itemName = captureConfigKey;
+            LOGGER.debug("Capturing item: {} into store: {}", captureConfigKey, storeName);
+        } else {
+            try {
+                itemName = captureValue(routingContext, itemConfig.getKey(), jsonPathContextHolder);
+                LOGGER.debug("Capturing item: {} into store: {} with dynamic name: {}", captureConfigKey, storeName, itemName);
+            } catch (Exception e) {
+                throw new RuntimeException(String.format("Error capturing item name: %s", captureConfigKey), e);
+            }
+        }
+        return itemName;
+    }
+
+    private Object captureItemValue(RoutingContext routingContext, AtomicReference<DocumentContext> jsonPathContextHolder, String captureConfigKey, ItemCaptureConfig itemConfig) {
+        final Object itemValue;
+        if (!Strings.isNullOrEmpty(itemConfig.getConstValue())) {
+            itemValue = itemConfig.getConstValue();
+        } else {
+            try {
+                itemValue = captureValue(routingContext, itemConfig, jsonPathContextHolder);
+            } catch (Exception e) {
+                throw new RuntimeException(String.format("Error capturing item value: %s", captureConfigKey), e);
+            }
+        }
+        return itemValue;
     }
 
     private Store openCaptureStore(RoutingContext routingContext, String storeName) {
@@ -429,13 +453,14 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
         return store;
     }
 
-    private Object captureValue(RoutingContext routingContext, CaptureConfig itemConfig, AtomicReference<DocumentContext> jsonPathContextHolder) {
+    @SuppressWarnings("unchecked")
+    private <T> T captureValue(RoutingContext routingContext, CaptureConfig itemConfig, AtomicReference<DocumentContext> jsonPathContextHolder) {
         if (!Strings.isNullOrEmpty(itemConfig.getPathParam())) {
-            return routingContext.pathParam(itemConfig.getPathParam());
+            return (T) routingContext.pathParam(itemConfig.getPathParam());
         } else if (!Strings.isNullOrEmpty(itemConfig.getQueryParam())) {
-            return routingContext.queryParam(itemConfig.getQueryParam()).stream().findFirst().orElse(null);
+            return (T) routingContext.queryParam(itemConfig.getQueryParam()).stream().findFirst().orElse(null);
         } else if (!Strings.isNullOrEmpty(itemConfig.getRequestHeader())) {
-            return routingContext.request().getHeader(itemConfig.getRequestHeader());
+            return (T) routingContext.request().getHeader(itemConfig.getRequestHeader());
         } else if (!Strings.isNullOrEmpty(itemConfig.getJsonPath())) {
             DocumentContext jsonPathContext = jsonPathContextHolder.get();
             if (isNull(jsonPathContext)) {
