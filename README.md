@@ -4,20 +4,17 @@ Reliable, scriptable and extensible mock server for REST APIs,
 [OpenAPI](https://github.com/OAI/OpenAPI-Specification) (and Swagger) specifications,
 Salesforce and HBase APIs.
 
-Scripting support for both JavaScript or [Groovy/Java](http://www.groovy-lang.org/).
+Run standalone mock servers, or embed mocks within your tests (supports JVM and Node.js).
 
-## What's it for?
+Dynamic responses can be scripted using JavaScript or Groovy/Java.
 
-Run standalone mock servers, or embed mocks within your JVM or Node.js tests.
-
-Use Imposter to:
+## Features
 
 * run standalone mocks in place of real systems
-* turn an OpenAPI/Swagger file into a mock API for testing or QA
-* quickly set up a temporary API for your mobile/web client teams whilst the real API is being built
+* turn an OpenAPI/Swagger file into a mock API for testing or QA (even before the real API is built)
 * decouple your integration tests from the cloud/various back-end systems and take control of your dependencies
 * validate your API requests against an OpenAPI specification
-* capture data and use response templates to provide conditional responses
+* capture data and validate later or use response templates to provide conditional responses
 
 Send dynamic responses:
 
@@ -43,14 +40,14 @@ The quickest way to get up and running is to use the free cloud-hosted service a
 
 # Plugins
 
-Imposter uses plugins to control its behaviour and provide specialised mocks:
+Imposter provides specialised mocks for the following scenarios:
 
 * **[OpenAPI](docs/openapi_plugin.md)** - Support for [OpenAPI](https://github.com/OAI/OpenAPI-Specification) (and Swagger) API specifications.
 * **[REST](docs/rest_plugin.md)** - Mocks RESTful or plain HTTP APIs.
 * **[HBase](docs/hbase_plugin.md)** - Basic HBase mock implementation.
 * **[SFDC (Salesforce) plugin](docs/sfdc_plugin.md)** - Basic Salesforce mock implementation.
 
-You can also create your own plugins, using a JVM language of your choice.
+These use a plugin system, so you can also create your own plugins, using any JVM language.
 
 # Example
 
@@ -63,9 +60,7 @@ Parsing configuration file: someapi-config.yaml
 Mock server is up and running
 ```
 
-Your mock server is now running!
-
-You can hit the URL [http://localhost:8080/users](http://localhost:8080/users) to see the mock response:
+Your mock server is now running! Here Imposter provides HTTP responses to simulate an API that accepts users and returns a dynamic response containing the user ID from the request.
 
 ```shell
 $ curl -v -X PUT http://localhost:8080/users/alice
@@ -75,6 +70,8 @@ Content-Type: application/json
 
 { "userName": "alice" }
 ```
+
+This is a trivial example, which you can extend with conditional logic, request validation, data capture and much more... 
 
 # How to run Imposter
 
