@@ -1,0 +1,51 @@
+name: CI
+on: [ push ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      AWS_REGION: "eu-west-1"
+      TESTCONTAINERS_RYUK_DISABLED: "true"
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Java
+        uses: actions/setup-java@v2
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Disable gradle daemon
+        run: |
+          mkdir -p ~/.gradle
+          echo "org.gradle.daemon=false" >> ~/.gradle/gradle.properties
+
+      - name: Run gradle build
+        run: ./gradlew test shadowJar --info --stacktrace
+
+      - name: Publish maven artifacts
+        run: ./gradlew publish --info --stacktrace
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Build and push Docker image
+        run: |
+          chmod +x ./scripts/*.sh
+          GIT_BRANCH="$( git branch --show-current )"
+          IMAGE_TAG_NAME="$( ./scripts/branch-to-tag-name.sh ${GIT_BRANCH} )"
+          if [[ ! -z ${IMAGE_TAG_NAME} ]]; then
+            ./scripts/docker-build.sh "${IMAGE_TAG_NAME}"
+          fi
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Release if required
+        if: ${{ github.ref == 'ref/head/master' }}
+        run: |
+          chmod +x ./scripts/*.sh
+          ./scripts/release-trigger.sh

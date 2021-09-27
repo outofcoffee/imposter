@@ -1,4 +1,4 @@
-.circleci
+.github
 .gradle
 core
 docs
