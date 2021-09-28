@@ -1,4 +1,4 @@
-# Imposter: A scriptable, multipurpose mock server [![CircleCI](https://circleci.com/gh/outofcoffee/imposter/tree/master.svg?style=svg)](https://circleci.com/gh/outofcoffee/imposter/tree/master)
+# Imposter: A scriptable, multipurpose mock server [![CI](https://github.com/outofcoffee/imposter/actions/workflows/ci.yaml/badge.svg)](https://github.com/outofcoffee/imposter/actions/workflows/ci.yaml)
 
 Reliable, scriptable and extensible mock server for REST APIs,
 [OpenAPI](https://github.com/OAI/OpenAPI-Specification) (and Swagger) specifications,
