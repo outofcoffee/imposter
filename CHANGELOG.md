@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- ...
+
 ## [1.23.1] - 2021-09-28
 ### Changed
 - (tools) Switches CI to GitHub Actions.
