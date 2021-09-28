@@ -22,17 +22,22 @@ jobs:
           mkdir -p ~/.gradle
           echo "org.gradle.daemon=false" >> ~/.gradle/gradle.properties
 
-      - name: Run gradle build
-        run: ./gradlew test shadowJar --info --stacktrace
+      - name: Test
+        run: ./gradlew test --info --stacktrace
+
+      - name: Build JARs
+        if: ${{ startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop' }}
+        run: ./gradlew shadowJar --info --stacktrace
 
       - name: Publish maven artifacts
-        if: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop' }}
+        if: ${{ startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop' }}
         run: ./gradlew publish --info --stacktrace
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Build and push Docker image
+        if: ${{ startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop' }}
         run: |
           chmod +x ./scripts/*.sh
           GIT_BRANCH="$( git branch --show-current )"
@@ -53,6 +58,9 @@ jobs:
           	CURRENT_VERSION="$( echo ${CURRENT_VERSION} | cut -c 2- )"
           fi
           ./scripts/docker-build.sh "${CURRENT_VERSION}"
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Release versioned JAR
         if: startsWith(github.ref, 'refs/tags/')
