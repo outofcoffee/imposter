@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2021-2021.
  *
  * This file is part of Imposter.
  *
@@ -41,73 +41,49 @@
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.gatehill.imposter.script;
+package io.gatehill.imposter.scripting.nashorn.shim;
 
-import com.google.common.collect.Maps;
-import io.gatehill.imposter.plugin.config.PluginConfig;
 import org.apache.logging.log4j.Logger;
 
-import java.util.Map;
-
-import static java.util.Optional.ofNullable;
+import javax.script.SimpleBindings;
 
 /**
+ * Basic shim for JavaScript console.
+ *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-public class RuntimeContext {
-    private final Map<String, String> env;
-    private final Logger logger;
-    private final PluginConfig pluginConfig;
-    private final Map<String, Object> additionalBindings;
-    private final ExecutionContext executionContext;
+public class ConsoleShim {
+    private final SimpleBindings bindings;
+    private Logger logger;
 
-    public RuntimeContext(
-            Map<String, String> env,
-            Logger logger,
-            PluginConfig pluginConfig,
-            Map<String, Object> additionalBindings,
-            ExecutionContext executionContext
-    ) {
-        this.env = env;
-        this.logger = logger;
-        this.pluginConfig = pluginConfig;
-        this.additionalBindings = additionalBindings;
-        this.executionContext = executionContext;
+    public ConsoleShim(SimpleBindings bindings) {
+        this.bindings = bindings;
     }
 
-    /**
-     * @return a representation of the runtime context as a {@link Map} of bindings
-     */
-    public Map<String, Object> asMap() {
-        final Map<String, Object> bindings = Maps.newHashMap();
-        bindings.put("config", pluginConfig);
-        bindings.put("context", executionContext);
-        bindings.put("env", env);
-        bindings.put("logger", logger);
-
-        // add custom bindings
-        ofNullable(additionalBindings).ifPresent(bindings::putAll);
-
-        return bindings;
-    }
-
-    public Logger getLogger() {
+    private Logger getLogger() {
+        if (null == logger) {
+            logger = (Logger) bindings.get("logger");
+        }
         return logger;
     }
 
-    public PluginConfig getPluginConfig() {
-        return pluginConfig;
+    public void log(String message, Object... args) {
+        getLogger().info(message, args);
     }
 
-    public Map<String, Object> getAdditionalBindings() {
-        return additionalBindings;
+    public void debug(String message, Object... args) {
+        getLogger().debug(message, args);
     }
 
-    public ExecutionContext getExecutionContext() {
-        return executionContext;
+    public void info(String message, Object... args) {
+        getLogger().info(message, args);
     }
 
-    public Map<String, String> getEnv() {
-        return env;
+    public void warn(String message, Object... args) {
+        getLogger().warn(message, args);
+    }
+
+    public void error(String message, Object... args) {
+        getLogger().error(message, args);
     }
 }

@@ -50,11 +50,10 @@ import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour;
 import io.gatehill.imposter.script.RuntimeContext;
 import io.gatehill.imposter.scripting.common.JavaScriptUtil;
+import io.gatehill.imposter.scripting.nashorn.shim.ConsoleShim;
 import io.gatehill.imposter.service.ScriptService;
-import io.gatehill.imposter.util.FeatureUtil;
 import io.gatehill.imposter.util.MetricsUtil;
 import io.micrometer.core.instrument.Gauge;
-import io.vertx.micrometer.backends.BackendRegistries;
 import jdk.nashorn.api.scripting.NashornScriptEngine;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -93,9 +92,9 @@ public class NashornScriptServiceImpl implements ScriptService {
         scriptEngine = (NashornScriptEngine) scriptEngineManager.getEngineByName("nashorn");
 
         MetricsUtil.doIfMetricsEnabled(METRIC_SCRIPT_CACHE_ENTRIES, registry ->
-            Gauge.builder(METRIC_SCRIPT_CACHE_ENTRIES, compiledScripts::size)
-                    .description("The number of cached compiled scripts")
-                    .register(registry)
+                Gauge.builder(METRIC_SCRIPT_CACHE_ENTRIES, compiledScripts::size)
+                        .description("The number of cached compiled scripts")
+                        .register(registry)
         );
     }
 
@@ -106,7 +105,12 @@ public class NashornScriptServiceImpl implements ScriptService {
         LOGGER.trace("Executing script file: {}", scriptFile);
         try {
             final CompiledScript compiledScript = getCompiledScript(scriptFile);
-            return (ReadWriteResponseBehaviour) compiledScript.eval(new SimpleBindings(runtimeContext.asMap()));
+            final SimpleBindings bindings = new SimpleBindings(runtimeContext.asMap());
+
+            // JS environment affordances
+            bindings.put("console", new ConsoleShim(bindings));
+
+            return (ReadWriteResponseBehaviour) compiledScript.eval(bindings);
 
         } catch (Exception e) {
             throw new RuntimeException("Script execution terminated abnormally", e);

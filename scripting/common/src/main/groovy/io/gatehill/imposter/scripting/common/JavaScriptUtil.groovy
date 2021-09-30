@@ -95,6 +95,24 @@ var responseBehaviour = new RunnableResponseBehaviourImpl() {
 /* ------------------------------------------------------------------------- */
 ${dslFunctions}
 /* ------------------------------------------------------------------------- */
+/* Shim for '__imposter_types' module exports                                */
+/* ------------------------------------------------------------------------- */
+var __imposter_types = {
+    env: (function() { return env })(),
+    context: (function() { return context })(),
+    logger: (function() { return logger })(),
+    respond: respond
+};
+/* ------------------------------------------------------------------------- */
+/* Shim for 'require()'                                                      */
+/* ------------------------------------------------------------------------- */
+function require(moduleName) {
+  if ("@imposter-js/types" !== moduleName){
+    throw new Error('require() only supports "@imposter-js/types"');
+  }
+  return __imposter_types;
+}
+/* ------------------------------------------------------------------------- */
 /* Mock script                                                               */
 /* ------------------------------------------------------------------------- */
 ${mockScript}
