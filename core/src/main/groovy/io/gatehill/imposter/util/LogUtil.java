@@ -57,7 +57,14 @@ import static java.util.Optional.ofNullable;
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public class LogUtil {
-    private static final String LOGGER_BASE_PACKAGE = ConfigUtil.CURRENT_PACKAGE;
+    /**
+     * The prefix for script logger names.
+     */
+    public static final String LOGGER_SCRIPT_PACKAGE = "script";
+    private static final String[] LOGGER_PACKAGES = {
+        ConfigUtil.CURRENT_PACKAGE,
+        LOGGER_SCRIPT_PACKAGE
+    };
     private static final String ENV_VAR_LOG_LEVEL = "IMPOSTER_LOG_LEVEL";
     private static final Level DEFAULT_LOG_LEVEL = Level.DEBUG;
 
@@ -76,8 +83,10 @@ public class LogUtil {
      */
     public static void configureLogging(String logLevel) {
         final LoggerContext context = (LoggerContext) LogManager.getContext(false);
-        final LoggerConfig logger = context.getConfiguration().getLoggerConfig(LOGGER_BASE_PACKAGE);
-        logger.setLevel(Level.valueOf(logLevel));
+        for (String loggerPackage : LOGGER_PACKAGES) {
+            final LoggerConfig logger = context.getConfiguration().getLoggerConfig(loggerPackage);
+            logger.setLevel(Level.valueOf(logLevel));
+        }
         context.updateLoggers();
     }
 

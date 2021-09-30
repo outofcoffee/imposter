@@ -43,6 +43,8 @@
 
 package io.gatehill.imposter.service;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import io.gatehill.imposter.lifecycle.ImposterLifecycleHooks;
 import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfig;
@@ -51,6 +53,7 @@ import io.gatehill.imposter.script.ExecutionContext;
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour;
 import io.gatehill.imposter.script.RuntimeContext;
 import io.gatehill.imposter.script.ScriptUtil;
+import io.gatehill.imposter.util.LogUtil;
 import io.gatehill.imposter.util.MetricsUtil;
 import io.gatehill.imposter.util.annotation.GroovyImpl;
 import io.gatehill.imposter.util.annotation.JavascriptImpl;
@@ -63,6 +66,7 @@ import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 import static java.util.Objects.nonNull;
 
@@ -72,6 +76,11 @@ import static java.util.Objects.nonNull;
 public class ScriptedResponseServiceImpl implements ScriptedResponseService {
     private static final Logger LOGGER = LogManager.getLogger(ScriptedResponseServiceImpl.class);
     private static final String METRIC_SCRIPT_EXECUTION_DURATION = "script.execution.duration";
+
+    /**
+     * Caches loggers to avoid logging framework lookup cost.
+     */
+    private final Cache<String, Logger> loggerCache = CacheBuilder.newBuilder().maximumSize(20).build();
 
     @Inject
     @GroovyImpl
@@ -147,10 +156,11 @@ public class ScriptedResponseServiceImpl implements ScriptedResponseService {
             LOGGER.trace("Context for request: {}", () -> executionContext);
 
             final Map<String, Object> finalAdditionalBindings = finaliseAdditionalBindings(routingContext, additionalBindings, executionContext);
+            final Logger scriptLogger = buildScriptLogger(responseConfig);
 
             final RuntimeContext runtimeContext = new RuntimeContext(
                     System.getenv(),
-                    LogManager.getLogger(determineScriptName(responseConfig.getScriptFile())),
+                    scriptLogger,
                     pluginConfig,
                     finalAdditionalBindings,
                     executionContext
@@ -182,13 +192,17 @@ public class ScriptedResponseServiceImpl implements ScriptedResponseService {
         }
     }
 
-    private String determineScriptName(String scriptFile) {
+    private Logger buildScriptLogger(ResponseConfig responseConfig) throws ExecutionException {
+        final String scriptFile = responseConfig.getScriptFile();
+        final String name;
         final int dotIndex = scriptFile.lastIndexOf('.');
         if (dotIndex >= 1 && dotIndex < scriptFile.length() - 1) {
-            return scriptFile.substring(0, dotIndex);
+            name = scriptFile.substring(0, dotIndex);
         } else {
-            return scriptFile;
+            name = scriptFile;
         }
+        final String loggerName = LogUtil.LOGGER_SCRIPT_PACKAGE + "." + name;
+        return loggerCache.get(loggerName, () -> LogManager.getLogger(loggerName));
     }
 
     private ScriptService fetchScriptService(String scriptFile) {
