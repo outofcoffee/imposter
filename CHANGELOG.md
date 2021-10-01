@@ -3,13 +3,16 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [1.23.2] - 2021-10-01
 ### Added
-- ...
+- (core) Adds support for scripts using `@imposter-js/types`. See https://github.com/gatehill/imposter-js-types
+
+### Changed
+- (core) Caches script logger for improved lookup performance.
 
 ## [1.23.1] - 2021-09-28
 ### Changed
-- (tools) Switches CI to GitHub Actions.
+- (ci) Switches CI to GitHub Actions.
 
 ## [1.23.0] - 2021-09-18
 ### Added
