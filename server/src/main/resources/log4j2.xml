@@ -9,21 +9,22 @@
         <Root level="debug">
             <AppenderRef ref="Console"/>
         </Root>
-        <Logger name="io.netty" level="warn"/>
-        <Logger name="io.netty.resolver" level="error"/>
-        <Logger name="httpclient.wire" level="warn"/>
-        <Logger name="org.apache" level="warn"/>
-        <Logger name="com.atlassian.oai" level="warn"/>
         <Logger name="io.gatehill.imposter" level="debug"/>
 
         <!-- due to Netty Docker logging bug -->
         <Logger name="io.netty.util.internal.MacAddressUtil" level="off"/>
 
         <!-- quieten -->
+        <Logger name="io.netty" level="warn"/>
+        <Logger name="io.netty.resolver" level="error"/>
+        <Logger name="httpclient.wire" level="warn"/>
+        <Logger name="org.apache" level="warn"/>
+        <Logger name="com.atlassian.oai" level="warn"/>
         <Logger name="com.amazonaws" level="warn"/>
         <Logger name="com.jayway.jsonpath" level="warn"/>
         <Logger name="io.swagger" level="warn"/>
         <Logger name="io.micrometer" level="warn"/>
         <Logger name="org.redisson" level="warn"/>
+        <Logger name="io.vertx.core.impl.launcher.commands" level="warn"/>
     </Loggers>
 </Configuration>

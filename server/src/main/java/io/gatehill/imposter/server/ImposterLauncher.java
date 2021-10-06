@@ -171,7 +171,7 @@ public class ImposterLauncher extends Launcher {
 
     private void startServer(String[] originalArgs) {
         if (isNull(plugins) || 0 == plugins.length) {
-            LOGGER.debug("Searching metadata for plugins");
+            LOGGER.trace("Searching metadata for plugins");
             plugins = new String[]{MetaInfPluginDetectorImpl.class.getCanonicalName()};
         }
 

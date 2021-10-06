@@ -126,7 +126,7 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
         this.resourceService = resourceService;
         this.storeFactory = storeFactory;
 
-        LOGGER.debug("Stores enabled");
+        LOGGER.trace("Stores enabled");
         storeItemSubstituter = buildStoreItemSubstituter();
         lifecycleHooks.registerListener(this);
     }

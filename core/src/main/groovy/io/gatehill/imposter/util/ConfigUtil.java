@@ -134,7 +134,7 @@ public final class ConfigUtil {
             }
         }
 
-        LOGGER.info("Loaded {} plugin configuration file(s) from: {}",
+        LOGGER.trace("Loaded {} plugin configuration file(s) from: {}",
                 configCount, Arrays.toString(configDirs));
 
         return allPluginConfigs;

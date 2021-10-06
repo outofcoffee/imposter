@@ -210,7 +210,7 @@ public class PluginManager {
             registerProvider(providerClass);
             final PluginProvider pluginProvider = createPluginProvider(providerClass);
             final List<String> provided = pluginProvider.providePlugins(imposterConfig, pluginConfigs);
-            LOGGER.debug("{} plugin(s) provided by: {}", provided.size(), pluginProvider.getName());
+            LOGGER.trace("{} plugin(s) provided by: {}", provided.size(), pluginProvider.getName());
 
             // recurse for new providers
             if (provided.size() > 0) {
@@ -227,11 +227,7 @@ public class PluginManager {
             final Class<? extends Plugin> clazz = (Class<? extends Plugin>) Class.forName(className);
             if (registerClass(clazz)) {
                 final String pluginName = PluginMetadata.getPluginName(clazz);
-                if (LOGGER.isTraceEnabled()) {
-                    LOGGER.trace("Registered plugin: {} with class: {}", pluginName, className);
-                } else {
-                    LOGGER.debug("Registered plugin: {}", pluginName);
-                }
+                LOGGER.trace("Registered plugin: {} with class: {}", pluginName, className);
             }
         } catch (Exception e) {
             throw new RuntimeException("Failed to register plugin: " + className, e);
@@ -306,7 +302,7 @@ public class PluginManager {
             final String pluginNames = getPlugins().stream()
                     .map(Plugin::getName)
                     .collect(Collectors.joining(", ", "[", "]"));
-            LOGGER.info("Loaded {} plugin(s): {}", pluginCount, pluginNames);
+            LOGGER.trace("Loaded {} plugin(s): {}", pluginCount, pluginNames);
         } else {
             throw new IllegalStateException("No plugins were loaded");
         }

@@ -71,7 +71,7 @@ public class StoreModule extends AbstractModule {
     @SuppressWarnings("unchecked")
     private Module discoverStoreModule() {
         final String storeModule = ofNullable(System.getenv("IMPOSTER_STORE_MODULE")).orElse(DEFAULT_STORE_MODULE);
-        LOGGER.debug("Loading store module: {}", storeModule);
+        LOGGER.trace("Loading store module: {}", storeModule);
         try {
             final Class<? extends Module> moduleClass = (Class<? extends Module>) Class.forName(storeModule);
             return moduleClass.newInstance();

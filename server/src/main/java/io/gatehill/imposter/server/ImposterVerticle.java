@@ -103,14 +103,13 @@ public class ImposterVerticle extends AbstractVerticle {
 
     @Override
     public void start(Future<Void> startFuture) {
-        LOGGER.debug("Initialising mock server");
+        LOGGER.trace("Initialising mock engine");
 
         vertx.executeBlocking(future -> {
             try {
                 startEngine();
                 InjectorUtil.getInjector().injectMembers(ImposterVerticle.this);
                 httpServer = serverFactory.provide(imposterConfig, future, vertx, configureRoutes());
-                LOGGER.info("Mock engine up and running");
             } catch (Exception e) {
                 future.fail(e);
             }
@@ -118,6 +117,7 @@ public class ImposterVerticle extends AbstractVerticle {
             if (result.failed()) {
                 startFuture.fail(result.cause());
             } else {
+                LOGGER.info("Mock engine up and running on {}", imposterConfig.getServerUrl());
                 startFuture.complete();
             }
         });
@@ -156,7 +156,7 @@ public class ImposterVerticle extends AbstractVerticle {
         }
 
         if (FeatureUtil.isFeatureEnabled(MetricsUtil.FEATURE_NAME_METRICS)) {
-            LOGGER.debug("Metrics enabled");
+            LOGGER.trace("Metrics enabled");
 
             router.route("/system/metrics").handler(
                     resourceService.passthroughRoute(imposterConfig, allConfigs, vertx, PrometheusScrapingHandler.create())

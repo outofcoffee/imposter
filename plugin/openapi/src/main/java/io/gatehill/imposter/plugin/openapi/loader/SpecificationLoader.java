@@ -97,7 +97,7 @@ public final class SpecificationLoader {
 
         // determine version
         final SpecVersion specVersion = determineVersion(config.getSpecFile(), parsed);
-        LOGGER.debug("Using version: {} parser for: {}", specVersion, config.getSpecFile());
+        LOGGER.trace("Using version: {} parser for: {}", specVersion, config.getSpecFile());
 
         final ParseOptions parseOptions = new ParseOptions();
         parseOptions.setResolveFully(true);

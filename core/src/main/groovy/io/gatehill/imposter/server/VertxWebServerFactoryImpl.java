@@ -67,12 +67,12 @@ public class VertxWebServerFactoryImpl implements ServerFactory {
 
     @Override
     public HttpServer provide(ImposterConfig imposterConfig, Future<?> startFuture, Vertx vertx, Router router) {
-        LOGGER.info("Starting mock server on {}:{}", imposterConfig.getHost(), imposterConfig.getListenPort());
+        LOGGER.trace("Starting mock server on {}:{}", imposterConfig.getHost(), imposterConfig.getListenPort());
         final HttpServerOptions serverOptions = new HttpServerOptions();
 
         // configure keystore and enable HTTPS
         if (imposterConfig.isTlsEnabled()) {
-            LOGGER.info("TLS is enabled");
+            LOGGER.trace("TLS is enabled");
 
             // locate keystore
             final Path keystorePath;
@@ -94,10 +94,10 @@ public class VertxWebServerFactoryImpl implements ServerFactory {
             serverOptions.setSsl(true);
 
         } else {
-            LOGGER.info("TLS is disabled");
+            LOGGER.trace("TLS is disabled");
         }
 
-        LOGGER.info("Listening on {}", imposterConfig.getServerUrl());
+        LOGGER.trace("Listening on {}", imposterConfig.getServerUrl());
         return vertx.createHttpServer(serverOptions)
                 .requestHandler(router)
                 .listen(imposterConfig.getListenPort(), imposterConfig.getHost(), AsyncUtil.resolveFutureOnCompletion(startFuture));
