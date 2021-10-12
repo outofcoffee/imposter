@@ -1,6 +1,8 @@
-# Imposter: A scriptable, multipurpose mock server
-
-Welcome to the Imposter documentation.
+---
+layout: default
+title: Documentation
+description: Imposter Mock Engine
+---
 
 ## Introduction
 
