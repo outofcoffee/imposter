@@ -4,32 +4,27 @@ Welcome to the Imposter documentation.
 
 ## Introduction
 
-Imposter is a reliable, scriptable and extensible mock server for REST APIs,
-[OpenAPI](https://github.com/OAI/OpenAPI-Specification) (and Swagger) specifications,
-Salesforce and HBase APIs.
+Imposter is a reliable, scriptable and extensible mock server for REST APIs, OpenAPI (and Swagger) specifications, Salesforce and HBase APIs.
 
-## What's it for?
+Run standalone mock servers, or embed mocks within your tests (supports JVM and Node.js). Dynamic responses can be scripted using JavaScript, Groovy or Java.
 
-Run standalone mock servers, or embed mocks within your JVM or Node.js tests.
+## Getting started
 
-Use Imposter to:
+To begin, check out our [Getting started](getting_started.md) guide. See the _User documentation_ section below for more.
+
+## Features
 
 * run standalone mocks in place of real systems
-* turn an OpenAPI/Swagger file into a mock API for testing or QA
-* quickly set up a temporary API for your mobile/web client teams whilst the real API is being built
-* decouple your integration tests from the cloud/various back-end systems and take control of your dependencies
+* turn an OpenAPI/Swagger file into a mock API for dev or QA (use it before the real API is built)
+* decouple your integration tests from the cloud/back-end systems and take control of your dependencies
 * validate your API requests against an OpenAPI specification
-* capture data and use response templates to provide conditional responses
+* capture data and retrieve later, or use in templates to for conditional responses
 
 Send dynamic responses:
 
 - Provide mock responses using static files or customise behaviour based on characteristics of the request.
 - Power users can control mock responses with JavaScript or Java/Groovy script engines.
 - Advanced users can write their own plugins in a JVM language of their choice.
-
-## Getting started
-
-To begin, check out our [Getting started](getting_started.md) guide.
 
 ## User documentation
 
@@ -73,3 +68,8 @@ The following sections describe the built-in plugins. You can also write your ow
 
 * [Build](build.md)
 * [Roadmap](roadmap.md)
+
+## Tutorials
+
+* [Mocking APIs with Swagger and Imposter](https://medium.com/@outofcoffee/mocking-apis-with-swagger-and-imposter-3694bd1733c0)
+* [Mocking REST APIs with Imposter](https://medium.com/@outofcoffee/mocking-apis-with-imposter-53bd908632e5)

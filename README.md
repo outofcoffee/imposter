@@ -1,20 +1,16 @@
 # Imposter: A scriptable, multipurpose mock server [![CI](https://github.com/outofcoffee/imposter/actions/workflows/ci.yaml/badge.svg)](https://github.com/outofcoffee/imposter/actions/workflows/ci.yaml)
 
-Reliable, scriptable and extensible mock server for REST APIs,
-[OpenAPI](https://github.com/OAI/OpenAPI-Specification) (and Swagger) specifications,
-Salesforce and HBase APIs.
+Reliable, scriptable and extensible mock server for REST APIs, OpenAPI (and Swagger) specifications, Salesforce and HBase APIs.
 
-Run standalone mock servers, or embed mocks within your tests (supports JVM and Node.js).
-
-Dynamic responses can be scripted using JavaScript or Groovy/Java.
+Run standalone mock servers, or embed mocks within your tests (supports JVM and Node.js). Dynamic responses can be scripted using JavaScript, Groovy or Java.
 
 ## Features
 
 * run standalone mocks in place of real systems
-* turn an OpenAPI/Swagger file into a mock API for testing or QA (even before the real API is built)
-* decouple your integration tests from the cloud/various back-end systems and take control of your dependencies
+* turn an OpenAPI/Swagger file into a mock API for dev or QA (use it before the real API is built)
+* decouple your integration tests from the cloud/back-end systems and take control of your dependencies
 * validate your API requests against an OpenAPI specification
-* capture data and validate later or use response templates to provide conditional responses
+* capture data and retrieve later, or use in templates to for conditional responses
 
 Send dynamic responses:
 
