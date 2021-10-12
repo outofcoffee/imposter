@@ -351,7 +351,7 @@ response:
 
 Now, `example.groovy` can control the responses, such as:
 
-1. a specific example name to return
+1. a specific OpenAPI example name to return
 
 ```groovy
 respond().withExampleName('example1')
@@ -366,12 +366,14 @@ respond().withFile('some-file.json')
 3. a literal string to return
 
 ```groovy
-respond().withContent('{ "foo": "bar" }')
+respond().withData('{ "foo": "bar" }')
 ```
 
 ### Returning a named example
 
-You can return a specific named example from the specification using the `withExampleName(String)` method.
+OpenAPI specifications allow API authors to provide examples of requests, responses, parameters and schema items.
+
+You can return a specific named example from the specification in your script using the `withExampleName(String)` method.
 
 ```groovy
 if (context.request.pathParams.petId == '2') {
@@ -435,4 +437,4 @@ plugin: openapi
 specFile: s3://example-bucket/sample_spec.yaml
 ```
 
-When using S3, set up your AWS profile/region/credentials as normal (e.g. using an instance profile in EC2, environment variables or the various local environment options). 
+When using S3, set up your AWS profile/region/credentials as per standard AWS practice. For example, using an instance profile in EC2, environment variables or the various local environment configuration locations for providing AWS credentials. 
