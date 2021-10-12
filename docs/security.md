@@ -219,5 +219,5 @@ resources:
 
 See the `docs/examples` directory for working sample configurations, such as:
 
-* [Simple authentication](./examples/openapi/authentication-simple)
-* [Extended authentication](./examples/openapi/authentication-extended)
+* [Simple authentication](https://github.com/outofcoffee/imposter/blob/master/docs/examples/openapi/authentication-simple)
+* [Extended authentication](https://github.com/outofcoffee/imposter/blob/master/docs/examples/openapi/authentication-extended)

@@ -113,6 +113,10 @@ A few things to call out:
 
 Let's assume your configuration is in the directory: `docs/examples/openapi/simple`.
 
+CLI example:
+
+    imposter up -p 8080 ./docs/examples/openapi/simple
+
 Docker example:
 
     docker run --rm -ti -p 8080:8080 \
@@ -151,8 +155,7 @@ Once you're finished, stop the server with CTRL+C.
 
 > For more working examples, see:
 >
-> * docs/examples/openapi
-> * plugin/openapi/src/test/resources/openapi3/simple
+> * [examples/openapi](https://github.com/outofcoffee/imposter/blob/master/docs/examples/openapi)
 
 ## Validating requests against the specification
 
@@ -304,7 +307,7 @@ HTTP/1.1 200 OK
 
 ## Object response examples
 
-Imposter has basic support for response examples defined as objects, for example an API specification like `object-examples.yaml` (see `/plugin/openapi/src/test/resources/openapi3/`).
+Imposter has basic support for response examples defined as objects, for example an API specification like `object-examples.yaml` - see [examples/openapi/object-examples](https://github.com/outofcoffee/imposter/blob/master/docs/examples/openapi/object-examples).
 
 The salient part of the response is as follows:
 
@@ -322,7 +325,7 @@ responses:
         name: Engineering
 ```
 
-> Note: the JSON example is specified as an object.
+> Note that the example is specified as an object, rather than literal JSON.
 
 Imposter currently supports JSON and YAML serialised content types in the response if they are specified in this way. If you want to return a different format, return a literal string, such as those above.
 
@@ -332,7 +335,7 @@ For more advanced scenarios, you can also control Imposter's responses using Jav
 
 > See the [Scripting](scripting.md) section for more information.
 
-For a simple script, see `plugin/openapi/src/test/resources/openapi3/simple` for a working example.
+For a simple script, see [examples/openapi/scripted-named-example](https://github.com/outofcoffee/imposter/blob/master/docs/examples/openapi/scripted-named-example) for a working example.
 
 ### Example
 
@@ -406,9 +409,9 @@ paths:
 
 #### Examples
 
-- [scripted-named-example](./examples/openapi/scripted-named-example)
-- [scripted-named-example-js](./examples/openapi/scripted-named-example-js)
-- [static-named-example](./examples/openapi/static-named-example)
+- [scripted-named-example](https://github.com/outofcoffee/imposter/blob/master/docs/examples/openapi/scripted-named-example)
+- [scripted-named-example-js](https://github.com/outofcoffee/imposter/blob/master/docs/examples/openapi/scripted-named-example-js)
+- [static-named-example](https://github.com/outofcoffee/imposter/blob/master/docs/examples/openapi/static-named-example)
 
 ### OpenAPI specification locations
 
