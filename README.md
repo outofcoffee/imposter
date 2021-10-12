@@ -71,7 +71,7 @@ This is a trivial example, which you can extend with conditional logic, request 
 
 # How to run Imposter
 
-There are lots of way to run Imposter.
+There are many ways to run Imposter.
 
 ### Standalone mock server
 

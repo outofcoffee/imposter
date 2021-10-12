@@ -1,17 +1,19 @@
 # Running Imposter with the CLI
 
-There are lots of way to run Imposter.
+There are many ways to run Imposter. This section describes using the command line interface (CLI) tool.
 
-### Standalone mock server
+---
+### Other ways to run Imposter
 
-1. Using the command line client - see below
-2. As a Docker container - see [Imposter Docker container](./run_imposter_docker.md)
-3. As a JAR file on the JVM - see [Imposter JAR file](./run_imposter_jar.md)
+#### Standalone mock server
 
-### Embedded in tests
+- As a Docker container - see [Imposter Docker container](./run_imposter_docker.md)
+- As a JAR file on the JVM - see [Imposter JAR file](./run_imposter_jar.md)
 
-4. Embedded within your **Java/Kotlin/Scala/JVM** unit tests - see [JVM bindings](../distro/embedded/README.md) 
-5. Embedded within your **JavaScript/Node.js** unit tests - see [JavaScript bindings](https://github.com/gatehill/imposter-js) 
+#### Embedded in tests
+
+- Embedded within your **Java/Kotlin/Scala/JVM** unit tests - see [JVM bindings](../distro/embedded/README.md) 
+- Embedded within your **JavaScript/Node.js** unit tests - see [JavaScript bindings](https://github.com/gatehill/imposter-js)
 
 ---
 

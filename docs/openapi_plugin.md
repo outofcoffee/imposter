@@ -111,7 +111,7 @@ A few things to call out:
 
 ### Start Imposter with the OpenAPI plugin
 
-Let's assume your configuration is in the directory: `docs/examples/openapi/simple`.
+Let's assume your configuration is in the directory: `docs/examples/openapi/simple`. Here are a few ways to start a mock running on port 8080.
 
 CLI example:
 
@@ -123,9 +123,9 @@ Docker example:
         -v $PWD/docs/examples/openapi/simple:/opt/imposter/config \
         outofcoffee/imposter-openapi
 
-Standalone Java example:
+Java JAR example:
 
-    java -jar distro/rest/build/libs/imposter-openapi.jar \
+    java -jar distro/openapi/build/libs/imposter-openapi.jar \
         --configDir ./docs/examples/openapi/simple
 
 This starts a mock server using the OpenAPI plugin. Responses are served based on the OpenAPI specification `petstore.yaml`.
