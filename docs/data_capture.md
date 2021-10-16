@@ -194,7 +194,7 @@ plugin: rest
     statusCode: 200
 ```
 
-In the example above, the an item corresponding to the `userId` parameter in the request is added to the 'adminUsers' store with the constant value `admin`.
+In the example above, an item corresponding to the `userId` parameter in the request is added to the 'adminUsers' store with the constant value `admin`.
 
 > Note: Values do not have to be constant - you can combine dynamic item names and captured data.
 

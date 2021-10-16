@@ -6,6 +6,7 @@ Imposter allows you to store data for use later. Benefits:
 - store the data sent to a mock for later retrieval/verification
 - set up or seed test data before a mock is used
 - [capture](./data_capture.md) data (headers, body etc.) for use by a script
+- return stored data in a [response template](./templates.md)
 
 ## Summary
 

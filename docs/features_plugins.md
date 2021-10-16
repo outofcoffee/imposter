@@ -21,7 +21,7 @@ These can be controlled by setting the environment variable `IMPOSTER_FEATURES`:
 
 ## Plugins
 
-Imposter uses plugins to control its behaviour and provide specialised mocks. You can load one or more plugins.
+Imposter uses plugins to control its behaviour and provide specialised mocks. You load one or more plugins.
 
 The following sections describe the built-in plugins. You can also write your own, if you want to customise behaviour further.
 

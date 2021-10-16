@@ -1,0 +1,3 @@
+---
+plugin: rest
+scriptFile: example.js

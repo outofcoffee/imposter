@@ -48,18 +48,18 @@ Send dynamic responses:
 * [OpenAPI validation](openapi_validation.md)
 * [Performance simulation](performance_simulation.md)
 * [Metrics, logs and telemetry](metrics_logs_telemetry.md)
+* [Performance tuning](./performance_tuning.md)
 
 ### Other
 
 * [Tips and tricks](tips_tricks.md)
+* [Benchmarks](./benchmarks.md)
 
 ## Plugins
 
-Imposter uses plugins to control its behaviour and provide specialised mocks. You can load one or more plugins.
+Imposter uses plugins to control its behaviour and provide specialised mocks. Learn about [plugins and features](features_plugins.md).
 
-> Learn more about [plugins and features](features_plugins.md).
-
-The following sections describe the built-in plugins. You can also write your own, if you want to customise behaviour further.
+The following sections describe the built-in plugins.
 
 * [OpenAPI (and Swagger) plugin](openapi_plugin.md)
 * [REST plugin](rest_plugin.md)

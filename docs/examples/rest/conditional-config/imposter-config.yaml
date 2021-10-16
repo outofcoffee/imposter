@@ -1,0 +1,13 @@
+---
+plugin: rest
+
+resources:
+  - path: "/users"
+    method: GET
+    response:
+      staticFile: users.json
+
+  - path: "/pets"
+    method: GET
+    response:
+      staticFile: pets.json
