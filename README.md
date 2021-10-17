@@ -30,7 +30,7 @@ The quickest way to get up and running is to use the free cloud-hosted service a
 
 ## User documentation
 
-**[Read the user documentation here](https://outofcoffee.github.io/imposter/)**
+**[Read the user documentation here](https://www.imposter.sh/docs/)**
 
 *****
 
