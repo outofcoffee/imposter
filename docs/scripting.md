@@ -136,17 +136,18 @@ Your scripts have access to the methods on `io.gatehill.imposter.script.MutableR
 
 The response behaviour object provides a number of methods to enable you to control the response:
 
-| Method                       | Plugin(s) | Description                                                                    |
-|------------------------------|-----------|--------------------------------------------------------------------------------|
-| `withStatusCode(int)`        | all       | Set the HTTP status code for the response                                      |
-| `withFile(String)`           | all       | Respond with the content of a static file                                      |
-| `withData(String)`           | all       | Respond with the content of a `String`                                         |
-| `withExampleName(String)`    | openapi   | Respond with the specification example with a given name                       |
-| `withHeader(String, String)` | all       | Set a response header                                                          |
-| `withEmpty()`                | all       | Respond with empty content, or no records                                      |
-| `usingDefaultBehaviour()`    | all       | Use the plugin's default behaviour to respond                                  |
-| `skipDefaultBehaviour()`     | all       | Skip the plugin's default behaviour when responding                            |
-| `and()`                      | all       | Syntactic sugar to improve readability of `respond` statements                 |
+| Method                       | Plugin(s) | Description                                                                        |
+|------------------------------|-----------|------------------------------------------------------------------------------------|
+| `withStatusCode(int)`        | all       | Set the HTTP status code for the response.                                         |
+| `withFile(String)`           | all       | Respond with the content of a static file. Also see `template`.                    |
+| `withData(String)`           | all       | Respond with the literal content of a string. Also see `template`.                 |
+| `withExampleName(String)`    | openapi   | Respond with the OpenAPI specification example with a given name.                  |
+| `withHeader(String, String)` | all       | Set a response header.                                                             |
+| `withEmpty()`                | all       | Respond with empty content, or no records.                                         |
+| `usingDefaultBehaviour()`    | all       | Use the plugin's default behaviour to respond.                                     |
+| `skipDefaultBehaviour()`     | all       | Skip the plugin's default behaviour when responding.                               |
+| `and()`                      | all       | Syntactic sugar to improve readability of `respond` statements.                    |
+| `template()`                 | all       | Treat the response file or data as a [template](./templates.md) with placeholders. |
 
 You structure your response behaviours like so:
 
