@@ -3,9 +3,9 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [1.24.0] - 2021-10-21
 ### Added
-- ...
+- (core) Allows header keys to be forced to lowercase.
 
 ## [1.23.3] - 2021-10-06
 ### Changed
