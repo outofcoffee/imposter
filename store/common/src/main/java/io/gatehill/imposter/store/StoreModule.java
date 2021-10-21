@@ -48,6 +48,7 @@ import com.google.inject.Module;
 import io.gatehill.imposter.store.inmem.InMemoryStoreModule;
 import io.gatehill.imposter.store.service.StoreService;
 import io.gatehill.imposter.store.service.StoreServiceImpl;
+import io.gatehill.imposter.util.EnvVars;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -70,7 +71,7 @@ public class StoreModule extends AbstractModule {
 
     @SuppressWarnings("unchecked")
     private Module discoverStoreModule() {
-        final String storeModule = ofNullable(System.getenv("IMPOSTER_STORE_MODULE")).orElse(DEFAULT_STORE_MODULE);
+        final String storeModule = ofNullable(EnvVars.getEnv("IMPOSTER_STORE_MODULE")).orElse(DEFAULT_STORE_MODULE);
         LOGGER.trace("Loading store module: {}", storeModule);
         try {
             final Class<? extends Module> moduleClass = (Class<? extends Module>) Class.forName(storeModule);

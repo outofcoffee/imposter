@@ -44,6 +44,7 @@
 package io.gatehill.imposter.store.redis;
 
 import io.gatehill.imposter.store.model.Store;
+import io.gatehill.imposter.util.EnvVars;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.redisson.api.RMapCache;
@@ -79,7 +80,7 @@ class RedisStore implements Store {
 
         store = redisson.getMapCache(storeName);
 
-        final int expiration = ofNullable(System.getenv(ENV_VAR_EXPIRY))
+        final int expiration = ofNullable(EnvVars.getEnv(ENV_VAR_EXPIRY))
                 .map(Integer::parseInt)
                 .orElse(DEFAULT_EXPIRY_SECS);
 

@@ -53,6 +53,7 @@ import io.gatehill.imposter.script.ExecutionContext;
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour;
 import io.gatehill.imposter.script.RuntimeContext;
 import io.gatehill.imposter.script.ScriptUtil;
+import io.gatehill.imposter.util.EnvVars;
 import io.gatehill.imposter.util.LogUtil;
 import io.gatehill.imposter.util.MetricsUtil;
 import io.gatehill.imposter.util.annotation.GroovyImpl;
@@ -159,7 +160,7 @@ public class ScriptedResponseServiceImpl implements ScriptedResponseService {
             final Logger scriptLogger = buildScriptLogger(responseConfig);
 
             final RuntimeContext runtimeContext = new RuntimeContext(
-                    System.getenv(),
+                    EnvVars.getEnv(),
                     scriptLogger,
                     pluginConfig,
                     finalAdditionalBindings,

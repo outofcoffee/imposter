@@ -89,7 +89,7 @@ public final class ConfigUtil {
     private static StringSubstitutor placeholderSubstitutor;
 
     static {
-        initInterpolators(System.getenv());
+        initInterpolators(EnvVars.getEnv());
     }
 
     private ConfigUtil() {

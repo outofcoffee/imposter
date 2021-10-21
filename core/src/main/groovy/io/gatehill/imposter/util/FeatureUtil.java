@@ -112,7 +112,7 @@ public final class FeatureUtil {
      * @return a map of feature name to enabled status
      */
     private static Map<String, Boolean> listOverrides() {
-        final List<String> features = Arrays.asList(ofNullable(System.getProperty(SYS_PROP_IMPOSTER_FEATURES, System.getenv(ENV_IMPOSTER_FEATURES))).orElse("")
+        final List<String> features = Arrays.asList(ofNullable(System.getProperty(SYS_PROP_IMPOSTER_FEATURES, EnvVars.getEnv(ENV_IMPOSTER_FEATURES))).orElse("")
                 .split(","));
 
         return features.stream()

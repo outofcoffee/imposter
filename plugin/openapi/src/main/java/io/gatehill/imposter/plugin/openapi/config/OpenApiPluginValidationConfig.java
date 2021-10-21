@@ -43,6 +43,8 @@
 
 package io.gatehill.imposter.plugin.openapi.config;
 
+import io.gatehill.imposter.util.EnvVars;
+
 import java.util.Map;
 
 import static java.util.Objects.isNull;
@@ -56,7 +58,7 @@ public class OpenApiPluginValidationConfig {
 
     static {
         DEFAULT_ISSUE_BEHAVIOUR = ValidationIssueBehaviour.from(
-                System.getenv("IMPOSTER_OPENAPI_VALIDATION_DEFAULT_BEHAVIOUR"),
+                EnvVars.getEnv("IMPOSTER_OPENAPI_VALIDATION_DEFAULT_BEHAVIOUR"),
                 ValidationIssueBehaviour.IGNORE
         );
     }

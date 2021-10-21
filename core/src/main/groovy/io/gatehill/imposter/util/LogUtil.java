@@ -73,7 +73,7 @@ public class LogUtil {
      * to {@link #DEFAULT_LOG_LEVEL} if empty.
      */
     public static void configureLoggingFromEnvironment() {
-        configureLogging(ofNullable(System.getenv(LogUtil.ENV_VAR_LOG_LEVEL)).orElse(DEFAULT_LOG_LEVEL.toString()));
+        configureLogging(ofNullable(EnvVars.getEnv(LogUtil.ENV_VAR_LOG_LEVEL)).orElse(DEFAULT_LOG_LEVEL.toString()));
     }
 
     /**

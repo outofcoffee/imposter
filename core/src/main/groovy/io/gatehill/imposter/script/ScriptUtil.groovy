@@ -43,7 +43,8 @@
 
 package io.gatehill.imposter.script
 
-
+import io.gatehill.imposter.util.CollectionUtil
+import io.gatehill.imposter.util.EnvVars
 import io.vertx.ext.web.RoutingContext
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -55,8 +56,13 @@ import static java.util.Optional.ofNullable
  *
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
-class ScriptUtil {
+final class ScriptUtil {
     private static final Logger LOGGER = LogManager.getLogger(ScriptUtil)
+    private final static boolean forceHeaderKeyNormalisation
+
+    static {
+        forceHeaderKeyNormalisation = EnvVars.getEnv("IMPOSTER_NORMALISE_HEADER_KEYS")
+    }
 
     /**
      * Build the {@code context}, containing lazily-evaluated values.
@@ -68,7 +74,10 @@ class ScriptUtil {
     static ExecutionContext buildContext(RoutingContext routingContext, Map<String, Object> additionalContext) {
         final vertxRequest = routingContext.request()
 
-        final headersSupplier = { -> vertxRequest.headers().collectEntries() }
+        final headersSupplier = { ->
+            def entries = vertxRequest.headers().collectEntries()
+            return forceHeaderKeyNormalisation ? CollectionUtil.convertKeysToLowerCase(entries) : entries
+        }
         final pathParamsSupplier = { -> routingContext.pathParams() }
         final queryParamsSupplier = { -> vertxRequest.params().collectEntries() }
         final bodySupplier = { -> routingContext.getBodyAsString() }

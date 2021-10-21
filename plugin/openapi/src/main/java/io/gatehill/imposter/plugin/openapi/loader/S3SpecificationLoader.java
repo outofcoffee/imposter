@@ -49,6 +49,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import io.gatehill.imposter.util.EnvVars;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,7 +77,7 @@ public class S3SpecificationLoader {
 
     private S3SpecificationLoader() {
         final AmazonS3ClientBuilder clientBuilder = AmazonS3ClientBuilder.standard().enablePathStyleAccess();
-        ofNullable(System.getProperty(SYS_PROP_OPENAPI_S3_API_ENDPOINT, System.getenv(ENV_OPENAPI_S3_API_ENDPOINT))).ifPresent(s3Endpoint -> {
+        ofNullable(System.getProperty(SYS_PROP_OPENAPI_S3_API_ENDPOINT, EnvVars.getEnv(ENV_OPENAPI_S3_API_ENDPOINT))).ifPresent(s3Endpoint -> {
             clientBuilder.withEndpointConfiguration(
                     new AwsClientBuilder.EndpointConfiguration(s3Endpoint, new DefaultAwsRegionProviderChain().getRegion())
             );

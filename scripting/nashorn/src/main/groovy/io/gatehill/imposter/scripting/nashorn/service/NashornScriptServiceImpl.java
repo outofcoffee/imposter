@@ -52,6 +52,7 @@ import io.gatehill.imposter.script.RuntimeContext;
 import io.gatehill.imposter.scripting.common.JavaScriptUtil;
 import io.gatehill.imposter.scripting.nashorn.shim.ConsoleShim;
 import io.gatehill.imposter.service.ScriptService;
+import io.gatehill.imposter.util.EnvVars;
 import io.gatehill.imposter.util.MetricsUtil;
 import io.micrometer.core.instrument.Gauge;
 import jdk.nashorn.api.scripting.NashornScriptEngine;
@@ -84,7 +85,7 @@ public class NashornScriptServiceImpl implements ScriptService {
      * variable {@link #ENV_SCRIPT_CACHE_ENTRIES}.
      */
     private final Cache<Path, CompiledScript> compiledScripts = CacheBuilder.newBuilder()
-            .maximumSize(ofNullable(System.getenv(ENV_SCRIPT_CACHE_ENTRIES)).map(Integer::parseInt).orElse(DEFAULT_SCRIPT_CACHE_ENTRIES))
+            .maximumSize(ofNullable(EnvVars.getEnv(ENV_SCRIPT_CACHE_ENTRIES)).map(Integer::parseInt).orElse(DEFAULT_SCRIPT_CACHE_ENTRIES))
             .build();
 
     @Inject

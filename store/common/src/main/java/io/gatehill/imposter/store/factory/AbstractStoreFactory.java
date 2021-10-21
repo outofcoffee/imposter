@@ -48,6 +48,7 @@ import io.gatehill.imposter.store.model.PrefixedKeyStore;
 import io.gatehill.imposter.store.model.Store;
 import io.gatehill.imposter.store.model.StoreFactory;
 import io.gatehill.imposter.store.util.StoreUtil;
+import io.gatehill.imposter.util.EnvVars;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -72,7 +73,7 @@ public abstract class AbstractStoreFactory implements StoreFactory {
     private final String keyPrefix;
 
     public AbstractStoreFactory() {
-        this.keyPrefix = ofNullable(System.getenv(ENV_VAR_KEY_PREFIX)).map(p -> p + ".").orElse("");
+        this.keyPrefix = ofNullable(EnvVars.getEnv(ENV_VAR_KEY_PREFIX)).map(p -> p + ".").orElse("");
     }
 
     @Override

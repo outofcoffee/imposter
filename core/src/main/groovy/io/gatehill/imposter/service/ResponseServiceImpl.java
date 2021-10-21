@@ -61,6 +61,7 @@ import io.gatehill.imposter.script.PerformanceSimulationConfig;
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour;
 import io.gatehill.imposter.script.ResponseBehaviour;
 import io.gatehill.imposter.script.ResponseBehaviourType;
+import io.gatehill.imposter.util.EnvVars;
 import io.gatehill.imposter.util.HttpUtil;
 import io.gatehill.imposter.util.LogUtil;
 import io.gatehill.imposter.util.MetricsUtil;
@@ -116,7 +117,7 @@ public class ResponseServiceImpl implements ResponseService {
      * variable {@link #ENV_RESPONSE_FILE_CACHE_ENTRIES}.
      */
     private final Cache<Path, String> responseFileCache = CacheBuilder.newBuilder()
-            .maximumSize(ofNullable(System.getenv(ENV_RESPONSE_FILE_CACHE_ENTRIES)).map(Integer::parseInt).orElse(DEFAULT_RESPONSE_FILE_CACHE_ENTRIES))
+            .maximumSize(ofNullable(EnvVars.getEnv(ENV_RESPONSE_FILE_CACHE_ENTRIES)).map(Integer::parseInt).orElse(DEFAULT_RESPONSE_FILE_CACHE_ENTRIES))
             .build();
 
     @Inject
