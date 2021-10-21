@@ -150,9 +150,6 @@ public class SpecificationLoaderTest {
      */
     @Test
     public void testLoadSpecificationFromS3() throws Exception {
-        // Testcontainers hangs in CircleCI
-        TestEnvironmentUtil.assumeNotInCircleCi();
-
         // These tests need Docker
         TestEnvironmentUtil.assumeDockerAccessible();
 

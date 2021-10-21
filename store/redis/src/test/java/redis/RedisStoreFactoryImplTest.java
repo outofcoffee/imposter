@@ -77,9 +77,6 @@ public class RedisStoreFactoryImplTest {
 
     @Before
     public void setUp() throws Exception {
-        // Testcontainers hangs in CircleCI
-        TestEnvironmentUtil.assumeNotInCircleCi();
-
         // These tests need Docker
         TestEnvironmentUtil.assumeDockerAccessible();
 

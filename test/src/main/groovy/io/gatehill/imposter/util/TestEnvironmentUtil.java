@@ -60,13 +60,6 @@ public class TestEnvironmentUtil {
     );
 
     /**
-     * Skips a JUnit test if running in CircleCI.
-     */
-    public static void assumeNotInCircleCi() {
-        assumeThat("Not running in CircleCI", System.getenv("CIRCLECI"), not("true"));
-    }
-
-    /**
      * Skips a JUnit test if Docker is not accessible.
      */
     public static void assumeDockerAccessible() throws Exception {
