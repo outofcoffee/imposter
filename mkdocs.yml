@@ -1,0 +1,46 @@
+theme:
+  name: 'material'
+  logo: images/plain_logo14.png
+  favicon: images/favicon.ico
+site_name: Imposter Mocks
+
+nav:
+  - Home: 'https://www.imposter.sh'
+  - Introduction: 'index.md'
+  - Getting started: 'getting_started.md'
+  - Configuration guide: 'configuration.md'
+  - Scripting: 'scripting.md'
+  - Security: 'security.md'
+
+  - Plugins:
+    - OpenAPI (and Swagger) plugin: 'openapi_plugin.md'
+    - REST plugin: 'rest_plugin.md'
+    - HBase plugin: 'hbase_plugin.md'
+    - SFDC (Salesforce) plugin: 'sfdc_plugin.md'
+
+  - Data capture, storage and templates:
+    - Data capture: 'data_capture.md'
+    - Response templates: 'templates.md'
+    - Stores: 'stores.md'
+
+  - Advanced:
+    - Usage (arguments and environment variables): 'usage.md'
+    - Advanced request matching: 'request_matching.md'
+    - OpenAPI validation: 'openapi_validation.md'
+    - Performance simulation: 'performance_simulation.md'
+    - Metrics, logs and telemetry: 'metrics_logs_telemetry.md'
+    - Performance tuning: './performance_tuning.md'
+    - TLS/SSL: './tls_ssl.md'
+
+  - Other:
+    - Tips and tricks: 'tips_tricks.md'
+    - Benchmarks: './benchmarks.md'
+
+  - Developers:
+    - GitHub: 'https://github.com/outofcoffee/imposter'
+    - Build: 'build.md'
+    - Roadmap: 'roadmap.md'
+
+  - Tutorials:
+    - Mocking APIs with Swagger and Imposter: 'https://medium.com/@outofcoffee/mocking-apis-with-swagger-and-imposter-3694bd1733c0'
+    - Mocking REST APIs with Imposter: 'https://medium.com/@outofcoffee/mocking-apis-with-imposter-53bd908632e5'
