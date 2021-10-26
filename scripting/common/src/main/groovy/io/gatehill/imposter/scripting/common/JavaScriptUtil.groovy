@@ -101,7 +101,8 @@ var __imposter_types = {
     env: (function() { return env })(),
     context: (function() { return context })(),
     logger: (function() { return logger })(),
-    respond: respond
+    respond: respond,
+    stores: (function() { try { return stores } catch(e) { return undefined } })()
 };
 /* ------------------------------------------------------------------------- */
 /* Shim for 'require()'                                                      */
