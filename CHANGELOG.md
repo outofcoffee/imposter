@@ -3,9 +3,9 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [1.24.1] - 2021-10-26
 ### Added
-- ...
+- (core) Adds JS type support for stores.
 
 ## [1.24.0] - 2021-10-21
 ### Added
