@@ -4,7 +4,7 @@ title: Documentation
 description: Imposter Mock Engine
 ---
 
-## Introduction
+## Welcome
 
 Imposter is a reliable, scriptable and extensible mock server for REST APIs, OpenAPI (and Swagger) specifications, Salesforce and HBase APIs.
 

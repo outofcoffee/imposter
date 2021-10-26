@@ -23,14 +23,14 @@ Send dynamic responses:
 
 The quickest way to get up and running is to use the free cloud-hosted service at **[mocks.cloud](https://www.mocks.cloud)**
 
+## User documentation
+
+**[Read the user documentation here](https://docs.imposter.sh/)**
+
 ## Tutorials
 
 * [Mocking APIs with Swagger and Imposter](https://medium.com/@outofcoffee/mocking-apis-with-swagger-and-imposter-3694bd1733c0)
 * [Mocking REST APIs with Imposter](https://medium.com/@outofcoffee/mocking-apis-with-imposter-53bd908632e5)
-
-## User documentation
-
-**[Read the user documentation here](https://www.imposter.sh/docs/)**
 
 *****
 
