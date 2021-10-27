@@ -1,4 +1,4 @@
-apply plugin: 'java'
+apply plugin: 'java-library'
 apply plugin: 'maven-publish'
 
 compileJava {
@@ -6,8 +6,8 @@ compileJava {
 }
 
 dependencies {
-    compile project (':imposter-core')
-    compile project (':imposter-server')
+    api project (':imposter-core')
+    api project (':imposter-server')
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

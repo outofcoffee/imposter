@@ -6,14 +6,14 @@ compileJava {
 }
 
 dependencies {
-    compile project (':distro:distro-base')
+    implementation project (':distro:distro-base')
 
     // plugins
-    compile project (':plugin:plugin-detector')
-    compile project (':plugin:plugin-hbase')
-    compile project (':plugin:plugin-openapi')
-    compile project (':plugin:plugin-rest')
-    compile project (':plugin:plugin-sfdc')
+    implementation project (':plugin:plugin-detector')
+    implementation project (':plugin:plugin-hbase')
+    implementation project (':plugin:plugin-openapi')
+    implementation project (':plugin:plugin-rest')
+    implementation project (':plugin:plugin-sfdc')
 }
 
 shadowJar {
