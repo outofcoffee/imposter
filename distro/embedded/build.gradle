@@ -1,14 +1,15 @@
-apply plugin: 'java'
+apply plugin: 'java-library'
+apply plugin: 'maven-publish'
 
 compileJava {
     sourceCompatibility = 1.8
 }
 
 dependencies {
-    compile project (':distro:distro-base')
+    api project (':distro:distro-base')
 
     // plugins
-    compile project (':plugin:plugin-detector')
+    implementation project (':plugin:plugin-detector')
 
     // examples
     testCompile project (':plugin:plugin-openapi')
@@ -18,4 +19,32 @@ dependencies {
     testCompile project(':imposter-test')
     testCompile "com.jayway.restassured:rest-assured:$version_restAssured"
     testCompile group: 'org.hamcrest', name: 'hamcrest-all', version: '1.3'
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    archiveClassifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives sourcesJar
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+
+            repositories {
+                maven {
+                    url = version.endsWith('SNAPSHOT') ? mavenSnapshotRepository : mavenReleaseRepository
+                    credentials(AwsCredentials) {
+                        accessKey awsAccessKey
+                        secretKey awsSecretKey
+                    }
+                }
+            }
+        }
+    }
 }
