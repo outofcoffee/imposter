@@ -64,7 +64,6 @@ import io.vertx.core.Future;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.impl.BodyHandlerImpl;
-import io.vertx.micrometer.PrometheusScrapingHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -159,7 +158,7 @@ public class ImposterVerticle extends AbstractVerticle {
             LOGGER.trace("Metrics enabled");
 
             router.route("/system/metrics").handler(
-                    resourceService.passthroughRoute(imposterConfig, allConfigs, vertx, PrometheusScrapingHandler.create())
+                    resourceService.passthroughRoute(imposterConfig, allConfigs, vertx, MetricsUtil.createHandler())
             );
         }
 

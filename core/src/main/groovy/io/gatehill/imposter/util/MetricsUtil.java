@@ -44,8 +44,11 @@
 package io.gatehill.imposter.util;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import io.vertx.core.Handler;
 import io.vertx.core.VertxOptions;
+import io.vertx.ext.web.RoutingContext;
 import io.vertx.micrometer.MicrometerMetricsOptions;
+import io.vertx.micrometer.PrometheusScrapingHandler;
 import io.vertx.micrometer.VertxPrometheusOptions;
 import io.vertx.micrometer.backends.BackendRegistries;
 import org.apache.logging.log4j.LogManager;
@@ -103,5 +106,9 @@ public final class MetricsUtil {
                 block.run();
             }
         }
+    }
+
+    public static Handler<RoutingContext> createHandler() {
+        return PrometheusScrapingHandler.create();
     }
 }
