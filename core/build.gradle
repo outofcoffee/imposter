@@ -12,21 +12,21 @@ compileJava {
 }
 
 dependencies {
-    compile project(':imposter-api')
+    api project(':imposter-api')
 
-    compile "org.apache.logging.log4j:log4j-core:$version_log4j"
-    compile "org.codehaus.groovy:groovy-all:$version_groovy"
-    compile "com.fasterxml.jackson.core:jackson-databind:$version_jackson"
-    compile "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$version_jackson"
-    compile "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$version_jackson"
-    compile "io.github.classgraph:classgraph:$version_classgraph"
-    compile "commons-io:commons-io:$version_commons_io"
-    compile "org.apache.commons:commons-text:$version_commons_text"
-    compile "com.jayway.jsonpath:json-path:$version_json_path"
+    implementation "org.apache.logging.log4j:log4j-core:$version_log4j"
+    api "org.codehaus.groovy:groovy-all:$version_groovy"
+    api "com.fasterxml.jackson.core:jackson-databind:$version_jackson"
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$version_jackson"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$version_jackson"
+    implementation "io.github.classgraph:classgraph:$version_classgraph"
+    api "commons-io:commons-io:$version_commons_io"
+    api "org.apache.commons:commons-text:$version_commons_text"
+    api "com.jayway.jsonpath:json-path:$version_json_path"
 
     // metrics
-    compile "io.vertx:vertx-micrometer-metrics:$version_vertx"
-    compile "io.micrometer:micrometer-registry-prometheus:$version_micrometer"
+    api "io.vertx:vertx-micrometer-metrics:$version_vertx"
+    api "io.micrometer:micrometer-registry-prometheus:$version_micrometer"
 
     testImplementation  "junit:junit:$version_junit"
     testImplementation group: 'org.hamcrest', name: 'hamcrest-all', version: '1.3'

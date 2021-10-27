@@ -1,21 +1,25 @@
 apply plugin: 'java-library'
 apply plugin: 'groovy'
 
+ext {
+    version_mockito = '3.10.0'
+}
+
 compileJava {
     sourceCompatibility = 1.8
 }
 
 dependencies {
-    compile project(':imposter-core')
-    compile project(':imposter-server')
+    api project(':imposter-core')
+    api project(':imposter-server')
 
     // test
-    compile "junit:junit:$version_junit"
-    compile "io.vertx:vertx-unit:$version_vertx"
+    api "junit:junit:$version_junit"
+    api "io.vertx:vertx-unit:$version_vertx"
 
     // mocking
     implementation "org.mockito:mockito-core:$version_mockito"
 
     // required to mock vertx interfaces
-    compile "io.vertx:vertx-codegen:$version_vertx"
+    implementation "io.vertx:vertx-codegen:$version_vertx"
 }
