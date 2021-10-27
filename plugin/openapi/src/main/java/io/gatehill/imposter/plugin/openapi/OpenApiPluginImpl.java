@@ -150,7 +150,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> imp
         parseSpecs(router);
 
         // serve specification and UI
-        LOGGER.debug("Adding specification UI at: {}", SPECIFICATION_PATH);
+        LOGGER.debug("Adding specification UI at: {}{}", imposterConfig.getServerUrl(), SPECIFICATION_PATH);
         router.get(COMBINED_SPECIFICATION_PATH).handler(resourceService.handleRoute(imposterConfig, configs, vertx, this::handleCombinedSpec));
         router.getWithRegex(SPECIFICATION_PATH + "$").handler(resourceService.handleRoute(imposterConfig, configs, vertx, routingContext -> routingContext.response().putHeader("Location", SPECIFICATION_PATH + "/").setStatusCode(HttpUtil.HTTP_MOVED_PERM).end()));
         router.get(SPECIFICATION_PATH + "/*").handler(StaticHandler.create(UI_WEB_ROOT));
