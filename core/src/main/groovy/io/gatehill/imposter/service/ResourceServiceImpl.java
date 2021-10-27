@@ -70,6 +70,7 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -81,8 +82,10 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static io.gatehill.imposter.util.HttpUtil.convertMultiMapToHashMap;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
@@ -97,6 +100,14 @@ import static java.util.Optional.ofNullable;
  */
 public class ResourceServiceImpl implements ResourceService {
     private static final Logger LOGGER = LogManager.getLogger(ResourceServiceImpl.class);
+
+    /**
+     * Log errors for the following paths at TRACE instead of ERROR.
+     */
+    private static final List<Pattern> IGNORED_ERROR_PATHS = newArrayList(
+            Pattern.compile(".*favicon\\.ico"),
+            Pattern.compile(".*favicon.*\\.png")
+    );
 
     @Inject
     private SecurityService securityService;
@@ -372,11 +383,21 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     public Handler<RoutingContext> buildUnhandledExceptionHandler() {
         return routingContext -> {
-            LOGGER.error(
-                    "Unhandled routing exception for request " + LogUtil.describeRequest(routingContext),
-                    routingContext.failure()
-            );
+            final Level level = determineLogLevel(routingContext);
+            LOGGER.log(level, "Unhandled routing exception for request " + LogUtil.describeRequest(routingContext),
+                    routingContext.failure());
         };
+    }
+
+    private Level determineLogLevel(RoutingContext routingContext) {
+        try {
+            return ofNullable(routingContext.request().path())
+                    .filter(path -> IGNORED_ERROR_PATHS.stream().anyMatch(p -> p.matcher(path).matches()))
+                    .map(p -> Level.TRACE)
+                    .orElse(Level.ERROR);
+        } catch (Exception ignored) {
+            return Level.ERROR;
+        }
     }
 
     private void handleResource(
