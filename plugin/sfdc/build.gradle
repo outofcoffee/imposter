@@ -9,8 +9,8 @@ dependencies {
     compile project(':imposter-core')
 
     // test
-    testCompile project(':imposter-test')
-    testCompile 'com.frejo:force-rest-api:0.0.29'
+    testImplementation  project(':imposter-test')
+    testImplementation  'com.frejo:force-rest-api:0.0.29'
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

@@ -13,8 +13,8 @@ dependencies {
     compile "org.graalvm.js:js-scriptengine:21.2.0"
 
     // test
-    testCompile project(':imposter-test')
-    testCompile "com.jayway.restassured:rest-assured:$version_restAssured"
+    testImplementation  project(':imposter-test')
+    testImplementation  "com.jayway.restassured:rest-assured:$version_restAssured"
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

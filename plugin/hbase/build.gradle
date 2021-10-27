@@ -22,7 +22,7 @@ dependencies {
     }
 
     // test
-    testCompile project(':imposter-test')
+    testImplementation  project(':imposter-test')
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

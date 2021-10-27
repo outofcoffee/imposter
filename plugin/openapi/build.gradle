@@ -28,10 +28,10 @@ dependencies {
     implementation 'com.amazonaws:aws-java-sdk-s3'
 
     // test
-    testCompile project(':imposter-test')
-    testCompile "com.jayway.restassured:rest-assured:$version_restAssured"
-    testCompile "org.testcontainers:testcontainers:$version_testcontainers"
-    testCompile "com.adobe.testing:s3mock-testcontainers:2.2.1"
+    testImplementation  project(':imposter-test')
+    testImplementation  "com.jayway.restassured:rest-assured:$version_restAssured"
+    testImplementation  "org.testcontainers:testcontainers:$version_testcontainers"
+    testImplementation  "com.adobe.testing:s3mock-testcontainers:2.2.1"
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

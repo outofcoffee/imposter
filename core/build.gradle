@@ -28,7 +28,7 @@ dependencies {
     compile "io.vertx:vertx-micrometer-metrics:$version_vertx"
     compile "io.micrometer:micrometer-registry-prometheus:$version_micrometer"
 
-    testCompile "junit:junit:$version_junit"
+    testImplementation  "junit:junit:$version_junit"
     testImplementation group: 'org.hamcrest', name: 'hamcrest-all', version: '1.3'
 }
 
