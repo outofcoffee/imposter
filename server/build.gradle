@@ -6,28 +6,29 @@ compileJava {
 }
 
 dependencies {
-    compile project(':imposter-core')
+    implementation project(':imposter-core')
 
     // scripting
-    compile project (':scripting:scripting-groovy')
-    compile project (':scripting:scripting-nashorn')
+    implementation project (':scripting:scripting-groovy')
+    implementation project (':scripting:scripting-nashorn')
 
     // store
-    compile project(':store:store-common')
-    compile project(':store:store-redis')
+    implementation project(':store:store-common')
+    implementation project(':store:store-redis')
 
     // logging
-    compile "org.apache.logging.log4j:log4j-core:$version_log4j"
-    compile "org.apache.logging.log4j:log4j-jcl:$version_log4j"
-    compile "org.apache.logging.log4j:log4j-slf4j-impl:$version_log4j"
-    compile "org.apache.logging.log4j:log4j-1.2-api:$version_log4j"
-    compile "org.apache.logging.log4j:log4j-jul:$version_log4j"
-    compile "args4j:args4j:$version_args4j"
+    implementation "org.apache.logging.log4j:log4j-core:$version_log4j"
+    implementation "org.apache.logging.log4j:log4j-jcl:$version_log4j"
+    implementation "org.apache.logging.log4j:log4j-slf4j-impl:$version_log4j"
+    implementation "org.apache.logging.log4j:log4j-1.2-api:$version_log4j"
+    implementation "org.apache.logging.log4j:log4j-jul:$version_log4j"
+    implementation "args4j:args4j:$version_args4j"
 
     // test
     testImplementation  project(':imposter-test')
     testImplementation  "com.jayway.restassured:rest-assured:$version_restAssured"
 
+    // java 11 compatibility
     testImplementation ('javax.xml.bind:jaxb-api:2.3.0')
 }
 
