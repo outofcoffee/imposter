@@ -7,10 +7,10 @@ compileJava {
 }
 
 dependencies {
-    compile project(':imposter-core')
-    compile project(':scripting:scripting-common')
-    compile "org.graalvm.js:js:21.2.0"
-    compile "org.graalvm.js:js-scriptengine:21.2.0"
+    implementation project(':imposter-core')
+    implementation project(':scripting:scripting-common')
+    implementation "org.graalvm.js:js:21.2.0"
+    implementation "org.graalvm.js:js-scriptengine:21.2.0"
 
     // test
     testImplementation  project(':imposter-test')
