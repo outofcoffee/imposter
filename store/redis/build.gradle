@@ -6,8 +6,8 @@ compileJava {
 }
 
 dependencies {
-    compile project(':store:store-common')
-    compile 'org.redisson:redisson:3.16.0'
+    implementation project(':store:store-common')
+    implementation 'org.redisson:redisson:3.16.0'
 
     // test
     testImplementation  project(':imposter-test')

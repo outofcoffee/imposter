@@ -6,7 +6,7 @@ compileJava {
 }
 
 dependencies {
-    compile project(':imposter-core')
+    api project(':imposter-core')
 
     // test
     testImplementation  "junit:junit:$version_junit"
