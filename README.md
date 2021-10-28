@@ -81,7 +81,7 @@ There are many ways to run Imposter.
 
 ### Embedded in tests
 
-4. Embedded within your **Java/Kotlin/Scala/JVM** unit tests - see [JVM bindings](./distro/embedded/README.md)
+4. Embedded within your **Java/Kotlin/Scala/JVM** unit tests - see [JVM bindings](./docs/embed_jvm.md)
 5. Embedded within your **JavaScript/Node.js** unit tests - see [JavaScript bindings](https://github.com/gatehill/imposter-js)
 
 # Recent changes and Roadmap

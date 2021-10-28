@@ -42,7 +42,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [1.21.1] - 2021-09-16
 ### Added
-- (core) Adds embedded JVM distribution. This allows use of Imposter in JUnit tests. See [JVM bindings](./distro/embedded/README.md).
+- (core) Adds embedded JVM distribution. This allows use of Imposter in JUnit tests. See [JVM bindings](./docs/embed_jvm.md).
 - (docs) Adds links to [Imposter CLI](./docs/run_imposter_cli.md) and [JavaScript bindings](https://github.com/gatehill/imposter-js).
 
 ## [1.21.0] - 2021-09-13

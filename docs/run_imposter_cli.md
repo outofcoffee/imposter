@@ -12,7 +12,7 @@ There are many ways to run Imposter. This section describes using the command li
 
 #### Embedded in tests
 
-- Embedded within your **Java/Kotlin/Scala/JVM** unit tests - see [JVM bindings](../distro/embedded/README.md) 
+- Embedded within your **Java/Kotlin/Scala/JVM** unit tests - see [JVM bindings](./embed_jvm.md) 
 - Embedded within your **JavaScript/Node.js** unit tests - see [JavaScript bindings](https://github.com/gatehill/imposter-js)
 
 ---

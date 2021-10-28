@@ -12,7 +12,7 @@ There are many ways to run Imposter. This section describes how to use a JAR fil
 
 #### Embedded in tests
 
-- Embedded within your **Java/Kotlin/Scala/JVM** unit tests - see [JVM bindings](../distro/embedded/README.md) 
+- Embedded within your **Java/Kotlin/Scala/JVM** unit tests - see [JVM bindings](./embed_jvm.md) 
 - Embedded within your **JavaScript/Node.js** unit tests - see [JavaScript bindings](https://github.com/gatehill/imposter-js)
 
 ---
@@ -22,7 +22,7 @@ There are many ways to run Imposter. This section describes how to use a JAR fil
 - Start mocks
 - Supports all [plugins](./features_plugins.md)
 
-> Note: if you want to embed Imposter in your JUnit tests, see [JVM bindings](../distro/embedded/README.md) instead.
+> Note: if you want to embed Imposter in your JUnit tests, see [JVM bindings](./embed_jvm.md) instead.
 
 ## Run
 

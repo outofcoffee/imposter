@@ -10,7 +10,7 @@ There are many ways to run Imposter. They broadly fit in two categories - runnin
 
 ### Embedded in tests
 
-- Embedded within your **Java/Kotlin/Scala/JVM** unit tests - see [JVM bindings](../distro/embedded/README.md)
+- Embedded within your **Java/Kotlin/Scala/JVM** unit tests - see [JVM bindings](./embed_jvm.md)
 - Embedded within your **JavaScript/Node.js** unit tests - see [JavaScript bindings](https://github.com/gatehill/imposter-js)
 
 ---
@@ -21,7 +21,7 @@ If you are looking for a quick local development solution, use [the CLI](./run_i
 
 If you want to run Imposter as a standalone mock server, you can run it as a [Docker container](./run_imposter_docker.md). If Docker isn't your thing, or you want to [build](./build.md) Imposter yourself, you can use it as a standalone [JAR file](./run_imposter_jar.md). Standalone servers are often useful when you require long-lived mock instances.
 
-You can also use it as a mock server for your unit tests on the [JVM](../distro/embedded/README.md) or [Node.js](https://github.com/gatehill/imposter-js), starting it before your tests, providing synthetic responses to your unit under test. Embedded instances tend to be short-lived and exist only for the duration of your test execution.
+You can also use it as a mock server for your unit tests on the [JVM](./embed_jvm.md) or [Node.js](https://github.com/gatehill/imposter-js), starting it before your tests, providing synthetic responses to your unit under test. Embedded instances tend to be short-lived and exist only for the duration of your test execution.
 
 ### Examples
 
