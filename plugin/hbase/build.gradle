@@ -11,13 +11,13 @@ compileJava {
 }
 
 dependencies {
-    compile project(':imposter-core')
+    implementation project(':imposter-core')
 
     // hbase
-    compile("org.apache.hbase:hbase-client:$version_hbaseApi") {
+    implementation("org.apache.hbase:hbase-client:$version_hbaseApi") {
         exclude module: 'slf4j-log4j12'
     }
-    compile("org.apache.hbase:hbase-rest:$version_hbaseApi") {
+    implementation("org.apache.hbase:hbase-rest:$version_hbaseApi") {
         exclude module: 'slf4j-log4j12'
     }
 
