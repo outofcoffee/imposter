@@ -9,31 +9,36 @@ Imposter starts before your test runs, such as in your test set-up method (e.g. 
 
 ## Getting started
 
-It is best to use a plugin-specific builder if it exists, such as `io.gatehill.imposter.openapi.embedded.OpenApiImposterBuilder` for the OpenAPI plugin.
+For the version, choose the latest release from https://github.com/outofcoffee/imposter/releases
 
-Add the following dependencies to your build tool:
+Add the following Maven repository to your build tool:
 
-Gradle:
+    https://s3-eu-west-1.amazonaws.com/gatehillsoftware-maven/releases/
+
+Add the Imposter dependency:
+
+#### Gradle
 
 ```groovy
-implementation "io.gatehill.imposter:distro-embedded:1.24.2"
+testImplementation "io.gatehill.imposter:distro-embedded:1.24.3"
 ```
 
-Maven:
+#### Maven
 
 ```xml
 <dependency>
-  <groupId>io.gatehill.imposter</groupId>
-  <artifactId>distro-embedded</artifactId>
-  <version>1.24.2</version>
+    <groupId>io.gatehill.imposter</groupId>
+    <artifactId>distro-embedded</artifactId>
+    <version>1.24.3</version>
+    <scope>test</scope>
 </dependency>
 ```
 
-> For the version, choose the latest release from https://github.com/outofcoffee/imposter/releases
->
 > See the _Dependencies_ section for full examples.
 
 ### OpenAPI example
+
+It is best to use a plugin-specific builder if it exists, such as `io.gatehill.imposter.openapi.embedded.OpenApiImposterBuilder` for the OpenAPI plugin.
 
 Let's assume you have an OpenAPI specification file:
 
@@ -105,7 +110,7 @@ repositories {
 
 dependencies {
     // choose latest release from: https://github.com/outofcoffee/imposter/releases
-    implementation "io.gatehill.imposter:distro-embedded:1.0.0"
+    testImplementation "io.gatehill.imposter:distro-embedded:1.0.0"
     
     // ...
 }
@@ -127,10 +132,11 @@ Using Maven, add the following to your POM:
     ...
     <dependencies>
         <dependency>
-          <groupId>io.gatehill.imposter</groupId>
-          <artifactId>distro-embedded</artifactId>
-          <!-- choose latest release from https://github.com/outofcoffee/imposter/releases -->
-          <version>1.0.0</version>
+            <groupId>io.gatehill.imposter</groupId>
+            <artifactId>distro-embedded</artifactId>
+            <!-- choose latest release from https://github.com/outofcoffee/imposter/releases -->
+            <version>1.0.0</version>
+            <scope>test</scope>
         </dependency>
         ...
     </dependencies>

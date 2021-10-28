@@ -59,19 +59,19 @@ Using Maven, add the following to your POM:
     ...
     <dependencies>
         <dependency>
-          <groupId>io.gatehill.imposter</groupId>
-          <artifactId>imposter-core</artifactId>
-          <version>${imposter.version}</version>
+            <groupId>io.gatehill.imposter</groupId>
+            <artifactId>imposter-core</artifactId>
+            <version>${imposter.version}</version>
         </dependency>
         <dependency>
-          <groupId>io.gatehill.imposter</groupId>
-          <artifactId>imposter-server</artifactId>
-          <version>${imposter.version}</version>
+            <groupId>io.gatehill.imposter</groupId>
+            <artifactId>imposter-server</artifactId>
+            <version>${imposter.version}</version>
         </dependency>
         <dependency>
-          <groupId>io.gatehill.imposter</groupId>
-          <artifactId>plugin-openapi</artifactId>
-          <version>${imposter.version}</version>
+            <groupId>io.gatehill.imposter</groupId>
+            <artifactId>plugin-openapi</artifactId>
+            <version>${imposter.version}</version>
         </dependency>
         ...
     </dependencies>
