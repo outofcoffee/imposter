@@ -1,7 +1,8 @@
 .gradle
 .idea
-build
+build/
 *.iml
 .gradletasknamecache
 .vertx/
 out/
+target/

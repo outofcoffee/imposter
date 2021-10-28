@@ -15,12 +15,14 @@ Add the following Maven repository to your build tool:
 
     https://s3-eu-west-1.amazonaws.com/gatehillsoftware-maven/releases/
 
-Add the Imposter dependency:
+Add the Imposter dependencies:
 
 #### Gradle
 
 ```groovy
 testImplementation "io.gatehill.imposter:distro-embedded:1.24.3"
+testImplementation "io.gatehill.imposter:imposter-server:1.24.3"
+testImplementation "io.gatehill.imposter:plugin-openapi:1.24.3"
 ```
 
 #### Maven
@@ -32,6 +34,18 @@ testImplementation "io.gatehill.imposter:distro-embedded:1.24.3"
     <version>1.24.3</version>
     <scope>test</scope>
 </dependency>
+<dependency>
+  <groupId>io.gatehill.imposter</groupId>
+  <artifactId>imposter-server</artifactId>
+  <version>1.24.3</version>
+  <scope>test</scope>
+</dependency>
+<dependency>
+  <groupId>io.gatehill.imposter</groupId>
+  <artifactId>plugin-openapi</artifactId>
+  <version>1.24.3</version>
+  <scope>test</scope>
+</dependency>
 ```
 
 > See the _Dependencies_ section for full examples.
@@ -42,7 +56,7 @@ It is best to use a plugin-specific builder if it exists, such as `io.gatehill.i
 
 Let's assume you have an OpenAPI specification file:
 
-    String specFile = Paths.get("/path/to/openapi_file.yaml");
+    Path specFile = Paths.get("/path/to/openapi_file.yaml");
 
 Example using an OpenAPI spec as the source:
 
@@ -100,6 +114,11 @@ Use the following Maven dependencies in your build tool:
 Using Gradle, add the following to your build configuration:
 
 ```groovy
+ext {
+    // choose latest release from: https://github.com/outofcoffee/imposter/releases
+    imposter_version = '1.24.3'
+}
+
 repositories {
     maven {
         // imposter maven repository
@@ -107,10 +126,10 @@ repositories {
     }
 }
 
-
 dependencies {
-    // choose latest release from: https://github.com/outofcoffee/imposter/releases
-    testImplementation "io.gatehill.imposter:distro-embedded:1.0.0"
+    testImplementation "io.gatehill.imposter:distro-embedded:$imposter_version"
+    testImplementation "io.gatehill.imposter:imposter-server:$imposter_version"
+    testImplementation "io.gatehill.imposter:plugin-openapi:$imposter_version"
     
     // ...
 }
@@ -130,12 +149,28 @@ Using Maven, add the following to your POM:
         </repository>
     </repositories>
     ...
+    <properties>
+        <!-- choose latest release from https://github.com/outofcoffee/imposter/releases -->
+        <imposter.version>1.24.3</imposter.version>
+    </properties>
+    ...
     <dependencies>
         <dependency>
             <groupId>io.gatehill.imposter</groupId>
             <artifactId>distro-embedded</artifactId>
-            <!-- choose latest release from https://github.com/outofcoffee/imposter/releases -->
-            <version>1.0.0</version>
+            <version>${imposter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.gatehill.imposter</groupId>
+            <artifactId>imposter-server</artifactId>
+            <version>${imposter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.gatehill.imposter</groupId>
+            <artifactId>plugin-openapi</artifactId>
+            <version>${imposter.version}</version>
             <scope>test</scope>
         </dependency>
         ...
