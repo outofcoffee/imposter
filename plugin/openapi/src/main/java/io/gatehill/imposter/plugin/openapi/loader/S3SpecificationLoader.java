@@ -64,7 +64,7 @@ import static java.util.Optional.ofNullable;
 /**
  * Loads an OpenAPI specification from S3.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class S3SpecificationLoader {
     public static final String ENV_OPENAPI_S3_API_ENDPOINT = "IMPOSTER_OPENAPI_S3_API_ENDPOINT";

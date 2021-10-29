@@ -53,7 +53,7 @@ import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl;
 import java.util.Map;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public abstract class GroovyResponseBehaviourImpl extends Script implements ReadWriteResponseBehaviour {
     private final ReadWriteResponseBehaviour delegate = new ReadWriteResponseBehaviourImpl();

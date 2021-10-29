@@ -47,7 +47,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Account {

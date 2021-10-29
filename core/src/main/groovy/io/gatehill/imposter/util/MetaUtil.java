@@ -57,7 +57,7 @@ import java.util.jar.Manifest;
 import static java.util.Objects.isNull;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public final class MetaUtil {
     private static final Logger LOGGER = LogManager.getLogger(MetaUtil.class);

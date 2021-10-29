@@ -53,7 +53,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.util.Arrays;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public final class MapUtil {
     public static final ObjectMapper JSON_MAPPER = new ObjectMapper();

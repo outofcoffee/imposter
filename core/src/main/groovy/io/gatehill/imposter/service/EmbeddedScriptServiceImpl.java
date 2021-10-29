@@ -52,7 +52,7 @@ import io.gatehill.imposter.script.RuntimeContext;
 import io.gatehill.imposter.script.listener.ScriptListener;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class EmbeddedScriptServiceImpl implements ScriptService {
     private ScriptListener listener;

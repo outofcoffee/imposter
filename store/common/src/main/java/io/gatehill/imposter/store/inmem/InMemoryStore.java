@@ -55,7 +55,7 @@ import static com.google.common.collect.Maps.newConcurrentMap;
  * An in-memory store implementation. Does not have any support for item expiration,
  * so data must be managed by the caller.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class InMemoryStore implements Store {
     private static final String STORE_TYPE = "inmem";

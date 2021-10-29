@@ -46,7 +46,7 @@ package io.gatehill.imposter.script.impl;
 import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public abstract class RunnableResponseBehaviourImpl extends ReadWriteResponseBehaviourImpl {
     /**

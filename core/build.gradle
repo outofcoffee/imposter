@@ -30,6 +30,7 @@ dependencies {
 
     testImplementation  "junit:junit:$version_junit"
     testImplementation group: 'org.hamcrest', name: 'hamcrest-all', version: '1.3'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

@@ -63,7 +63,7 @@ import static org.hamcrest.Matchers.hasSize;
 /**
  * Tests for request validation for OpenAPI mocks.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class RequestValidationTest extends BaseVerticleTest {
     @Override

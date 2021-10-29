@@ -44,7 +44,9 @@
 package io.gatehill.imposter.plugin.openapi;
 
 import com.google.common.collect.Lists;
+import com.google.inject.Injector;
 import io.gatehill.imposter.ImposterConfig;
+import io.gatehill.imposter.http.ResponseBehaviourFactory;
 import io.gatehill.imposter.http.StatusCodeFactory;
 import io.gatehill.imposter.plugin.PluginInfo;
 import io.gatehill.imposter.plugin.RequireModules;
@@ -78,6 +80,8 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.inject.Inject;
 import java.net.URI;
@@ -88,17 +92,18 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 import static com.google.common.collect.Maps.newHashMap;
+import static io.gatehill.imposter.plugin.ScriptedPlugin.scriptHandler;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 
 /**
  * Plugin for OpenAPI (OAI; formerly known as 'Swagger').
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 @PluginInfo("openapi")
 @RequireModules(OpenApiModule.class)
-public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> implements ScriptedPlugin<OpenApiPluginConfig> {
+public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> {
     private static final Logger LOGGER = LogManager.getLogger(OpenApiPluginImpl.class);
     private static final String UI_WEB_ROOT = "swagger-ui";
 

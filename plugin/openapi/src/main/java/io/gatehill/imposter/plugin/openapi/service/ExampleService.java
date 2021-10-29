@@ -51,7 +51,7 @@ import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.vertx.ext.web.RoutingContext;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public interface ExampleService {
     /**

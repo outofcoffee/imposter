@@ -59,7 +59,7 @@ import static com.jayway.restassured.RestAssured.given;
 /**
  * Tests for returning specific status codes from OpenAPI mocks.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class OverrideStatusCodeTest extends BaseVerticleTest {
     @Override

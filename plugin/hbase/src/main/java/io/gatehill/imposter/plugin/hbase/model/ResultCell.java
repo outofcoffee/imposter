@@ -44,7 +44,7 @@
 package io.gatehill.imposter.plugin.hbase.model;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class ResultCell {
     private final String fieldName;

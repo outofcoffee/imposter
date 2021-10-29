@@ -45,13 +45,15 @@ package io.gatehill.imposter.server;
 
 import com.google.inject.AbstractModule;
 import io.gatehill.imposter.ImposterConfig;
-import io.gatehill.imposter.lifecycle.ImposterLifecycleHooks;
+import io.gatehill.imposter.lifecycle.EngineLifecycleHooks;
+import io.gatehill.imposter.lifecycle.ScriptExecLifecycleHooks;
+import io.gatehill.imposter.lifecycle.SecurityLifecycleHooks;
 import io.vertx.core.Vertx;
 
 import javax.inject.Singleton;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class BootstrapModule extends AbstractModule {
     private final Vertx vertx;
@@ -75,7 +77,10 @@ public class BootstrapModule extends AbstractModule {
                     (Class<? extends ServerFactory>) Class.forName(serverFactory);
 
             bind(ServerFactory.class).to(serverFactoryClass).in(Singleton.class);
-            bind(ImposterLifecycleHooks.class).in(Singleton.class);
+
+            bind(EngineLifecycleHooks.class).in(Singleton.class);
+            bind(SecurityLifecycleHooks.class).in(Singleton.class);
+            bind(ScriptExecLifecycleHooks.class).in(Singleton.class);
 
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("Could not load server factory: " + serverFactory, e);

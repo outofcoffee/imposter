@@ -49,7 +49,7 @@ import io.gatehill.imposter.scripting.groovy.service.GroovyScriptServiceImpl
 import javax.inject.Inject
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class GroovyScriptServiceImplTest extends AbstractScriptServiceImplTest {
     @Inject

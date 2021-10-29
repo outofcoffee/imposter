@@ -46,7 +46,7 @@ package io.gatehill.imposter.store.model;
 import java.util.Map;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public interface Store {
     String getStoreName();

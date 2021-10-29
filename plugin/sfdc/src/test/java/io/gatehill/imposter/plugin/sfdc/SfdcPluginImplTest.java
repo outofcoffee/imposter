@@ -62,7 +62,7 @@ import static io.gatehill.imposter.util.FileUtil.CLASSPATH_PREFIX;
 /**
  * Tests for {@link SfdcPluginImpl}.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class SfdcPluginImplTest extends BaseVerticleTest {
     @Override

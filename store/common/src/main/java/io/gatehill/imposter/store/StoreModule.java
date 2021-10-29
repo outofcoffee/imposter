@@ -55,7 +55,7 @@ import org.apache.logging.log4j.Logger;
 import static java.util.Optional.ofNullable;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class StoreModule extends AbstractModule {
     private static final String DEFAULT_STORE_MODULE = InMemoryStoreModule.class.getCanonicalName();

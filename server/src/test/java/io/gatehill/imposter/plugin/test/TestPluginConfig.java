@@ -49,7 +49,7 @@ import io.gatehill.imposter.plugin.config.ResourcesHolder;
 import java.util.List;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class TestPluginConfig extends PluginConfigImpl implements ResourcesHolder<TestPluginResourceConfig> {
     private List<TestPluginResourceConfig> resources;

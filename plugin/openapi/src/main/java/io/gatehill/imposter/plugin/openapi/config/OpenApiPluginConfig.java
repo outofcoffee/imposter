@@ -50,7 +50,7 @@ import io.gatehill.imposter.plugin.config.ResourcesHolder;
 import java.util.List;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class OpenApiPluginConfig extends ContentTypedPluginConfigImpl implements ResourcesHolder<OpenApiResourceConfig> {
     @JsonProperty("specFile")

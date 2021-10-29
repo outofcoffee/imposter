@@ -56,7 +56,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public interface SerialisationService {
     Logger getLogger();

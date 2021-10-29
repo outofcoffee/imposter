@@ -47,7 +47,7 @@ import io.gatehill.imposter.plugin.config.ContentTypedConfig;
 import io.gatehill.imposter.plugin.config.resource.RestResourceConfig;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class TestPluginResourceConfig extends RestResourceConfig implements ContentTypedConfig {
     private String contentType;

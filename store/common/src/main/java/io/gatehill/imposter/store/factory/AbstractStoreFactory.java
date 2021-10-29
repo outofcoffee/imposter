@@ -63,7 +63,7 @@ import static java.util.Optional.ofNullable;
  * Common store factory methods. Supports adding a prefix to keys by setting the {@link #ENV_VAR_KEY_PREFIX}
  * environment variable.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public abstract class AbstractStoreFactory implements StoreFactory {
     private static final String ENV_VAR_KEY_PREFIX = "IMPOSTER_STORE_KEY_PREFIX";

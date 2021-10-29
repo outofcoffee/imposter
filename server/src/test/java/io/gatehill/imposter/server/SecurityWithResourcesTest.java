@@ -63,7 +63,7 @@ import static org.hamcrest.Matchers.equalTo;
  * Tests for when resources are configured with no security, so policy
  * should fall back to root security.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 @RunWith(VertxUnitRunner.class)
 public class SecurityWithResourcesTest extends BaseVerticleTest {

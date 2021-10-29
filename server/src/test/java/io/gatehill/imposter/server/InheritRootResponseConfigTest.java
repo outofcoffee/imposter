@@ -62,7 +62,7 @@ import static org.hamcrest.Matchers.equalTo;
 /**
  * Tests for inheriting the root response configuration.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 @RunWith(VertxUnitRunner.class)
 public class InheritRootResponseConfigTest extends BaseVerticleTest {

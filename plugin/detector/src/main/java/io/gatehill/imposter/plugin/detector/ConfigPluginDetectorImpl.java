@@ -48,6 +48,7 @@ import io.gatehill.imposter.plugin.Plugin;
 import io.gatehill.imposter.plugin.PluginInfo;
 import io.gatehill.imposter.plugin.PluginProvider;
 import io.vertx.ext.web.Router;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.List;
@@ -57,7 +58,7 @@ import java.util.stream.Collectors;
 /**
  * Provides the plugin class names present in the configuration files.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 @PluginInfo("config-detector")
 public class ConfigPluginDetectorImpl implements Plugin, PluginProvider {
@@ -67,7 +68,7 @@ public class ConfigPluginDetectorImpl implements Plugin, PluginProvider {
     }
 
     @Override
-    public List<String> providePlugins(ImposterConfig imposterConfig, Map<String, List<File>> pluginConfigs) {
+    public List<String> providePlugins(ImposterConfig imposterConfig, Map<String, ? extends List<? extends File>> pluginConfigs) {
         return pluginConfigs.keySet().stream()
                 .distinct()
                 .collect(Collectors.toList());

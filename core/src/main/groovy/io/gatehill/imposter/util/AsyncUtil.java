@@ -48,7 +48,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class AsyncUtil {
     private AsyncUtil() {

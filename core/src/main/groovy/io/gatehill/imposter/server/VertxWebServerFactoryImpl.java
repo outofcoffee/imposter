@@ -60,7 +60,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class VertxWebServerFactoryImpl implements ServerFactory {
     private static final Logger LOGGER = LogManager.getLogger(VertxWebServerFactoryImpl.class);

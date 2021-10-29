@@ -52,7 +52,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assume.assumeThat;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class TestEnvironmentUtil {
     private static final File NULL_FILE = new File(

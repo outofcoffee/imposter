@@ -49,7 +49,7 @@ import io.gatehill.imposter.plugin.config.resource.ResponseConfig;
  * Extends the base response configuration with items specific
  * to the OpenAPI plugin.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class OpenApiResponseConfig extends ResponseConfig {
     private String exampleName;

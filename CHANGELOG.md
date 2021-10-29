@@ -5,7 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Changed
-- ...
+- (all) Ports codebase to Kotlin.
 
 ## [1.24.5] - 2021-11-12
 ### Added

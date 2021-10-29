@@ -59,7 +59,7 @@ import static java.util.Optional.ofNullable;
  * A Redis store implementation. Supports configurable item expiry in seconds,
  * by setting the {@link #ENV_VAR_EXPIRY} environment variable.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 class RedisStore implements Store {
     private static final String STORE_TYPE = "redis";

@@ -44,7 +44,7 @@
 package io.gatehill.imposter.store.model;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public interface StoreFactory {
     boolean hasStoreWithName(String storeName);

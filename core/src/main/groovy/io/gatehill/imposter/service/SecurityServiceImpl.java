@@ -43,7 +43,8 @@
 
 package io.gatehill.imposter.service;
 
-import io.gatehill.imposter.lifecycle.ImposterLifecycleHooks;
+import io.gatehill.imposter.lifecycle.EngineLifecycleHooks;
+import io.gatehill.imposter.lifecycle.SecurityLifecycleHooks;
 import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.plugin.config.security.ConditionalNameValuePair;
 import io.gatehill.imposter.plugin.config.security.MatchOperator;
@@ -51,7 +52,7 @@ import io.gatehill.imposter.plugin.config.security.SecurityCondition;
 import io.gatehill.imposter.plugin.config.security.SecurityConfig;
 import io.gatehill.imposter.plugin.config.security.SecurityConfigHolder;
 import io.gatehill.imposter.plugin.config.security.SecurityEffect;
-import io.gatehill.imposter.service.security.SecurityLifecycleListener;
+import io.gatehill.imposter.service.security.SecurityLifecycleListenerImpl;
 import io.gatehill.imposter.util.CollectionUtil;
 import io.gatehill.imposter.util.HttpUtil;
 import io.gatehill.imposter.util.StringUtil;
@@ -70,14 +71,14 @@ import java.util.stream.Collectors;
 import static java.util.Objects.nonNull;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class SecurityServiceImpl implements SecurityService {
     private static final Logger LOGGER = LogManager.getLogger(SecurityServiceImpl.class);
 
     @Inject
-    public SecurityServiceImpl(ImposterLifecycleHooks lifecycleHooks, SecurityLifecycleListener securityListener) {
-        lifecycleHooks.registerListener(securityListener);
+    public SecurityServiceImpl(SecurityLifecycleHooks securityLifecycle, SecurityLifecycleListenerImpl securityListener) {
+        securityLifecycle.registerListener(securityListener);
     }
 
     /**

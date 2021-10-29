@@ -63,7 +63,7 @@ import static com.jayway.restassured.RestAssured.given;
 /**
  * Tests for OpenAPI definitions with object examples.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class ObjectExamplesTest extends BaseVerticleTest {
     private static final Yaml YAML_PARSER = new Yaml();

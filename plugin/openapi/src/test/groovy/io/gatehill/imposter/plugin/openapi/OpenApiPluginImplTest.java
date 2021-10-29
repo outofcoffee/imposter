@@ -69,7 +69,7 @@ import static com.jayway.restassured.RestAssured.given;
 /**
  * Tests for {@link OpenApiPluginImpl}.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class OpenApiPluginImplTest extends BaseVerticleTest {
     @Override

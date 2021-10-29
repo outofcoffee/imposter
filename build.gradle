@@ -9,6 +9,10 @@ buildscript {
     }
 }
 
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.5.31' apply false
+}
+
 ext {
     try {
         awsCredentials = new ProfileCredentialsProvider().credentials
@@ -24,6 +28,7 @@ subprojects {
     buildscript {
         ext {
             version_shadow = '5.1.0'
+            kotlin_version = '1.5.31'
         }
         repositories {
             mavenCentral()
@@ -32,6 +37,7 @@ subprojects {
             }
         }
         dependencies {
+            classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
             classpath "com.github.jengelman.gradle.plugins:shadow:$version_shadow"
         }
     }

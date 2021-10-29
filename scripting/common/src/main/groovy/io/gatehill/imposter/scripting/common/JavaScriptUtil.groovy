@@ -52,7 +52,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 class JavaScriptUtil {
     private static final Logger LOGGER = LogManager.getLogger(JavaScriptUtil.class);

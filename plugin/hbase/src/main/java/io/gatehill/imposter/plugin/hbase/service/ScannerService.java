@@ -50,7 +50,7 @@ import io.gatehill.imposter.plugin.hbase.model.MockScanner;
 import java.util.Optional;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public interface ScannerService {
     int registerScanner(HBasePluginConfig config, MockScanner scanner);

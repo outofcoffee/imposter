@@ -56,7 +56,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests for in-memory store implementation.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class InMemoryStoreTest {
     private InMemoryStoreFactoryImpl factory;

@@ -46,7 +46,7 @@ package io.gatehill.imposter.server;
 import com.google.inject.Module;
 import io.gatehill.imposter.Imposter;
 import io.gatehill.imposter.ImposterConfig;
-import io.gatehill.imposter.lifecycle.ImposterLifecycleHooks;
+import io.gatehill.imposter.lifecycle.EngineLifecycleHooks;
 import io.gatehill.imposter.plugin.PluginManager;
 import io.gatehill.imposter.plugin.config.ConfigurablePlugin;
 import io.gatehill.imposter.plugin.config.PluginConfig;
@@ -75,7 +75,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Optional.ofNullable;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class ImposterVerticle extends AbstractVerticle {
     private static final Logger LOGGER = LogManager.getLogger(ImposterVerticle.class);
@@ -87,7 +87,7 @@ public class ImposterVerticle extends AbstractVerticle {
     private ServerFactory serverFactory;
 
     @Inject
-    private ImposterLifecycleHooks lifecycleHooks;
+    private EngineLifecycleHooks engineLifecycle;
 
     @Inject
     private ResourceService resourceService;
@@ -172,7 +172,7 @@ public class ImposterVerticle extends AbstractVerticle {
         pluginManager.getPlugins().forEach(plugin -> plugin.configureRoutes(router));
 
         // fire post route config hooks
-        lifecycleHooks.forEach(listener -> listener.afterRoutesConfigured(imposterConfig, allConfigs, router));
+        engineLifecycle.forEach(listener -> listener.afterRoutesConfigured(imposterConfig, allConfigs, router));
 
         return router;
     }

@@ -50,7 +50,7 @@ import java.util.stream.Collectors;
  * A delegating {@link Store} wrapper that prepends a string to item keys
  * before persistence and retrieval.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class PrefixedKeyStore implements Store {
     private final String keyPrefix;

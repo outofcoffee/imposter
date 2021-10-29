@@ -62,7 +62,7 @@ import static org.hamcrest.Matchers.equalTo;
 /**
  * Tests for preloading data into storage subsystem.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 @RunWith(VertxUnitRunner.class)
 public class StorePreloadTest extends BaseVerticleTest {

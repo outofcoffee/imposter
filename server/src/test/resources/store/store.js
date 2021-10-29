@@ -12,4 +12,7 @@ switch (context.request.path) {
             .withHeader('Content-Type', 'text/plain')
             .withData(testStore.load('foo'));
         break;
+
+    default:
+        throw new Error('Unhandled path: ' + context.request.path);
 }

@@ -46,7 +46,7 @@ package io.gatehill.imposter.plugin.openapi.util;
 import io.vertx.ext.web.RoutingContext;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public final class ValidationReportUtil {
     private ValidationReportUtil() {

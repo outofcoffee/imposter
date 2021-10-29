@@ -51,7 +51,7 @@ import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class OpenApiPluginValidationConfig {
     private static final ValidationIssueBehaviour DEFAULT_ISSUE_BEHAVIOUR;

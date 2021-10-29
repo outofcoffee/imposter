@@ -44,7 +44,7 @@
 package io.gatehill.imposter.store.util;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public final class StoreUtil {
     public static final String REQUEST_SCOPED_STORE_NAME = "request";

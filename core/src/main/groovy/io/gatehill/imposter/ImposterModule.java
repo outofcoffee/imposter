@@ -56,7 +56,7 @@ import io.gatehill.imposter.service.SecurityService;
 import io.gatehill.imposter.service.SecurityServiceImpl;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 class ImposterModule extends AbstractModule {
     private final ImposterConfig imposterConfig;

@@ -62,7 +62,7 @@ import static org.hamcrest.Matchers.equalTo;
 /**
  * Tests for matching request body with JsonPath.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 @RunWith(VertxUnitRunner.class)
 public class RequestBodyJsonPathTest extends BaseVerticleTest {

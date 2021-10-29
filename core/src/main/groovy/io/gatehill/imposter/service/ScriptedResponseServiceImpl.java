@@ -45,7 +45,8 @@ package io.gatehill.imposter.service;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import io.gatehill.imposter.lifecycle.ImposterLifecycleHooks;
+import io.gatehill.imposter.lifecycle.EngineLifecycleHooks;
+import io.gatehill.imposter.lifecycle.ScriptExecLifecycleHooks;
 import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfig;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
@@ -72,7 +73,7 @@ import java.util.concurrent.ExecutionException;
 import static java.util.Objects.nonNull;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class ScriptedResponseServiceImpl implements ScriptedResponseService {
     private static final Logger LOGGER = LogManager.getLogger(ScriptedResponseServiceImpl.class);
@@ -92,7 +93,10 @@ public class ScriptedResponseServiceImpl implements ScriptedResponseService {
     private ScriptService javascriptScriptService;
 
     @Inject
-    private ImposterLifecycleHooks lifecycleHooks;
+    private EngineLifecycleHooks engineLifecycle;
+
+    @Inject
+    private ScriptExecLifecycleHooks scriptExecLifecycle;
 
     private Timer executionTimer;
 
@@ -110,13 +114,7 @@ public class ScriptedResponseServiceImpl implements ScriptedResponseService {
     }
 
     @Override
-    public ReadWriteResponseBehaviour determineResponseFromScript(
-            RoutingContext routingContext,
-            PluginConfig pluginConfig,
-            ResponseConfigHolder resourceConfig,
-            Map<String, Object> additionalContext,
-            Map<String, Object> additionalBindings
-    ) {
+    public ReadWriteResponseBehaviour determineResponseFromScript(RoutingContext routingContext, PluginConfig pluginConfig, ResponseConfigHolder resourceConfig, Map<String, ?> additionalContext, Map<String, ?> additionalBindings) {
         try {
             final Callable<ReadWriteResponseBehaviour> scriptExecutor = () -> determineResponseFromScriptInternal(
                     routingContext,
@@ -139,8 +137,8 @@ public class ScriptedResponseServiceImpl implements ScriptedResponseService {
             RoutingContext routingContext,
             PluginConfig pluginConfig,
             ResponseConfigHolder resourceConfig,
-            Map<String, Object> additionalContext,
-            Map<String, Object> additionalBindings
+            Map<String, ?> additionalContext,
+            Map<String, ?> additionalBindings
     ) {
         final ResponseConfig responseConfig = resourceConfig.getResponseConfig();
 
@@ -156,7 +154,7 @@ public class ScriptedResponseServiceImpl implements ScriptedResponseService {
             final ExecutionContext executionContext = ScriptUtil.buildContext(routingContext, additionalContext);
             LOGGER.trace("Context for request: {}", () -> executionContext);
 
-            final Map<String, Object> finalAdditionalBindings = finaliseAdditionalBindings(routingContext, additionalBindings, executionContext);
+            final Map<String, ?> finalAdditionalBindings = finaliseAdditionalBindings(routingContext, additionalBindings, executionContext);
             final Logger scriptLogger = buildScriptLogger(responseConfig);
 
             final RuntimeContext runtimeContext = new RuntimeContext(
@@ -172,7 +170,7 @@ public class ScriptedResponseServiceImpl implements ScriptedResponseService {
                     fetchScriptService(responseConfig.getScriptFile()).executeScript(pluginConfig, resourceConfig, runtimeContext);
 
             // fire post execution hooks
-            lifecycleHooks.forEach(listener -> listener.afterSuccessfulScriptExecution(finalAdditionalBindings, responseBehaviour));
+            scriptExecLifecycle.forEach(listener -> listener.afterSuccessfulScriptExecution(finalAdditionalBindings, responseBehaviour));
 
             LOGGER.debug(String.format(
                     "Executed script '%s' for request: %s %s in %.2fms",
@@ -225,14 +223,14 @@ public class ScriptedResponseServiceImpl implements ScriptedResponseService {
         }
     }
 
-    private Map<String, Object> finaliseAdditionalBindings(RoutingContext routingContext, Map<String, Object> additionalBindings, ExecutionContext executionContext) {
-        Map<String, Object> finalAdditionalBindings = additionalBindings;
+    private Map<String, ?> finaliseAdditionalBindings(RoutingContext routingContext, Map<String, ?> additionalBindings, ExecutionContext executionContext) {
+        Map<String, ?> finalAdditionalBindings = additionalBindings;
 
         // fire pre-context build hooks
-        if (!lifecycleHooks.isEmpty()) {
+        if (!engineLifecycle.isEmpty()) {
             final Map<String, Object> listenerAdditionalBindings = new HashMap<>();
 
-            lifecycleHooks.forEach(listener -> listener.beforeBuildingRuntimeContext(routingContext, listenerAdditionalBindings, executionContext));
+            engineLifecycle.forEach(listener -> listener.beforeBuildingRuntimeContext(routingContext, listenerAdditionalBindings, executionContext));
 
             if (!listenerAdditionalBindings.isEmpty()) {
                 listenerAdditionalBindings.putAll(additionalBindings);

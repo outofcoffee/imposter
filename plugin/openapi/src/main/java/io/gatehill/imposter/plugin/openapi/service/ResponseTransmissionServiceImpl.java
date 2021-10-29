@@ -63,7 +63,7 @@ import static java.util.Optional.ofNullable;
 /**
  * Serialises and transmits examples to the client.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class ResponseTransmissionServiceImpl implements ResponseTransmissionService {
     private static final Logger LOGGER = LogManager.getLogger(ResponseTransmissionServiceImpl.class);

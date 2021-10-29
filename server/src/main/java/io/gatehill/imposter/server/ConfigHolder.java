@@ -48,7 +48,7 @@ import io.gatehill.imposter.ImposterConfig;
 /**
  * Holds the global engine configuration.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public final class ConfigHolder {
     private static ImposterConfig config;

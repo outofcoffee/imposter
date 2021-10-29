@@ -67,7 +67,7 @@ import java.util.Optional;
 import static java.util.Optional.empty;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class ProtobufSerialisationServiceImpl implements SerialisationService, DeserialisationService {
     private static final Logger LOGGER = LogManager.getLogger(ProtobufSerialisationServiceImpl.class);

@@ -47,7 +47,7 @@ import io.gatehill.imposter.script.ExecutionContext;
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public interface ScriptListener {
     void hear(ExecutionContext context, ReadWriteResponseBehaviour responseBehaviour);

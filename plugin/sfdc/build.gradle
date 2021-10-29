@@ -1,4 +1,5 @@
 apply plugin: 'java-library'
+apply plugin: 'kotlin'
 apply plugin: 'maven-publish'
 
 compileJava {
@@ -11,6 +12,7 @@ dependencies {
     // test
     testImplementation  project(':imposter-test')
     testImplementation  'com.frejo:force-rest-api:0.0.29'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
@@ -38,5 +40,27 @@ publishing {
                 }
             }
         }
+    }
+}
+buildscript {
+    ext.kotlin_version = '1.5.31'
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+repositories {
+    mavenCentral()
+}
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
     }
 }

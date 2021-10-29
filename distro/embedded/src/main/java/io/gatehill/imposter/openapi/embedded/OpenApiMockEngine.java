@@ -52,7 +52,7 @@ import java.util.Arrays;
 /**
  * Extends the base engine wrapper with functionality specific to the OpenAPI plugin.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class OpenApiMockEngine extends MockEngine {
     public OpenApiMockEngine(ImposterConfig config) {

@@ -49,7 +49,7 @@ import io.gatehill.imposter.scripting.nashorn.service.NashornScriptServiceImpl
 import javax.inject.Inject
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class NashornScriptServiceImplTest extends AbstractScriptServiceImplTest {
     @Inject

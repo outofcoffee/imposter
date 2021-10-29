@@ -71,7 +71,7 @@ import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class ExampleServiceImpl implements ExampleService {
     private static final Logger LOGGER = LogManager.getLogger(ExampleServiceImpl.class);

@@ -46,7 +46,7 @@ package io.gatehill.imposter.store.model;
 import io.gatehill.imposter.store.util.StoreUtil;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class StoreHolder {
     private final StoreFactory storeFactory;

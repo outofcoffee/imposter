@@ -48,6 +48,7 @@ import io.gatehill.imposter.plugin.Plugin;
 import io.gatehill.imposter.util.ConfigUtil;
 import io.gatehill.imposter.util.InjectorUtil;
 import io.vertx.core.Vertx;
+import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -55,7 +56,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public abstract class ConfiguredPlugin<T extends PluginConfigImpl> implements Plugin, ConfigurablePlugin<T> {
     @Inject
@@ -66,7 +67,7 @@ public abstract class ConfiguredPlugin<T extends PluginConfigImpl> implements Pl
     protected abstract Class<T> getConfigClass();
 
     @Override
-    public void loadConfiguration(List<File> configFiles) {
+    public void loadConfiguration(List<? extends File> configFiles) {
         configs = configFiles.stream()
                 .map(file -> ConfigUtil.loadPluginConfig(file, getConfigClass(), true, true))
                 .collect(Collectors.toList());

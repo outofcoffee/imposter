@@ -60,7 +60,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class GroovyScriptServiceImpl implements ScriptService {
     private static final Logger LOGGER = LogManager.getLogger(GroovyScriptServiceImpl.class);

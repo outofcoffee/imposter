@@ -74,7 +74,7 @@ import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class ImposterLauncher extends Launcher {
     private static final Logger LOGGER = LogManager.getLogger(ImposterLauncher.class);
