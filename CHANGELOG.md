@@ -3,9 +3,16 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [1.24.4] - 2021-10-29
 ### Added
-- ...
+- (docs) Adds JUnit sample project.
+- (ci) Publishes base distro Maven artifacts.
+
+### Changed
+- (openapi) Logs full URI to OpenAPI specification UI at startup. 
+- (core) Quietens logging of unhandled errors for favicons to TRACE. 
+- (build) Upgrades Gradle to 6.8.1.
+- (build) Increases granularity of module dependency scopes.
 
 ## [1.24.3] - 2021-10-28
 ### Added
