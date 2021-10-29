@@ -68,7 +68,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class RedisStoreFactoryImplTest {
     private RedisStoreFactoryImpl factory;

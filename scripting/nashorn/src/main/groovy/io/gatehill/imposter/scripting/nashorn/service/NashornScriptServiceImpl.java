@@ -70,7 +70,7 @@ import java.util.concurrent.ExecutionException;
 import static java.util.Optional.ofNullable;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class NashornScriptServiceImpl implements ScriptService {
     private static final Logger LOGGER = LogManager.getLogger(NashornScriptServiceImpl.class);

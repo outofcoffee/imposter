@@ -63,7 +63,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests for performance simulation.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 @RunWith(VertxUnitRunner.class)
 public class PerformanceSimulationTest extends BaseVerticleTest {

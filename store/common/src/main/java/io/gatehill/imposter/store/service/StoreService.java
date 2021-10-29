@@ -44,7 +44,7 @@
 package io.gatehill.imposter.store.service;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public interface StoreService {
 }

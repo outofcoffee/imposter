@@ -62,7 +62,7 @@ import org.junit.Test
 /**
  * Tests for {@link HBasePluginImpl}.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 class HBasePluginTest extends BaseVerticleTest {
     private Client client

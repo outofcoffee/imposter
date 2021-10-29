@@ -51,8 +51,8 @@ import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.ParseContext;
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 import io.gatehill.imposter.ImposterConfig;
-import io.gatehill.imposter.lifecycle.ImposterLifecycleHooks;
-import io.gatehill.imposter.lifecycle.ImposterLifecycleListener;
+import io.gatehill.imposter.lifecycle.EngineLifecycleHooks;
+import io.gatehill.imposter.lifecycle.EngineLifecycleListener;
 import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.plugin.config.capture.CaptureConfig;
 import io.gatehill.imposter.plugin.config.capture.CaptureConfigHolder;
@@ -80,6 +80,7 @@ import org.apache.commons.text.lookup.StringLookup;
 import org.apache.commons.text.lookup.StringLookupFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -95,9 +96,9 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
-public class StoreServiceImpl implements StoreService, ImposterLifecycleListener {
+public class StoreServiceImpl implements StoreService, EngineLifecycleListener {
     private static final Logger LOGGER = LogManager.getLogger(StoreServiceImpl.class);
     private static final ParsableMIMEValue JSON_MIME = new ParsableMIMEValue(HttpUtil.CONTENT_TYPE_JSON);
 
@@ -118,7 +119,7 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
     @Inject
     public StoreServiceImpl(
             Vertx vertx,
-            ImposterLifecycleHooks lifecycleHooks,
+            EngineLifecycleHooks lifecycleHooks,
             ResourceService resourceService,
             StoreFactory storeFactory
     ) {
@@ -177,7 +178,7 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
     }
 
     @Override
-    public void afterRoutesConfigured(ImposterConfig imposterConfig, List<PluginConfig> allPluginConfigs, Router router) {
+    public void afterRoutesConfigured( ImposterConfig imposterConfig, List<? extends PluginConfig> allPluginConfigs, Router router) {
         router.get("/system/store/:storeName").handler(handleLoadAll(imposterConfig, allPluginConfigs));
         router.delete("/system/store/:storeName").handler(handleDeleteStore(imposterConfig, allPluginConfigs));
         router.get("/system/store/:storeName/:key").handler(handleLoadSingle(imposterConfig, allPluginConfigs));
@@ -188,7 +189,7 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
         preloadStores(allPluginConfigs);
     }
 
-    private void preloadStores(List<PluginConfig> allPluginConfigs) {
+    private void preloadStores(List<? extends PluginConfig> allPluginConfigs) {
         allPluginConfigs.forEach(pluginConfig -> {
             if (pluginConfig instanceof SystemConfigHolder) {
                 ofNullable(((SystemConfigHolder) pluginConfig).getSystemConfig())
@@ -230,7 +231,7 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
         }
     }
 
-    private Handler<RoutingContext> handleLoadAll(ImposterConfig imposterConfig, List<PluginConfig> allPluginConfigs) {
+    private Handler<RoutingContext> handleLoadAll(ImposterConfig imposterConfig, List<? extends PluginConfig> allPluginConfigs) {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx, routingContext -> {
             final String storeName = routingContext.pathParam("storeName");
             final Store store = openStore(routingContext, storeName);
@@ -254,7 +255,7 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
         });
     }
 
-    private Handler<RoutingContext> handleDeleteStore(ImposterConfig imposterConfig, List<PluginConfig> allPluginConfigs) {
+    private Handler<RoutingContext> handleDeleteStore(ImposterConfig imposterConfig, List<? extends PluginConfig> allPluginConfigs) {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx, routingContext -> {
             final String storeName = routingContext.pathParam("storeName");
 
@@ -267,7 +268,7 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
         });
     }
 
-    private Handler<RoutingContext> handleLoadSingle(ImposterConfig imposterConfig, List<PluginConfig> allPluginConfigs) {
+    private Handler<RoutingContext> handleLoadSingle(ImposterConfig imposterConfig, List<? extends PluginConfig> allPluginConfigs) {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx, routingContext -> {
             final String storeName = routingContext.pathParam("storeName");
             final Store store = openStore(routingContext, storeName);
@@ -296,7 +297,7 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
         });
     }
 
-    private Handler<RoutingContext> handleSaveSingle(ImposterConfig imposterConfig, List<PluginConfig> allPluginConfigs) {
+    private Handler<RoutingContext> handleSaveSingle(ImposterConfig imposterConfig, List<? extends PluginConfig> allPluginConfigs) {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx, routingContext -> {
             final String storeName = routingContext.pathParam("storeName");
             final Store store = openStore(routingContext, storeName, true);
@@ -322,7 +323,7 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
         });
     }
 
-    private Handler<RoutingContext> handleSaveMultiple(ImposterConfig imposterConfig, List<PluginConfig> allPluginConfigs) {
+    private Handler<RoutingContext> handleSaveMultiple(ImposterConfig imposterConfig, List<? extends PluginConfig> allPluginConfigs) {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx, routingContext -> {
             final String storeName = routingContext.pathParam("storeName");
             final Store store = openStore(routingContext, storeName, true);
@@ -342,7 +343,7 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
         });
     }
 
-    private Handler<RoutingContext> handleDeleteSingle(ImposterConfig imposterConfig, List<PluginConfig> allPluginConfigs) {
+    private Handler<RoutingContext> handleDeleteSingle(ImposterConfig imposterConfig, List<? extends PluginConfig> allPluginConfigs) {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx, routingContext -> {
             final String storeName = routingContext.pathParam("storeName");
             final Store store = openStore(routingContext, storeName, true);
@@ -474,7 +475,7 @@ public class StoreServiceImpl implements StoreService, ImposterLifecycleListener
     }
 
     @Override
-    public void beforeBuildingRuntimeContext(RoutingContext routingContext, Map<String, Object> additionalBindings, ExecutionContext executionContext) {
+    public void beforeBuildingRuntimeContext(@NotNull RoutingContext routingContext, @NotNull Map<String, Object> additionalBindings, @NotNull ExecutionContext executionContext) {
         final String requestId = routingContext.get(ResourceUtil.RC_REQUEST_ID_KEY);
         additionalBindings.put("stores", new StoreHolder(storeFactory, requestId));
     }

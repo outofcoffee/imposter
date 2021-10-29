@@ -44,7 +44,7 @@
 package io.gatehill.imposter.exception;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class ResponseException extends RuntimeException {
     public ResponseException(String message) {

@@ -67,7 +67,7 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class Imposter {
     private static final Logger LOGGER = LogManager.getLogger(Imposter.class);

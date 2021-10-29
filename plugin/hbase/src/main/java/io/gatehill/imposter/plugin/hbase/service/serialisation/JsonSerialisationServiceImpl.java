@@ -61,7 +61,7 @@ import java.io.IOException;
 import java.util.Optional;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class JsonSerialisationServiceImpl implements SerialisationService, DeserialisationService {
     private static final Logger LOGGER = LogManager.getLogger(JsonSerialisationServiceImpl.class);

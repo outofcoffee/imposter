@@ -55,7 +55,7 @@ import java.util.stream.Collectors;
 import static java.util.Optional.ofNullable;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public final class FeatureUtil {
     private static final String ENV_IMPOSTER_FEATURES = "IMPOSTER_FEATURES";

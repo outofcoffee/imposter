@@ -46,7 +46,7 @@ package io.gatehill.imposter.plugin.hbase.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MockScanner {

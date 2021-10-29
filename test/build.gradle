@@ -22,4 +22,5 @@ dependencies {
 
     // required to mock vertx interfaces
     implementation "io.vertx:vertx-codegen:$version_vertx"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 }

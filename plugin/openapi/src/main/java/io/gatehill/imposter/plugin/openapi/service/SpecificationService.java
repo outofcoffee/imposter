@@ -53,7 +53,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public interface SpecificationService {
     default OpenAPI combineSpecifications(List<OpenAPI> specs, String basePath) {

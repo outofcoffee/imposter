@@ -53,7 +53,7 @@ import io.gatehill.imposter.script.ReadWriteResponseBehaviour;
  * Extends base response behaviour population with specific
  * OpenAPI plugin configuration.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class OpenApiResponseBehaviourFactory extends DefaultResponseBehaviourFactory {
     @Override

@@ -54,7 +54,7 @@ import io.gatehill.imposter.plugin.hbase.service.serialisation.ProtobufSerialisa
 import io.gatehill.imposter.plugin.hbase.service.serialisation.SerialisationService;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class HBasePluginModule extends AbstractModule {
     @Override

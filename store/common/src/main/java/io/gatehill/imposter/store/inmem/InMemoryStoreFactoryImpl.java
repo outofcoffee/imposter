@@ -47,7 +47,7 @@ import io.gatehill.imposter.store.factory.AbstractStoreFactory;
 import io.gatehill.imposter.store.model.Store;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class InMemoryStoreFactoryImpl extends AbstractStoreFactory {
     @Override

@@ -58,7 +58,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * Tests for {@link ConfigUtil}.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class ConfigUtilTest {
     PluginManager pluginManager;

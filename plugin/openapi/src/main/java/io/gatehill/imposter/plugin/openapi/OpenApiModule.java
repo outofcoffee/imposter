@@ -55,7 +55,7 @@ import io.gatehill.imposter.plugin.openapi.service.SpecificationService;
 import io.gatehill.imposter.plugin.openapi.service.SpecificationServiceImpl;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class OpenApiModule extends AbstractModule {
     @Override

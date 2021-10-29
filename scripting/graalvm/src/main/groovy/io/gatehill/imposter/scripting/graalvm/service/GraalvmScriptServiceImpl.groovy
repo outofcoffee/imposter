@@ -62,7 +62,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 class GraalvmScriptServiceImpl implements ScriptService {
     private static final Logger LOGGER = LogManager.getLogger(GraalvmScriptServiceImpl.class);

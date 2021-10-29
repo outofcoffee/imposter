@@ -56,7 +56,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Optional.ofNullable;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public final class HttpUtil {
     public static final String DEFAULT_SERVER_FACTORY = VertxWebServerFactoryImpl.class.getCanonicalName();

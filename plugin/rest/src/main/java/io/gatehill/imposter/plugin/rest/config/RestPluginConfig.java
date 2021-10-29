@@ -52,7 +52,7 @@ import io.gatehill.imposter.plugin.config.resource.ResourceMethod;
 import java.util.List;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class RestPluginConfig extends ContentTypedPluginConfigImpl implements MethodResourceConfig, ResourcesHolder<RestPluginResourceConfig> {
     @JsonProperty("resources")

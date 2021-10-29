@@ -48,7 +48,9 @@ import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
 import io.gatehill.imposter.ImposterConfig;
 import io.gatehill.imposter.config.ResolvedResourceConfig;
-import io.gatehill.imposter.lifecycle.ImposterLifecycleHooks;
+import io.gatehill.imposter.lifecycle.EngineLifecycleHooks;
+import io.gatehill.imposter.lifecycle.ScriptExecLifecycleHooks;
+import io.gatehill.imposter.lifecycle.SecurityLifecycleHooks;
 import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.plugin.config.ResourcesHolder;
 import io.gatehill.imposter.plugin.config.resource.PathParamsResourceConfig;
@@ -96,7 +98,7 @@ import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class ResourceServiceImpl implements ResourceService {
     private static final Logger LOGGER = LogManager.getLogger(ResourceServiceImpl.class);
@@ -113,7 +115,10 @@ public class ResourceServiceImpl implements ResourceService {
     private SecurityService securityService;
 
     @Inject
-    private ImposterLifecycleHooks lifecycleHooks;
+    private EngineLifecycleHooks engineLifecycle;
+
+    @Inject
+    private SecurityLifecycleHooks securityLifecycle;
 
     /**
      * {@inheritDoc}
@@ -431,13 +436,13 @@ public class ResourceServiceImpl implements ResourceService {
         // allows plugins to customise behaviour
         routingContext.put(ResourceUtil.RESPONSE_CONFIG_HOLDER_KEY, resourceConfig);
 
-        if (lifecycleHooks.allMatch(listener -> listener.isRequestPermitted(rootResourceConfig, resourceConfig, resolvedResourceConfigs, routingContext))) {
+        if (securityLifecycle.allMatch(listener -> listener.isRequestPermitted(rootResourceConfig, resourceConfig, resolvedResourceConfigs, routingContext))) {
             // request is permitted to continue
             try {
                 routingContextConsumer.accept(routingContext);
             } finally {
                 // always perform tidy up once handled, regardless of outcome
-                lifecycleHooks.forEach(listener -> listener.afterRoutingContextHandled(routingContext));
+                engineLifecycle.forEach(listener -> listener.afterRoutingContextHandled(routingContext));
             }
         } else {
             LOGGER.trace("Request {} was not permitted to continue", LogUtil.describeRequest(routingContext, requestId));

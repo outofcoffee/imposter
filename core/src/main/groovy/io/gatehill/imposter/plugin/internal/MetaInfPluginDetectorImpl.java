@@ -49,6 +49,7 @@ import io.gatehill.imposter.plugin.PluginInfo;
 import io.gatehill.imposter.plugin.PluginProvider;
 import io.gatehill.imposter.util.MetaUtil;
 import io.vertx.ext.web.Router;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.List;
@@ -63,7 +64,7 @@ import static java.util.Optional.ofNullable;
  * <p>
  * Checks for a list of comma-separated plugin names or fully qualified classes.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 @PluginInfo("meta-detector")
 public class MetaInfPluginDetectorImpl implements Plugin, PluginProvider {
@@ -73,7 +74,7 @@ public class MetaInfPluginDetectorImpl implements Plugin, PluginProvider {
     }
 
     @Override
-    public List<String> providePlugins(ImposterConfig imposterConfig, Map<String, List<File>> pluginConfigs) {
+    public List<String> providePlugins(ImposterConfig imposterConfig, Map<String, ? extends List<? extends File>> pluginConfigs) {
         return ofNullable(MetaUtil.readMetaProperties().getProperty("plugins"))
                 .map(plugin -> plugin.split(","))
                 .map(elements -> (List<String>) newArrayList(elements))

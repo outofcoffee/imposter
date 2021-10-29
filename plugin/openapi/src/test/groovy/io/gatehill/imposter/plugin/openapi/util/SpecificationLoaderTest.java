@@ -75,7 +75,7 @@ import static org.junit.Assert.assertNotNull;
 /**
  * Verifies loading local and remote specifications.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class SpecificationLoaderTest {
     private static Vertx vertx;

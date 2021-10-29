@@ -46,7 +46,7 @@ package io.gatehill.imposter.plugin.hbase.config;
 import io.gatehill.imposter.plugin.config.PluginConfigImpl;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class HBasePluginConfig extends PluginConfigImpl {
     private String tableName;

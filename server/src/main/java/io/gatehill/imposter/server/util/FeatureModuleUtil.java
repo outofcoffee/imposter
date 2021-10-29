@@ -53,7 +53,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public final class FeatureModuleUtil {
     /**

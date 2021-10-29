@@ -56,12 +56,13 @@ import javax.inject.Inject;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static io.gatehill.imposter.plugin.ScriptedPlugin.scriptHandler;
 import static java.util.Optional.ofNullable;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
-public class TestPluginImpl extends ConfiguredPlugin<TestPluginConfig> implements ScriptedPlugin<TestPluginConfig> {
+public class TestPluginImpl extends ConfiguredPlugin<TestPluginConfig> {
     @Inject
     private ImposterConfig imposterConfig;
 

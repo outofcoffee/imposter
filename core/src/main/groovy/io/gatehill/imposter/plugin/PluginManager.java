@@ -71,7 +71,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class PluginManager {
     private static final Logger LOGGER = LogManager.getLogger(PluginManager.class);
@@ -210,7 +210,7 @@ public class PluginManager {
             registerProvider(providerClass);
             final PluginProvider pluginProvider = createPluginProvider(providerClass);
             final List<String> provided = pluginProvider.providePlugins(imposterConfig, pluginConfigs);
-            LOGGER.trace("{} plugin(s) provided by: {}", provided.size(), pluginProvider.getName());
+            LOGGER.trace("{} plugin(s) provided by: {}", provided.size(), PluginMetadata.getPluginName(providerClass));
 
             // recurse for new providers
             if (provided.size() > 0) {
@@ -300,7 +300,7 @@ public class PluginManager {
         final int pluginCount = getPlugins().size();
         if (pluginCount > 0) {
             final String pluginNames = getPlugins().stream()
-                    .map(Plugin::getName)
+                    .map(p -> PluginMetadata.getPluginName(p.getClass()))
                     .collect(Collectors.joining(", ", "[", "]"));
             LOGGER.trace("Loaded {} plugin(s): {}", pluginCount, pluginNames);
         } else {
@@ -322,7 +322,7 @@ public class PluginManager {
                         final List<File> configFiles = ofNullable(pluginConfigs.get(plugin.getClass().getCanonicalName())).orElse(emptyList());
                         plugin.loadConfiguration(configFiles);
                     } catch (Exception e) {
-                        throw new RuntimeException("Error configuring plugin: " + ((Plugin) plugin).getName(), e);
+                        throw new RuntimeException("Error configuring plugin: " + PluginMetadata.getPluginName(plugin.getClass()), e);
                     }
                 });
     }

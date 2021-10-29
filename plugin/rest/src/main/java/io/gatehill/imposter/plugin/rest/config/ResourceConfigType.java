@@ -44,7 +44,7 @@
 package io.gatehill.imposter.plugin.rest.config;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public enum ResourceConfigType {
     ARRAY,

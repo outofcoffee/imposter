@@ -61,7 +61,7 @@ import static org.hamcrest.Matchers.equalTo;
 /**
  * Tests for examples referenced using '$ref' in spec.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class ExampleRefTest extends BaseVerticleTest {
     @Override

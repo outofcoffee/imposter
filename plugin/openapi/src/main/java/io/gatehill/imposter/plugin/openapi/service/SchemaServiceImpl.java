@@ -79,7 +79,7 @@ import static java.util.Optional.ofNullable;
  * Collects examples from schema definitions.
  *
  * @author benjvoigt
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class SchemaServiceImpl implements SchemaService {
     private static final Logger LOGGER = LogManager.getLogger(SchemaServiceImpl.class);

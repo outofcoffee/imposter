@@ -70,16 +70,17 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static io.gatehill.imposter.plugin.ScriptedPlugin.scriptHandler;
 import static io.gatehill.imposter.util.HttpUtil.CONTENT_TYPE_JSON;
 import static java.util.Optional.ofNullable;
 
 /**
  * Plugin for simple RESTful APIs.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 @PluginInfo("rest")
-public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin<C> implements ScriptedPlugin<C> {
+public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin<C> {
     private static final Logger LOGGER = LogManager.getLogger(RestPluginImpl.class);
 
     /**

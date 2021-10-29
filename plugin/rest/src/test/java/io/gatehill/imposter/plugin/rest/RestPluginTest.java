@@ -62,7 +62,7 @@ import static org.hamcrest.Matchers.isEmptyOrNullString;
 
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class RestPluginTest extends BaseVerticleTest {
     @Override

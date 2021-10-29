@@ -81,6 +81,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static io.gatehill.imposter.plugin.ScriptedPlugin.scriptHandler;
 import static io.gatehill.imposter.util.HttpUtil.CONTENT_TYPE_JSON;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
@@ -88,11 +89,11 @@ import static java.util.Optional.ofNullable;
 /**
  * Plugin for HBase.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 @PluginInfo("hbase")
 @RequireModules(HBasePluginModule.class)
-public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> implements ScriptedPlugin<HBasePluginConfig> {
+public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> {
     private static final Logger LOGGER = LogManager.getLogger(HBasePluginImpl.class);
 
     @Inject

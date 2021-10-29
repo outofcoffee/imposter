@@ -67,7 +67,7 @@ import static org.hamcrest.Matchers.hasEntry;
 /**
  * Tests for storage subsystem.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 @RunWith(VertxUnitRunner.class)
 public class StoreTest extends BaseVerticleTest {

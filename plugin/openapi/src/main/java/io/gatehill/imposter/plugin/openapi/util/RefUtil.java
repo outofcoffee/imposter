@@ -54,7 +54,7 @@ import static java.util.Optional.ofNullable;
  * <p>
  * See: https://swagger.io/docs/specification/using-ref/
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class RefUtil {
     private static final String REF_PREFIX_RESPONSES = "#/components/responses/";

@@ -89,7 +89,7 @@ import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class SpecificationServiceImpl implements SpecificationService {
     private static final Logger LOGGER = LogManager.getLogger(SpecificationServiceImpl.class);

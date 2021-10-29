@@ -86,7 +86,7 @@ import static java.util.Objects.isNull;
  * Typically, you will want to use a plugin-specific builder if it exists,
  * such as {@link io.gatehill.imposter.openapi.embedded.OpenApiImposterBuilder}
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  * @see io.gatehill.imposter.openapi.embedded.OpenApiImposterBuilder
  */
 public class ImposterBuilder<M extends MockEngine, SELF extends ImposterBuilder<M, SELF>> {

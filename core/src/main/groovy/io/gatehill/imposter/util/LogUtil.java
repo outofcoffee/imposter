@@ -54,7 +54,7 @@ import static java.util.Optional.ofNullable;
 /**
  * Common logging functionality.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class LogUtil {
     /**

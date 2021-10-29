@@ -48,7 +48,7 @@ import com.google.common.base.Preconditions;
 /**
  * Holds an object of a given content type.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class ContentTypedHolder<T> {
     private final String contentType;

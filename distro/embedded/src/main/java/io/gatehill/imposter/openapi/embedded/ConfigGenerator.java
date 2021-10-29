@@ -57,7 +57,7 @@ import java.util.List;
 /**
  * Generates Imposter configuration for the OpenAPI plugin.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 class ConfigGenerator {
     private static final Logger LOGGER = LogManager.getLogger(ConfigGenerator.class);

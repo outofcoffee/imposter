@@ -56,7 +56,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static java.util.Optional.ofNullable;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class ScannerServiceImpl implements ScannerService {
     /**

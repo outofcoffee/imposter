@@ -61,7 +61,7 @@ import static com.jayway.restassured.RestAssured.given;
 /**
  * Tests for OpenAPI definitions with reference responses.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class DefaultResponseTest extends BaseVerticleTest {
     @Override

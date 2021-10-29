@@ -58,7 +58,7 @@ import java.io.IOException;
 import java.util.Arrays;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class RedisStoreFactoryImpl extends AbstractStoreFactory {
     private static final Logger LOGGER = LogManager.getLogger(RedisStoreFactoryImpl.class);

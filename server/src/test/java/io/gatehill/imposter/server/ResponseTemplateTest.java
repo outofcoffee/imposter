@@ -66,7 +66,7 @@ import static org.hamcrest.Matchers.equalTo;
 /**
  * Tests for response templates.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 @RunWith(VertxUnitRunner.class)
 public class ResponseTemplateTest extends BaseVerticleTest {

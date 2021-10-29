@@ -70,7 +70,7 @@ import static java.util.Optional.ofNullable;
 /**
  * Utility functions to load the OpenAPI specification, determining the version and use the appropriate parser.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public final class SpecificationLoader {
     private static final Logger LOGGER = LoggerFactory.getLogger(SpecificationLoader.class);

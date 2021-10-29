@@ -60,7 +60,7 @@ import static com.jayway.restassured.RestAssured.given;
 /**
  * Tests for complex path parameters.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class ComplexPathParamsTest extends BaseVerticleTest {
     @Override

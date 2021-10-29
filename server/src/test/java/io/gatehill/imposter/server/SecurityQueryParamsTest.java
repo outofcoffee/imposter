@@ -62,7 +62,7 @@ import static org.hamcrest.Matchers.equalTo;
 /**
  * Tests for security using query parameters.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 @RunWith(VertxUnitRunner.class)
 public class SecurityQueryParamsTest extends BaseVerticleTest {

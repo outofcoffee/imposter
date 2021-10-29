@@ -53,7 +53,7 @@ import static org.junit.Assert.assertNotNull;
 /**
  * Tests for {@link HttpUtil}.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class HttpUtilTest {
     @Test

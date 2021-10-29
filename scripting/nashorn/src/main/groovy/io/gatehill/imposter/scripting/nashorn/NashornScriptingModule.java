@@ -50,7 +50,7 @@ import io.gatehill.imposter.service.ScriptService;
 import io.gatehill.imposter.util.annotation.JavascriptImpl;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class NashornScriptingModule extends AbstractModule {
     @Override

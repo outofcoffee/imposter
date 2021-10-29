@@ -46,7 +46,7 @@ package io.gatehill.imposter.plugin.hbase.model;
 import java.util.Comparator;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class ResultCellComparator implements Comparator<ResultCell> {
     @Override

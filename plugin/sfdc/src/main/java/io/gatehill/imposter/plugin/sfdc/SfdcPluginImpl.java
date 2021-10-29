@@ -69,6 +69,7 @@ import java.util.Optional;
 import java.util.StringTokenizer;
 import java.util.UUID;
 
+import static io.gatehill.imposter.plugin.ScriptedPlugin.scriptHandler;
 import static io.gatehill.imposter.util.HttpUtil.CONTENT_TYPE;
 import static io.gatehill.imposter.util.HttpUtil.CONTENT_TYPE_JSON;
 import static java.util.Optional.empty;
@@ -78,10 +79,10 @@ import static java.util.Optional.ofNullable;
 /**
  * Plugin for SFDC.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 @PluginInfo("sfdc")
-public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> implements ScriptedPlugin<SfdcPluginConfig> {
+public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
     private static final Logger LOGGER = LogManager.getLogger(SfdcPluginImpl.class);
     private static final String FIELD_ID = "Id";
 

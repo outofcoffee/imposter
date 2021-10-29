@@ -70,7 +70,7 @@ import static org.mockito.Mockito.mock
 import static org.mockito.Mockito.when
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 abstract class AbstractScriptServiceImplTest {
     @BeforeClass
@@ -125,8 +125,9 @@ abstract class AbstractScriptServiceImplTest {
         when(mockRoutingContext.pathParams()).thenReturn(pathParams)
         when(mockRoutingContext.getBodyAsString()).thenReturn('')
 
+        def pluginConfig = mock(PluginConfig.class)
         def executionContext = ScriptUtil.buildContext(mockRoutingContext, null)
-        def runtimeContext = new RuntimeContext(env, logger, null, additionalBindings, executionContext)
+        def runtimeContext = new RuntimeContext(env, logger, pluginConfig, additionalBindings, executionContext)
         runtimeContext
     }
 

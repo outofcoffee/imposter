@@ -49,7 +49,7 @@ import java.util.Map;
  * Wrapper for retrieving environment variables, allowing for
  * overrides.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public final class EnvVars {
     private static EnvVars INSTANCE;

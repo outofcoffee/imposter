@@ -59,7 +59,7 @@ import java.util.function.Consumer;
 import static java.util.Objects.nonNull;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public final class MetricsUtil {
     private static final Logger LOGGER = LogManager.getLogger(MetricsUtil.class);

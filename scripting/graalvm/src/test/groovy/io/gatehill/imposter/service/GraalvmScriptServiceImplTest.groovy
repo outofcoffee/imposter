@@ -50,7 +50,7 @@ import io.gatehill.imposter.scripting.graalvm.service.GraalvmScriptServiceImpl
 import javax.inject.Inject
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class GraalvmScriptServiceImplTest extends AbstractScriptServiceImplTest {
     @Inject

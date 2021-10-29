@@ -49,7 +49,7 @@ import io.vertx.ext.web.RoutingContext;
 import java.util.Optional;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public interface DeserialisationService {
     /**

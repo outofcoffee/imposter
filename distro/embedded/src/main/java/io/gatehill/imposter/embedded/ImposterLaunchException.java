@@ -44,7 +44,7 @@
 package io.gatehill.imposter.embedded;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class ImposterLaunchException extends RuntimeException {
     public ImposterLaunchException(Exception cause) {

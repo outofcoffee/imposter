@@ -48,7 +48,7 @@ import io.gatehill.imposter.plugin.config.PluginConfig;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class InMemoryScanner {
     private PluginConfig config;

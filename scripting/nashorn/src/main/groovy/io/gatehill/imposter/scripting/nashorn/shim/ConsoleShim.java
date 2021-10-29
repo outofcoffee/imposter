@@ -50,7 +50,7 @@ import javax.script.SimpleBindings;
 /**
  * Basic shim for JavaScript console.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class ConsoleShim {
     private final SimpleBindings bindings;

@@ -50,7 +50,7 @@ import java.util.List;
 /**
  * Represents the dependencies of a plugin.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class PluginDependencies {
     private List<Module> requiredModules;

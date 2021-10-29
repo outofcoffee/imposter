@@ -71,7 +71,7 @@ import static java.util.Optional.ofNullable;
 /**
  * Utility methods for reading configuration.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public final class ConfigUtil {
     private static final Logger LOGGER = LogManager.getLogger(ConfigUtil.class);

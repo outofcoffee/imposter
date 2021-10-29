@@ -50,7 +50,7 @@ import com.google.inject.Injector;
 import io.gatehill.imposter.exception.ResponseException;
 import io.gatehill.imposter.http.ResponseBehaviourFactory;
 import io.gatehill.imposter.http.StatusCodeFactory;
-import io.gatehill.imposter.lifecycle.ImposterLifecycleHooks;
+import io.gatehill.imposter.lifecycle.EngineLifecycleHooks;
 import io.gatehill.imposter.plugin.config.ContentTypedConfig;
 import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.plugin.config.ResourcesHolder;
@@ -95,7 +95,7 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class ResponseServiceImpl implements ResponseService {
     private static final Logger LOGGER = LogManager.getLogger(ResponseServiceImpl.class);
@@ -104,7 +104,7 @@ public class ResponseServiceImpl implements ResponseService {
     private static final String METRIC_RESPONSE_FILE_CACHE_ENTRIES = "response.file.cache.entries";
 
     @Inject
-    private ImposterLifecycleHooks lifecycleHooks;
+    private EngineLifecycleHooks engineLifecycle;
 
     @Inject
     private ScriptedResponseService scriptedResponseService;
@@ -135,13 +135,13 @@ public class ResponseServiceImpl implements ResponseService {
             ResponseConfigHolder resourceConfig,
             RoutingContext routingContext,
             Injector injector,
-            Map<String, Object> additionalContext,
+            Map<String, ?> additionalContext,
             StatusCodeFactory statusCodeFactory,
             ResponseBehaviourFactory responseBehaviourFactory,
             Consumer<ResponseBehaviour> defaultBehaviourHandler
     ) {
         try {
-            lifecycleHooks.forEach(listener -> listener.beforeBuildingResponse(routingContext, resourceConfig));
+            engineLifecycle.forEach(listener -> listener.beforeBuildingResponse(routingContext, resourceConfig));
 
             final ResponseBehaviour responseBehaviour = buildResponseBehaviour(
                     routingContext,
@@ -173,7 +173,7 @@ public class ResponseServiceImpl implements ResponseService {
             RoutingContext routingContext,
             PluginConfig pluginConfig,
             ResponseConfigHolder resourceConfig,
-            Map<String, Object> additionalContext,
+            Map<String, ?> additionalContext,
             Map<String, Object> additionalBindings,
             StatusCodeFactory statusCodeFactory,
             ResponseBehaviourFactory responseBehaviourFactory
@@ -377,9 +377,9 @@ public class ResponseServiceImpl implements ResponseService {
         setContentTypeIfAbsent(resourceConfig, response, filenameHintForContentType);
 
         // listeners may transform response data
-        if (!lifecycleHooks.isEmpty()) {
+        if (!engineLifecycle.isEmpty()) {
             final AtomicReference<String> dataHolder = new AtomicReference<>(responseData);
-            lifecycleHooks.forEach(listener ->
+            engineLifecycle.forEach(listener ->
                     dataHolder.set(listener.beforeTransmittingTemplate(routingContext, dataHolder.get()))
             );
             responseData = dataHolder.get();

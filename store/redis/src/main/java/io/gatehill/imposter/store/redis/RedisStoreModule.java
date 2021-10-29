@@ -48,7 +48,7 @@ import com.google.inject.Singleton;
 import io.gatehill.imposter.store.model.StoreFactory;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class RedisStoreModule extends AbstractModule {
     @Override

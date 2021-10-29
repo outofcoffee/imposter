@@ -62,7 +62,7 @@ import static com.jayway.restassured.RestAssured.given;
 /**
  * Tests for OpenAPI definitions with a single '/' as the base path and a specified host.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class SlashBasePathWithHostTest extends BaseVerticleTest {
     @Override

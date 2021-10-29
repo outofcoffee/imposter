@@ -61,7 +61,7 @@ import static org.hamcrest.Matchers.equalTo;
 /**
  * Tests for named response examples controlled by script.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class ScriptedNamedExamplesTest extends BaseVerticleTest {
     @Override

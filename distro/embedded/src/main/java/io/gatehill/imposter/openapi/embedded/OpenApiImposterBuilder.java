@@ -72,7 +72,7 @@ import static java.util.Objects.isNull;
  * // simulated HTTP responses, in place of a real endpoint.
  * </pre>
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class OpenApiImposterBuilder<M extends OpenApiMockEngine, SELF extends OpenApiImposterBuilder<M, SELF>> extends ImposterBuilder<M, SELF> {
     private static final String PLUGIN_FQCN = "io.gatehill.imposter.plugin.openapi.OpenApiPluginImpl";

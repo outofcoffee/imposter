@@ -54,7 +54,7 @@ import static java.util.Optional.ofNullable
 /**
  * Convenience methods for script execution.
  *
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 final class ScriptUtil {
     private static final Logger LOGGER = LogManager.getLogger(ScriptUtil)
@@ -71,7 +71,7 @@ final class ScriptUtil {
      * @param additionalContext
      * @return the context
      */
-    static ExecutionContext buildContext(RoutingContext routingContext, Map<String, Object> additionalContext) {
+    static ExecutionContext buildContext(RoutingContext routingContext, Map<String, ?> additionalContext) {
         final vertxRequest = routingContext.request()
 
         final headersSupplier = { ->

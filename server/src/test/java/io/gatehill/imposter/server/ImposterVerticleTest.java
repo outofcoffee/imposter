@@ -68,7 +68,7 @@ import static io.gatehill.imposter.util.FileUtil.CLASSPATH_PREFIX;
 import static org.hamcrest.Matchers.equalTo;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 @RunWith(VertxUnitRunner.class)
 public class ImposterVerticleTest extends BaseVerticleTest {

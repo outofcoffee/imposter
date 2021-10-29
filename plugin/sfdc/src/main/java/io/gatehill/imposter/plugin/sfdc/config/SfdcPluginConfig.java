@@ -46,7 +46,7 @@ package io.gatehill.imposter.plugin.sfdc.config;
 import io.gatehill.imposter.plugin.config.PluginConfigImpl;
 
 /**
- * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
+ * @author Pete Cornish
  */
 public class SfdcPluginConfig extends PluginConfigImpl {
     private String sObjectName;
