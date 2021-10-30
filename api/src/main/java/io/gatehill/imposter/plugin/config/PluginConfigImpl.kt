@@ -44,8 +44,8 @@ package io.gatehill.imposter.plugin.config
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
-import io.gatehill.imposter.plugin.config.system.SystemConfig
 import io.gatehill.imposter.plugin.config.resource.AbstractResourceConfig
+import io.gatehill.imposter.plugin.config.system.SystemConfig
 import io.gatehill.imposter.plugin.config.system.SystemConfigHolder
 import java.io.File
 

@@ -43,9 +43,9 @@
 package io.gatehill.imposter.plugin
 
 import com.google.inject.Module
-import kotlin.reflect.KClass
 import java.lang.annotation.Retention
 import java.lang.annotation.RetentionPolicy
+import kotlin.reflect.KClass
 
 /**
  * @author Pete Cornish

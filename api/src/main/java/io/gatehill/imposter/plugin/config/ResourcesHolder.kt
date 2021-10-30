@@ -49,7 +49,7 @@ import io.gatehill.imposter.plugin.config.resource.RestResourceConfig
  *
  * @author Pete Cornish
  */
-interface ResourcesHolder<T : RestResourceConfig?> {
+interface ResourcesHolder<T : RestResourceConfig> {
     val resources: List<T>?
     val isDefaultsFromRootResponse: Boolean
 }

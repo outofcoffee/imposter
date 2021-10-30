@@ -42,7 +42,6 @@
  */
 package io.gatehill.imposter.plugin.config.security
 
-import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 
 /**

@@ -42,11 +42,6 @@
  */
 package io.gatehill.imposter.lifecycle
 
-import com.google.common.collect.Lists
-import org.apache.logging.log4j.LogManager
-import java.util.function.Consumer
-import java.util.function.Predicate
-
 /**
  * @author Pete Cornish
  */

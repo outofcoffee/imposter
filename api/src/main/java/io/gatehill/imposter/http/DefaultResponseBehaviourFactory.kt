@@ -66,8 +66,8 @@ open class DefaultResponseBehaviourFactory protected constructor() : ResponseBeh
         if (0 == responseBehaviour.statusCode) {
             responseBehaviour.withStatusCode(statusCode)
         }
-        if (Strings.isNullOrEmpty(responseBehaviour.responseFile)) {
-            responseBehaviour.withFile(responseConfig.staticFile)
+        if (Strings.isNullOrEmpty(responseBehaviour.responseFile) && !Strings.isNullOrEmpty(responseConfig.staticFile)) {
+            responseBehaviour.withFile(responseConfig.staticFile!!)
         }
         if (Strings.isNullOrEmpty(responseBehaviour.responseData)) {
             responseBehaviour.withData(responseConfig.staticData)

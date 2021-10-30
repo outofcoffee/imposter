@@ -46,7 +46,7 @@ package io.gatehill.imposter.plugin
  * @author Pete Cornish
  */
 object PluginMetadata {
-    @kotlin.jvm.JvmStatic
+    @JvmStatic
     fun getPluginName(clazz: Class<*>): String {
         return clazz.getAnnotation(PluginInfo::class.java)?.value ?: clazz.canonicalName
     }

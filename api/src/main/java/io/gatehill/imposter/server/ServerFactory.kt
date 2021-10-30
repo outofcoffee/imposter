@@ -43,8 +43,8 @@
 package io.gatehill.imposter.server
 
 import io.gatehill.imposter.ImposterConfig
-import io.vertx.core.Vertx
 import io.vertx.core.Future
+import io.vertx.core.Vertx
 import io.vertx.core.http.HttpServer
 import io.vertx.ext.web.Router
 
@@ -65,5 +65,5 @@ interface ServerFactory {
      * @param router         the router
      * @return a server
      */
-    fun provide(imposterConfig: ImposterConfig?, startFuture: Future<*>?, vertx: Vertx?, router: Router?): HttpServer?
+    fun provide(imposterConfig: ImposterConfig, startFuture: Future<*>, vertx: Vertx, router: Router): HttpServer
 }

@@ -42,9 +42,9 @@
  */
 package io.gatehill.imposter.lifecycle
 
+import io.gatehill.imposter.config.ResolvedResourceConfig
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.vertx.ext.web.RoutingContext
-import io.gatehill.imposter.config.ResolvedResourceConfig
 
 /**
  * Hooks for engine lifecycle events.

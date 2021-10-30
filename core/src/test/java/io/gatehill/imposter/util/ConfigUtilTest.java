@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Tests for {@link ConfigUtil}.
@@ -76,6 +77,7 @@ public class ConfigUtilTest {
         assertEquals(1, configs.size());
 
         List<File> configFiles = configs.get("io.gatehill.imposter.core.test.ExamplePluginImpl");
+        assertNotNull("Config files should be discovered", configFiles);
         assertEquals(2, configFiles.size());
     }
 
@@ -87,6 +89,7 @@ public class ConfigUtilTest {
         assertEquals(1, configs.size());
 
         List<File> configFiles = configs.get("io.gatehill.imposter.core.test.ExamplePluginImpl");
+        assertNotNull("Legacy config file should be discovered", configFiles);
         assertEquals(1, configFiles.size());
     }
 

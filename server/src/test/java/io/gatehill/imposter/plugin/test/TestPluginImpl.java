@@ -44,13 +44,14 @@
 package io.gatehill.imposter.plugin.test;
 
 import io.gatehill.imposter.ImposterConfig;
-import io.gatehill.imposter.plugin.ScriptedPlugin;
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
 import io.gatehill.imposter.script.ResponseBehaviour;
 import io.gatehill.imposter.service.ResourceService;
 import io.gatehill.imposter.service.ResponseService;
+import io.vertx.core.Vertx;
 import io.vertx.ext.web.Router;
+import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -63,14 +64,17 @@ import static java.util.Optional.ofNullable;
  * @author Pete Cornish
  */
 public class TestPluginImpl extends ConfiguredPlugin<TestPluginConfig> {
-    @Inject
-    private ImposterConfig imposterConfig;
+    private final ImposterConfig imposterConfig;
+    private final ResourceService resourceService;
+    private final ResponseService responseService;
 
     @Inject
-    private ResourceService resourceService;
-
-    @Inject
-    private ResponseService responseService;
+    public TestPluginImpl(@NotNull Vertx vertx, ImposterConfig imposterConfig, ResourceService resourceService, ResponseService responseService) {
+        super(vertx);
+        this.imposterConfig = imposterConfig;
+        this.resourceService = resourceService;
+        this.responseService = responseService;
+    }
 
     @Override
     protected Class<TestPluginConfig> getConfigClass() {
@@ -78,7 +82,7 @@ public class TestPluginImpl extends ConfiguredPlugin<TestPluginConfig> {
     }
 
     @Override
-    protected void configurePlugin(List<TestPluginConfig> configs) {
+    protected void configurePlugin(List<? extends TestPluginConfig> configs) {
         // no-op
     }
 
@@ -96,7 +100,7 @@ public class TestPluginImpl extends ConfiguredPlugin<TestPluginConfig> {
     }
 
     private void configureRoute(TestPluginConfig pluginConfig, ResponseConfigHolder resourceConfig, Router router, String path) {
-        router.route(path).handler(resourceService.handleRoute(imposterConfig, pluginConfig, vertx, routingContext -> {
+        router.route(path).handler(resourceService.handleRoute(imposterConfig, pluginConfig, getVertx(), routingContext -> {
             final Consumer<ResponseBehaviour> defaultBehaviourHandler = responseBehaviour -> {
                 responseService.sendResponse(pluginConfig, resourceConfig, routingContext, responseBehaviour);
             };

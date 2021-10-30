@@ -55,7 +55,7 @@ object StringUtil {
      * @param b object to test, possibly `null`
      * @return `true` if the objects match, otherwise `false`
      */
-    @kotlin.jvm.JvmStatic
+    @JvmStatic
     fun safeEquals(a: Any?, b: Any?): Boolean {
         return if (Objects.nonNull(a)) {
             a == b

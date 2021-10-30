@@ -45,7 +45,6 @@ package io.gatehill.imposter.plugin.sfdc;
 
 import io.gatehill.imposter.ImposterConfig;
 import io.gatehill.imposter.plugin.PluginInfo;
-import io.gatehill.imposter.plugin.ScriptedPlugin;
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin;
 import io.gatehill.imposter.plugin.sfdc.config.SfdcPluginConfig;
 import io.gatehill.imposter.service.ResourceService;
@@ -53,6 +52,7 @@ import io.gatehill.imposter.service.ResponseService;
 import io.gatehill.imposter.util.FileUtil;
 import io.gatehill.imposter.util.HttpUtil;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerResponse;
@@ -86,16 +86,19 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
     private static final Logger LOGGER = LogManager.getLogger(SfdcPluginImpl.class);
     private static final String FIELD_ID = "Id";
 
-    @Inject
-    private ImposterConfig imposterConfig;
+    private final ImposterConfig imposterConfig;
+    private final ResourceService resourceService;
+    private final ResponseService responseService;
+
+    private List<? extends SfdcPluginConfig> configs;
 
     @Inject
-    private ResourceService resourceService;
-
-    @Inject
-    private ResponseService responseService;
-
-    private List<SfdcPluginConfig> configs;
+    public SfdcPluginImpl(Vertx vertx, ImposterConfig imposterConfig, ResourceService resourceService, ResponseService responseService) {
+        super(vertx);
+        this.imposterConfig = imposterConfig;
+        this.resourceService = resourceService;
+        this.responseService = responseService;
+    }
 
     @Override
     protected Class<SfdcPluginConfig> getConfigClass() {
@@ -103,14 +106,14 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
     }
 
     @Override
-    protected void configurePlugin(List<SfdcPluginConfig> configs) {
+    protected void configurePlugin(List<? extends SfdcPluginConfig> configs) {
         this.configs = configs;
     }
 
     @Override
     public void configureRoutes(Router router) {
         // oauth handler
-        router.post("/services/oauth2/token").handler(resourceService.handleRoute(imposterConfig, configs, vertx, routingContext -> {
+        router.post("/services/oauth2/token").handler(resourceService.handleRoute(imposterConfig, configs, getVertx(), routingContext -> {
             LOGGER.info("Handling oauth request: {}", routingContext.getBodyAsString());
 
             final JsonObject authResponse = new JsonObject();
@@ -121,7 +124,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
         }));
 
         // query handler
-        router.get("/services/data/:apiVersion/query/").handler(resourceService.handleRoute(imposterConfig, configs, vertx, routingContext -> {
+        router.get("/services/data/:apiVersion/query/").handler(resourceService.handleRoute(imposterConfig, configs, getVertx(), routingContext -> {
             final String apiVersion = routingContext.request().getParam("apiVersion");
 
             // e.g. 'SELECT Name, Id from Account LIMIT 100'
@@ -162,7 +165,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
         // get SObject handler
         configs.forEach(config -> {
             router.get("/services/data/:apiVersion/sobjects/" + config.getsObjectName() + "/:sObjectId")
-                    .handler(resourceService.handleRoute(imposterConfig, config, vertx, routingContext -> {
+                    .handler(resourceService.handleRoute(imposterConfig, config, getVertx(), routingContext -> {
                         // script should fire first
                         scriptHandler(config, routingContext, getInjector(), responseBehaviour -> {
 
@@ -194,7 +197,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
 
         // create SObject handler
         router.post("/services/data/:apiVersion/sobjects/:sObjectName")
-                .handler(resourceService.handleRoute(imposterConfig, configs, vertx, routingContext -> {
+                .handler(resourceService.handleRoute(imposterConfig, configs, getVertx(), routingContext -> {
                     final String sObjectName = routingContext.request().getParam("sObjectName");
                     final JsonObject sObject = routingContext.getBodyAsJson();
 
@@ -225,7 +228,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
      * @return
      */
     private Handler<RoutingContext> handleUpdateRequest() {
-        return resourceService.handleRoute(imposterConfig, configs, vertx, routingContext -> {
+        return resourceService.handleRoute(imposterConfig, configs, getVertx(), routingContext -> {
             final String sObjectName = routingContext.request().getParam("sObjectName");
             final String sObjectId = routingContext.request().getParam("sObjectId");
             final JsonObject sObject = routingContext.getBodyAsJson();

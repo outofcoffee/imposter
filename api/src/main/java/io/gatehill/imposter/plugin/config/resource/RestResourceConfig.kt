@@ -53,6 +53,7 @@ import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyResourceCo
 open class RestResourceConfig : AbstractResourceConfig(), MethodResourceConfig, PathParamsResourceConfig,
     QueryParamsResourceConfig, LegacyQueryParamsResourceConfig, RequestHeadersResourceConfig,
     RequestBodyResourceConfig {
+
     @JsonProperty("method")
     override val method: ResourceMethod? = null
 
@@ -68,6 +69,7 @@ open class RestResourceConfig : AbstractResourceConfig(), MethodResourceConfig, 
 
     @JsonProperty("requestBody")
     override val requestBody: RequestBodyConfig? = null
+
     override val params: Map<String, String>?
         get() = queryParams
 }

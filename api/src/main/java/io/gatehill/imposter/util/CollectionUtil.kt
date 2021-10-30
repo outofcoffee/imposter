@@ -52,7 +52,7 @@ object CollectionUtil {
     /**
      * @return a copy of the input [MultiMap] as a [Map]
      */
-    @kotlin.jvm.JvmStatic
+    @JvmStatic
     fun asMap(input: MultiMap): Map<String, String> {
         return input.associate { (k, v) -> k to v }
     }
@@ -60,7 +60,7 @@ object CollectionUtil {
     /**
      * @return a copy of the input [MultiMap] as a [Map] with all strings in lowercase
      */
-    @kotlin.jvm.JvmStatic
+    @JvmStatic
     fun <V> convertKeysToLowerCase(input: MultiMap): Map<String, V> {
         return input.associate { (k, v) -> k.lowercase(Locale.getDefault()) to v as V }
     }
@@ -68,7 +68,7 @@ object CollectionUtil {
     /**
      * @return a copy of the input map with all strings in lowercase
      */
-    @kotlin.jvm.JvmStatic
+    @JvmStatic
     fun <V> convertKeysToLowerCase(input: Map<String, V>): Map<String, V> {
         return input.entries.associate { (k, v) -> k.lowercase(Locale.getDefault()) to v }
     }

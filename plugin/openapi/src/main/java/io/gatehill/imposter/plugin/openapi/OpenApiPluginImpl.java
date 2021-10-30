@@ -44,13 +44,10 @@
 package io.gatehill.imposter.plugin.openapi;
 
 import com.google.common.collect.Lists;
-import com.google.inject.Injector;
 import io.gatehill.imposter.ImposterConfig;
-import io.gatehill.imposter.http.ResponseBehaviourFactory;
 import io.gatehill.imposter.http.StatusCodeFactory;
 import io.gatehill.imposter.plugin.PluginInfo;
 import io.gatehill.imposter.plugin.RequireModules;
-import io.gatehill.imposter.plugin.ScriptedPlugin;
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin;
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder;
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig;
@@ -72,6 +69,7 @@ import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.servers.Server;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
@@ -80,8 +78,6 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.inject.Inject;
 import java.net.URI;
@@ -115,26 +111,26 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> {
     static final String SPECIFICATION_PATH = "/_spec";
     static final String COMBINED_SPECIFICATION_PATH = SPECIFICATION_PATH + "/combined.json";
 
-    @Inject
-    private ImposterConfig imposterConfig;
+    private final ImposterConfig imposterConfig;
+    private final ResourceService resourceService;
+    private final SpecificationService specificationService;
+    private final ExampleService exampleService;
+    private final ResponseService responseService;
+    private final OpenApiResponseBehaviourFactory openApiResponseBehaviourFactory;
 
-    @Inject
-    private ResourceService resourceService;
-
-    @Inject
-    private SpecificationService specificationService;
-
-    @Inject
-    private ExampleService exampleService;
-
-    @Inject
-    private ResponseService responseService;
-
-    @Inject
-    private OpenApiResponseBehaviourFactory openApiResponseBehaviourFactory;
-
-    private List<OpenApiPluginConfig> configs;
+    private List<? extends OpenApiPluginConfig> configs;
     private List<OpenAPI> allSpecs;
+
+    @Inject
+    public OpenApiPluginImpl(Vertx vertx, ImposterConfig imposterConfig, ResourceService resourceService, SpecificationService specificationService, ExampleService exampleService, ResponseService responseService, OpenApiResponseBehaviourFactory openApiResponseBehaviourFactory) {
+        super(vertx);
+        this.imposterConfig = imposterConfig;
+        this.resourceService = resourceService;
+        this.specificationService = specificationService;
+        this.exampleService = exampleService;
+        this.responseService = responseService;
+        this.openApiResponseBehaviourFactory = openApiResponseBehaviourFactory;
+    }
 
     @Override
     protected Class<OpenApiPluginConfig> getConfigClass() {
@@ -142,7 +138,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> {
     }
 
     @Override
-    protected void configurePlugin(List<OpenApiPluginConfig> configs) {
+    protected void configurePlugin(List<? extends OpenApiPluginConfig> configs) {
         this.configs = configs;
     }
 
@@ -156,8 +152,8 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> {
 
         // serve specification and UI
         LOGGER.debug("Adding specification UI at: {}{}", imposterConfig.getServerUrl(), SPECIFICATION_PATH);
-        router.get(COMBINED_SPECIFICATION_PATH).handler(resourceService.handleRoute(imposterConfig, configs, vertx, this::handleCombinedSpec));
-        router.getWithRegex(SPECIFICATION_PATH + "$").handler(resourceService.handleRoute(imposterConfig, configs, vertx, routingContext -> routingContext.response().putHeader("Location", SPECIFICATION_PATH + "/").setStatusCode(HttpUtil.HTTP_MOVED_PERM).end()));
+        router.get(COMBINED_SPECIFICATION_PATH).handler(resourceService.handleRoute(imposterConfig, configs, getVertx(), this::handleCombinedSpec));
+        router.getWithRegex(SPECIFICATION_PATH + "$").handler(resourceService.handleRoute(imposterConfig, configs, getVertx(), routingContext -> routingContext.response().putHeader("Location", SPECIFICATION_PATH + "/").setStatusCode(HttpUtil.HTTP_MOVED_PERM).end()));
         router.get(SPECIFICATION_PATH + "/*").handler(StaticHandler.create(UI_WEB_ROOT));
     }
 
@@ -280,7 +276,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> {
         // statically calculate as much as possible
         final StatusCodeFactory statusCodeFactory = buildStatusCodeCalculator(operation);
 
-        return resourceService.handleRoute(imposterConfig, pluginConfig, vertx, routingContext -> {
+        return resourceService.handleRoute(imposterConfig, pluginConfig, getVertx(), routingContext -> {
             if (!specificationService.isValidRequest(imposterConfig, pluginConfig, routingContext, allSpecs)) {
                 return;
             }
