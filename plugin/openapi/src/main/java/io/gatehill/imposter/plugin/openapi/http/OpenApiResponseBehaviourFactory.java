@@ -60,8 +60,9 @@ public class OpenApiResponseBehaviourFactory extends DefaultResponseBehaviourFac
     public void populate(int statusCode, ResponseConfig responseConfig, ReadWriteResponseBehaviour responseBehaviour) {
         super.populate(statusCode, responseConfig, responseBehaviour);
 
-        if (Strings.isNullOrEmpty(responseBehaviour.getExampleName())) {
-            responseBehaviour.withExampleName(((OpenApiResponseConfig) responseConfig).getExampleName());
+        final String configExampleName = ((OpenApiResponseConfig) responseConfig).getExampleName();
+        if (Strings.isNullOrEmpty(responseBehaviour.getExampleName()) && !Strings.isNullOrEmpty(configExampleName)) {
+            responseBehaviour.withExampleName(configExampleName);
         }
     }
 }

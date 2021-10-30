@@ -87,7 +87,7 @@ open class ReadWriteResponseBehaviourImpl : ReadWriteResponseBehaviour {
      * @param responseFile the response file
      * @return this
      */
-    override fun withFile(responseFile: String?): MutableResponseBehaviour {
+    override fun withFile(responseFile: String): MutableResponseBehaviour {
         this.responseFile = responseFile
         return this
     }
@@ -107,7 +107,7 @@ open class ReadWriteResponseBehaviourImpl : ReadWriteResponseBehaviour {
         return this
     }
 
-    override fun withExampleName(exampleName: String?): MutableResponseBehaviour {
+    override fun withExampleName(exampleName: String): MutableResponseBehaviour {
         this.exampleName = exampleName
         return this
     }

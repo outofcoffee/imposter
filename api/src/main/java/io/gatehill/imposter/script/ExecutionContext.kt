@@ -43,27 +43,55 @@
 package io.gatehill.imposter.script
 
 import io.gatehill.imposter.util.CollectionUtil
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 import java.util.function.Supplier
 
 /**
- * Representation of the request, supporting lazily-initialised collections for params and headers.
+ * Wrapper for context variables available during script execution.
  *
  * @author Pete Cornish
  */
-class ExecutionContext {
-    var request: Request? = null
+class ExecutionContext(
+    request: Request
+) : HashMap<String, Any>() {
 
-    override fun toString(): String {
-        return "ExecutionContext{" +
-                "request=" + request +
-                '}'
+    init {
+        put("request", request)
     }
 
+    private val request: Request
+        get() = get("request") as Request
+
+    override fun get(key: String): Any? {
+        // legacy support
+        if (key == "params" && !containsKey("params")) {
+            LOGGER.warn(
+                "DEPRECATION NOTICE: 'context.params' is deprecated and will be removed " +
+                        "in a future version. Use 'context.request.queryParams' instead."
+            )
+            put("params", request.queryParams)
+
+        } else if (key == "uri" && !containsKey("uri")) {
+            LOGGER.warn(
+                "DEPRECATION NOTICE: 'context.uri' is deprecated and will be removed " +
+                        "in a future version. Use 'context.request.uri' instead."
+            )
+
+            put("uri", request.uri)
+        }
+
+        return super.get(key)
+    }
+
+    /**
+     * Representation of the request, supporting lazily-initialised collections for params and headers.
+     */
     class Request(
         private val headersSupplier: Supplier<Map<String, String>>,
         private val pathParamsSupplier: Supplier<Map<String, String>>,
         private val queryParamsSupplier: Supplier<Map<String, String>>,
-        private val bodySupplier: Supplier<String>,
+        private val bodySupplier: Supplier<String?>,
     ) {
         lateinit var path: String
         lateinit var method: String
@@ -101,13 +129,17 @@ class ExecutionContext {
             get() = CollectionUtil.convertKeysToLowerCase(headers)
 
         /**
-         * Use [.getQueryParams] instead.
-         *
          * @return the request query parameters
          */
-        @get:Deprecated("")
+        @get:Deprecated("Use queryParams instead.", ReplaceWith("queryParams"))
         val params: Map<String, String>
-            get() = queryParams
+            get() {
+                LOGGER.warn(
+                    "DEPRECATION NOTICE: 'context.request.params' is deprecated and will be removed " +
+                            "in a future version. Use 'context.request.queryParams' instead."
+                )
+                return queryParams
+            }
 
         override fun toString(): String {
             return "Request{" +
@@ -120,5 +152,9 @@ class ExecutionContext {
                     ", body=<" + (body?.let { "${it.length} bytes" } ?: "null") + '>' +
                     '}'
         }
+    }
+
+    companion object {
+        private val LOGGER: Logger = LogManager.getLogger(ExecutionContext)
     }
 }

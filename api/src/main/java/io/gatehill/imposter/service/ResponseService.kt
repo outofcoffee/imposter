@@ -43,32 +43,33 @@
 package io.gatehill.imposter.service
 
 import com.google.inject.Injector
-import io.gatehill.imposter.http.StatusCodeFactory
 import io.gatehill.imposter.http.ResponseBehaviourFactory
+import io.gatehill.imposter.http.StatusCodeFactory
 import io.gatehill.imposter.plugin.config.PluginConfig
-import io.vertx.ext.web.RoutingContext
+import io.gatehill.imposter.plugin.config.resource.ResourceConfig
+import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.script.ResponseBehaviour
-import kotlin.Throws
-import io.gatehill.imposter.plugin.config.resource.*
 import io.vertx.core.json.JsonArray
-import java.lang.Exception
+import io.vertx.ext.web.RoutingContext
 import java.util.function.Consumer
 
 /**
  * @author Pete Cornish
  */
 interface ResponseService {
-    fun loadResponseAsJsonArray(config: PluginConfig?, behaviour: ResponseBehaviour?): JsonArray?
-    fun loadResponseAsJsonArray(config: PluginConfig?, responseFile: String?): JsonArray?
+    fun loadResponseAsJsonArray(config: PluginConfig, behaviour: ResponseBehaviour): JsonArray
+
+    fun loadResponseAsJsonArray(config: PluginConfig, responseFile: String): JsonArray
+
     fun handle(
-        pluginConfig: PluginConfig?,
+        pluginConfig: PluginConfig,
         resourceConfig: ResponseConfigHolder?,
-        routingContext: RoutingContext?,
-        injector: Injector?,
-        additionalContext: Map<String?, Any?>?,
-        statusCodeFactory: StatusCodeFactory?,
-        responseBehaviourFactory: ResponseBehaviourFactory?,
-        defaultBehaviourHandler: Consumer<ResponseBehaviour?>?
+        routingContext: RoutingContext,
+        injector: Injector,
+        additionalContext: Map<String, Any>?,
+        statusCodeFactory: StatusCodeFactory,
+        responseBehaviourFactory: ResponseBehaviourFactory,
+        defaultBehaviourHandler: Consumer<ResponseBehaviour>
     )
 
     /**
@@ -79,7 +80,7 @@ interface ResponseService {
      * @param responseBehaviour the response behaviour
      * @return always `true`
      */
-    fun sendEmptyResponse(routingContext: RoutingContext?, responseBehaviour: ResponseBehaviour?): Boolean
+    fun sendEmptyResponse(routingContext: RoutingContext, responseBehaviour: ResponseBehaviour): Boolean
 
     /**
      * Send a response to the client, if one can be computed. If a response cannot
@@ -91,10 +92,10 @@ interface ResponseService {
      * @param responseBehaviour the response behaviour
      */
     fun sendResponse(
-        pluginConfig: PluginConfig?,
+        pluginConfig: PluginConfig,
         resourceConfig: ResourceConfig?,
-        routingContext: RoutingContext?,
-        responseBehaviour: ResponseBehaviour?
+        routingContext: RoutingContext,
+        responseBehaviour: ResponseBehaviour
     )
 
     /**
@@ -108,15 +109,15 @@ interface ResponseService {
      * @param fallbackSenders   the handler(s) to invoke in sequence if a response cannot be computed
      */
     fun sendResponse(
-        pluginConfig: PluginConfig?,
+        pluginConfig: PluginConfig,
         resourceConfig: ResourceConfig?,
-        routingContext: RoutingContext?,
-        responseBehaviour: ResponseBehaviour?,
-        vararg fallbackSenders: ResponseSender?
+        routingContext: RoutingContext,
+        responseBehaviour: ResponseBehaviour,
+        vararg fallbackSenders: ResponseSender
     )
 
     fun interface ResponseSender {
         @Throws(Exception::class)
-        fun send(routingContext: RoutingContext?, responseBehaviour: ResponseBehaviour?): Boolean
+        fun send(routingContext: RoutingContext, responseBehaviour: ResponseBehaviour): Boolean
     }
 }

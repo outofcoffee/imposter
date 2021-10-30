@@ -42,10 +42,9 @@
  */
 package io.gatehill.imposter.service
 
-import io.gatehill.imposter.plugin.config.security.SecurityConfig
 import io.gatehill.imposter.plugin.config.PluginConfig
+import io.gatehill.imposter.plugin.config.security.SecurityConfig
 import io.vertx.ext.web.RoutingContext
-import java.lang.IllegalStateException
 
 /**
  * @author Pete Cornish
@@ -62,7 +61,7 @@ interface SecurityService {
      * @param allPluginConfigs all plugin configurations
      * @return a single plugin configuration that *may* have a security configuration.
      */
-    fun findConfigPreferringSecurityPolicy(allPluginConfigs: List<PluginConfig?>?): PluginConfig?
+    fun findConfigPreferringSecurityPolicy(allPluginConfigs: List<PluginConfig>): PluginConfig
 
     /**
      * Enforces the given security policy on the current request.
@@ -75,5 +74,5 @@ interface SecurityService {
      * @param routingContext the current request
      * @return `true` of the request is permitted to continue, otherwise `false`
      */
-    fun enforce(security: SecurityConfig?, routingContext: RoutingContext?): Boolean
+    fun enforce(security: SecurityConfig?, routingContext: RoutingContext): Boolean
 }

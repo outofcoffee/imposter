@@ -43,10 +43,10 @@
 package io.gatehill.imposter.plugin.config.resource
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import io.gatehill.imposter.plugin.config.capture.ItemCaptureConfig
-import io.gatehill.imposter.plugin.config.security.SecurityConfigHolder
 import io.gatehill.imposter.plugin.config.capture.CaptureConfigHolder
+import io.gatehill.imposter.plugin.config.capture.ItemCaptureConfig
 import io.gatehill.imposter.plugin.config.security.SecurityConfig
+import io.gatehill.imposter.plugin.config.security.SecurityConfigHolder
 
 /**
  * Base configuration for plugins and sub-resources.

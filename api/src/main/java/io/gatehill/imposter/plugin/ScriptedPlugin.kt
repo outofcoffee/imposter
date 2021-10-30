@@ -61,9 +61,9 @@ object ScriptedPlugin {
     @JvmStatic
     fun <C : PluginConfigImpl> scriptHandler(
         pluginConfig: C,
-        routingContext: RoutingContext?,
+        routingContext: RoutingContext,
         injector: Injector,
-        defaultBehaviourHandler: Consumer<ResponseBehaviour?>?
+        defaultBehaviourHandler: Consumer<ResponseBehaviour>
     ) {
         scriptHandler(
             pluginConfig,
@@ -81,9 +81,9 @@ object ScriptedPlugin {
     fun <C : PluginConfigImpl> scriptHandler(
         pluginConfig: C,
         resourceConfig: ResponseConfigHolder?,
-        routingContext: RoutingContext?,
+        routingContext: RoutingContext,
         injector: Injector,
-        defaultBehaviourHandler: Consumer<ResponseBehaviour?>?
+        defaultBehaviourHandler: Consumer<ResponseBehaviour>
     ) {
         scriptHandler(
             pluginConfig,
@@ -100,10 +100,10 @@ object ScriptedPlugin {
     @JvmStatic
     fun <C : PluginConfigImpl> scriptHandler(
         pluginConfig: C,
-        routingContext: RoutingContext?,
+        routingContext: RoutingContext,
         injector: Injector,
-        additionalContext: Map<String?, Any?>?,
-        defaultBehaviourHandler: Consumer<ResponseBehaviour?>?
+        additionalContext: Map<String, Any>?,
+        defaultBehaviourHandler: Consumer<ResponseBehaviour>
     ) {
         scriptHandler(
             pluginConfig,
@@ -121,12 +121,12 @@ object ScriptedPlugin {
     fun <C : PluginConfigImpl> scriptHandler(
         pluginConfig: C,
         resourceConfig: ResponseConfigHolder?,
-        routingContext: RoutingContext?,
+        routingContext: RoutingContext,
         injector: Injector,
-        additionalContext: Map<String?, Any?>?,
-        statusCodeFactory: StatusCodeFactory?,
-        responseBehaviourFactory: ResponseBehaviourFactory?,
-        defaultBehaviourHandler: Consumer<ResponseBehaviour?>?
+        additionalContext: Map<String, Any>?,
+        statusCodeFactory: StatusCodeFactory,
+        responseBehaviourFactory: ResponseBehaviourFactory,
+        defaultBehaviourHandler: Consumer<ResponseBehaviour>
     ) {
         val responseService = injector.getInstance(ResponseService::class.java)
         responseService.handle(

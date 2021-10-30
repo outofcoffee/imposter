@@ -45,7 +45,6 @@ package io.gatehill.imposter.plugin.rest;
 
 import io.gatehill.imposter.ImposterConfig;
 import io.gatehill.imposter.plugin.PluginInfo;
-import io.gatehill.imposter.plugin.ScriptedPlugin;
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin;
 import io.gatehill.imposter.plugin.config.ContentTypedConfig;
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig;
@@ -57,12 +56,14 @@ import io.gatehill.imposter.service.ResponseService;
 import io.gatehill.imposter.util.FileUtil;
 import io.gatehill.imposter.util.HttpUtil;
 import io.gatehill.imposter.util.ResourceUtil;
+import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -88,16 +89,19 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
      */
     private static final Pattern PARAM_MATCHER = Pattern.compile(".*:(.+).*");
 
-    @Inject
-    private ImposterConfig imposterConfig;
+    private final ImposterConfig imposterConfig;
+    private final ResourceService resourceService;
+    private final ResponseService responseService;
+
+    private List<? extends C> configs;
 
     @Inject
-    private ResourceService resourceService;
-
-    @Inject
-    private ResponseService responseService;
-
-    private List<C> configs;
+    public RestPluginImpl(Vertx vertx, ImposterConfig imposterConfig, ResourceService resourceService, ResponseService responseService) {
+        super(vertx);
+        this.imposterConfig = imposterConfig;
+        this.resourceService = resourceService;
+        this.responseService = responseService;
+    }
 
     @SuppressWarnings("unchecked")
     @Override
@@ -106,7 +110,7 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
     }
 
     @Override
-    protected void configurePlugin(List<C> configs) {
+    protected void configurePlugin(List<? extends C> configs) {
         this.configs = configs;
     }
 
@@ -147,7 +151,7 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
         final HttpMethod method = ResourceUtil.convertMethodToVertx(resourceConfig);
         LOGGER.debug("Adding {} object handler: {}", method, qualifiedPath);
 
-        router.route(method, qualifiedPath).handler(resourceService.handleRoute(imposterConfig, pluginConfig, vertx, routingContext -> {
+        router.route(method, qualifiedPath).handler(resourceService.handleRoute(imposterConfig, pluginConfig, getVertx(), routingContext -> {
             // script should fire first
             scriptHandler(pluginConfig, resourceConfig, routingContext, getInjector(), responseBehaviour -> {
                 LOGGER.info("Handling {} object request for: {}", method, routingContext.request().absoluteURI());
@@ -169,7 +173,7 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
                     resourcePath));
         }
 
-        router.route(method, qualifiedPath).handler(resourceService.handleRoute(imposterConfig, pluginConfig, vertx, routingContext -> {
+        router.route(method, qualifiedPath).handler(resourceService.handleRoute(imposterConfig, pluginConfig, getVertx(), routingContext -> {
             // script should fire first
             scriptHandler(pluginConfig, resourceConfig, routingContext, getInjector(), responseBehaviour -> {
                 LOGGER.info("Handling {} array request for: {}", method, routingContext.request().absoluteURI());

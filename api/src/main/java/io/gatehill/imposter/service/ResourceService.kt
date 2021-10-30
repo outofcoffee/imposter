@@ -42,15 +42,14 @@
  */
 package io.gatehill.imposter.service
 
-import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
-import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.ImposterConfig
-import io.vertx.ext.web.RoutingContext
-import io.vertx.core.Vertx
 import io.gatehill.imposter.config.ResolvedResourceConfig
+import io.gatehill.imposter.plugin.config.PluginConfig
+import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.vertx.core.Handler
+import io.vertx.core.Vertx
 import io.vertx.core.http.HttpMethod
-import java.util.*
+import io.vertx.ext.web.RoutingContext
 import java.util.function.Consumer
 import java.util.function.Supplier
 
@@ -64,7 +63,7 @@ interface ResourceService {
      * @param pluginConfig the plugin configuration
      * @return the resource configurations
      */
-    fun resolveResourceConfigs(pluginConfig: PluginConfig?): List<ResolvedResourceConfig?>?
+    fun resolveResourceConfigs(pluginConfig: PluginConfig): List<ResolvedResourceConfig>
 
     /**
      * Search for a resource configuration matching the current request.
@@ -80,15 +79,15 @@ interface ResourceService {
      * @return a matching resource configuration or else empty
      */
     fun matchResourceConfig(
-        resources: List<ResolvedResourceConfig?>?,
-        method: HttpMethod?,
+        resources: List<ResolvedResourceConfig>,
+        method: HttpMethod,
         pathTemplate: String?,
         path: String?,
-        pathParams: Map<String?, String?>?,
-        queryParams: Map<String?, String?>?,
-        requestHeaders: Map<String?, String?>?,
-        bodySupplier: Supplier<String?>?
-    ): Optional<ResponseConfigHolder>
+        pathParams: Map<String, String>,
+        queryParams: Map<String, String>,
+        requestHeaders: Map<String, String>,
+        bodySupplier: Supplier<String?>
+    ): ResponseConfigHolder?
 
     /**
      * Builds a [Handler] that processes a request.
@@ -116,11 +115,11 @@ interface ResourceService {
      * @return the handler
      */
     fun handleRoute(
-        imposterConfig: ImposterConfig?,
-        allPluginConfigs: List<PluginConfig?>?,
-        vertx: Vertx?,
-        routingContextConsumer: Consumer<RoutingContext?>?
-    ): Handler<RoutingContext?>?
+        imposterConfig: ImposterConfig,
+        allPluginConfigs: List<PluginConfig>,
+        vertx: Vertx,
+        routingContextConsumer: Consumer<RoutingContext>
+    ): Handler<RoutingContext>
 
     /**
      * Builds a [Handler] that processes a request.
@@ -148,11 +147,11 @@ interface ResourceService {
      * @return the handler
      */
     fun handleRoute(
-        imposterConfig: ImposterConfig?,
-        pluginConfig: PluginConfig?,
-        vertx: Vertx?,
-        routingContextConsumer: Consumer<RoutingContext?>?
-    ): Handler<RoutingContext?>?
+        imposterConfig: ImposterConfig,
+        pluginConfig: PluginConfig,
+        vertx: Vertx,
+        routingContextConsumer: Consumer<RoutingContext>
+    ): Handler<RoutingContext>
 
     /**
      * Builds a [Handler] that processes a request.
@@ -178,16 +177,16 @@ interface ResourceService {
      * @return the handler
      */
     fun passthroughRoute(
-        imposterConfig: ImposterConfig?,
-        allPluginConfigs: List<PluginConfig?>?,
-        vertx: Vertx?,
-        routingContextHandler: Handler<RoutingContext?>?
-    ): Handler<RoutingContext?>?
+        imposterConfig: ImposterConfig,
+        allPluginConfigs: List<PluginConfig>,
+        vertx: Vertx,
+        routingContextHandler: Handler<RoutingContext>
+    ): Handler<RoutingContext>
 
     /**
      * Catches unhandled exceptions.
      *
      * @return the exception handler
      */
-    fun buildUnhandledExceptionHandler(): Handler<RoutingContext?>?
+    fun buildUnhandledExceptionHandler(): Handler<RoutingContext>
 }

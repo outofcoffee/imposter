@@ -42,9 +42,9 @@
  */
 package io.gatehill.imposter.service
 
+import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
-import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.script.RuntimeContext
 
 /**
@@ -60,8 +60,8 @@ interface ScriptService {
      * @return the response behaviour
      */
     fun executeScript(
-        pluginConfig: PluginConfig?,
+        pluginConfig: PluginConfig,
         resourceConfig: ResponseConfigHolder?,
-        runtimeContext: RuntimeContext?
-    ): ReadWriteResponseBehaviour?
+        runtimeContext: RuntimeContext
+    ): ReadWriteResponseBehaviour
 }

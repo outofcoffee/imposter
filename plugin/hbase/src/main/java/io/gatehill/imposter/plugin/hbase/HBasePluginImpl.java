@@ -51,7 +51,6 @@ import com.google.inject.name.Names;
 import io.gatehill.imposter.ImposterConfig;
 import io.gatehill.imposter.plugin.PluginInfo;
 import io.gatehill.imposter.plugin.RequireModules;
-import io.gatehill.imposter.plugin.ScriptedPlugin;
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin;
 import io.gatehill.imposter.plugin.config.PluginConfig;
 import io.gatehill.imposter.plugin.hbase.config.HBasePluginConfig;
@@ -66,6 +65,7 @@ import io.gatehill.imposter.service.ResourceService;
 import io.gatehill.imposter.service.ResponseService;
 import io.gatehill.imposter.util.FileUtil;
 import io.gatehill.imposter.util.HttpUtil;
+import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
@@ -74,6 +74,7 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -96,19 +97,21 @@ import static java.util.Optional.ofNullable;
 public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> {
     private static final Logger LOGGER = LogManager.getLogger(HBasePluginImpl.class);
 
-    @Inject
-    private ImposterConfig imposterConfig;
-
-    @Inject
-    private ResourceService resourceService;
-
-    @Inject
-    private ResponseService responseService;
-
-    @Inject
-    private ScannerService scannerService;
+    private final ImposterConfig imposterConfig;
+    private final ResourceService resourceService;
+    private final ResponseService responseService;
+    private final ScannerService scannerService;
 
     private Map<String, HBasePluginConfig> tableConfigs;
+
+    @Inject
+    public HBasePluginImpl(Vertx vertx, ImposterConfig imposterConfig, ResourceService resourceService, ResponseService responseService, ScannerService scannerService) {
+        super(vertx);
+        this.imposterConfig = imposterConfig;
+        this.resourceService = resourceService;
+        this.responseService = responseService;
+        this.scannerService = scannerService;
+    }
 
     @Override
     protected Class<HBasePluginConfig> getConfigClass() {
@@ -116,7 +119,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> {
     }
 
     @Override
-    protected void configurePlugin(List<HBasePluginConfig> configs) {
+    protected void configurePlugin(List<? extends HBasePluginConfig> configs) {
         this.tableConfigs = configs.stream()
                 .collect(Collectors.toConcurrentMap(HBasePluginConfig::getTableName, hBaseConfig -> hBaseConfig));
     }
@@ -148,7 +151,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> {
      * @param path
      */
     private void addRowRetrievalRoute(PluginConfig pluginConfig, Router router, String path) {
-        router.get(path + "/:tableName/:recordId/").handler(resourceService.handleRoute(imposterConfig, pluginConfig, vertx, routingContext -> {
+        router.get(path + "/:tableName/:recordId/").handler(resourceService.handleRoute(imposterConfig, pluginConfig, getVertx(), routingContext -> {
             final String tableName = routingContext.request().getParam("tableName");
             final String recordId = routingContext.request().getParam("recordId");
 
@@ -198,7 +201,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> {
      * @param path
      */
     private void addCreateScannerRoute(PluginConfig pluginConfig, Router router, String path) {
-        router.post(path + "/:tableName/scanner").handler(resourceService.handleRoute(imposterConfig, pluginConfig, vertx, routingContext -> {
+        router.post(path + "/:tableName/scanner").handler(resourceService.handleRoute(imposterConfig, pluginConfig, getVertx(), routingContext -> {
             final String tableName = routingContext.request().getParam("tableName");
 
             // check that the table is registered
@@ -266,7 +269,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> {
      * @param path
      */
     private void addReadScannerResultsRoute(HBasePluginConfig pluginConfig, Router router, String path) {
-        router.get(path + "/:tableName/scanner/:scannerId").handler(resourceService.handleRoute(imposterConfig, pluginConfig, vertx, routingContext -> {
+        router.get(path + "/:tableName/scanner/:scannerId").handler(resourceService.handleRoute(imposterConfig, pluginConfig, getVertx(), routingContext -> {
             final String tableName = routingContext.request().getParam("tableName");
             final String scannerId = routingContext.request().getParam("scannerId");
 

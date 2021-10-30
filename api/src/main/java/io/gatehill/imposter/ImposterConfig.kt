@@ -50,12 +50,12 @@ import io.gatehill.imposter.server.RequestHandlingMode
 class ImposterConfig {
     var host: String? = null
     var listenPort = 0
-    lateinit var configDirs: Array<String>
+    var configDirs: Array<String>? = null
     var serverUrl: String? = null
     var isTlsEnabled = false
     var keystorePath: String? = null
     var keystorePassword: String? = null
-    lateinit var plugins: Array<String>
+    var plugins: Array<String>? = null
     var pluginArgs: Map<String, String>? = null
     var serverFactory: String? = null
     var requestHandlingMode = RequestHandlingMode.ASYNC

@@ -116,7 +116,8 @@ abstract class AbstractScriptServiceImplTest {
 
         def mockRequest = mock(HttpServerRequest.class)
         when(mockRequest.method()).thenReturn(HttpMethod.GET)
-        when(mockRequest.absoluteURI()).thenReturn('/example')
+        when(mockRequest.path()).thenReturn('/example')
+        when(mockRequest.absoluteURI()).thenReturn('http://localhost:8080/example')
         when(mockRequest.headers()).thenReturn(new CaseInsensitiveHeaders().addAll(headers))
         when(mockRequest.params()).thenReturn(new CaseInsensitiveHeaders().addAll(queryParams))
 

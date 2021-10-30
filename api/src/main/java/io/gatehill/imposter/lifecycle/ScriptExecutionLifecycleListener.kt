@@ -42,7 +42,7 @@
  */
 package io.gatehill.imposter.lifecycle
 
-import io.gatehill.imposter.script.*
+import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 
 /**
  * Hooks for engine lifecycle events.

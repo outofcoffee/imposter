@@ -42,34 +42,26 @@
  */
 package io.gatehill.imposter.script
 
-import java.lang.Runnable
-
 /**
  * @author Pete Cornish
  */
 interface MutableResponseBehaviour {
     fun withHeader(header: String, value: String?): MutableResponseBehaviour
     fun withStatusCode(statusCode: Int): MutableResponseBehaviour
-    fun withFile(responseFile: String?): MutableResponseBehaviour
+    fun withFile(responseFile: String): MutableResponseBehaviour
     fun withEmpty(): MutableResponseBehaviour
     fun withData(responseData: String?): MutableResponseBehaviour
     fun template(): MutableResponseBehaviour
-    fun withExampleName(exampleName: String?): MutableResponseBehaviour
+    fun withExampleName(exampleName: String): MutableResponseBehaviour
     fun usingDefaultBehaviour(): MutableResponseBehaviour
     fun skipDefaultBehaviour(): MutableResponseBehaviour
-
-    /**
-     * @return this
-     */
-    @Deprecated(
-        """use {@link #skipDefaultBehaviour()} instead
-      """
-    )
-    fun immediately(): MutableResponseBehaviour
     fun respond(): MutableResponseBehaviour
     fun respond(closure: Runnable): MutableResponseBehaviour
     fun and(): MutableResponseBehaviour
     fun withPerformance(performance: PerformanceSimulationConfig?): MutableResponseBehaviour
     fun withDelay(exactDelayMs: Int): MutableResponseBehaviour
     fun withDelayRange(minDelayMs: Int, maxDelayMs: Int): MutableResponseBehaviour
+
+    @Deprecated("Use skipDefaultBehaviour() instead", ReplaceWith("skipDefaultBehaviour()"))
+    fun immediately(): MutableResponseBehaviour
 }

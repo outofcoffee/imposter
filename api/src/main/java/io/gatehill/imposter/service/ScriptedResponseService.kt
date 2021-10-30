@@ -42,9 +42,9 @@
  */
 package io.gatehill.imposter.service
 
+import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
-import io.gatehill.imposter.plugin.config.PluginConfig
 import io.vertx.ext.web.RoutingContext
 
 /**
@@ -52,10 +52,10 @@ import io.vertx.ext.web.RoutingContext
  */
 interface ScriptedResponseService {
     fun determineResponseFromScript(
-        routingContext: RoutingContext?,
-        pluginConfig: PluginConfig?,
+        routingContext: RoutingContext,
+        pluginConfig: PluginConfig,
         resourceConfig: ResponseConfigHolder?,
-        additionalContext: Map<String?, Any?>?,
-        additionalBindings: Map<String?, Any?>?
-    ): ReadWriteResponseBehaviour?
+        additionalContext: Map<String, Any>?,
+        additionalBindings: Map<String, Any>?
+    ): ReadWriteResponseBehaviour
 }
