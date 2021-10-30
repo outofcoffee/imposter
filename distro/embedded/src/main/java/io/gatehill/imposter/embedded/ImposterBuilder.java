@@ -45,9 +45,12 @@ package io.gatehill.imposter.embedded;
 
 import io.gatehill.imposter.ImposterConfig;
 import io.gatehill.imposter.plugin.Plugin;
+import io.gatehill.imposter.script.listener.ScriptListener;
 import io.gatehill.imposter.server.ConfigHolder;
 import io.gatehill.imposter.server.ImposterVerticle;
+import io.gatehill.imposter.service.EmbeddedScriptService;
 import io.gatehill.imposter.util.FeatureUtil;
+import io.gatehill.imposter.util.InjectorUtil;
 import io.gatehill.imposter.util.MetricsUtil;
 import io.vertx.core.Vertx;
 import org.apache.logging.log4j.LogManager;
@@ -64,6 +67,7 @@ import java.util.concurrent.CompletableFuture;
 import static io.gatehill.imposter.util.HttpUtil.DEFAULT_SERVER_FACTORY;
 import static java.util.Collections.emptyMap;
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 /**
  * Convenience class for building Imposter mock engine instances.
@@ -96,6 +100,7 @@ public class ImposterBuilder<M extends MockEngine, SELF extends ImposterBuilder<
     private final Vertx vertx = Vertx.vertx();
     protected final List<Path> configurationDirs = new ArrayList<>();
     protected Class<? extends Plugin> pluginClass;
+    private ScriptListener scriptListener;
 
     @SuppressWarnings("unchecked")
     protected SELF self() {
@@ -128,6 +133,11 @@ public class ImposterBuilder<M extends MockEngine, SELF extends ImposterBuilder<
      */
     public SELF withConfigurationDir(Path configurationDir) {
         this.configurationDirs.add(configurationDir);
+        return self();
+    }
+
+    public SELF withScriptedBehaviour(ScriptListener scriptListener) {
+        this.scriptListener = scriptListener;
         return self();
     }
 
@@ -173,11 +183,22 @@ public class ImposterBuilder<M extends MockEngine, SELF extends ImposterBuilder<
         vertx.deployVerticle(ImposterVerticle.class.getCanonicalName(), completion -> {
             if (completion.succeeded()) {
                 mockEngine.logStartup();
+                configureScriptEngine();
                 future.complete(mockEngine);
             } else {
                 future.completeExceptionally(completion.cause());
             }
         });
+    }
+
+    private void configureScriptEngine() {
+        if (isNull(scriptListener)) {
+            return;
+        }
+        final EmbeddedScriptService embeddedScriptService = InjectorUtil.getInjector().getInstance(
+                EmbeddedScriptService.class
+        );
+        embeddedScriptService.setListener(scriptListener);
     }
 
     @SuppressWarnings("unchecked")
@@ -199,6 +220,10 @@ public class ImposterBuilder<M extends MockEngine, SELF extends ImposterBuilder<
                 throw new RuntimeException("Error parsing directory: " + dir, e);
             }
         }).toArray(String[]::new));
+
+        if (nonNull(scriptListener)) {
+            imposterConfig.setUseEmbeddedScriptEngine(true);
+        }
     }
 
     private int findFreePort() {

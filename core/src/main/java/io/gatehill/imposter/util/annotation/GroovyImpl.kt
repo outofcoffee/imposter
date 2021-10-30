@@ -40,49 +40,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.plugin.config
+package io.gatehill.imposter.util.annotation
 
-import com.google.inject.Injector
-import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.plugin.Plugin
-import io.gatehill.imposter.util.ConfigUtil
-import io.gatehill.imposter.util.InjectorUtil
-import io.vertx.core.Vertx
-import java.io.File
-import javax.inject.Inject
+import com.google.inject.BindingAnnotation
 
 /**
  * @author Pete Cornish
  */
-abstract class ConfiguredPlugin<T : PluginConfigImpl> @Inject constructor(
-    protected val vertx: Vertx,
-    protected val imposterConfig: ImposterConfig
-) : Plugin, ConfigurablePlugin<T> {
-
-    override var configs: List<T> = emptyList()
-
-    protected abstract val configClass: Class<T>
-
-    override fun loadConfiguration(configFiles: List<File>) {
-        configs = configFiles.map { file ->
-            ConfigUtil.loadPluginConfig(
-                imposterConfig,
-                file,
-                configClass,
-                substitutePlaceholders = true,
-                convertPathParameters = true
-            )
-        }
-        configurePlugin(configs)
-    }
-
-    /**
-     * Strongly typed configuration objects for this plugin.
-     *
-     * @param configs
-     */
-    protected abstract fun configurePlugin(configs: List<T?>?)
-
-    protected val injector: Injector
-        get() = InjectorUtil.injector!!
-}
+@BindingAnnotation
+@kotlin.annotation.Retention(AnnotationRetention.RUNTIME)
+@Target(AnnotationTarget.FIELD)
+annotation class GroovyImpl 

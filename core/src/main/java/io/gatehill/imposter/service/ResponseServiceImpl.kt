@@ -46,6 +46,7 @@ import com.google.common.base.Preconditions
 import com.google.common.base.Strings
 import com.google.common.cache.CacheBuilder
 import com.google.inject.Injector
+import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.exception.ResponseException
 import io.gatehill.imposter.http.ResponseBehaviourFactory
 import io.gatehill.imposter.http.StatusCodeFactory
@@ -66,7 +67,6 @@ import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.LogUtil.describeRequest
 import io.gatehill.imposter.util.MetricsUtil
 import io.micrometer.core.instrument.Gauge
-import io.micrometer.core.instrument.MeterRegistry
 import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.http.HttpServerRequest
@@ -93,7 +93,8 @@ import javax.inject.Inject
 class ResponseServiceImpl @Inject constructor(
     private val engineLifecycle: EngineLifecycleHooks,
     private val scriptedResponseService: ScriptedResponseService,
-    private val vertx: Vertx
+    private val vertx: Vertx,
+    private val imposterConfig: ImposterConfig
 ) : ResponseService {
 
     /**
@@ -171,13 +172,8 @@ class ResponseServiceImpl @Inject constructor(
 
         val statusCode = statusCodeFactory.calculateStatus(resourceConfig)
         val responseBehaviour: ReadWriteResponseBehaviour
-        if (Strings.isNullOrEmpty(responseConfig.scriptFile)) {
-            LOGGER.debug(
-                "Using default HTTP {} response behaviour for request: {} {}",
-                statusCode, routingContext.request().method(), routingContext.request().absoluteURI()
-            )
-            responseBehaviour = responseBehaviourFactory.build(statusCode, responseConfig)
-        } else {
+
+        if (!Strings.isNullOrEmpty(responseConfig.scriptFile) || imposterConfig.useEmbeddedScriptEngine) {
             responseBehaviour = scriptedResponseService.determineResponseFromScript(
                 routingContext,
                 pluginConfig,
@@ -190,6 +186,12 @@ class ResponseServiceImpl @Inject constructor(
             if (ResponseBehaviourType.DEFAULT_BEHAVIOUR == responseBehaviour.behaviourType) {
                 responseBehaviourFactory.populate(statusCode, responseConfig, responseBehaviour)
             }
+        } else {
+            LOGGER.debug(
+                "Using default HTTP {} response behaviour for request: {} {}",
+                statusCode, routingContext.request().method(), routingContext.request().absoluteURI()
+            )
+            responseBehaviour = responseBehaviourFactory.build(statusCode, responseConfig)
         }
 
         // explicitly check if the root resource should have its response config used as defaults for its child resources
@@ -266,7 +268,7 @@ class ResponseServiceImpl @Inject constructor(
         }
         if (delayMs > 0) {
             LOGGER.info("Delaying mock response for {} {} by {}ms", request.method(), request.absoluteURI(), delayMs)
-            vertx.setTimer(delayMs.toLong()) { e: Long? -> completion.run() }
+            vertx.setTimer(delayMs.toLong()) { completion.run() }
         } else {
             completion.run()
         }

@@ -43,6 +43,7 @@
 package io.gatehill.imposter.util
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.plugin.PluginManager
 import io.gatehill.imposter.plugin.config.PluginConfigImpl
 import io.gatehill.imposter.plugin.config.ResourcesHolder
@@ -80,7 +81,11 @@ object ConfigUtil {
     }
 
     @JvmStatic
-    fun loadPluginConfigs(pluginManager: PluginManager, configDirs: Array<String>): Map<String, MutableList<File>> {
+    fun loadPluginConfigs(
+        imposterConfig: ImposterConfig,
+        pluginManager: PluginManager,
+        configDirs: Array<String>
+    ): Map<String, MutableList<File>> {
         var configCount = 0
 
         // read all config files
@@ -95,6 +100,7 @@ object ConfigUtil {
 
                     // load to determine plugin
                     val config = loadPluginConfig(
+                        imposterConfig,
                         configFile,
                         PluginConfigImpl::class.java,
                         substitutePlaceholders = false,
@@ -132,6 +138,7 @@ object ConfigUtil {
      */
     @JvmStatic
     fun <T : PluginConfigImpl> loadPluginConfig(
+        imposterConfig: ImposterConfig,
         configFile: File,
         configClass: Class<T>,
         substitutePlaceholders: Boolean,
@@ -153,6 +160,10 @@ object ConfigUtil {
                 (config as ResourcesHolder<*>).resources?.forEach { resource ->
                     resource.path = ResourceUtil.convertPathToVertx(resource.path)
                 }
+            }
+
+            if (imposterConfig.useEmbeddedScriptEngine) {
+                config.responseConfig.scriptFile = "embedded"
             }
 
             check(config.plugin != null) { "No plugin specified in configuration file: $configFile" }

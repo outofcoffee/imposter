@@ -41,22 +41,13 @@
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.gatehill.imposter.util.annotation;
+package io.gatehill.imposter.service
 
-import com.google.inject.BindingAnnotation;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import io.gatehill.imposter.script.listener.ScriptListener
 
 /**
- * Must be a Java annotation for Guice annotation binding.
- *
  * @author Pete Cornish
  */
-@BindingAnnotation
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
-public @interface JavascriptImpl {
+interface EmbeddedScriptService : ScriptService {
+    fun setListener(listener: ScriptListener)
 }

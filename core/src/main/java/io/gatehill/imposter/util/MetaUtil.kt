@@ -93,5 +93,5 @@ object MetaUtil {
     }
 
     private val classLoader: ClassLoader
-        private get() = MetaUtil::class.java.classLoader
+        get() = MetaUtil::class.java.classLoader
 }

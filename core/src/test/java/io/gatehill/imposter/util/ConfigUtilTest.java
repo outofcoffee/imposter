@@ -43,6 +43,7 @@
 
 package io.gatehill.imposter.util;
 
+import io.gatehill.imposter.ImposterConfig;
 import io.gatehill.imposter.plugin.PluginManager;
 import io.gatehill.imposter.plugin.config.PluginConfigImpl;
 import org.junit.Before;
@@ -73,7 +74,7 @@ public class ConfigUtilTest {
     public void testLoadPluginConfigs() throws Exception {
         String configDir = new File(ConfigUtilTest.class.getResource("/config").toURI()).getPath();
 
-        Map<String, List<File>> configs = ConfigUtil.loadPluginConfigs(pluginManager, new String[]{configDir});
+        Map<String, List<File>> configs = ConfigUtil.loadPluginConfigs(new ImposterConfig(), pluginManager, new String[]{configDir});
         assertEquals(1, configs.size());
 
         List<File> configFiles = configs.get("io.gatehill.imposter.core.test.ExamplePluginImpl");
@@ -85,7 +86,7 @@ public class ConfigUtilTest {
     public void testLoadLegacyPluginConfig() throws Exception {
         String configDir = new File(ConfigUtilTest.class.getResource("/legacy").toURI()).getPath();
 
-        Map<String, List<File>> configs = ConfigUtil.loadPluginConfigs(pluginManager, new String[]{configDir});
+        Map<String, List<File>> configs = ConfigUtil.loadPluginConfigs(new ImposterConfig(), pluginManager, new String[]{configDir});
         assertEquals(1, configs.size());
 
         List<File> configFiles = configs.get("io.gatehill.imposter.core.test.ExamplePluginImpl");
@@ -103,7 +104,7 @@ public class ConfigUtilTest {
 
         File configFile = new File(ConfigUtilTest.class.getResource("/interpolated/test-config.yaml").toURI());
 
-        PluginConfigImpl config = ConfigUtil.loadPluginConfig(configFile, PluginConfigImpl.class, true, true);
+        PluginConfigImpl config = ConfigUtil.loadPluginConfig(new ImposterConfig(), configFile, PluginConfigImpl.class, true, true);
 
         assertEquals("/test", config.getPath());
     }

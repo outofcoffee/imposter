@@ -44,7 +44,6 @@
 package io.gatehill.imposter.embedded;
 
 import com.jayway.restassured.RestAssured;
-import io.gatehill.imposter.openapi.embedded.OpenApiImposterBuilder;
 import io.gatehill.imposter.plugin.openapi.OpenApiPluginImpl;
 import io.gatehill.imposter.util.HttpUtil;
 import org.junit.Test;
@@ -68,16 +67,33 @@ public class ImposterBuilderTest {
                 .withConfigurationDir(configDir)
                 .startBlocking();
 
-        invokeMockEndpoint(imposter);
+        invokeMockEndpoint(imposter, HttpUtil.HTTP_OK);
     }
 
-    private void invokeMockEndpoint(MockEngine imposter) {
+    @Test
+    public void testEmbeddedScriptEngine() throws Exception {
+        final Path configDir = Paths.get(ImposterBuilderTest.class.getResource("/config").toURI());
+
+        final MockEngine imposter = new ImposterBuilder<>()
+                .withPluginClass(OpenApiPluginImpl.class)
+                .withConfigurationDir(configDir)
+                .withScriptedBehaviour((context, responseBehaviour) -> {
+                    // customise the response
+                    responseBehaviour.withStatusCode(HttpUtil.HTTP_NO_CONTENT);
+                    responseBehaviour.withHeader("X-Example", "Hello world");
+                })
+                .startBlocking();
+
+        invokeMockEndpoint(imposter, HttpUtil.HTTP_NO_CONTENT);
+    }
+
+    private void invokeMockEndpoint(MockEngine imposter, int statusCode) {
         RestAssured.baseURI = String.valueOf(imposter.getBaseUrl());
         given().when()
                 .log().ifValidationFails()
                 .get("/v1/pets")
                 .then()
                 .log().ifValidationFails()
-                .statusCode(equalTo(HttpUtil.HTTP_OK));
+                .statusCode(equalTo(statusCode));
     }
 }

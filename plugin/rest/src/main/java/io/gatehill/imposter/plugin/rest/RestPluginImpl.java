@@ -63,7 +63,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -89,7 +88,6 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
      */
     private static final Pattern PARAM_MATCHER = Pattern.compile(".*:(.+).*");
 
-    private final ImposterConfig imposterConfig;
     private final ResourceService resourceService;
     private final ResponseService responseService;
 
@@ -97,8 +95,7 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
 
     @Inject
     public RestPluginImpl(Vertx vertx, ImposterConfig imposterConfig, ResourceService resourceService, ResponseService responseService) {
-        super(vertx);
-        this.imposterConfig = imposterConfig;
+        super(vertx, imposterConfig);
         this.resourceService = resourceService;
         this.responseService = responseService;
     }
@@ -151,7 +148,7 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
         final HttpMethod method = ResourceUtil.convertMethodToVertx(resourceConfig);
         LOGGER.debug("Adding {} object handler: {}", method, qualifiedPath);
 
-        router.route(method, qualifiedPath).handler(resourceService.handleRoute(imposterConfig, pluginConfig, getVertx(), routingContext -> {
+        router.route(method, qualifiedPath).handler(resourceService.handleRoute(getImposterConfig(), pluginConfig, getVertx(), routingContext -> {
             // script should fire first
             scriptHandler(pluginConfig, resourceConfig, routingContext, getInjector(), responseBehaviour -> {
                 LOGGER.info("Handling {} object request for: {}", method, routingContext.request().absoluteURI());
@@ -173,7 +170,7 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
                     resourcePath));
         }
 
-        router.route(method, qualifiedPath).handler(resourceService.handleRoute(imposterConfig, pluginConfig, getVertx(), routingContext -> {
+        router.route(method, qualifiedPath).handler(resourceService.handleRoute(getImposterConfig(), pluginConfig, getVertx(), routingContext -> {
             // script should fire first
             scriptHandler(pluginConfig, resourceConfig, routingContext, getInjector(), responseBehaviour -> {
                 LOGGER.info("Handling {} array request for: {}", method, routingContext.request().absoluteURI());

@@ -73,7 +73,7 @@ class Imposter @JvmOverloads constructor(
 
         // load config
         processConfiguration()
-        val pluginConfigs = ConfigUtil.loadPluginConfigs(pluginManager, imposterConfig.configDirs ?: emptyArray())
+        val pluginConfigs = ConfigUtil.loadPluginConfigs(imposterConfig, pluginManager, imposterConfig.configDirs ?: emptyArray())
 
         val plugins = imposterConfig.plugins?.toList() ?: emptyList()
 

@@ -74,7 +74,6 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -97,7 +96,6 @@ import static java.util.Optional.ofNullable;
 public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> {
     private static final Logger LOGGER = LogManager.getLogger(HBasePluginImpl.class);
 
-    private final ImposterConfig imposterConfig;
     private final ResourceService resourceService;
     private final ResponseService responseService;
     private final ScannerService scannerService;
@@ -106,8 +104,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> {
 
     @Inject
     public HBasePluginImpl(Vertx vertx, ImposterConfig imposterConfig, ResourceService resourceService, ResponseService responseService, ScannerService scannerService) {
-        super(vertx);
-        this.imposterConfig = imposterConfig;
+        super(vertx, imposterConfig);
         this.resourceService = resourceService;
         this.responseService = responseService;
         this.scannerService = scannerService;
@@ -151,7 +148,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> {
      * @param path
      */
     private void addRowRetrievalRoute(PluginConfig pluginConfig, Router router, String path) {
-        router.get(path + "/:tableName/:recordId/").handler(resourceService.handleRoute(imposterConfig, pluginConfig, getVertx(), routingContext -> {
+        router.get(path + "/:tableName/:recordId/").handler(resourceService.handleRoute(getImposterConfig(), pluginConfig, getVertx(), routingContext -> {
             final String tableName = routingContext.request().getParam("tableName");
             final String recordId = routingContext.request().getParam("recordId");
 
@@ -201,7 +198,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> {
      * @param path
      */
     private void addCreateScannerRoute(PluginConfig pluginConfig, Router router, String path) {
-        router.post(path + "/:tableName/scanner").handler(resourceService.handleRoute(imposterConfig, pluginConfig, getVertx(), routingContext -> {
+        router.post(path + "/:tableName/scanner").handler(resourceService.handleRoute(getImposterConfig(), pluginConfig, getVertx(), routingContext -> {
             final String tableName = routingContext.request().getParam("tableName");
 
             // check that the table is registered
@@ -250,7 +247,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> {
             scriptHandler(config, routingContext, getInjector(), bindings, responseBehaviour -> {
                 final int scannerId = scannerService.registerScanner(config, scanner);
 
-                final String resultUrl = imposterConfig.getServerUrl() + path + "/" + tableName + "/scanner/" + scannerId;
+                final String resultUrl = getImposterConfig().getServerUrl() + path + "/" + tableName + "/scanner/" + scannerId;
 
                 routingContext.response()
                         .putHeader("Location", resultUrl)
@@ -269,7 +266,7 @@ public class HBasePluginImpl extends ConfiguredPlugin<HBasePluginConfig> {
      * @param path
      */
     private void addReadScannerResultsRoute(HBasePluginConfig pluginConfig, Router router, String path) {
-        router.get(path + "/:tableName/scanner/:scannerId").handler(resourceService.handleRoute(imposterConfig, pluginConfig, getVertx(), routingContext -> {
+        router.get(path + "/:tableName/scanner/:scannerId").handler(resourceService.handleRoute(getImposterConfig(), pluginConfig, getVertx(), routingContext -> {
             final String tableName = routingContext.request().getParam("tableName");
             final String scannerId = routingContext.request().getParam("scannerId");
 

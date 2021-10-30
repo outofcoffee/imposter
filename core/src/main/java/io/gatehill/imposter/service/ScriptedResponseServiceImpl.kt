@@ -43,6 +43,7 @@
 package io.gatehill.imposter.service
 
 import com.google.common.cache.CacheBuilder
+import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
 import io.gatehill.imposter.lifecycle.EngineLifecycleListener
 import io.gatehill.imposter.lifecycle.ScriptExecLifecycleHooks
@@ -54,19 +55,18 @@ import io.gatehill.imposter.script.ExecutionContext
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.ScriptUtil
-import io.gatehill.imposter.service.ScriptedResponseServiceImpl
 import io.gatehill.imposter.util.EnvVars
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.MetricsUtil
 import io.gatehill.imposter.util.annotation.GroovyImpl
 import io.gatehill.imposter.util.annotation.JavascriptImpl
-import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Timer
 import io.vertx.ext.web.RoutingContext
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.apache.logging.log4j.util.Supplier
 import java.util.*
+import java.util.Objects.nonNull
 import java.util.concurrent.Callable
 import java.util.concurrent.ExecutionException
 import javax.inject.Inject
@@ -76,12 +76,18 @@ import javax.inject.Inject
  */
 class ScriptedResponseServiceImpl : ScriptedResponseService {
     @Inject
+    private lateinit var imposterConfig: ImposterConfig
+
+    @Inject
     @GroovyImpl
     private lateinit var groovyScriptService: ScriptService
 
     @Inject
     @JavascriptImpl
     private lateinit var javascriptScriptService: ScriptService
+
+    @Inject
+    private lateinit var embeddedScriptService: EmbeddedScriptService
 
     @Inject
     private lateinit var engineLifecycle: EngineLifecycleHooks
@@ -122,7 +128,7 @@ class ScriptedResponseServiceImpl : ScriptedResponseService {
                     additionalBindings
                 )
             }
-            if (Objects.nonNull(executionTimer)) {
+            if (nonNull(executionTimer)) {
                 executionTimer!!.recordCallable(scriptExecutor)
             } else {
                 scriptExecutor.call()
@@ -140,6 +146,10 @@ class ScriptedResponseServiceImpl : ScriptedResponseService {
         additionalBindings: Map<String, Any>?
     ): ReadWriteResponseBehaviour {
         val responseConfig = resourceConfig!!.responseConfig
+
+        check(nonNull(responseConfig.scriptFile)) { "Script file not set" }
+        val scriptFile = responseConfig.scriptFile!!
+
         return try {
             val executionStart = System.nanoTime()
             LOGGER.trace(
@@ -167,7 +177,7 @@ class ScriptedResponseServiceImpl : ScriptedResponseService {
             )
 
             // execute the script and read response behaviour
-            val responseBehaviour = fetchScriptService(responseConfig.scriptFile).executeScript(
+            val responseBehaviour = fetchScriptService(scriptFile).executeScript(
                 pluginConfig,
                 resourceConfig,
                 runtimeContext
@@ -212,9 +222,14 @@ class ScriptedResponseServiceImpl : ScriptedResponseService {
         return loggerCache[loggerName, { LogManager.getLogger(loggerName) }]
     }
 
-    private fun fetchScriptService(scriptFile: String?): ScriptService {
+    private fun fetchScriptService(scriptFile: String): ScriptService {
+        if (imposterConfig.useEmbeddedScriptEngine) {
+            LOGGER.debug("Using embedded script engine")
+            return embeddedScriptService
+        }
+
         val scriptExtension: String
-        val dotIndex = scriptFile!!.lastIndexOf('.')
+        val dotIndex = scriptFile.lastIndexOf('.')
         scriptExtension = if (dotIndex >= 1 && dotIndex < scriptFile.length - 1) {
             scriptFile.substring(dotIndex + 1)
         } else {

@@ -40,23 +40,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.util.annotation
 
-package io.gatehill.imposter.util.annotation;
-
-import com.google.inject.BindingAnnotation;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import com.google.inject.BindingAnnotation
 
 /**
- * Must be a Java annotation for Guice annotation binding.
- *
  * @author Pete Cornish
  */
 @BindingAnnotation
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
-public @interface GroovyImpl {
-}
+@kotlin.annotation.Retention(AnnotationRetention.RUNTIME)
+@Target(AnnotationTarget.FIELD)
+annotation class JavascriptImpl 

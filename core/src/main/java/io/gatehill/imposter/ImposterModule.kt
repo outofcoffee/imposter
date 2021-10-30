@@ -60,6 +60,8 @@ internal class ImposterModule(private val imposterConfig: ImposterConfig, privat
         bind(ScriptedResponseService::class.java).to(ScriptedResponseServiceImpl::class.java)
             .`in`(Singleton::class.java)
 
+        bind(EmbeddedScriptService::class.java).to(EmbeddedScriptServiceImpl::class.java).`in`(Singleton::class.java)
+
         // needs to be eager to register lifecycle listener
         bind(SecurityService::class.java).to(SecurityServiceImpl::class.java).asEagerSingleton()
     }
