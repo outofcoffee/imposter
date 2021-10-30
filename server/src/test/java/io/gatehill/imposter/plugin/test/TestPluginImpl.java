@@ -64,14 +64,12 @@ import static java.util.Optional.ofNullable;
  * @author Pete Cornish
  */
 public class TestPluginImpl extends ConfiguredPlugin<TestPluginConfig> {
-    private final ImposterConfig imposterConfig;
     private final ResourceService resourceService;
     private final ResponseService responseService;
 
     @Inject
     public TestPluginImpl(@NotNull Vertx vertx, ImposterConfig imposterConfig, ResourceService resourceService, ResponseService responseService) {
-        super(vertx);
-        this.imposterConfig = imposterConfig;
+        super(vertx, imposterConfig);
         this.resourceService = resourceService;
         this.responseService = responseService;
     }
@@ -100,7 +98,7 @@ public class TestPluginImpl extends ConfiguredPlugin<TestPluginConfig> {
     }
 
     private void configureRoute(TestPluginConfig pluginConfig, ResponseConfigHolder resourceConfig, Router router, String path) {
-        router.route(path).handler(resourceService.handleRoute(imposterConfig, pluginConfig, getVertx(), routingContext -> {
+        router.route(path).handler(resourceService.handleRoute(getImposterConfig(), pluginConfig, getVertx(), routingContext -> {
             final Consumer<ResponseBehaviour> defaultBehaviourHandler = responseBehaviour -> {
                 responseService.sendResponse(pluginConfig, resourceConfig, routingContext, responseBehaviour);
             };

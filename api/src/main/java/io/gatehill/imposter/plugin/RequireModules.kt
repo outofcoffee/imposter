@@ -43,14 +43,12 @@
 package io.gatehill.imposter.plugin
 
 import com.google.inject.Module
-import java.lang.annotation.Retention
-import java.lang.annotation.RetentionPolicy
 import kotlin.reflect.KClass
 
 /**
  * @author Pete Cornish
  */
-@Retention(RetentionPolicy.RUNTIME)
+@kotlin.annotation.Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.CLASS)
 annotation class RequireModules(
     /**

@@ -42,13 +42,10 @@
  */
 package io.gatehill.imposter.plugin
 
-import java.lang.annotation.Retention
-import java.lang.annotation.RetentionPolicy
-
 /**
  * @author Pete Cornish
  */
-@Retention(RetentionPolicy.RUNTIME)
+@kotlin.annotation.Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.CLASS)
 annotation class PluginInfo(
     /**

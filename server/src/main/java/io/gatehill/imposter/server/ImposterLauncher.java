@@ -45,10 +45,11 @@ package io.gatehill.imposter.server;
 
 import io.gatehill.imposter.ImposterConfig;
 import io.gatehill.imposter.plugin.internal.MetaInfPluginDetectorImpl;
-import io.gatehill.imposter.util.MetricsUtil;
+import io.gatehill.imposter.util.EnvVars;
 import io.gatehill.imposter.util.FeatureUtil;
 import io.gatehill.imposter.util.LogUtil;
 import io.gatehill.imposter.util.MetaUtil;
+import io.gatehill.imposter.util.MetricsUtil;
 import io.vertx.core.Launcher;
 import io.vertx.core.VertxOptions;
 import org.apache.logging.log4j.LogManager;
@@ -201,6 +202,11 @@ public class ImposterLauncher extends Launcher {
         imposterConfig.setConfigDirs(configDirs);
         imposterConfig.setPlugins(plugins);
         imposterConfig.setPluginArgs(splitArgs);
+
+        final Boolean useEmbeddedScriptEngine = ofNullable(EnvVars.getEnv("IMPOSTER_EMBEDDED_SCRIPT_ENGINE"))
+                .map(Boolean::parseBoolean)
+                .orElse(false);
+        imposterConfig.setUseEmbeddedScriptEngine(useEmbeddedScriptEngine);
 
         final List<String> args = newArrayList(originalArgs);
         args.add(0, "run");

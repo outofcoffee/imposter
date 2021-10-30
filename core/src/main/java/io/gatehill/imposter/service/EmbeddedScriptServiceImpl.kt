@@ -42,7 +42,6 @@
  */
 package io.gatehill.imposter.service
 
-import com.google.common.base.Preconditions
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
@@ -53,20 +52,22 @@ import io.gatehill.imposter.script.listener.ScriptListener
 /**
  * @author Pete Cornish
  */
-class EmbeddedScriptServiceImpl : ScriptService {
+class EmbeddedScriptServiceImpl : EmbeddedScriptService {
     private var listener: ScriptListener? = null
+
     override fun executeScript(
         pluginConfig: PluginConfig,
         resourceConfig: ResponseConfigHolder?,
         runtimeContext: RuntimeContext
     ): ReadWriteResponseBehaviour {
-        Preconditions.checkNotNull(listener, "ScriptListener is not set")
+        check(listener != null) { "ScriptListener is not set" }
+
         val responseBehaviour: ReadWriteResponseBehaviour = ReadWriteResponseBehaviourImpl()
         listener!!.hear(runtimeContext.executionContext, responseBehaviour)
         return responseBehaviour
     }
 
-    fun setListener(listener: ScriptListener?) {
+    override fun setListener(listener: ScriptListener) {
         this.listener = listener
     }
 }

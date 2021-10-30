@@ -111,7 +111,6 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> {
     static final String SPECIFICATION_PATH = "/_spec";
     static final String COMBINED_SPECIFICATION_PATH = SPECIFICATION_PATH + "/combined.json";
 
-    private final ImposterConfig imposterConfig;
     private final ResourceService resourceService;
     private final SpecificationService specificationService;
     private final ExampleService exampleService;
@@ -123,8 +122,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> {
 
     @Inject
     public OpenApiPluginImpl(Vertx vertx, ImposterConfig imposterConfig, ResourceService resourceService, SpecificationService specificationService, ExampleService exampleService, ResponseService responseService, OpenApiResponseBehaviourFactory openApiResponseBehaviourFactory) {
-        super(vertx);
-        this.imposterConfig = imposterConfig;
+        super(vertx, imposterConfig);
         this.resourceService = resourceService;
         this.specificationService = specificationService;
         this.exampleService = exampleService;
@@ -151,9 +149,9 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> {
         parseSpecs(router);
 
         // serve specification and UI
-        LOGGER.debug("Adding specification UI at: {}{}", imposterConfig.getServerUrl(), SPECIFICATION_PATH);
-        router.get(COMBINED_SPECIFICATION_PATH).handler(resourceService.handleRoute(imposterConfig, configs, getVertx(), this::handleCombinedSpec));
-        router.getWithRegex(SPECIFICATION_PATH + "$").handler(resourceService.handleRoute(imposterConfig, configs, getVertx(), routingContext -> routingContext.response().putHeader("Location", SPECIFICATION_PATH + "/").setStatusCode(HttpUtil.HTTP_MOVED_PERM).end()));
+        LOGGER.debug("Adding specification UI at: {}{}", getImposterConfig().getServerUrl(), SPECIFICATION_PATH);
+        router.get(COMBINED_SPECIFICATION_PATH).handler(resourceService.handleRoute(getImposterConfig(), configs, getVertx(), this::handleCombinedSpec));
+        router.getWithRegex(SPECIFICATION_PATH + "$").handler(resourceService.handleRoute(getImposterConfig(), configs, getVertx(), routingContext -> routingContext.response().putHeader("Location", SPECIFICATION_PATH + "/").setStatusCode(HttpUtil.HTTP_MOVED_PERM).end()));
         router.get(SPECIFICATION_PATH + "/*").handler(StaticHandler.create(UI_WEB_ROOT));
     }
 
@@ -257,7 +255,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> {
         try {
             routingContext.response()
                     .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_JSON)
-                    .end(specificationService.getCombinedSpecSerialised(imposterConfig, allSpecs));
+                    .end(specificationService.getCombinedSpecSerialised(getImposterConfig(), allSpecs));
 
         } catch (Exception e) {
             routingContext.fail(e);
@@ -276,8 +274,8 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> {
         // statically calculate as much as possible
         final StatusCodeFactory statusCodeFactory = buildStatusCodeCalculator(operation);
 
-        return resourceService.handleRoute(imposterConfig, pluginConfig, getVertx(), routingContext -> {
-            if (!specificationService.isValidRequest(imposterConfig, pluginConfig, routingContext, allSpecs)) {
+        return resourceService.handleRoute(getImposterConfig(), pluginConfig, getVertx(), routingContext -> {
+            if (!specificationService.isValidRequest(getImposterConfig(), pluginConfig, routingContext, allSpecs)) {
                 return;
             }
 
@@ -301,7 +299,7 @@ public class OpenApiPluginImpl extends ConfiguredPlugin<OpenApiPluginConfig> {
 
                     // build a response from the specification
                     final ResponseService.ResponseSender exampleSender = (rc, rb) ->
-                            exampleService.serveExample(imposterConfig, pluginConfig, rc, rb, optionalResponse.get(), spec);
+                            exampleService.serveExample(getImposterConfig(), pluginConfig, rc, rb, optionalResponse.get(), spec);
 
                     // attempt to serve an example from the specification, falling back if not present
                     responseService.sendResponse(

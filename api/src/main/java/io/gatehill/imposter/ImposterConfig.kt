@@ -59,4 +59,5 @@ class ImposterConfig {
     var pluginArgs: Map<String, String>? = null
     var serverFactory: String? = null
     var requestHandlingMode = RequestHandlingMode.ASYNC
+    var useEmbeddedScriptEngine: Boolean = false
 }

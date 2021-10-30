@@ -43,10 +43,6 @@
 package io.gatehill.imposter.plugin.config.security
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import java.lang.Enum
-import kotlin.Any
-import kotlin.String
-import kotlin.to
 
 /**
  * Represents a name/value pair, such as an HTTP header or query parameter,
@@ -84,7 +80,7 @@ class ConditionalNameValuePair(
             return ConditionalNameValuePair(
                 key,
                 structuredMatch["value"],
-                Enum.valueOf(MatchOperator::class.java, structuredMatch["operator"])
+                MatchOperator.valueOf(structuredMatch["operator"]!!)
             )
         }
     }

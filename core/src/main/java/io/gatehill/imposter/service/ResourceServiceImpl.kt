@@ -217,15 +217,13 @@ class ResourceServiceImpl @Inject constructor(
         val resourceConfig = resource.config
 
         // path template can be null when a regex route is used
-        val pathMatch = path == resourceConfig.path ||
-                Optional.ofNullable(pathTemplate).map { pt: String -> pt == resourceConfig.path }
-                    .orElse(false)
-        if (Objects.isNull(resourceConfig.method)) {
-            LOGGER.warn(
-                "Resource configuration for '{}' is missing HTTP method - will not correctly match response behaviour",
-                resourceConfig.path
-            )
-        }
+        val pathMatch = path == resourceConfig.path || (pathTemplate?.let { it == resourceConfig.path } == true)
+
+        resourceConfig.method ?: LOGGER.warn(
+            "Resource configuration for '{}' is missing HTTP method - will not correctly match response behaviour",
+            resourceConfig.path
+        )
+
         return pathMatch && resourceMethod == resourceConfig.method &&
                 matchPairs(pathParams, resource.pathParams, true) &&
                 matchPairs(queryParams, resource.queryParams, true) &&

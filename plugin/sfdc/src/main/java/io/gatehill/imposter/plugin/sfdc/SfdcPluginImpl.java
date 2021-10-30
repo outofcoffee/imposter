@@ -86,7 +86,6 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
     private static final Logger LOGGER = LogManager.getLogger(SfdcPluginImpl.class);
     private static final String FIELD_ID = "Id";
 
-    private final ImposterConfig imposterConfig;
     private final ResourceService resourceService;
     private final ResponseService responseService;
 
@@ -94,8 +93,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
 
     @Inject
     public SfdcPluginImpl(Vertx vertx, ImposterConfig imposterConfig, ResourceService resourceService, ResponseService responseService) {
-        super(vertx);
-        this.imposterConfig = imposterConfig;
+        super(vertx, imposterConfig);
         this.resourceService = resourceService;
         this.responseService = responseService;
     }
@@ -113,18 +111,18 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
     @Override
     public void configureRoutes(Router router) {
         // oauth handler
-        router.post("/services/oauth2/token").handler(resourceService.handleRoute(imposterConfig, configs, getVertx(), routingContext -> {
+        router.post("/services/oauth2/token").handler(resourceService.handleRoute(getImposterConfig(), configs, getVertx(), routingContext -> {
             LOGGER.info("Handling oauth request: {}", routingContext.getBodyAsString());
 
             final JsonObject authResponse = new JsonObject();
             authResponse.put("access_token", "dummyAccessToken");
-            authResponse.put("instance_url", imposterConfig.getServerUrl());
+            authResponse.put("instance_url", getImposterConfig().getServerUrl());
             routingContext.response().putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON);
             routingContext.response().end(authResponse.encode());
         }));
 
         // query handler
-        router.get("/services/data/:apiVersion/query/").handler(resourceService.handleRoute(imposterConfig, configs, getVertx(), routingContext -> {
+        router.get("/services/data/:apiVersion/query/").handler(resourceService.handleRoute(getImposterConfig(), configs, getVertx(), routingContext -> {
             final String apiVersion = routingContext.request().getParam("apiVersion");
 
             // e.g. 'SELECT Name, Id from Account LIMIT 100'
@@ -165,7 +163,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
         // get SObject handler
         configs.forEach(config -> {
             router.get("/services/data/:apiVersion/sobjects/" + config.getsObjectName() + "/:sObjectId")
-                    .handler(resourceService.handleRoute(imposterConfig, config, getVertx(), routingContext -> {
+                    .handler(resourceService.handleRoute(getImposterConfig(), config, getVertx(), routingContext -> {
                         // script should fire first
                         scriptHandler(config, routingContext, getInjector(), responseBehaviour -> {
 
@@ -197,7 +195,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
 
         // create SObject handler
         router.post("/services/data/:apiVersion/sobjects/:sObjectName")
-                .handler(resourceService.handleRoute(imposterConfig, configs, getVertx(), routingContext -> {
+                .handler(resourceService.handleRoute(getImposterConfig(), configs, getVertx(), routingContext -> {
                     final String sObjectName = routingContext.request().getParam("sObjectName");
                     final JsonObject sObject = routingContext.getBodyAsJson();
 
@@ -228,7 +226,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
      * @return
      */
     private Handler<RoutingContext> handleUpdateRequest() {
-        return resourceService.handleRoute(imposterConfig, configs, getVertx(), routingContext -> {
+        return resourceService.handleRoute(getImposterConfig(), configs, getVertx(), routingContext -> {
             final String sObjectName = routingContext.request().getParam("sObjectName");
             final String sObjectId = routingContext.request().getParam("sObjectId");
             final JsonObject sObject = routingContext.getBodyAsJson();
