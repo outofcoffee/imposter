@@ -40,21 +40,22 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.plugin.openapi.service
 
-package io.gatehill.imposter.plugin.openapi.config;
-
-import io.gatehill.imposter.plugin.config.resource.ResponseConfig;
+import io.gatehill.imposter.plugin.openapi.model.ContentTypedHolder
+import io.swagger.v3.oas.models.OpenAPI
+import io.swagger.v3.oas.models.media.Schema
+import io.vertx.core.http.HttpServerRequest
 
 /**
- * Extends the base response configuration with items specific
- * to the OpenAPI plugin.
+ * Collects examples from schema definitions.
  *
- * @author Pete Cornish
+ * @author benjvoigt
  */
-public class OpenApiResponseConfig extends ResponseConfig {
-    private String exampleName;
-
-    public String getExampleName() {
-        return exampleName;
-    }
+interface SchemaService {
+    fun collectExamples(
+        request: HttpServerRequest,
+        spec: OpenAPI,
+        schema: ContentTypedHolder<Schema<*>>
+    ): ContentTypedHolder<*>
 }

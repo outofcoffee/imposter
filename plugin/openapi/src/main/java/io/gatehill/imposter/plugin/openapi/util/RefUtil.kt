@@ -40,50 +40,40 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.plugin.openapi.util
 
-package io.gatehill.imposter.plugin.openapi.util;
-
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.media.Schema;
-import io.swagger.v3.oas.models.responses.ApiResponse;
-
-import static java.util.Optional.ofNullable;
+import io.swagger.v3.oas.models.OpenAPI
+import io.swagger.v3.oas.models.media.Schema
+import io.swagger.v3.oas.models.responses.ApiResponse
 
 /**
  * Utilities for handling OpenAPI refs.
- * <p>
+ *
  * See: https://swagger.io/docs/specification/using-ref/
  *
  * @author Pete Cornish
  */
-public class RefUtil {
-    private static final String REF_PREFIX_RESPONSES = "#/components/responses/";
-    private static final String REF_PREFIX_SCHEMAS = "#/components/schemas/";
+object RefUtil {
+    private const val REF_PREFIX_RESPONSES = "#/components/responses/"
+    private const val REF_PREFIX_SCHEMAS = "#/components/schemas/"
 
-    private RefUtil() {
-    }
-
-    public static ApiResponse lookupResponseRef(OpenAPI spec, ApiResponse referrer) {
-        if (referrer.get$ref().startsWith(REF_PREFIX_RESPONSES)) {
-            final String responseName = referrer.get$ref().substring(REF_PREFIX_RESPONSES.length());
-            return ofNullable(spec.getComponents())
-                    .flatMap(components -> ofNullable(components.getResponses()))
-                    .map(responses -> responses.get(responseName))
-                    .orElseThrow(() -> new IllegalStateException("Referenced response not found in components section: " + responseName));
+    fun lookupResponseRef(spec: OpenAPI, referrer: ApiResponse): ApiResponse {
+        if (referrer.`$ref`.startsWith(REF_PREFIX_RESPONSES)) {
+            val responseName = referrer.`$ref`.substring(REF_PREFIX_RESPONSES.length)
+            return spec.components?.responses?.get(responseName)
+                ?: throw IllegalStateException("Referenced response not found in components section: $responseName")
         } else {
-            throw new IllegalStateException("Unsupported response $ref: " + referrer.get$ref());
+            throw IllegalStateException("Unsupported response \$ref: ${referrer.`$ref`}")
         }
     }
 
-    public static Schema<?> lookupSchemaRef(OpenAPI spec, Schema<?> referrer) {
-        if (referrer.get$ref().startsWith(REF_PREFIX_SCHEMAS)) {
-            final String schemaName = referrer.get$ref().substring(REF_PREFIX_SCHEMAS.length());
-            return ofNullable(spec.getComponents())
-                    .flatMap(components -> ofNullable(components.getSchemas()))
-                    .map(responses -> responses.get(schemaName))
-                    .orElseThrow(() -> new IllegalStateException("Referenced schema not found in components section: " + schemaName));
+    fun lookupSchemaRef(spec: OpenAPI, referrer: Schema<*>): Schema<*> {
+        if (referrer.`$ref`.startsWith(REF_PREFIX_SCHEMAS)) {
+            val schemaName = referrer.`$ref`.substring(REF_PREFIX_SCHEMAS.length)
+            return spec.components?.schemas?.get(schemaName)
+                ?: throw IllegalStateException("Referenced schema not found in components section: $schemaName")
         } else {
-            throw new IllegalStateException("Unsupported schema $ref: " + referrer.get$ref());
+            throw IllegalStateException("Unsupported schema \$ref: ${referrer.`$ref`}")
         }
     }
 }

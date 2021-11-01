@@ -40,19 +40,36 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.plugin.openapi.service
 
-package io.gatehill.imposter.plugin.openapi.service;
-
-import io.gatehill.imposter.plugin.openapi.model.ContentTypedHolder;
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.media.Schema;
-import io.vertx.core.http.HttpServerRequest;
+import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig
+import io.gatehill.imposter.script.ResponseBehaviour
+import io.swagger.v3.oas.models.OpenAPI
+import io.swagger.v3.oas.models.responses.ApiResponse
+import io.vertx.ext.web.RoutingContext
 
 /**
- * Collects examples from schema definitions.
- *
- * @author benjvoigt
+ * @author Pete Cornish
  */
-public interface SchemaService {
-    ContentTypedHolder<?> collectExamples(HttpServerRequest request, OpenAPI spec, ContentTypedHolder<Schema<?>> schema);
+interface ExampleService {
+    /**
+     * Attempt to respond with an example from the API specification.
+     *
+     * @param imposterConfig    the Imposter engine configuration
+     * @param config            the plugin configuration
+     * @param routingContext    the Vert.x routing context
+     * @param responseBehaviour the response behaviour
+     * @param specResponse      the specification response
+     * @param spec              the OpenAPI specification
+     * @return `true` if an example was served, otherwise `false`
+     */
+    fun serveExample(
+        imposterConfig: ImposterConfig,
+        config: OpenApiPluginConfig,
+        routingContext: RoutingContext,
+        responseBehaviour: ResponseBehaviour,
+        specResponse: ApiResponse,
+        spec: OpenAPI
+    ): Boolean
 }

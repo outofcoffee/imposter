@@ -40,13 +40,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package io.gatehill.imposter.plugin.openapi
 
-import com.google.common.collect.Lists
 import com.jayway.restassured.RestAssured
 import com.jayway.restassured.http.ContentType
 import io.gatehill.imposter.plugin.Plugin
+import io.gatehill.imposter.plugin.openapi.OpenApiPluginImpl
 import io.gatehill.imposter.server.BaseVerticleTest
 import io.gatehill.imposter.util.HttpUtil
 import io.vertx.core.json.JsonArray
@@ -55,48 +54,40 @@ import org.junit.Before
 import org.junit.Test
 import org.yaml.snakeyaml.Yaml
 
-import static com.jayway.restassured.RestAssured.given
-
 /**
  * Tests for schema examples.
  *
  * @author benjvoigt
  */
-class SchemaExamplesTest extends BaseVerticleTest {
-    private static final Yaml YAML_PARSER = new Yaml();
-
-    @Override
-    protected Class<? extends Plugin> getPluginClass() {
-        return OpenApiPluginImpl.class
+internal class SchemaExamplesTest : BaseVerticleTest() {
+    override fun getPluginClass(): Class<out Plugin?> {
+        return OpenApiPluginImpl::class.java
     }
 
     @Before
-    void setUp(TestContext testContext) throws Exception {
+    @Throws(Exception::class)
+    override fun setUp(testContext: TestContext) {
         super.setUp(testContext)
         RestAssured.baseURI = "http://$HOST:$listenPort"
     }
 
-    @Override
-    protected List<String> getTestConfigDirs() {
-        Lists.newArrayList(
-                '/openapi2/model-examples'
-        )
-    }
+    override fun getTestConfigDirs() = listOf(
+        "/openapi2/model-examples"
+    )
 
     @Test
-    void testServeSchemaExamplesAsJson(TestContext testContext) {
-        final String body = given()
-                .log().ifValidationFails()
-                .accept(ContentType.JSON) // JSON content type in 'Accept' header matches specification example
-                .when()
-                .get('/api/pets')
-                .then()
-                .log().ifValidationFails()
-                .statusCode(HttpUtil.HTTP_OK)
-                .extract().asString()
+    fun testServeSchemaExamplesAsJson(testContext: TestContext) {
+        val body = RestAssured.given()
+            .log().ifValidationFails()
+            .accept(ContentType.JSON) // JSON content type in 'Accept' header matches specification example
+            .`when`()["/api/pets"]
+            .then()
+            .log().ifValidationFails()
+            .statusCode(HttpUtil.HTTP_OK)
+            .extract().asString()
 
-        final JsonArray actual = new JsonArray(body)
-        final JsonArray expected = new JsonArray("""
+        val actual = JsonArray(body)
+        val expected = JsonArray("""
         [
             {
                 "name": "",
@@ -113,37 +104,39 @@ class SchemaExamplesTest extends BaseVerticleTest {
             }
         ]
         """)
-
         testContext.assertEquals(expected, actual)
     }
 
     @Test
-    void testServeSchemaExamplesAsYaml(TestContext testContext) {
-        final String rawBody = given()
-                .log().ifValidationFails()
-                .accept("application/x-yaml") // YAML content type in 'Accept' header matches specification example
-                .when()
-                .get('/api/pets')
-                .then()
-                .log().ifValidationFails()
-                .statusCode(HttpUtil.HTTP_OK)
-                .extract().asString()
+    fun testServeSchemaExamplesAsYaml(testContext: TestContext) {
+        val rawBody = RestAssured.given()
+            .log().ifValidationFails()
+            .accept("application/x-yaml") // YAML content type in 'Accept' header matches specification example
+            .`when`()["/api/pets"]
+            .then()
+            .log().ifValidationFails()
+            .statusCode(HttpUtil.HTTP_OK)
+            .extract().asString()
 
-        final List<Map<String, ?>> yamlBody = YAML_PARSER.load(rawBody);
-        testContext.assertEquals(1, yamlBody.size());
+        val yamlBody = YAML_PARSER.load<List<Map<String, *>>>(rawBody)
+        testContext.assertEquals(1, yamlBody.size)
 
-        final first = yamlBody.first()
-        testContext.assertEquals("", first.get("name"));
-        testContext.assertEquals(0, first.get("id"));
-        testContext.assertEquals("Collie", first.get("breed"));
-        testContext.assertEquals("test@example.com", first.get("ownerEmail"));
-        testContext.assertEquals("changeme", first.get("secret"));
-        testContext.assertEquals("2015-02-01T08:00:00Z", first.get("bornAt"));
-        testContext.assertEquals("2020-03-15", first.get("lastVetVisitOn"));
+        val first = yamlBody.first()
+        testContext.assertEquals("", first.get("name"))
+        testContext.assertEquals(0, first.get("id"))
+        testContext.assertEquals("Collie", first.get("breed"))
+        testContext.assertEquals("test@example.com", first.get("ownerEmail"))
+        testContext.assertEquals("changeme", first.get("secret"))
+        testContext.assertEquals("2015-02-01T08:00:00Z", first.get("bornAt"))
+        testContext.assertEquals("2020-03-15", first.get("lastVetVisitOn"))
 
-        final misc = first.get("misc") as Map<String, ?>
-        testContext.assertNotNull(misc, "misc property should not be null");
-        testContext.assertEquals(false, misc.get("nocturnal"));
-        testContext.assertEquals(47435, misc.get("population"));
+        val misc = first.get("misc") as Map<String, *>
+        testContext.assertNotNull(misc, "misc property should not be null")
+        testContext.assertEquals(false, misc.get("nocturnal"))
+        testContext.assertEquals(47435, misc.get("population"))
+    }
+
+    companion object {
+        private val YAML_PARSER = Yaml()
     }
 }

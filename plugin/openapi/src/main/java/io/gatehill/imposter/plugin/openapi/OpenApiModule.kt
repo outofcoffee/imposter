@@ -40,40 +40,22 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.plugin.openapi
 
-package io.gatehill.imposter.plugin.openapi.service;
-
-import io.gatehill.imposter.ImposterConfig;
-import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig;
-import io.swagger.models.Scheme;
-import io.swagger.v3.oas.models.OpenAPI;
-import io.vertx.ext.web.RoutingContext;
-
-import java.util.List;
-import java.util.concurrent.ExecutionException;
+import com.google.inject.AbstractModule
+import com.google.inject.Singleton
+import io.gatehill.imposter.plugin.openapi.service.*
 
 /**
  * @author Pete Cornish
  */
-public interface SpecificationService {
-    default OpenAPI combineSpecifications(List<OpenAPI> specs, String basePath) {
-        return combineSpecifications(specs, basePath, null, null);
+class OpenApiModule : AbstractModule() {
+    override fun configure() {
+        bind(SpecificationService::class.java).to(SpecificationServiceImpl::class.java).`in`(Singleton::class.java)
+        bind(ExampleService::class.java).to(ExampleServiceImpl::class.java).`in`(Singleton::class.java)
+        bind(SchemaService::class.java).to(SchemaServiceImpl::class.java).`in`(Singleton::class.java)
+        bind(ResponseTransmissionService::class.java).to(ResponseTransmissionServiceImpl::class.java).`in`(
+            Singleton::class.java
+        )
     }
-
-    /**
-     * Returns the combined specification from cache, generating it first on cache miss.
-     */
-    OpenAPI getCombinedSpec(ImposterConfig imposterConfig, List<OpenAPI> allSpecs) throws ExecutionException;
-
-    /**
-     * As {@link #getCombinedSpec(ImposterConfig, List)} but serialised to JSON.
-     */
-    String getCombinedSpecSerialised(ImposterConfig imposterConfig, List<OpenAPI> allSpecs) throws ExecutionException;
-
-    OpenAPI combineSpecifications(List<OpenAPI> specs, String basePath, Scheme scheme, String title);
-
-    boolean isValidRequest(ImposterConfig imposterConfig,
-                           OpenApiPluginConfig pluginConfig,
-                           RoutingContext routingContext,
-                           List<OpenAPI> allSpecs);
 }

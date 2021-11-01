@@ -74,7 +74,7 @@ public class RestPluginConfig extends ContentTypedPluginConfigImpl implements Me
     }
 
     @Override
-    public boolean isDefaultsFromRootResponse() {
+    public Boolean isDefaultsFromRootResponse() {
         return defaultsFromRootResponse;
     }
 }

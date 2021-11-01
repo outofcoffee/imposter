@@ -40,72 +40,30 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.plugin.openapi.http
 
-package io.gatehill.imposter.plugin.openapi.config;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-import io.gatehill.imposter.plugin.config.ContentTypedPluginConfigImpl;
-import io.gatehill.imposter.plugin.config.ResourcesHolder;
-
-import java.util.List;
+import com.google.common.base.Strings
+import io.gatehill.imposter.http.DefaultResponseBehaviourFactory
+import io.gatehill.imposter.plugin.config.resource.ResponseConfig
+import io.gatehill.imposter.plugin.openapi.config.OpenApiResponseConfig
+import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 
 /**
+ * Extends base response behaviour population with specific
+ * OpenAPI plugin configuration.
+ *
  * @author Pete Cornish
  */
-public class OpenApiPluginConfig extends ContentTypedPluginConfigImpl implements ResourcesHolder<OpenApiResourceConfig> {
-    @JsonProperty("specFile")
-    private String specFile;
-
-    @JsonProperty("resources")
-    private List<OpenApiResourceConfig> resources;
-
-    @JsonProperty("defaultsFromRootResponse")
-    private boolean defaultsFromRootResponse;
-
-    @JsonProperty("pickFirstIfNoneMatch")
-    private boolean pickFirstIfNoneMatch = true;
-
-    @JsonProperty("useServerPathAsBaseUrl")
-    private boolean useServerPathAsBaseUrl = true;
-
-    @JsonProperty("response")
-    private OpenApiResponseConfig responseConfig = new OpenApiResponseConfig();
-
-    @JsonProperty("validation")
-    private OpenApiPluginValidationConfig validation;
-
-    public void setSpecFile(String specFile) {
-        this.specFile = specFile;
-    }
-
-    public String getSpecFile() {
-        return specFile;
-    }
-
-    @Override
-    public List<OpenApiResourceConfig> getResources() {
-        return resources;
-    }
-
-    @Override
-    public boolean isDefaultsFromRootResponse() {
-        return defaultsFromRootResponse;
-    }
-
-    public boolean isPickFirstIfNoneMatch() {
-        return pickFirstIfNoneMatch;
-    }
-
-    public boolean isUseServerPathAsBaseUrl() {
-        return useServerPathAsBaseUrl;
-    }
-
-    @Override
-    public OpenApiResponseConfig getResponseConfig() {
-        return responseConfig;
-    }
-
-    public OpenApiPluginValidationConfig getValidation() {
-        return validation;
+class OpenApiResponseBehaviourFactory : DefaultResponseBehaviourFactory() {
+    override fun populate(
+        statusCode: Int,
+        responseConfig: ResponseConfig,
+        responseBehaviour: ReadWriteResponseBehaviour
+    ) {
+        super.populate(statusCode, responseConfig, responseBehaviour)
+        val configExampleName = (responseConfig as OpenApiResponseConfig).exampleName
+        if (Strings.isNullOrEmpty(responseBehaviour.exampleName) && !Strings.isNullOrEmpty(configExampleName)) {
+            responseBehaviour.withExampleName(configExampleName!!)
+        }
     }
 }

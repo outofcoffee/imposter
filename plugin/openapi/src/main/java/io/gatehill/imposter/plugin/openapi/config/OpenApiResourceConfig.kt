@@ -40,36 +40,17 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.plugin.openapi.config
 
-package io.gatehill.imposter.plugin.openapi.util;
-
-import io.vertx.ext.web.RoutingContext;
+import com.fasterxml.jackson.annotation.JsonProperty
+import io.gatehill.imposter.plugin.config.resource.RestResourceConfig
 
 /**
+ * Extends a REST resource configuration with more specific matching criteria.
+ *
  * @author Pete Cornish
  */
-public final class ValidationReportUtil {
-    private ValidationReportUtil() {
-    }
-
-    public static void sendValidationReport(RoutingContext routingContext, String reportMessages) {
-        if (routingContext.parsedHeaders().accept().stream().anyMatch(a -> a.rawValue().equals("text/html"))) {
-            routingContext.response().putHeader("Content-Type", "text/html")
-                    .end(buildResponseReportHtml(reportMessages));
-        } else {
-            routingContext.response().putHeader("Content-Type", "text/plain")
-                    .end(buildResponseReportPlain(reportMessages));
-        }
-    }
-
-    private static String buildResponseReportPlain(String reportMessages) {
-        return "Request validation failed:\n" + reportMessages + "\n";
-    }
-
-    private static String buildResponseReportHtml(String reportMessages) {
-        return "<html>\n" +
-                "<head><title>Invalid request</title></head>\n" +
-                "<body><h1>Request validation failed</h1><br/><pre>" + reportMessages + "</pre></body>\n" +
-                "</html>\n";
-    }
+class OpenApiResourceConfig : RestResourceConfig() {
+    @JsonProperty("response")
+    override val responseConfig = OpenApiResponseConfig()
 }

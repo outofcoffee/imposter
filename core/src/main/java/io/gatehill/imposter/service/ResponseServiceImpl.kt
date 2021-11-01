@@ -195,7 +195,7 @@ class ResponseServiceImpl @Inject constructor(
         }
 
         // explicitly check if the root resource should have its response config used as defaults for its child resources
-        if (pluginConfig is ResourcesHolder<*> && (pluginConfig as ResourcesHolder<*>).isDefaultsFromRootResponse) {
+        if (pluginConfig is ResourcesHolder<*> && (pluginConfig as ResourcesHolder<*>).isDefaultsFromRootResponse == true) {
             if (pluginConfig is ResponseConfigHolder) {
                 LOGGER.trace("Inheriting root response configuration as defaults")
                 responseBehaviourFactory.populate(

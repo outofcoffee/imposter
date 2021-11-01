@@ -40,17 +40,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-
-package io.gatehill.imposter.plugin.openapi.service;
-
-import io.gatehill.imposter.plugin.openapi.model.ContentTypedHolder;
-import io.vertx.ext.web.RoutingContext;
+package io.gatehill.imposter.plugin.openapi.model
 
 /**
- * Serialises and transmits examples to the client.
+ * Holds an object of a given content type.
  *
  * @author Pete Cornish
  */
-public interface ResponseTransmissionService {
-    <T> void transmitExample(RoutingContext routingContext, ContentTypedHolder<T> example);
-}
+class ContentTypedHolder<T>(
+    val contentType: String,
+    val value: T
+)

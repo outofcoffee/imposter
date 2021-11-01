@@ -81,7 +81,9 @@ abstract class ConfiguredPlugin<T : PluginConfigImpl> @Inject constructor(
      *
      * @param configs
      */
-    protected abstract fun configurePlugin(configs: List<T?>?)
+    protected open fun configurePlugin(configs: List<T>) {
+        /* no op */
+    }
 
     protected val injector: Injector
         get() = InjectorUtil.injector!!
