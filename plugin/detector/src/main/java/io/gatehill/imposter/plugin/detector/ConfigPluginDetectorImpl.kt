@@ -40,20 +40,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.plugin.detector
 
-package io.gatehill.imposter.plugin.detector;
-
-import io.gatehill.imposter.ImposterConfig;
-import io.gatehill.imposter.plugin.Plugin;
-import io.gatehill.imposter.plugin.PluginInfo;
-import io.gatehill.imposter.plugin.PluginProvider;
-import io.vertx.ext.web.Router;
-import org.jetbrains.annotations.NotNull;
-
-import java.io.File;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.plugin.Plugin
+import io.gatehill.imposter.plugin.PluginInfo
+import io.gatehill.imposter.plugin.PluginProvider
+import io.vertx.ext.web.Router
+import java.io.File
 
 /**
  * Provides the plugin class names present in the configuration files.
@@ -61,16 +55,13 @@ import java.util.stream.Collectors;
  * @author Pete Cornish
  */
 @PluginInfo("config-detector")
-public class ConfigPluginDetectorImpl implements Plugin, PluginProvider {
-    @Override
-    public void configureRoutes(Router router) {
+class ConfigPluginDetectorImpl : Plugin, PluginProvider {
+    override fun configureRoutes(router: Router) {
         // no op
     }
 
-    @Override
-    public List<String> providePlugins(ImposterConfig imposterConfig, Map<String, ? extends List<? extends File>> pluginConfigs) {
-        return pluginConfigs.keySet().stream()
-                .distinct()
-                .collect(Collectors.toList());
-    }
+    override fun providePlugins(
+        imposterConfig: ImposterConfig,
+        pluginConfigs: Map<String, List<File>>
+    ) = pluginConfigs.keys.distinct()
 }
