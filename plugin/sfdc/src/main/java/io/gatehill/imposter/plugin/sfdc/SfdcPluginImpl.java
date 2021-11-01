@@ -64,7 +64,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.inject.Inject;
-import java.util.List;
 import java.util.Optional;
 import java.util.StringTokenizer;
 import java.util.UUID;
@@ -89,8 +88,6 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
     private final ResourceService resourceService;
     private final ResponseService responseService;
 
-    private List<? extends SfdcPluginConfig> configs;
-
     @Inject
     public SfdcPluginImpl(Vertx vertx, ImposterConfig imposterConfig, ResourceService resourceService, ResponseService responseService) {
         super(vertx, imposterConfig);
@@ -104,14 +101,9 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
     }
 
     @Override
-    protected void configurePlugin(List<? extends SfdcPluginConfig> configs) {
-        this.configs = configs;
-    }
-
-    @Override
     public void configureRoutes(Router router) {
         // oauth handler
-        router.post("/services/oauth2/token").handler(resourceService.handleRoute(getImposterConfig(), configs, getVertx(), routingContext -> {
+        router.post("/services/oauth2/token").handler(resourceService.handleRoute(getImposterConfig(), getConfigs(), getVertx(), routingContext -> {
             LOGGER.info("Handling oauth request: {}", routingContext.getBodyAsString());
 
             final JsonObject authResponse = new JsonObject();
@@ -122,7 +114,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
         }));
 
         // query handler
-        router.get("/services/data/:apiVersion/query/").handler(resourceService.handleRoute(getImposterConfig(), configs, getVertx(), routingContext -> {
+        router.get("/services/data/:apiVersion/query/").handler(resourceService.handleRoute(getImposterConfig(), getConfigs(), getVertx(), routingContext -> {
             final String apiVersion = routingContext.request().getParam("apiVersion");
 
             // e.g. 'SELECT Name, Id from Account LIMIT 100'
@@ -131,7 +123,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
             final String sObjectName = getSObjectName(query)
                     .orElseThrow(() -> new RuntimeException(String.format("Could not determine SObject name from query: %s", query)));
 
-            final SfdcPluginConfig config = configs.stream()
+            final SfdcPluginConfig config = getConfigs().stream()
                     .filter(sfdcPluginConfig -> sObjectName.equalsIgnoreCase(sfdcPluginConfig.getsObjectName()))
                     .findAny()
                     .orElseThrow(() -> new RuntimeException(String.format("Unable to find mock config for SObject: %s", sObjectName)));
@@ -161,7 +153,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
         }));
 
         // get SObject handler
-        configs.forEach(config -> {
+        getConfigs().forEach(config -> {
             router.get("/services/data/:apiVersion/sobjects/" + config.getsObjectName() + "/:sObjectId")
                     .handler(resourceService.handleRoute(getImposterConfig(), config, getVertx(), routingContext -> {
                         // script should fire first
@@ -195,7 +187,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
 
         // create SObject handler
         router.post("/services/data/:apiVersion/sobjects/:sObjectName")
-                .handler(resourceService.handleRoute(getImposterConfig(), configs, getVertx(), routingContext -> {
+                .handler(resourceService.handleRoute(getImposterConfig(), getConfigs(), getVertx(), routingContext -> {
                     final String sObjectName = routingContext.request().getParam("sObjectName");
                     final JsonObject sObject = routingContext.getBodyAsJson();
 
@@ -226,7 +218,7 @@ public class SfdcPluginImpl extends ConfiguredPlugin<SfdcPluginConfig> {
      * @return
      */
     private Handler<RoutingContext> handleUpdateRequest() {
-        return resourceService.handleRoute(getImposterConfig(), configs, getVertx(), routingContext -> {
+        return resourceService.handleRoute(getImposterConfig(), getConfigs(), getVertx(), routingContext -> {
             final String sObjectName = routingContext.request().getParam("sObjectName");
             final String sObjectId = routingContext.request().getParam("sObjectId");
             final JsonObject sObject = routingContext.getBodyAsJson();

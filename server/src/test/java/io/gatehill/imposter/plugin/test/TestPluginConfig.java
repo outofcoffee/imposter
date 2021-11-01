@@ -62,7 +62,7 @@ public class TestPluginConfig extends PluginConfigImpl implements ResourcesHolde
     }
 
     @Override
-    public boolean isDefaultsFromRootResponse() {
+    public Boolean isDefaultsFromRootResponse() {
         return defaultsFromRootResponse;
     }
 

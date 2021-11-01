@@ -65,7 +65,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.inject.Inject;
-import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -91,8 +90,6 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
     private final ResourceService resourceService;
     private final ResponseService responseService;
 
-    private List<? extends C> configs;
-
     @Inject
     public RestPluginImpl(Vertx vertx, ImposterConfig imposterConfig, ResourceService resourceService, ResponseService responseService) {
         super(vertx, imposterConfig);
@@ -107,13 +104,8 @@ public class RestPluginImpl<C extends RestPluginConfig> extends ConfiguredPlugin
     }
 
     @Override
-    protected void configurePlugin(List<? extends C> configs) {
-        this.configs = configs;
-    }
-
-    @Override
     public void configureRoutes(Router router) {
-        configs.forEach(config -> {
+        getConfigs().forEach(config -> {
             // add root handler
             // TODO consider changing this to config.getPath() if non-null
             addObjectHandler(router, "", config, config);

@@ -54,7 +54,6 @@ import io.vertx.ext.web.Router;
 import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Inject;
-import java.util.List;
 import java.util.function.Consumer;
 
 import static io.gatehill.imposter.plugin.ScriptedPlugin.scriptHandler;
@@ -77,11 +76,6 @@ public class TestPluginImpl extends ConfiguredPlugin<TestPluginConfig> {
     @Override
     protected Class<TestPluginConfig> getConfigClass() {
         return TestPluginConfig.class;
-    }
-
-    @Override
-    protected void configurePlugin(List<? extends TestPluginConfig> configs) {
-        // no-op
     }
 
     @Override

@@ -40,29 +40,16 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.plugin.openapi.config
 
-package io.gatehill.imposter.plugin.openapi;
-
-import com.google.inject.AbstractModule;
-import com.google.inject.Singleton;
-import io.gatehill.imposter.plugin.openapi.service.ExampleService;
-import io.gatehill.imposter.plugin.openapi.service.ExampleServiceImpl;
-import io.gatehill.imposter.plugin.openapi.service.ResponseTransmissionService;
-import io.gatehill.imposter.plugin.openapi.service.ResponseTransmissionServiceImpl;
-import io.gatehill.imposter.plugin.openapi.service.SchemaService;
-import io.gatehill.imposter.plugin.openapi.service.SchemaServiceImpl;
-import io.gatehill.imposter.plugin.openapi.service.SpecificationService;
-import io.gatehill.imposter.plugin.openapi.service.SpecificationServiceImpl;
+import io.gatehill.imposter.plugin.config.resource.ResponseConfig
 
 /**
+ * Extends the base response configuration with items specific
+ * to the OpenAPI plugin.
+ *
  * @author Pete Cornish
  */
-public class OpenApiModule extends AbstractModule {
-    @Override
-    protected void configure() {
-        bind(SpecificationService.class).to(SpecificationServiceImpl.class).in(Singleton.class);
-        bind(ExampleService.class).to(ExampleServiceImpl.class).in(Singleton.class);
-        bind(SchemaService.class).to(SchemaServiceImpl.class).in(Singleton.class);
-        bind(ResponseTransmissionService.class).to(ResponseTransmissionServiceImpl.class).in(Singleton.class);
-    }
+class OpenApiResponseConfig : ResponseConfig() {
+    val exampleName: String? = null
 }

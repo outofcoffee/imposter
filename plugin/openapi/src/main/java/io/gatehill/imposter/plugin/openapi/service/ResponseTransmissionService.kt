@@ -40,29 +40,16 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.plugin.openapi.service
 
-package io.gatehill.imposter.plugin.openapi.http;
-
-import com.google.common.base.Strings;
-import io.gatehill.imposter.http.DefaultResponseBehaviourFactory;
-import io.gatehill.imposter.plugin.config.resource.ResponseConfig;
-import io.gatehill.imposter.plugin.openapi.config.OpenApiResponseConfig;
-import io.gatehill.imposter.script.ReadWriteResponseBehaviour;
+import io.gatehill.imposter.plugin.openapi.model.ContentTypedHolder
+import io.vertx.ext.web.RoutingContext
 
 /**
- * Extends base response behaviour population with specific
- * OpenAPI plugin configuration.
+ * Serialises and transmits examples to the client.
  *
  * @author Pete Cornish
  */
-public class OpenApiResponseBehaviourFactory extends DefaultResponseBehaviourFactory {
-    @Override
-    public void populate(int statusCode, ResponseConfig responseConfig, ReadWriteResponseBehaviour responseBehaviour) {
-        super.populate(statusCode, responseConfig, responseBehaviour);
-
-        final String configExampleName = ((OpenApiResponseConfig) responseConfig).getExampleName();
-        if (Strings.isNullOrEmpty(responseBehaviour.getExampleName()) && !Strings.isNullOrEmpty(configExampleName)) {
-            responseBehaviour.withExampleName(configExampleName);
-        }
-    }
+interface ResponseTransmissionService {
+    fun <T> transmitExample(routingContext: RoutingContext, example: ContentTypedHolder<T>)
 }

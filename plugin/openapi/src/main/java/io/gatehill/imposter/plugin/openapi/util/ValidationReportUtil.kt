@@ -40,24 +40,36 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.plugin.openapi.util
 
-package io.gatehill.imposter.plugin.openapi.config;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-import io.gatehill.imposter.plugin.config.resource.RestResourceConfig;
+import io.vertx.ext.web.MIMEHeader
+import io.vertx.ext.web.RoutingContext
 
 /**
- * Extends a REST resource configuration with more specific matching criteria.
- *
  * @author Pete Cornish
  */
-public class OpenApiResourceConfig extends RestResourceConfig {
-
-    @Override
-    public OpenApiResponseConfig getResponseConfig() {
-        return responseConfig;
+object ValidationReportUtil {
+    fun sendValidationReport(routingContext: RoutingContext, reportMessages: String) {
+        if (routingContext.parsedHeaders().accept().any { a: MIMEHeader -> a.rawValue() == "text/html" }) {
+            routingContext.response().putHeader("Content-Type", "text/html")
+                .end(buildResponseReportHtml(reportMessages))
+        } else {
+            routingContext.response().putHeader("Content-Type", "text/plain")
+                .end(buildResponseReportPlain(reportMessages))
+        }
     }
 
-    @JsonProperty("response")
-    private OpenApiResponseConfig responseConfig = new OpenApiResponseConfig();
+    private fun buildResponseReportPlain(reportMessages: String): String {
+        return "Request validation failed:\n$reportMessages\n"
+    }
+
+    private fun buildResponseReportHtml(reportMessages: String): String {
+        return """
+            <html>
+            <head><title>Invalid request</title></head>
+            <body><h1>Request validation failed</h1><br/><pre>$reportMessages</pre></body>
+            </html>
+            
+            """.trimIndent()
+    }
 }

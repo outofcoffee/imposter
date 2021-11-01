@@ -40,34 +40,34 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.plugin.openapi.config
 
-package io.gatehill.imposter.plugin.openapi.service;
-
-import io.gatehill.imposter.ImposterConfig;
-import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig;
-import io.gatehill.imposter.script.ResponseBehaviour;
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.responses.ApiResponse;
-import io.vertx.ext.web.RoutingContext;
+import com.fasterxml.jackson.annotation.JsonProperty
+import io.gatehill.imposter.plugin.config.ContentTypedPluginConfigImpl
+import io.gatehill.imposter.plugin.config.ResourcesHolder
 
 /**
  * @author Pete Cornish
  */
-public interface ExampleService {
-    /**
-     * Attempt to respond with an example from the API specification.
-     *
-     * @param imposterConfig    the Imposter engine configuration
-     * @param config            the plugin configuration
-     * @param routingContext    the Vert.x routing context
-     * @param responseBehaviour the response behaviour
-     * @param mockResponse      the specification response
-     * @param spec              the OpenAPI specification
-     * @return {@code true} if an example was served, otherwise {@code false}
-     */
-    boolean serveExample(ImposterConfig imposterConfig, OpenApiPluginConfig config,
-                         RoutingContext routingContext,
-                         ResponseBehaviour responseBehaviour,
-                         ApiResponse mockResponse,
-                         OpenAPI spec);
+class OpenApiPluginConfig : ContentTypedPluginConfigImpl(), ResourcesHolder<OpenApiResourceConfig> {
+    @JsonProperty("specFile")
+    var specFile: String? = null
+
+    @JsonProperty("resources")
+    override val resources: List<OpenApiResourceConfig>? = null
+
+    @JsonProperty("defaultsFromRootResponse")
+    override val isDefaultsFromRootResponse = false
+
+    @JsonProperty("pickFirstIfNoneMatch")
+    val isPickFirstIfNoneMatch = true
+
+    @JsonProperty("useServerPathAsBaseUrl")
+    val isUseServerPathAsBaseUrl = true
+
+    @JsonProperty("response")
+    override val responseConfig = OpenApiResponseConfig()
+
+    @JsonProperty("validation")
+    val validation: OpenApiPluginValidationConfig? = null
 }

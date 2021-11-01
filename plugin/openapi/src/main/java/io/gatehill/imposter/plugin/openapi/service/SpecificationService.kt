@@ -40,31 +40,39 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.plugin.openapi.service
 
-package io.gatehill.imposter.plugin.openapi.model;
-
-import com.google.common.base.Preconditions;
+import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig
+import io.swagger.models.Scheme
+import io.swagger.v3.oas.models.OpenAPI
+import io.vertx.ext.web.RoutingContext
+import java.util.concurrent.ExecutionException
 
 /**
- * Holds an object of a given content type.
- *
  * @author Pete Cornish
  */
-public class ContentTypedHolder<T> {
-    private final String contentType;
-    private final T value;
-
-    public ContentTypedHolder(String contentType, T value) {
-        Preconditions.checkNotNull(contentType, "Content type cannot be null");
-        this.contentType = contentType;
-        this.value = value;
+interface SpecificationService {
+    fun combineSpecifications(specs: List<OpenAPI>?, basePath: String?): OpenAPI? {
+        return combineSpecifications(specs, basePath, null, null)
     }
 
-    public String getContentType() {
-        return contentType;
-    }
+    /**
+     * Returns the combined specification from cache, generating it first on cache miss.
+     */
+    @Throws(ExecutionException::class)
+    fun getCombinedSpec(imposterConfig: ImposterConfig, allSpecs: List<OpenAPI>?): OpenAPI
 
-    public T getValue() {
-        return value;
-    }
+    /**
+     * As [.getCombinedSpec] but serialised to JSON.
+     */
+    @Throws(ExecutionException::class)
+    fun getCombinedSpecSerialised(imposterConfig: ImposterConfig, allSpecs: List<OpenAPI>?): String
+    fun combineSpecifications(specs: List<OpenAPI>?, basePath: String?, scheme: Scheme?, title: String?): OpenAPI?
+    fun isValidRequest(
+        imposterConfig: ImposterConfig,
+        pluginConfig: OpenApiPluginConfig,
+        routingContext: RoutingContext,
+        allSpecs: List<OpenAPI>?
+    ): Boolean
 }
