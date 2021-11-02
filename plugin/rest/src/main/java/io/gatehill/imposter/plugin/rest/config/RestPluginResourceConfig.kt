@@ -40,27 +40,18 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.plugin.rest.config
 
-package io.gatehill.imposter.plugin.rest.config;
-
-import io.gatehill.imposter.plugin.config.ContentTypedConfig;
-import io.gatehill.imposter.plugin.config.resource.RestResourceConfig;
+import io.gatehill.imposter.plugin.config.ContentTypedConfig
+import io.gatehill.imposter.plugin.config.resource.RestResourceConfig
 
 /**
  * Extends a REST resource configuration with a content type and resource type.
  *
  * @author Pete Cornish
  */
-public class RestPluginResourceConfig extends RestResourceConfig implements ContentTypedConfig {
-    protected String contentType;
-    private ResourceConfigType type;
-
-    @Override
-    public String getContentType() {
-        return contentType;
-    }
-
-    public ResourceConfigType getType() {
-        return type;
-    }
+class RestPluginResourceConfig : RestResourceConfig(), ContentTypedConfig {
+    override var contentType: String? = null
+        protected set
+    val type: ResourceConfigType? = null
 }
