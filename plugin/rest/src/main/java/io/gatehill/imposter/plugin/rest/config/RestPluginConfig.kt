@@ -40,41 +40,26 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.plugin.rest.config
 
-package io.gatehill.imposter.plugin.rest.config;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-import io.gatehill.imposter.plugin.config.ContentTypedPluginConfigImpl;
-import io.gatehill.imposter.plugin.config.ResourcesHolder;
-import io.gatehill.imposter.plugin.config.resource.MethodResourceConfig;
-import io.gatehill.imposter.plugin.config.resource.ResourceMethod;
-
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonProperty
+import io.gatehill.imposter.plugin.config.ContentTypedPluginConfigImpl
+import io.gatehill.imposter.plugin.config.ResourcesHolder
+import io.gatehill.imposter.plugin.config.resource.MethodResourceConfig
+import io.gatehill.imposter.plugin.config.resource.ResourceMethod
 
 /**
  * @author Pete Cornish
  */
-public class RestPluginConfig extends ContentTypedPluginConfigImpl implements MethodResourceConfig, ResourcesHolder<RestPluginResourceConfig> {
+class RestPluginConfig : ContentTypedPluginConfigImpl(), MethodResourceConfig,
+    ResourcesHolder<RestPluginResourceConfig> {
+
     @JsonProperty("resources")
-    private List<RestPluginResourceConfig> resources;
+    override val resources: List<RestPluginResourceConfig>? = null
 
     @JsonProperty("method")
-    private ResourceMethod method;
+    override val method: ResourceMethod? = null
 
     @JsonProperty("defaultsFromRootResponse")
-    private boolean defaultsFromRootResponse;
-
-    public List<RestPluginResourceConfig> getResources() {
-        return resources;
-    }
-
-    @Override
-    public ResourceMethod getMethod() {
-        return method;
-    }
-
-    @Override
-    public Boolean isDefaultsFromRootResponse() {
-        return defaultsFromRootResponse;
-    }
+    override val isDefaultsFromRootResponse = false
 }

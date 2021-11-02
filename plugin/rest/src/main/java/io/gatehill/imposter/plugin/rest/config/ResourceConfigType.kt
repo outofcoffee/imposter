@@ -40,13 +40,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-
-package io.gatehill.imposter.plugin.rest.config;
+package io.gatehill.imposter.plugin.rest.config
 
 /**
  * @author Pete Cornish
  */
-public enum ResourceConfigType {
-    ARRAY,
-    OBJECT
+enum class ResourceConfigType {
+    ARRAY, OBJECT
 }
