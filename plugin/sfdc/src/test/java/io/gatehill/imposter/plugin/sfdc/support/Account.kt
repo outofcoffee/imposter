@@ -40,18 +40,19 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.plugin.sfdc.support
 
-package io.gatehill.imposter.plugin.sfdc.config;
-
-import io.gatehill.imposter.plugin.config.PluginConfigImpl;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonProperty
 
 /**
  * @author Pete Cornish
  */
-public class SfdcPluginConfig extends PluginConfigImpl {
-    private String sObjectName;
+@JsonIgnoreProperties(ignoreUnknown = true)
+class Account {
+    @JsonProperty(value = "Id")
+    var id: String? = null
 
-    public String getsObjectName() {
-        return sObjectName;
-    }
+    @JsonProperty(value = "Name")
+    var name: String? = null
 }
