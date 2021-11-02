@@ -1,3 +1,13 @@
 ---
 plugin: rest
-scriptFile: example.js
+
+resources:
+  - path: "/users"
+    method: GET
+    response:
+      scriptFile: example.js
+
+  - path: "/pets"
+    method: GET
+    response:
+      scriptFile: example.js
