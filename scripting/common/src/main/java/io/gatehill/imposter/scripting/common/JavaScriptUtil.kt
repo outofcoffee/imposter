@@ -47,45 +47,41 @@ import io.gatehill.imposter.script.MutableResponseBehaviour
 import io.gatehill.imposter.script.impl.RunnableResponseBehaviourImpl
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
-
 import java.nio.file.Files
 import java.nio.file.Path
 
 /**
  * @author Pete Cornish
  */
-class JavaScriptUtil {
-    private static final Logger LOGGER = LogManager.getLogger(JavaScriptUtil.class);
-
-    private static final String DSL_FUNCTIONS = buildDslFunctions()
-
-    private JavaScriptUtil() {}
+object JavaScriptUtil {
+    private val LOGGER: Logger = LogManager.getLogger(JavaScriptUtil::class)
+    private val DSL_FUNCTIONS: String = buildDslFunctions()
 
     /**
      * Expose superclass methods as DSL functions.
      *
      * @return the JavaScript function variables
      */
-    static String buildDslFunctions() {
-        def dslMethods = MutableResponseBehaviour.class.declaredMethods.collect { method -> method.name }
+    private fun buildDslFunctions(): String {
+        val dslMethods = MutableResponseBehaviour::class.java.declaredMethods.map { it.name }
 
-        return dslMethods.unique()
-                .collect { methodName -> "var ${methodName} = Java.super(responseBehaviour).${methodName};" }
-                .join('\r\n')
+        return dslMethods.distinct().joinToString("\r\n") { methodName ->
+            "var $methodName = Java.super(responseBehaviour).${methodName};"
+        }
     }
 
-    static String wrapScript(Path scriptFile) throws IOException {
+    @JvmStatic
+    fun wrapScript(scriptFile: Path): String {
         // wrap mock script
-        def mockScript = new String(Files.readAllBytes(scriptFile))
-        def wrappedScript = buildWrappedScript(DSL_FUNCTIONS, mockScript)
+        val mockScript = String(Files.readAllBytes(scriptFile))
+        val wrappedScript = buildWrappedScript(mockScript)
 
-        LOGGER.trace("Wrapped script: ${wrappedScript}")
+        LOGGER.trace("Wrapped script: $wrappedScript")
         return wrappedScript
     }
 
-    private static String buildWrappedScript(dslFunctions, mockScript) {
-        """
-var RunnableResponseBehaviourImpl = Java.type('${RunnableResponseBehaviourImpl.class.canonicalName}');
+    private fun buildWrappedScript(mockScript: String): String = """
+var RunnableResponseBehaviourImpl = Java.type('${RunnableResponseBehaviourImpl::class.java.canonicalName}');
 
 var responseBehaviour = new RunnableResponseBehaviourImpl() {
     run: function() {
@@ -93,7 +89,7 @@ var responseBehaviour = new RunnableResponseBehaviourImpl() {
 /* ------------------------------------------------------------------------- */
 /* Exposed DSL functions                                                     */
 /* ------------------------------------------------------------------------- */
-${dslFunctions}
+$DSL_FUNCTIONS
 /* ------------------------------------------------------------------------- */
 /* Shim for '__imposter_types' module exports                                */
 /* ------------------------------------------------------------------------- */
@@ -116,7 +112,7 @@ function require(moduleName) {
 /* ------------------------------------------------------------------------- */
 /* Mock script                                                               */
 /* ------------------------------------------------------------------------- */
-${mockScript}
+$mockScript
 /* ------------------------------------------------------------------------- */
 
     }
@@ -127,5 +123,4 @@ responseBehaviour.run();
 /* return the configured behaviour */
 responseBehaviour;
 """
-    }
 }

@@ -49,7 +49,7 @@ import io.gatehill.imposter.store.service.StoreService
 import io.gatehill.imposter.store.service.StoreServiceImpl
 import io.gatehill.imposter.util.EnvVars.Companion.getEnv
 import org.apache.logging.log4j.LogManager
-import java.util.Optional
+import java.util.*
 
 /**
  * @author Pete Cornish
@@ -68,7 +68,7 @@ class StoreModule : AbstractModule() {
         return try {
             @Suppress("UNCHECKED_CAST")
             val moduleClass = Class.forName(storeModule) as Class<out Module>
-            moduleClass.newInstance()
+            moduleClass.getDeclaredConstructor().newInstance()
 
         } catch (e: Exception) {
             throw RuntimeException(

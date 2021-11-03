@@ -137,7 +137,7 @@ class HBasePluginTest : BaseVerticleTest() {
 
         try {
             table.getScanner(scan)
-            testContext.fail(IOException::javaClass.name + " expected")
+            testContext.fail(IOException::class.java.simpleName + " expected")
 
         } catch (e: IOException) {
             testContext.assertTrue(e.getLocalizedMessage().contains("400"))
@@ -153,7 +153,7 @@ class HBasePluginTest : BaseVerticleTest() {
 
         try {
             table.getScanner(scan)
-            testContext.fail(IOException::javaClass.name + " expected")
+            testContext.fail(IOException::class.java.simpleName + " expected")
 
         } catch (e: IOException) {
             testContext.assertTrue(e.getLocalizedMessage().contains("404"))
@@ -169,7 +169,7 @@ class HBasePluginTest : BaseVerticleTest() {
 
         try {
             table.getScanner(scan)
-            testContext.fail(IOException::javaClass.name + " expected")
+            testContext.fail(IOException::class.java.simpleName + " expected")
 
         } catch (e: IOException) {
             testContext.assertTrue(e.getLocalizedMessage().contains("500"))

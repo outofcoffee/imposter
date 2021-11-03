@@ -57,11 +57,11 @@ object InjectorUtil {
     var injector: Injector? = null
         private set
 
-    fun create(vararg modules: Module?): Injector? {
+    fun create(vararg modules: Module): Injector {
         if (null != injector) {
             LOGGER.warn("Injector already initialised")
         }
         injector = Guice.createInjector(*modules)
-        return injector
+        return injector!!
     }
 }

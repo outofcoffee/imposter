@@ -42,9 +42,7 @@
  */
 package io.gatehill.imposter
 
-import com.google.common.collect.Lists
 import com.google.inject.Module
-import io.gatehill.imposter.Imposter
 import io.gatehill.imposter.plugin.PluginManager
 import io.gatehill.imposter.util.ConfigUtil
 import io.gatehill.imposter.util.HttpUtil
@@ -56,42 +54,38 @@ import java.nio.file.Paths
 /**
  * @author Pete Cornish
  */
-class Imposter @JvmOverloads constructor(
+class Imposter constructor(
     private val imposterConfig: ImposterConfig,
-    private val bootstrapModules: MutableList<Module?>,
-    private val pluginManager: PluginManager = PluginManager()
+    private val bootstrapModules: Array<Module>,
 ) {
-    constructor(imposterConfig: ImposterConfig, vararg bootstrapModules: Module?) : this(
-        imposterConfig,
-        Lists.newArrayList<Module?>(*bootstrapModules)
-    ) {
-    }
+    private val pluginManager: PluginManager = PluginManager()
 
     fun start() {
         LOGGER.info("Starting mock engine")
 
         // load config
         processConfiguration()
-        val pluginConfigs = ConfigUtil.loadPluginConfigs(imposterConfig, pluginManager, imposterConfig.configDirs ?: emptyArray())
 
+        val pluginConfigs = ConfigUtil.loadPluginConfigs(imposterConfig, pluginManager, imposterConfig.configDirs)
         val plugins = imposterConfig.plugins?.toList() ?: emptyList()
-
         val dependencies = pluginManager.preparePluginsFromConfig(imposterConfig, plugins, pluginConfigs)
 
-        val allModules = bootstrapModules
-        allModules.add(ImposterModule(imposterConfig, pluginManager))
-        dependencies.forEach { deps -> allModules.addAll(deps.requiredModules) }
+        val allModules = mutableListOf<Module>().apply {
+            addAll(bootstrapModules)
+            add(ImposterModule(imposterConfig, pluginManager))
+            addAll(dependencies.flatMap { it.requiredModules })
+        }
 
         // inject dependencies
         val injector = InjectorUtil.create(*allModules.toTypedArray())
-        injector!!.injectMembers(this)
+        injector.injectMembers(this)
         pluginManager.registerPlugins(injector)
         pluginManager.configurePlugins(pluginConfigs)
     }
 
     private fun processConfiguration() {
         imposterConfig.serverUrl = buildServerUrl().toString()
-        val configDirs = imposterConfig.configDirs ?: emptyArray()
+        val configDirs = imposterConfig.configDirs
 
         // resolve relative config paths
         for (i in configDirs.indices) {
@@ -110,16 +104,12 @@ class Imposter @JvmOverloads constructor(
         // build based on configuration
         val scheme = (if (imposterConfig.isTlsEnabled) "https" else "http") + "://"
         val host = if (HttpUtil.BIND_ALL_HOSTS == imposterConfig.host) "localhost" else imposterConfig.host!!
-        val port: String
-        port = if (imposterConfig.isTlsEnabled && 443 == imposterConfig.listenPort
-            || !imposterConfig.isTlsEnabled && 80 == imposterConfig.listenPort
-        ) {
-            ""
-        } else {
-            ":" + imposterConfig.listenPort
-        }
+        val port: String = if (shouldHidePort()) "" else ":" + imposterConfig.listenPort
         return URI.create(scheme + host + port)
     }
+
+    private fun shouldHidePort() = (imposterConfig.isTlsEnabled && 443 == imposterConfig.listenPort) ||
+            (!imposterConfig.isTlsEnabled && 80 == imposterConfig.listenPort)
 
     companion object {
         private val LOGGER = LogManager.getLogger(Imposter::class.java)
