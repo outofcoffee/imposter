@@ -8,7 +8,9 @@ Imposter starts before your test runs, such as in your test set-up method (e.g. 
 
 ## Getting started
 
-For the version, choose the latest release from https://github.com/outofcoffee/imposter/releases
+> For a full working example project, see [docs/examples/junit-sample](https://github.com/outofcoffee/imposter/tree/master/docs/examples/junit-sample)
+
+First, note the latest [release version](https://github.com/outofcoffee/imposter/releases).
 
 Add the following Maven repository to your build tool:
 
@@ -46,7 +48,7 @@ String mockEndpoint = imposter.getBaseUrl() + "/v1/pets";
 // simulated HTTP responses, in place of a real endpoint.
 ```
 
-> For a working example, see [OpenApiImposterBuilderTest](https://github.com/outofcoffee/imposter/blob/master/distro/embedded/src/test/java/io/gatehill/imposter/embedded/OpenApiImposterBuilderTest.java)
+> For a full working example project, see [docs/examples/junit-sample](https://github.com/outofcoffee/imposter/tree/master/docs/examples/junit-sample)
 
 ## Using a full configuration file
 
