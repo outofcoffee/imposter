@@ -77,7 +77,7 @@ class GraalvmScriptServiceImpl @Inject constructor(
         resourceConfig: ResponseConfigHolder?,
         runtimeContext: RuntimeContext
     ): ReadWriteResponseBehaviour {
-        val scriptFile = Paths.get(pluginConfig.parentDir!!.absolutePath, resourceConfig!!.responseConfig.scriptFile)
+        val scriptFile = Paths.get(pluginConfig.parentDir.absolutePath, resourceConfig!!.responseConfig.scriptFile)
         LOGGER.trace("Executing script file: {}", scriptFile)
 
         val scriptEngine = scriptEngineManager.getEngineByName("graal.js")

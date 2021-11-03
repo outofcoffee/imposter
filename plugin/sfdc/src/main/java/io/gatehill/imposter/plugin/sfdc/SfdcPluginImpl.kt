@@ -62,9 +62,7 @@ import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.RoutingContext
 import org.apache.logging.log4j.LogManager
-import java.util.StringTokenizer
-import java.util.UUID
-import java.util.function.Consumer
+import java.util.*
 import javax.inject.Inject
 import kotlin.math.abs
 
@@ -112,7 +110,7 @@ class SfdcPluginImpl @Inject constructor(
                 } ?: throw RuntimeException("Unable to find mock config for SObject: $sObjectName")
 
                 // script should fire first
-                scriptHandler(config, routingContext, injector, Consumer { responseBehaviour: ResponseBehaviour? ->
+                scriptHandler(config, routingContext, injector) { responseBehaviour: ResponseBehaviour? ->
                     // enrich records
                     val records = responseService.loadResponseAsJsonArray(config, responseBehaviour!!)
                     for (i in 0 until records.size()) {
@@ -129,69 +127,62 @@ class SfdcPluginImpl @Inject constructor(
                         .putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON)
                         .setStatusCode(HttpUtil.HTTP_OK)
                         .end(Buffer.buffer(responseWrapper.encodePrettily()))
-                })
+                }
             }
         )
 
         // get SObject handler
-        configs.forEach(Consumer { config: SfdcPluginConfig ->
-            router["/services/data/:apiVersion/sobjects/" + config.sObjectName + "/:sObjectId"]
-                .handler(resourceService.handleRoute(imposterConfig, config, vertx) { routingContext: RoutingContext ->
-                    // script should fire first
-                    scriptHandler(config, routingContext, injector, Consumer { responseBehaviour: ResponseBehaviour? ->
-                        val apiVersion = routingContext.request().getParam("apiVersion")
-                        val sObjectId = routingContext.request().getParam("sObjectId")
+        configs.forEach { config: SfdcPluginConfig ->
+            val handler = resourceService.handleRoute(imposterConfig, config, vertx) { routingContext: RoutingContext ->
+                // script should fire first
+                scriptHandler(config, routingContext, injector) { responseBehaviour: ResponseBehaviour? ->
+                    val apiVersion = routingContext.request().getParam("apiVersion")
+                    val sObjectId = routingContext.request().getParam("sObjectId")
 
-                        // find and enrich record
-                        val result = findRow(
-                            FIELD_ID, sObjectId,
-                            responseService.loadResponseAsJsonArray(config, responseBehaviour!!)
-                        )?.let { r: JsonObject -> addRecordAttributes(r, apiVersion, config.sObjectName) }
+                    // find and enrich record
+                    val result = findRow(
+                        FIELD_ID, sObjectId,
+                        responseService.loadResponseAsJsonArray(config, responseBehaviour!!)
+                    )?.let { r: JsonObject -> addRecordAttributes(r, apiVersion, config.sObjectName) }
 
-                        val response = routingContext.response()
+                    val response = routingContext.response()
 
-                        result?.let {
-                            LOGGER.info("Sending SObject with ID: {}", sObjectId)
-                            response.putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON)
-                                .setStatusCode(HttpUtil.HTTP_OK)
-                                .end(Buffer.buffer(result.encodePrettily()))
-                        } ?: run {
-                            // no such record
-                            LOGGER.error("{} SObject with ID: {} not found", config.sObjectName, sObjectId)
-                            response.setStatusCode(HttpUtil.HTTP_NOT_FOUND).end()
-                        }
-                    })
-                })
-        })
+                    result?.let {
+                        LOGGER.info("Sending SObject with ID: {}", sObjectId)
+                        response.putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON)
+                            .setStatusCode(HttpUtil.HTTP_OK)
+                            .end(Buffer.buffer(result.encodePrettily()))
+                    } ?: run {
+                        // no such record
+                        LOGGER.error("{} SObject with ID: {} not found", config.sObjectName, sObjectId)
+                        response.setStatusCode(HttpUtil.HTTP_NOT_FOUND).end()
+                    }
+                }
+            }
+            router["/services/data/:apiVersion/sobjects/${config.sObjectName}/:sObjectId"].handler(handler)
+        }
 
         // create SObject handler
-        router.post("/services/data/:apiVersion/sobjects/:sObjectName")
-            .handler(
-                resourceService.handleRoute(
-                    imposterConfig,
-                    configs,
-                    vertx,
-                    Consumer { routingContext: RoutingContext ->
-                        val sObjectName = routingContext.request().getParam("sObjectName")
-                        val sObject = routingContext.bodyAsJson
-                        LOGGER.info("Received create request for {}: {}", sObjectName, sObject)
-                        val result = JsonObject()
+        router.post("/services/data/:apiVersion/sobjects/:sObjectName").handler(
+            resourceService.handleRoute(imposterConfig, configs, vertx) { routingContext: RoutingContext ->
+                val sObjectName = routingContext.request().getParam("sObjectName")
+                val sObject = routingContext.bodyAsJson
+                LOGGER.info("Received create request for {}: {}", sObjectName, sObject)
+                val result = JsonObject()
 
-                        // Note: ID response field name has to be lowercase, for some reason
-                        result.put("id", generateBase62Id())
-                        result.put("success", true)
-                        routingContext.response()
-                            .putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON)
-                            .setStatusCode(HttpUtil.HTTP_CREATED)
-                            .end(Buffer.buffer(result.encodePrettily()))
-                    })
-            )
+                // Note: ID response field name has to be lowercase, for some reason
+                result.put("id", generateBase62Id())
+                result.put("success", true)
+                routingContext.response()
+                    .putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON)
+                    .setStatusCode(HttpUtil.HTTP_CREATED)
+                    .end(Buffer.buffer(result.encodePrettily()))
+            }
+        )
 
         // update SObject handlers
-        router.patch("/services/data/:apiVersion/sobjects/:sObjectName/:sObjectId")
-            .handler(handleUpdateRequest())
-        router.post("/services/data/:apiVersion/sobjects/:sObjectName/:sObjectId")
-            .handler(handleUpdateRequest())
+        router.patch("/services/data/:apiVersion/sobjects/:sObjectName/:sObjectId").handler(handleUpdateRequest())
+        router.post("/services/data/:apiVersion/sobjects/:sObjectName/:sObjectId").handler(handleUpdateRequest())
     }
 
     /**

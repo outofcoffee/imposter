@@ -67,7 +67,7 @@ import java.util.*
 object SpecificationLoader {
     private val LOGGER = LoggerFactory.getLogger(SpecificationLoader::class.java)
 
-    @kotlin.jvm.JvmStatic
+    @JvmStatic
     fun parseSpecification(config: OpenApiPluginConfig): OpenAPI {
         val specFile = config.specFile ?: throw IllegalStateException("No specification file configured")
         val specData = loadSpecData(config, specFile)
@@ -91,9 +91,9 @@ object SpecificationLoader {
         val parseResult: SwaggerParseResult? = when (specVersion) {
             SpecVersion.V2 -> SwaggerConverter().readContents(specData, emptyList(), parseOptions)
             SpecVersion.V3 -> OpenAPIV3Parser().readContents(specData, emptyList(), parseOptions)
-            else -> throw IllegalStateException("Unsupported version: $specVersion for: $specFile")
         }
         checkNotNull(parseResult) { "Unable to parse specification: $specFile" }
+
         if (null != parseResult.messages && parseResult.messages.isNotEmpty()) {
             LOGGER.info(
                 "OpenAPI parser messages for: {}: {}",
@@ -101,6 +101,7 @@ object SpecificationLoader {
             )
         }
         checkNotNull(parseResult.openAPI) { "Unable to parse specification: $specFile" }
+
         return parseResult.openAPI
     }
 
@@ -125,7 +126,7 @@ object SpecificationLoader {
     }
 
     private fun readSpecFromFile(config: OpenApiPluginConfig, specFile: String): String {
-        val specPath = Paths.get(config.parentDir!!.absolutePath, specFile)
+        val specPath = Paths.get(config.parentDir.absolutePath, specFile)
         return try {
             FileUtils.readFileToString(specPath.toFile(), StandardCharsets.UTF_8)
         } catch (e: IOException) {

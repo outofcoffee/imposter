@@ -100,7 +100,7 @@ class S3SpecificationLoader private constructor() {
         /**
          * Clears the instance holding the S3 client. Typically only called from tests.
          */
-        @kotlin.jvm.JvmStatic
+        @JvmStatic
         fun destroyInstance() {
             instance = null
         }

@@ -85,7 +85,7 @@ class NashornScriptServiceImpl @Inject constructor(scriptEngineManager: ScriptEn
      * variable [.ENV_SCRIPT_CACHE_ENTRIES].
      */
     private val compiledScripts = CacheBuilder.newBuilder()
-        .maximumSize((getEnv(ENV_SCRIPT_CACHE_ENTRIES)?.toInt() ?: DEFAULT_SCRIPT_CACHE_ENTRIES).toLong())
+        .maximumSize(getEnv(ENV_SCRIPT_CACHE_ENTRIES)?.toLong() ?: DEFAULT_SCRIPT_CACHE_ENTRIES)
         .build<Path, CompiledScript>()
 
     override fun executeScript(
@@ -93,7 +93,7 @@ class NashornScriptServiceImpl @Inject constructor(scriptEngineManager: ScriptEn
         resourceConfig: ResponseConfigHolder?,
         runtimeContext: RuntimeContext
     ): ReadWriteResponseBehaviour {
-        val scriptFile = Paths.get(pluginConfig.parentDir!!.absolutePath, resourceConfig!!.responseConfig.scriptFile)
+        val scriptFile = Paths.get(pluginConfig.parentDir.absolutePath, resourceConfig!!.responseConfig.scriptFile)
         LOGGER.trace("Executing script file: {}", scriptFile)
 
         return try {
@@ -127,7 +127,7 @@ class NashornScriptServiceImpl @Inject constructor(scriptEngineManager: ScriptEn
     companion object {
         private val LOGGER = LogManager.getLogger(NashornScriptServiceImpl::class.java)
         private const val ENV_SCRIPT_CACHE_ENTRIES = "IMPOSTER_SCRIPT_CACHE_ENTRIES"
-        private const val DEFAULT_SCRIPT_CACHE_ENTRIES = 20
+        private const val DEFAULT_SCRIPT_CACHE_ENTRIES = 20L
         private const val METRIC_SCRIPT_CACHE_ENTRIES = "script.cache.entries"
     }
 }

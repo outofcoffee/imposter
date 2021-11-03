@@ -54,7 +54,13 @@ import io.gatehill.imposter.lifecycle.SecurityLifecycleHooks
 import io.gatehill.imposter.lifecycle.SecurityLifecycleListener
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.ResourcesHolder
-import io.gatehill.imposter.plugin.config.resource.*
+import io.gatehill.imposter.plugin.config.resource.PathParamsResourceConfig
+import io.gatehill.imposter.plugin.config.resource.QueryParamsResourceConfig
+import io.gatehill.imposter.plugin.config.resource.RequestHeadersResourceConfig
+import io.gatehill.imposter.plugin.config.resource.ResourceConfig
+import io.gatehill.imposter.plugin.config.resource.ResourceMethod
+import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
+import io.gatehill.imposter.plugin.config.resource.RestResourceConfig
 import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyConfig
 import io.gatehill.imposter.server.RequestHandlingMode
 import io.gatehill.imposter.service.ResourceServiceImpl
@@ -378,7 +384,7 @@ class ResourceServiceImpl @Inject constructor(
     }
 
     private fun handleResource(
-        pluginConfig: PluginConfig?,
+        pluginConfig: PluginConfig,
         routingContextConsumer: Consumer<RoutingContext>,
         routingContext: RoutingContext,
         resolvedResourceConfigs: List<ResolvedResourceConfig>
