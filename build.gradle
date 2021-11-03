@@ -53,7 +53,7 @@ subprojects {
         version_commons_text = '1.9'
         version_groovy = '2.4.12'
         version_guice = '4.1.0'
-        version_jackson = '2.12.3'
+        version_jackson = '2.12.5'
         version_junit = '4.12'
         version_log4j = '2.9.1'
         version_micrometer = '1.6.7'
