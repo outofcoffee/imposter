@@ -10,6 +10,8 @@ compileJava {
 }
 
 dependencies {
+    api "org.codehaus.groovy:groovy-all:$version_groovy"
+
     api project(':imposter-core')
     api project(':imposter-server')
 
@@ -22,5 +24,4 @@ dependencies {
 
     // required to mock vertx interfaces
     implementation "io.vertx:vertx-codegen:$version_vertx"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 }
