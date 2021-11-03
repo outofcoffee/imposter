@@ -9,7 +9,6 @@ compileJava {
 dependencies {
     api project (':imposter-core')
     api project (':imposter-server')
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

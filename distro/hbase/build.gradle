@@ -12,7 +12,6 @@ dependencies {
     // plugins
     implementation project (':plugin:plugin-detector')
     implementation project (':plugin:plugin-hbase')
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 }
 
 shadowJar {
