@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2021-2021.
  *
  * This file is part of Imposter.
  *
@@ -40,21 +40,42 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.scripting.nashorn.shim
 
-package io.gatehill.imposter.scripting.nashorn;
-
-import com.google.inject.AbstractModule;
-import com.google.inject.Singleton;
-import io.gatehill.imposter.scripting.nashorn.service.NashornScriptServiceImpl;
-import io.gatehill.imposter.service.ScriptService;
-import io.gatehill.imposter.util.annotation.JavascriptImpl;
+import org.apache.logging.log4j.Logger
+import javax.script.SimpleBindings
 
 /**
+ * Basic shim for JavaScript console.
+ *
  * @author Pete Cornish
  */
-public class NashornScriptingModule extends AbstractModule {
-    @Override
-    protected void configure() {
-        bind(ScriptService.class).annotatedWith(JavascriptImpl.class).to(NashornScriptServiceImpl.class).in(Singleton.class);
+class ConsoleShim(private val bindings: SimpleBindings) {
+    private var logger: Logger? = null
+        get() {
+            if (null == field) {
+                field = bindings["logger"] as Logger?
+            }
+            return field
+        }
+
+    fun log(message: String?, vararg args: Any?) {
+        logger!!.info(message, *args)
+    }
+
+    fun debug(message: String?, vararg args: Any?) {
+        logger!!.debug(message, *args)
+    }
+
+    fun info(message: String?, vararg args: Any?) {
+        logger!!.info(message, *args)
+    }
+
+    fun warn(message: String?, vararg args: Any?) {
+        logger!!.warn(message, *args)
+    }
+
+    fun error(message: String?, vararg args: Any?) {
+        logger!!.error(message, *args)
     }
 }

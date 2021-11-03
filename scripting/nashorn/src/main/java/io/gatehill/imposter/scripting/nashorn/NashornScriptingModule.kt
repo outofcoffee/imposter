@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2021.
+ * Copyright (c) 2016-2021.
  *
  * This file is part of Imposter.
  *
@@ -40,50 +40,20 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.scripting.nashorn
 
-package io.gatehill.imposter.scripting.nashorn.shim;
-
-import org.apache.logging.log4j.Logger;
-
-import javax.script.SimpleBindings;
+import com.google.inject.AbstractModule
+import com.google.inject.Singleton
+import io.gatehill.imposter.scripting.nashorn.service.NashornScriptServiceImpl
+import io.gatehill.imposter.service.ScriptService
+import io.gatehill.imposter.util.annotation.JavascriptImpl
 
 /**
- * Basic shim for JavaScript console.
- *
  * @author Pete Cornish
  */
-public class ConsoleShim {
-    private final SimpleBindings bindings;
-    private Logger logger;
-
-    public ConsoleShim(SimpleBindings bindings) {
-        this.bindings = bindings;
-    }
-
-    private Logger getLogger() {
-        if (null == logger) {
-            logger = (Logger) bindings.get("logger");
-        }
-        return logger;
-    }
-
-    public void log(String message, Object... args) {
-        getLogger().info(message, args);
-    }
-
-    public void debug(String message, Object... args) {
-        getLogger().debug(message, args);
-    }
-
-    public void info(String message, Object... args) {
-        getLogger().info(message, args);
-    }
-
-    public void warn(String message, Object... args) {
-        getLogger().warn(message, args);
-    }
-
-    public void error(String message, Object... args) {
-        getLogger().error(message, args);
+class NashornScriptingModule : AbstractModule() {
+    override fun configure() {
+        bind(ScriptService::class.java).annotatedWith(JavascriptImpl::class.java)
+            .to(NashornScriptServiceImpl::class.java).`in`(Singleton::class.java)
     }
 }
