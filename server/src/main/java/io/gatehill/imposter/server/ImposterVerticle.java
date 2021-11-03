@@ -130,7 +130,7 @@ public class ImposterVerticle extends AbstractVerticle {
         );
         bootstrapModules.addAll(FeatureModuleUtil.discoverFeatureModules());
 
-        final Imposter imposter = new Imposter(imposterConfig, bootstrapModules);
+        final Imposter imposter = new Imposter(imposterConfig, bootstrapModules.toArray(new Module[0]));
         imposter.start();
     }
 
