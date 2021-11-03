@@ -15,7 +15,6 @@ dependencies {
     implementation project (':plugin:plugin-openapi')
     implementation project (':plugin:plugin-rest')
     implementation project (':plugin:plugin-sfdc')
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 }
 
 shadowJar {

@@ -10,7 +10,7 @@ dependencies {
     api "org.apache.logging.log4j:log4j-api:$version_log4j"
     api "com.google.inject:guice:$version_guice"
     api "io.vertx:vertx-web:$version_vertx"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    api "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
