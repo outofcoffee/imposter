@@ -7,13 +7,14 @@ compileJava {
 }
 
 dependencies {
+    api "org.codehaus.groovy:groovy-all:$version_groovy"
+
     implementation project(':imposter-core')
     implementation project(':scripting:scripting-common')
 
     // test
     testImplementation  project(':imposter-test')
     testImplementation  "com.jayway.restassured:rest-assured:$version_restAssured"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
