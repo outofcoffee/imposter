@@ -40,28 +40,20 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.scripting.groovy
 
-package io.gatehill.imposter.service
-
-import io.gatehill.imposter.scripting.AbstractScriptServiceImplTest
+import com.google.inject.AbstractModule
+import com.google.inject.Singleton
 import io.gatehill.imposter.scripting.groovy.service.GroovyScriptServiceImpl
-
-import javax.inject.Inject
+import io.gatehill.imposter.service.ScriptService
+import io.gatehill.imposter.util.annotation.GroovyImpl
 
 /**
  * @author Pete Cornish
  */
-public class GroovyScriptServiceImplTest extends AbstractScriptServiceImplTest {
-    @Inject
-    private GroovyScriptServiceImpl service;
-
-    @Override
-    protected ScriptService getService() {
-        return service
-    }
-
-    @Override
-    protected String getScriptName() {
-        return 'test.groovy'
+class GroovyScriptingModule : AbstractModule() {
+    override fun configure() {
+        bind(ScriptService::class.java).annotatedWith(GroovyImpl::class.java)
+            .to(GroovyScriptServiceImpl::class.java).`in`(Singleton::class.java)
     }
 }
