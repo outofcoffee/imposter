@@ -46,7 +46,12 @@ import io.gatehill.imposter.plugin.openapi.model.ContentTypedHolder
 import io.gatehill.imposter.plugin.openapi.service.valueprovider.DEFAULT_VALUE_PROVIDERS
 import io.gatehill.imposter.plugin.openapi.util.RefUtil
 import io.swagger.v3.oas.models.OpenAPI
-import io.swagger.v3.oas.models.media.*
+import io.swagger.v3.oas.models.media.ArraySchema
+import io.swagger.v3.oas.models.media.ComposedSchema
+import io.swagger.v3.oas.models.media.DateSchema
+import io.swagger.v3.oas.models.media.DateTimeSchema
+import io.swagger.v3.oas.models.media.ObjectSchema
+import io.swagger.v3.oas.models.media.Schema
 import io.vertx.core.http.HttpServerRequest
 import org.apache.logging.log4j.LogManager
 import java.time.OffsetDateTime
@@ -54,7 +59,6 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.*
-import java.util.function.Consumer
 
 /**
  * Collects examples from schema definitions.
@@ -126,13 +130,13 @@ class SchemaServiceImpl : SchemaService {
             // Combine properties of 'allOf'
             // See: https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/
             val combinedExampleProperties: MutableMap<String, Any> = HashMap()
-            allOf.forEach(Consumer { s ->
+            allOf.forEach { s ->
                 val exampleMap = collectSchemaExample(spec, s)
                 if (Objects.nonNull(exampleMap) && exampleMap is Map<*, *>) {
                     // FIXME code defensively around this cast
                     combinedExampleProperties.putAll((exampleMap as Map<String, Any>?)!!)
                 }
-            })
+            }
             combinedExampleProperties
 
         } else if (Objects.nonNull(schema.oneOf) && schema.oneOf.isNotEmpty()) {

@@ -61,8 +61,7 @@ import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.ResponseBehaviour
 import io.gatehill.imposter.script.ResponseBehaviourType
 import io.gatehill.imposter.service.ResponseService.ResponseSender
-import io.gatehill.imposter.service.ResponseServiceImpl
-import io.gatehill.imposter.util.EnvVars
+import io.gatehill.imposter.util.EnvVars.Companion.getEnv
 import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.LogUtil.describeRequest
 import io.gatehill.imposter.util.MetricsUtil
@@ -80,8 +79,7 @@ import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.Objects
-import java.util.Optional
+import java.util.*
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.atomic.AtomicReference
@@ -103,10 +101,7 @@ class ResponseServiceImpl @Inject constructor(
      * variable [.ENV_RESPONSE_FILE_CACHE_ENTRIES].
      */
     private val responseFileCache = CacheBuilder.newBuilder()
-        .maximumSize(
-            Optional.ofNullable<String>(EnvVars.getEnv(ENV_RESPONSE_FILE_CACHE_ENTRIES))
-                .map { s: String -> s.toInt() }.orElse(DEFAULT_RESPONSE_FILE_CACHE_ENTRIES).toLong()
-        )
+        .maximumSize(getEnv(ENV_RESPONSE_FILE_CACHE_ENTRIES)?.toLong() ?: DEFAULT_RESPONSE_FILE_CACHE_ENTRIES)
         .build<Path, String>()
 
     init {
@@ -276,7 +271,7 @@ class ResponseServiceImpl @Inject constructor(
     }
 
     private fun sendResponseInternal(
-        pluginConfig: PluginConfig?,
+        pluginConfig: PluginConfig,
         resourceConfig: ResourceConfig?,
         routingContext: RoutingContext,
         responseBehaviour: ResponseBehaviour,
@@ -307,7 +302,7 @@ class ResponseServiceImpl @Inject constructor(
             routingContext.fail(
                 ResponseException(
                     "Error sending mock response with status code ${responseBehaviour.statusCode} for " +
-                        describeRequest(routingContext), e
+                            describeRequest(routingContext), e
                 )
             )
         }
@@ -324,7 +319,7 @@ class ResponseServiceImpl @Inject constructor(
      */
     @Throws(ExecutionException::class)
     private fun serveResponseFile(
-        pluginConfig: PluginConfig?,
+        pluginConfig: PluginConfig,
         resourceConfig: ResourceConfig?,
         routingContext: RoutingContext,
         responseBehaviour: ResponseBehaviour
@@ -336,7 +331,10 @@ class ResponseServiceImpl @Inject constructor(
             routingContext.request().absoluteURI(),
             response.statusCode
         )
-        val normalisedPath = normalisePath(pluginConfig, responseBehaviour.responseFile)
+
+        val responseFile = responseBehaviour.responseFile ?: throw IllegalStateException("Response file not set")
+        val normalisedPath = normalisePath(pluginConfig, responseFile)
+
         if (responseBehaviour.isTemplate) {
             val responseData = responseFileCache[normalisedPath, {
                 FileUtils.readFileToString(
@@ -446,8 +444,8 @@ class ResponseServiceImpl @Inject constructor(
         throw ResponseException("All attempts to send a response failed")
     }
 
-    private fun normalisePath(config: PluginConfig?, responseFile: String?): Path {
-        return Paths.get(config!!.parentDir!!.absolutePath, responseFile)
+    private fun normalisePath(config: PluginConfig, responseFile: String): Path {
+        return Paths.get(config.parentDir.absolutePath, responseFile)
     }
 
     override fun loadResponseAsJsonArray(config: PluginConfig, behaviour: ResponseBehaviour): JsonArray {
@@ -472,7 +470,7 @@ class ResponseServiceImpl @Inject constructor(
             ResponseServiceImpl::class.java
         )
         private const val ENV_RESPONSE_FILE_CACHE_ENTRIES = "IMPOSTER_RESPONSE_FILE_CACHE_ENTRIES"
-        private const val DEFAULT_RESPONSE_FILE_CACHE_ENTRIES = 20
+        private const val DEFAULT_RESPONSE_FILE_CACHE_ENTRIES = 20L
         private const val METRIC_RESPONSE_FILE_CACHE_ENTRIES = "response.file.cache.entries"
     }
 }

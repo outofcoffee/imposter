@@ -42,6 +42,7 @@
  */
 package io.gatehill.imposter.plugin.config
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.gatehill.imposter.plugin.config.resource.AbstractResourceConfig
@@ -59,9 +60,12 @@ open class PluginConfigImpl : AbstractResourceConfig(), SystemConfigHolder, Plug
     @JsonProperty("plugin")
     override val plugin: String? = null
 
-    @JsonProperty("parentDir")
-    override var parentDir: File? = null
-
     @JsonProperty("system")
     override val systemConfig: SystemConfig? = null
+
+    /**
+     * Not set by configuration file.
+     */
+    @JsonIgnore
+    override lateinit var parentDir: File
 }

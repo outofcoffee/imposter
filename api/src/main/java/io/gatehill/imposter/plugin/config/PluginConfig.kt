@@ -49,5 +49,5 @@ import java.io.File
  */
 interface PluginConfig {
     val plugin: String?
-    val parentDir: File?
+    val parentDir: File
 }

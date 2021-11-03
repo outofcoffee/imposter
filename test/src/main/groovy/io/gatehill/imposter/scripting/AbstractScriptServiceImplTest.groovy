@@ -99,10 +99,10 @@ abstract class AbstractScriptServiceImplTest {
         config.with {
             parentDir = script.parent.toFile()
             responseConfig.with {
-                scriptFile = scriptName
+                it.scriptFile = scriptName
             }
         }
-        config
+        return config
     }
 
     protected RuntimeContext buildRuntimeContext(
@@ -129,7 +129,7 @@ abstract class AbstractScriptServiceImplTest {
         def pluginConfig = mock(PluginConfig.class)
         def executionContext = ScriptUtil.buildContext(mockRoutingContext, null)
         def runtimeContext = new RuntimeContext(env, logger, pluginConfig, additionalBindings, executionContext)
-        runtimeContext
+        return runtimeContext
     }
 
     @Test

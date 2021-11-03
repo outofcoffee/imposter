@@ -78,8 +78,7 @@ import org.apache.commons.text.lookup.StringLookupFactory
 import org.apache.logging.log4j.LogManager
 import java.io.IOException
 import java.nio.file.Paths
-import java.util.Objects
-import java.util.Optional
+import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 import java.util.regex.Pattern
 import javax.inject.Inject
@@ -186,7 +185,7 @@ class StoreServiceImpl @Inject constructor(
 
         } else if (Objects.nonNull(storeConfig.preloadFile)) {
             check(storeConfig.preloadFile!!.endsWith(".json")) { "Only JSON (.json) files containing a top-level object are supported for preloading" }
-            val preloadPath = Paths.get(pluginConfig.parentDir!!.path, storeConfig.preloadFile).toAbsolutePath()
+            val preloadPath = Paths.get(pluginConfig.parentDir.path, storeConfig.preloadFile).toAbsolutePath()
             LOGGER.trace("Preloading file {} into store: {}", preloadPath, storeName)
 
             try {
