@@ -40,25 +40,39 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.plugin.hbase.service
 
-package io.gatehill.imposter.plugin.hbase.model;
+import com.google.common.cache.CacheBuilder
+import io.gatehill.imposter.plugin.hbase.config.HBasePluginConfig
+import io.gatehill.imposter.plugin.hbase.model.InMemoryScanner
+import io.gatehill.imposter.plugin.hbase.model.MockScanner
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * @author Pete Cornish
  */
-public enum ResponsePhase {
+class ScannerServiceImpl : ScannerService {
     /**
-     * Creation of a scanner.
+     * Hold scanners for a period of time.
      */
-    SCANNER,
+    private val createdScanners = CacheBuilder.newBuilder()
+        .expireAfterAccess(5, TimeUnit.MINUTES)
+        .build<Int, InMemoryScanner>()
 
-    /**
-     * Read results from a scanner.
-     */
-    RESULTS,
+    private val scannerIdCounter = AtomicInteger()
 
-    /**
-     * Fetch a single record.
-     */
-    RECORD
+    override fun registerScanner(config: HBasePluginConfig, scanner: MockScanner): Int {
+        val scannerId = scannerIdCounter.incrementAndGet()
+        createdScanners.put(scannerId, InMemoryScanner(config, scanner))
+        return scannerId
+    }
+
+    override fun invalidateScanner(scannerId: Int) {
+        createdScanners.invalidate(scannerId)
+    }
+
+    override fun fetchScanner(scannerId: Int): InMemoryScanner? {
+        return createdScanners.getIfPresent(scannerId)
+    }
 }

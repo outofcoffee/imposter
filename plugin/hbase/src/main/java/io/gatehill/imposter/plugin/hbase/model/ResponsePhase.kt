@@ -40,35 +40,24 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-
-package io.gatehill.imposter.plugin.hbase.model;
-
-import io.gatehill.imposter.plugin.config.PluginConfig;
-
-import java.util.concurrent.atomic.AtomicInteger;
+package io.gatehill.imposter.plugin.hbase.model
 
 /**
  * @author Pete Cornish
  */
-public class InMemoryScanner {
-    private PluginConfig config;
-    private MockScanner scanner;
-    private AtomicInteger rowCounter = new AtomicInteger();
+enum class ResponsePhase {
+    /**
+     * Creation of a scanner.
+     */
+    SCANNER,
 
-    public InMemoryScanner(PluginConfig config, MockScanner scanner) {
-        this.config = config;
-        this.scanner = scanner;
-    }
+    /**
+     * Read results from a scanner.
+     */
+    RESULTS,
 
-    public PluginConfig getConfig() {
-        return config;
-    }
-
-    public MockScanner getScanner() {
-        return scanner;
-    }
-
-    public AtomicInteger getRowCounter() {
-        return rowCounter;
-    }
+    /**
+     * Fetch a single record.
+     */
+    RECORD
 }

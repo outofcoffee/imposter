@@ -44,14 +44,14 @@ package io.gatehill.imposter.util
 
 import io.gatehill.imposter.server.VertxWebServerFactoryImpl
 import io.vertx.ext.web.RoutingContext
-import java.util.*
+import java.util.Locale
 import java.util.regex.Pattern
 
 /**
  * @author Pete Cornish
  */
 object HttpUtil {
-    @kotlin.jvm.JvmField
+    @JvmField
     val DEFAULT_SERVER_FACTORY: String = VertxWebServerFactoryImpl::class.java.canonicalName
 
     private val whitespacePattern = Pattern.compile("\\s")
@@ -247,7 +247,7 @@ object HttpUtil {
      * @return the ordered content types
      */
     @JvmStatic
-    fun readAcceptedContentTypes(routingContext: RoutingContext): List<String?> {
+    fun readAcceptedContentTypes(routingContext: RoutingContext): List<String> {
         return readAcceptedContentTypes(routingContext.request().getHeader("Accept"))
     }
 

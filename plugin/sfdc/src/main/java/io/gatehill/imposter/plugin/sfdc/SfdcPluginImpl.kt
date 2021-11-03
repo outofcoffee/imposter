@@ -62,7 +62,8 @@ import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.RoutingContext
 import org.apache.logging.log4j.LogManager
-import java.util.*
+import java.util.StringTokenizer
+import java.util.UUID
 import java.util.function.Consumer
 import javax.inject.Inject
 import kotlin.math.abs
@@ -145,19 +146,19 @@ class SfdcPluginImpl @Inject constructor(
                         val result = findRow(
                             FIELD_ID, sObjectId,
                             responseService.loadResponseAsJsonArray(config, responseBehaviour!!)
-                        )
-                            .map { r: JsonObject -> addRecordAttributes(r, apiVersion, config.sObjectName) }
+                        )?.let { r: JsonObject -> addRecordAttributes(r, apiVersion, config.sObjectName) }
+
                         val response = routingContext.response()
-                        if (result.isPresent) {
+
+                        result?.let {
                             LOGGER.info("Sending SObject with ID: {}", sObjectId)
                             response.putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON)
                                 .setStatusCode(HttpUtil.HTTP_OK)
-                                .end(Buffer.buffer(result.get().encodePrettily()))
-                        } else {
+                                .end(Buffer.buffer(result.encodePrettily()))
+                        } ?: run {
                             // no such record
                             LOGGER.error("{} SObject with ID: {} not found", config.sObjectName, sObjectId)
-                            response.setStatusCode(HttpUtil.HTTP_NOT_FOUND)
-                                .end()
+                            response.setStatusCode(HttpUtil.HTTP_NOT_FOUND).end()
                         }
                     })
                 })

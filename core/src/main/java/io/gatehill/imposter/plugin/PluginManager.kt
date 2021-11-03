@@ -55,8 +55,8 @@ import io.github.classgraph.ClassGraph
 import io.github.classgraph.ClassInfo
 import org.apache.logging.log4j.LogManager
 import java.io.File
-import java.util.*
-import java.util.function.Consumer
+import java.util.Collections
+import java.util.Optional
 import java.util.regex.Pattern
 import java.util.stream.Collectors
 
@@ -180,7 +180,7 @@ class PluginManager {
             .map { pluginClass: Class<out Plugin> -> examinePlugin(pluginClass) }
             .collect(Collectors.toList()))
 
-        findUnregisteredProviders().forEach(Consumer { providerClass: Class<PluginProvider> ->
+        findUnregisteredProviders().forEach { providerClass: Class<PluginProvider> ->
             registerProvider(providerClass)
             val pluginProvider = createPluginProvider(providerClass)
             val provided = pluginProvider.providePlugins(imposterConfig!!, pluginConfigs)
@@ -190,7 +190,7 @@ class PluginManager {
             if (provided.isNotEmpty()) {
                 dependencies.addAll(preparePluginsFromConfig(imposterConfig, provided, pluginConfigs))
             }
-        })
+        }
         return dependencies
     }
 
@@ -263,13 +263,13 @@ class PluginManager {
      * @param injector the injector from which the plugins can be instantiated
      */
     fun registerPlugins(injector: Injector) {
-        getPluginClasses().forEach(Consumer { pluginClass: Class<out Plugin> ->
+        getPluginClasses().forEach { pluginClass: Class<out Plugin> ->
             try {
                 registerInstance(injector.getInstance(pluginClass))
             } catch (e: Exception) {
                 throw RuntimeException("Error registering plugin: $pluginClass", e)
             }
-        })
+        }
         val pluginCount = getPlugins().size
         if (pluginCount > 0) {
             val pluginNames = getPlugins().stream()

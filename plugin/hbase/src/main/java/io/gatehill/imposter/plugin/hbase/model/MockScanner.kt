@@ -40,21 +40,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.plugin.hbase.model
 
-package io.gatehill.imposter.plugin.hbase.model;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 
-public class RecordInfo {
-    private String recordId;
-
-    public RecordInfo(String recordId) {
-        this.recordId = recordId;
-    }
-
-    public String getRecordId() {
-        return recordId;
-    }
-
-    public void setRecordId(String recordId) {
-        this.recordId = recordId;
-    }
+/**
+ * @author Pete Cornish
+ */
+@JsonIgnoreProperties(ignoreUnknown = true)
+class MockScanner {
+    var filter: String? = null
 }

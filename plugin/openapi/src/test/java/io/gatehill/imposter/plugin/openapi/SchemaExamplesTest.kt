@@ -44,7 +44,6 @@ package io.gatehill.imposter.plugin.openapi
 
 import com.jayway.restassured.RestAssured
 import com.jayway.restassured.http.ContentType
-import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.plugin.openapi.OpenApiPluginImpl
 import io.gatehill.imposter.server.BaseVerticleTest
 import io.gatehill.imposter.util.HttpUtil
@@ -60,9 +59,7 @@ import org.yaml.snakeyaml.Yaml
  * @author benjvoigt
  */
 internal class SchemaExamplesTest : BaseVerticleTest() {
-    override fun getPluginClass(): Class<out Plugin?> {
-        return OpenApiPluginImpl::class.java
-    }
+    override fun getPluginClass() = OpenApiPluginImpl::class.java
 
     @Before
     @Throws(Exception::class)

@@ -45,7 +45,6 @@ package io.gatehill.imposter.util
 import com.google.common.base.Strings
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
-import java.util.*
 
 /**
  * @author Pete Cornish
@@ -62,14 +61,14 @@ object FileUtil {
      * @return
      */
     @JvmStatic
-    fun findRow(idFieldName: String?, rowId: String?, rows: JsonArray): Optional<JsonObject> {
+    fun findRow(idFieldName: String?, rowId: String?, rows: JsonArray): JsonObject? {
         check(!Strings.isNullOrEmpty(idFieldName)) { "ID field name not configured" }
         for (i in 0 until rows.size()) {
             val row = rows.getJsonObject(i)
-            if (Optional.ofNullable(row.getValue(idFieldName).toString()).orElse("").equals(rowId, ignoreCase = true)) {
-                return Optional.of(row)
+            if (row.getValue(idFieldName)?.toString()?.equals(rowId, ignoreCase = true) == true) {
+                return row
             }
         }
-        return Optional.empty()
+        return null
     }
 }
