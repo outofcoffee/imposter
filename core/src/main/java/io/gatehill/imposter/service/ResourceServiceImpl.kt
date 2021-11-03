@@ -63,7 +63,6 @@ import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.plugin.config.resource.RestResourceConfig
 import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyConfig
 import io.gatehill.imposter.server.RequestHandlingMode
-import io.gatehill.imposter.service.ResourceServiceImpl
 import io.gatehill.imposter.util.CollectionUtil
 import io.gatehill.imposter.util.CollectionUtil.convertKeysToLowerCase
 import io.gatehill.imposter.util.LogUtil.describeRequest
@@ -98,15 +97,10 @@ class ResourceServiceImpl @Inject constructor(
      */
     override fun resolveResourceConfigs(pluginConfig: PluginConfig): List<ResolvedResourceConfig> {
         if (pluginConfig is ResourcesHolder<*>) {
-            val resources = pluginConfig as ResourcesHolder<RestResourceConfig>
+            val resources = pluginConfig as ResourcesHolder<*>
             if (Objects.nonNull(resources.resources)) {
                 return resources.resources!!.map { res: RestResourceConfig ->
-                    ResolvedResourceConfig(
-                        res,
-                        findPathParams(res),
-                        findQueryParams(res),
-                        findRequestHeaders(res)
-                    )
+                    ResolvedResourceConfig(res, findPathParams(res), findQueryParams(res), findRequestHeaders(res))
                 }
             }
         }
@@ -188,8 +182,7 @@ class ResourceServiceImpl @Inject constructor(
         resourceConfigs: List<ResolvedResourceConfig>,
         pairsSupplier: Function<ResolvedResourceConfig, Map<String, String>>
     ): List<ResolvedResourceConfig> {
-        val configsWithPairs = resourceConfigs
-            .filter { res -> pairsSupplier.apply(res).isNotEmpty() }
+        val configsWithPairs = resourceConfigs.filter { res -> pairsSupplier.apply(res).isNotEmpty() }
 
         return configsWithPairs.ifEmpty {
             // no resource configs specified params - don't filter
@@ -258,9 +251,7 @@ class ResourceServiceImpl @Inject constructor(
         }
         val comparisonMap = if (caseSensitiveKeyMatch) requestMap else convertKeysToLowerCase(requestMap)
         return resourceMap.entries.any { (key, value) ->
-            val configKey: String = if (caseSensitiveKeyMatch) key else key.lowercase(
-                Locale.getDefault()
-            )
+            val configKey: String = if (caseSensitiveKeyMatch) key else key.lowercase(Locale.getDefault())
             safeEquals(comparisonMap[configKey], value)
         }
     }
@@ -278,8 +269,7 @@ class ResourceServiceImpl @Inject constructor(
             return true
         }
         val body = bodySupplier.get()
-        val bodyValue: Any?
-        bodyValue = if (Strings.isNullOrEmpty(body)) {
+        val bodyValue = if (Strings.isNullOrEmpty(body)) {
             null
         } else {
             try {
@@ -354,11 +344,9 @@ class ResourceServiceImpl @Inject constructor(
         routingContextHandler: Handler<RoutingContext>
     ): Handler<RoutingContext> {
         val selectedConfig = securityService.findConfigPreferringSecurityPolicy(allPluginConfigs)
-        return handleRoute(
-            imposterConfig,
-            selectedConfig,
-            vertx
-        ) { event: RoutingContext -> routingContextHandler.handle(event) }
+        return handleRoute(imposterConfig, selectedConfig, vertx) { event: RoutingContext ->
+            routingContextHandler.handle(event)
+        }
     }
 
     /**
@@ -367,7 +355,8 @@ class ResourceServiceImpl @Inject constructor(
     override fun buildUnhandledExceptionHandler() = Handler { routingContext: RoutingContext ->
         val level = determineLogLevel(routingContext)
         LOGGER.log(
-            level, "Unhandled routing exception for request " + describeRequest(routingContext),
+            level,
+            "Unhandled routing exception for request " + describeRequest(routingContext),
             routingContext.failure()
         )
     }
@@ -411,12 +400,7 @@ class ResourceServiceImpl @Inject constructor(
         // allows plugins to customise behaviour
         routingContext.put(ResourceUtil.RESPONSE_CONFIG_HOLDER_KEY, resourceConfig)
         if (securityLifecycle.allMatch { listener: SecurityLifecycleListener ->
-                listener.isRequestPermitted(
-                    rootResourceConfig,
-                    resourceConfig,
-                    resolvedResourceConfigs,
-                    routingContext
-                )
+                listener.isRequestPermitted(rootResourceConfig, resourceConfig, resolvedResourceConfigs, routingContext)
             }) {
             // request is permitted to continue
             try {
@@ -424,9 +408,7 @@ class ResourceServiceImpl @Inject constructor(
             } finally {
                 // always perform tidy up once handled, regardless of outcome
                 engineLifecycle.forEach { listener: EngineLifecycleListener ->
-                    listener.afterRoutingContextHandled(
-                        routingContext
-                    )
+                    listener.afterRoutingContextHandled(routingContext)
                 }
             }
         } else {
@@ -443,9 +425,7 @@ class ResourceServiceImpl @Inject constructor(
     }
 
     companion object {
-        private val LOGGER = LogManager.getLogger(
-            ResourceServiceImpl::class.java
-        )
+        private val LOGGER = LogManager.getLogger(ResourceServiceImpl::class.java)
 
         /**
          * Log errors for the following paths at TRACE instead of ERROR.
