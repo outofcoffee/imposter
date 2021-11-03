@@ -62,11 +62,11 @@ import java.util.List;
 import java.util.Map;
 
 import static com.jayway.restassured.RestAssured.given;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Tests for item capture.
@@ -83,7 +83,7 @@ public class CaptureTest extends BaseVerticleTest {
     @Before
     public void setUp(TestContext testContext) throws Exception {
         super.setUp(testContext);
-        RestAssured.baseURI = "http://" + HOST + ":" + getListenPort();
+        RestAssured.baseURI = "http://" + getHost() + ":" + getListenPort();
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
     }
 

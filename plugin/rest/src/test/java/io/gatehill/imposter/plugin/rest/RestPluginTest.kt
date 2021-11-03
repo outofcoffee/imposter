@@ -44,7 +44,6 @@ package io.gatehill.imposter.plugin.rest
 
 import com.jayway.restassured.RestAssured
 import com.jayway.restassured.config.RedirectConfig
-import io.gatehill.imposter.plugin.rest.RestPluginImpl
 import io.gatehill.imposter.server.BaseVerticleTest
 import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.HttpUtil.CONTENT_TYPE
@@ -59,13 +58,13 @@ import org.junit.Test
  * @author Pete Cornish
  */
 class RestPluginTest : BaseVerticleTest() {
-    override fun getPluginClass() = RestPluginImpl::class.java
+    override val pluginClass = RestPluginImpl::class.java
 
     @Before
     @Throws(Exception::class)
     override fun setUp(testContext: TestContext) {
         super.setUp(testContext)
-        RestAssured.baseURI = "http://$HOST:$listenPort"
+        RestAssured.baseURI = "http://$host:$listenPort"
         RestAssured.config().redirect(RedirectConfig.redirectConfig().followRedirects(false))
     }
 

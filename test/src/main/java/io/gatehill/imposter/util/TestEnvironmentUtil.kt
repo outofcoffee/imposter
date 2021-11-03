@@ -40,48 +40,47 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.util
 
-package io.gatehill.imposter.util;
-
-import org.hamcrest.Matcher;
-
-import java.io.File;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assume.assumeThat;
+import org.hamcrest.CoreMatchers
+import org.junit.Assume
+import java.io.File
 
 /**
  * @author Pete Cornish
  */
-public class TestEnvironmentUtil {
-    private static final File NULL_FILE = new File(
-            (System.getProperty("os.name").startsWith("Windows") ? "NUL" : "/dev/null")
-    );
+object TestEnvironmentUtil {
+    private val NULL_FILE = File(
+        if (System.getProperty("os.name").startsWith("Windows")) "NUL" else "/dev/null"
+    )
 
     /**
      * Skips a JUnit test if Docker is not accessible.
      */
-    public static void assumeDockerAccessible() throws Exception {
-        assumeThat("Docker is running", TestEnvironmentUtil.testDockerRunning(), is(0));
+    @JvmStatic
+    @Throws(Exception::class)
+    fun assumeDockerAccessible() {
+        Assume.assumeThat("Docker is running", testDockerRunning(), CoreMatchers.`is`(0))
     }
 
     /**
      * Tests if the Docker process can be started successfully.
-     * <p>
-     * Typically used with a {@link org.junit.Assume#assumeThat(Object, Matcher)} statement in a JUnit test,
+     *
+     *
+     * Typically used with a [org.junit.Assume.assumeThat] statement in a JUnit test,
      * for example:
      *
      * <pre>
-     *     assumeThat("Docker is running", TestEnvironmentUtil.testDockerRunning(), is(0));
-     * </pre>
+     * assumeThat("Docker is running", TestEnvironmentUtil.testDockerRunning(), is(0));
+    </pre> *
      *
      * @return the exit code of running the 'docker ps' command
      */
-    private static int testDockerRunning() throws Exception {
-        return new ProcessBuilder("docker", "ps")
-                .redirectErrorStream(true)
-                .redirectOutput(NULL_FILE)
-                .start().waitFor();
+    @Throws(Exception::class)
+    private fun testDockerRunning(): Int {
+        return ProcessBuilder("docker", "ps")
+            .redirectErrorStream(true)
+            .redirectOutput(NULL_FILE)
+            .start().waitFor()
     }
 }

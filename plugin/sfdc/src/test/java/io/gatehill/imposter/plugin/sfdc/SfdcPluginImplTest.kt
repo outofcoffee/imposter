@@ -64,7 +64,7 @@ import javax.net.ssl.SSLSession
  * @author Pete Cornish
  */
 class SfdcPluginImplTest : BaseVerticleTest() {
-    override fun getPluginClass() = SfdcPluginImpl::class.java
+    override val pluginClass = SfdcPluginImpl::class.java
 
     @Before
     @Throws(Exception::class)
@@ -93,7 +93,7 @@ class SfdcPluginImplTest : BaseVerticleTest() {
     private fun buildForceApi(): ForceApi {
         return ForceApi(
             ApiConfig()
-                .setForceURL("https://$HOST:$listenPort/?")
+                .setForceURL("https://$host:$listenPort/?")
                 .setUsername("user@example.com")
                 .setPassword("password")
                 .setClientId("longclientidalphanumstring")

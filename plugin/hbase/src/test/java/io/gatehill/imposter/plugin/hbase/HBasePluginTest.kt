@@ -66,13 +66,13 @@ import java.io.IOException
 class HBasePluginTest : BaseVerticleTest() {
     private var client: Client? = null
 
-    override fun getPluginClass() = HBasePluginImpl::class.java
+    override val pluginClass = HBasePluginImpl::class.java
 
     @Before
     @Throws(Exception::class)
     override fun setUp(testContext: TestContext) {
         super.setUp(testContext)
-        client = Client(Cluster().add(HOST, listenPort))
+        client = Client(Cluster().add(host, listenPort))
     }
 
     private fun expectSuccessfulRows(testContext: TestContext, table: RemoteHTable, prefix: String) {
