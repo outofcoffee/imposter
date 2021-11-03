@@ -40,47 +40,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-
-package io.gatehill.imposter.store;
-
-import com.google.inject.AbstractModule;
-import com.google.inject.Module;
-import io.gatehill.imposter.store.inmem.InMemoryStoreModule;
-import io.gatehill.imposter.store.service.StoreService;
-import io.gatehill.imposter.store.service.StoreServiceImpl;
-import io.gatehill.imposter.util.EnvVars;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import static java.util.Optional.ofNullable;
+package io.gatehill.imposter.store.util
 
 /**
  * @author Pete Cornish
  */
-public class StoreModule extends AbstractModule {
-    private static final String DEFAULT_STORE_MODULE = InMemoryStoreModule.class.getCanonicalName();
-    private static final Logger LOGGER = LogManager.getLogger(StoreModule.class);
+object StoreUtil {
+    const val REQUEST_SCOPED_STORE_NAME = "request"
 
-    @Override
-    protected void configure() {
-        // needs to be eager to register lifecycle listener
-        bind(StoreService.class).to(StoreServiceImpl.class).asEagerSingleton();
+    fun isRequestScopedStore(storeName: String?): Boolean = REQUEST_SCOPED_STORE_NAME == storeName
 
-        install(discoverStoreModule());
-    }
-
-    @SuppressWarnings("unchecked")
-    private Module discoverStoreModule() {
-        final String storeModule = ofNullable(EnvVars.getEnv("IMPOSTER_STORE_MODULE")).orElse(DEFAULT_STORE_MODULE);
-        LOGGER.trace("Loading store module: {}", storeModule);
-        try {
-            final Class<? extends Module> moduleClass = (Class<? extends Module>) Class.forName(storeModule);
-            return moduleClass.newInstance();
-
-        } catch (Exception e) {
-            throw new RuntimeException("Unable to load store module: " + storeModule +
-                    ". Must be a fully qualified class implementing " + Module.class.getCanonicalName() +
-                    " with a no-arg constructor.", e);
-        }
-    }
+    fun buildRequestStoreName(requestId: String): String = "request_$requestId"
 }

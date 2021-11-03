@@ -40,19 +40,19 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.store.model
 
-package io.gatehill.imposter.store.inmem;
-
-import com.google.inject.AbstractModule;
-import com.google.inject.Singleton;
-import io.gatehill.imposter.store.model.StoreFactory;
+import io.gatehill.imposter.store.util.StoreUtil
 
 /**
  * @author Pete Cornish
  */
-public class InMemoryStoreModule extends AbstractModule {
-    @Override
-    protected void configure() {
-        bind(StoreFactory.class).to(InMemoryStoreFactoryImpl.class).in(Singleton.class);
+class StoreHolder(private val storeFactory: StoreFactory, private val requestId: String) {
+    fun open(storeName: String): Store {
+        if (StoreUtil.isRequestScopedStore(storeName)) {
+            val requestStoreName = StoreUtil.buildRequestStoreName(requestId)
+            return storeFactory.getStoreByName(requestStoreName, true)
+        }
+        return storeFactory.getStoreByName(storeName, false)
     }
 }

@@ -40,70 +40,43 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-
-package io.gatehill.imposter.store.model;
-
-import java.util.Map;
-import java.util.stream.Collectors;
+package io.gatehill.imposter.store.model
 
 /**
- * A delegating {@link Store} wrapper that prepends a string to item keys
+ * A delegating [Store] wrapper that prepends a string to item keys
  * before persistence and retrieval.
  *
  * @author Pete Cornish
  */
-public class PrefixedKeyStore implements Store {
-    private final String keyPrefix;
-    private final Store delegate;
+class PrefixedKeyStore(private val keyPrefix: String, private val delegate: Store) : Store {
+    override val storeName: String
+        get() = delegate.storeName
 
-    public PrefixedKeyStore(String keyPrefix, Store delegate) {
-        this.keyPrefix = keyPrefix;
-        this.delegate = delegate;
+    override val typeDescription: String
+        get() = delegate.typeDescription
+
+    private fun buildKey(key: String): String {
+        return keyPrefix + key
     }
 
-    @Override
-    public String getStoreName() {
-        return delegate.getStoreName();
+    override fun save(key: String, value: Any?) {
+        delegate.save(buildKey(key), value)
     }
 
-    private String buildKey(String key) {
-        return keyPrefix + key;
+    override fun <T> load(key: String): T? = delegate.load(buildKey(key))
+
+    override fun delete(key: String) {
+        delegate.delete(buildKey(key))
     }
 
-    @Override
-    public String getTypeDescription() {
-        return delegate.getTypeDescription();
-    }
-
-    @Override
-    public void save(String key, Object value) {
-        delegate.save(buildKey(key), value);
-    }
-
-    @Override
-    public <T> T load(String key) {
-        return delegate.load(buildKey(key));
-    }
-
-    @Override
-    public void delete(String key) {
-        delegate.delete(buildKey(key));
-    }
-
-    @Override
-    public Map<String, Object> loadAll() {
+    override fun loadAll(): Map<String, Any> {
         // strip out key prefix
-        return delegate.loadAll().entrySet().stream()
-                .collect(Collectors.toMap(e -> e.getKey().substring(keyPrefix.length()), Map.Entry::getValue));
+        return delegate.loadAll().entries.associate { (key, value) ->
+            key.substring(keyPrefix.length) to value
+        }
     }
 
-    @Override
-    public boolean hasItemWithKey(String key) {
-        return delegate.hasItemWithKey(buildKey(key));
-    }
+    override fun hasItemWithKey(key: String) = delegate.hasItemWithKey(buildKey(key))
 
-    @Override
-    public int count() {
-        return delegate.count();
-    }
+    override fun count() = delegate.count()
 }

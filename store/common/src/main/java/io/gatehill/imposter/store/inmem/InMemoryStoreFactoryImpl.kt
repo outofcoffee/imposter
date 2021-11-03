@@ -40,28 +40,16 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.store.inmem
 
-package io.gatehill.imposter.store.model;
-
-import java.util.Map;
+import io.gatehill.imposter.store.factory.AbstractStoreFactory
+import io.gatehill.imposter.store.model.Store
 
 /**
  * @author Pete Cornish
  */
-public interface Store {
-    String getStoreName();
-
-    String getTypeDescription();
-
-    void save(String key, Object value);
-
-    <T> T load(String key);
-
-    void delete(String key);
-
-    Map<String, Object> loadAll();
-
-    boolean hasItemWithKey(String key);
-
-    int count();
+class InMemoryStoreFactoryImpl : AbstractStoreFactory() {
+    override fun buildNewStore(storeName: String): Store {
+        return InMemoryStore(storeName)
+    }
 }
