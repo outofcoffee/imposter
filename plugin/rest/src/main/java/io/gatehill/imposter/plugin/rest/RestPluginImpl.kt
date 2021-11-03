@@ -165,12 +165,13 @@ class RestPluginImpl @Inject constructor(
                         responseService.loadResponseAsJsonArray(pluginConfig, responseBehaviour)
                     )
                     val response = routingContext.response()
-                    if (result.isPresent) {
+
+                    result?.let {
                         LOGGER.info("Returning single row for {}:{}", idFieldName, idField)
                         response.setStatusCode(HttpUtil.HTTP_OK)
                             .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_JSON)
-                            .end(result.get().encodePrettily())
-                    } else {
+                            .end(result.encodePrettily())
+                    } ?: run {
                         // no such record
                         LOGGER.error("No row found for {}:{}", idFieldName, idField)
                         response.setStatusCode(HttpUtil.HTTP_NOT_FOUND).end()

@@ -40,27 +40,37 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.plugin.hbase
 
-package io.gatehill.imposter.plugin.hbase.service.serialisation;
-
-import io.gatehill.imposter.plugin.hbase.model.MockScanner;
-import io.vertx.ext.web.RoutingContext;
-
-import java.util.Optional;
+import com.google.inject.AbstractModule
+import com.google.inject.Singleton
+import com.google.inject.name.Names
+import io.gatehill.imposter.plugin.hbase.service.ScannerService
+import io.gatehill.imposter.plugin.hbase.service.ScannerServiceImpl
+import io.gatehill.imposter.plugin.hbase.service.serialisation.DeserialisationService
+import io.gatehill.imposter.plugin.hbase.service.serialisation.JsonSerialisationServiceImpl
+import io.gatehill.imposter.plugin.hbase.service.serialisation.ProtobufSerialisationServiceImpl
+import io.gatehill.imposter.plugin.hbase.service.serialisation.SerialisationService
 
 /**
  * @author Pete Cornish
  */
-public interface DeserialisationService {
-    /**
-     * @param routingContext the Vert.x routing context
-     * @return the scanner
-     */
-    MockScanner decodeScanner(RoutingContext routingContext);
+class HBasePluginModule : AbstractModule() {
+    override fun configure() {
+        bind(ScannerService::class.java).to(ScannerServiceImpl::class.java).`in`(Singleton::class.java)
 
-    /**
-     * @param scanner the scanner from which to read the filter
-     * @return the scanner filter prefix
-     */
-    Optional<String> decodeScannerFilterPrefix(MockScanner scanner);
+        bind(SerialisationService::class.java).annotatedWith(Names.named("application/x-protobuf"))
+            .to(ProtobufSerialisationServiceImpl::class.java).`in`(Singleton::class.java)
+
+        bind(DeserialisationService::class.java).annotatedWith(Names.named("application/x-protobuf"))
+            .to(ProtobufSerialisationServiceImpl::class.java).`in`(Singleton::class.java)
+
+        bind(SerialisationService::class.java).annotatedWith(Names.named("application/json"))
+            .to(JsonSerialisationServiceImpl::class.java).`in`(Singleton::class.java)
+
+        bind(DeserialisationService::class.java).annotatedWith(Names.named("application/json"))
+            .to(JsonSerialisationServiceImpl::class.java).`in`(Singleton::class.java)
+
+        bind(ScannerService::class.java).to(ScannerServiceImpl::class.java).`in`(Singleton::class.java)
+    }
 }

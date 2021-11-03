@@ -40,23 +40,21 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.plugin.hbase.config
 
-package io.gatehill.imposter.plugin.hbase.model;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import io.gatehill.imposter.plugin.config.PluginConfigImpl
+import org.codehaus.jackson.annotate.JsonProperty
 
 /**
  * @author Pete Cornish
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class MockScanner {
-    private String filter;
+class HBasePluginConfig(
+    @JsonProperty("tableName")
+    val tableName: String,
 
-    public String getFilter() {
-        return filter;
-    }
+    @JsonProperty("prefix")
+    val prefix: String? = null,
 
-    public void setFilter(String filter) {
-        this.filter = filter;
-    }
-}
+    @JsonProperty("idField")
+    val idField: String? = null
+) : PluginConfigImpl()

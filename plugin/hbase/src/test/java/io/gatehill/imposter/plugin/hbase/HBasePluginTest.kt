@@ -44,12 +44,10 @@
 package io.gatehill.imposter.plugin.hbase
 
 
-import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.server.BaseVerticleTest
 import io.vertx.ext.unit.TestContext
 import org.apache.hadoop.hbase.client.Get
 import org.apache.hadoop.hbase.client.Result
-import org.apache.hadoop.hbase.client.ResultScanner
 import org.apache.hadoop.hbase.client.Scan
 import org.apache.hadoop.hbase.filter.PrefixFilter
 import org.apache.hadoop.hbase.rest.client.Client
@@ -58,34 +56,32 @@ import org.apache.hadoop.hbase.rest.client.RemoteHTable
 import org.apache.hadoop.hbase.util.Bytes
 import org.junit.Before
 import org.junit.Test
+import java.io.IOException
 
 /**
- * Tests for {@link HBasePluginImpl}.
+ * Tests for [HBasePluginImpl].
  *
  * @author Pete Cornish
  */
-class HBasePluginTest extends BaseVerticleTest {
-    private Client client
+class HBasePluginTest : BaseVerticleTest() {
+    private var client: Client? = null
 
-    @Override
-    protected Class<? extends Plugin> getPluginClass() {
-        return HBasePluginImpl.class
-    }
+    override fun getPluginClass() = HBasePluginImpl::class.java
 
     @Before
-    void setUp(TestContext testContext) throws Exception {
+    @Throws(Exception::class)
+    override fun setUp(testContext: TestContext) {
         super.setUp(testContext)
-
-        client = new Client(new Cluster().add(HOST, getListenPort()))
+        client = Client(Cluster().add(HOST, listenPort))
     }
 
-    private static void expectSuccessfulRows(TestContext testContext, RemoteHTable table, String prefix) throws IOException {
-        final Scan scan = new Scan()
-        scan.setFilter(new PrefixFilter(Bytes.toBytes(prefix)))
-        final ResultScanner scanner = table.getScanner(scan)
+    private fun expectSuccessfulRows(testContext: TestContext, table: RemoteHTable, prefix: String) {
+        val scan = Scan()
+        scan.filter = PrefixFilter(Bytes.toBytes(prefix))
+        val scanner = table.getScanner(scan)
 
-        int rowCount = 0
-        for (Result result : scanner) {
+        var rowCount = 0
+        for (result in scanner) {
             rowCount++
             testContext.assertEquals("exampleValue${rowCount}A".toString(), getStringValue(result, "abc", "exampleStringA"))
             testContext.assertEquals("exampleValue${rowCount}B".toString(), getStringValue(result, "abc", "exampleStringB"))
@@ -95,87 +91,87 @@ class HBasePluginTest extends BaseVerticleTest {
         testContext.assertEquals(2, rowCount)
     }
 
-    private static String getStringValue(Result result, String family, String qualifier) {
+    private fun getStringValue(result: Result, family: String, qualifier: String): String {
         return Bytes.toString(result.getValue(Bytes.toBytes(family), Bytes.toBytes(qualifier)))
     }
 
     @Test
-    void testFetchResults(TestContext testContext) throws Exception {
-        final RemoteHTable table = new RemoteHTable(client, "exampleTable")
+    fun testFetchResults(testContext: TestContext) {
+        val table = RemoteHTable(client, "exampleTable")
         expectSuccessfulRows(testContext, table, "examplePrefix")
     }
 
     @Test
-    void testFetchIndividualRow_Success(TestContext testContext) throws Exception {
-        final RemoteHTable table = new RemoteHTable(client, "exampleTable")
+    fun testFetchIndividualRow_Success(testContext: TestContext) {
+        val table = RemoteHTable(client, "exampleTable")
 
-        final Result result1 = table.get(new Get(Bytes.toBytes("row1")))
+        val result1 = table.get(Get(Bytes.toBytes("row1")))
         testContext.assertNotNull(result1)
         testContext.assertEquals("exampleValue1A", getStringValue(result1, "abc", "exampleStringA"))
 
-        final Result result2 = table.get(new Get(Bytes.toBytes("row2")))
+        val result2 = table.get(Get(Bytes.toBytes("row2")))
         testContext.assertNotNull(result2)
         testContext.assertEquals("exampleValue2A", getStringValue(result2, "abc", "exampleStringA"))
     }
 
     @Test
-    void testFetchIndividualRow_NotFound(TestContext testContext) throws Exception {
-        final RemoteHTable table = new RemoteHTable(client, "exampleTable")
+    fun testFetchIndividualRow_NotFound(testContext: TestContext) {
+        val table = RemoteHTable(client, "exampleTable")
 
-        def actual = table.get(new Get(Bytes.toBytes("row404")))
+        val actual = table.get(Get(Bytes.toBytes("row404")))
         testContext.assertNull(actual.row)
     }
 
     @Test
-    void testScriptedSuccess(TestContext testContext) throws Exception {
-        final RemoteHTable table = new RemoteHTable(client, "scriptedTable")
+    fun testScriptedSuccess(testContext: TestContext) {
+        val table = RemoteHTable(client, "scriptedTable")
         expectSuccessfulRows(testContext, table, "examplePrefix")
     }
 
     @Test
-    void testScriptedFailure(TestContext testContext) throws Exception {
-        final RemoteHTable table = new RemoteHTable(client, "scriptedTable")
+    fun testScriptedFailure(testContext: TestContext) {
+        val table = RemoteHTable(client, "scriptedTable")
 
-        final Scan scan = new Scan()
-        scan.setFilter(new PrefixFilter(Bytes.toBytes("fail")))
+        val scan = Scan()
+        scan.filter = PrefixFilter(Bytes.toBytes("fail"))
 
         try {
             table.getScanner(scan)
-            testContext.fail(IOException.class.simpleName + " expected")
+            testContext.fail(IOException::javaClass.name + " expected")
 
-        } catch (IOException e) {
+        } catch (e: IOException) {
             testContext.assertTrue(e.getLocalizedMessage().contains("400"))
         }
     }
 
     @Test
-    void testTableNotFound(TestContext testContext) throws Exception {
-        final RemoteHTable table = new RemoteHTable(client, "nonExistentTable")
+    fun testTableNotFound(testContext: TestContext) {
+        val table = RemoteHTable(client, "nonExistentTable")
 
-        final Scan scan = new Scan()
-        scan.setFilter(new PrefixFilter(Bytes.toBytes("examplePrefix")))
+        val scan = Scan()
+        scan.filter = PrefixFilter(Bytes.toBytes("examplePrefix"))
 
         try {
             table.getScanner(scan)
-            testContext.fail(IOException.class.simpleName + " expected")
+            testContext.fail(IOException::javaClass.name + " expected")
 
-        } catch (IOException e) {
+        } catch (e: IOException) {
             testContext.assertTrue(e.getLocalizedMessage().contains("404"))
         }
     }
 
     @Test
-    void testFilterMismatch(TestContext testContext) throws Exception {
-        final RemoteHTable table = new RemoteHTable(client, "exampleTable")
+    fun testFilterMismatch(testContext: TestContext) {
+        val table = RemoteHTable(client, "exampleTable")
 
-        final Scan scan = new Scan()
-        scan.setFilter(new PrefixFilter(Bytes.toBytes("nonMatchingPrefix")))
+        val scan = Scan()
+        scan.filter = PrefixFilter(Bytes.toBytes("nonMatchingPrefix"))
 
         try {
             table.getScanner(scan)
-            testContext.fail(IOException.class.simpleName + " expected")
+            testContext.fail(IOException::javaClass.name + " expected")
 
-        } catch (IOException e) {
+        } catch (e: IOException) {
             testContext.assertTrue(e.getLocalizedMessage().contains("500"))
         }
     }

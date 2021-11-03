@@ -40,22 +40,17 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.plugin.hbase.service
 
-package io.gatehill.imposter.plugin.hbase.service;
-
-import io.gatehill.imposter.plugin.hbase.config.HBasePluginConfig;
-import io.gatehill.imposter.plugin.hbase.model.InMemoryScanner;
-import io.gatehill.imposter.plugin.hbase.model.MockScanner;
-
-import java.util.Optional;
+import io.gatehill.imposter.plugin.hbase.config.HBasePluginConfig
+import io.gatehill.imposter.plugin.hbase.model.InMemoryScanner
+import io.gatehill.imposter.plugin.hbase.model.MockScanner
 
 /**
  * @author Pete Cornish
  */
-public interface ScannerService {
-    int registerScanner(HBasePluginConfig config, MockScanner scanner);
-
-    Optional<InMemoryScanner> fetchScanner(int scannerId);
-
-    void invalidateScanner(int scannerId);
+interface ScannerService {
+    fun registerScanner(config: HBasePluginConfig, scanner: MockScanner): Int
+    fun fetchScanner(scannerId: Int): InMemoryScanner?
+    fun invalidateScanner(scannerId: Int)
 }

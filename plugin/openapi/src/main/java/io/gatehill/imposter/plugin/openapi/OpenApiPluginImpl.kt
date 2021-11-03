@@ -102,8 +102,8 @@ class OpenApiPluginImpl @Inject constructor(
 ) : ConfiguredPlugin<OpenApiPluginConfig>(
     vertx, imposterConfig
 ) {
-    private var allSpecs: MutableList<OpenAPI>? = null
     override val configClass = OpenApiPluginConfig::class.java
+    private var allSpecs: MutableList<OpenAPI>? = null
 
     companion object {
         private val LOGGER = LogManager.getLogger(OpenApiPluginImpl::class.java)

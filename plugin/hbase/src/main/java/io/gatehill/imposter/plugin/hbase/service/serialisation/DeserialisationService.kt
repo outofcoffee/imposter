@@ -40,33 +40,24 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.plugin.hbase.service.serialisation
 
-package io.gatehill.imposter.plugin.hbase;
-
-import com.google.inject.AbstractModule;
-import com.google.inject.Singleton;
-import com.google.inject.name.Names;
-import io.gatehill.imposter.plugin.hbase.service.ScannerService;
-import io.gatehill.imposter.plugin.hbase.service.ScannerServiceImpl;
-import io.gatehill.imposter.plugin.hbase.service.serialisation.DeserialisationService;
-import io.gatehill.imposter.plugin.hbase.service.serialisation.JsonSerialisationServiceImpl;
-import io.gatehill.imposter.plugin.hbase.service.serialisation.ProtobufSerialisationServiceImpl;
-import io.gatehill.imposter.plugin.hbase.service.serialisation.SerialisationService;
+import io.gatehill.imposter.plugin.hbase.model.MockScanner
+import io.vertx.ext.web.RoutingContext
 
 /**
  * @author Pete Cornish
  */
-public class HBasePluginModule extends AbstractModule {
-    @Override
-    protected void configure() {
-        bind(ScannerService.class).to(ScannerServiceImpl.class).in(Singleton.class);
+interface DeserialisationService {
+    /**
+     * @param routingContext the Vert.x routing context
+     * @return the scanner
+     */
+    fun decodeScanner(routingContext: RoutingContext): MockScanner
 
-        bind(SerialisationService.class).annotatedWith(Names.named("application/x-protobuf")).to(ProtobufSerialisationServiceImpl.class).in(Singleton.class);
-        bind(DeserialisationService.class).annotatedWith(Names.named("application/x-protobuf")).to(ProtobufSerialisationServiceImpl.class).in(Singleton.class);
-
-        bind(SerialisationService.class).annotatedWith(Names.named("application/json")).to(JsonSerialisationServiceImpl.class).in(Singleton.class);
-        bind(DeserialisationService.class).annotatedWith(Names.named("application/json")).to(JsonSerialisationServiceImpl.class).in(Singleton.class);
-
-        bind(ScannerService.class).to(ScannerServiceImpl.class).in(Singleton.class);
-    }
+    /**
+     * @param scanner the scanner from which to read the filter
+     * @return the scanner filter prefix
+     */
+    fun decodeScannerFilterPrefix(scanner: MockScanner): String?
 }

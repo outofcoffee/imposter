@@ -1,5 +1,5 @@
 apply plugin: 'java-library'
-apply plugin: 'groovy'
+apply plugin: 'kotlin'
 apply plugin: 'maven-publish'
 
 ext {
@@ -11,6 +11,7 @@ compileJava {
 }
 
 dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation project(':imposter-core')
 
     // hbase
@@ -23,7 +24,6 @@ dependencies {
 
     // test
     testImplementation  project(':imposter-test')
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
@@ -51,5 +51,23 @@ publishing {
                 }
             }
         }
+    }
+}
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+
+        // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
+        freeCompilerArgs = ["-Xjvm-default=all"]
+    }
+}
+
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+
+        // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
+        freeCompilerArgs = ["-Xjvm-default=all"]
     }
 }

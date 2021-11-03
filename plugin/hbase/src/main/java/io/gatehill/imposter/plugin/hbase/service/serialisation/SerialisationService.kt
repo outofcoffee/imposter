@@ -40,54 +40,50 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.plugin.hbase.service.serialisation
 
-package io.gatehill.imposter.plugin.hbase.service.serialisation;
-
-import io.gatehill.imposter.plugin.hbase.model.InMemoryScanner;
-import io.gatehill.imposter.plugin.hbase.model.ResultCell;
-import io.gatehill.imposter.plugin.hbase.model.ResultCellComparator;
-import io.gatehill.imposter.plugin.hbase.service.ScannerService;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import org.apache.logging.log4j.Logger;
-
-import java.util.List;
-import java.util.stream.Collectors;
+import io.gatehill.imposter.plugin.hbase.model.InMemoryScanner
+import io.gatehill.imposter.plugin.hbase.model.ResultCell
+import io.gatehill.imposter.plugin.hbase.model.ResultCellComparator
+import io.gatehill.imposter.plugin.hbase.service.ScannerService
+import io.vertx.core.buffer.Buffer
+import io.vertx.core.json.JsonArray
+import io.vertx.core.json.JsonObject
+import org.apache.logging.log4j.Logger
+import java.util.stream.Collectors
 
 /**
  * @author Pete Cornish
  */
-public interface SerialisationService {
-    Logger getLogger();
+interface SerialisationService {
+    val logger: Logger
+    val scannerService: ScannerService
 
-    ScannerService getScannerService();
+    fun serialise(tableName: String, recordId: String, result: JsonObject): Buffer?
 
-    Buffer serialise(String tableName, String recordId, JsonObject result);
+    fun serialise(tableName: String, scannerId: String, results: JsonArray, scanner: InMemoryScanner, rows: Int): Buffer?
 
-    Buffer serialise(String tableName, String scannerId, JsonArray results, InMemoryScanner scanner, int rows);
-
-    default String buildRowKey(InMemoryScanner scanner) {
+    fun buildRowKey(scanner: InMemoryScanner): String {
         // TODO consider setting key to prefix from scanner filter
-        return "rowKey" + scanner.getRowCounter().incrementAndGet();
+        return "rowKey" + scanner.rowCounter.incrementAndGet()
     }
 
-    default List<ResultCell> buildSortedCells(JsonObject result) {
+    fun buildSortedCells(result: JsonObject): List<ResultCell>? {
         // add cells from result
-        final List<ResultCell> cells = result.fieldNames().stream()
-                .map(fieldName -> new ResultCell(fieldName, result.getString(fieldName)))
-                .collect(Collectors.toList());
+        val cells = result.fieldNames().stream()
+            .map { fieldName: String -> ResultCell(fieldName, result.getString(fieldName)) }
+            .collect(Collectors.toList())
 
         // sort the cells before adding to row
-        cells.sort(new ResultCellComparator());
-        return cells;
+        cells.sortWith(ResultCellComparator())
+        return cells
     }
 
-    default void checkExhausted(String tableName, String scannerId, JsonArray results, InMemoryScanner scanner) {
-        final boolean exhausted = (scanner.getRowCounter().get() >= results.size());
+    fun checkExhausted(tableName: String, scannerId: String, results: JsonArray, scanner: InMemoryScanner) {
+        val exhausted = scanner.rowCounter.get() >= results.size()
         if (exhausted) {
-            getLogger().info("Scanner {} for table: {} exhausted", scannerId, tableName);
-            getScannerService().invalidateScanner(Integer.valueOf(scannerId));
+            logger.info("Scanner {} for table: {} exhausted", scannerId, tableName)
+            scannerService.invalidateScanner(Integer.valueOf(scannerId))
         }
     }
 }

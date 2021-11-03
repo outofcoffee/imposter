@@ -63,6 +63,7 @@ object ConfigUtil {
     private val LOGGER = LogManager.getLogger(ConfigUtil::class.java)
     const val CURRENT_PACKAGE = "io.gatehill.imposter"
     private const val CONFIG_FILE_SUFFIX = "-config"
+
     private val CONFIG_FILE_MAPPERS: Map<String, ObjectMapper> = mapOf(
         ".json" to MapUtil.JSON_MAPPER,
         ".yaml" to MapUtil.YAML_MAPPER,
@@ -152,8 +153,8 @@ object ConfigUtil {
                 rawContents
             }
 
-            val config = lookupMapper(configFile).readValue(parsedContents, configClass)
-            config!!.parentDir = configFile.parentFile
+            val config = lookupMapper(configFile).readValue(parsedContents, configClass)!!
+            config.parentDir = configFile.parentFile
 
             // convert OpenAPI format path parameters to Vert.x format
             if (convertPathParameters && config is ResourcesHolder<*>) {
@@ -180,7 +181,7 @@ object ConfigUtil {
      * @param configFile the configuration file
      * @return the mapper
      */
-    fun lookupMapper(configFile: File?): ObjectMapper {
+    private fun lookupMapper(configFile: File?): ObjectMapper {
         val extension = configFile!!.name.substring(configFile.name.lastIndexOf("."))
         return CONFIG_FILE_MAPPERS[extension]
             ?: throw IllegalStateException("Unable to locate mapper for config file: $configFile")

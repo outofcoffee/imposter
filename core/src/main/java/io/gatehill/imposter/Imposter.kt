@@ -52,7 +52,6 @@ import io.gatehill.imposter.util.InjectorUtil
 import org.apache.logging.log4j.LogManager
 import java.net.URI
 import java.nio.file.Paths
-import java.util.function.Consumer
 
 /**
  * @author Pete Cornish
@@ -81,7 +80,7 @@ class Imposter @JvmOverloads constructor(
 
         val allModules = bootstrapModules
         allModules.add(ImposterModule(imposterConfig, pluginManager))
-        dependencies.forEach(Consumer { deps -> allModules.addAll(deps.requiredModules) })
+        dependencies.forEach { deps -> allModules.addAll(deps.requiredModules) }
 
         // inject dependencies
         val injector = InjectorUtil.create(*allModules.toTypedArray())

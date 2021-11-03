@@ -40,26 +40,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.plugin.hbase.model
 
-package io.gatehill.imposter.plugin.hbase.model;
+import io.gatehill.imposter.plugin.config.PluginConfig
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * @author Pete Cornish
  */
-public class ResultCell {
-    private final String fieldName;
-    private final String fieldValue;
-
-    public ResultCell(String fieldName, String fieldValue) {
-        this.fieldName = fieldName;
-        this.fieldValue = fieldValue;
-    }
-
-    public String getFieldName() {
-        return fieldName;
-    }
-
-    public String getFieldValue() {
-        return fieldValue;
-    }
+class InMemoryScanner(val config: PluginConfig, val scanner: MockScanner) {
+    val rowCounter = AtomicInteger()
 }

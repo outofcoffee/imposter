@@ -40,22 +40,18 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-
-package io.gatehill.imposter.plugin.hbase.model;
-
-import java.util.Comparator;
+package io.gatehill.imposter.plugin.hbase.model
 
 /**
  * @author Pete Cornish
  */
-public class ResultCellComparator implements Comparator<ResultCell> {
-    @Override
-    public int compare(ResultCell o1, ResultCell o2) {
-        final int nameCompare = o1.getFieldName().compareTo(o2.getFieldName());
-        if (nameCompare == 0) {
-            return o1.getFieldValue().compareTo(o2.getFieldValue());
+class ResultCellComparator : Comparator<ResultCell> {
+    override fun compare(o1: ResultCell, o2: ResultCell): Int {
+        val nameCompare = o1.fieldName.compareTo(o2.fieldName)
+        return if (nameCompare == 0) {
+            o1.fieldValue.compareTo(o2.fieldValue)
         } else {
-            return nameCompare;
+            nameCompare
         }
     }
 }

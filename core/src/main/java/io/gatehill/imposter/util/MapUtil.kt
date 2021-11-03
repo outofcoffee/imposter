@@ -48,16 +48,17 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import java.util.*
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import java.util.Arrays
 
 /**
  * @author Pete Cornish
  */
 object MapUtil {
-    @kotlin.jvm.JvmField
+    @JvmField
     val JSON_MAPPER = ObjectMapper()
 
-    @kotlin.jvm.JvmField
+    @JvmField
     val YAML_MAPPER = YAMLMapper()
 
     private val DESERIALISERS = arrayOf(
@@ -68,6 +69,7 @@ object MapUtil {
     private fun configureMapper(mapper: ObjectMapper) {
         addJavaTimeSupport(mapper)
         mapper.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
+        mapper.registerKotlinModule()
     }
 
     /**

@@ -40,28 +40,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-
-package io.gatehill.imposter.plugin.hbase.config;
-
-import io.gatehill.imposter.plugin.config.PluginConfigImpl;
+package io.gatehill.imposter.plugin.hbase.model
 
 /**
  * @author Pete Cornish
  */
-public class HBasePluginConfig extends PluginConfigImpl {
-    private String tableName;
-    private String prefix;
-    private String idField;
-
-    public String getTableName() {
-        return tableName;
-    }
-
-    public String getPrefix() {
-        return prefix;
-    }
-
-    public String getIdField() {
-        return idField;
-    }
-}
+class ResultCell(val fieldName: String, val fieldValue: String)

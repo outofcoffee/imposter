@@ -54,6 +54,8 @@ import org.junit.Before
 import org.junit.Test
 
 /**
+ * Tests for [RestPluginImpl].
+
  * @author Pete Cornish
  */
 class RestPluginTest : BaseVerticleTest() {
