@@ -1,5 +1,5 @@
 apply plugin: 'java-library'
-apply plugin: 'groovy'
+apply plugin: 'kotlin'
 
 ext {
     version_mockito = '3.10.0'
@@ -10,8 +10,6 @@ compileJava {
 }
 
 dependencies {
-    api "org.codehaus.groovy:groovy-all:$version_groovy"
-
     api project(':imposter-core')
     api project(':imposter-server')
 
@@ -24,4 +22,22 @@ dependencies {
 
     // required to mock vertx interfaces
     implementation "io.vertx:vertx-codegen:$version_vertx"
+}
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+
+        // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
+        freeCompilerArgs = ["-Xjvm-default=all"]
+    }
+}
+
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+
+        // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
+        freeCompilerArgs = ["-Xjvm-default=all"]
+    }
 }

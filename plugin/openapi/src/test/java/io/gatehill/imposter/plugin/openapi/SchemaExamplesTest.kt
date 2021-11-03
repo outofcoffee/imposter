@@ -44,7 +44,6 @@ package io.gatehill.imposter.plugin.openapi
 
 import com.jayway.restassured.RestAssured
 import com.jayway.restassured.http.ContentType
-import io.gatehill.imposter.plugin.openapi.OpenApiPluginImpl
 import io.gatehill.imposter.server.BaseVerticleTest
 import io.gatehill.imposter.util.HttpUtil
 import io.vertx.core.json.JsonArray
@@ -59,16 +58,16 @@ import org.yaml.snakeyaml.Yaml
  * @author benjvoigt
  */
 internal class SchemaExamplesTest : BaseVerticleTest() {
-    override fun getPluginClass() = OpenApiPluginImpl::class.java
+    override val pluginClass = OpenApiPluginImpl::class.java
 
     @Before
     @Throws(Exception::class)
     override fun setUp(testContext: TestContext) {
         super.setUp(testContext)
-        RestAssured.baseURI = "http://$HOST:$listenPort"
+        RestAssured.baseURI = "http://$host:$listenPort"
     }
 
-    override fun getTestConfigDirs() = listOf(
+    override val testConfigDirs = listOf(
         "/openapi2/model-examples"
     )
 

@@ -78,7 +78,7 @@ public class ResponseTemplateTest extends BaseVerticleTest {
     @Before
     public void setUp(TestContext testContext) throws Exception {
         super.setUp(testContext);
-        RestAssured.baseURI = "http://" + HOST + ":" + getListenPort();
+        RestAssured.baseURI = "http://" + getHost() + ":" + getListenPort();
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
     }
 

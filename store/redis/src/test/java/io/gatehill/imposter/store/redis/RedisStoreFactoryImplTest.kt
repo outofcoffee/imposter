@@ -101,8 +101,10 @@ class RedisStoreFactoryImplTest {
 
     @Throws(IOException::class)
     private fun writeRedissonConfig(configDir: Path) {
-        val redissonConfig = """singleServerConfig:
-  address: "redis://${redis!!.host}:${redis!!.getMappedPort(6379)}""""
+        val redissonConfig = """
+singleServerConfig:
+  address: "redis://${redis!!.host}:${redis!!.getMappedPort(6379)}"
+"""
 
         val redissonConfigFile = File(configDir.toFile(), "redisson.yaml")
         FileUtils.write(redissonConfigFile, redissonConfig, Charsets.UTF_8)
