@@ -40,16 +40,47 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.store
 
-package io.gatehill.imposter.store.model;
+import com.google.inject.AbstractModule
+import com.google.inject.Module
+import io.gatehill.imposter.store.inmem.InMemoryStoreModule
+import io.gatehill.imposter.store.service.StoreService
+import io.gatehill.imposter.store.service.StoreServiceImpl
+import io.gatehill.imposter.util.EnvVars.Companion.getEnv
+import org.apache.logging.log4j.LogManager
+import java.util.Optional
 
 /**
  * @author Pete Cornish
  */
-public interface StoreFactory {
-    boolean hasStoreWithName(String storeName);
+class StoreModule : AbstractModule() {
+    override fun configure() {
+        // needs to be eager to register lifecycle listener
+        bind(StoreService::class.java).to(StoreServiceImpl::class.java).asEagerSingleton()
+        install(discoverStoreModule())
+    }
 
-    Store getStoreByName(String storeName, boolean forceInMemory);
+    private fun discoverStoreModule(): Module {
+        val storeModule = Optional.ofNullable(getEnv("IMPOSTER_STORE_MODULE")).orElse(DEFAULT_STORE_MODULE)
+        LOGGER.trace("Loading store module: {}", storeModule)
 
-    void deleteStoreByName(String storeName);
+        return try {
+            @Suppress("UNCHECKED_CAST")
+            val moduleClass = Class.forName(storeModule) as Class<out Module>
+            moduleClass.newInstance()
+
+        } catch (e: Exception) {
+            throw RuntimeException(
+                "Unable to load store module: " + storeModule +
+                    ". Must be a fully qualified class implementing " + Module::class.java.canonicalName +
+                    " with a no-arg constructor.", e
+            )
+        }
+    }
+
+    companion object {
+        private val DEFAULT_STORE_MODULE = InMemoryStoreModule::class.java.canonicalName
+        private val LOGGER = LogManager.getLogger(StoreModule::class.java)
+    }
 }

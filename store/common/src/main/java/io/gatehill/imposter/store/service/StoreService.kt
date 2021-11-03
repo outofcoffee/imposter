@@ -40,11 +40,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-
-package io.gatehill.imposter.store.service;
+package io.gatehill.imposter.store.service
 
 /**
  * @author Pete Cornish
  */
-public interface StoreService {
-}
+interface StoreService 

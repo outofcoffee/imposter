@@ -63,9 +63,9 @@ interface EngineLifecycleListener {
      * @param router           the router
      */
     fun afterRoutesConfigured(
-        imposterConfig: ImposterConfig?,
-        allPluginConfigs: List<PluginConfig?>?,
-        router: Router?
+        imposterConfig: ImposterConfig,
+        allPluginConfigs: List<PluginConfig>,
+        router: Router
     ) {
         // no op
     }
@@ -92,7 +92,7 @@ interface EngineLifecycleListener {
      * @param responseTemplate the response content
      * @return the transformed response content
      */
-    fun beforeTransmittingTemplate(routingContext: RoutingContext, responseTemplate: String): String? {
+    fun beforeTransmittingTemplate(routingContext: RoutingContext, responseTemplate: String?): String? {
         // no op
         return responseTemplate
     }

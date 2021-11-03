@@ -80,7 +80,8 @@ import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.*
+import java.util.Objects
+import java.util.Optional
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.atomic.AtomicReference
@@ -306,7 +307,7 @@ class ResponseServiceImpl @Inject constructor(
             routingContext.fail(
                 ResponseException(
                     "Error sending mock response with status code ${responseBehaviour.statusCode} for " +
-                            describeRequest(routingContext), e
+                        describeRequest(routingContext), e
                 )
             )
         }
@@ -392,9 +393,7 @@ class ResponseServiceImpl @Inject constructor(
             val dataHolder = AtomicReference(responseData)
             engineLifecycle.forEach { listener: EngineLifecycleListener ->
                 dataHolder.set(
-                    listener.beforeTransmittingTemplate(
-                        routingContext, dataHolder.get()!!
-                    )
+                    listener.beforeTransmittingTemplate(routingContext, dataHolder.get()!!)
                 )
             }
             responseData = dataHolder.get()

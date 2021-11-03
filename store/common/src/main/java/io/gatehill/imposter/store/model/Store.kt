@@ -40,28 +40,18 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-
-package io.gatehill.imposter.store.model;
-
-import io.gatehill.imposter.store.util.StoreUtil;
+package io.gatehill.imposter.store.model
 
 /**
  * @author Pete Cornish
  */
-public class StoreHolder {
-    private final StoreFactory storeFactory;
-    private final String requestId;
-
-    public StoreHolder(StoreFactory storeFactory, String requestId) {
-        this.storeFactory = storeFactory;
-        this.requestId = requestId;
-    }
-
-    public Store open(String storeName) {
-        if (StoreUtil.isRequestScopedStore(storeName)) {
-            storeName = StoreUtil.buildRequestStoreName(requestId);
-            return storeFactory.getStoreByName(storeName, true);
-        }
-        return storeFactory.getStoreByName(storeName, false);
-    }
+interface Store {
+    val storeName: String
+    val typeDescription: String
+    fun save(key: String, value: Any?)
+    fun <T> load(key: String): T?
+    fun delete(key: String)
+    fun loadAll(): Map<String, Any>
+    fun hasItemWithKey(key: String): Boolean
+    fun count(): Int
 }

@@ -41,22 +41,56 @@
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.gatehill.imposter.store.util;
+package io.gatehill.imposter.store.inmem
+
+import com.google.common.collect.Maps
+import io.gatehill.imposter.store.model.Store
+import org.apache.logging.log4j.LogManager
 
 /**
+ * An in-memory store implementation. Does not have any support for item expiration,
+ * so data must be managed by the caller.
+ *
  * @author Pete Cornish
  */
-public final class StoreUtil {
-    public static final String REQUEST_SCOPED_STORE_NAME = "request";
+class InMemoryStore(override val storeName: String) : Store {
+    private val store: MutableMap<String, Any> = Maps.newConcurrentMap()
+    override val typeDescription = STORE_TYPE
 
-    private StoreUtil() {
+    override fun save(key: String, value: Any?) {
+        LOGGER.trace("Saving item with key: {} to store: {}", key, storeName)
+        value?.let { store[key] = value } ?: store.remove(key)
     }
 
-    public static boolean isRequestScopedStore(String storeName) {
-        return REQUEST_SCOPED_STORE_NAME.equals(storeName);
+    override fun <T> load(key: String): T? {
+        LOGGER.trace("Loading item with key: {} from store: {}", key, storeName)
+        @Suppress("UNCHECKED_CAST")
+        return store[key] as T?
     }
 
-    public static String buildRequestStoreName(String requestId) {
-        return "request_" + requestId;
+    override fun delete(key: String) {
+        LOGGER.trace("Deleting item with key: {} from store: {}", key, storeName)
+        store.remove(key)
+    }
+
+    override fun loadAll(): Map<String, Any> {
+        LOGGER.trace("Loading all items in store: {}", storeName)
+        return store
+    }
+
+    override fun hasItemWithKey(key: String): Boolean {
+        LOGGER.trace("Checking for item with key: {} in store: {}", key, storeName)
+        return store.containsKey(key)
+    }
+
+    override fun count(): Int {
+        val count = store.size
+        LOGGER.trace("Returning item count {} from store: {}", count, storeName)
+        return count
+    }
+
+    companion object {
+        private const val STORE_TYPE = "inmem"
+        private val LOGGER = LogManager.getLogger(InMemoryStore::class.java)
     }
 }

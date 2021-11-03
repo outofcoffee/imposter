@@ -40,18 +40,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-
-package io.gatehill.imposter.store.inmem;
-
-import io.gatehill.imposter.store.factory.AbstractStoreFactory;
-import io.gatehill.imposter.store.model.Store;
+package io.gatehill.imposter.store.model
 
 /**
  * @author Pete Cornish
  */
-public class InMemoryStoreFactoryImpl extends AbstractStoreFactory {
-    @Override
-    public Store buildNewStore(String storeName) {
-        return new InMemoryStore(storeName);
-    }
+interface StoreFactory {
+    fun hasStoreWithName(storeName: String): Boolean
+    fun getStoreByName(storeName: String, forceInMemory: Boolean): Store
+    fun deleteStoreByName(storeName: String)
 }
