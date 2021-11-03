@@ -1,5 +1,5 @@
 apply plugin: 'java-library'
-apply plugin: 'groovy'
+apply plugin: 'kotlin'
 apply plugin: 'maven-publish'
 
 compileJava {
@@ -7,8 +7,6 @@ compileJava {
 }
 
 dependencies {
-    api "org.codehaus.groovy:groovy-all:$version_groovy"
-
     implementation project(':imposter-core')
     implementation project(':scripting:scripting-common')
 
@@ -42,5 +40,23 @@ publishing {
                 }
             }
         }
+    }
+}
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+
+        // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
+        freeCompilerArgs = ["-Xjvm-default=all"]
+    }
+}
+
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+
+        // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
+        freeCompilerArgs = ["-Xjvm-default=all"]
     }
 }

@@ -40,28 +40,20 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package io.gatehill.imposter.service
 
 import io.gatehill.imposter.scripting.AbstractScriptServiceImplTest
 import io.gatehill.imposter.scripting.nashorn.service.NashornScriptServiceImpl
-
 import javax.inject.Inject
 
 /**
  * @author Pete Cornish
  */
-public class NashornScriptServiceImplTest extends AbstractScriptServiceImplTest {
+class NashornScriptServiceImplTest : AbstractScriptServiceImplTest() {
     @Inject
-    private NashornScriptServiceImpl service;
+    private var service: NashornScriptServiceImpl? = null
 
-    @Override
-    protected ScriptService getService() {
-        return service
-    }
+    override fun getService() = service!!
 
-    @Override
-    protected String getScriptName() {
-        return 'test.js'
-    }
+    override fun getScriptName() = "test.js"
 }
