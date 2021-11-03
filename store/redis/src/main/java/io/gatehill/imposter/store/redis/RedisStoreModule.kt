@@ -40,19 +40,18 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.store.redis
 
-package io.gatehill.imposter.store.redis;
-
-import com.google.inject.AbstractModule;
-import com.google.inject.Singleton;
-import io.gatehill.imposter.store.model.StoreFactory;
+import com.google.inject.AbstractModule
+import com.google.inject.Singleton
+import io.gatehill.imposter.store.model.StoreFactory
+import io.gatehill.imposter.store.redis.RedisStoreFactoryImpl
 
 /**
  * @author Pete Cornish
  */
-public class RedisStoreModule extends AbstractModule {
-    @Override
-    protected void configure() {
-        bind(StoreFactory.class).to(RedisStoreFactoryImpl.class).in(Singleton.class);
+class RedisStoreModule : AbstractModule() {
+    override fun configure() {
+        bind(StoreFactory::class.java).to(RedisStoreFactoryImpl::class.java).`in`(Singleton::class.java)
     }
 }

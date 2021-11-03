@@ -191,6 +191,12 @@ public class ImposterLauncher extends Launcher {
             port = listenPort;
         }
 
+        final String[] configDirs = ofNullable(this.configDirs).orElse(new String[0]);
+        if (configDirs.length == 0) {
+            LOGGER.error("No configuration directories were provided");
+            System.exit(0);
+        }
+
         final ImposterConfig imposterConfig = ConfigHolder.getConfig();
         imposterConfig.setServerFactory(serverFactory);
         imposterConfig.setListenPort(port);

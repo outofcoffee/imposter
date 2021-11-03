@@ -50,7 +50,7 @@ import io.gatehill.imposter.server.RequestHandlingMode
 class ImposterConfig {
     var host: String? = null
     var listenPort = 0
-    var configDirs: Array<String>? = null
+    var configDirs: Array<String> = emptyArray()
     var serverUrl: String? = null
     var isTlsEnabled = false
     var keystorePath: String? = null
