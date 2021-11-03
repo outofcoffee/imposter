@@ -14,6 +14,8 @@ plugins {
 }
 
 ext {
+    kotlin_version = '1.5.31'
+
     try {
         awsCredentials = new ProfileCredentialsProvider().credentials
     } catch(ignored) {
@@ -28,7 +30,6 @@ subprojects {
     buildscript {
         ext {
             version_shadow = '5.1.0'
-            kotlin_version = '1.5.31'
         }
         repositories {
             mavenCentral()
