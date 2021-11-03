@@ -1,4 +1,5 @@
-logger.info('context: ' + context);
+logger.info(`context: ${context}`);
+console.log('JS console is available');
 
 var request = context.request;
 
@@ -39,8 +40,8 @@ if (request.pathParams.qux) {
         // respond with status code and file
         respond()
             .withStatusCode(201).and()
-            .withFile("foo.bar")
-            .withHeader("MyHeader", "AwesomeHeader")
+            .withFile('foo.bar')
+            .withHeader('MyHeader', 'AwesomeHeader')
             .skipDefaultBehaviour();
     }
 }
