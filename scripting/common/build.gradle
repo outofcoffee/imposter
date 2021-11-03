@@ -7,8 +7,6 @@ compileJava {
 }
 
 dependencies {
-    api "org.codehaus.groovy:groovy-all:$version_groovy"
-
     implementation project(':imposter-core')
 
     // test

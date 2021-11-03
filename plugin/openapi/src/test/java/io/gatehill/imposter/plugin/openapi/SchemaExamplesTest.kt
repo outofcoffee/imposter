@@ -127,6 +127,7 @@ internal class SchemaExamplesTest : BaseVerticleTest() {
         testContext.assertEquals("2015-02-01T08:00:00Z", first.get("bornAt"))
         testContext.assertEquals("2020-03-15", first.get("lastVetVisitOn"))
 
+        @Suppress("UNCHECKED_CAST")
         val misc = first.get("misc") as Map<String, *>
         testContext.assertNotNull(misc, "misc property should not be null")
         testContext.assertEquals(false, misc.get("nocturnal"))

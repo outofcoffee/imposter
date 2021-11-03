@@ -40,21 +40,20 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.scripting.graalvm
 
-package io.gatehill.imposter.scripting.graalvm;
-
-import com.google.inject.AbstractModule;
-import com.google.inject.Singleton;
-import io.gatehill.imposter.scripting.graalvm.service.GraalvmScriptServiceImpl;
-import io.gatehill.imposter.service.ScriptService;
-import io.gatehill.imposter.util.annotation.JavascriptImpl;
+import com.google.inject.AbstractModule
+import com.google.inject.Singleton
+import io.gatehill.imposter.scripting.graalvm.service.GraalvmScriptServiceImpl
+import io.gatehill.imposter.service.ScriptService
+import io.gatehill.imposter.util.annotation.JavascriptImpl
 
 /**
  * @author Pete Cornish
  */
-public class GraalvmScriptingModule extends AbstractModule {
-    @Override
-    protected void configure() {
-        bind(ScriptService.class).annotatedWith(JavascriptImpl.class).to(GraalvmScriptServiceImpl.class).in(Singleton.class);
+class GraalvmScriptingModule : AbstractModule() {
+    override fun configure() {
+        bind(ScriptService::class.java).annotatedWith(JavascriptImpl::class.java)
+            .to(GraalvmScriptServiceImpl::class.java).`in`(Singleton::class.java)
     }
 }

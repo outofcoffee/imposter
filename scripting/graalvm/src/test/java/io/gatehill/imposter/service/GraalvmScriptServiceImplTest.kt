@@ -40,29 +40,20 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package io.gatehill.imposter.service
-
 
 import io.gatehill.imposter.scripting.AbstractScriptServiceImplTest
 import io.gatehill.imposter.scripting.graalvm.service.GraalvmScriptServiceImpl
-
 import javax.inject.Inject
 
 /**
  * @author Pete Cornish
  */
-public class GraalvmScriptServiceImplTest extends AbstractScriptServiceImplTest {
+class GraalvmScriptServiceImplTest : AbstractScriptServiceImplTest() {
     @Inject
-    private GraalvmScriptServiceImpl service;
+    private var service: GraalvmScriptServiceImpl? = null
 
-    @Override
-    protected ScriptService getService() {
-        return service
-    }
+    override fun getService() = service!!
 
-    @Override
-    protected String getScriptName() {
-        return 'test.js'
-    }
+    override fun getScriptName() = "test.js"
 }
