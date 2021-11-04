@@ -72,7 +72,7 @@ abstract class BaseVerticleTest {
 
         // simulate ImposterLauncher bootstrap
         ConfigHolder.resetConfig()
-        configure(ConfigHolder.getConfig())
+        configure(ConfigHolder.config)
 
         rule.vertx().deployVerticle(ImposterVerticle::class.java.canonicalName) { completion ->
             if (completion.succeeded()) {
@@ -110,7 +110,7 @@ abstract class BaseVerticleTest {
     }
 
     val listenPort: Int
-        get() = ConfigHolder.getConfig().listenPort
+        get() = ConfigHolder.config.listenPort
 
     protected abstract val pluginClass: Class<out Plugin?>
 

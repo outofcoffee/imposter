@@ -6,6 +6,7 @@ compileJava {
 }
 
 dependencies {
+    implementation project (':imposter-cmd')
     implementation project (':distro:distro-base')
 
     // plugins
@@ -19,8 +20,7 @@ shadowJar {
     classifier = ''
 
     manifest {
-        attributes 'Main-Class': 'io.gatehill.imposter.server.ImposterLauncher'
-        attributes 'Main-Verticle': 'io.gatehill.imposter.server.ImposterVerticle'
+        attributes 'Main-Class': 'io.gatehill.imposter.cmd.ImposterLauncher'
         attributes 'Imposter-Version': project.version
     }
 
