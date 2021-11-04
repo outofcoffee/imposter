@@ -40,70 +40,48 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.server
 
-package io.gatehill.imposter.server;
-
-import com.jayway.restassured.RestAssured;
-import io.gatehill.imposter.plugin.Plugin;
-import io.gatehill.imposter.plugin.test.TestPluginImpl;
-import io.gatehill.imposter.util.HttpUtil;
-import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import java.util.List;
-
-import static com.google.common.collect.Lists.newArrayList;
-import static com.jayway.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.equalTo;
+import com.jayway.restassured.RestAssured
+import io.gatehill.imposter.plugin.test.TestPluginImpl
+import io.gatehill.imposter.util.HttpUtil
+import io.vertx.ext.unit.TestContext
+import io.vertx.ext.unit.junit.VertxUnitRunner
+import org.hamcrest.Matchers
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
 
 /**
- * Tests for matching path parameters.
+ * Tests for inheriting the root response configuration.
  *
  * @author Pete Cornish
  */
-@RunWith(VertxUnitRunner.class)
-public class RequestMatchingTest extends BaseVerticleTest {
-    @Override
-    protected Class<? extends Plugin> getPluginClass() {
-        return TestPluginImpl.class;
-    }
+@RunWith(VertxUnitRunner::class)
+class InheritRootResponseConfigTest : BaseVerticleTest() {
+    override val pluginClass = TestPluginImpl::class.java
 
     @Before
-    public void setUp(TestContext testContext) throws Exception {
-        super.setUp(testContext);
-        RestAssured.baseURI = "http://" + getHost() + ":" + getListenPort();
-        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
+    @Throws(Exception::class)
+    override fun setUp(testContext: TestContext) {
+        super.setUp(testContext)
+        RestAssured.baseURI = "http://$host:$listenPort"
+        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails()
     }
 
-    @Override
-    protected List<String> getTestConfigDirs() {
-        return newArrayList(
-                "/request-matching"
-        );
-    }
+    override val testConfigDirs = listOf(
+        "/inherit-root-response-config"
+    )
 
     /**
-     * Match against a path parameter defined in configuration in Vert.x format.
+     * Interpolate a simple template placeholder using a store value.
      */
     @Test
-    public void testMatchPathParamVertxFormat() {
-        given().when()
-                .get("/users/1")
-                .then()
-                .statusCode(equalTo(HttpUtil.HTTP_NO_CONTENT));
-    }
-
-    /**
-     * Match against a path parameter defined in configuration in OpenAPI format.
-     */
-    @Test
-    public void testMatchPathParamOpenApiFormat() {
-        given().when()
-                .get("/orders/99")
-                .then()
-                .statusCode(equalTo(HttpUtil.HTTP_NOT_AUTHORITATIVE));
+    fun testAlwaysReceiveHeader() {
+        RestAssured.given().`when`()["/example"]
+            .then()
+            .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
+            .body(Matchers.equalTo("Hello world")) // header inherited from root response config
+            .header("X-Always-Present", "Yes")
     }
 }
