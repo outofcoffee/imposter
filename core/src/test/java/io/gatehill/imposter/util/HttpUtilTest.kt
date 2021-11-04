@@ -40,34 +40,33 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.util
 
-package io.gatehill.imposter.script.impl;
+import io.gatehill.imposter.util.HttpUtil.readAcceptedContentTypes
+import org.junit.Assert
+import org.junit.Test
 
-import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-public class ReadWriteResponseBehaviourImplTest {
-
+/**
+ * Tests for [HttpUtil].
+ *
+ * @author Pete Cornish
+ */
+class HttpUtilTest {
     @Test
-    public void shouldAddHeaderWithValue() throws Exception {
-        ReadWriteResponseBehaviourImpl scriptedResponseBehavior = new ReadWriteResponseBehaviourImpl();
-        scriptedResponseBehavior.withHeader("MyHeader", "MyValue");
+    @Throws(Exception::class)
+    fun readAcceptedContentTypes() {
+        // note: provided out of order, but should be sorted by 'q' weight
+        val acceptHeader = "text/html; q=1.0, text/*; q=0.8, image/jpeg; q=0.5, image/gif; q=0.7, image/*; q=0.4, */*; q=0.1"
+        val actual = readAcceptedContentTypes(acceptHeader)
+        Assert.assertNotNull(actual)
+        Assert.assertEquals(6, actual.size.toLong())
 
-        assertEquals(1, scriptedResponseBehavior.getResponseHeaders().size());
-        assertTrue(scriptedResponseBehavior.getResponseHeaders().containsKey("MyHeader"));
-        assertEquals("MyValue", scriptedResponseBehavior.getResponseHeaders().get("MyHeader"));
-    }
-
-    @Test
-    public void shouldRemoveHeaderWithValueNull() throws Exception {
-        ReadWriteResponseBehaviourImpl scriptedResponseBehavior = new ReadWriteResponseBehaviourImpl();
-        scriptedResponseBehavior.getResponseHeaders().put("MyHeader", "MyValue");
-
-        scriptedResponseBehavior.withHeader("MyHeader", null);
-
-        assertEquals(0, scriptedResponseBehavior.getResponseHeaders().size());
+        // check order
+        Assert.assertEquals("text/html", actual[0])
+        Assert.assertEquals("text/*", actual[1])
+        Assert.assertEquals("image/gif", actual[2])
+        Assert.assertEquals("image/jpeg", actual[3])
+        Assert.assertEquals("image/*", actual[4])
+        Assert.assertEquals("*/*", actual[5])
     }
 }
