@@ -40,20 +40,56 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.server
 
-package io.gatehill.imposter.plugin.test;
-
-import io.gatehill.imposter.plugin.config.ContentTypedConfig;
-import io.gatehill.imposter.plugin.config.resource.RestResourceConfig;
+import com.jayway.restassured.RestAssured
+import io.gatehill.imposter.plugin.test.TestPluginImpl
+import io.gatehill.imposter.util.HttpUtil
+import io.vertx.ext.unit.TestContext
+import io.vertx.ext.unit.junit.VertxUnitRunner
+import org.hamcrest.Matchers
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
 
 /**
+ * Tests for matching path parameters.
+ *
  * @author Pete Cornish
  */
-public class TestPluginResourceConfig extends RestResourceConfig implements ContentTypedConfig {
-    private String contentType;
+@RunWith(VertxUnitRunner::class)
+class RequestMatchingTest : BaseVerticleTest() {
+    override val pluginClass = TestPluginImpl::class.java
 
-    @Override
-    public String getContentType() {
-        return contentType;
+    @Before
+    @Throws(Exception::class)
+    override fun setUp(testContext: TestContext) {
+        super.setUp(testContext)
+        RestAssured.baseURI = "http://$host:$listenPort"
+        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails()
+    }
+
+    override val testConfigDirs = listOf(
+        "/request-matching"
+    )
+
+    /**
+     * Match against a path parameter defined in configuration in Vert.x format.
+     */
+    @Test
+    fun testMatchPathParamVertxFormat() {
+        RestAssured.given().`when`()["/users/1"]
+            .then()
+            .statusCode(Matchers.equalTo(HttpUtil.HTTP_NO_CONTENT))
+    }
+
+    /**
+     * Match against a path parameter defined in configuration in OpenAPI format.
+     */
+    @Test
+    fun testMatchPathParamOpenApiFormat() {
+        RestAssured.given().`when`()["/orders/99"]
+            .then()
+            .statusCode(Matchers.equalTo(HttpUtil.HTTP_NOT_AUTHORITATIVE))
     }
 }

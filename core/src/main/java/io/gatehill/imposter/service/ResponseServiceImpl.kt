@@ -79,7 +79,8 @@ import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.*
+import java.util.Objects
+import java.util.Optional
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.atomic.AtomicReference
@@ -191,14 +192,16 @@ class ResponseServiceImpl @Inject constructor(
         }
 
         // explicitly check if the root resource should have its response config used as defaults for its child resources
-        if (pluginConfig is ResourcesHolder<*> && (pluginConfig as ResourcesHolder<*>).isDefaultsFromRootResponse == true) {
-            if (pluginConfig is ResponseConfigHolder) {
-                LOGGER.trace("Inheriting root response configuration as defaults")
-                responseBehaviourFactory.populate(
-                    statusCode,
-                    (pluginConfig as ResponseConfigHolder).responseConfig,
-                    responseBehaviour
-                )
+        when {
+            pluginConfig is ResourcesHolder<*> && pluginConfig.isDefaultsFromRootResponse == true -> {
+                if (pluginConfig is ResponseConfigHolder) {
+                    LOGGER.trace("Inheriting root response configuration as defaults")
+                    responseBehaviourFactory.populate(
+                        statusCode,
+                        (pluginConfig as ResponseConfigHolder).responseConfig,
+                        responseBehaviour
+                    )
+                }
             }
         }
         return responseBehaviour

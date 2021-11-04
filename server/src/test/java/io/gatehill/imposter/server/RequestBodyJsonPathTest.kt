@@ -40,73 +40,69 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.server
 
-package io.gatehill.imposter.server;
-
-import com.google.common.collect.Lists;
-import com.jayway.restassured.RestAssured;
-import io.gatehill.imposter.plugin.Plugin;
-import io.gatehill.imposter.plugin.test.TestPluginImpl;
-import io.gatehill.imposter.util.HttpUtil;
-import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import java.util.List;
-
-import static com.jayway.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.equalTo;
+import com.jayway.restassured.RestAssured
+import io.gatehill.imposter.plugin.test.TestPluginImpl
+import io.gatehill.imposter.util.HttpUtil
+import io.vertx.ext.unit.TestContext
+import io.vertx.ext.unit.junit.VertxUnitRunner
+import org.hamcrest.Matchers
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
 
 /**
- * Tests for when resources are configured with no security, so policy
- * should fall back to root security.
+ * Tests for matching request body with JsonPath.
  *
  * @author Pete Cornish
  */
-@RunWith(VertxUnitRunner.class)
-public class SecurityWithResourcesTest extends BaseVerticleTest {
-    @Override
-    protected Class<? extends Plugin> getPluginClass() {
-        return TestPluginImpl.class;
-    }
+@RunWith(VertxUnitRunner::class)
+class RequestBodyJsonPathTest : BaseVerticleTest() {
+    override val pluginClass = TestPluginImpl::class.java
 
     @Before
-    public void setUp(TestContext testContext) throws Exception {
-        super.setUp(testContext);
-        RestAssured.baseURI = "http://" + getHost() + ":" + getListenPort();
+    @Throws(Exception::class)
+    override fun setUp(testContext: TestContext) {
+        super.setUp(testContext)
+        RestAssured.baseURI = "http://$host:$listenPort"
+        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails()
     }
 
-    @Override
-    protected List<String> getTestConfigDirs() {
-        return Lists.newArrayList(
-                "/security-config-with-resources"
-        );
+    override val testConfigDirs = listOf(
+        "/request-body-jsonpath"
+    )
+
+    /**
+     * Match against a string in the request body
+     */
+    @Test
+    fun testMatchStringInRequestBody() {
+        RestAssured.given().`when`()
+            .body("{ \"foo\": \"bar\" }")["/example1"]
+            .then()
+            .statusCode(Matchers.equalTo(HttpUtil.HTTP_NO_CONTENT))
     }
 
     /**
-     * Deny - no authentication provided.
-     * Resource has no security: should fall back to root.
+     * Match against an integer in the request body
      */
     @Test
-    public void testRequestDenied_NoAuth() {
-        given().when()
-                .get("/example")
-                .then()
-                .statusCode(equalTo(HttpUtil.HTTP_UNAUTHORIZED));
+    fun testMatchIntegerInRequestBody() {
+        RestAssured.given().`when`()
+            .body("{ \"baz\": 99 }")["/example2"]
+            .then()
+            .statusCode(Matchers.equalTo(HttpUtil.HTTP_MOVED_TEMP))
     }
 
     /**
-     * Permit - both conditions are satisfied.
-     * Resource has no security: should fall back to root.
+     * Match null against an empty JsonPath result in the request body
      */
     @Test
-    public void testRequestPermitted() {
-        given().when()
-                .queryParam("apiKey", "s3cr3t")
-                .get("/example")
-                .then()
-                .statusCode(equalTo(HttpUtil.HTTP_OK));
+    fun testMatchNullRequestBody() {
+        RestAssured.given().`when`()
+            .body("{ \"foo\": \"bar\" }")["/example3"]
+            .then()
+            .statusCode(Matchers.equalTo(HttpUtil.HTTP_CONFLICT))
     }
 }

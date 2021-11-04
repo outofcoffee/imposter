@@ -40,33 +40,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.plugin.test
 
-package io.gatehill.imposter.plugin.test;
-
-import io.gatehill.imposter.plugin.config.PluginConfigImpl;
-import io.gatehill.imposter.plugin.config.ResourcesHolder;
-
-import java.util.List;
+import io.gatehill.imposter.plugin.config.ContentTypedConfig
+import io.gatehill.imposter.plugin.config.resource.RestResourceConfig
 
 /**
  * @author Pete Cornish
  */
-public class TestPluginConfig extends PluginConfigImpl implements ResourcesHolder<TestPluginResourceConfig> {
-    private List<TestPluginResourceConfig> resources;
-    private boolean defaultsFromRootResponse;
-    private String customProperty;
-
-    @Override
-    public List<TestPluginResourceConfig> getResources() {
-        return resources;
-    }
-
-    @Override
-    public Boolean isDefaultsFromRootResponse() {
-        return defaultsFromRootResponse;
-    }
-
-    public String getCustomProperty() {
-        return customProperty;
-    }
+class TestPluginResourceConfig : RestResourceConfig(), ContentTypedConfig {
+    override val contentType: String? = null
 }
