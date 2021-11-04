@@ -40,47 +40,29 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.server
 
-package io.gatehill.imposter.server.util;
-
-import com.google.inject.Module;
-import io.gatehill.imposter.store.StoreModule;
-import io.gatehill.imposter.util.FeatureUtil;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import io.gatehill.imposter.ImposterConfig
 
 /**
+ * Holds the global engine configuration.
+ *
  * @author Pete Cornish
  */
-public final class FeatureModuleUtil {
-    /**
-     * Maps modules for specific features.
-     */
-    private static final Map<String, Class<? extends Module>> FEATURE_MODULES = new HashMap<String, Class<? extends Module>>() {{
-        put("stores", StoreModule.class);
-    }};
-
-    private FeatureModuleUtil() {
-    }
+object ConfigHolder {
+    @JvmStatic
+    lateinit var config: ImposterConfig
+        private set
 
     /**
-     * @return a list of {@link Module} instances based on the enabled features
+     * This is primarily used in tests to clear the configuration state.
      */
-    public static List<Module> discoverFeatureModules() {
-        return FEATURE_MODULES.entrySet().stream()
-                .filter(entry -> FeatureUtil.isFeatureEnabled(entry.getKey()))
-                .map(entry -> uncheckedInstantiate(entry.getValue()))
-                .collect(Collectors.toList());
+    @JvmStatic
+    fun resetConfig() {
+        config = ImposterConfig()
     }
 
-    private static <T> T uncheckedInstantiate(Class<T> clazz) {
-        try {
-            return clazz.getDeclaredConstructor().newInstance();
-        } catch (Exception e) {
-            throw new RuntimeException("Unable to instantiate: " + clazz.getCanonicalName(), e);
-        }
+    init {
+        resetConfig()
     }
 }

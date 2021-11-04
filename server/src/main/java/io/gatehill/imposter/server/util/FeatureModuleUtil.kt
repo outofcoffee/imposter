@@ -40,50 +40,39 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.server.util
 
-package io.gatehill.imposter.server;
-
-import com.google.inject.AbstractModule;
-import io.gatehill.imposter.ImposterConfig;
-import io.gatehill.imposter.lifecycle.EngineLifecycleHooks;
-import io.gatehill.imposter.lifecycle.ScriptExecLifecycleHooks;
-import io.gatehill.imposter.lifecycle.SecurityLifecycleHooks;
-import io.vertx.core.Vertx;
-
-import javax.inject.Singleton;
+import com.google.inject.Module
+import io.gatehill.imposter.store.StoreModule
+import io.gatehill.imposter.util.FeatureUtil.isFeatureEnabled
 
 /**
  * @author Pete Cornish
  */
-public class BootstrapModule extends AbstractModule {
-    private final Vertx vertx;
-    private final ImposterConfig imposterConfig;
-    private final String serverFactory;
+object FeatureModuleUtil {
+    /**
+     * Maps modules for specific features.
+     */
+    private val FEATURE_MODULES: Map<String, Class<out Module>> = mapOf(
+        "stores" to StoreModule::class.java
+    )
 
-    public BootstrapModule(Vertx vertx, ImposterConfig imposterConfig, String serverFactory) {
-        this.vertx = vertx;
-        this.imposterConfig = imposterConfig;
-        this.serverFactory = serverFactory;
+    /**
+     * @return a list of [Module] instances based on the enabled features
+     */
+    fun discoverFeatureModules(): List<Module> {
+        return FEATURE_MODULES.entries.filter { (key) ->
+            isFeatureEnabled(key)
+        }.map { (_, value) ->
+            uncheckedInstantiate(value)
+        }
     }
 
-    @Override
-    @SuppressWarnings("unchecked")
-    protected void configure() {
-        bind(Vertx.class).toInstance(vertx);
-        bind(ImposterConfig.class).toInstance(imposterConfig);
-
-        try {
-            final Class<? extends ServerFactory> serverFactoryClass =
-                    (Class<? extends ServerFactory>) Class.forName(serverFactory);
-
-            bind(ServerFactory.class).to(serverFactoryClass).in(Singleton.class);
-
-            bind(EngineLifecycleHooks.class).in(Singleton.class);
-            bind(SecurityLifecycleHooks.class).in(Singleton.class);
-            bind(ScriptExecLifecycleHooks.class).in(Singleton.class);
-
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Could not load server factory: " + serverFactory, e);
+    private fun <T> uncheckedInstantiate(clazz: Class<T>): T {
+        return try {
+            clazz.getDeclaredConstructor().newInstance()
+        } catch (e: Exception) {
+            throw RuntimeException("Unable to instantiate: ${clazz.canonicalName}", e)
         }
     }
 }

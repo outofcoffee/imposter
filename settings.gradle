@@ -6,6 +6,9 @@ project(':api').name = 'imposter-api'
 include ':core'
 project(':core').name = 'imposter-core'
 
+include ':cmd'
+project(':cmd').name = 'imposter-cmd'
+
 include ':server'
 project(':server').name = 'imposter-server'
 

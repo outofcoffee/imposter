@@ -40,34 +40,26 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.cmd
 
-package io.gatehill.imposter.server;
-
-import io.gatehill.imposter.ImposterConfig;
+import io.gatehill.imposter.server.ImposterVerticle
+import io.gatehill.imposter.util.FeatureUtil.isFeatureEnabled
+import io.gatehill.imposter.util.MetricsUtil
+import io.gatehill.imposter.util.MetricsUtil.configureMetrics
+import io.vertx.core.Launcher
+import io.vertx.core.VertxOptions
 
 /**
- * Holds the global engine configuration.
- *
  * @author Pete Cornish
  */
-public final class ConfigHolder {
-    private static ImposterConfig config;
-
-    static {
-        resetConfig();
+class LifecycleAwareLauncher : Launcher() {
+    override fun dispatch(args: Array<out String>) {
+        super.dispatch(arrayOf("run", ImposterVerticle::class.java.canonicalName, *args))
     }
 
-    private ConfigHolder() {
-    }
-
-    /**
-     * This is primarily used in tests to clear the configuration state.
-     */
-    public static void resetConfig() {
-        config = new ImposterConfig();
-    }
-
-    public static ImposterConfig getConfig() {
-        return config;
+    override fun beforeStartingVertx(options: VertxOptions) {
+        if (isFeatureEnabled(MetricsUtil.FEATURE_NAME_METRICS)) {
+            configureMetrics(options)
+        }
     }
 }

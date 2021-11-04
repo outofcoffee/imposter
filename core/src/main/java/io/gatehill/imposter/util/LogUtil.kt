@@ -46,7 +46,6 @@ import io.vertx.ext.web.RoutingContext
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.core.LoggerContext
-import java.util.*
 
 /**
  * Common logging functionality.
@@ -69,13 +68,8 @@ object LogUtil {
      * Configure the logging level using the value of [.ENV_VAR_LOG_LEVEL], falling back
      * to [.DEFAULT_LOG_LEVEL] if empty.
      */
-    @JvmStatic
     fun configureLoggingFromEnvironment() {
-        configureLogging(
-            Optional.ofNullable<String>(EnvVars.getEnv(ENV_VAR_LOG_LEVEL)).orElse(
-                DEFAULT_LOG_LEVEL.toString()
-            )
-        )
+        configureLogging(EnvVars.getEnv(ENV_VAR_LOG_LEVEL) ?: DEFAULT_LOG_LEVEL.toString())
     }
 
     /**
@@ -112,7 +106,7 @@ object LogUtil {
         requestId: String? = routingContext.get(ResourceUtil.RC_REQUEST_ID_KEY)
     ): String {
         return "[" + requestId + "]" +
-                " " + routingContext.request().method() +
-                " " + routingContext.request().absoluteURI()
+            " " + routingContext.request().method() +
+            " " + routingContext.request().absoluteURI()
     }
 }
