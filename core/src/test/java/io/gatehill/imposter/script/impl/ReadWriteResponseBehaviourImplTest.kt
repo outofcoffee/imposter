@@ -40,40 +40,29 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.script.impl
 
-package io.gatehill.imposter.util;
+import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl
+import org.junit.Assert
+import org.junit.Test
 
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.collection.IsMapContaining.hasEntry;
-import static org.hamcrest.MatcherAssert.assertThat;
-
-/**
- * Tests for {@link EnvVars}.
- */
-public class EnvVarsTest {
-    @BeforeClass
-    public static void beforeClass() {
-        EnvVars.populate(new HashMap<String, String>() {{
-            put("foo", "bar");
-        }});
+class ReadWriteResponseBehaviourImplTest {
+    @Test
+    @Throws(Exception::class)
+    fun shouldAddHeaderWithValue() {
+        val scriptedResponseBehavior = ReadWriteResponseBehaviourImpl()
+        scriptedResponseBehavior.withHeader("MyHeader", "MyValue")
+        Assert.assertEquals(1, scriptedResponseBehavior.responseHeaders.size.toLong())
+        Assert.assertTrue(scriptedResponseBehavior.responseHeaders.containsKey("MyHeader"))
+        Assert.assertEquals("MyValue", scriptedResponseBehavior.responseHeaders["MyHeader"])
     }
 
     @Test
-    public void testGetEnvSingle() {
-        assertThat(EnvVars.getEnv("foo"), equalTo("bar"));
-    }
-
-    @Test
-    public void testGetEnvAll() {
-        final Map<String, String> entries = EnvVars.getEnv();
-        assertThat(entries.entrySet(), hasSize(1));
-        assertThat(entries, hasEntry("foo", "bar"));
+    @Throws(Exception::class)
+    fun shouldRemoveHeaderWithValueNull() {
+        val scriptedResponseBehavior = ReadWriteResponseBehaviourImpl()
+        scriptedResponseBehavior.responseHeaders["MyHeader"] = "MyValue"
+        scriptedResponseBehavior.withHeader("MyHeader", null)
+        Assert.assertEquals(0, scriptedResponseBehavior.responseHeaders.size.toLong())
     }
 }
