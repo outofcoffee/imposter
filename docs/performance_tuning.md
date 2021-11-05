@@ -19,6 +19,10 @@ Features that can be switched off include:
 
 > See [features](./features_plugins.md) and [usage](./usage.md) documentation.
 
+### Resource matching performance
+
+[Resource matching](./configuration.md) is typically the fastest method of providing conditional responses. This is the case for request properties such as headers, query parameters, path parameters, path and HTTP method. In the case of using [JsonPath to query the request body](./request_matching.md) to conditionally match resources, however, the body must be parsed, which is computationally expensive and will result in lower performance. 
+
 ### Response Templating performance
 
 [Templating](./templates.md) incurs a performance penalty, but is often faster than dynamically generating large objects using scripts, so is generally a better tradeoff when dynamic responses are required.
@@ -29,7 +33,7 @@ Using JsonPath in placeholder templates is computationally expensive, as it requ
 
 ### Data Capture performance
 
-[Data capture](./data_capture.md) can incur overhead on response times, depending on the speed of the store implementation used. If using the in-memory store, the performance impact is immaterial (with the caveat of JsonPath matching). For store providers backed by external datastores, requests will incur a synchronous write to the store when capturing data.
+[Data capture](./data_capture.md) incurs overhead on response times, depending on the speed of the store implementation used. If using the in-memory store, the performance impact is lower than using an external store. For store providers backed by external datastores, requests will incur a synchronous write to the store when capturing data.
 
 Using JsonPath to capture the request body is computationally expensive, as it requires parsing and querying of the request body item rather than just copying a reference.
 

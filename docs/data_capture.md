@@ -200,7 +200,7 @@ In the example above, an item corresponding to the `userId` parameter in the req
 
 ## Capture performance
 
-Data capture can incur overhead on response times, depending on the speed of the store implementation used. If using the in-memory store, the performance impact is immaterial (with the caveat of JsonPath matching). For store providers backed by external datastores, requests will incur a synchronous write to the store when capturing data.
+Data capture incurs overhead on response times, depending on the speed of the store implementation used. If using the in-memory store, the performance impact is lower than using an external store. For store providers backed by external datastores, requests will incur a synchronous write to the store when capturing data.
 
 Using JsonPath to capture the request body is computationally expensive, as it requires parsing and querying of the request body item rather than just copying a reference.
 
