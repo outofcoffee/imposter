@@ -76,11 +76,15 @@ object TestEnvironmentUtil {
      *
      * @return the exit code of running the 'docker ps' command
      */
-    @Throws(Exception::class)
     private fun testDockerRunning(): Int {
-        return ProcessBuilder("docker", "ps")
-            .redirectErrorStream(true)
-            .redirectOutput(NULL_FILE)
-            .start().waitFor()
+        return try {
+            ProcessBuilder("docker", "ps")
+                .redirectErrorStream(true)
+                .redirectOutput(NULL_FILE)
+                .start().waitFor()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            255
+        }
     }
 }
