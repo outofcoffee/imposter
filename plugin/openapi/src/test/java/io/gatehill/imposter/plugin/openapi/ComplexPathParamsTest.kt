@@ -40,66 +40,51 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.plugin.openapi
 
-package io.gatehill.imposter.plugin.openapi;
-
-import com.google.common.collect.Lists;
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.http.ContentType;
-import com.jayway.restassured.path.json.JsonPath;
-import io.gatehill.imposter.plugin.Plugin;
-import io.gatehill.imposter.server.BaseVerticleTest;
-import io.gatehill.imposter.util.HttpUtil;
-import io.vertx.ext.unit.TestContext;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.util.List;
-
-import static com.jayway.restassured.RestAssured.given;
+import com.jayway.restassured.RestAssured
+import com.jayway.restassured.http.ContentType
+import io.gatehill.imposter.server.BaseVerticleTest
+import io.gatehill.imposter.util.HttpUtil
+import io.vertx.ext.unit.TestContext
+import org.junit.Before
+import org.junit.Test
 
 /**
- * Tests for OpenAPI definitions with reference responses.
+ * Tests for complex path parameters.
  *
  * @author Pete Cornish
  */
-public class DefaultResponseTest extends BaseVerticleTest {
-    @Override
-    protected Class<? extends Plugin> getPluginClass() {
-        return OpenApiPluginImpl.class;
-    }
+class ComplexPathParamsTest : BaseVerticleTest() {
+    override val pluginClass = OpenApiPluginImpl::class.java
 
     @Before
-    public void setUp(TestContext testContext) throws Exception {
-        super.setUp(testContext);
-        RestAssured.baseURI = "http://" + getHost() + ":" + getListenPort();
+    @Throws(Exception::class)
+    override fun setUp(testContext: TestContext) {
+        super.setUp(testContext)
+        RestAssured.baseURI = "http://$host:$listenPort"
     }
 
-    @Override
-    protected List<String> getTestConfigDirs() {
-        return Lists.newArrayList(
-                "/openapi3/default-response"
-        );
-    }
+    override val testConfigDirs = listOf(
+        "/openapi2/complex-path-params"
+    )
 
     /**
-     * Should return example from reference response.
+     * Should return a sample artifact and  HTTP 200 status code, per behaviour script.
      *
      * @param testContext
      */
     @Test
-    public void testReferenceObjectExample(TestContext testContext) {
-        final JsonPath body = given()
-                .log().ifValidationFails()
-                .accept(ContentType.JSON)
-                .when()
-                .get("/v1/pets")
-                .then()
-                .log().ifValidationFails()
-                .statusCode(HttpUtil.HTTP_OK)
-                .extract().jsonPath();
+    fun testServeDefaultExampleMatchContentType(testContext: TestContext) {
+        val body = RestAssured.given()
+            .log().ifValidationFails()
+            .accept(ContentType.ANY)
+            .`when`()["/apis/v1beta1/runs/1/nodes/2/artifacts/3:read"]
+            .then()
+            .log().ifValidationFails()
+            .statusCode(HttpUtil.HTTP_OK)
+            .extract().asString()
 
-        testContext.assertEquals(99, body.get("code"));
-        testContext.assertEquals("Default response", body.get("message"));
+        testContext.assertEquals("Example artifact data", body)
     }
 }

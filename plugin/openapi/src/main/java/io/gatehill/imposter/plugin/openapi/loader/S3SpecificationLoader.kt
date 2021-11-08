@@ -52,7 +52,8 @@ import org.slf4j.LoggerFactory
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
-import java.util.*
+import java.util.Objects
+import java.util.Optional
 import java.util.stream.Collectors
 
 /**
@@ -71,13 +72,13 @@ class S3SpecificationLoader private constructor() {
         return try {
             val bucketName = s3Url.substring(5, s3Url.indexOf("/", 5))
             val keyName = s3Url.substring(bucketName.length + 6)
-            val specData: String
-            val obj = s3client.getObject(bucketName, keyName)
-            obj.objectContent.use { s3is ->
-                specData = BufferedReader(InputStreamReader(s3is, StandardCharsets.UTF_8))
+
+            val specData: String = s3client.getObject(bucketName, keyName).objectContent.use { s3is ->
+                BufferedReader(InputStreamReader(s3is, StandardCharsets.UTF_8))
                     .lines()
                     .collect(Collectors.joining("\n"))
             }
+
             LOGGER.debug("Specification read [{} bytes] from S3: {}", specData.length, s3Url)
             specData
         } catch (e: Exception) {
@@ -90,6 +91,7 @@ class S3SpecificationLoader private constructor() {
         const val SYS_PROP_OPENAPI_S3_API_ENDPOINT = "imposter.openapi.s3.api.endpoint"
         private val LOGGER = LoggerFactory.getLogger(S3SpecificationLoader::class.java)
         private var instance: S3SpecificationLoader? = null
+
         fun getInstance(): S3SpecificationLoader? {
             if (Objects.isNull(instance)) {
                 instance = S3SpecificationLoader()

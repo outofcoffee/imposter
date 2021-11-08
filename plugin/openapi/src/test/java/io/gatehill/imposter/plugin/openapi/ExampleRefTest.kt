@@ -40,62 +40,49 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.plugin.openapi
 
-package io.gatehill.imposter.plugin.openapi;
-
-import com.google.common.collect.Lists;
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.http.ContentType;
-import io.gatehill.imposter.plugin.Plugin;
-import io.gatehill.imposter.server.BaseVerticleTest;
-import io.gatehill.imposter.util.HttpUtil;
-import io.vertx.ext.unit.TestContext;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.util.List;
-
-import static com.jayway.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.equalTo;
+import com.jayway.restassured.RestAssured
+import com.jayway.restassured.http.ContentType
+import io.gatehill.imposter.server.BaseVerticleTest
+import io.gatehill.imposter.util.HttpUtil
+import io.vertx.ext.unit.TestContext
+import org.hamcrest.Matchers
+import org.junit.Before
+import org.junit.Test
 
 /**
  * Tests for examples referenced using '$ref' in spec.
  *
  * @author Pete Cornish
  */
-public class ExampleRefTest extends BaseVerticleTest {
-    @Override
-    protected Class<? extends Plugin> getPluginClass() {
-        return OpenApiPluginImpl.class;
-    }
+class ExampleRefTest : BaseVerticleTest() {
+    override val pluginClass = OpenApiPluginImpl::class.java
 
     @Before
-    public void setUp(TestContext testContext) throws Exception {
-        super.setUp(testContext);
-        RestAssured.baseURI = "http://" + getHost() + ":" + getListenPort();
+    @Throws(Exception::class)
+    override fun setUp(testContext: TestContext) {
+        super.setUp(testContext)
+        RestAssured.baseURI = "http://$host:$listenPort"
     }
 
-    @Override
-    protected List<String> getTestConfigDirs() {
-        return Lists.newArrayList(
-                "/openapi3/example-ref"
-        );
-    }
+    override val testConfigDirs = listOf(
+        "/openapi3/example-ref"
+    )
 
     /**
      * Expects that different request URIs return specific request examples.
      */
     @Test
-    public void testExampleRefReturned() {
-        given()
-                .log().ifValidationFails()
-                .accept(ContentType.JSON)
-                .when()
-                .get("/pets/1")
-                .then()
-                .log().ifValidationFails()
-                .statusCode(HttpUtil.HTTP_OK)
-                .body("id", equalTo(1))
-                .body("name", equalTo("Cat"));
+    fun testExampleRefReturned() {
+        RestAssured.given()
+            .log().ifValidationFails()
+            .accept(ContentType.JSON)
+            .`when`()["/pets/1"]
+            .then()
+            .log().ifValidationFails()
+            .statusCode(HttpUtil.HTTP_OK)
+            .body("id", Matchers.equalTo(1))
+            .body("name", Matchers.equalTo("Cat"))
     }
 }
