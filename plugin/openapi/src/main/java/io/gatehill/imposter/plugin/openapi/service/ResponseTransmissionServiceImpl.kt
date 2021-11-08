@@ -44,7 +44,6 @@ package io.gatehill.imposter.plugin.openapi.service
 
 import com.fasterxml.jackson.core.JsonProcessingException
 import io.gatehill.imposter.plugin.openapi.model.ContentTypedHolder
-import io.gatehill.imposter.plugin.openapi.service.ResponseTransmissionServiceImpl
 import io.gatehill.imposter.util.HttpUtil.CONTENT_TYPE
 import io.gatehill.imposter.util.MapUtil
 import io.gatehill.imposter.util.MapUtil.YAML_MAPPER
@@ -76,7 +75,7 @@ class ResponseTransmissionServiceImpl : ResponseTransmissionService {
             LOGGER.info(
                 "Serving mock example for URI {} with status code {} (response body {} bytes)",
                 routingContext.request().absoluteURI(), routingContext.response().statusCode,
-                Optional.ofNullable(exampleResponse).map { obj: String -> obj.length }.orElse(0)
+                exampleResponse?.let { obj: String -> obj.length } ?: 0
             )
         }
         routingContext.response()
@@ -91,22 +90,25 @@ class ResponseTransmissionServiceImpl : ResponseTransmissionService {
      * @param example     the example candidate - may be strongly typed [Example], map, list, or raw
      * @return the [String] representation of the example entry
      */
-    private fun buildExampleResponse(contentType: String, example: Any?): String {
-        val exampleResponse: String = if (example is Example) {
-            example.value.toString()
-        } else if (example is List<*>) {
-            serialiseList(contentType, example)
-        } else (example as? Map<*, *>)?.let { serialise(contentType, it) }
-            ?: if (example is String) {
-                example
-            } else {
-                LOGGER.warn(
-                    "Unsupported example type '{}' - attempting String conversion",
-                    example!!.javaClass
-                )
-                example.toString()
+    private fun buildExampleResponse(contentType: String, example: Any?): String? {
+        return when (example) {
+            is Example -> {
+                example.value?.toString()
             }
-        return exampleResponse
+            is List<*> -> {
+                serialiseList(contentType, example)
+            }
+            else -> (example as? Map<*, *>)?.let { serialise(contentType, it) }
+                ?: if (example is String) {
+                    example
+                } else {
+                    LOGGER.warn(
+                        "Unsupported example type '{}' - attempting String conversion",
+                        example?.javaClass
+                    )
+                    example?.toString()
+                }
+        }
     }
 
     /**
@@ -130,17 +132,23 @@ class ResponseTransmissionServiceImpl : ResponseTransmissionService {
      */
     private fun transformListForSerialisation(example: List<*>): List<*> {
         return example.map { e ->
-            if (e is Example) {
-                return@map e.value.toString()
-            } else if (e is List<*>) {
-                return@map transformListForSerialisation(e)
-            } else if (e is Map<*, *>) {
-                return@map e
-            } else if (e is String) {
-                return@map e
-            } else {
-                LOGGER.warn("Unsupported example element type '{}' - attempting String conversion", e!!.javaClass)
-                return@map e.toString()
+            when (e) {
+                is Example -> {
+                    return@map e.value?.toString()
+                }
+                is List<*> -> {
+                    return@map transformListForSerialisation(e)
+                }
+                is Map<*, *> -> {
+                    return@map e
+                }
+                is String -> {
+                    return@map e
+                }
+                else -> {
+                    LOGGER.warn("Unsupported example element type '{}' - attempting String conversion", e?.javaClass)
+                    return@map e?.toString()
+                }
             }
         }
     }

@@ -43,9 +43,6 @@
 package io.gatehill.imposter.util
 
 import org.apache.logging.log4j.LogManager
-import java.util.*
-import java.util.function.Function
-import java.util.stream.Collectors
 
 /**
  * @author Pete Cornish
@@ -101,27 +98,13 @@ object FeatureUtil {
      *
      * @return a map of feature name to enabled status
      */
-    private fun listOverrides(): MutableMap<String, Boolean> {
-        val features = Arrays.asList(
-            *Optional.ofNullable(
-                System.getProperty(
-                    SYS_PROP_IMPOSTER_FEATURES, EnvVars.getEnv(
-                        ENV_IMPOSTER_FEATURES
-                    )
-                )
-            ).orElse("")
-                .split(",").toTypedArray()
-        )
-        return features.stream()
-            .filter { entry: String -> entry.contains("=") }
+    private fun listOverrides(): Map<String, Boolean> {
+        val features = System.getProperty(SYS_PROP_IMPOSTER_FEATURES, EnvVars.getEnv(ENV_IMPOSTER_FEATURES))
+            ?.split(",") ?: emptyList()
+
+        return features.filter { entry: String -> entry.contains("=") }
             .map { entry: String -> entry.trim { it <= ' ' }.split("=").toTypedArray() }
-            .collect(Collectors.toMap(
-                Function { entry: Array<String> -> entry[0] }, Function { entry: Array<String> ->
-                    java.lang.Boolean.parseBoolean(
-                        entry[1]
-                    )
-                })
-            )
+            .associate { (k, v) -> k to v.toBoolean() }
     }
 
     @JvmStatic
@@ -130,7 +113,7 @@ object FeatureUtil {
     }
 
     fun overrideFeature(featureName: String, enabled: Boolean) {
-        val overrides = listOverrides()
+        val overrides = listOverrides().toMutableMap()
         overrides[featureName] = enabled
         System.setProperty(
             SYS_PROP_IMPOSTER_FEATURES, overrides.entries.joinToString(",") { (key, value) -> "$key=$value" }

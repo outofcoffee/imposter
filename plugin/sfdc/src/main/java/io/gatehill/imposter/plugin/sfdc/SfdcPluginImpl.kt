@@ -47,7 +47,6 @@ import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.ScriptedPlugin.scriptHandler
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin
 import io.gatehill.imposter.plugin.sfdc.config.SfdcPluginConfig
-import io.gatehill.imposter.script.ResponseBehaviour
 import io.gatehill.imposter.service.ResourceService
 import io.gatehill.imposter.service.ResponseService
 import io.gatehill.imposter.util.FileUtil.findRow
@@ -110,9 +109,9 @@ class SfdcPluginImpl @Inject constructor(
                 } ?: throw RuntimeException("Unable to find mock config for SObject: $sObjectName")
 
                 // script should fire first
-                scriptHandler(config, routingContext, injector) { responseBehaviour: ResponseBehaviour? ->
+                scriptHandler(config, routingContext, injector) { responseBehaviour ->
                     // enrich records
-                    val records = responseService.loadResponseAsJsonArray(config, responseBehaviour!!)
+                    val records = responseService.loadResponseAsJsonArray(config, responseBehaviour)
                     for (i in 0 until records.size()) {
                         addRecordAttributes(records.getJsonObject(i), apiVersion, config.sObjectName)
                     }
@@ -135,14 +134,14 @@ class SfdcPluginImpl @Inject constructor(
         configs.forEach { config: SfdcPluginConfig ->
             val handler = resourceService.handleRoute(imposterConfig, config, vertx) { routingContext: RoutingContext ->
                 // script should fire first
-                scriptHandler(config, routingContext, injector) { responseBehaviour: ResponseBehaviour? ->
+                scriptHandler(config, routingContext, injector) { responseBehaviour ->
                     val apiVersion = routingContext.request().getParam("apiVersion")
                     val sObjectId = routingContext.request().getParam("sObjectId")
 
                     // find and enrich record
                     val result = findRow(
                         FIELD_ID, sObjectId,
-                        responseService.loadResponseAsJsonArray(config, responseBehaviour!!)
+                        responseService.loadResponseAsJsonArray(config, responseBehaviour)
                     )?.let { r: JsonObject -> addRecordAttributes(r, apiVersion, config.sObjectName) }
 
                     val response = routingContext.response()

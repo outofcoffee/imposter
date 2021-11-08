@@ -59,7 +59,6 @@ import io.gatehill.imposter.plugin.hbase.model.ResponsePhase
 import io.gatehill.imposter.plugin.hbase.service.ScannerService
 import io.gatehill.imposter.plugin.hbase.service.serialisation.DeserialisationService
 import io.gatehill.imposter.plugin.hbase.service.serialisation.SerialisationService
-import io.gatehill.imposter.script.ResponseBehaviour
 import io.gatehill.imposter.service.ResourceService
 import io.gatehill.imposter.service.ResponseService
 import io.gatehill.imposter.util.FileUtil.findRow
@@ -70,8 +69,6 @@ import io.vertx.core.Vertx
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.RoutingContext
 import org.apache.logging.log4j.LogManager
-import java.util.Optional
-import java.util.function.Consumer
 import javax.inject.Inject
 
 /**
@@ -102,8 +99,7 @@ class HBasePluginImpl @Inject constructor(
 
     override fun configureRoutes(router: Router) {
         // add route for each distinct path
-        tableConfigs.values.stream()
-            .map { config: HBasePluginConfig -> ConfigAndPath(config, Optional.ofNullable(config.path).orElse("")) }
+        tableConfigs.values.map { config: HBasePluginConfig -> ConfigAndPath(config, config.path ?: "") }
             .distinct()
             .forEach { configAndPath: ConfigAndPath ->
                 LOGGER.debug("Adding routes for base path: {}", { configAndPath.path.ifEmpty { "<empty>" } })
@@ -126,44 +122,50 @@ class HBasePluginImpl @Inject constructor(
      * @param path
      */
     private fun addRowRetrievalRoute(pluginConfig: PluginConfig, router: Router, path: String) {
-        router["$path/:tableName/:recordId/"].handler(resourceService.handleRoute(imposterConfig, pluginConfig, vertx) { routingContext: RoutingContext ->
-            val tableName = routingContext.request().getParam("tableName")
-            val recordId = routingContext.request().getParam("recordId")
+        router["$path/:tableName/:recordId/"].handler(
+            resourceService.handleRoute(imposterConfig, pluginConfig, vertx) { routingContext: RoutingContext ->
+                val tableName = routingContext.request().getParam("tableName")
+                val recordId = routingContext.request().getParam("recordId")
 
-            val recordInfo = RecordInfo(recordId)
-            val config: HBasePluginConfig
+                val recordInfo = RecordInfo(recordId)
+                val config: HBasePluginConfig
 
-            // check that the table is registered
-            if (!tableConfigs.containsKey(tableName)) {
-                LOGGER.error("Received row request for unknown table: {}", tableName)
-                routingContext.response()
-                    .setStatusCode(HttpUtil.HTTP_NOT_FOUND)
-                    .end()
-                return@handleRoute
-            } else {
-                LOGGER.info("Received request for row with ID: {} for table: {}", recordId, tableName)
-                config = tableConfigs[tableName]!!
-            }
-
-            // script should fire first
-            val bindings = buildScriptBindings(ResponsePhase.RECORD, tableName, recordInfo, scannerFilterPrefix = null)
-            scriptHandler(config, routingContext, injector, bindings) { responseBehaviour: ResponseBehaviour? ->
-                // find the right row from results
-                val results = responseService.loadResponseAsJsonArray(config, responseBehaviour!!)
-                val result = findRow(config.idField, recordInfo.recordId, results)
-                val response = routingContext.response()
-
-                result?.let {
-                    val serialiser = findSerialiser(routingContext)
-                    val buffer = serialiser.serialise(tableName, recordInfo.recordId, result)
-                    response.setStatusCode(HttpUtil.HTTP_OK).end(buffer)
-                } ?: run {
-                    // no such record
-                    LOGGER.error("No row found with ID: {} for table: {}", recordInfo.recordId, tableName)
-                    response.setStatusCode(HttpUtil.HTTP_NOT_FOUND).end()
+                // check that the table is registered
+                if (!tableConfigs.containsKey(tableName)) {
+                    LOGGER.error("Received row request for unknown table: {}", tableName)
+                    routingContext.response()
+                        .setStatusCode(HttpUtil.HTTP_NOT_FOUND)
+                        .end()
+                    return@handleRoute
+                } else {
+                    LOGGER.info("Received request for row with ID: {} for table: {}", recordId, tableName)
+                    config = tableConfigs[tableName]!!
                 }
-            }
-        })
+
+                // script should fire first
+                val bindings = buildScriptBindings(
+                    ResponsePhase.RECORD,
+                    tableName,
+                    recordInfo,
+                    scannerFilterPrefix = null
+                )
+                scriptHandler(config, routingContext, injector, bindings) { responseBehaviour ->
+                    // find the right row from results
+                    val results = responseService.loadResponseAsJsonArray(config, responseBehaviour)
+                    val result = findRow(config.idField, recordInfo.recordId, results)
+                    val response = routingContext.response()
+
+                    result?.let {
+                        val serialiser = findSerialiser(routingContext)
+                        val buffer = serialiser.serialise(tableName, recordInfo.recordId, result)
+                        response.setStatusCode(HttpUtil.HTTP_OK).end(buffer)
+                    } ?: run {
+                        // no such record
+                        LOGGER.error("No row found with ID: {} for table: {}", recordInfo.recordId, tableName)
+                        response.setStatusCode(HttpUtil.HTTP_NOT_FOUND).end()
+                    }
+                }
+            })
     }
 
     /**
@@ -175,53 +177,59 @@ class HBasePluginImpl @Inject constructor(
      * @param path
      */
     private fun addCreateScannerRoute(pluginConfig: PluginConfig, router: Router, path: String) {
-        router.post("$path/:tableName/scanner").handler(resourceService.handleRoute(imposterConfig, pluginConfig, vertx) { routingContext: RoutingContext ->
-            val tableName = routingContext.request().getParam("tableName")
+        router.post("$path/:tableName/scanner").handler(
+            resourceService.handleRoute(imposterConfig, pluginConfig, vertx) { routingContext: RoutingContext ->
+                val tableName = routingContext.request().getParam("tableName")
 
-            // check that the table is registered
-            if (!tableConfigs.containsKey(tableName)) {
-                LOGGER.error("Received scanner request for unknown table: {}", tableName)
-                routingContext.response()
-                    .setStatusCode(HttpUtil.HTTP_NOT_FOUND)
-                    .end()
-                return@handleRoute
-            }
-            LOGGER.info("Received scanner request for table: {}", tableName)
-            val config = tableConfigs[tableName]!!
+                // check that the table is registered
+                if (!tableConfigs.containsKey(tableName)) {
+                    LOGGER.error("Received scanner request for unknown table: {}", tableName)
+                    routingContext.response()
+                        .setStatusCode(HttpUtil.HTTP_NOT_FOUND)
+                        .end()
+                    return@handleRoute
+                }
+                LOGGER.info("Received scanner request for table: {}", tableName)
+                val config = tableConfigs[tableName]!!
 
-            val deserialiser = findDeserialiser(routingContext)
-            val scanner = try {
-                deserialiser.decodeScanner(routingContext)
-            } catch (e: Exception) {
-                routingContext.fail(e)
-                return@handleRoute
-            }
-            val scannerFilterPrefix = deserialiser.decodeScannerFilterPrefix(scanner)
-            LOGGER.debug("Scanner filter for table: {}: {}, with prefix: {}", tableName, scanner.filter, scannerFilterPrefix)
-
-            // assert prefix matches if present
-            if (config.prefix?.let { it == scannerFilterPrefix } != false) {
-                LOGGER.info("Scanner filter prefix matches expected value: {}", config.prefix)
-            } else {
-                LOGGER.error(
-                    "Scanner filter prefix '{}' does not match expected value: {}}",
-                    scannerFilterPrefix, config.prefix
+                val deserialiser = findDeserialiser(routingContext)
+                val scanner = try {
+                    deserialiser.decodeScanner(routingContext)
+                } catch (e: Exception) {
+                    routingContext.fail(e)
+                    return@handleRoute
+                }
+                val scannerFilterPrefix = deserialiser.decodeScannerFilterPrefix(scanner)
+                LOGGER.debug(
+                    "Scanner filter for table: {}: {}, with prefix: {}",
+                    tableName,
+                    scanner.filter,
+                    scannerFilterPrefix
                 )
-                routingContext.fail(HttpUtil.HTTP_INTERNAL_ERROR)
-                return@handleRoute
-            }
 
-            // script should fire first
-            val bindings = buildScriptBindings(ResponsePhase.SCANNER, tableName, null, scannerFilterPrefix)
-            scriptHandler(config, routingContext, injector, bindings) {
-                val scannerId = scannerService.registerScanner(config, scanner)
-                val resultUrl = imposterConfig.serverUrl + path + "/" + tableName + "/scanner/" + scannerId
-                routingContext.response()
-                    .putHeader("Location", resultUrl)
-                    .setStatusCode(HttpUtil.HTTP_CREATED)
-                    .end()
-            }
-        })
+                // assert prefix matches if present
+                if (config.prefix?.let { it == scannerFilterPrefix } != false) {
+                    LOGGER.info("Scanner filter prefix matches expected value: {}", config.prefix)
+                } else {
+                    LOGGER.error(
+                        "Scanner filter prefix '{}' does not match expected value: {}}",
+                        scannerFilterPrefix, config.prefix
+                    )
+                    routingContext.fail(HttpUtil.HTTP_INTERNAL_ERROR)
+                    return@handleRoute
+                }
+
+                // script should fire first
+                val bindings = buildScriptBindings(ResponsePhase.SCANNER, tableName, null, scannerFilterPrefix)
+                scriptHandler(config, routingContext, injector, bindings) {
+                    val scannerId = scannerService.registerScanner(config, scanner)
+                    val resultUrl = imposterConfig.serverUrl + path + "/" + tableName + "/scanner/" + scannerId
+                    routingContext.response()
+                        .putHeader("Location", resultUrl)
+                        .setStatusCode(HttpUtil.HTTP_CREATED)
+                        .end()
+                }
+            })
     }
 
     /**
@@ -234,11 +242,7 @@ class HBasePluginImpl @Inject constructor(
      */
     private fun addReadScannerResultsRoute(pluginConfig: HBasePluginConfig, router: Router, path: String) {
         router["$path/:tableName/scanner/:scannerId"].handler(
-            resourceService.handleRoute(
-                imposterConfig,
-                pluginConfig,
-                vertx
-            ) { routingContext: RoutingContext ->
+            resourceService.handleRoute(imposterConfig, pluginConfig, vertx) { routingContext: RoutingContext ->
                 val tableName = routingContext.request().getParam("tableName")
                 val scannerId = routingContext.request().getParam("scannerId")
 
@@ -257,13 +261,22 @@ class HBasePluginImpl @Inject constructor(
                 // check that the scanner was created
                 val scanner = scannerService.fetchScanner(Integer.valueOf(scannerId))
                 scanner ?: run {
-                    LOGGER.error("Received result request for non-existent scanner {} for table: {}", scannerId, tableName)
+                    LOGGER.error(
+                        "Received result request for non-existent scanner {} for table: {}",
+                        scannerId,
+                        tableName
+                    )
                     routingContext.response()
                         .setStatusCode(HttpUtil.HTTP_NOT_FOUND)
                         .end()
                     return@handleRoute
                 }
-                LOGGER.info("Received result request for {} rows from scanner {} for table: {}", rows, scannerId, tableName)
+                LOGGER.info(
+                    "Received result request for {} rows from scanner {} for table: {}",
+                    rows,
+                    scannerId,
+                    tableName
+                )
 
                 // load result
                 val config = tableConfigs[tableName]!!
@@ -275,15 +288,15 @@ class HBasePluginImpl @Inject constructor(
                     tableName = tableName,
                     scannerFilterPrefix = deserialiser.decodeScannerFilterPrefix(scanner.scanner)
                 )
-                scriptHandler(config, routingContext, injector, bindings, Consumer { responseBehaviour: ResponseBehaviour? ->
+                scriptHandler(config, routingContext, injector, bindings) { responseBehaviour ->
                     // build results
-                    val results = responseService.loadResponseAsJsonArray(config, responseBehaviour!!)
+                    val results = responseService.loadResponseAsJsonArray(config, responseBehaviour)
                     val serialiser = findSerialiser(routingContext)
                     val buffer = serialiser.serialise(tableName, scannerId, results, scanner, rows)
                     routingContext.response()
                         .setStatusCode(HttpUtil.HTTP_OK)
                         .end(buffer)
-                })
+                }
             })
     }
 
@@ -305,20 +318,20 @@ class HBasePluginImpl @Inject constructor(
         for (contentType in acceptedContentTypes) {
             try {
                 val serialiser = injector.getInstance(
-                    Key.get(
-                        SerialisationService::class.java, Names.named(contentType)
-                    )
+                    Key.get(SerialisationService::class.java, Names.named(contentType))
                 )
-                LOGGER.debug("Found serialiser binding {} for content type '{}'", serialiser.javaClass.simpleName, contentType)
+                LOGGER.debug(
+                    "Found serialiser binding {} for content type '{}'",
+                    serialiser.javaClass.simpleName,
+                    contentType
+                )
                 return serialiser
             } catch (e: Exception) {
                 LOGGER.trace("Unable to load serialiser binding for content type '{}'", contentType, e)
             }
         }
         throw RuntimeException(
-            String.format(
-                "Unable to find serialiser matching any accepted content type: %s", acceptedContentTypes
-            )
+            "Unable to find serialiser matching any accepted content type: $acceptedContentTypes"
         )
     }
 
@@ -337,20 +350,18 @@ class HBasePluginImpl @Inject constructor(
         }
         try {
             val deserialiser = injector.getInstance(
-                Key.get(
-                    DeserialisationService::class.java, Names.named(contentType)
-                )
+                Key.get(DeserialisationService::class.java, Names.named(contentType))
             )
-            LOGGER.debug("Found deserialiser binding {} for content type '{}'", deserialiser.javaClass.simpleName, contentType)
+            LOGGER.debug(
+                "Found deserialiser binding {} for content type '{}'",
+                deserialiser.javaClass.simpleName,
+                contentType
+            )
             return deserialiser
         } catch (e: Exception) {
             LOGGER.trace("Unable to load deserialiser binding for content type '{}'", contentType, e)
         }
-        throw RuntimeException(
-            String.format(
-                "Unable to find deserialiser matching content type: %s", contentType
-            )
-        )
+        throw RuntimeException("Unable to find deserialiser matching content type: $contentType")
     }
 
     /**

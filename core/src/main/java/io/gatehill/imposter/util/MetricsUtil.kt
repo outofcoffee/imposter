@@ -51,7 +51,6 @@ import io.vertx.micrometer.PrometheusScrapingHandler
 import io.vertx.micrometer.VertxPrometheusOptions
 import io.vertx.micrometer.backends.BackendRegistries
 import org.apache.logging.log4j.LogManager
-import java.util.*
 import java.util.function.Consumer
 
 /**
@@ -74,11 +73,10 @@ object MetricsUtil {
     @JvmStatic
     fun doIfMetricsEnabled(description: String?, block: Consumer<MeterRegistry>): ChainableMetricsStarter {
         return if (FeatureUtil.isFeatureEnabled(FEATURE_NAME_METRICS)) {
-            val registry = BackendRegistries.getDefaultNow()
-            if (Objects.nonNull(registry)) {
+            BackendRegistries.getDefaultNow()?.let { registry ->
                 block.accept(registry)
                 ChainableMetricsStarter(true)
-            } else {
+            } ?: run {
                 // this is important to avoid NPEs if we are running in a context, such as embedded,
                 // in which metrics are not explicitly disabled, but are not initialised
                 LOGGER.warn("No metrics registry - skipping {}", description)
@@ -95,7 +93,7 @@ object MetricsUtil {
         return PrometheusScrapingHandler.create()
     }
 
-    class ChainableMetricsStarter internal constructor(val primaryCondition: Boolean) {
+    class ChainableMetricsStarter internal constructor(private val primaryCondition: Boolean) {
         fun orElseDo(block: Runnable) {
             if (!primaryCondition) {
                 block.run()

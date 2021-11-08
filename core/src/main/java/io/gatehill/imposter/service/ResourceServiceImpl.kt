@@ -57,7 +57,6 @@ import io.gatehill.imposter.plugin.config.ResourcesHolder
 import io.gatehill.imposter.plugin.config.resource.PathParamsResourceConfig
 import io.gatehill.imposter.plugin.config.resource.QueryParamsResourceConfig
 import io.gatehill.imposter.plugin.config.resource.RequestHeadersResourceConfig
-import io.gatehill.imposter.plugin.config.resource.ResourceConfig
 import io.gatehill.imposter.plugin.config.resource.ResourceMethod
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.plugin.config.resource.RestResourceConfig
@@ -96,39 +95,14 @@ class ResourceServiceImpl @Inject constructor(
      * {@inheritDoc}
      */
     override fun resolveResourceConfigs(pluginConfig: PluginConfig): List<ResolvedResourceConfig> {
-        if (pluginConfig is ResourcesHolder<*>) {
-            val resources = pluginConfig as ResourcesHolder<*>
-            if (Objects.nonNull(resources.resources)) {
-                return resources.resources!!.map { res: RestResourceConfig ->
-                    ResolvedResourceConfig(res, findPathParams(res), findQueryParams(res), findRequestHeaders(res))
-                }
-            }
-        }
-        return emptyList()
-    }
-
-    private fun findPathParams(resourceConfig: ResourceConfig): Map<String, String> {
-        if (resourceConfig is PathParamsResourceConfig) {
-            val params = (resourceConfig as PathParamsResourceConfig).pathParams
-            return params ?: emptyMap()
-        }
-        return emptyMap()
-    }
-
-    private fun findQueryParams(resourceConfig: ResourceConfig): Map<String, String> {
-        if (resourceConfig is QueryParamsResourceConfig) {
-            val params = (resourceConfig as QueryParamsResourceConfig).queryParams
-            return params ?: emptyMap()
-        }
-        return emptyMap()
-    }
-
-    private fun findRequestHeaders(resourceConfig: ResourceConfig): Map<String, String> {
-        if (resourceConfig is RequestHeadersResourceConfig) {
-            val headers = (resourceConfig as RequestHeadersResourceConfig).requestHeaders
-            return headers ?: emptyMap()
-        }
-        return emptyMap()
+        return (pluginConfig as? ResourcesHolder<*>)?.resources?.map { config: RestResourceConfig ->
+            ResolvedResourceConfig(
+                config = config,
+                pathParams = (config as? PathParamsResourceConfig)?.pathParams ?: emptyMap(),
+                queryParams = (config as? QueryParamsResourceConfig)?.queryParams ?: emptyMap(),
+                requestHeaders = (config as? RequestHeadersResourceConfig)?.requestHeaders ?: emptyMap()
+            )
+        } ?: emptyList()
     }
 
     /**

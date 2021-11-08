@@ -71,7 +71,7 @@ object MetaUtil {
                 }
             } catch (ignored: IOException) {
             }
-            version = Optional.ofNullable(version).orElse("unknown")
+            version = version ?: "unknown"
         }
         return version
     }

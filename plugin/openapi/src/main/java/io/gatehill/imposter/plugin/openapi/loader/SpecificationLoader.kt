@@ -57,7 +57,6 @@ import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Paths
-import java.util.*
 
 /**
  * Utility functions to load the OpenAPI specification, determining the version and use the appropriate parser.
@@ -109,7 +108,7 @@ object SpecificationLoader {
         return if (specFile.startsWith("http://") || specFile.startsWith("https://")) {
             readSpecFromUrl(specFile)
         } else if (specFile.startsWith("s3://")) {
-            S3SpecificationLoader.Companion.getInstance()!!.readSpecFromS3(specFile)
+            S3SpecificationLoader.getInstance().readSpecFromS3(specFile)
         } else {
             readSpecFromFile(config, specFile)
         }
@@ -145,9 +144,10 @@ object SpecificationLoader {
 
     private fun determineVersion(specFile: String, parsed: Map<*, *>): SpecVersion {
         LOGGER.trace("Determining version for: {}", specFile)
-        val versionString = Optional.ofNullable(parsed["openapi"])
-            .orElse(Optional.ofNullable(parsed["swagger"]).orElse(""))
-            .toString()
+        val versionString = parsed["openapi"] as String?
+            ?: parsed["swagger"] as String?
+            ?: ""
+
         return if (versionString == "3" || versionString.startsWith("3.")) {
             // OpenAPI v3
             SpecVersion.V3

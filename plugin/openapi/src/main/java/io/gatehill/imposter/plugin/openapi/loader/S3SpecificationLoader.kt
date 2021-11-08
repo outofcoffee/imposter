@@ -46,14 +46,11 @@ import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
 import com.amazonaws.regions.DefaultAwsRegionProviderChain
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
-import io.gatehill.imposter.plugin.openapi.loader.S3SpecificationLoader
 import io.gatehill.imposter.util.EnvVars.Companion.getEnv
 import org.slf4j.LoggerFactory
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
-import java.util.Objects
-import java.util.Optional
 import java.util.stream.Collectors
 
 /**
@@ -92,11 +89,11 @@ class S3SpecificationLoader private constructor() {
         private val LOGGER = LoggerFactory.getLogger(S3SpecificationLoader::class.java)
         private var instance: S3SpecificationLoader? = null
 
-        fun getInstance(): S3SpecificationLoader? {
-            if (Objects.isNull(instance)) {
+        fun getInstance(): S3SpecificationLoader {
+            return instance ?: run {
                 instance = S3SpecificationLoader()
+                instance!!
             }
-            return instance
         }
 
         /**
@@ -110,8 +107,8 @@ class S3SpecificationLoader private constructor() {
 
     init {
         val clientBuilder = AmazonS3ClientBuilder.standard().enablePathStyleAccess()
-        Optional.ofNullable(System.getProperty(SYS_PROP_OPENAPI_S3_API_ENDPOINT, getEnv(ENV_OPENAPI_S3_API_ENDPOINT)))
-            .ifPresent { s3Endpoint: String? ->
+        System.getProperty(SYS_PROP_OPENAPI_S3_API_ENDPOINT, getEnv(ENV_OPENAPI_S3_API_ENDPOINT))
+            ?.let { s3Endpoint: String ->
                 clientBuilder.withEndpointConfiguration(
                     EndpointConfiguration(s3Endpoint, DefaultAwsRegionProviderChain().region)
                 )
