@@ -40,62 +40,50 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.store.inmem
 
-package io.gatehill.imposter.store.inmem;
-
-import io.gatehill.imposter.store.model.Store;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
 
 /**
  * Tests for in-memory store implementation.
  *
  * @author Pete Cornish
  */
-public class InMemoryStoreTest {
-    private InMemoryStoreFactoryImpl factory;
+class InMemoryStoreTest {
+    private var factory: InMemoryStoreFactoryImpl? = null
 
     @Before
-    public void setUp() {
-        factory = new InMemoryStoreFactoryImpl();
+    fun setUp() {
+        factory = InMemoryStoreFactoryImpl()
     }
 
     @Test
-    public void testBuildNewStore() {
-        final Store store = factory.buildNewStore("test");
-        assertEquals("inmem", store.getTypeDescription());
+    fun testBuildNewStore() {
+        val store = factory!!.buildNewStore("test")
+        Assert.assertEquals("inmem", store.typeDescription)
     }
 
     @Test
-    public void testSaveLoadItem() {
-        final Store store = factory.buildNewStore("sli");
-
-        store.save("foo", "bar");
-        assertEquals("bar", store.load("foo"));
-
-        final Map<String, Object> allItems = store.loadAll();
-        assertEquals(1, allItems.size());
-        assertEquals("bar", allItems.get("foo"));
-        assertTrue("Item should exist", store.hasItemWithKey("foo"));
-        assertEquals(1, store.count());
+    fun testSaveLoadItem() {
+        val store = factory!!.buildNewStore("sli")
+        store.save("foo", "bar")
+        Assert.assertEquals("bar", store.load("foo"))
+        val allItems = store.loadAll()
+        Assert.assertEquals(1, allItems.size.toLong())
+        Assert.assertEquals("bar", allItems["foo"])
+        Assert.assertTrue("Item should exist", store.hasItemWithKey("foo"))
+        Assert.assertEquals(1, store.count().toLong())
     }
 
     @Test
-    public void testDeleteItem() {
-        final Store store = factory.buildNewStore("di");
-
-        assertFalse("Item should not exist", store.hasItemWithKey("foo"));
-
-        store.save("foo", "bar");
-        assertTrue("Item should exist", store.hasItemWithKey("foo"));
-
-        store.delete("foo");
-        assertFalse("Item should not exist", store.hasItemWithKey("foo"));
+    fun testDeleteItem() {
+        val store = factory!!.buildNewStore("di")
+        Assert.assertFalse("Item should not exist", store.hasItemWithKey("foo"))
+        store.save("foo", "bar")
+        Assert.assertTrue("Item should exist", store.hasItemWithKey("foo"))
+        store.delete("foo")
+        Assert.assertFalse("Item should not exist", store.hasItemWithKey("foo"))
     }
 }
