@@ -105,9 +105,7 @@ abstract class BaseVerticleTest {
     protected open val testConfigDirs = listOf("/config")
 
     @Throws(IOException::class)
-    private fun findFreePort(): Int {
-        ServerSocket(0).use { socket -> return socket.localPort }
-    }
+    private fun findFreePort() = ServerSocket(0).use { it.localPort }
 
     val listenPort: Int
         get() = ConfigHolder.config.listenPort

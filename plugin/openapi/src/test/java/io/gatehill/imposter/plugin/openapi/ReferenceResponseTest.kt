@@ -46,18 +46,16 @@ import com.jayway.restassured.RestAssured
 import com.jayway.restassured.http.ContentType
 import io.gatehill.imposter.server.BaseVerticleTest
 import io.gatehill.imposter.util.HttpUtil
-import io.vertx.core.json.JsonArray
 import io.vertx.ext.unit.TestContext
 import org.junit.Before
 import org.junit.Test
-import org.yaml.snakeyaml.Yaml
 
 /**
- * Tests for schema examples.
+ * Tests for OpenAPI definitions with reference responses.
  *
- * @author benjvoigt
+ * @author Pete Cornish
  */
-internal class SchemaExamplesTest : BaseVerticleTest() {
+class ReferenceResponseTest : BaseVerticleTest() {
     override val pluginClass = OpenApiPluginImpl::class.java
 
     @Before
@@ -68,74 +66,30 @@ internal class SchemaExamplesTest : BaseVerticleTest() {
     }
 
     override val testConfigDirs = listOf(
-        "/openapi2/model-examples"
+        "/openapi3/reference-response"
     )
 
+    /**
+     * Should return example from reference response.
+     *
+     * @param testContext
+     */
     @Test
-    fun testServeSchemaExamplesAsJson(testContext: TestContext) {
+    fun testReferenceObjectExample(testContext: TestContext) {
         val body = RestAssured.given()
             .log().ifValidationFails()
-            .accept(ContentType.JSON) // JSON content type in 'Accept' header matches specification example
-            .`when`()["/api/pets"]
+            .accept(ContentType.JSON)
+            .`when`()["/v1/pets"]
             .then()
             .log().ifValidationFails()
             .statusCode(HttpUtil.HTTP_OK)
-            .extract().asString()
+            .extract().jsonPath()
 
-        val actual = JsonArray(body)
-        val expected = JsonArray(
-            """
-        [
-            {
-                "name": "",
-                "id": 0,
-                "breed": "Collie",
-                "ownerEmail": "test@example.com",
-                "secret": "changeme",
-                "bornAt" : "2015-02-01T08:00:00Z",
-                "lastVetVisitOn": "2020-03-15",
-                "misc": {
-                    "nocturnal": false,
-                    "population": 47435
-                }
-            }
-        ]
-        """
-        )
-        testContext.assertEquals(expected, actual)
-    }
+        val pets = body.getList<Any>("")
+        testContext.assertEquals(2, pets.size)
 
-    @Test
-    fun testServeSchemaExamplesAsYaml(testContext: TestContext) {
-        val rawBody = RestAssured.given()
-            .log().ifValidationFails()
-            .accept("application/x-yaml") // YAML content type in 'Accept' header matches specification example
-            .`when`()["/api/pets"]
-            .then()
-            .log().ifValidationFails()
-            .statusCode(HttpUtil.HTTP_OK)
-            .extract().asString()
-
-        val yamlBody = YAML_PARSER.load<List<Map<String, *>>>(rawBody)
-        testContext.assertEquals(1, yamlBody.size)
-
-        val first = yamlBody.first()
-        testContext.assertEquals("", first.get("name"))
-        testContext.assertEquals(0, first.get("id"))
-        testContext.assertEquals("Collie", first.get("breed"))
-        testContext.assertEquals("test@example.com", first.get("ownerEmail"))
-        testContext.assertEquals("changeme", first.get("secret"))
-        testContext.assertEquals("2015-02-01T08:00:00Z", first.get("bornAt"))
-        testContext.assertEquals("2020-03-15", first.get("lastVetVisitOn"))
-
-        @Suppress("UNCHECKED_CAST")
-        val misc = first.get("misc") as Map<String, *>
-        testContext.assertNotNull(misc, "misc property should not be null")
-        testContext.assertEquals(false, misc.get("nocturnal"))
-        testContext.assertEquals(47435, misc.get("population"))
-    }
-
-    companion object {
-        private val YAML_PARSER = Yaml()
+        val firstPet = body.getMap<Any, Any>("[0]")
+        testContext.assertEquals(101, firstPet["id"])
+        testContext.assertEquals("Cat", firstPet["name"])
     }
 }
