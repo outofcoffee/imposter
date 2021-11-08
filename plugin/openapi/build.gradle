@@ -12,13 +12,6 @@ compileJava {
     sourceCompatibility = 1.8
 }
 
-task copyStaticUi(type: Copy) {
-    from 'src/main/html'
-    into "${sourceSets.main.output.resourcesDir}/swagger-ui"
-}
-
-tasks.processResources.dependsOn copyStaticUi
-
 dependencies {
     implementation project(':imposter-core')
     implementation "io.swagger.parser.v3:swagger-parser:$version_swagger_parser"
