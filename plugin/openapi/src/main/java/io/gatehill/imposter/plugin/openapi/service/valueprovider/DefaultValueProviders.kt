@@ -21,7 +21,7 @@ internal interface DefaultValueProvider<T> {
 internal class StringDefaultValueProvider : DefaultValueProvider<String> {
     override fun provide(schema: Schema<*>): String {
         // TODO make these configurable
-        if (Objects.nonNull(schema.format)) {
+        return schema.format?.let {
             // see https://swagger.io/docs/specification/data-models/data-types/
             when (schema.format) {
                 "date" -> return SchemaServiceImpl.DATE_FORMATTER.format(
@@ -35,9 +35,9 @@ internal class StringDefaultValueProvider : DefaultValueProvider<String> {
                     return "SW1wb3N0ZXI0bGlmZQo="
                 "email" -> return "test@example.com"
                 "uuid", "guid" -> return UUID.randomUUID().toString()
+                else -> ""
             }
-        }
-        return ""
+        } ?: ""
     }
 }
 

@@ -44,8 +44,12 @@ package io.gatehill.imposter.service
 
 import io.gatehill.imposter.lifecycle.SecurityLifecycleHooks
 import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.config.security.*
-import io.gatehill.imposter.service.SecurityServiceImpl
+import io.gatehill.imposter.plugin.config.security.ConditionalNameValuePair
+import io.gatehill.imposter.plugin.config.security.MatchOperator
+import io.gatehill.imposter.plugin.config.security.SecurityCondition
+import io.gatehill.imposter.plugin.config.security.SecurityConfig
+import io.gatehill.imposter.plugin.config.security.SecurityConfigHolder
+import io.gatehill.imposter.plugin.config.security.SecurityEffect
 import io.gatehill.imposter.service.security.SecurityLifecycleListenerImpl
 import io.gatehill.imposter.util.CollectionUtil.asMap
 import io.gatehill.imposter.util.CollectionUtil.convertKeysToLowerCase
@@ -79,7 +83,7 @@ class SecurityServiceImpl @Inject constructor(
 
         val configsWithSecurity = allPluginConfigs.filter { c ->
             if (c is SecurityConfigHolder) {
-                return@filter Objects.nonNull((c as SecurityConfigHolder).securityConfig)
+                return@filter null != (c as SecurityConfigHolder).securityConfig
             }
             false
         }

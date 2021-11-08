@@ -69,17 +69,18 @@ class SecurityLifecycleListenerImpl @Inject constructor(
     ): Boolean {
         val request = routingContext.request()
         val security = getSecurityConfig(rootResourceConfig, resourceConfig)
-        return if (Objects.nonNull(security)) {
+
+        return security?.let {
             if (LOGGER.isTraceEnabled) {
                 LOGGER.trace(
                     "Enforcing security policy [{} conditions] for: {} {}",
-                    security!!.conditions.size,
+                    security.conditions.size,
                     request.method(),
                     request.absoluteURI()
                 )
             }
             securityService.enforce(security, routingContext)
-        } else {
+        } ?: run {
             if (LOGGER.isTraceEnabled) {
                 LOGGER.trace(
                     "No security policy found for: {} {}",

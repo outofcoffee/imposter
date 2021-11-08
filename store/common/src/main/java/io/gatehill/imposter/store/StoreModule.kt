@@ -49,7 +49,6 @@ import io.gatehill.imposter.store.service.StoreService
 import io.gatehill.imposter.store.service.StoreServiceImpl
 import io.gatehill.imposter.util.EnvVars.Companion.getEnv
 import org.apache.logging.log4j.LogManager
-import java.util.*
 
 /**
  * @author Pete Cornish
@@ -62,7 +61,7 @@ class StoreModule : AbstractModule() {
     }
 
     private fun discoverStoreModule(): Module {
-        val storeModule = Optional.ofNullable(getEnv("IMPOSTER_STORE_MODULE")).orElse(DEFAULT_STORE_MODULE)
+        val storeModule = getEnv("IMPOSTER_STORE_MODULE") ?: DEFAULT_STORE_MODULE
         LOGGER.trace("Loading store module: {}", storeModule)
 
         return try {

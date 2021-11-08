@@ -66,8 +66,6 @@ import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.apache.logging.log4j.util.Supplier
 import java.util.*
-import java.util.Objects.nonNull
-import java.util.concurrent.Callable
 import java.util.concurrent.ExecutionException
 import javax.inject.Inject
 
@@ -119,7 +117,7 @@ class ScriptedResponseServiceImpl : ScriptedResponseService {
         additionalBindings: Map<String, Any>?
     ): ReadWriteResponseBehaviour {
         return try {
-            val scriptExecutor = Callable {
+            val scriptExecutor = {
                 determineResponseFromScriptInternal(
                     routingContext,
                     pluginConfig,
@@ -128,11 +126,8 @@ class ScriptedResponseServiceImpl : ScriptedResponseService {
                     additionalBindings
                 )
             }
-            if (nonNull(executionTimer)) {
-                executionTimer!!.recordCallable(scriptExecutor)
-            } else {
-                scriptExecutor.call()
-            }
+            executionTimer?.recordCallable(scriptExecutor) ?: scriptExecutor()
+
         } catch (e: Exception) {
             throw RuntimeException(e)
         }
@@ -147,7 +142,7 @@ class ScriptedResponseServiceImpl : ScriptedResponseService {
     ): ReadWriteResponseBehaviour {
         val responseConfig = resourceConfig!!.responseConfig
 
-        check(nonNull(responseConfig.scriptFile)) { "Script file not set" }
+        checkNotNull(responseConfig.scriptFile) { "Script file not set" }
         val scriptFile = responseConfig.scriptFile!!
 
         return try {

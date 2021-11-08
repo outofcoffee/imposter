@@ -67,19 +67,15 @@ object ResourceUtil {
     @JvmStatic
     fun convertMethodToVertx(resourceConfig: ContentTypedConfig?): HttpMethod {
         return if (resourceConfig is MethodResourceConfig) {
-            val method =
-                Optional.ofNullable((resourceConfig as MethodResourceConfig).method)
-                    .orElse(ResourceMethod.GET)
-            Optional.ofNullable(METHODS[method])
-                .orElseThrow { UnsupportedOperationException("Unknown method: $method") }
+            val method = (resourceConfig as MethodResourceConfig).method ?: ResourceMethod.GET
+            METHODS[method] ?: throw UnsupportedOperationException("Unknown method: $method")
         } else {
             HttpMethod.GET
         }
     }
 
     fun convertMethodFromVertx(method: HttpMethod?): ResourceMethod {
-        return Optional.ofNullable(METHODS.inverse()[method])
-            .orElseThrow { UnsupportedOperationException("Unknown method: $method") }
+        return METHODS.inverse()[method] ?: throw UnsupportedOperationException("Unknown method: $method")
     }
 
     /**

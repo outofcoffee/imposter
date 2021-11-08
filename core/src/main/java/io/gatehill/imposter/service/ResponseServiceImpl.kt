@@ -79,8 +79,6 @@ import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.Objects
-import java.util.Optional
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.atomic.AtomicReference
@@ -254,12 +252,12 @@ class ResponseServiceImpl @Inject constructor(
     ) {
         val performance = responseBehaviour.performanceSimulation
         var delayMs = -1
-        if (Objects.nonNull(performance)) {
-            if (Optional.ofNullable(performance!!.exactDelayMs).orElse(0) > 0) {
-                delayMs = performance.exactDelayMs!!
-            } else {
-                val minDelayMs = Optional.ofNullable(performance.minDelayMs).orElse(0)
-                val maxDelayMs = Optional.ofNullable(performance.maxDelayMs).orElse(0)
+        performance?.let {
+            performance.exactDelayMs?.takeIf { it > 0 }?.let { exactDelayMs ->
+                delayMs = exactDelayMs
+            } ?: run {
+                val minDelayMs = performance.minDelayMs ?: 0
+                val maxDelayMs = performance.maxDelayMs ?: 0
                 if (minDelayMs > 0 && maxDelayMs >= minDelayMs) {
                     delayMs = ThreadLocalRandom.current().nextInt(maxDelayMs - minDelayMs) + minDelayMs
                 }
@@ -433,15 +431,13 @@ class ResponseServiceImpl @Inject constructor(
         responseBehaviour: ResponseBehaviour,
         missingResponseSenders: Array<out ResponseSender>
     ) {
-        if (Objects.nonNull(missingResponseSenders)) {
-            for (sender in missingResponseSenders) {
-                try {
-                    if (sender.send(routingContext, responseBehaviour)) {
-                        return
-                    }
-                } catch (e: Exception) {
-                    LOGGER.warn("Error invoking response sender", e)
+        for (sender in missingResponseSenders) {
+            try {
+                if (sender.send(routingContext, responseBehaviour)) {
+                    return
                 }
+            } catch (e: Exception) {
+                LOGGER.warn("Error invoking response sender", e)
             }
         }
         throw ResponseException("All attempts to send a response failed")

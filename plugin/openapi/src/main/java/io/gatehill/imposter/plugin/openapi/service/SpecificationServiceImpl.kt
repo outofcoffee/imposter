@@ -133,13 +133,12 @@ class SpecificationServiceImpl : SpecificationService {
         val description = StringBuilder().append("This specification includes the following APIs:")
 
         specs.forEach { spec: OpenAPI ->
-            Optional.ofNullable(spec.info).ifPresent { specInfo: Info ->
+            spec.info?.let { specInfo: Info ->
                 description
                     .append("\n* **")
                     .append(specInfo.title)
                     .append("**")
-                    .append(Optional.ofNullable(specInfo.description).map { specDesc: String -> " - $specDesc" }
-                        .orElse(""))
+                    .append(specInfo.description?.let { specDesc -> " - $specDesc" } ?: "")
             }
             servers.addAll(spec.servers ?: emptyList())
             security.addAll(spec.security ?: emptyList())
@@ -154,7 +153,7 @@ class SpecificationServiceImpl : SpecificationService {
         }
 
         // info
-        info.title = Optional.ofNullable(title).orElse(DEFAULT_TITLE)
+        info.title = title ?: DEFAULT_TITLE
         info.description = description.toString()
 
         // external docs

@@ -57,7 +57,6 @@ import io.gatehill.imposter.plugin.config.capture.CaptureConfigHolder
 import io.gatehill.imposter.plugin.config.capture.ItemCaptureConfig
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.plugin.config.system.StoreConfig
-import io.gatehill.imposter.plugin.config.system.SystemConfig
 import io.gatehill.imposter.plugin.config.system.SystemConfigHolder
 import io.gatehill.imposter.script.ExecutionContext
 import io.gatehill.imposter.service.ResourceService
@@ -140,14 +139,14 @@ class StoreServiceImpl @Inject constructor(
         val store = storeFactory.getStoreByName(storeName, false)
         val itemValue = store.load<Any>(itemKey)
 
-        return if (Objects.nonNull(jsonPath)) {
-            JSONPATH_PARSE_CONTEXT.parse(itemValue).read<Any>(jsonPath)
-        } else {
-            itemValue
-        }
+        return jsonPath?.let { JSONPATH_PARSE_CONTEXT.parse(itemValue).read(jsonPath) } ?: itemValue
     }
 
-    override fun afterRoutesConfigured(imposterConfig: ImposterConfig, allPluginConfigs: List<PluginConfig>, router: Router) {
+    override fun afterRoutesConfigured(
+        imposterConfig: ImposterConfig,
+        allPluginConfigs: List<PluginConfig>,
+        router: Router
+    ) {
         router["/system/store/:storeName"].handler(handleLoadAll(imposterConfig, allPluginConfigs))
         router.delete("/system/store/:storeName").handler(handleDeleteStore(imposterConfig, allPluginConfigs))
         router["/system/store/:storeName/:key"].handler(handleLoadSingle(imposterConfig, allPluginConfigs))
@@ -158,15 +157,10 @@ class StoreServiceImpl @Inject constructor(
     }
 
     private fun preloadStores(allPluginConfigs: List<PluginConfig>) {
-        allPluginConfigs.forEach { pluginConfig: PluginConfig ->
-            if (pluginConfig is SystemConfigHolder) {
-                Optional.ofNullable((pluginConfig as SystemConfigHolder).systemConfig)
-                    .flatMap { systemConfig: SystemConfig -> Optional.ofNullable(systemConfig.storeConfigs) }
-                    .ifPresent { storeConfigs: Map<String, StoreConfig> ->
-                        storeConfigs.forEach { (storeName: String, storeConfig: StoreConfig) ->
-                            preload(storeName, pluginConfig, storeConfig)
-                        }
-                    }
+        allPluginConfigs.filter { it is SystemConfigHolder }.forEach { pluginConfig: PluginConfig ->
+            val storeConfigs = (pluginConfig as SystemConfigHolder).systemConfig?.storeConfigs
+            storeConfigs?.forEach { (storeName: String, storeConfig: StoreConfig) ->
+                preload(storeName, pluginConfig, storeConfig)
             }
         }
     }
@@ -176,30 +170,39 @@ class StoreServiceImpl @Inject constructor(
         check(!StoreUtil.isRequestScopedStore(storeName)) { "Cannot preload request scoped store: $storeName" }
 
         val store = storeFactory.getStoreByName(storeName, false)
-        val preloadData = storeConfig.preloadData
 
-        if (Objects.nonNull(preloadData)) {
+        storeConfig.preloadData?.let { preloadData ->
             LOGGER.trace("Preloading inline data into store: {}", storeName)
-            preloadData!!.forEach { (key: String, value: Any?) -> store.save(key, value) }
+            preloadData.forEach { (key: String, value: Any?) -> store.save(key, value) }
             LOGGER.debug("Preloaded {} items from inline data into store: {}", preloadData.size, storeName)
 
-        } else if (Objects.nonNull(storeConfig.preloadFile)) {
-            check(storeConfig.preloadFile!!.endsWith(".json")) { "Only JSON (.json) files containing a top-level object are supported for preloading" }
-            val preloadPath = Paths.get(pluginConfig.parentDir.path, storeConfig.preloadFile).toAbsolutePath()
+        } ?: storeConfig.preloadFile?.let { preloadFile ->
+            check(preloadFile.endsWith(".json")) { "Only JSON (.json) files containing a top-level object are supported for preloading" }
+            val preloadPath = Paths.get(pluginConfig.parentDir.path, preloadFile).toAbsolutePath()
             LOGGER.trace("Preloading file {} into store: {}", preloadPath, storeName)
 
             try {
                 @Suppress("UNCHECKED_CAST")
-                val fileContents: Map<String, *> = MapUtil.JSON_MAPPER.readValue(preloadPath.toFile(), HashMap::class.java) as Map<String, *>
+                val fileContents: Map<String, *> =
+                    MapUtil.JSON_MAPPER.readValue(preloadPath.toFile(), HashMap::class.java) as Map<String, *>
+
                 fileContents.forEach { (key, value) -> store.save(key, value) }
-                LOGGER.debug("Preloaded {} items from file {} into store: {}", fileContents.size, preloadPath, storeName)
+                LOGGER.debug(
+                    "Preloaded {} items from file {} into store: {}",
+                    fileContents.size,
+                    preloadPath,
+                    storeName
+                )
             } catch (e: IOException) {
                 throw RuntimeException("Error preloading file $preloadPath into store: $storeName", e)
             }
         }
     }
 
-    private fun handleLoadAll(imposterConfig: ImposterConfig, allPluginConfigs: List<PluginConfig>): Handler<RoutingContext> {
+    private fun handleLoadAll(
+        imposterConfig: ImposterConfig,
+        allPluginConfigs: List<PluginConfig>
+    ): Handler<RoutingContext> {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { routingContext: RoutingContext ->
             val storeName = routingContext.pathParam("storeName")
             val store = openStore(routingContext, storeName)
@@ -223,7 +226,10 @@ class StoreServiceImpl @Inject constructor(
         }
     }
 
-    private fun handleDeleteStore(imposterConfig: ImposterConfig, allPluginConfigs: List<PluginConfig>): Handler<RoutingContext> {
+    private fun handleDeleteStore(
+        imposterConfig: ImposterConfig,
+        allPluginConfigs: List<PluginConfig>
+    ): Handler<RoutingContext> {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { routingContext: RoutingContext ->
             val storeName = routingContext.pathParam("storeName")
             storeFactory.deleteStoreByName(storeName)
@@ -235,7 +241,10 @@ class StoreServiceImpl @Inject constructor(
         }
     }
 
-    private fun handleLoadSingle(imposterConfig: ImposterConfig, allPluginConfigs: List<PluginConfig>): Handler<RoutingContext> {
+    private fun handleLoadSingle(
+        imposterConfig: ImposterConfig,
+        allPluginConfigs: List<PluginConfig>
+    ): Handler<RoutingContext> {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { routingContext: RoutingContext ->
             val storeName = routingContext.pathParam("storeName")
             val store = openStore(routingContext, storeName)
@@ -244,8 +253,7 @@ class StoreServiceImpl @Inject constructor(
             }
 
             val key = routingContext.pathParam("key")
-            val value = store!!.load<Any>(key)
-            if (Objects.nonNull(value)) {
+            store!!.load<Any>(key)?.let { value ->
                 if (value is String) {
                     LOGGER.debug("Returning string item: {} from store: {}", key, storeName)
                     routingContext.response()
@@ -256,7 +264,7 @@ class StoreServiceImpl @Inject constructor(
                     serialiseBodyAsJson(routingContext, value)
                 }
 
-            } else {
+            } ?: run {
                 LOGGER.debug("Nonexistent item: {} in store: {}", key, storeName)
                 routingContext.response()
                     .setStatusCode(HttpUtil.HTTP_NOT_FOUND)
@@ -265,7 +273,10 @@ class StoreServiceImpl @Inject constructor(
         }
     }
 
-    private fun handleSaveSingle(imposterConfig: ImposterConfig, allPluginConfigs: List<PluginConfig>): Handler<RoutingContext> {
+    private fun handleSaveSingle(
+        imposterConfig: ImposterConfig,
+        allPluginConfigs: List<PluginConfig>
+    ): Handler<RoutingContext> {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { routingContext: RoutingContext ->
             val storeName = routingContext.pathParam("storeName")
             val store = openStore(routingContext, storeName, true)
@@ -290,7 +301,10 @@ class StoreServiceImpl @Inject constructor(
         }
     }
 
-    private fun handleSaveMultiple(imposterConfig: ImposterConfig, allPluginConfigs: List<PluginConfig>): Handler<RoutingContext> {
+    private fun handleSaveMultiple(
+        imposterConfig: ImposterConfig,
+        allPluginConfigs: List<PluginConfig>
+    ): Handler<RoutingContext> {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { routingContext: RoutingContext ->
             val storeName = routingContext.pathParam("storeName")
             val store = openStore(routingContext, storeName, true)
@@ -308,7 +322,10 @@ class StoreServiceImpl @Inject constructor(
         }
     }
 
-    private fun handleDeleteSingle(imposterConfig: ImposterConfig, allPluginConfigs: List<PluginConfig>): Handler<RoutingContext> {
+    private fun handleDeleteSingle(
+        imposterConfig: ImposterConfig,
+        allPluginConfigs: List<PluginConfig>
+    ): Handler<RoutingContext> {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { routingContext: RoutingContext ->
             val storeName = routingContext.pathParam("storeName")
             val store = openStore(routingContext, storeName, true)
@@ -326,7 +343,11 @@ class StoreServiceImpl @Inject constructor(
         }
     }
 
-    private fun openStore(routingContext: RoutingContext, storeName: String, createIfNotExist: Boolean = false): Store? {
+    private fun openStore(
+        routingContext: RoutingContext,
+        storeName: String,
+        createIfNotExist: Boolean = false
+    ): Store? {
         if (!storeFactory.hasStoreWithName(storeName)) {
             LOGGER.debug("No store found named: {}", storeName)
             if (!createIfNotExist) {
@@ -358,8 +379,19 @@ class StoreServiceImpl @Inject constructor(
                 val jsonPathContextHolder = AtomicReference<DocumentContext>()
                 captureConfig.forEach { (captureConfigKey: String, itemConfig: ItemCaptureConfig) ->
                     val storeName = itemConfig.store ?: DEFAULT_CAPTURE_STORE_NAME
-                    val itemName = determineItemName(routingContext, jsonPathContextHolder, captureConfigKey, itemConfig, storeName)
-                    val itemValue = captureItemValue(routingContext, jsonPathContextHolder, captureConfigKey, itemConfig)
+                    val itemName = determineItemName(
+                        routingContext,
+                        jsonPathContextHolder,
+                        captureConfigKey,
+                        itemConfig,
+                        storeName
+                    )
+                    val itemValue = captureItemValue(
+                        routingContext,
+                        jsonPathContextHolder,
+                        captureConfigKey,
+                        itemConfig
+                    )
                     val store = openCaptureStore(routingContext, storeName)
                     store.save(itemName, itemValue)
                 }
@@ -382,7 +414,12 @@ class StoreServiceImpl @Inject constructor(
         } else {
             try {
                 itemName = captureValue<String>(routingContext, itemConfig.key, jsonPathContextHolder)!!
-                LOGGER.debug("Capturing item: {} into store: {} with dynamic name: {}", captureConfigKey, storeName, itemName)
+                LOGGER.debug(
+                    "Capturing item: {} into store: {} with dynamic name: {}",
+                    captureConfigKey,
+                    storeName,
+                    itemName
+                )
             } catch (e: Exception) {
                 throw RuntimeException("Error capturing item name: $captureConfigKey", e)
             }
@@ -448,7 +485,11 @@ class StoreServiceImpl @Inject constructor(
         }
     }
 
-    override fun beforeBuildingRuntimeContext(routingContext: RoutingContext, additionalBindings: MutableMap<String, Any>, executionContext: ExecutionContext) {
+    override fun beforeBuildingRuntimeContext(
+        routingContext: RoutingContext,
+        additionalBindings: MutableMap<String, Any>,
+        executionContext: ExecutionContext
+    ) {
         val requestId = routingContext.get<String>(ResourceUtil.RC_REQUEST_ID_KEY)
         additionalBindings["stores"] = StoreHolder(storeFactory, requestId)
     }
