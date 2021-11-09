@@ -12,42 +12,17 @@ For the version, choose the latest release from https://github.com/outofcoffee/i
 
 Add the following Maven repository to your build tool:
 
-    https://s3-eu-west-1.amazonaws.com/gatehillsoftware-maven/releases/
+    https://s3-eu-west-1.amazonaws.com/gatehillsoftware-maven/releases
 
-> See the _Dependencies_ section for full examples.
+Add the following Maven dependencies in your build tool:
 
-Add the Imposter dependencies:
+| Component         | Group ID               | Artifact ID       | Version                                                                            |
+|-------------------|------------------------|-------------------|------------------------------------------------------------------------------------|
+| Unit test library | `io.gatehill.imposter` | `distro-embedded` | As per [Releases](https://github.com/outofcoffee/imposter/releases), e.g. `1.24.3` |
+| HTTP server       | `io.gatehill.imposter` | `imposter-server` | As per [Releases](https://github.com/outofcoffee/imposter/releases), e.g. `1.24.3` |
+| OpenAPI plugin    | `io.gatehill.imposter` | `plugin-openapi`  | As per [Releases](https://github.com/outofcoffee/imposter/releases), e.g. `1.24.3` |
 
-#### Gradle
-
-```groovy
-testImplementation "io.gatehill.imposter:distro-embedded:1.24.3"
-testImplementation "io.gatehill.imposter:imposter-server:1.24.3"
-testImplementation "io.gatehill.imposter:plugin-openapi:1.24.3"
-```
-
-#### Maven
-
-```xml
-<dependency>
-    <groupId>io.gatehill.imposter</groupId>
-    <artifactId>distro-embedded</artifactId>
-    <version>1.24.3</version>
-    <scope>test</scope>
-</dependency>
-<dependency>
-  <groupId>io.gatehill.imposter</groupId>
-  <artifactId>imposter-server</artifactId>
-  <version>1.24.3</version>
-  <scope>test</scope>
-</dependency>
-<dependency>
-  <groupId>io.gatehill.imposter</groupId>
-  <artifactId>plugin-openapi</artifactId>
-  <version>1.24.3</version>
-  <scope>test</scope>
-</dependency>
-```
+> See the _Dependencies_ section for full Maven and Gradle examples.
 
 ### OpenAPI example
 
@@ -100,13 +75,7 @@ String mockEndpoint = imposter.getBaseUrl() + "/v1/pets";
 
 ## Dependencies
 
-Use the following Maven dependencies in your build tool:
-
-| Component       | Value                                                                |
-|-----------------|----------------------------------------------------------------------|
-| Group ID        | `io.gatehill.imposter`                                               |
-| Artifact ID     | `distro-embedded`                                                    |
-| Version         | As per [Releases](https://github.com/outofcoffee/imposter/releases). |
+Build tool configuration for Gradle and Maven.
 
 ### Gradle
 
