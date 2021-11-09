@@ -11,7 +11,7 @@
 * SObject retrieval by ID.
 * Dummy SOQL queries.
 
-# Configuration
+## Configuration
 
 Read the [Configuration](configuration.md) section to understand how to configure Imposter.
 

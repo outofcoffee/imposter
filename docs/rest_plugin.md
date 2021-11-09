@@ -9,7 +9,7 @@
 * Supports arbitrary format static files.
 * Supports optional JSON array responses.
 
-# Configuration
+## Configuration
 
 Read the [Configuration](configuration.md) section to understand how to configure Imposter.
 

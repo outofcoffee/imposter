@@ -1,5 +1,4 @@
-Prometheus metrics for Imposter
-===============================
+# Prometheus metrics for Imposter
 
 A worked example of using Prometheus to scrape metrics from an Imposter instance.
 

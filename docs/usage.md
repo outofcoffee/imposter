@@ -1,4 +1,4 @@
-# Usage (command line arguments)
+# Usage (command line arguments and environment variables)
 
 Some options can be controlled using command line arguments. These are described in this section.
 

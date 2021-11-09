@@ -13,7 +13,7 @@ The plugin provides support for [OpenAPI](https://github.com/OAI/OpenAPI-Specifi
 * Also supports static response files and script-driven responses, using status code, response files etc.
 * Provides an interactive API sandbox at `/_spec`
 
-# Configuration
+## Configuration
 
 Read the [Configuration](configuration.md) section to understand how to configure Imposter.
 

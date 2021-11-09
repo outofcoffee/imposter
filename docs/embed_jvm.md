@@ -1,5 +1,4 @@
-Embedding Imposter in your JVM tests
-====================================
+# Embedding Imposter in your JVM tests
 
 You can embed the Imposter in your JVM tests, such as JUnit or TestNG.
 
@@ -14,6 +13,8 @@ For the version, choose the latest release from https://github.com/outofcoffee/i
 Add the following Maven repository to your build tool:
 
     https://s3-eu-west-1.amazonaws.com/gatehillsoftware-maven/releases/
+
+> See the _Dependencies_ section for full examples.
 
 Add the Imposter dependencies:
 
@@ -47,8 +48,6 @@ testImplementation "io.gatehill.imposter:plugin-openapi:1.24.3"
   <scope>test</scope>
 </dependency>
 ```
-
-> See the _Dependencies_ section for full examples.
 
 ### OpenAPI example
 

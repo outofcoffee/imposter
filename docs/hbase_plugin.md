@@ -10,7 +10,7 @@
 * Dummy Scanner queries.
 * Individual table row/record retrieval.
 
-# Configuration
+## Configuration
 
 Read the [Configuration](configuration.md) section to understand how to configure Imposter.
 
