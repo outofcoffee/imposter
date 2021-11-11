@@ -49,6 +49,25 @@ paths:
       responses:
         '202':
           description: Indicates pet updated
+
+  /pets/{petId}/status:
+    get:
+      summary: Update a specific pet
+      operationId: updatePet
+      parameters:
+        - in: path
+          name: petId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Retrieve status of a pet
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Status"
+
   /vets:
     get:
       summary: List all veterinarians
@@ -111,3 +130,14 @@ components:
         postCode:
           type: string
           example: EC1A 2BC
+    Status:
+      type: object
+      required:
+        - id
+        - valid
+      properties:
+        id:
+          type: integer
+          format: int64
+        valid:
+          type: boolean

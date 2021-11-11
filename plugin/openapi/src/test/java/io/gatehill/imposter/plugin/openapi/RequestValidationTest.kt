@@ -171,7 +171,7 @@ class RequestValidationTest : BaseVerticleTest() {
         RestAssured.given()
             .log().ifValidationFails()
             .accept(ContentType.JSON)
-            .`when`()["/vets"]
+            .`when`().get("/vets")
             .then()
             .log().ifValidationFails()
             .statusCode(400)
@@ -186,7 +186,7 @@ class RequestValidationTest : BaseVerticleTest() {
         RestAssured.given()
             .log().ifValidationFails()
             .accept(ContentType.JSON)
-            .`when`()["/vets?limit=1"]
+            .`when`().get("/vets?limit=1")
             .then()
             .log().ifValidationFails()
             .statusCode(200)
@@ -196,5 +196,42 @@ class RequestValidationTest : BaseVerticleTest() {
                     Matchers.hasEntry("name", "SupaVets")
                 )
             )
+    }
+
+    /**
+     * Request should pass request validation due to provided request parameter.
+     */
+    @Test
+    fun testPathParamsNotTreatedAsQueryParams(testContext: TestContext?) {
+        RestAssured.given()
+            .log().ifValidationFails()
+            .accept(ContentType.JSON)
+            .`when`().get("/pets/10/status")
+            .then()
+            .log().ifValidationFails()
+            .statusCode(200)
+            .body(
+                "$",
+                Matchers.allOf(
+                    Matchers.hasEntry("id", 0),
+                    Matchers.hasEntry("valid", false)
+                )
+            )
+    }
+
+    /**
+     * Request should fail request validation due to missing request parameter.
+     */
+    @Test
+    fun testInvalidExtraQueryParam(testContext: TestContext?) {
+        RestAssured.given()
+            .log().ifValidationFails()
+            .accept(ContentType.JSON)
+            .queryParam("foo", "bar")
+            .`when`().get("/pets/10/status")
+            .then()
+            .log().ifValidationFails()
+            .statusCode(400)
+            .body(Matchers.containsString("Query parameter 'foo' is unexpected on path \"/pets/{petId}/status"))
     }
 }
