@@ -215,7 +215,7 @@ class SpecificationServiceImpl : SpecificationService {
         val requestBuilder = SimpleRequest.Builder(request.method().toString(), request.path())
             .withBody(routingContext.bodyAsString)
 
-        request.params().forEach { p ->
+        routingContext.queryParams().forEach { p ->
             requestBuilder.withQueryParam(p.key, p.value)
         }
         request.headers().forEach { h ->
@@ -258,15 +258,11 @@ class SpecificationServiceImpl : SpecificationService {
             val builder = OpenApiInteractionValidator.createFor(combined)
 
             // custom validation levels
-            pluginConfig.validation?.levels?.let {
-                LOGGER.trace("Using custom validation levels: {}", pluginConfig.validation.levels)
+            pluginConfig.validation?.levels?.let { levels ->
+                LOGGER.trace("Using custom validation levels: {}", levels)
                 val levelBuilder = LevelResolver.create()
-                pluginConfig.validation.levels.forEach { (key: String?, value: String?) ->
-                    levelBuilder.withLevel(
-                        key, ValidationReport.Level.valueOf(
-                            value!!
-                        )
-                    )
+                (defaultValidationLevels + levels).forEach { (key, value) ->
+                    levelBuilder.withLevel(key, ValidationReport.Level.valueOf(value))
                 }
                 builder.withLevelResolver(levelBuilder.build())
             }
@@ -361,5 +357,9 @@ class SpecificationServiceImpl : SpecificationService {
         private const val ARG_BASEPATH = "openapi.basepath"
         private const val ARG_SCHEME = "openapi.scheme"
         private const val ARG_TITLE = "openapi.title"
+
+        private val defaultValidationLevels = mapOf(
+            "validation.request.parameter.query.unexpected" to "IGNORE"
+        )
     }
 }

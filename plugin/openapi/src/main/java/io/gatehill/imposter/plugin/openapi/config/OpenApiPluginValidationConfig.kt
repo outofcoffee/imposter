@@ -83,7 +83,7 @@ class OpenApiPluginValidationConfig {
 
     val returnErrorsInResponse = true
 
-    val levels: Map<String?, String?>? = null
+    val levels: Map<String, String>? = null
 
     /**
      * Supports backwards compatible boolean-style values, mapping
