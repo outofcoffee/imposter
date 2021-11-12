@@ -155,7 +155,7 @@ Once you're finished, stop the server with CTRL+C.
 
 > For more working examples, see:
 >
-> * [examples/openapi](https://github.com/outofcoffee/imposter/blob/master/docs/examples/openapi)
+> * [examples/openapi](https://github.com/outofcoffee/imposter/blob/main/docs/examples/openapi)
 
 ## Validating requests against the specification
 
@@ -307,7 +307,7 @@ HTTP/1.1 200 OK
 
 ## Object response examples
 
-Imposter has basic support for response examples defined as objects, for example an API specification like `object-examples.yaml` - see [examples/openapi/object-examples](https://github.com/outofcoffee/imposter/blob/master/docs/examples/openapi/object-examples).
+Imposter has basic support for response examples defined as objects, for example an API specification like `object-examples.yaml` - see [examples/openapi/object-examples](https://github.com/outofcoffee/imposter/blob/main/docs/examples/openapi/object-examples).
 
 The salient part of the response is as follows:
 
@@ -335,7 +335,7 @@ For more advanced scenarios, you can also control Imposter's responses using Jav
 
 > See the [Scripting](scripting.md) section for more information.
 
-For a simple script, see [examples/openapi/scripted-named-example](https://github.com/outofcoffee/imposter/blob/master/docs/examples/openapi/scripted-named-example) for a working example.
+For a simple script, see [examples/openapi/scripted-named-example](https://github.com/outofcoffee/imposter/blob/main/docs/examples/openapi/scripted-named-example) for a working example.
 
 ### Example
 
@@ -409,9 +409,9 @@ paths:
 
 #### Examples
 
-- [scripted-named-example](https://github.com/outofcoffee/imposter/blob/master/docs/examples/openapi/scripted-named-example)
-- [scripted-named-example-js](https://github.com/outofcoffee/imposter/blob/master/docs/examples/openapi/scripted-named-example-js)
-- [static-named-example](https://github.com/outofcoffee/imposter/blob/master/docs/examples/openapi/static-named-example)
+- [scripted-named-example](https://github.com/outofcoffee/imposter/blob/main/docs/examples/openapi/scripted-named-example)
+- [scripted-named-example-js](https://github.com/outofcoffee/imposter/blob/main/docs/examples/openapi/scripted-named-example-js)
+- [static-named-example](https://github.com/outofcoffee/imposter/blob/main/docs/examples/openapi/static-named-example)
 
 ### OpenAPI specification locations
 

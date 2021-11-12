@@ -2,7 +2,7 @@
 set -e
 
 case $1 in
-  master)
+  main)
     IMAGE_TAG_NAME="latest"
     ;;
   develop)

@@ -53,9 +53,9 @@ Configuration and commands to allow benchmarks to be independently reproduced.
 
 #### Scenarios
 
-- Scenario 1: Static, configuration-driven: [examples/rest/simple](https://github.com/outofcoffee/imposter/blob/master/docs/examples/rest/simple)
-- Scenario 2: Conditional, configuration-driven: [examples/rest/conditional-config](https://github.com/outofcoffee/imposter/blob/master/docs/examples/rest/conditional-config)
-- Scenario 3: Dynamic, script-driven: [examples/rest/conditional-scripted](https://github.com/outofcoffee/imposter/blob/master/docs/examples/rest/conditional-scripted)
+- Scenario 1: Static, configuration-driven: [examples/rest/simple](https://github.com/outofcoffee/imposter/blob/main/docs/examples/rest/simple)
+- Scenario 2: Conditional, configuration-driven: [examples/rest/conditional-config](https://github.com/outofcoffee/imposter/blob/main/docs/examples/rest/conditional-config)
+- Scenario 3: Dynamic, script-driven: [examples/rest/conditional-scripted](https://github.com/outofcoffee/imposter/blob/main/docs/examples/rest/conditional-scripted)
 
 #### Start command
 

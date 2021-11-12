@@ -8,7 +8,7 @@ Imposter starts before your test runs, such as in your test set-up method (e.g. 
 
 ## Getting started
 
-> For a full working example project, see [docs/examples/junit-sample](https://github.com/outofcoffee/imposter/tree/master/docs/examples/junit-sample)
+> For a full working example project, see [docs/examples/junit-sample](https://github.com/outofcoffee/imposter/tree/main/docs/examples/junit-sample)
 
 First, note the latest [release version](https://github.com/outofcoffee/imposter/releases).
 
@@ -48,7 +48,7 @@ String mockEndpoint = imposter.getBaseUrl() + "/v1/pets";
 // simulated HTTP responses, in place of a real endpoint.
 ```
 
-> For a full working example project, see [docs/examples/junit-sample](https://github.com/outofcoffee/imposter/tree/master/docs/examples/junit-sample)
+> For a full working example project, see [docs/examples/junit-sample](https://github.com/outofcoffee/imposter/tree/main/docs/examples/junit-sample)
 
 ## Using a full configuration file
 
@@ -73,7 +73,7 @@ String mockEndpoint = imposter.getBaseUrl() + "/v1/pets";
 
 > Note the need to specify the plugin, which was implicit in the example above.
 
-> For a working example, see [ImposterBuilderTest](https://github.com/outofcoffee/imposter/blob/master/distro/embedded/src/test/java/io/gatehill/imposter/embedded/ImposterBuilderTest.java)
+> For a working example, see [ImposterBuilderTest](https://github.com/outofcoffee/imposter/blob/main/distro/embedded/src/test/java/io/gatehill/imposter/embedded/ImposterBuilderTest.java)
 
 ## Dependencies
 

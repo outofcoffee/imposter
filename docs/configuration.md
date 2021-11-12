@@ -148,7 +148,7 @@ resources:
 
 In this example, responses to both `/example1` and `/example2` will have the header `X-Always-Present: Yes` set, as it is inherited from the root configuration.
 
-> See [default-response-config](https://github.com/outofcoffee/imposter/blob/master/docs/examples/rest/default-response-config) for an example.
+> See [default-response-config](https://github.com/outofcoffee/imposter/blob/main/docs/examples/rest/default-response-config) for an example.
 
 #### Default response values
 

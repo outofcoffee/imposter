@@ -71,7 +71,7 @@ This is because in the corresponding part of the OpenAPI specification, both the
 
 Note that if the request body were provided, its structure would be validated against the corresponding schema entry.
 
-See [examples/openapi/request-validation](https://github.com/outofcoffee/imposter/blob/master/docs/examples/openapi/request-validation) for a working example.
+See [examples/openapi/request-validation](https://github.com/outofcoffee/imposter/blob/main/docs/examples/openapi/request-validation) for a working example.
 
 ## Configuring issue behaviour
 
@@ -130,4 +130,4 @@ In the example above, if the request body were missing, Imposter would not treat
 
 The `validation.levels` block is a map of validation key (i.e. a type of validation check) to level (`ERROR` or `WARN`).
 
-> See the full list of validations at the [swagger-request-validator-core project](https://bitbucket.org/atlassian/swagger-request-validator/src/master/swagger-request-validator-core/src/main/resources/swagger/validation/messages.properties).
+> See the full list of validations at the [swagger-request-validator-core project](https://bitbucket.org/atlassian/swagger-request-validator/src/main/swagger-request-validator-core/src/main/resources/swagger/validation/messages.properties).

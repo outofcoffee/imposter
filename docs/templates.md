@@ -107,4 +107,4 @@ Using JsonPath in placeholder templates is computationally expensive, as it requ
 
 ## Examples
 
-- [response-template](https://github.com/outofcoffee/imposter/blob/master/docs/examples/rest/response-template)
+- [response-template](https://github.com/outofcoffee/imposter/blob/main/docs/examples/rest/response-template)

@@ -16,7 +16,7 @@ module.exports = async ({github, context}) => {
         owner: 'outofcoffee',
         repo: 'imposter',
         tag_name: releaseVersion,
-        body: 'See [change log](https://github.com/outofcoffee/imposter/blob/master/CHANGELOG.md)',
+        body: 'See [change log](https://github.com/outofcoffee/imposter/blob/main/CHANGELOG.md)',
     });
 
     const localFilePath = './distro/all/build/libs/imposter-all.jar';
