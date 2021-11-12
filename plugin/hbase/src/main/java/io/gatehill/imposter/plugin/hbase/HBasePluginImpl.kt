@@ -121,7 +121,7 @@ class HBasePluginImpl @Inject constructor(
      * @param path
      */
     private fun addRowRetrievalRoute(pluginConfig: PluginConfig, router: Router, path: String) {
-        router["$path/:tableName/:recordId/"].handler(
+        router.get("$path/:tableName/:recordId/").handler(
             resourceService.handleRoute(imposterConfig, pluginConfig, vertx) { routingContext: RoutingContext ->
                 val tableName = routingContext.request().getParam("tableName")
                 val recordId = routingContext.request().getParam("recordId")
@@ -240,7 +240,7 @@ class HBasePluginImpl @Inject constructor(
      * @param path
      */
     private fun addReadScannerResultsRoute(pluginConfig: HBasePluginConfig, router: Router, path: String) {
-        router["$path/:tableName/scanner/:scannerId"].handler(
+        router.get("$path/:tableName/scanner/:scannerId").handler(
             resourceService.handleRoute(imposterConfig, pluginConfig, vertx) { routingContext: RoutingContext ->
                 val tableName = routingContext.request().getParam("tableName")
                 val scannerId = routingContext.request().getParam("scannerId")

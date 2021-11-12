@@ -95,7 +95,7 @@ class SfdcPluginImpl @Inject constructor(
         )
 
         // query handler
-        router["/services/data/:apiVersion/query/"].handler(
+        router.get("/services/data/:apiVersion/query/").handler(
             resourceService.handleRoute(imposterConfig, configs, vertx) { routingContext: RoutingContext ->
                 val apiVersion = routingContext.request().getParam("apiVersion")
 
@@ -158,7 +158,7 @@ class SfdcPluginImpl @Inject constructor(
                     }
                 }
             }
-            router["/services/data/:apiVersion/sobjects/${config.sObjectName}/:sObjectId"].handler(handler)
+            router.get("/services/data/:apiVersion/sobjects/${config.sObjectName}/:sObjectId").handler(handler)
         }
 
         // create SObject handler

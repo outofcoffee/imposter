@@ -126,7 +126,7 @@ class OpenApiPluginImpl @Inject constructor(
 
         // serve specification and UI
         LOGGER.debug("Adding specification UI at: {}{}", imposterConfig.serverUrl, SPECIFICATION_PATH)
-        router[COMBINED_SPECIFICATION_PATH].handler(
+        router.get(COMBINED_SPECIFICATION_PATH).handler(
             resourceService.handleRoute(imposterConfig, configs, vertx) { routingContext: RoutingContext ->
                 handleCombinedSpec(routingContext)
             }
@@ -139,7 +139,7 @@ class OpenApiPluginImpl @Inject constructor(
                     .end()
             }
         )
-        router["$SPECIFICATION_PATH/*"].handler(StaticHandler.create(UI_WEB_ROOT))
+        router.get("$SPECIFICATION_PATH/*").handler(StaticHandler.create(UI_WEB_ROOT))
     }
 
     private fun parseSpecs(router: Router) {

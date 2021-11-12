@@ -147,7 +147,7 @@ class ImposterVerticle : AbstractVerticle() {
         }
 
         // status check to indicate when server is up
-        router["/system/status"].handler(
+        router.get("/system/status").handler(
             resourceService.handleRoute(imposterConfig, allConfigs, vertx) { routingContext ->
                 routingContext.response()
                     .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_JSON)
