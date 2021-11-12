@@ -40,7 +40,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.service
+package io.gatehill.imposter.service.security
 
 import io.gatehill.imposter.lifecycle.SecurityLifecycleHooks
 import io.gatehill.imposter.plugin.config.PluginConfig
@@ -50,7 +50,7 @@ import io.gatehill.imposter.plugin.config.security.SecurityCondition
 import io.gatehill.imposter.plugin.config.security.SecurityConfig
 import io.gatehill.imposter.plugin.config.security.SecurityConfigHolder
 import io.gatehill.imposter.plugin.config.security.SecurityEffect
-import io.gatehill.imposter.service.security.SecurityLifecycleListenerImpl
+import io.gatehill.imposter.service.SecurityService
 import io.gatehill.imposter.util.CollectionUtil.asMap
 import io.gatehill.imposter.util.CollectionUtil.convertKeysToLowerCase
 import io.gatehill.imposter.util.HttpUtil
@@ -58,7 +58,7 @@ import io.gatehill.imposter.util.StringUtil.safeEquals
 import io.vertx.core.MultiMap
 import io.vertx.ext.web.RoutingContext
 import org.apache.logging.log4j.LogManager
-import java.util.*
+import java.util.Locale
 import javax.inject.Inject
 
 /**

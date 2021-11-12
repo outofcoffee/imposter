@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2021-2021.
  *
  * This file is part of Imposter.
  *
@@ -40,34 +40,56 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.service
 
-import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
-import io.gatehill.imposter.script.ReadWriteResponseBehaviour
-import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl
-import io.gatehill.imposter.script.RuntimeContext
-import io.gatehill.imposter.script.listener.ScriptListener
+package io.gatehill.imposter.service.script
+
+import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.service.ScriptService
+import io.gatehill.imposter.util.annotation.GroovyImpl
+import io.gatehill.imposter.util.annotation.JavascriptImpl
+import org.apache.logging.log4j.LogManager
+import java.util.Locale
+import javax.inject.Inject
 
 /**
  * @author Pete Cornish
  */
-class EmbeddedScriptServiceImpl : EmbeddedScriptService {
-    private var listener: ScriptListener? = null
+class ScriptServiceFactory {
+    @Inject
+    @GroovyImpl
+    private lateinit var groovyScriptService: ScriptService
 
-    override fun executeScript(
-        pluginConfig: PluginConfig,
-        resourceConfig: ResponseConfigHolder?,
-        runtimeContext: RuntimeContext
-    ): ReadWriteResponseBehaviour {
-        check(listener != null) { "ScriptListener is not set" }
+    @Inject
+    @JavascriptImpl
+    private lateinit var javascriptScriptService: ScriptService
 
-        val responseBehaviour: ReadWriteResponseBehaviour = ReadWriteResponseBehaviourImpl()
-        listener!!.hear(runtimeContext.executionContext, responseBehaviour)
-        return responseBehaviour
+    @Inject
+    private lateinit var embeddedScriptService: EmbeddedScriptService
+
+    @Inject
+    private lateinit var imposterConfig: ImposterConfig
+
+    fun fetchScriptService(scriptFile: String): ScriptService {
+        if (imposterConfig.useEmbeddedScriptEngine) {
+            LOGGER.debug("Using embedded script engine")
+            return embeddedScriptService
+        }
+
+        val scriptExtension: String
+        val dotIndex = scriptFile.lastIndexOf('.')
+        scriptExtension = if (dotIndex >= 1 && dotIndex < scriptFile.length - 1) {
+            scriptFile.substring(dotIndex + 1)
+        } else {
+            ""
+        }
+        return when (scriptExtension.lowercase(Locale.getDefault())) {
+            "groovy" -> groovyScriptService
+            "js" -> javascriptScriptService
+            else -> throw RuntimeException("Unable to determine script engine from script file name: $scriptFile")
+        }
     }
 
-    override fun setListener(listener: ScriptListener) {
-        this.listener = listener
+    companion object {
+        private val LOGGER = LogManager.getLogger(ScriptServiceFactory::class.java)
     }
 }

@@ -45,7 +45,17 @@ package io.gatehill.imposter
 import com.google.inject.AbstractModule
 import com.google.inject.Singleton
 import io.gatehill.imposter.plugin.PluginManager
-import io.gatehill.imposter.service.*
+import io.gatehill.imposter.service.ResourceService
+import io.gatehill.imposter.service.ResourceServiceImpl
+import io.gatehill.imposter.service.ResponseService
+import io.gatehill.imposter.service.ResponseServiceImpl
+import io.gatehill.imposter.service.ScriptedResponseService
+import io.gatehill.imposter.service.SecurityService
+import io.gatehill.imposter.service.script.EmbeddedScriptService
+import io.gatehill.imposter.service.script.EmbeddedScriptServiceImpl
+import io.gatehill.imposter.service.script.ScriptServiceFactory
+import io.gatehill.imposter.service.script.ScriptedResponseServiceImpl
+import io.gatehill.imposter.service.security.SecurityServiceImpl
 
 /**
  * @author Pete Cornish
@@ -57,6 +67,8 @@ internal class ImposterModule(private val imposterConfig: ImposterConfig, privat
         bind(PluginManager::class.java).toInstance(pluginManager)
         bind(ResourceService::class.java).to(ResourceServiceImpl::class.java).`in`(Singleton::class.java)
         bind(ResponseService::class.java).to(ResponseServiceImpl::class.java).`in`(Singleton::class.java)
+
+        bind(ScriptServiceFactory::class.java).`in`(Singleton::class.java)
         bind(ScriptedResponseService::class.java).to(ScriptedResponseServiceImpl::class.java)
             .`in`(Singleton::class.java)
 

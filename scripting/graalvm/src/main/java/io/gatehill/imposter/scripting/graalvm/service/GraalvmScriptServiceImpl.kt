@@ -46,11 +46,10 @@ import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
+import io.gatehill.imposter.script.ScriptUtil
 import io.gatehill.imposter.scripting.common.JavaScriptUtil.wrapScript
-import io.gatehill.imposter.scripting.graalvm.service.GraalvmScriptServiceImpl
 import io.gatehill.imposter.service.ScriptService
 import org.apache.logging.log4j.LogManager
-import java.nio.file.Paths
 import javax.inject.Inject
 import javax.script.ScriptContext
 import javax.script.ScriptEngineManager
@@ -74,10 +73,10 @@ class GraalvmScriptServiceImpl @Inject constructor(
 
     override fun executeScript(
         pluginConfig: PluginConfig,
-        resourceConfig: ResponseConfigHolder?,
+        resourceConfig: ResponseConfigHolder,
         runtimeContext: RuntimeContext
     ): ReadWriteResponseBehaviour {
-        val scriptFile = Paths.get(pluginConfig.parentDir.absolutePath, resourceConfig!!.responseConfig.scriptFile)
+        val scriptFile = ScriptUtil.resolveScriptPath(pluginConfig, resourceConfig.responseConfig.scriptFile)
         LOGGER.trace("Executing script file: {}", scriptFile)
 
         val scriptEngine = scriptEngineManager.getEngineByName("graal.js")

@@ -47,6 +47,7 @@ import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
+import io.gatehill.imposter.script.ScriptUtil
 import io.gatehill.imposter.scripting.common.JavaScriptUtil.wrapScript
 import io.gatehill.imposter.scripting.nashorn.shim.ConsoleShim
 import io.gatehill.imposter.service.ScriptService
@@ -56,7 +57,6 @@ import io.micrometer.core.instrument.Gauge
 import jdk.nashorn.api.scripting.NashornScriptEngine
 import org.apache.logging.log4j.LogManager
 import java.nio.file.Path
-import java.nio.file.Paths
 import java.util.concurrent.ExecutionException
 import javax.inject.Inject
 import javax.script.CompiledScript
@@ -67,7 +67,9 @@ import javax.script.SimpleBindings
  * @author Pete Cornish
  */
 @Suppress("DEPRECATION")
-class NashornScriptServiceImpl @Inject constructor(scriptEngineManager: ScriptEngineManager) : ScriptService {
+class NashornScriptServiceImpl @Inject constructor(
+    scriptEngineManager: ScriptEngineManager
+) : ScriptService {
     private val scriptEngine: NashornScriptEngine
 
     init {
@@ -88,12 +90,21 @@ class NashornScriptServiceImpl @Inject constructor(scriptEngineManager: ScriptEn
         .maximumSize(getEnv(ENV_SCRIPT_CACHE_ENTRIES)?.toLong() ?: DEFAULT_SCRIPT_CACHE_ENTRIES)
         .build<Path, CompiledScript>()
 
+    private val shouldPrecompile = getEnv(ENV_SCRIPT_PRECOMPILE)?.toBoolean() != false
+
+    override fun initScript(scriptFile: Path) {
+        if (shouldPrecompile) {
+            LOGGER.debug("Precompiling script: $scriptFile")
+            getCompiledScript(scriptFile)
+        }
+    }
+
     override fun executeScript(
         pluginConfig: PluginConfig,
-        resourceConfig: ResponseConfigHolder?,
+        resourceConfig: ResponseConfigHolder,
         runtimeContext: RuntimeContext
     ): ReadWriteResponseBehaviour {
-        val scriptFile = Paths.get(pluginConfig.parentDir.absolutePath, resourceConfig!!.responseConfig.scriptFile)
+        val scriptFile = ScriptUtil.resolveScriptPath(pluginConfig, resourceConfig.responseConfig.scriptFile)
         LOGGER.trace("Executing script file: {}", scriptFile)
 
         return try {
@@ -127,6 +138,7 @@ class NashornScriptServiceImpl @Inject constructor(scriptEngineManager: ScriptEn
     companion object {
         private val LOGGER = LogManager.getLogger(NashornScriptServiceImpl::class.java)
         private const val ENV_SCRIPT_CACHE_ENTRIES = "IMPOSTER_SCRIPT_CACHE_ENTRIES"
+        private const val ENV_SCRIPT_PRECOMPILE = "IMPOSTER_SCRIPT_PRECOMPILE"
         private const val DEFAULT_SCRIPT_CACHE_ENTRIES = 20L
         private const val METRIC_SCRIPT_CACHE_ENTRIES = "script.cache.entries"
     }

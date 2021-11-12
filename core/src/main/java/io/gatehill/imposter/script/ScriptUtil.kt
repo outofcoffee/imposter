@@ -43,9 +43,12 @@
 
 package io.gatehill.imposter.script
 
+import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.util.CollectionUtil
 import io.gatehill.imposter.util.EnvVars
 import io.vertx.ext.web.RoutingContext
+import java.nio.file.Path
+import java.nio.file.Paths
 
 /**
  * Convenience methods for script execution.
@@ -98,4 +101,7 @@ object ScriptUtil {
 
         return executionContext
     }
+
+    fun resolveScriptPath(pluginConfig: PluginConfig, scriptFile: String?): Path =
+        Paths.get(pluginConfig.parentDir.absolutePath, scriptFile!!)
 }

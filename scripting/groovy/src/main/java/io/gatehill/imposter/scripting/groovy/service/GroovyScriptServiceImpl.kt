@@ -49,11 +49,11 @@ import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
+import io.gatehill.imposter.script.ScriptUtil
 import io.gatehill.imposter.scripting.groovy.impl.GroovyResponseBehaviourImpl
 import io.gatehill.imposter.service.ScriptService
 import org.apache.logging.log4j.LogManager
 import org.codehaus.groovy.control.CompilerConfiguration
-import java.nio.file.Paths
 
 /**
  * @author Pete Cornish
@@ -61,10 +61,10 @@ import java.nio.file.Paths
 class GroovyScriptServiceImpl : ScriptService {
     override fun executeScript(
         pluginConfig: PluginConfig,
-        resourceConfig: ResponseConfigHolder?,
+        resourceConfig: ResponseConfigHolder,
         runtimeContext: RuntimeContext
     ): ReadWriteResponseBehaviour {
-        val scriptFile = Paths.get(pluginConfig.parentDir.absolutePath, resourceConfig!!.responseConfig.scriptFile)
+        val scriptFile = ScriptUtil.resolveScriptPath(pluginConfig, resourceConfig.responseConfig.scriptFile)
         LOGGER.trace("Executing script file: {}", scriptFile)
 
         val compilerConfig = CompilerConfiguration()

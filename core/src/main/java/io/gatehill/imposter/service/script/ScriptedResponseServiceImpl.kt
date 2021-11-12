@@ -40,7 +40,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.service
+package io.gatehill.imposter.service.script
 
 import com.google.common.cache.CacheBuilder
 import io.gatehill.imposter.ImposterConfig
@@ -49,49 +49,34 @@ import io.gatehill.imposter.lifecycle.EngineLifecycleListener
 import io.gatehill.imposter.lifecycle.ScriptExecLifecycleHooks
 import io.gatehill.imposter.lifecycle.ScriptExecutionLifecycleListener
 import io.gatehill.imposter.plugin.config.PluginConfig
+import io.gatehill.imposter.plugin.config.ResourcesHolder
 import io.gatehill.imposter.plugin.config.resource.ResponseConfig
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.script.ExecutionContext
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.ScriptUtil
+import io.gatehill.imposter.service.ScriptedResponseService
 import io.gatehill.imposter.util.EnvVars
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.MetricsUtil
-import io.gatehill.imposter.util.annotation.GroovyImpl
-import io.gatehill.imposter.util.annotation.JavascriptImpl
 import io.micrometer.core.instrument.Timer
+import io.vertx.ext.web.Router
 import io.vertx.ext.web.RoutingContext
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.apache.logging.log4j.util.Supplier
-import java.util.*
 import java.util.concurrent.ExecutionException
 import javax.inject.Inject
 
 /**
  * @author Pete Cornish
  */
-class ScriptedResponseServiceImpl : ScriptedResponseService {
-    @Inject
-    private lateinit var imposterConfig: ImposterConfig
-
-    @Inject
-    @GroovyImpl
-    private lateinit var groovyScriptService: ScriptService
-
-    @Inject
-    @JavascriptImpl
-    private lateinit var javascriptScriptService: ScriptService
-
-    @Inject
-    private lateinit var embeddedScriptService: EmbeddedScriptService
-
-    @Inject
-    private lateinit var engineLifecycle: EngineLifecycleHooks
-
-    @Inject
-    private lateinit var scriptExecLifecycle: ScriptExecLifecycleHooks
+class ScriptedResponseServiceImpl @Inject constructor(
+    private val engineLifecycle: EngineLifecycleHooks,
+    private val scriptExecLifecycle: ScriptExecLifecycleHooks,
+    private val scriptServiceFactory: ScriptServiceFactory
+) : ScriptedResponseService, EngineLifecycleListener {
 
     /**
      * Caches loggers to avoid logging framework lookup cost.
@@ -107,6 +92,33 @@ class ScriptedResponseServiceImpl : ScriptedResponseService {
                 .description("Script engine execution duration in seconds")
                 .register(registry)
         }.orElseDo { executionTimer = null }
+
+        engineLifecycle.registerListener(this)
+    }
+
+    override fun afterRoutesConfigured(imposterConfig: ImposterConfig, allPluginConfigs: List<PluginConfig>, router: Router) {
+        initScripts(allPluginConfigs)
+    }
+
+    private fun initScripts(allPluginConfigs: List<PluginConfig>) {
+        // root resource
+        allPluginConfigs.filter { it is ResponseConfigHolder }.forEach { config ->
+            val responseConfigHolder = config as ResponseConfigHolder
+            initScript(config, responseConfigHolder.responseConfig)
+        }
+        // child resources
+        allPluginConfigs.filter { it is ResourcesHolder<*> }.forEach { config ->
+            (config as ResourcesHolder<*>).resources?.forEach { resource ->
+                initScript(config, resource.responseConfig)
+            }
+        }
+    }
+
+    fun initScript(pluginConfig: PluginConfig, responseConfig: ResponseConfig) {
+        responseConfig.scriptFile?.let { scriptFile ->
+            val scriptPath = ScriptUtil.resolveScriptPath(pluginConfig, scriptFile)
+            scriptServiceFactory.fetchScriptService(scriptFile).initScript(scriptPath)
+        }
     }
 
     override fun determineResponseFromScript(
@@ -172,7 +184,7 @@ class ScriptedResponseServiceImpl : ScriptedResponseService {
             )
 
             // execute the script and read response behaviour
-            val responseBehaviour = fetchScriptService(scriptFile).executeScript(
+            val responseBehaviour = scriptServiceFactory.fetchScriptService(scriptFile).executeScript(
                 pluginConfig,
                 resourceConfig,
                 runtimeContext
@@ -180,10 +192,7 @@ class ScriptedResponseServiceImpl : ScriptedResponseService {
 
             // fire post execution hooks
             scriptExecLifecycle.forEach { listener: ScriptExecutionLifecycleListener ->
-                listener.afterSuccessfulScriptExecution(
-                    finalAdditionalBindings,
-                    responseBehaviour
-                )
+                listener.afterSuccessfulScriptExecution(finalAdditionalBindings, responseBehaviour)
             }
             LOGGER.debug(
                 String.format(
@@ -198,7 +207,7 @@ class ScriptedResponseServiceImpl : ScriptedResponseService {
         } catch (e: Exception) {
             throw RuntimeException(
                 "Error executing script: '${responseConfig.scriptFile}' for request: " +
-                        "${routingContext.request().method()} ${routingContext.request().absoluteURI()}", e
+                    "${routingContext.request().method()} ${routingContext.request().absoluteURI()}", e
             )
         }
     }
@@ -215,26 +224,6 @@ class ScriptedResponseServiceImpl : ScriptedResponseService {
         }
         val loggerName = LogUtil.LOGGER_SCRIPT_PACKAGE + "." + name
         return loggerCache[loggerName, { LogManager.getLogger(loggerName) }]
-    }
-
-    private fun fetchScriptService(scriptFile: String): ScriptService {
-        if (imposterConfig.useEmbeddedScriptEngine) {
-            LOGGER.debug("Using embedded script engine")
-            return embeddedScriptService
-        }
-
-        val scriptExtension: String
-        val dotIndex = scriptFile.lastIndexOf('.')
-        scriptExtension = if (dotIndex >= 1 && dotIndex < scriptFile.length - 1) {
-            scriptFile.substring(dotIndex + 1)
-        } else {
-            ""
-        }
-        return when (scriptExtension.lowercase(Locale.getDefault())) {
-            "groovy" -> groovyScriptService
-            "js" -> javascriptScriptService
-            else -> throw RuntimeException("Unable to determine script engine from script file name: $scriptFile")
-        }
     }
 
     private fun finaliseAdditionalBindings(
@@ -261,9 +250,7 @@ class ScriptedResponseServiceImpl : ScriptedResponseService {
     }
 
     companion object {
-        private val LOGGER = LogManager.getLogger(
-            ScriptedResponseServiceImpl::class.java
-        )
+        private val LOGGER = LogManager.getLogger(ScriptedResponseServiceImpl::class.java)
         private const val METRIC_SCRIPT_EXECUTION_DURATION = "script.execution.duration"
     }
 }

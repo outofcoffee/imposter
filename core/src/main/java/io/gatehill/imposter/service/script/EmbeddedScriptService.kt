@@ -40,33 +40,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.service
 
-import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
-import io.gatehill.imposter.script.ReadWriteResponseBehaviour
-import io.gatehill.imposter.script.RuntimeContext
-import java.nio.file.Path
+package io.gatehill.imposter.service.script
+
+import io.gatehill.imposter.script.listener.ScriptListener
+import io.gatehill.imposter.service.ScriptService
 
 /**
  * @author Pete Cornish
  */
-interface ScriptService {
-    fun initScript(scriptFile: Path) {
-        // no op
-    }
-
-    /**
-     * Execute the script and read response behaviour.
-     *
-     * @param pluginConfig   the plugin configuration
-     * @param resourceConfig the resource configuration
-     * @param runtimeContext the script engine runtime context
-     * @return the response behaviour
-     */
-    fun executeScript(
-        pluginConfig: PluginConfig,
-        resourceConfig: ResponseConfigHolder,
-        runtimeContext: RuntimeContext
-    ): ReadWriteResponseBehaviour
+interface EmbeddedScriptService : ScriptService {
+    fun setListener(listener: ScriptListener)
 }

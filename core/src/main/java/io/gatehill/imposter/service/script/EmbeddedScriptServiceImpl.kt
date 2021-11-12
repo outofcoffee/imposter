@@ -40,14 +40,34 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.service.script
 
-package io.gatehill.imposter.service
-
+import io.gatehill.imposter.plugin.config.PluginConfig
+import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
+import io.gatehill.imposter.script.ReadWriteResponseBehaviour
+import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl
+import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.listener.ScriptListener
 
 /**
  * @author Pete Cornish
  */
-interface EmbeddedScriptService : ScriptService {
-    fun setListener(listener: ScriptListener)
+class EmbeddedScriptServiceImpl : EmbeddedScriptService {
+    private var listener: ScriptListener? = null
+
+    override fun executeScript(
+        pluginConfig: PluginConfig,
+        resourceConfig: ResponseConfigHolder,
+        runtimeContext: RuntimeContext
+    ): ReadWriteResponseBehaviour {
+        check(listener != null) { "ScriptListener is not set" }
+
+        val responseBehaviour: ReadWriteResponseBehaviour = ReadWriteResponseBehaviourImpl()
+        listener!!.hear(runtimeContext.executionContext, responseBehaviour)
+        return responseBehaviour
+    }
+
+    override fun setListener(listener: ScriptListener) {
+        this.listener = listener
+    }
 }
