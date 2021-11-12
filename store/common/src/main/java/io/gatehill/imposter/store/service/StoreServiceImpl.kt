@@ -77,7 +77,7 @@ import org.apache.commons.text.lookup.StringLookupFactory
 import org.apache.logging.log4j.LogManager
 import java.io.IOException
 import java.nio.file.Paths
-import java.util.*
+import java.util.Objects
 import java.util.concurrent.atomic.AtomicReference
 import java.util.regex.Pattern
 import javax.inject.Inject
@@ -380,52 +380,64 @@ class StoreServiceImpl @Inject constructor(
                 val jsonPathContextHolder = AtomicReference<DocumentContext>()
                 captureConfig.forEach { (captureConfigKey: String, itemConfig: ItemCaptureConfig) ->
                     val storeName = itemConfig.store ?: DEFAULT_CAPTURE_STORE_NAME
-                    val itemName = determineItemName(
-                        routingContext,
-                        jsonPathContextHolder,
-                        captureConfigKey,
-                        itemConfig,
-                        storeName
-                    )
-                    val itemValue = captureItemValue(
-                        routingContext,
-                        jsonPathContextHolder,
-                        captureConfigKey,
-                        itemConfig
-                    )
-                    val store = openCaptureStore(routingContext, storeName)
-                    store.save(itemName, itemValue)
+                    val itemName: String? = determineItemName(routingContext, jsonPathContextHolder, captureConfigKey, itemConfig, storeName)
+
+                    // itemname may not be set, if dynamic value was null
+                    itemName?.let {
+                        val itemValue = captureItemValue(routingContext, jsonPathContextHolder, captureConfigKey, itemConfig)
+                        val store = openCaptureStore(routingContext, storeName)
+                        store.save(itemName, itemValue)
+
+                    } ?: run {
+                        LOGGER.warn(
+                            "Could not capture item: {} into store: {} as dynamic item name resolved to null",
+                            captureConfigKey,
+                            storeName
+                        )
+                    }
                 }
             }
         }
     }
 
+    /**
+     * Determines the item name, if possible.
+     * May return `null` if dynamic value could not be resolved or resolves to `null`.
+     */
     private fun determineItemName(
         routingContext: RoutingContext,
         jsonPathContextHolder: AtomicReference<DocumentContext>,
         captureConfigKey: String,
         itemConfig: ItemCaptureConfig,
         storeName: String
-    ): String {
-        val itemName: String
+    ): String? {
         if (Objects.isNull(itemConfig.key)) {
-            itemName = captureConfigKey
             LOGGER.debug("Capturing item: {} into store: {}", captureConfigKey, storeName)
+            return captureConfigKey
 
         } else {
             try {
-                itemName = captureValue<String>(routingContext, itemConfig.key, jsonPathContextHolder)!!
-                LOGGER.debug(
-                    "Capturing item: {} into store: {} with dynamic name: {}",
-                    captureConfigKey,
-                    storeName,
-                    itemName
-                )
+                captureValue<String?>(routingContext, itemConfig.key, jsonPathContextHolder)?.let { itemName ->
+                    LOGGER.debug(
+                        "Capturing item: {} into store: {} with dynamic name: {}",
+                        captureConfigKey,
+                        storeName,
+                        itemName
+                    )
+                    return itemName
+
+                } ?: run {
+                    LOGGER.trace(
+                        "Could not capture item name for: {} as dynamic item name resolved to null",
+                        captureConfigKey,
+                    )
+                    return null
+                }
+
             } catch (e: Exception) {
                 throw RuntimeException("Error capturing item name: $captureConfigKey", e)
             }
         }
-        return itemName
     }
 
     private fun captureItemValue(
