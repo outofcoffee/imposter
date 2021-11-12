@@ -3,9 +3,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [2.0.0] - 2021-11-12
 ### Changed
-- (all) Ports codebase to Kotlin.
+- refactor: ports codebase to Kotlin.
+
+### Fixed
+- fix: stops path parameters being treated as query parameters during OpenAPI request validation.
+- fix: stops path parameters being treated as query parameters during condition and resource matching.
 
 ## [1.24.5] - 2021-11-12
 ### Added
