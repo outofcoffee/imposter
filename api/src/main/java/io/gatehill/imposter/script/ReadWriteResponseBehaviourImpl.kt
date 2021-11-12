@@ -52,7 +52,7 @@ open class ReadWriteResponseBehaviourImpl : ReadWriteResponseBehaviour {
     override var responseData: String? = null
     override var isTemplate = false
     override var exampleName: String? = null
-    override val responseHeaders: MutableMap<String, String> = HashMap()
+    override val responseHeaders: MutableMap<String, String> = mutableMapOf()
     private var behaviourConfigured = false
     override var performanceSimulation: PerformanceSimulationConfig? = null
 

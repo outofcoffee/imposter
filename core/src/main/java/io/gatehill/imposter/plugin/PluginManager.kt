@@ -42,7 +42,6 @@
  */
 package io.gatehill.imposter.plugin
 
-import com.google.common.collect.Lists
 import com.google.inject.Injector
 import com.google.inject.Module
 import io.gatehill.imposter.ImposterConfig
@@ -171,7 +170,7 @@ class PluginManager {
         // prepare plugins
         plugins.map { plugin -> determinePluginClass(plugin) }.forEach { className -> registerPluginClass(className) }
 
-        val dependencies: MutableList<PluginDependencies> = Lists.newArrayList()
+        val dependencies: MutableList<PluginDependencies> = mutableListOf()
 
         dependencies.addAll(getPluginClasses().map { pluginClass -> examinePlugin(pluginClass) })
 

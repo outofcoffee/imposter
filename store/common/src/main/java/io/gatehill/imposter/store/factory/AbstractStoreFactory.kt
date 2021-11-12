@@ -42,7 +42,6 @@
  */
 package io.gatehill.imposter.store.factory
 
-import com.google.common.collect.Maps
 import io.gatehill.imposter.store.inmem.InMemoryStore
 import io.gatehill.imposter.store.model.PrefixedKeyStore
 import io.gatehill.imposter.store.model.Store
@@ -58,7 +57,7 @@ import org.apache.logging.log4j.LogManager
  * @author Pete Cornish
  */
 abstract class AbstractStoreFactory : StoreFactory {
-    private val stores: MutableMap<String, Store> = Maps.newHashMap()
+    private val stores: MutableMap<String, Store> = mutableMapOf()
     private val keyPrefix: String
 
     override fun hasStoreWithName(storeName: String): Boolean {

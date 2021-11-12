@@ -47,7 +47,6 @@ import com.force.api.ForceApi
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.plugin.sfdc.support.Account
 import io.gatehill.imposter.server.BaseVerticleTest
-import io.gatehill.imposter.util.CryptoUtil
 import io.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PASSWORD
 import io.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PATH
 import io.gatehill.imposter.util.CryptoUtil.getDefaultKeystore
@@ -73,7 +72,7 @@ class SfdcPluginImplTest : BaseVerticleTest() {
 
         // set up trust store for TLS
         System.setProperty("javax.net.ssl.trustStore", getDefaultKeystore(SfdcPluginImplTest::class.java).toString())
-        System.setProperty("javax.net.ssl.trustStorePassword", CryptoUtil.DEFAULT_KEYSTORE_PASSWORD)
+        System.setProperty("javax.net.ssl.trustStorePassword", DEFAULT_KEYSTORE_PASSWORD)
         System.setProperty("javax.net.ssl.trustStoreType", "JKS")
 
         // for localhost testing only
@@ -112,10 +111,8 @@ class SfdcPluginImplTest : BaseVerticleTest() {
 
         // check records
         testContext.assertEquals(2, actual.records.size)
-        testContext.assertTrue(actual.records.stream()
-            .anyMatch { account: Account -> "0015000000VALDtAAP" == account.id })
-        testContext.assertTrue(actual.records.stream()
-            .anyMatch { account: Account -> "0015000000XALDuAAZ" == account.id })
+        testContext.assertTrue(actual.records.any { account: Account -> "0015000000VALDtAAP" == account.id })
+        testContext.assertTrue(actual.records.any { account: Account -> "0015000000XALDuAAZ" == account.id })
     }
 
     @Test

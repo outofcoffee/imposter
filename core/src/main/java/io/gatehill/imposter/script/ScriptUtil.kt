@@ -79,7 +79,7 @@ object ScriptUtil {
         val pathParamsSupplier: () -> Map<String, String> = { routingContext.pathParams() }
 
         val queryParamsSupplier: () -> Map<String, String> = {
-            CollectionUtil.asMap(vertxRequest.params())
+            CollectionUtil.asMap(routingContext.queryParams())
         }
 
         val bodySupplier: () -> String? = { routingContext.bodyAsString }

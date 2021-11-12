@@ -69,7 +69,6 @@ import java.net.URI
 import java.net.URISyntaxException
 import java.util.*
 import java.util.concurrent.ExecutionException
-import java.util.function.Function
 
 /**
  * @author Pete Cornish
@@ -168,16 +167,16 @@ class SpecificationServiceImpl : SpecificationService {
 
         // components
         val components = Components()
-        components.callbacks = aggregate(allComponents) { obj: Components -> obj.callbacks }
-        components.examples = aggregate(allComponents) { obj: Components -> obj.examples }
-        components.extensions = aggregate(allComponents) { obj: Components -> obj.extensions }
-        components.headers = aggregate(allComponents) { obj: Components -> obj.headers }
-        components.links = aggregate(allComponents) { obj: Components -> obj.links }
-        components.parameters = aggregate(allComponents) { obj: Components -> obj.parameters }
-        components.requestBodies = aggregate(allComponents) { obj: Components -> obj.requestBodies }
-        components.responses = aggregate(allComponents) { obj: Components -> obj.responses }
-        components.schemas = aggregate(allComponents) { obj: Components -> obj.schemas }
-        components.securitySchemes = aggregate(allComponents) { obj: Components -> obj.securitySchemes }
+        components.callbacks = aggregate(allComponents) { it.callbacks }
+        components.examples = aggregate(allComponents) { it.examples }
+        components.extensions = aggregate(allComponents) { it.extensions }
+        components.headers = aggregate(allComponents) { it.headers }
+        components.links = aggregate(allComponents) { it.links }
+        components.parameters = aggregate(allComponents) { it.parameters }
+        components.requestBodies = aggregate(allComponents) { it.requestBodies }
+        components.responses = aggregate(allComponents) { it.responses }
+        components.schemas = aggregate(allComponents) { it.schemas }
+        components.securitySchemes = aggregate(allComponents) { it.securitySchemes }
         combined.components = components
         setServers(combined, servers, scheme, basePath)
         combined.paths = paths
@@ -338,14 +337,15 @@ class SpecificationServiceImpl : SpecificationService {
         }
     }
 
-    private fun <H, T> aggregate(allHolders: List<H>, mapSupplier: Function<H, Map<String, T>>): Map<String, T> {
-        val all: MutableMap<String, T> = mutableMapOf()
-        allHolders.stream()
-            .map(mapSupplier)
-            .filter { obj: Map<String, T>? -> Objects.nonNull(obj) }
-            .forEach { m: Map<String, T>? ->
-                all.putAll(m!!)
-            }
+    /**
+     * Combine the non-null maps of each `Components` object into a single map.
+     */
+    private fun <H> aggregate(
+        allHolders: List<Components>,
+        mapSupplier: (Components) -> Map<String, H>?
+    ): Map<String, H> {
+        val all: MutableMap<String, H> = mutableMapOf()
+        allHolders.mapNotNull(mapSupplier).forEach { m -> all.putAll(m) }
         return all
     }
 
