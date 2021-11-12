@@ -3,9 +3,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [1.24.5] - 2021-11-12
 ### Added
-- ...
+- (docs) Links to example JUnit project.
+
+### Changed
+- (build) Bumps Jackson to 2.12.5.
 
 ## [1.24.4] - 2021-10-29
 ### Added
