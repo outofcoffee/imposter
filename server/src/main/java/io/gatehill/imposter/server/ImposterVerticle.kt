@@ -130,9 +130,9 @@ class ImposterVerticle : AbstractVerticle() {
         router.errorHandler(500, resourceService.buildUnhandledExceptionHandler())
         router.route().handler(BodyHandlerImpl())
 
-        val allConfigs: MutableList<PluginConfig> = ArrayList()
-        pluginManager.getPlugins().stream()
-            .filter { p: Plugin? -> p is ConfigurablePlugin<*> }
+        val allConfigs: MutableList<PluginConfig> = mutableListOf()
+        pluginManager.getPlugins()
+            .filter { p: Plugin -> p is ConfigurablePlugin<*> }
             .forEach { p: Plugin -> allConfigs.addAll((p as ConfigurablePlugin<*>).configs) }
 
         check(allConfigs.isNotEmpty()) {

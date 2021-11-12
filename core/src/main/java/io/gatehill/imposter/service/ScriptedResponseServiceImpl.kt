@@ -246,7 +246,7 @@ class ScriptedResponseServiceImpl : ScriptedResponseService {
 
         // fire pre-context build hooks
         if (!engineLifecycle.isEmpty) {
-            val listenerAdditionalBindings: MutableMap<String, Any> = HashMap()
+            val listenerAdditionalBindings: MutableMap<String, Any> = mutableMapOf()
             engineLifecycle.forEach { listener: EngineLifecycleListener ->
                 listener.beforeBuildingRuntimeContext(
                     routingContext, listenerAdditionalBindings, executionContext

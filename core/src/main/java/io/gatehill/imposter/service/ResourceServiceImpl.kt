@@ -338,7 +338,7 @@ class ResourceServiceImpl @Inject constructor(
     private fun determineLogLevel(routingContext: RoutingContext): Level {
         return try {
             routingContext.request().path()?.takeIf { path: String ->
-                IGNORED_ERROR_PATHS.stream().anyMatch { p: Pattern -> p.matcher(path).matches() }
+                IGNORED_ERROR_PATHS.any { p: Pattern -> p.matcher(path).matches() }
             }?.let { Level.TRACE } ?: Level.ERROR
 
         } catch (ignored: Exception) {
@@ -367,7 +367,7 @@ class ResourceServiceImpl @Inject constructor(
             routingContext.currentRoute().path,
             request.path(),
             routingContext.pathParams(),
-            CollectionUtil.asMap(request.params()),
+            CollectionUtil.asMap(routingContext.queryParams()),
             CollectionUtil.asMap(request.headers())
         ) { routingContext.bodyAsString } ?: rootResourceConfig
 

@@ -118,7 +118,7 @@ class SchemaServiceImpl : SchemaService {
     private fun buildFromArraySchema(spec: OpenAPI, schema: ArraySchema?): List<Any?> {
         // items may be a schema type with multiple children
         val items = schema!!.items
-        val examples: MutableList<Any?> = ArrayList()
+        val examples: MutableList<Any?> = mutableListOf()
         examples.add(collectSchemaExample(spec, items))
         return examples
     }
@@ -129,7 +129,7 @@ class SchemaServiceImpl : SchemaService {
 
             // Combine properties of 'allOf'
             // See: https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/
-            val combinedExampleProperties: MutableMap<String, Any> = HashMap()
+            val combinedExampleProperties: MutableMap<String, Any> = mutableMapOf()
             allOf.forEach { s ->
                 val exampleMap = collectSchemaExample(spec, s)
                 if (Objects.nonNull(exampleMap) && exampleMap is Map<*, *>) {

@@ -122,12 +122,12 @@ abstract class AbstractScriptServiceImplTest {
         When(mockRequest.path()).thenReturn("/example")
         When(mockRequest.absoluteURI()).thenReturn("http://localhost:8080/example")
         When(mockRequest.headers()).thenReturn(CaseInsensitiveHeaders().addAll(headers))
-        When(mockRequest.params()).thenReturn(CaseInsensitiveHeaders().addAll(queryParams))
 
         val mockRoutingContext = mock(RoutingContext::class.java)
         When(mockRoutingContext.request()).thenReturn(mockRequest)
         When(mockRoutingContext.pathParams()).thenReturn(pathParams)
-        When(mockRoutingContext.getBodyAsString()).thenReturn("")
+        When(mockRoutingContext.queryParams()).thenReturn(CaseInsensitiveHeaders().addAll(queryParams))
+        When(mockRoutingContext.bodyAsString).thenReturn("")
 
         val pluginConfig = mock(PluginConfig::class.java)
         val executionContext = ScriptUtil.buildContext(mockRoutingContext, null)

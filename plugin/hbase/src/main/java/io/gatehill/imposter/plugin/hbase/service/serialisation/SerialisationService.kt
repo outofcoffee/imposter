@@ -50,7 +50,6 @@ import io.vertx.core.buffer.Buffer
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import org.apache.logging.log4j.Logger
-import java.util.stream.Collectors
 
 /**
  * @author Pete Cornish
@@ -61,22 +60,27 @@ interface SerialisationService {
 
     fun serialise(tableName: String, recordId: String, result: JsonObject): Buffer?
 
-    fun serialise(tableName: String, scannerId: String, results: JsonArray, scanner: InMemoryScanner, rows: Int): Buffer?
+    fun serialise(
+        tableName: String,
+        scannerId: String,
+        results: JsonArray,
+        scanner: InMemoryScanner,
+        rows: Int
+    ): Buffer?
 
     fun buildRowKey(scanner: InMemoryScanner): String {
         // TODO consider setting key to prefix from scanner filter
         return "rowKey" + scanner.rowCounter.incrementAndGet()
     }
 
-    fun buildSortedCells(result: JsonObject): List<ResultCell>? {
+    fun buildSortedCells(result: JsonObject): List<ResultCell> {
         // add cells from result
-        val cells = result.fieldNames().stream()
-            .map { fieldName: String -> ResultCell(fieldName, result.getString(fieldName)) }
-            .collect(Collectors.toList())
+        val cells = result.fieldNames().map { fieldName: String ->
+            ResultCell(fieldName, result.getString(fieldName))
+        }
 
         // sort the cells before adding to row
-        cells.sortWith(ResultCellComparator())
-        return cells
+        return cells.sortedWith(ResultCellComparator())
     }
 
     fun checkExhausted(tableName: String, scannerId: String, results: JsonArray, scanner: InMemoryScanner) {

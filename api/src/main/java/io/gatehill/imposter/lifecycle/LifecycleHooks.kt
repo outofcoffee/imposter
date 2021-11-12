@@ -42,41 +42,34 @@
  */
 package io.gatehill.imposter.lifecycle
 
-import com.google.common.collect.Lists
 import org.apache.logging.log4j.LogManager
-import java.util.function.Consumer
-import java.util.function.Predicate
 
 /**
  * @author Pete Cornish
  */
 abstract class LifecycleHooks<L> {
-    private val listeners: MutableList<L> = Lists.newArrayList()
+    private val listeners: MutableList<L> = mutableListOf()
 
     fun registerListener(listener: L) {
         LOGGER.trace("Registered listener: {}", listener!!::class.java.canonicalName)
         listeners.add(listener)
     }
 
-    fun forEach(listenerConsumer: Consumer<L>?) {
+    fun forEach(listenerConsumer: (L) -> Unit) {
         if (listeners.isEmpty()) {
             return
         }
         listeners.forEach(listenerConsumer)
     }
 
-    fun allMatch(listenerConsumer: Predicate<L>?): Boolean {
-        return if (listeners.isEmpty()) {
-            true
-        } else listeners.stream().allMatch(listenerConsumer)
+    fun allMatch(listenerConsumer: (L) -> Boolean): Boolean {
+        return if (listeners.isEmpty()) true else listeners.all(listenerConsumer)
     }
 
     val isEmpty: Boolean
         get() = listeners.isEmpty()
 
     companion object {
-        private val LOGGER = LogManager.getLogger(
-            LifecycleHooks::class.java
-        )
+        private val LOGGER = LogManager.getLogger(LifecycleHooks::class.java)
     }
 }

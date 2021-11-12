@@ -44,7 +44,6 @@ package io.gatehill.imposter.plugin.hbase
 
 import com.google.common.base.Objects
 import com.google.common.base.Strings
-import com.google.common.collect.Maps
 import com.google.inject.Key
 import com.google.inject.name.Names
 import io.gatehill.imposter.ImposterConfig
@@ -378,7 +377,7 @@ class HBasePluginImpl @Inject constructor(
         recordInfo: RecordInfo? = null,
         scannerFilterPrefix: String?
     ): Map<String, Any> {
-        val bindings: MutableMap<String, Any> = Maps.newHashMap()
+        val bindings: MutableMap<String, Any> = mutableMapOf()
         bindings["tableName"] = tableName
         bindings["responsePhase"] = responsePhase
         bindings["scannerFilterPrefix"] = scannerFilterPrefix ?: ""

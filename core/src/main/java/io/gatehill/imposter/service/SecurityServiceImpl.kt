@@ -59,7 +59,6 @@ import io.vertx.core.MultiMap
 import io.vertx.ext.web.RoutingContext
 import org.apache.logging.log4j.LogManager
 import java.util.*
-import java.util.stream.Collectors
 import javax.inject.Inject
 
 /**
@@ -118,9 +117,7 @@ class SecurityServiceImpl @Inject constructor(
         } else {
             PolicyOutcome(
                 SecurityEffect.Deny,
-                failed.stream()
-                    .map { condition: SecurityCondition -> describeCondition(condition) }
-                    .collect(Collectors.joining(", "))
+                failed.joinToString(", ") { condition -> describeCondition(condition) }
             )
         }
     }
@@ -133,15 +130,15 @@ class SecurityServiceImpl @Inject constructor(
      * @return `true` if the condition permits the request, otherwise `false`
      */
     private fun checkCondition(condition: SecurityCondition, routingContext: RoutingContext): Boolean {
-        val results: MutableList<SecurityEffect> = ArrayList()
+        val results: MutableList<SecurityEffect> = mutableListOf()
 
         // query params
         results.addAll(
             checkCondition(
                 condition.queryParams,
-                routingContext.request().params(),
+                routingContext.queryParams(),
                 condition.effect,
-                true
+                caseSensitiveKeyMatch = true
             )
         )
 
@@ -151,12 +148,12 @@ class SecurityServiceImpl @Inject constructor(
                 condition.requestHeaders,
                 routingContext.request().headers(),
                 condition.effect,
-                false
+                caseSensitiveKeyMatch = false
             )
         )
 
         // all must permit
-        return results.stream().allMatch { other: SecurityEffect? -> SecurityEffect.Permit == other }
+        return results.all { effect -> SecurityEffect.Permit == effect }
     }
 
     /**
@@ -177,7 +174,7 @@ class SecurityServiceImpl @Inject constructor(
         caseSensitiveKeyMatch: Boolean
     ): List<SecurityEffect> {
         val comparisonMap = if (caseSensitiveKeyMatch) asMap(requestMap) else convertKeysToLowerCase(requestMap)
-        return conditionMap.values.stream().map { conditionValue: ConditionalNameValuePair ->
+        return conditionMap.values.map { conditionValue: ConditionalNameValuePair ->
             val valueMatch = safeEquals(
                 comparisonMap[if (caseSensitiveKeyMatch) conditionValue.name else conditionValue.name.lowercase(Locale.getDefault())],
                 conditionValue.value
@@ -203,8 +200,7 @@ class SecurityServiceImpl @Inject constructor(
                 )
             }
             return@map finalEffect
-
-        }.collect(Collectors.toList())
+        }
     }
 
     private fun enforceEffect(routingContext: RoutingContext, outcome: PolicyOutcome): Boolean {

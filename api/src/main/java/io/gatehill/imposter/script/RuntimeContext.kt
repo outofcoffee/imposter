@@ -42,7 +42,6 @@
  */
 package io.gatehill.imposter.script
 
-import com.google.common.collect.Maps
 import io.gatehill.imposter.plugin.config.PluginConfig
 import org.apache.logging.log4j.Logger
 
@@ -61,7 +60,7 @@ class RuntimeContext(
      * @return a representation of the runtime context as a [Map] of bindings
      */
     fun asMap(): Map<String, Any> {
-        val bindings: MutableMap<String, Any> = Maps.newHashMap()
+        val bindings: MutableMap<String, Any> = mutableMapOf()
         bindings["config"] = pluginConfig
         bindings["context"] = executionContext
         bindings["env"] = env

@@ -124,8 +124,7 @@ object ConfigUtil {
     }
 
     private fun isConfigFile(dir: File, name: String): Boolean {
-        return CONFIG_FILE_MAPPERS.keys.stream()
-            .anyMatch { extension: String -> name.endsWith(CONFIG_FILE_SUFFIX + extension) }
+        return CONFIG_FILE_MAPPERS.keys.any { extension -> name.endsWith(CONFIG_FILE_SUFFIX + extension) }
     }
 
     /**
