@@ -3,9 +3,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
-### Added
-- ...
+## [2.0.1] - 2021-11-15
+### Changed
+- feat: precompiles JavaScript scripts on startup to lower initial request latency.
+
+### Fixed
+- fix: improves error trapping when dynamic item name cannot be resolved.
 
 ## [2.0.0] - 2021-11-12
 ### Changed
