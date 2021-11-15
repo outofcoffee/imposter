@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- ...
+
 ## [2.0.1] - 2021-11-15
 ### Changed
 - feat: precompiles JavaScript scripts on startup to lower initial request latency.
