@@ -53,7 +53,7 @@ import java.util.concurrent.ExecutionException
  * @author Pete Cornish
  */
 interface SpecificationService {
-    fun combineSpecifications(specs: List<OpenAPI>?, basePath: String?): OpenAPI? {
+    fun combineSpecifications(specs: List<OpenAPI>, basePath: String?): OpenAPI? {
         return combineSpecifications(specs, basePath, null, null)
     }
 
@@ -61,18 +61,20 @@ interface SpecificationService {
      * Returns the combined specification from cache, generating it first on cache miss.
      */
     @Throws(ExecutionException::class)
-    fun getCombinedSpec(imposterConfig: ImposterConfig, allSpecs: List<OpenAPI>?): OpenAPI
+    fun getCombinedSpec(imposterConfig: ImposterConfig, allSpecs: List<OpenAPI>): OpenAPI
 
     /**
      * As [.getCombinedSpec] but serialised to JSON.
      */
     @Throws(ExecutionException::class)
-    fun getCombinedSpecSerialised(imposterConfig: ImposterConfig, allSpecs: List<OpenAPI>?): String
-    fun combineSpecifications(specs: List<OpenAPI>?, basePath: String?, scheme: Scheme?, title: String?): OpenAPI?
+    fun getCombinedSpecSerialised(imposterConfig: ImposterConfig, allSpecs: List<OpenAPI>): String
+
+    fun combineSpecifications(specs: List<OpenAPI>, basePath: String?, scheme: Scheme?, title: String?): OpenAPI?
+
     fun isValidRequest(
         imposterConfig: ImposterConfig,
         pluginConfig: OpenApiPluginConfig,
         routingContext: RoutingContext,
-        allSpecs: List<OpenAPI>?
+        allSpecs: List<OpenAPI>
     ): Boolean
 }

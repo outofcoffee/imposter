@@ -78,7 +78,7 @@ class SpecificationServiceImpl : SpecificationService {
     private val reportFormatter = SimpleValidationReportFormat.getInstance()
 
     @Throws(ExecutionException::class)
-    override fun getCombinedSpec(imposterConfig: ImposterConfig, allSpecs: List<OpenAPI>?): OpenAPI {
+    override fun getCombinedSpec(imposterConfig: ImposterConfig, allSpecs: List<OpenAPI>): OpenAPI {
         return cache.get("combinedSpecObject") {
             try {
                 val scheme = Scheme.forValue(imposterConfig.pluginArgs!![ARG_SCHEME])
@@ -92,7 +92,7 @@ class SpecificationServiceImpl : SpecificationService {
     }
 
     @Throws(ExecutionException::class)
-    override fun getCombinedSpecSerialised(imposterConfig: ImposterConfig, allSpecs: List<OpenAPI>?): String {
+    override fun getCombinedSpecSerialised(imposterConfig: ImposterConfig, allSpecs: List<OpenAPI>): String {
         return cache.get("combinedSpecSerialised") {
             try {
                 return@get MapUtil.JSON_MAPPER.writeValueAsString(getCombinedSpec(imposterConfig, allSpecs))
@@ -103,13 +103,13 @@ class SpecificationServiceImpl : SpecificationService {
     }
 
     override fun combineSpecifications(
-        specs: List<OpenAPI>?,
+        specs: List<OpenAPI>,
         basePath: String?,
         scheme: Scheme?,
         title: String?
     ): OpenAPI {
         Objects.requireNonNull(specs, "Input specifications must not be null")
-        LOGGER.debug("Generating combined specification from {} inputs", specs!!.size)
+        LOGGER.debug("Generating combined specification from {} inputs", specs.size)
 
         val combined = OpenAPI()
         val info = Info()
@@ -139,16 +139,12 @@ class SpecificationServiceImpl : SpecificationService {
                     .append("**")
                     .append(specInfo.description?.let { specDesc -> " - $specDesc" } ?: "")
             }
-            servers.addAll(spec.servers ?: emptyList())
-            security.addAll(spec.security ?: emptyList())
-            tags.addAll(spec.tags ?: emptyList())
-            if (Objects.nonNull(spec.externalDocs)) {
-                allExternalDocs.add(spec.externalDocs)
-            }
-            if (Objects.nonNull(spec.components)) {
-                allComponents.add(spec.components)
-            }
-            paths.putAll(spec.paths ?: emptyMap())
+            spec.servers?.let(servers::addAll)
+            spec.security?.let(security::addAll)
+            spec.tags?.let(tags::addAll)
+            spec.externalDocs?.let(allExternalDocs::add)
+            spec.components?.let(allComponents::add)
+            spec.paths?.let(paths::putAll)
         }
 
         // info
@@ -178,7 +174,7 @@ class SpecificationServiceImpl : SpecificationService {
         components.schemas = aggregate(allComponents) { it.schemas }
         components.securitySchemes = aggregate(allComponents) { it.securitySchemes }
         combined.components = components
-        setServers(combined, servers, scheme, basePath)
+        combined.servers = buildServerList(servers, scheme, basePath)
         combined.paths = paths
         combined.security = security
         combined.tags = tags
@@ -189,7 +185,7 @@ class SpecificationServiceImpl : SpecificationService {
         imposterConfig: ImposterConfig,
         pluginConfig: OpenApiPluginConfig,
         routingContext: RoutingContext,
-        allSpecs: List<OpenAPI>?
+        allSpecs: List<OpenAPI>
     ): Boolean {
         if (Objects.isNull(pluginConfig.validation)) {
             LOGGER.trace("Validation is disabled")
@@ -250,7 +246,7 @@ class SpecificationServiceImpl : SpecificationService {
     private fun getValidator(
         imposterConfig: ImposterConfig,
         pluginConfig: OpenApiPluginConfig,
-        allSpecs: List<OpenAPI>?
+        allSpecs: List<OpenAPI>
     ): OpenApiInteractionValidator {
         return cache.get("specValidator") {
             val combined = getCombinedSpec(imposterConfig, allSpecs)
@@ -269,7 +265,7 @@ class SpecificationServiceImpl : SpecificationService {
         } as OpenApiInteractionValidator
     }
 
-    private fun setServers(combined: OpenAPI, servers: MutableList<Server>, scheme: Scheme?, basePath: String?) {
+    private fun buildServerList(servers: MutableList<Server>, scheme: Scheme?, basePath: String?): List<Server> {
         scheme?.let {
             servers.forEach { server: Server ->
                 overrideScheme(scheme.toValue(), server)
@@ -282,7 +278,7 @@ class SpecificationServiceImpl : SpecificationService {
             }
             servers.forEach { server: Server -> prefixPath(basePath, server) }
         }
-        combined.servers = servers.distinct()
+        return servers.distinct()
     }
 
     /**
