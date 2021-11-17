@@ -3,9 +3,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
-### Added
-- ...
+## [2.0.2] - 2021-11-17
+### Fixed
+- fix: resolves some compiler warnings.
+- fix: initialises scripts once even if referenced multiple times.
+- fix: restores behaviour of deprecated params property.
 
 ## [2.0.1] - 2021-11-15
 ### Changed
