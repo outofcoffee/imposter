@@ -101,17 +101,21 @@ class ScriptedResponseServiceImpl @Inject constructor(
     }
 
     private fun initScripts(allPluginConfigs: List<PluginConfig>) {
+        val allScripts = mutableListOf<Pair<PluginConfig, ResponseConfig>>()
+
         // root resource
         allPluginConfigs.filter { it is ResponseConfigHolder }.forEach { config ->
-            val responseConfigHolder = config as ResponseConfigHolder
-            initScript(config, responseConfigHolder.responseConfig)
+            allScripts += config to (config as ResponseConfigHolder).responseConfig
         }
         // child resources
         allPluginConfigs.filter { it is ResourcesHolder<*> }.forEach { config ->
             (config as ResourcesHolder<*>).resources?.forEach { resource ->
-                initScript(config, resource.responseConfig)
+                allScripts += config to resource.responseConfig
             }
         }
+
+        allScripts.distinctBy { (_, responseConfig) -> responseConfig.scriptFile }
+            .forEach { (config, responseConfig) -> initScript(config, responseConfig) }
     }
 
     fun initScript(pluginConfig: PluginConfig, responseConfig: ResponseConfig) {
