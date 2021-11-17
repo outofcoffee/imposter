@@ -72,7 +72,7 @@ class OverrideStatusCodeTest : BaseVerticleTest() {
      * Should return a specific status code for a simple request path.
      */
     @Test
-    fun testSetStatusCodeForSimplePath(testContext: TestContext?) {
+    fun testSetStatusCodeForSimplePath() {
         RestAssured.given()
             .log().ifValidationFails()
             .contentType(ContentType.JSON)
@@ -89,7 +89,7 @@ class OverrideStatusCodeTest : BaseVerticleTest() {
      * Should return a specific status code for a path parameter.
      */
     @Test
-    fun testSetStatusCodeForPathParam(testContext: TestContext?) {
+    fun testSetStatusCodeForPathParam() {
         RestAssured.given()
             .log().ifValidationFails()
             .accept(ContentType.JSON)
@@ -103,7 +103,7 @@ class OverrideStatusCodeTest : BaseVerticleTest() {
      * Should return a specific status code for a query parameter.
      */
     @Test
-    fun testSetStatusCodeForQueryParam(testContext: TestContext?) {
+    fun testSetStatusCodeForQueryParam() {
         RestAssured.given()
             .log().ifValidationFails()
             .accept(ContentType.JSON)
@@ -117,7 +117,7 @@ class OverrideStatusCodeTest : BaseVerticleTest() {
      * Should return a specific status code for a request header.
      */
     @Test
-    fun testSetStatusCodeForRequestHeader(testContext: TestContext?) {
+    fun testSetStatusCodeForRequestHeader() {
         RestAssured.given()
             .log().ifValidationFails()
             .`when`()
@@ -132,7 +132,7 @@ class OverrideStatusCodeTest : BaseVerticleTest() {
      * the case of the request header key differs from that of the configuration.
      */
     @Test
-    fun testSetStatusCodeForRequestHeaderCaseInsensitive(testContext: TestContext?) {
+    fun testSetStatusCodeForRequestHeaderCaseInsensitive() {
         RestAssured.given()
             .log().ifValidationFails()
             .`when`() // header key deliberately uppercase in request, but lowercase in config
@@ -148,7 +148,7 @@ class OverrideStatusCodeTest : BaseVerticleTest() {
      * Should return a specific status code for a path with a placeholder.
      */
     @Test
-    fun testSetStatusCodeForPathWithPlaceholder(testContext: TestContext?) {
+    fun testSetStatusCodeForPathWithPlaceholder() {
         RestAssured.given()
             .log().ifValidationFails()
             .contentType(ContentType.JSON)

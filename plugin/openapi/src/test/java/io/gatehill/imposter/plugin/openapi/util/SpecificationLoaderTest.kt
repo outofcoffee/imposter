@@ -184,7 +184,7 @@ class SpecificationLoaderTest {
         @Throws(Exception::class)
         private fun <T> blockWait(handlerConsumer: Consumer<Handler<T>>) {
             val latch = CountDownLatch(1)
-            val handler = Handler { event: T -> latch.countDown() }
+            val handler = Handler { _: T -> latch.countDown() }
             handlerConsumer.accept(handler)
             latch.await()
         }

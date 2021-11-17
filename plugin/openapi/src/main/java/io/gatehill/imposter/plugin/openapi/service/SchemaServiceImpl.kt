@@ -134,6 +134,7 @@ class SchemaServiceImpl : SchemaService {
                 val exampleMap = collectSchemaExample(spec, s)
                 if (Objects.nonNull(exampleMap) && exampleMap is Map<*, *>) {
                     // FIXME code defensively around this cast
+                    @Suppress("UNCHECKED_CAST")
                     combinedExampleProperties.putAll((exampleMap as Map<String, Any>?)!!)
                 }
             }

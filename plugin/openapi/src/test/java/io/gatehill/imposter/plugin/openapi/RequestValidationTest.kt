@@ -73,7 +73,7 @@ class RequestValidationTest : BaseVerticleTest() {
      * Request should pass request validation.
      */
     @Test
-    fun testValidRequest(testContext: TestContext?) {
+    fun testValidRequest() {
         RestAssured.given()
             .log().ifValidationFails()
             .contentType(ContentType.JSON)
@@ -91,7 +91,7 @@ class RequestValidationTest : BaseVerticleTest() {
      * Request should fail request validation due to nonconformant request body.
      */
     @Test
-    fun testMissingRequestBody(testContext: TestContext?) {
+    fun testMissingRequestBody() {
         RestAssured.given()
             .log().ifValidationFails()
             .contentType(ContentType.JSON)
@@ -109,7 +109,7 @@ class RequestValidationTest : BaseVerticleTest() {
      * Request should fail request validation due to nonconformant request body.
      */
     @Test
-    fun testInvalidRequestBody(testContext: TestContext?) {
+    fun testInvalidRequestBody() {
         RestAssured.given()
             .log().ifValidationFails()
             .contentType(ContentType.JSON)
@@ -131,7 +131,7 @@ class RequestValidationTest : BaseVerticleTest() {
      * Request should fail request validation due to missing header.
      */
     @Test
-    fun testMissingHeader(testContext: TestContext?) {
+    fun testMissingHeader() {
         RestAssured.given()
             .log().ifValidationFails()
             .contentType(ContentType.JSON)
@@ -149,7 +149,7 @@ class RequestValidationTest : BaseVerticleTest() {
      * Request should fail request validation due to nonconformant path parameter.
      */
     @Test
-    fun testInvalidPathParameter(testContext: TestContext?) {
+    fun testInvalidPathParameter() {
         RestAssured.given()
             .log().ifValidationFails()
             .contentType(ContentType.JSON)
@@ -167,7 +167,7 @@ class RequestValidationTest : BaseVerticleTest() {
      * Request should fail request validation due to missing request parameter.
      */
     @Test
-    fun testMissingRequestParameter(testContext: TestContext?) {
+    fun testMissingRequestParameter() {
         RestAssured.given()
             .log().ifValidationFails()
             .accept(ContentType.JSON)
@@ -182,7 +182,7 @@ class RequestValidationTest : BaseVerticleTest() {
      * Request should pass request validation due to provided request parameter.
      */
     @Test
-    fun testValidRequestParameter(testContext: TestContext?) {
+    fun testValidRequestParameter() {
         RestAssured.given()
             .log().ifValidationFails()
             .accept(ContentType.JSON)
@@ -202,7 +202,7 @@ class RequestValidationTest : BaseVerticleTest() {
      * Request should pass request validation due to provided request parameter.
      */
     @Test
-    fun testPathParamsNotTreatedAsQueryParams(testContext: TestContext?) {
+    fun testPathParamsNotTreatedAsQueryParams() {
         RestAssured.given()
             .log().ifValidationFails()
             .accept(ContentType.JSON)
@@ -223,7 +223,7 @@ class RequestValidationTest : BaseVerticleTest() {
      * Request should fail request validation due to missing request parameter.
      */
     @Test
-    fun testInvalidExtraQueryParam(testContext: TestContext?) {
+    fun testInvalidExtraQueryParam() {
         RestAssured.given()
             .log().ifValidationFails()
             .accept(ContentType.JSON)
