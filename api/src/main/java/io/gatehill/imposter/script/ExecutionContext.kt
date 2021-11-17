@@ -68,9 +68,9 @@ class ExecutionContext(
         if (key == "params" && !containsKey("params")) {
             LOGGER.warn(
                 "DEPRECATION NOTICE: 'context.params' is deprecated and will be removed " +
-                        "in a future version. Use 'context.request.queryParams' instead."
+                        "in a future version. Use 'context.request.queryParams' or 'context.request.pathParams' instead."
             )
-            put("params", request.queryParams)
+            put("params", (request.pathParams + request.queryParams))
 
         } else if (key == "uri" && !containsKey("uri")) {
             LOGGER.warn(
@@ -136,9 +136,9 @@ class ExecutionContext(
             get() {
                 LOGGER.warn(
                     "DEPRECATION NOTICE: 'context.request.params' is deprecated and will be removed " +
-                            "in a future version. Use 'context.request.queryParams' instead."
+                            "in a future version. Use 'context.request.queryParams' or 'context.request.pathParams' instead."
                 )
-                return queryParams
+                return (pathParams + queryParams)
             }
 
         override fun toString(): String {
