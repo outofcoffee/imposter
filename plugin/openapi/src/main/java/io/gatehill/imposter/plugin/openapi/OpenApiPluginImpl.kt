@@ -76,8 +76,6 @@ import io.vertx.ext.web.Router
 import io.vertx.ext.web.RoutingContext
 import io.vertx.ext.web.handler.StaticHandler
 import org.apache.logging.log4j.LogManager
-import java.net.URI
-import java.net.URISyntaxException
 import java.util.function.Consumer
 import javax.inject.Inject
 import kotlin.collections.component1
@@ -124,11 +122,13 @@ class OpenApiPluginImpl @Inject constructor(
     override fun configureRoutes(router: Router) {
         parseSpecs(router)
 
+        val deriveBasePathFromServerEntries = configs.any { it.isUseServerPathAsBaseUrl }
+
         // serve specification and UI
         LOGGER.debug("Adding specification UI at: {}{}", imposterConfig.serverUrl, SPECIFICATION_PATH)
         router.get(COMBINED_SPECIFICATION_PATH).handler(
             resourceService.handleRoute(imposterConfig, configs, vertx) { routingContext: RoutingContext ->
-                handleCombinedSpec(routingContext)
+                handleCombinedSpec(routingContext, deriveBasePathFromServerEntries)
             }
         )
         router.getWithRegex("$SPECIFICATION_PATH$").handler(
@@ -174,7 +174,8 @@ class OpenApiPluginImpl @Inject constructor(
         pathConfig: PathItem
     ) {
         pathConfig.readOperationsMap().forEach { (httpMethod: PathItem.HttpMethod, operation: Operation) ->
-            val fullPath = buildFullPath(buildBasePath(config, spec), path)
+            val basePath = specificationService.determineBasePathFromSpec(spec, config.isUseServerPathAsBaseUrl)
+            val fullPath = buildFullPath(basePath, path)
             LOGGER.debug("Adding mock endpoint: {} -> {}", httpMethod, fullPath)
 
             // convert an io.swagger.models.HttpMethod to an io.vertx.core.http.HttpMethod
@@ -208,41 +209,15 @@ class OpenApiPluginImpl @Inject constructor(
     }
 
     /**
-     * Construct the base path, optionally dependent on the server path,
-     * from which the example response will be served.
-     *
-     * @param config the mock configuration
-     * @param spec   the OpenAPI specification
-     * @return the base path
-     */
-    private fun buildBasePath(config: OpenApiPluginConfig, spec: OpenAPI): String {
-        if (config.isUseServerPathAsBaseUrl) {
-            // Treat the mock server as substitute for 'the' server.
-            // Note: OASv2 'basePath' is converted to OASv3 'server' entries.
-            spec.servers.firstOrNull()?.let { firstServer ->
-                val url = firstServer.url ?: ""
-                if (url.length > 1) {
-                    // attempt to parse as URI and extract path
-                    try {
-                        return URI(url).path
-                    } catch (ignored: URISyntaxException) {
-                    }
-                }
-            }
-        }
-        return ""
-    }
-
-    /**
      * Returns an OpenAPI specification combining all the given specifications.
      *
      * @param routingContext the Vert.x routing context
      */
-    private fun handleCombinedSpec(routingContext: RoutingContext) {
+    private fun handleCombinedSpec(routingContext: RoutingContext, deriveBasePathFromServerEntries: Boolean) {
         try {
             routingContext.response()
                 .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_JSON)
-                .end(specificationService.getCombinedSpecSerialised(imposterConfig, allSpecs))
+                .end(specificationService.getCombinedSpecSerialised(allSpecs, deriveBasePathFromServerEntries))
         } catch (e: Exception) {
             routingContext.fail(e)
         }
@@ -264,7 +239,7 @@ class OpenApiPluginImpl @Inject constructor(
         // statically calculate as much as possible
         val statusCodeFactory = buildStatusCodeCalculator(operation)
         return resourceService.handleRoute(imposterConfig, pluginConfig, vertx) { routingContext: RoutingContext ->
-            if (!specificationService.isValidRequest(imposterConfig, pluginConfig, routingContext, allSpecs)) {
+            if (!specificationService.isValidRequest(pluginConfig, routingContext, allSpecs)) {
                 return@handleRoute
             }
 

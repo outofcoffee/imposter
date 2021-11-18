@@ -69,22 +69,25 @@ import java.net.URI
 import java.net.URISyntaxException
 import java.util.*
 import java.util.concurrent.ExecutionException
+import javax.inject.Inject
 
 /**
  * @author Pete Cornish
  */
-class SpecificationServiceImpl : SpecificationService {
+class SpecificationServiceImpl @Inject constructor(
+    private val imposterConfig: ImposterConfig
+) : SpecificationService {
     private val cache = CacheBuilder.newBuilder().build<String, Any>()
     private val reportFormatter = SimpleValidationReportFormat.getInstance()
 
     @Throws(ExecutionException::class)
-    override fun getCombinedSpec(imposterConfig: ImposterConfig, allSpecs: List<OpenAPI>): OpenAPI {
+    override fun getCombinedSpec(allSpecs: List<OpenAPI>, deriveBasePathFromServerEntries: Boolean): OpenAPI {
         return cache.get("combinedSpecObject") {
             try {
                 val scheme = Scheme.forValue(imposterConfig.pluginArgs!![ARG_SCHEME])
                 val basePath = imposterConfig.pluginArgs!![ARG_BASEPATH]
                 val title = imposterConfig.pluginArgs!![ARG_TITLE]
-                return@get combineSpecifications(allSpecs, basePath, scheme, title)
+                return@get combineSpecs(allSpecs, basePath, scheme, title, deriveBasePathFromServerEntries)
             } catch (e: Exception) {
                 throw ExecutionException(e)
             }
@@ -92,21 +95,24 @@ class SpecificationServiceImpl : SpecificationService {
     }
 
     @Throws(ExecutionException::class)
-    override fun getCombinedSpecSerialised(imposterConfig: ImposterConfig, allSpecs: List<OpenAPI>): String {
+    override fun getCombinedSpecSerialised(allSpecs: List<OpenAPI>, deriveBasePathFromServerEntries: Boolean): String {
         return cache.get("combinedSpecSerialised") {
             try {
-                return@get MapUtil.JSON_MAPPER.writeValueAsString(getCombinedSpec(imposterConfig, allSpecs))
+                return@get MapUtil.JSON_MAPPER.writeValueAsString(
+                    getCombinedSpec(allSpecs, deriveBasePathFromServerEntries)
+                )
             } catch (e: JsonGenerationException) {
                 throw ExecutionException(e)
             }
         } as String
     }
 
-    override fun combineSpecifications(
+    override fun combineSpecs(
         specs: List<OpenAPI>,
         basePath: String?,
         scheme: Scheme?,
-        title: String?
+        title: String?,
+        deriveBasePathFromServerEntries: Boolean
     ): OpenAPI {
         Objects.requireNonNull(specs, "Input specifications must not be null")
         LOGGER.debug("Generating combined specification from {} inputs", specs.size)
@@ -115,20 +121,20 @@ class SpecificationServiceImpl : SpecificationService {
         val info = Info()
         combined.info = info
 
-        val servers: MutableList<Server> = mutableListOf()
+        val servers = mutableListOf<Server>()
         combined.servers = servers
 
-        val security: MutableList<SecurityRequirement> = mutableListOf()
+        val security = mutableListOf<SecurityRequirement>()
         combined.security = security
 
         val paths = Paths()
         combined.paths = paths
 
-        val tags: MutableList<Tag> = mutableListOf()
+        val tags = mutableListOf<Tag>()
         combined.tags = tags
 
-        val allExternalDocs: MutableList<ExternalDocumentation> = mutableListOf()
-        val allComponents: MutableList<Components> = mutableListOf()
+        val allExternalDocs = mutableListOf<ExternalDocumentation>()
+        val allComponents = mutableListOf<Components>()
         val description = StringBuilder().append("This specification includes the following APIs:")
 
         specs.forEach { spec: OpenAPI ->
@@ -174,7 +180,7 @@ class SpecificationServiceImpl : SpecificationService {
         components.schemas = aggregate(allComponents) { it.schemas }
         components.securitySchemes = aggregate(allComponents) { it.securitySchemes }
         combined.components = components
-        combined.servers = buildServerList(servers, scheme, basePath)
+        combined.servers = buildServerList(deriveBasePathFromServerEntries, servers, scheme, basePath)
         combined.paths = paths
         combined.security = security
         combined.tags = tags
@@ -182,7 +188,6 @@ class SpecificationServiceImpl : SpecificationService {
     }
 
     override fun isValidRequest(
-        imposterConfig: ImposterConfig,
         pluginConfig: OpenApiPluginConfig,
         routingContext: RoutingContext,
         allSpecs: List<OpenAPI>
@@ -200,7 +205,7 @@ class SpecificationServiceImpl : SpecificationService {
         }
 
         val validator: OpenApiInteractionValidator = try {
-            getValidator(imposterConfig, pluginConfig, allSpecs)
+            getValidator(pluginConfig, allSpecs)
         } catch (e: ExecutionException) {
             routingContext.fail(RuntimeException("Error building spec validator", e))
             return false
@@ -210,12 +215,8 @@ class SpecificationServiceImpl : SpecificationService {
         val requestBuilder = SimpleRequest.Builder(request.method().toString(), request.path())
             .withBody(routingContext.bodyAsString)
 
-        routingContext.queryParams().forEach { p ->
-            requestBuilder.withQueryParam(p.key, p.value)
-        }
-        request.headers().forEach { h ->
-            requestBuilder.withHeader(h.key, h.value)
-        }
+        routingContext.queryParams().forEach { p -> requestBuilder.withQueryParam(p.key, p.value) }
+        request.headers().forEach { h -> requestBuilder.withHeader(h.key, h.value) }
 
         val report = validator.validateRequest(requestBuilder.build())
         if (report.messages.isNotEmpty()) {
@@ -243,13 +244,9 @@ class SpecificationServiceImpl : SpecificationService {
      * Returns the specification validator from cache, creating it first on cache miss.
      */
     @Throws(ExecutionException::class)
-    private fun getValidator(
-        imposterConfig: ImposterConfig,
-        pluginConfig: OpenApiPluginConfig,
-        allSpecs: List<OpenAPI>
-    ): OpenApiInteractionValidator {
+    private fun getValidator(pluginConfig: OpenApiPluginConfig, allSpecs: List<OpenAPI>): OpenApiInteractionValidator {
         return cache.get("specValidator") {
-            val combined = getCombinedSpec(imposterConfig, allSpecs)
+            val combined = getCombinedSpec(allSpecs, pluginConfig.isUseServerPathAsBaseUrl)
             val builder = OpenApiInteractionValidator.createFor(combined)
 
             // custom validation levels
@@ -265,20 +262,53 @@ class SpecificationServiceImpl : SpecificationService {
         } as OpenApiInteractionValidator
     }
 
-    private fun buildServerList(servers: MutableList<Server>, scheme: Scheme?, basePath: String?): List<Server> {
+    private fun buildServerList(
+        deriveBasePathFromServerEntries: Boolean,
+        servers: List<Server>,
+        scheme: Scheme?,
+        basePath: String?
+    ): List<Server> {
+        val finalServers = servers.toMutableList()
+
         scheme?.let {
-            servers.forEach { server: Server ->
+            finalServers.forEach { server: Server ->
                 overrideScheme(scheme.toValue(), server)
             }
         }
         basePath?.let {
-            if (servers.isEmpty()) {
-                val server = Server()
-                servers.add(server)
+            if (finalServers.isEmpty()) {
+                finalServers.add(Server())
             }
-            servers.forEach { server: Server -> prefixPath(basePath, server) }
+            finalServers.forEach { server: Server -> prefixPath(basePath, server) }
         }
-        return servers.distinct()
+
+        // add a base path for the imposter server URL and each server entry's path component
+        val mockEndpoints = mutableListOf<Server>()
+        finalServers.forEach { server ->
+            mockEndpoints += Server().apply {
+                this.url = URI.create(
+                    imposterConfig.serverUrl + determineBasePathFromServer(deriveBasePathFromServerEntries, server)
+                ).toString()
+            }
+        }
+        // prepend mock endpoints to servers list
+        for (i in 0 until mockEndpoints.size) {
+            finalServers.add(i, mockEndpoints[i])
+        }
+
+        return finalServers.distinct()
+    }
+
+    /**
+     * Combine the non-null maps of each `Components` object into a single map.
+     */
+    private fun <H> aggregate(
+        allHolders: List<Components>,
+        mapSupplier: (Components) -> Map<String, H>?
+    ): Map<String, H> {
+        val all: MutableMap<String, H> = mutableMapOf()
+        allHolders.mapNotNull(mapSupplier).forEach { m -> all.putAll(m) }
+        return all
     }
 
     /**
@@ -334,21 +364,49 @@ class SpecificationServiceImpl : SpecificationService {
     }
 
     /**
-     * Combine the non-null maps of each `Components` object into a single map.
+     * Construct the base path from which the example response will be served.
+     *
+     * This attempts to derive the path from the first `server` entry in the spec, if one is present
+     * and `ImposterConfig.isUseServerPathAsBaseUrl == true`.
+     *
+     * @param deriveBasePathFromServerEntries whether to derive the path from server entries in the spec
+     * @param spec   the OpenAPI specification
+     * @return the base path
      */
-    private fun <H> aggregate(
-        allHolders: List<Components>,
-        mapSupplier: (Components) -> Map<String, H>?
-    ): Map<String, H> {
-        val all: MutableMap<String, H> = mutableMapOf()
-        allHolders.mapNotNull(mapSupplier).forEach { m -> all.putAll(m) }
-        return all
+    override fun determineBasePathFromSpec(spec: OpenAPI, deriveBasePathFromServerEntries: Boolean): String {
+        spec.servers.firstOrNull()?.let { firstServer ->
+            return determineBasePathFromServer(deriveBasePathFromServerEntries, firstServer)
+        }
+        return ""
+    }
+
+    /**
+     * Construct the base path from which the example response will be served.
+     *
+     * This attempts to derive the path from the `server`, if `ImposterConfig.isUseServerPathAsBaseUrl == true`.
+     *
+     * @param deriveBasePathFromServerEntries whether to derive the path from server entries in the spec
+     * @param server   the Server configuration
+     * @return the base path
+     */
+    private fun determineBasePathFromServer(deriveBasePathFromServerEntries: Boolean, server: Server): String {
+        if (deriveBasePathFromServerEntries) {
+            // Treat the mock server as substitute for 'the' server.
+            // Note: OASv2 'basePath' is converted to OASv3 'server' entries.
+            val url = server.url ?: ""
+            if (url.length > 1) {
+                // attempt to parse as URI and extract path
+                try {
+                    return URI(url).path
+                } catch (ignored: URISyntaxException) {
+                }
+            }
+        }
+        return ""
     }
 
     companion object {
-        private val LOGGER = LogManager.getLogger(
-            SpecificationServiceImpl::class.java
-        )
+        private val LOGGER = LogManager.getLogger(SpecificationServiceImpl::class.java)
         private const val DEFAULT_TITLE = "Imposter Mock APIs"
         private const val ARG_BASEPATH = "openapi.basepath"
         private const val ARG_SCHEME = "openapi.scheme"
