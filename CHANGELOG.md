@@ -3,9 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [2.1.0] - 2021-11-23
 ### Added
-- ...
+- feat: adds a server entry to the combined OpenAPI spec for the mock endpoint.
+- feat: adds support for CLI boot. CLI boot is currently experimental, but supports hot-reload of configuration and other [CLI features](https://github.com/gatehill/imposter-cli).
 
 ## [2.0.2] - 2021-11-17
 ### Fixed
