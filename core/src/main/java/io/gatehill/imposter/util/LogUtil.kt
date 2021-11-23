@@ -57,7 +57,7 @@ object LogUtil {
      * The prefix for script logger names.
      */
     const val LOGGER_SCRIPT_PACKAGE = "script"
-    private val LOGGER_PACKAGES = arrayOf<String?>(
+    private val LOGGER_PACKAGES = arrayOf(
         ConfigUtil.CURRENT_PACKAGE,
         LOGGER_SCRIPT_PACKAGE
     )
@@ -77,7 +77,7 @@ object LogUtil {
      *
      * @param logLevel the log level
      */
-    fun configureLogging(logLevel: String?) {
+    fun configureLogging(logLevel: String) {
         val context = LogManager.getContext(false) as LoggerContext
         for (loggerPackage in LOGGER_PACKAGES) {
             val logger = context.configuration.getLoggerConfig(loggerPackage)
