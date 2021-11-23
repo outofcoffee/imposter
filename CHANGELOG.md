@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- ...
+
 ## [2.1.0] - 2021-11-23
 ### Added
 - feat: adds a server entry to the combined OpenAPI spec for the mock endpoint.
