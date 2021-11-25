@@ -44,6 +44,7 @@ package io.gatehill.imposter.cmd
 
 import io.gatehill.imposter.plugin.internal.MetaInfPluginDetectorImpl
 import io.gatehill.imposter.server.ConfigHolder
+import io.gatehill.imposter.server.vertxweb.VertxWebServerFactoryImpl
 import io.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PASSWORD
 import io.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PATH
 import io.gatehill.imposter.util.EnvVars.Companion.getEnv
@@ -51,7 +52,6 @@ import io.gatehill.imposter.util.FileUtil.CLASSPATH_PREFIX
 import io.gatehill.imposter.util.HttpUtil.BIND_ALL_HOSTS
 import io.gatehill.imposter.util.HttpUtil.DEFAULT_HTTPS_LISTEN_PORT
 import io.gatehill.imposter.util.HttpUtil.DEFAULT_HTTP_LISTEN_PORT
-import io.gatehill.imposter.util.HttpUtil.DEFAULT_SERVER_FACTORY
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.MetaUtil.readVersion
 import io.vertx.core.logging.SLF4JLogDelegateFactory
@@ -103,7 +103,7 @@ class ImposterLauncher(args: Array<String>) {
     private var pluginArgs = arrayOf<String>()
 
     @Option(name = "--serverFactory", usage = "Fully qualified class for server factory")
-    private var serverFactory: String = DEFAULT_SERVER_FACTORY
+    private var serverFactory: String = VertxWebServerFactoryImpl::class.java.canonicalName
 
     companion object {
         private val LOGGER = LogManager.getLogger(ImposterLauncher::class.java)

@@ -40,62 +40,35 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.util
+package io.gatehill.imposter.server.vertxweb.impl
 
-import com.google.common.base.Strings
-import io.gatehill.imposter.plugin.config.ContentTypedConfig
-import io.gatehill.imposter.plugin.config.resource.MethodResourceConfig
+import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.plugin.config.resource.ResourceMethod
-import java.util.regex.Pattern
+import io.gatehill.imposter.server.vertxweb.util.VertxResourceUtil
+import io.gatehill.imposter.util.CollectionUtil
+import io.vertx.core.http.HttpServerRequest
 
 /**
  * @author Pete Cornish
  */
-object ResourceUtil {
-    const val RESPONSE_CONFIG_HOLDER_KEY = "io.gatehill.imposter.responseConfigHolder"
-    const val RC_REQUEST_ID_KEY = "request.id"
-
-    private val PATH_PARAM_PLACEHOLDER = Pattern.compile("\\{([a-zA-Z0-9._\\-]+)}")
-
-    /**
-     * Convert the OpenAPI style path to one with colon-prefixed parameter placeholders.
-     *
-     * For example:
-     * `
-     * /example/{foo}
-    ` *
-     *
-     * will be converted to:
-     * `
-     * /example/:foo
-    ` *
-     *
-     * @param path the OpenAPI path
-     * @return the converted path
-     */
-    fun convertPathFromOpenApi(openapiPath: String?): String? {
-        var path = openapiPath
-        if (!Strings.isNullOrEmpty(path)) {
-            var matchFound: Boolean
-            do {
-                val matcher = PATH_PARAM_PLACEHOLDER.matcher(path)
-                matchFound = matcher.find()
-                if (matchFound) {
-                    path = matcher.replaceFirst(":" + matcher.group(1))
-                }
-            } while (matchFound)
-        }
-        return path
+class VertxHttpRequest(private val vertxRequest: HttpServerRequest) : HttpRequest {
+    override fun path(): String {
+        return vertxRequest.path() ?: ""
     }
 
-    /**
-     * Extracts the resource method.
-     */
-    fun extractResourceMethod(resourceConfig: ContentTypedConfig?): ResourceMethod {
-        return if (resourceConfig is MethodResourceConfig) {
-            return (resourceConfig as MethodResourceConfig).method ?: ResourceMethod.GET
-        } else {
-            ResourceMethod.GET
-        }
+    override fun method(): ResourceMethod {
+        return VertxResourceUtil.convertMethodFromVertx(vertxRequest.method())
+    }
+
+    override fun absoluteURI(): String {
+        return vertxRequest.absoluteURI()
+    }
+
+    override fun headers(): Map<String, String> {
+        return CollectionUtil.asMap(vertxRequest.headers())
+    }
+
+    override fun getHeader(headerKey: String): String? {
+        return vertxRequest.getHeader(headerKey)
     }
 }

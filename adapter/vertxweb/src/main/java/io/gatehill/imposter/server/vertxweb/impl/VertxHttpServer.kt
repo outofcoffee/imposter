@@ -40,62 +40,17 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.util
+package io.gatehill.imposter.server.vertxweb.impl
 
-import com.google.common.base.Strings
-import io.gatehill.imposter.plugin.config.ContentTypedConfig
-import io.gatehill.imposter.plugin.config.resource.MethodResourceConfig
-import io.gatehill.imposter.plugin.config.resource.ResourceMethod
-import java.util.regex.Pattern
+import io.gatehill.imposter.server.HttpServer
+import io.vertx.core.AsyncResult
+import io.vertx.core.Handler
 
 /**
  * @author Pete Cornish
  */
-object ResourceUtil {
-    const val RESPONSE_CONFIG_HOLDER_KEY = "io.gatehill.imposter.responseConfigHolder"
-    const val RC_REQUEST_ID_KEY = "request.id"
-
-    private val PATH_PARAM_PLACEHOLDER = Pattern.compile("\\{([a-zA-Z0-9._\\-]+)}")
-
-    /**
-     * Convert the OpenAPI style path to one with colon-prefixed parameter placeholders.
-     *
-     * For example:
-     * `
-     * /example/{foo}
-    ` *
-     *
-     * will be converted to:
-     * `
-     * /example/:foo
-    ` *
-     *
-     * @param path the OpenAPI path
-     * @return the converted path
-     */
-    fun convertPathFromOpenApi(openapiPath: String?): String? {
-        var path = openapiPath
-        if (!Strings.isNullOrEmpty(path)) {
-            var matchFound: Boolean
-            do {
-                val matcher = PATH_PARAM_PLACEHOLDER.matcher(path)
-                matchFound = matcher.find()
-                if (matchFound) {
-                    path = matcher.replaceFirst(":" + matcher.group(1))
-                }
-            } while (matchFound)
-        }
-        return path
-    }
-
-    /**
-     * Extracts the resource method.
-     */
-    fun extractResourceMethod(resourceConfig: ContentTypedConfig?): ResourceMethod {
-        return if (resourceConfig is MethodResourceConfig) {
-            return (resourceConfig as MethodResourceConfig).method ?: ResourceMethod.GET
-        } else {
-            ResourceMethod.GET
-        }
+class VertxHttpServer(private val vertxServer: io.vertx.core.http.HttpServer) : HttpServer {
+    override fun close(onCompletion: Handler<AsyncResult<Void>>) {
+        vertxServer.close(onCompletion)
     }
 }

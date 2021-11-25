@@ -15,6 +15,10 @@ project(':server').name = 'imposter-server'
 include ':test'
 project(':test').name = 'imposter-test'
 
+// adapters
+include ':adapter:vertxweb'
+project(':adapter:vertxweb').name = 'adapter-vertxweb'
+
 // scripting
 include ':scripting:common'
 project(':scripting:common').name = 'scripting-common'

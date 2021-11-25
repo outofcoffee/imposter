@@ -12,6 +12,7 @@ compileJava {
 dependencies {
     api project(':imposter-core')
     api project(':imposter-server')
+    implementation project(':adapter:adapter-vertxweb')
 
     // test
     api "junit:junit:$version_junit"

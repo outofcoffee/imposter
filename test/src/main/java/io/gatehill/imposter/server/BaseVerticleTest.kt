@@ -44,7 +44,7 @@ package io.gatehill.imposter.server
 
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.plugin.Plugin
-import io.gatehill.imposter.util.HttpUtil.DEFAULT_SERVER_FACTORY
+import io.gatehill.imposter.server.vertxweb.VertxWebServerFactoryImpl
 import io.gatehill.imposter.util.MetricsUtil.configureMetrics
 import io.vertx.core.VertxOptions
 import io.vertx.ext.unit.TestContext
@@ -85,7 +85,7 @@ abstract class BaseVerticleTest {
 
     @Throws(Exception::class)
     protected open fun configure(imposterConfig: ImposterConfig) {
-        imposterConfig.serverFactory = DEFAULT_SERVER_FACTORY
+        imposterConfig.serverFactory = VertxWebServerFactoryImpl::class.java.canonicalName
         imposterConfig.host = host
         imposterConfig.listenPort = findFreePort()
         imposterConfig.plugins = arrayOf(pluginClass.canonicalName)

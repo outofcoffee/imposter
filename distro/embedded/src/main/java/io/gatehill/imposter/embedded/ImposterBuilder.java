@@ -48,6 +48,7 @@ import io.gatehill.imposter.plugin.Plugin;
 import io.gatehill.imposter.script.listener.ScriptListener;
 import io.gatehill.imposter.server.ConfigHolder;
 import io.gatehill.imposter.server.ImposterVerticle;
+import io.gatehill.imposter.server.vertxweb.VertxWebServerFactoryImpl;
 import io.gatehill.imposter.service.script.EmbeddedScriptService;
 import io.gatehill.imposter.util.FeatureUtil;
 import io.gatehill.imposter.util.InjectorUtil;
@@ -64,7 +65,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import static io.gatehill.imposter.util.HttpUtil.DEFAULT_SERVER_FACTORY;
 import static java.util.Collections.emptyMap;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -207,7 +207,7 @@ public class ImposterBuilder<M extends MockEngine, SELF extends ImposterBuilder<
     }
 
     private void configure(ImposterConfig imposterConfig, int port) {
-        imposterConfig.setServerFactory(DEFAULT_SERVER_FACTORY);
+        imposterConfig.setServerFactory(VertxWebServerFactoryImpl.class.getCanonicalName());
         imposterConfig.setHost(HOST);
         imposterConfig.setListenPort(port);
         imposterConfig.setPlugins(new String[]{pluginClass.getCanonicalName()});

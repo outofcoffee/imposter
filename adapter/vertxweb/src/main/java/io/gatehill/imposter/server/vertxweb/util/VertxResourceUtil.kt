@@ -40,62 +40,37 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.util
+package io.gatehill.imposter.server.vertxweb.util
 
-import com.google.common.base.Strings
-import io.gatehill.imposter.plugin.config.ContentTypedConfig
-import io.gatehill.imposter.plugin.config.resource.MethodResourceConfig
+import com.google.common.collect.BiMap
+import com.google.common.collect.HashBiMap
 import io.gatehill.imposter.plugin.config.resource.ResourceMethod
-import java.util.regex.Pattern
+import io.vertx.core.http.HttpMethod
 
 /**
  * @author Pete Cornish
  */
-object ResourceUtil {
-    const val RESPONSE_CONFIG_HOLDER_KEY = "io.gatehill.imposter.responseConfigHolder"
-    const val RC_REQUEST_ID_KEY = "request.id"
-
-    private val PATH_PARAM_PLACEHOLDER = Pattern.compile("\\{([a-zA-Z0-9._\\-]+)}")
+object VertxResourceUtil {
+    private val METHODS: BiMap<ResourceMethod, HttpMethod?> = HashBiMap.create()
 
     /**
-     * Convert the OpenAPI style path to one with colon-prefixed parameter placeholders.
-     *
-     * For example:
-     * `
-     * /example/{foo}
-    ` *
-     *
-     * will be converted to:
-     * `
-     * /example/:foo
-    ` *
-     *
-     * @param path the OpenAPI path
-     * @return the converted path
+     * Converts [ResourceMethod]s to [HttpMethod]s.
      */
-    fun convertPathFromOpenApi(openapiPath: String?): String? {
-        var path = openapiPath
-        if (!Strings.isNullOrEmpty(path)) {
-            var matchFound: Boolean
-            do {
-                val matcher = PATH_PARAM_PLACEHOLDER.matcher(path)
-                matchFound = matcher.find()
-                if (matchFound) {
-                    path = matcher.replaceFirst(":" + matcher.group(1))
-                }
-            } while (matchFound)
-        }
-        return path
-    }
+    fun convertMethodToVertx(method: ResourceMethod): HttpMethod =
+        METHODS[method] ?: throw UnsupportedOperationException("Unknown method: $method")
 
-    /**
-     * Extracts the resource method.
-     */
-    fun extractResourceMethod(resourceConfig: ContentTypedConfig?): ResourceMethod {
-        return if (resourceConfig is MethodResourceConfig) {
-            return (resourceConfig as MethodResourceConfig).method ?: ResourceMethod.GET
-        } else {
-            ResourceMethod.GET
-        }
+    fun convertMethodFromVertx(method: HttpMethod): ResourceMethod =
+        METHODS.inverse()[method] ?: throw UnsupportedOperationException("Unknown method: $method")
+
+    init {
+        METHODS[ResourceMethod.GET] = HttpMethod.GET
+        METHODS[ResourceMethod.HEAD] = HttpMethod.HEAD
+        METHODS[ResourceMethod.POST] = HttpMethod.POST
+        METHODS[ResourceMethod.PUT] = HttpMethod.PUT
+        METHODS[ResourceMethod.PATCH] = HttpMethod.PATCH
+        METHODS[ResourceMethod.DELETE] = HttpMethod.DELETE
+        METHODS[ResourceMethod.CONNECT] = HttpMethod.CONNECT
+        METHODS[ResourceMethod.OPTIONS] = HttpMethod.OPTIONS
+        METHODS[ResourceMethod.TRACE] = HttpMethod.TRACE
     }
 }

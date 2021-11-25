@@ -155,10 +155,10 @@ object ConfigUtil {
             val config = lookupMapper(configFile).readValue(parsedContents, configClass)!!
             config.parentDir = configFile.parentFile
 
-            // convert OpenAPI format path parameters to Vert.x format
+            // convert any OpenAPI format path parameters
             if (convertPathParameters && config is ResourcesHolder<*>) {
                 (config as ResourcesHolder<*>).resources?.forEach { resource ->
-                    resource.path = ResourceUtil.convertPathToVertx(resource.path)
+                    resource.path = ResourceUtil.convertPathFromOpenApi(resource.path)
                 }
             }
 

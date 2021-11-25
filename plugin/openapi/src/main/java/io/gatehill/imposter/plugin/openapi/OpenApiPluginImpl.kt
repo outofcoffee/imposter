@@ -67,7 +67,7 @@ import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.LogUtil.describeRequestShort
 import io.gatehill.imposter.util.MapUtil.addJavaTimeSupport
 import io.gatehill.imposter.util.ResourceUtil
-import io.gatehill.imposter.util.ResourceUtil.convertPathToVertx
+import io.gatehill.imposter.util.ResourceUtil.convertPathFromOpenApi
 import io.swagger.util.Json
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.Operation
@@ -192,7 +192,7 @@ class OpenApiPluginImpl @Inject constructor(
      * @return the full path
      */
     private fun buildFullPath(basePath: String, specOperationPath: String): String {
-        val operationPath = convertPathToVertx(specOperationPath)
+        val operationPath = convertPathFromOpenApi(specOperationPath)
         return if (basePath.endsWith("/")) {
             if (operationPath!!.startsWith("/")) {
                 basePath + operationPath.substring(1)
@@ -259,12 +259,12 @@ class OpenApiPluginImpl @Inject constructor(
                     }
 
                     // build a response from the specification
-                    val exampleSender = ResponseSender { rc: HttpExchange, rb: ResponseBehaviour ->
+                    val exampleSender = ResponseSender { httpExchange: HttpExchange, responseBehaviour: ResponseBehaviour ->
                         exampleService.serveExample(
                             imposterConfig,
                             pluginConfig,
-                            rc,
-                            rb,
+                            httpExchange,
+                            responseBehaviour,
                             specResponse,
                             spec
                         )
@@ -278,10 +278,7 @@ class OpenApiPluginImpl @Inject constructor(
                         responseBehaviour,
                         exampleSender,
                         ResponseSender { httpExchange: HttpExchange, responseBehaviour: ResponseBehaviour ->
-                            fallback(
-                                httpExchange,
-                                responseBehaviour
-                            )
+                            fallback(httpExchange, responseBehaviour)
                         })
                 } ?: run {
                     LOGGER.warn(

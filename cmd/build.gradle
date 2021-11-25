@@ -7,6 +7,7 @@ compileJava {
 
 dependencies {
     implementation project(':imposter-server')
+    implementation project(':adapter:adapter-vertxweb')
 
     implementation "args4j:args4j:$version_args4j"
 }

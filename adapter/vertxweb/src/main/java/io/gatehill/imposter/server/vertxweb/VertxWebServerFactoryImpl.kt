@@ -40,34 +40,23 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.server
+package io.gatehill.imposter.server.vertxweb
 
 import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.http.HttpExchange
-import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.http.HttpRequestHandler
-import io.gatehill.imposter.http.HttpResponse
 import io.gatehill.imposter.http.HttpRouter
-import io.gatehill.imposter.plugin.config.resource.ResourceMethod
+import io.gatehill.imposter.server.HttpServer
+import io.gatehill.imposter.server.ServerFactory
+import io.gatehill.imposter.server.vertxweb.impl.VertxHttpExchange
+import io.gatehill.imposter.server.vertxweb.impl.VertxHttpServer
+import io.gatehill.imposter.server.vertxweb.util.VertxResourceUtil.convertMethodToVertx
 import io.gatehill.imposter.util.AsyncUtil
-import io.gatehill.imposter.util.CollectionUtil
 import io.gatehill.imposter.util.FileUtil
-import io.gatehill.imposter.util.ResourceUtil
-import io.gatehill.imposter.util.ResourceUtil.convertMethodToVertx
-import io.vertx.core.AsyncResult
 import io.vertx.core.Future
-import io.vertx.core.Handler
-import io.vertx.core.MultiMap
 import io.vertx.core.Vertx
-import io.vertx.core.buffer.Buffer
 import io.vertx.core.http.HttpServerOptions
-import io.vertx.core.http.HttpServerRequest
-import io.vertx.core.http.HttpServerResponse
-import io.vertx.core.json.JsonObject
 import io.vertx.core.net.JksOptions
-import io.vertx.ext.web.MIMEHeader
 import io.vertx.ext.web.Router
-import io.vertx.ext.web.RoutingContext
 import io.vertx.ext.web.handler.StaticHandler
 import io.vertx.ext.web.handler.impl.BodyHandlerImpl
 import io.vertx.micrometer.PrometheusScrapingHandler
@@ -161,131 +150,6 @@ class VertxWebServerFactoryImpl : ServerFactory {
     override fun createMetricsHandler(): HttpRequestHandler {
         val handler = PrometheusScrapingHandler.create()
         return { he -> handler.handle((he as VertxHttpExchange).routingContext) }
-    }
-
-    class VertxHttpServer(private val vertxServer: io.vertx.core.http.HttpServer) : HttpServer {
-        override fun close(onCompletion: Handler<AsyncResult<Void>>) {
-            vertxServer.close(onCompletion)
-        }
-    }
-
-    class VertxHttpExchange(
-        val routingContext: RoutingContext,
-        override val currentRoutePath: String?
-    ) : HttpExchange {
-
-        override fun request(): HttpRequest {
-            return VertxHttpRequest(routingContext.request())
-        }
-
-        override fun response(): HttpResponse {
-            return VertxHttpResponse(routingContext.response())
-        }
-
-        override fun pathParam(paramName: String): String? {
-            return routingContext.pathParam(paramName)
-        }
-
-        override fun queryParam(queryParam: String): String? {
-            return routingContext.queryParam(queryParam)?.firstOrNull()
-        }
-
-        override fun parsedAcceptHeader(): List<MIMEHeader> {
-            return routingContext.parsedHeaders().accept()
-        }
-
-        override val body: Buffer? by lazy { routingContext.body }
-
-        override val bodyAsString: String? by lazy { routingContext.bodyAsString }
-
-        override val bodyAsJson: JsonObject? by lazy { routingContext.bodyAsJson }
-
-        override fun queryParams(): Map<String, String> {
-            return CollectionUtil.asMap(routingContext.queryParams())
-        }
-
-        override fun pathParams(): Map<String, String> {
-            return routingContext.pathParams()
-        }
-
-        override fun fail(cause: Throwable?) {
-            routingContext.fail(cause)
-        }
-
-        override fun fail(statusCode: Int) {
-            routingContext.fail(statusCode)
-        }
-
-        override fun failure(): Throwable? {
-            return routingContext.failure()
-        }
-
-        override fun <T> get(key: String): T? {
-            return routingContext.get<T>(key)
-        }
-
-        override fun put(key: String, value: Any) {
-            routingContext.put(key, value)
-        }
-    }
-
-    class VertxHttpRequest(private val vertxRequest: HttpServerRequest) : HttpRequest {
-        override fun path(): String {
-            return vertxRequest.path() ?: ""
-        }
-
-        override fun method(): ResourceMethod {
-            return ResourceUtil.convertMethodFromVertx(vertxRequest.method())
-        }
-
-        override fun absoluteURI(): String {
-            return vertxRequest.absoluteURI()
-        }
-
-        override fun headers(): Map<String, String> {
-            return CollectionUtil.asMap(vertxRequest.headers())
-        }
-
-        override fun getHeader(headerKey: String): String? {
-            return vertxRequest.getHeader(headerKey)
-        }
-    }
-
-    class VertxHttpResponse(val vertxResponse: HttpServerResponse) : HttpResponse {
-        override fun setStatusCode(statusCode: Int): HttpResponse {
-            vertxResponse.statusCode = statusCode
-            return this
-        }
-
-        override fun getStatusCode(): Int {
-            return vertxResponse.statusCode
-        }
-
-        override fun putHeader(headerKey: String, headerValue: String): HttpResponse {
-            vertxResponse.putHeader(headerKey, headerValue)
-            return this
-        }
-
-        override fun headers(): MultiMap {
-            return vertxResponse.headers()
-        }
-
-        override fun sendFile(filePath: String): HttpResponse {
-            vertxResponse.sendFile(filePath)
-            return this
-        }
-
-        override fun end() {
-            vertxResponse.end()
-        }
-
-        override fun end(body: String?) {
-            body?.let { vertxResponse.end(body) } ?: end()
-        }
-
-        override fun end(body: Buffer) {
-            vertxResponse.end(body)
-        }
     }
 
     companion object {

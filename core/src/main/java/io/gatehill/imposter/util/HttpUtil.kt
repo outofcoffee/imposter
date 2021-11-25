@@ -43,7 +43,6 @@
 package io.gatehill.imposter.util
 
 import io.gatehill.imposter.http.HttpExchange
-import io.gatehill.imposter.server.VertxWebServerFactoryImpl
 import java.util.*
 import java.util.regex.Pattern
 
@@ -51,9 +50,6 @@ import java.util.regex.Pattern
  * @author Pete Cornish
  */
 object HttpUtil {
-    @JvmField
-    val DEFAULT_SERVER_FACTORY: String = VertxWebServerFactoryImpl::class.java.canonicalName
-
     private val whitespacePattern = Pattern.compile("\\s")
 
     const val CONTENT_TYPE = "Content-Type"
