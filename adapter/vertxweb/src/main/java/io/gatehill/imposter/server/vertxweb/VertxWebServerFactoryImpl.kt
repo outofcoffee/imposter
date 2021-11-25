@@ -125,14 +125,17 @@ class VertxWebServerFactoryImpl : ServerFactory {
 
             } ?: vr.route()
 
+            val routeHandler = hr.handler ?: throw IllegalStateException("No route handler set for: $hr")
             route.handler { rc ->
-                hr.handler!!.invoke(VertxHttpExchange(rc, rc.currentRoute().path))
+                // current route can technically be null, so propagate null
+                routeHandler(VertxHttpExchange(rc, rc.currentRoute()?.path))
             }
         }
 
-        router.errorHandlers.forEach { eh ->
-            vr.errorHandler(eh.key) { rc ->
-                eh.value.invoke(VertxHttpExchange(rc, rc.currentRoute().path))
+        router.errorHandlers.forEach { (statusCode, errorHandler) ->
+            vr.errorHandler(statusCode) { rc ->
+                // current route can technically be null, so propagate null
+                errorHandler(VertxHttpExchange(rc, rc.currentRoute()?.path))
             }
         }
     }

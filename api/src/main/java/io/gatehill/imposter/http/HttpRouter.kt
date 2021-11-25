@@ -124,7 +124,7 @@ typealias HttpRequestHandler = (HttpExchange) -> Unit
 /**
  * @author Pete Cornish
  */
-class HttpRoute(
+data class HttpRoute(
     val path: String? = null,
     val regex: String? = null,
     val method: ResourceMethod? = null

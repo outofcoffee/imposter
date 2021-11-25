@@ -70,9 +70,7 @@ interface HttpExchange {
     val currentRoutePath: String?
 
     val body: Buffer?
-
     val bodyAsString: String?
-
     val bodyAsJson: JsonObject?
 
     fun fail(cause: Throwable?)
