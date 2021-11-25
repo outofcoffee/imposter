@@ -42,6 +42,7 @@
  */
 package io.gatehill.imposter.plugin.hbase.service.serialisation
 
+import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.plugin.hbase.model.InMemoryScanner
 import io.gatehill.imposter.plugin.hbase.model.MockScanner
 import io.gatehill.imposter.plugin.hbase.model.ResultCell
@@ -49,7 +50,6 @@ import io.gatehill.imposter.plugin.hbase.service.ScannerService
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
-import io.vertx.ext.web.RoutingContext
 import org.apache.hadoop.hbase.filter.Filter
 import org.apache.hadoop.hbase.filter.PrefixFilter
 import org.apache.hadoop.hbase.rest.model.CellModel
@@ -60,7 +60,6 @@ import org.apache.hadoop.hbase.util.Bytes
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.io.IOException
-import java.util.function.Consumer
 import javax.inject.Inject
 
 /**
@@ -72,10 +71,10 @@ class ProtobufSerialisationServiceImpl @Inject constructor(
 
     override val logger: Logger = LogManager.getLogger(ProtobufSerialisationServiceImpl::class.java)
 
-    override fun decodeScanner(routingContext: RoutingContext): MockScanner {
+    override fun decodeScanner(httpExchange: HttpExchange): MockScanner {
         val scannerModel: ScannerModel
         return try {
-            scannerModel = getScannerModel(routingContext)
+            scannerModel = getScannerModel(httpExchange)
             val scanner = MockScanner()
             scanner.filter = scannerModel.filter
             scanner
@@ -97,14 +96,14 @@ class ProtobufSerialisationServiceImpl @Inject constructor(
     }
 
     /**
-     * @param routingContext
+     * @param httpExchange
      * @return the scanner
      * @throws IOException
      */
     @Throws(IOException::class)
-    private fun getScannerModel(routingContext: RoutingContext): ScannerModel {
+    private fun getScannerModel(httpExchange: HttpExchange): ScannerModel {
         val scannerModel = ScannerModel()
-        val rawMessage = routingContext.body.bytes
+        val rawMessage = httpExchange.body!!.bytes
 
         // deserialise from protobuf
         scannerModel.getObjectFromMessage(rawMessage)
@@ -119,7 +118,13 @@ class ProtobufSerialisationServiceImpl @Inject constructor(
         return Buffer.buffer(protobufOutput)
     }
 
-    override fun serialise(tableName: String, scannerId: String, results: JsonArray, scanner: InMemoryScanner, rows: Int): Buffer {
+    override fun serialise(
+        tableName: String,
+        scannerId: String,
+        results: JsonArray,
+        scanner: InMemoryScanner,
+        rows: Int
+    ): Buffer {
         val cellSetModel = CellSetModel()
 
         // start the row counter from the last position in the scanner
@@ -150,12 +155,12 @@ class ProtobufSerialisationServiceImpl @Inject constructor(
         row.key = Bytes.toBytes(rowKey)
 
         // add cells in sorted order
-        buildSortedCells(result)!!.forEach(Consumer { c: ResultCell ->
+        buildSortedCells(result).forEach { c: ResultCell ->
             val cell = CellModel()
             cell.column = Bytes.toBytes(c.fieldName)
             cell.value = Bytes.toBytes(c.fieldValue)
             row.addCell(cell)
-        })
+        }
         return row
     }
 }

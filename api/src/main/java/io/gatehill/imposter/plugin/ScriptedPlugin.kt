@@ -45,13 +45,13 @@ package io.gatehill.imposter.plugin
 import com.google.inject.Injector
 import io.gatehill.imposter.http.DefaultResponseBehaviourFactory
 import io.gatehill.imposter.http.DefaultStatusCodeFactory
+import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.ResponseBehaviourFactory
 import io.gatehill.imposter.http.StatusCodeFactory
 import io.gatehill.imposter.plugin.config.PluginConfigImpl
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.script.ResponseBehaviour
 import io.gatehill.imposter.service.ResponseService
-import io.vertx.ext.web.RoutingContext
 import java.util.function.Consumer
 
 /**
@@ -61,14 +61,14 @@ object ScriptedPlugin {
     @JvmStatic
     fun <C : PluginConfigImpl> scriptHandler(
         pluginConfig: C,
-        routingContext: RoutingContext,
+        httpExchange: HttpExchange,
         injector: Injector,
         defaultBehaviourHandler: Consumer<ResponseBehaviour>
     ) {
         scriptHandler(
             pluginConfig,
             pluginConfig,
-            routingContext,
+            httpExchange,
             injector,
             null,
             DefaultStatusCodeFactory.instance,
@@ -81,14 +81,14 @@ object ScriptedPlugin {
     fun <C : PluginConfigImpl> scriptHandler(
         pluginConfig: C,
         resourceConfig: ResponseConfigHolder?,
-        routingContext: RoutingContext,
+        httpExchange: HttpExchange,
         injector: Injector,
         defaultBehaviourHandler: Consumer<ResponseBehaviour>
     ) {
         scriptHandler(
             pluginConfig,
             resourceConfig,
-            routingContext,
+            httpExchange,
             injector,
             null,
             DefaultStatusCodeFactory.instance,
@@ -100,7 +100,7 @@ object ScriptedPlugin {
     @JvmStatic
     fun <C : PluginConfigImpl> scriptHandler(
         pluginConfig: C,
-        routingContext: RoutingContext,
+        httpExchange: HttpExchange,
         injector: Injector,
         additionalContext: Map<String, Any>?,
         defaultBehaviourHandler: Consumer<ResponseBehaviour>
@@ -108,7 +108,7 @@ object ScriptedPlugin {
         scriptHandler(
             pluginConfig,
             pluginConfig,
-            routingContext,
+            httpExchange,
             injector,
             additionalContext,
             DefaultStatusCodeFactory.instance,
@@ -121,7 +121,7 @@ object ScriptedPlugin {
     fun <C : PluginConfigImpl> scriptHandler(
         pluginConfig: C,
         resourceConfig: ResponseConfigHolder?,
-        routingContext: RoutingContext,
+        httpExchange: HttpExchange,
         injector: Injector,
         additionalContext: Map<String, Any>?,
         statusCodeFactory: StatusCodeFactory,
@@ -132,7 +132,7 @@ object ScriptedPlugin {
         responseService.handle(
             pluginConfig,
             resourceConfig,
-            routingContext,
+            httpExchange,
             injector,
             additionalContext,
             statusCodeFactory,

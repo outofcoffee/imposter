@@ -58,7 +58,7 @@ interface SerialisationService {
     val logger: Logger
     val scannerService: ScannerService
 
-    fun serialise(tableName: String, recordId: String, result: JsonObject): Buffer?
+    fun serialise(tableName: String, recordId: String, result: JsonObject): Buffer
 
     fun serialise(
         tableName: String,
@@ -66,7 +66,7 @@ interface SerialisationService {
         results: JsonArray,
         scanner: InMemoryScanner,
         rows: Int
-    ): Buffer?
+    ): Buffer
 
     fun buildRowKey(scanner: InMemoryScanner): String {
         // TODO consider setting key to prefix from scanner filter

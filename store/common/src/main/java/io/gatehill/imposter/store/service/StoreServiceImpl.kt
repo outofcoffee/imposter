@@ -49,6 +49,9 @@ import com.jayway.jsonpath.DocumentContext
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider
 import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.http.HttpRequestHandler
+import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
 import io.gatehill.imposter.lifecycle.EngineLifecycleListener
 import io.gatehill.imposter.plugin.config.PluginConfig
@@ -67,17 +70,14 @@ import io.gatehill.imposter.store.util.StoreUtil
 import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.MapUtil
 import io.gatehill.imposter.util.ResourceUtil
-import io.vertx.core.Handler
 import io.vertx.core.Vertx
-import io.vertx.ext.web.Router
-import io.vertx.ext.web.RoutingContext
 import io.vertx.ext.web.impl.ParsableMIMEValue
 import org.apache.commons.text.StringSubstitutor
 import org.apache.commons.text.lookup.StringLookupFactory
 import org.apache.logging.log4j.LogManager
 import java.io.IOException
 import java.nio.file.Paths
-import java.util.Objects
+import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 import java.util.regex.Pattern
 import javax.inject.Inject
@@ -145,7 +145,7 @@ class StoreServiceImpl @Inject constructor(
     override fun afterRoutesConfigured(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>,
-        router: Router
+        router: HttpRouter
     ) {
         router.get("/system/store/:storeName").handler(handleLoadAll(imposterConfig, allPluginConfigs))
         router.delete("/system/store/:storeName").handler(handleDeleteStore(imposterConfig, allPluginConfigs))
@@ -203,23 +203,23 @@ class StoreServiceImpl @Inject constructor(
     private fun handleLoadAll(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>
-    ): Handler<RoutingContext> {
-        return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { routingContext: RoutingContext ->
-            val storeName = routingContext.pathParam("storeName")
-            val store = openStore(routingContext, storeName)
+    ): HttpRequestHandler {
+        return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { httpExchange: HttpExchange ->
+            val storeName = httpExchange.pathParam("storeName")!!
+            val store = openStore(httpExchange, storeName)
             if (Objects.isNull(store)) {
                 return@handleRoute
             }
 
-            val accepted = routingContext.parsedHeaders().accept()
+            val accepted = httpExchange.parsedAcceptHeader()
             if (accepted.isEmpty() || accepted.any { it.isMatchedBy(JSON_MIME) }) {
                 LOGGER.debug("Listing store: {}", storeName)
-                serialiseBodyAsJson(routingContext, store!!.loadAll())
+                serialiseBodyAsJson(httpExchange, store!!.loadAll())
 
             } else {
                 // client doesn't accept JSON
                 LOGGER.warn("Cannot serialise store: {} as client does not accept JSON", storeName)
-                routingContext.response()
+                httpExchange.response()
                     .setStatusCode(HttpUtil.HTTP_NOT_ACCEPTABLE)
                     .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_PLAIN_TEXT)
                     .end("Stores are only available as JSON. Please set an appropriate Accept header.")
@@ -230,13 +230,13 @@ class StoreServiceImpl @Inject constructor(
     private fun handleDeleteStore(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>
-    ): Handler<RoutingContext> {
-        return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { routingContext: RoutingContext ->
-            val storeName = routingContext.pathParam("storeName")
+    ): HttpRequestHandler {
+        return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { httpExchange: HttpExchange ->
+            val storeName = httpExchange.pathParam("storeName")!!
             storeFactory.deleteStoreByName(storeName)
             LOGGER.debug("Deleted store: {}", storeName)
 
-            routingContext.response()
+            httpExchange.response()
                 .setStatusCode(HttpUtil.HTTP_NO_CONTENT)
                 .end()
         }
@@ -245,29 +245,29 @@ class StoreServiceImpl @Inject constructor(
     private fun handleLoadSingle(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>
-    ): Handler<RoutingContext> {
-        return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { routingContext: RoutingContext ->
-            val storeName = routingContext.pathParam("storeName")
-            val store = openStore(routingContext, storeName)
+    ): HttpRequestHandler {
+        return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { httpExchange: HttpExchange ->
+            val storeName = httpExchange.pathParam("storeName")!!
+            val store = openStore(httpExchange, storeName)
             if (Objects.isNull(store)) {
                 return@handleRoute
             }
 
-            val key = routingContext.pathParam("key")
+            val key = httpExchange.pathParam("key")!!
             store!!.load<Any>(key)?.let { value ->
                 if (value is String) {
                     LOGGER.debug("Returning string item: {} from store: {}", key, storeName)
-                    routingContext.response()
+                    httpExchange.response()
                         .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_PLAIN_TEXT)
                         .end(value)
                 } else {
                     LOGGER.debug("Returning object item: {} from store: {}", key, storeName)
-                    serialiseBodyAsJson(routingContext, value)
+                    serialiseBodyAsJson(httpExchange, value)
                 }
 
             } ?: run {
                 LOGGER.debug("Nonexistent item: {} in store: {}", key, storeName)
-                routingContext.response()
+                httpExchange.response()
                     .setStatusCode(HttpUtil.HTTP_NOT_FOUND)
                     .end()
             }
@@ -277,14 +277,14 @@ class StoreServiceImpl @Inject constructor(
     private fun handleSaveSingle(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>
-    ): Handler<RoutingContext> {
-        return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { routingContext: RoutingContext ->
-            val storeName = routingContext.pathParam("storeName")
-            val store = openStore(routingContext, storeName, true)
+    ): HttpRequestHandler {
+        return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { httpExchange: HttpExchange ->
+            val storeName = httpExchange.pathParam("storeName")!!
+            val store = openStore(httpExchange, storeName, true)
             if (Objects.isNull(store)) {
                 return@handleRoute
             }
-            val key = routingContext.pathParam("key")
+            val key = httpExchange.pathParam("key")!!
 
             // "If the target resource does not have a current representation and the
             // PUT successfully creates one, then the origin server MUST inform the
@@ -292,11 +292,11 @@ class StoreServiceImpl @Inject constructor(
             // See: https://datatracker.ietf.org/doc/html/rfc7231#section-4.3.4
             val statusCode = if (store!!.hasItemWithKey(key)) HttpUtil.HTTP_OK else HttpUtil.HTTP_CREATED
 
-            val value = routingContext.bodyAsString
+            val value = httpExchange.bodyAsString
             store.save(key, value)
             LOGGER.debug("Saved item: {} to store: {}", key, storeName)
 
-            routingContext.response()
+            httpExchange.response()
                 .setStatusCode(statusCode)
                 .end()
         }
@@ -305,19 +305,20 @@ class StoreServiceImpl @Inject constructor(
     private fun handleSaveMultiple(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>
-    ): Handler<RoutingContext> {
-        return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { routingContext: RoutingContext ->
-            val storeName = routingContext.pathParam("storeName")
-            val store = openStore(routingContext, storeName, true)
+    ): HttpRequestHandler {
+        return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { httpExchange: HttpExchange ->
+            val storeName = httpExchange.pathParam("storeName")!!
+            val store = openStore(httpExchange, storeName, true)
             if (Objects.isNull(store)) {
                 return@handleRoute
             }
 
-            val items = routingContext.bodyAsJson
-            items.forEach { (key: String, value: Any?) -> store!!.save(key, value) }
-            LOGGER.debug("Saved {} items to store: {}", items.size(), storeName)
+            val items = httpExchange.bodyAsJson
+            items?.forEach { (key: String, value: Any?) -> store!!.save(key, value) }
+            val itemCount = items?.size() ?: 0
+            LOGGER.debug("Saved {} items to store: {}", itemCount, storeName)
 
-            routingContext.response()
+            httpExchange.response()
                 .setStatusCode(HttpUtil.HTTP_OK)
                 .end()
         }
@@ -326,33 +327,33 @@ class StoreServiceImpl @Inject constructor(
     private fun handleDeleteSingle(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>
-    ): Handler<RoutingContext> {
-        return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { routingContext: RoutingContext ->
-            val storeName = routingContext.pathParam("storeName")
-            val store = openStore(routingContext, storeName, true)
+    ): HttpRequestHandler {
+        return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { httpExchange: HttpExchange ->
+            val storeName = httpExchange.pathParam("storeName")!!
+            val store = openStore(httpExchange, storeName, true)
             if (Objects.isNull(store)) {
                 return@handleRoute
             }
 
-            val key = routingContext.pathParam("key")
+            val key = httpExchange.pathParam("key")!!
             store!!.delete(key)
             LOGGER.debug("Deleted item: {} from store: {}", key, storeName)
 
-            routingContext.response()
+            httpExchange.response()
                 .setStatusCode(HttpUtil.HTTP_NO_CONTENT)
                 .end()
         }
     }
 
     private fun openStore(
-        routingContext: RoutingContext,
+        httpExchange: HttpExchange,
         storeName: String,
         createIfNotExist: Boolean = false
     ): Store? {
         if (!storeFactory.hasStoreWithName(storeName)) {
             LOGGER.debug("No store found named: {}", storeName)
             if (!createIfNotExist) {
-                routingContext.response()
+                httpExchange.response()
                     .setStatusCode(HttpUtil.HTTP_NOT_FOUND)
                     .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_PLAIN_TEXT)
                     .end("No store named '$storeName'.")
@@ -363,29 +364,29 @@ class StoreServiceImpl @Inject constructor(
         return storeFactory.getStoreByName(storeName, false)
     }
 
-    private fun serialiseBodyAsJson(routingContext: RoutingContext, body: Any?) {
+    private fun serialiseBodyAsJson(httpExchange: HttpExchange, body: Any?) {
         try {
-            routingContext.response()
+            httpExchange.response()
                 .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_JSON)
                 .end(MapUtil.JSON_MAPPER.writeValueAsString(body))
         } catch (e: JsonProcessingException) {
-            routingContext.fail(e)
+            httpExchange.fail(e)
         }
     }
 
-    override fun beforeBuildingResponse(routingContext: RoutingContext, resourceConfig: ResponseConfigHolder?) {
+    override fun beforeBuildingResponse(httpExchange: HttpExchange, resourceConfig: ResponseConfigHolder?) {
         if (resourceConfig is CaptureConfigHolder) {
             val captureConfig = (resourceConfig as CaptureConfigHolder).captureConfig
             captureConfig?.let {
                 val jsonPathContextHolder = AtomicReference<DocumentContext>()
                 captureConfig.forEach { (captureConfigKey: String, itemConfig: ItemCaptureConfig) ->
                     val storeName = itemConfig.store ?: DEFAULT_CAPTURE_STORE_NAME
-                    val itemName: String? = determineItemName(routingContext, jsonPathContextHolder, captureConfigKey, itemConfig, storeName)
+                    val itemName: String? = determineItemName(httpExchange, jsonPathContextHolder, captureConfigKey, itemConfig, storeName)
 
                     // itemname may not be set, if dynamic value was null
                     itemName?.let {
-                        val itemValue = captureItemValue(routingContext, jsonPathContextHolder, captureConfigKey, itemConfig)
-                        val store = openCaptureStore(routingContext, storeName)
+                        val itemValue = captureItemValue(httpExchange, jsonPathContextHolder, captureConfigKey, itemConfig)
+                        val store = openCaptureStore(httpExchange, storeName)
                         store.save(itemName, itemValue)
 
                     } ?: run {
@@ -405,7 +406,7 @@ class StoreServiceImpl @Inject constructor(
      * May return `null` if dynamic value could not be resolved or resolves to `null`.
      */
     private fun determineItemName(
-        routingContext: RoutingContext,
+        httpExchange: HttpExchange,
         jsonPathContextHolder: AtomicReference<DocumentContext>,
         captureConfigKey: String,
         itemConfig: ItemCaptureConfig,
@@ -417,7 +418,7 @@ class StoreServiceImpl @Inject constructor(
 
         } else {
             try {
-                captureValue<String?>(routingContext, itemConfig.key, jsonPathContextHolder)?.let { itemName ->
+                captureValue<String?>(httpExchange, itemConfig.key, jsonPathContextHolder)?.let { itemName ->
                     LOGGER.debug(
                         "Capturing item: {} into store: {} with dynamic name: {}",
                         captureConfigKey,
@@ -441,7 +442,7 @@ class StoreServiceImpl @Inject constructor(
     }
 
     private fun captureItemValue(
-        routingContext: RoutingContext,
+        httpExchange: HttpExchange,
         jsonPathContextHolder: AtomicReference<DocumentContext>,
         captureConfigKey: String,
         itemConfig: ItemCaptureConfig
@@ -450,7 +451,7 @@ class StoreServiceImpl @Inject constructor(
             itemConfig.constValue
         } else {
             try {
-                captureValue<Any>(routingContext, itemConfig, jsonPathContextHolder)
+                captureValue<Any>(httpExchange, itemConfig, jsonPathContextHolder)
             } catch (e: Exception) {
                 throw RuntimeException("Error capturing item value: $captureConfigKey", e)
             }
@@ -458,10 +459,10 @@ class StoreServiceImpl @Inject constructor(
         return itemValue
     }
 
-    private fun openCaptureStore(routingContext: RoutingContext, storeName: String): Store {
+    private fun openCaptureStore(httpExchange: HttpExchange, storeName: String): Store {
         val store: Store?
         if (StoreUtil.isRequestScopedStore(storeName)) {
-            val uniqueRequestId = routingContext.get<String>(ResourceUtil.RC_REQUEST_ID_KEY)
+            val uniqueRequestId = httpExchange.get<String>(ResourceUtil.RC_REQUEST_ID_KEY)!!
             val requestStoreName = StoreUtil.buildRequestStoreName(uniqueRequestId)
             store = storeFactory.getStoreByName(requestStoreName, true)
         } else {
@@ -472,23 +473,23 @@ class StoreServiceImpl @Inject constructor(
 
     @Suppress("UNCHECKED_CAST")
     private fun <T> captureValue(
-        routingContext: RoutingContext,
+        httpExchange: HttpExchange,
         itemConfig: CaptureConfig?,
         jsonPathContextHolder: AtomicReference<DocumentContext>
     ): T? {
         return if (!Strings.isNullOrEmpty(itemConfig!!.pathParam)) {
-            routingContext.pathParam(itemConfig.pathParam) as T
+            httpExchange.pathParam(itemConfig.pathParam!!) as T
 
         } else if (!Strings.isNullOrEmpty(itemConfig.queryParam)) {
-            routingContext.queryParam(itemConfig.queryParam).firstOrNull() as T
+            httpExchange.queryParam(itemConfig.queryParam!!) as T
 
         } else if (!Strings.isNullOrEmpty(itemConfig.requestHeader)) {
-            routingContext.request().getHeader(itemConfig.requestHeader) as T
+            httpExchange.request().getHeader(itemConfig.requestHeader!!) as T
 
         } else if (!Strings.isNullOrEmpty(itemConfig.jsonPath)) {
             var jsonPathContext = jsonPathContextHolder.get()
             if (Objects.isNull(jsonPathContext)) {
-                jsonPathContext = JSONPATH_PARSE_CONTEXT.parse(routingContext.bodyAsString)
+                jsonPathContext = JSONPATH_PARSE_CONTEXT.parse(httpExchange.bodyAsString)
                 jsonPathContextHolder.set(jsonPathContext)
             }
             jsonPathContext.read<T>(itemConfig.jsonPath)
@@ -499,18 +500,18 @@ class StoreServiceImpl @Inject constructor(
     }
 
     override fun beforeBuildingRuntimeContext(
-        routingContext: RoutingContext,
+        httpExchange: HttpExchange,
         additionalBindings: MutableMap<String, Any>,
         executionContext: ExecutionContext
     ) {
-        val requestId = routingContext.get<String>(ResourceUtil.RC_REQUEST_ID_KEY)
+        val requestId = httpExchange.get<String>(ResourceUtil.RC_REQUEST_ID_KEY)!!
         additionalBindings["stores"] = StoreHolder(storeFactory, requestId)
     }
 
-    override fun beforeTransmittingTemplate(routingContext: RoutingContext, responseTemplate: String?): String? {
+    override fun beforeTransmittingTemplate(httpExchange: HttpExchange, responseTemplate: String?): String? {
         return responseTemplate?.let {
             // shim for request scoped store
-            val uniqueRequestId = routingContext.get<String>(ResourceUtil.RC_REQUEST_ID_KEY)
+            val uniqueRequestId = httpExchange.get<String>(ResourceUtil.RC_REQUEST_ID_KEY)!!
             val responseData = requestStorePrefixPattern
                 .matcher(responseTemplate)
                 .replaceAll("\\$\\{" + StoreUtil.buildRequestStoreName(uniqueRequestId) + ".")
@@ -519,9 +520,9 @@ class StoreServiceImpl @Inject constructor(
         }
     }
 
-    override fun afterRoutingContextHandled(routingContext: RoutingContext) {
+    override fun afterHttpExchangeHandled(httpExchange: HttpExchange) {
         // clean up request store if one exists
-        routingContext.get<String?>(ResourceUtil.RC_REQUEST_ID_KEY)?.let { uniqueRequestId: String ->
+        httpExchange.get<String?>(ResourceUtil.RC_REQUEST_ID_KEY)?.let { uniqueRequestId: String ->
             storeFactory.deleteStoreByName(
                 StoreUtil.buildRequestStoreName(uniqueRequestId)
             )

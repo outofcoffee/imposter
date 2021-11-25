@@ -92,9 +92,7 @@ class ImposterVerticleTest : BaseVerticleTest() {
 
     @Test
     fun testPluginLoadAndConfig(testContext: TestContext) {
-        val pluginManager = injector!!.getInstance(
-            PluginManager::class.java
-        )
+        val pluginManager = injector!!.getInstance(PluginManager::class.java)
         val plugin = pluginManager.getPlugin<TestPluginImpl>(TestPluginImpl::class.java.canonicalName)
         testContext.assertNotNull(plugin)
         testContext.assertNotNull(plugin!!.configs)

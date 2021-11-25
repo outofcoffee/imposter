@@ -43,12 +43,12 @@
 package io.gatehill.imposter.plugin.openapi.service
 
 import com.fasterxml.jackson.core.JsonProcessingException
+import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.plugin.openapi.model.ContentTypedHolder
 import io.gatehill.imposter.util.HttpUtil.CONTENT_TYPE
 import io.gatehill.imposter.util.MapUtil
 import io.gatehill.imposter.util.MapUtil.YAML_MAPPER
 import io.swagger.v3.oas.models.examples.Example
-import io.vertx.ext.web.RoutingContext
 import org.apache.logging.log4j.LogManager
 import java.util.*
 
@@ -58,27 +58,27 @@ import java.util.*
  * @author Pete Cornish
  */
 class ResponseTransmissionServiceImpl : ResponseTransmissionService {
-    override fun <T> transmitExample(routingContext: RoutingContext, example: ContentTypedHolder<T>) {
+    override fun <T> transmitExample(httpExchange: HttpExchange, example: ContentTypedHolder<T>) {
         val exampleValue: Any? = example.value
         if (Objects.isNull(exampleValue)) {
             LOGGER.info("No example found - returning empty response")
-            routingContext.response().end()
+            httpExchange.response().end()
             return
         }
         val exampleResponse = buildExampleResponse(example.contentType, example.value)
         if (LOGGER.isTraceEnabled) {
             LOGGER.trace(
                 "Serving mock example for URI {} with status code {}: {}",
-                routingContext.request().absoluteURI(), routingContext.response().statusCode, exampleResponse
+                httpExchange.request().absoluteURI(), httpExchange.response().getStatusCode(), exampleResponse
             )
         } else {
             LOGGER.info(
                 "Serving mock example for URI {} with status code {} (response body {} bytes)",
-                routingContext.request().absoluteURI(), routingContext.response().statusCode,
+                httpExchange.request().absoluteURI(), httpExchange.response().getStatusCode(),
                 exampleResponse?.let { obj: String -> obj.length } ?: 0
             )
         }
-        routingContext.response()
+        httpExchange.response()
             .putHeader(CONTENT_TYPE, example.contentType)
             .end(exampleResponse)
     }

@@ -50,6 +50,7 @@ import com.atlassian.oai.validator.report.ValidationReport
 import com.fasterxml.jackson.core.JsonGenerationException
 import com.google.common.cache.CacheBuilder
 import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginValidationConfig.ValidationIssueBehaviour
 import io.gatehill.imposter.plugin.openapi.util.ValidationReportUtil
@@ -63,7 +64,6 @@ import io.swagger.v3.oas.models.info.Info
 import io.swagger.v3.oas.models.security.SecurityRequirement
 import io.swagger.v3.oas.models.servers.Server
 import io.swagger.v3.oas.models.tags.Tag
-import io.vertx.ext.web.RoutingContext
 import org.apache.logging.log4j.LogManager
 import java.net.URI
 import java.net.URISyntaxException
@@ -189,7 +189,7 @@ class SpecificationServiceImpl @Inject constructor(
 
     override fun isValidRequest(
         pluginConfig: OpenApiPluginConfig,
-        routingContext: RoutingContext,
+        httpExchange: HttpExchange,
         allSpecs: List<OpenAPI>
     ): Boolean {
         if (Objects.isNull(pluginConfig.validation)) {
@@ -207,15 +207,15 @@ class SpecificationServiceImpl @Inject constructor(
         val validator: OpenApiInteractionValidator = try {
             getValidator(pluginConfig, allSpecs)
         } catch (e: ExecutionException) {
-            routingContext.fail(RuntimeException("Error building spec validator", e))
+            httpExchange.fail(RuntimeException("Error building spec validator", e))
             return false
         }
 
-        val request = routingContext.request()
+        val request = httpExchange.request()
         val requestBuilder = SimpleRequest.Builder(request.method().toString(), request.path())
-            .withBody(routingContext.bodyAsString)
+            .withBody(httpExchange.bodyAsString)
 
-        routingContext.queryParams().forEach { p -> requestBuilder.withQueryParam(p.key, p.value) }
+        httpExchange.queryParams().forEach { p -> requestBuilder.withQueryParam(p.key, p.value) }
         request.headers().forEach { h -> requestBuilder.withHeader(h.key, h.value) }
 
         val report = validator.validateRequest(requestBuilder.build())
@@ -225,10 +225,10 @@ class SpecificationServiceImpl @Inject constructor(
 
             // only respond with 400 if validation failures are at error level
             if (report.hasErrors() && ValidationIssueBehaviour.FAIL == pluginConfig.validation.request) {
-                val response = routingContext.response()
-                response.statusCode = 400
+                val response = httpExchange.response()
+                response.setStatusCode(400)
                 if (pluginConfig.validation.returnErrorsInResponse) {
-                    ValidationReportUtil.sendValidationReport(routingContext, reportMessages)
+                    ValidationReportUtil.sendValidationReport(httpExchange, reportMessages)
                 } else {
                     response.end()
                 }

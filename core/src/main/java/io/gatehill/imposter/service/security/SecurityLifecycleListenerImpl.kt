@@ -43,13 +43,13 @@
 package io.gatehill.imposter.service.security
 
 import io.gatehill.imposter.config.ResolvedResourceConfig
+import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.lifecycle.SecurityLifecycleListener
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.plugin.config.security.SecurityConfig
 import io.gatehill.imposter.plugin.config.security.SecurityConfigHolder
 import io.gatehill.imposter.service.SecurityService
 import io.gatehill.imposter.service.security.SecurityLifecycleListenerImpl
-import io.vertx.ext.web.RoutingContext
 import org.apache.logging.log4j.LogManager
 import java.util.*
 import javax.inject.Inject
@@ -65,9 +65,9 @@ class SecurityLifecycleListenerImpl @Inject constructor(
         rootResourceConfig: ResponseConfigHolder,
         resourceConfig: ResponseConfigHolder?,
         resolvedResourceConfigs: List<ResolvedResourceConfig?>,
-        routingContext: RoutingContext
+        httpExchange: HttpExchange
     ): Boolean {
-        val request = routingContext.request()
+        val request = httpExchange.request()
         val security = getSecurityConfig(rootResourceConfig, resourceConfig)
 
         return security?.let {
@@ -79,7 +79,7 @@ class SecurityLifecycleListenerImpl @Inject constructor(
                     request.absoluteURI()
                 )
             }
-            securityService.enforce(security, routingContext)
+            securityService.enforce(security, httpExchange)
         } ?: run {
             if (LOGGER.isTraceEnabled) {
                 LOGGER.trace(

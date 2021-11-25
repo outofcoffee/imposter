@@ -48,6 +48,8 @@ import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.PathNotFoundException
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.ResolvedResourceConfig
+import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.http.HttpRequestHandler
 import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
 import io.gatehill.imposter.lifecycle.EngineLifecycleListener
 import io.gatehill.imposter.lifecycle.SecurityLifecycleHooks
@@ -62,7 +64,6 @@ import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.plugin.config.resource.RestResourceConfig
 import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyConfig
 import io.gatehill.imposter.server.RequestHandlingMode
-import io.gatehill.imposter.util.CollectionUtil
 import io.gatehill.imposter.util.CollectionUtil.convertKeysToLowerCase
 import io.gatehill.imposter.util.LogUtil.describeRequest
 import io.gatehill.imposter.util.ResourceUtil
@@ -71,8 +72,6 @@ import io.vertx.core.AsyncResult
 import io.vertx.core.Future
 import io.vertx.core.Handler
 import io.vertx.core.Vertx
-import io.vertx.core.http.HttpMethod
-import io.vertx.ext.web.RoutingContext
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
 import java.util.*
@@ -110,7 +109,7 @@ class ResourceServiceImpl @Inject constructor(
      */
     override fun matchResourceConfig(
         resources: List<ResolvedResourceConfig>,
-        method: HttpMethod,
+        method: ResourceMethod,
         pathTemplate: String?,
         path: String?,
         pathParams: Map<String, String>,
@@ -118,11 +117,10 @@ class ResourceServiceImpl @Inject constructor(
         requestHeaders: Map<String, String>,
         bodySupplier: Supplier<String?>
     ): ResponseConfigHolder? {
-        val resourceMethod = ResourceUtil.convertMethodFromVertx(method)
         var resourceConfigs = resources.filter { res ->
             isRequestMatch(
                 res,
-                resourceMethod,
+                method,
                 pathTemplate,
                 path,
                 pathParams,
@@ -141,11 +139,11 @@ class ResourceServiceImpl @Inject constructor(
             return null
         }
         if (resourceConfigs.size == 1) {
-            LOGGER.debug("Matched response config for {} {}", resourceMethod, path)
+            LOGGER.debug("Matched response config for {} {}", method, path)
         } else {
             LOGGER.warn(
                 "More than one response config found for {} {} - this is probably a configuration error. Choosing first response configuration.",
-                resourceMethod,
+                method,
                 path
             )
         }
@@ -262,10 +260,10 @@ class ResourceServiceImpl @Inject constructor(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>,
         vertx: Vertx,
-        routingContextConsumer: Consumer<RoutingContext>
-    ): Handler<RoutingContext> {
+        httpExchangeConsumer: Consumer<HttpExchange>
+    ): HttpRequestHandler {
         val selectedConfig = securityService.findConfigPreferringSecurityPolicy(allPluginConfigs)
-        return handleRoute(imposterConfig, selectedConfig, vertx, routingContextConsumer)
+        return handleRoute(imposterConfig, selectedConfig, vertx, httpExchangeConsumer)
     }
 
     /**
@@ -275,21 +273,21 @@ class ResourceServiceImpl @Inject constructor(
         imposterConfig: ImposterConfig,
         pluginConfig: PluginConfig,
         vertx: Vertx,
-        routingContextConsumer: Consumer<RoutingContext>
-    ): Handler<RoutingContext> {
+        httpExchangeConsumer: Consumer<HttpExchange>
+    ): HttpRequestHandler {
         val resolvedResourceConfigs = resolveResourceConfigs(pluginConfig)
         return when (imposterConfig.requestHandlingMode) {
-            RequestHandlingMode.SYNC -> Handler { routingContext: RoutingContext ->
+            RequestHandlingMode.SYNC -> { httpExchange: HttpExchange ->
                 try {
-                    handleResource(pluginConfig, routingContextConsumer, routingContext, resolvedResourceConfigs)
+                    handleResource(pluginConfig, httpExchangeConsumer, httpExchange, resolvedResourceConfigs)
                 } catch (e: Exception) {
-                    handleFailure(routingContext, e)
+                    handleFailure(httpExchange, e)
                 }
             }
-            RequestHandlingMode.ASYNC -> Handler { routingContext: RoutingContext ->
+            RequestHandlingMode.ASYNC -> { httpExchange: HttpExchange ->
                 val handler = Handler { future: Future<Any?> ->
                     try {
-                        handleResource(pluginConfig, routingContextConsumer, routingContext, resolvedResourceConfigs)
+                        handleResource(pluginConfig, httpExchangeConsumer, httpExchange, resolvedResourceConfigs)
                         future.complete()
                     } catch (e: Exception) {
                         future.fail(e)
@@ -300,7 +298,7 @@ class ResourceServiceImpl @Inject constructor(
                 // as this causes head of line blocking performance issues
                 vertx.orCreateContext.executeBlocking(handler, false) { result: AsyncResult<Any?> ->
                     if (result.failed()) {
-                        handleFailure(routingContext, result.cause())
+                        handleFailure(httpExchange, result.cause())
                     }
                 }
             }
@@ -315,29 +313,29 @@ class ResourceServiceImpl @Inject constructor(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>,
         vertx: Vertx,
-        routingContextHandler: Handler<RoutingContext>
-    ): Handler<RoutingContext> {
+        httpExchangeHandler: HttpRequestHandler
+    ): HttpRequestHandler {
         val selectedConfig = securityService.findConfigPreferringSecurityPolicy(allPluginConfigs)
-        return handleRoute(imposterConfig, selectedConfig, vertx) { event: RoutingContext ->
-            routingContextHandler.handle(event)
+        return handleRoute(imposterConfig, selectedConfig, vertx) { event: HttpExchange ->
+            httpExchangeHandler(event)
         }
     }
 
     /**
      * {@inheritDoc}
      */
-    override fun buildUnhandledExceptionHandler() = Handler { routingContext: RoutingContext ->
-        val level = determineLogLevel(routingContext)
+    override fun buildUnhandledExceptionHandler() = { httpExchange: HttpExchange ->
+        val level = determineLogLevel(httpExchange)
         LOGGER.log(
             level,
-            "Unhandled routing exception for request " + describeRequest(routingContext),
-            routingContext.failure()
+            "Unhandled routing exception for request " + describeRequest(httpExchange),
+            httpExchange.failure()
         )
     }
 
-    private fun determineLogLevel(routingContext: RoutingContext): Level {
+    private fun determineLogLevel(httpExchange: HttpExchange): Level {
         return try {
-            routingContext.request().path()?.takeIf { path: String ->
+            httpExchange.request().path().takeIf { path: String ->
                 IGNORED_ERROR_PATHS.any { p: Pattern -> p.matcher(path).matches() }
             }?.let { Level.TRACE } ?: Level.ERROR
 
@@ -348,52 +346,52 @@ class ResourceServiceImpl @Inject constructor(
 
     private fun handleResource(
         pluginConfig: PluginConfig,
-        routingContextConsumer: Consumer<RoutingContext>,
-        routingContext: RoutingContext,
+        httpExchangeConsumer: Consumer<HttpExchange>,
+        httpExchange: HttpExchange,
         resolvedResourceConfigs: List<ResolvedResourceConfig>
     ) {
         // every request has a unique ID
         val requestId = UUID.randomUUID().toString()
-        routingContext.put(ResourceUtil.RC_REQUEST_ID_KEY, requestId)
-        val response = routingContext.response()
+        httpExchange.put(ResourceUtil.RC_REQUEST_ID_KEY, requestId)
+        val response = httpExchange.response()
         response.putHeader("X-Imposter-Request", requestId)
         response.putHeader("Server", "imposter")
 
         val rootResourceConfig = (pluginConfig as ResponseConfigHolder?)!!
-        val request = routingContext.request()
+        val request = httpExchange.request()
         val resourceConfig = matchResourceConfig(
             resolvedResourceConfigs,
             request.method(),
-            routingContext.currentRoute().path,
+            httpExchange.currentRoutePath,
             request.path(),
-            routingContext.pathParams(),
-            CollectionUtil.asMap(routingContext.queryParams()),
-            CollectionUtil.asMap(request.headers())
-        ) { routingContext.bodyAsString } ?: rootResourceConfig
+            httpExchange.pathParams(),
+            httpExchange.queryParams(),
+            request.headers()
+        ) { httpExchange.bodyAsString } ?: rootResourceConfig
 
         // allows plugins to customise behaviour
-        routingContext.put(ResourceUtil.RESPONSE_CONFIG_HOLDER_KEY, resourceConfig)
+        httpExchange.put(ResourceUtil.RESPONSE_CONFIG_HOLDER_KEY, resourceConfig)
         if (securityLifecycle.allMatch { listener: SecurityLifecycleListener ->
-                listener.isRequestPermitted(rootResourceConfig, resourceConfig, resolvedResourceConfigs, routingContext)
+                listener.isRequestPermitted(rootResourceConfig, resourceConfig, resolvedResourceConfigs, httpExchange)
             }) {
             // request is permitted to continue
             try {
-                routingContextConsumer.accept(routingContext)
+                httpExchangeConsumer.accept(httpExchange)
             } finally {
                 // always perform tidy up once handled, regardless of outcome
                 engineLifecycle.forEach { listener: EngineLifecycleListener ->
-                    listener.afterRoutingContextHandled(routingContext)
+                    listener.afterHttpExchangeHandled(httpExchange)
                 }
             }
         } else {
-            LOGGER.trace("Request {} was not permitted to continue", describeRequest(routingContext, requestId))
+            LOGGER.trace("Request {} was not permitted to continue", describeRequest(httpExchange, requestId))
         }
     }
 
-    private fun handleFailure(routingContext: RoutingContext, e: Throwable) {
-        routingContext.fail(
+    private fun handleFailure(httpExchange: HttpExchange, e: Throwable) {
+        httpExchange.fail(
             RuntimeException(
-                "Unhandled exception processing request ${describeRequest(routingContext)}", e
+                "Unhandled exception processing request ${describeRequest(httpExchange)}", e
             )
         )
     }

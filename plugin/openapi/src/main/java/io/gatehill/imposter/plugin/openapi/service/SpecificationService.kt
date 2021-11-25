@@ -42,10 +42,10 @@
  */
 package io.gatehill.imposter.plugin.openapi.service
 
+import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig
 import io.swagger.models.Scheme
 import io.swagger.v3.oas.models.OpenAPI
-import io.vertx.ext.web.RoutingContext
 import java.util.concurrent.ExecutionException
 
 /**
@@ -82,7 +82,7 @@ interface SpecificationService {
 
     fun isValidRequest(
         pluginConfig: OpenApiPluginConfig,
-        routingContext: RoutingContext,
+        httpExchange: HttpExchange,
         allSpecs: List<OpenAPI>
     ): Boolean
 

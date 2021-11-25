@@ -42,11 +42,11 @@
  */
 package io.gatehill.imposter.plugin
 
-import io.vertx.ext.web.Router
+import io.gatehill.imposter.http.HttpRouter
 
 /**
  * @author Pete Cornish
  */
 interface Plugin {
-    fun configureRoutes(router: Router)
+    fun configureRoutes(router: HttpRouter)
 }

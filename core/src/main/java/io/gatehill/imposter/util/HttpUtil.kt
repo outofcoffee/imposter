@@ -42,9 +42,9 @@
  */
 package io.gatehill.imposter.util
 
+import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.server.VertxWebServerFactoryImpl
-import io.vertx.ext.web.RoutingContext
-import java.util.Locale
+import java.util.*
 import java.util.regex.Pattern
 
 /**
@@ -243,12 +243,12 @@ object HttpUtil {
     /**
      * Read the content types accepted by the requesting client, ordered by their weighting.
      *
-     * @param routingContext the Vert.x routing context
+     * @param httpExchange the HTTP exchange
      * @return the ordered content types
      */
     @JvmStatic
-    fun readAcceptedContentTypes(routingContext: RoutingContext): List<String> {
-        return readAcceptedContentTypes(routingContext.request().getHeader("Accept"))
+    fun readAcceptedContentTypes(httpExchange: HttpExchange): List<String> {
+        return readAcceptedContentTypes(httpExchange.request().getHeader("Accept"))
     }
 
     /**

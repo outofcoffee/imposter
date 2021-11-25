@@ -43,8 +43,8 @@
 package io.gatehill.imposter.lifecycle
 
 import io.gatehill.imposter.config.ResolvedResourceConfig
+import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
-import io.vertx.ext.web.RoutingContext
 
 /**
  * Hooks for engine lifecycle events.
@@ -58,14 +58,14 @@ interface SecurityLifecycleListener {
      * @param rootResourceConfig      the root resource configuration
      * @param resourceConfig          the resource configuration for this request
      * @param resolvedResourceConfigs the resolved resource configurations
-     * @param routingContext          the routing context
+     * @param httpExchange          the HTTP exchange
      * @return `true` if the request is permitted, otherwise `false`
      */
     fun isRequestPermitted(
         rootResourceConfig: ResponseConfigHolder,
         resourceConfig: ResponseConfigHolder?,
         resolvedResourceConfigs: List<ResolvedResourceConfig?>,
-        routingContext: RoutingContext
+        httpExchange: HttpExchange
     ): Boolean {
         return true
     }

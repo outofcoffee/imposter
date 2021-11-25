@@ -48,6 +48,9 @@ import com.google.common.cache.CacheBuilder
 import com.google.inject.Injector
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.exception.ResponseException
+import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.http.HttpRequest
+import io.gatehill.imposter.http.HttpResponse
 import io.gatehill.imposter.http.ResponseBehaviourFactory
 import io.gatehill.imposter.http.StatusCodeFactory
 import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
@@ -68,11 +71,8 @@ import io.gatehill.imposter.util.MetricsUtil
 import io.micrometer.core.instrument.Gauge
 import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
-import io.vertx.core.http.HttpServerRequest
-import io.vertx.core.http.HttpServerResponse
 import io.vertx.core.http.impl.MimeMapping
 import io.vertx.core.json.JsonArray
-import io.vertx.ext.web.RoutingContext
 import org.apache.commons.io.FileUtils
 import org.apache.logging.log4j.LogManager
 import java.io.IOException
@@ -116,7 +116,7 @@ class ResponseServiceImpl @Inject constructor(
     override fun handle(
         pluginConfig: PluginConfig,
         resourceConfig: ResponseConfigHolder?,
-        routingContext: RoutingContext,
+        httpExchange: HttpExchange,
         injector: Injector,
         additionalContext: Map<String, Any>?,
         statusCodeFactory: StatusCodeFactory,
@@ -126,11 +126,11 @@ class ResponseServiceImpl @Inject constructor(
         try {
             engineLifecycle.forEach { listener: EngineLifecycleListener ->
                 listener.beforeBuildingResponse(
-                    routingContext, resourceConfig
+                    httpExchange, resourceConfig
                 )
             }
             val responseBehaviour = buildResponseBehaviour(
-                routingContext,
+                httpExchange,
                 pluginConfig,
                 resourceConfig,
                 additionalContext,
@@ -139,7 +139,7 @@ class ResponseServiceImpl @Inject constructor(
                 responseBehaviourFactory
             )
             if (ResponseBehaviourType.SHORT_CIRCUIT == responseBehaviour.behaviourType) {
-                routingContext.response()
+                httpExchange.response()
                     .setStatusCode(responseBehaviour.statusCode)
                     .end()
             } else {
@@ -147,14 +147,14 @@ class ResponseServiceImpl @Inject constructor(
                 defaultBehaviourHandler.accept(responseBehaviour)
             }
         } catch (e: Exception) {
-            val msg = "Error sending mock response for ${describeRequest(routingContext)}"
+            val msg = "Error sending mock response for ${describeRequest(httpExchange)}"
             LOGGER.error(msg, e)
-            routingContext.fail(ResponseException(msg, e))
+            httpExchange.fail(ResponseException(msg, e))
         }
     }
 
     private fun buildResponseBehaviour(
-        routingContext: RoutingContext,
+        httpExchange: HttpExchange,
         pluginConfig: PluginConfig,
         resourceConfig: ResponseConfigHolder?,
         additionalContext: Map<String, Any>?,
@@ -170,7 +170,7 @@ class ResponseServiceImpl @Inject constructor(
 
         if (!Strings.isNullOrEmpty(responseConfig.scriptFile) || imposterConfig.useEmbeddedScriptEngine) {
             responseBehaviour = scriptedResponseService.determineResponseFromScript(
-                routingContext,
+                httpExchange,
                 pluginConfig,
                 resourceConfig,
                 additionalContext,
@@ -184,7 +184,7 @@ class ResponseServiceImpl @Inject constructor(
         } else {
             LOGGER.debug(
                 "Using default HTTP {} response behaviour for request: {} {}",
-                statusCode, routingContext.request().method(), routingContext.request().absoluteURI()
+                statusCode, httpExchange.request().method(), httpExchange.request().absoluteURI()
             )
             responseBehaviour = responseBehaviourFactory.build(statusCode, responseConfig)
         }
@@ -205,16 +205,16 @@ class ResponseServiceImpl @Inject constructor(
         return responseBehaviour
     }
 
-    override fun sendEmptyResponse(routingContext: RoutingContext, responseBehaviour: ResponseBehaviour): Boolean {
+    override fun sendEmptyResponse(httpExchange: HttpExchange, responseBehaviour: ResponseBehaviour): Boolean {
         return try {
             LOGGER.info(
                 "Response file and data are blank - returning empty response for {}",
-                describeRequest(routingContext)
+                describeRequest(httpExchange)
             )
-            routingContext.response().end()
+            httpExchange.response().end()
             true
         } catch (e: Exception) {
-            LOGGER.warn("Error sending empty response for " + describeRequest(routingContext), e)
+            LOGGER.warn("Error sending empty response for " + describeRequest(httpExchange), e)
             false
         }
     }
@@ -222,13 +222,13 @@ class ResponseServiceImpl @Inject constructor(
     override fun sendResponse(
         pluginConfig: PluginConfig,
         resourceConfig: ResourceConfig?,
-        routingContext: RoutingContext,
+        httpExchange: HttpExchange,
         responseBehaviour: ResponseBehaviour
     ) {
         sendResponse(
             pluginConfig,
             resourceConfig,
-            routingContext,
+            httpExchange,
             responseBehaviour,
             ResponseSender { rc, rb -> sendEmptyResponse(rc, rb) })
     }
@@ -236,18 +236,18 @@ class ResponseServiceImpl @Inject constructor(
     override fun sendResponse(
         pluginConfig: PluginConfig,
         resourceConfig: ResourceConfig?,
-        routingContext: RoutingContext,
+        httpExchange: HttpExchange,
         responseBehaviour: ResponseBehaviour,
         vararg fallbackSenders: ResponseSender
     ) {
         simulatePerformance(
-            responseBehaviour, routingContext.request()
-        ) { sendResponseInternal(pluginConfig, resourceConfig, routingContext, responseBehaviour, fallbackSenders) }
+            responseBehaviour, httpExchange.request()
+        ) { sendResponseInternal(pluginConfig, resourceConfig, httpExchange, responseBehaviour, fallbackSenders) }
     }
 
     private fun simulatePerformance(
         responseBehaviour: ResponseBehaviour,
-        request: HttpServerRequest,
+        request: HttpRequest,
         completion: Runnable
     ) {
         val performance = responseBehaviour.performanceSimulation
@@ -274,18 +274,18 @@ class ResponseServiceImpl @Inject constructor(
     private fun sendResponseInternal(
         pluginConfig: PluginConfig,
         resourceConfig: ResourceConfig?,
-        routingContext: RoutingContext,
+        httpExchange: HttpExchange,
         responseBehaviour: ResponseBehaviour,
         fallbackSenders: Array<out ResponseSender>
     ) {
         LOGGER.trace(
             "Sending mock response for URI {} with status code {}",
-            routingContext.request().absoluteURI(),
+            httpExchange.request().absoluteURI(),
             responseBehaviour.statusCode
         )
         try {
-            val response = routingContext.response()
-            response.statusCode = responseBehaviour.statusCode
+            val response = httpExchange.response()
+            response.setStatusCode(responseBehaviour.statusCode)
             responseBehaviour.responseHeaders.forEach { (name: String?, value: String?) ->
                 response.putHeader(
                     name,
@@ -293,17 +293,17 @@ class ResponseServiceImpl @Inject constructor(
                 )
             }
             if (!Strings.isNullOrEmpty(responseBehaviour.responseFile)) {
-                serveResponseFile(pluginConfig, resourceConfig, routingContext, responseBehaviour)
+                serveResponseFile(pluginConfig, resourceConfig, httpExchange, responseBehaviour)
             } else if (!Strings.isNullOrEmpty(responseBehaviour.responseData)) {
-                serveResponseData(resourceConfig, routingContext, responseBehaviour)
+                serveResponseData(resourceConfig, httpExchange, responseBehaviour)
             } else {
-                fallback(routingContext, responseBehaviour, fallbackSenders)
+                fallback(httpExchange, responseBehaviour, fallbackSenders)
             }
         } catch (e: Exception) {
-            routingContext.fail(
+            httpExchange.fail(
                 ResponseException(
                     "Error sending mock response with status code ${responseBehaviour.statusCode} for " +
-                            describeRequest(routingContext), e
+                            describeRequest(httpExchange), e
                 )
             )
         }
@@ -315,22 +315,22 @@ class ResponseServiceImpl @Inject constructor(
      *
      * @param pluginConfig      the plugin configuration
      * @param resourceConfig    the resource configuration
-     * @param routingContext    the Vert.x routing context
+     * @param httpExchange    the HTTP exchange
      * @param responseBehaviour the response behaviour
      */
     @Throws(ExecutionException::class)
     private fun serveResponseFile(
         pluginConfig: PluginConfig,
         resourceConfig: ResourceConfig?,
-        routingContext: RoutingContext,
+        httpExchange: HttpExchange,
         responseBehaviour: ResponseBehaviour
     ) {
-        val response = routingContext.response()
+        val response = httpExchange.response()
         LOGGER.info(
             "Serving response file {} for URI {} with status code {}",
             responseBehaviour.responseFile,
-            routingContext.request().absoluteURI(),
-            response.statusCode
+            httpExchange.request().absoluteURI(),
+            response.getStatusCode()
         )
 
         val responseFile = responseBehaviour.responseFile ?: throw IllegalStateException("Response file not set")
@@ -343,7 +343,7 @@ class ResponseServiceImpl @Inject constructor(
                     StandardCharsets.UTF_8
                 )
             }]
-            writeResponseData(resourceConfig, routingContext, normalisedPath.fileName.toString(), responseData)
+            writeResponseData(resourceConfig, httpExchange, normalisedPath.fileName.toString(), responseData)
         } else {
             response.sendFile(normalisedPath.toString())
         }
@@ -354,37 +354,37 @@ class ResponseServiceImpl @Inject constructor(
      * JSON is assumed.
      *
      * @param resourceConfig    the resource configuration
-     * @param routingContext    the Vert.x routing context
+     * @param httpExchange    the HTTP exchange
      * @param responseBehaviour the response behaviour
      */
     private fun serveResponseData(
         resourceConfig: ResourceConfig?,
-        routingContext: RoutingContext,
+        httpExchange: HttpExchange,
         responseBehaviour: ResponseBehaviour
     ) {
         LOGGER.info(
             "Serving response data ({} bytes) for URI {} with status code {}",
             responseBehaviour.responseData!!.length,
-            routingContext.request().absoluteURI(),
-            routingContext.response().statusCode
+            httpExchange.request().absoluteURI(),
+            httpExchange.response().getStatusCode()
         )
-        writeResponseData(resourceConfig, routingContext, null, responseBehaviour.responseData)
+        writeResponseData(resourceConfig, httpExchange, null, responseBehaviour.responseData)
     }
 
     /**
      * Write the response data, optionally resolving placeholders if templating is enabled.
      *
-     * @param routingContext the Vert.x routing context
+     * @param httpExchange the HTTP exchange
      * @param rawResponseData   the data
      */
     private fun writeResponseData(
         resourceConfig: ResourceConfig?,
-        routingContext: RoutingContext,
+        httpExchange: HttpExchange,
         filenameHintForContentType: String?,
         rawResponseData: String?
     ) {
         var responseData = rawResponseData
-        val response = routingContext.response()
+        val response = httpExchange.response()
         setContentTypeIfAbsent(resourceConfig, response, filenameHintForContentType)
 
         // listeners may transform response data
@@ -392,7 +392,7 @@ class ResponseServiceImpl @Inject constructor(
             val dataHolder = AtomicReference(responseData)
             engineLifecycle.forEach { listener: EngineLifecycleListener ->
                 dataHolder.set(
-                    listener.beforeTransmittingTemplate(routingContext, dataHolder.get()!!)
+                    listener.beforeTransmittingTemplate(httpExchange, dataHolder.get()!!)
                 )
             }
             responseData = dataHolder.get()
@@ -402,13 +402,13 @@ class ResponseServiceImpl @Inject constructor(
 
     private fun setContentTypeIfAbsent(
         resourceConfig: ResourceConfig?,
-        response: HttpServerResponse,
+        response: HttpResponse,
         filenameHintForContentType: String?
     ) {
         // explicit content type
         if (resourceConfig is ContentTypedConfig) {
             if (!Strings.isNullOrEmpty(resourceConfig.contentType)) {
-                response.putHeader(HttpUtil.CONTENT_TYPE, resourceConfig.contentType)
+                response.putHeader(HttpUtil.CONTENT_TYPE, resourceConfig.contentType!!)
             }
         }
 
@@ -427,13 +427,13 @@ class ResponseServiceImpl @Inject constructor(
     }
 
     private fun fallback(
-        routingContext: RoutingContext,
+        httpExchange: HttpExchange,
         responseBehaviour: ResponseBehaviour,
         missingResponseSenders: Array<out ResponseSender>
     ) {
         for (sender in missingResponseSenders) {
             try {
-                if (sender.send(routingContext, responseBehaviour)) {
+                if (sender.send(httpExchange, responseBehaviour)) {
                     return
                 }
             } catch (e: Exception) {
@@ -465,9 +465,7 @@ class ResponseServiceImpl @Inject constructor(
     }
 
     companion object {
-        private val LOGGER = LogManager.getLogger(
-            ResponseServiceImpl::class.java
-        )
+        private val LOGGER = LogManager.getLogger(ResponseServiceImpl::class.java)
         private const val ENV_RESPONSE_FILE_CACHE_ENTRIES = "IMPOSTER_RESPONSE_FILE_CACHE_ENTRIES"
         private const val DEFAULT_RESPONSE_FILE_CACHE_ENTRIES = 20L
         private const val METRIC_RESPONSE_FILE_CACHE_ENTRIES = "response.file.cache.entries"

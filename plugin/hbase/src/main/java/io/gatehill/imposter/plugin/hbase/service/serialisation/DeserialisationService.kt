@@ -42,18 +42,18 @@
  */
 package io.gatehill.imposter.plugin.hbase.service.serialisation
 
+import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.plugin.hbase.model.MockScanner
-import io.vertx.ext.web.RoutingContext
 
 /**
  * @author Pete Cornish
  */
 interface DeserialisationService {
     /**
-     * @param routingContext the Vert.x routing context
+     * @param httpExchange the HTTP exchange
      * @return the scanner
      */
-    fun decodeScanner(routingContext: RoutingContext): MockScanner
+    fun decodeScanner(httpExchange: HttpExchange): MockScanner
 
     /**
      * @param scanner the scanner from which to read the filter

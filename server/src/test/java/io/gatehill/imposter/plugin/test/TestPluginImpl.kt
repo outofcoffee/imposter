@@ -43,6 +43,7 @@
 package io.gatehill.imposter.plugin.test
 
 import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.plugin.ScriptedPlugin.scriptHandler
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
@@ -50,7 +51,6 @@ import io.gatehill.imposter.script.ResponseBehaviour
 import io.gatehill.imposter.service.ResourceService
 import io.gatehill.imposter.service.ResponseService
 import io.vertx.core.Vertx
-import io.vertx.ext.web.Router
 import javax.inject.Inject
 
 /**
@@ -66,7 +66,7 @@ class TestPluginImpl @Inject constructor(
     override val configClass: Class<TestPluginConfig>
         get() = TestPluginConfig::class.java
 
-    override fun configureRoutes(router: Router) {
+    override fun configureRoutes(router: HttpRouter) {
         configs.forEach { config: TestPluginConfig ->
             // root resource
             config.path?.let { path: String -> configureRoute(config, config, router, path) }
@@ -78,20 +78,20 @@ class TestPluginImpl @Inject constructor(
         }
     }
 
-    private fun configureRoute(pluginConfig: TestPluginConfig, resourceConfig: ResponseConfigHolder, router: Router, path: String) {
-        router.route(path).handler(resourceService.handleRoute(imposterConfig, pluginConfig, vertx) { routingContext ->
+    private fun configureRoute(pluginConfig: TestPluginConfig, resourceConfig: ResponseConfigHolder, router: HttpRouter, path: String) {
+        router.route(path).handler(resourceService.handleRoute(imposterConfig, pluginConfig, vertx) { httpExchange ->
             val defaultBehaviourHandler = { responseBehaviour: ResponseBehaviour ->
                 responseService.sendResponse(
                     pluginConfig,
                     resourceConfig,
-                    routingContext,
+                    httpExchange,
                     responseBehaviour
                 )
             }
             scriptHandler(
                 pluginConfig,
                 resourceConfig,
-                routingContext,
+                httpExchange,
                 injector,
                 defaultBehaviourHandler
             )

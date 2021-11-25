@@ -47,6 +47,8 @@ import com.google.common.base.Strings
 import com.google.inject.Key
 import com.google.inject.name.Names
 import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.RequireModules
 import io.gatehill.imposter.plugin.ScriptedPlugin.scriptHandler
@@ -65,8 +67,6 @@ import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.HttpUtil.CONTENT_TYPE_JSON
 import io.gatehill.imposter.util.HttpUtil.readAcceptedContentTypes
 import io.vertx.core.Vertx
-import io.vertx.ext.web.Router
-import io.vertx.ext.web.RoutingContext
 import org.apache.logging.log4j.LogManager
 import javax.inject.Inject
 
@@ -96,7 +96,7 @@ class HBasePluginImpl @Inject constructor(
         tables = configs.associateBy { it.tableName }
     }
 
-    override fun configureRoutes(router: Router) {
+    override fun configureRoutes(router: HttpRouter) {
         // add route for each distinct path
         tableConfigs.values.map { config: HBasePluginConfig -> ConfigAndPath(config, config.path ?: "") }
             .distinct()
@@ -120,11 +120,11 @@ class HBasePluginImpl @Inject constructor(
      * @param router
      * @param path
      */
-    private fun addRowRetrievalRoute(pluginConfig: PluginConfig, router: Router, path: String) {
+    private fun addRowRetrievalRoute(pluginConfig: PluginConfig, router: HttpRouter, path: String) {
         router.get("$path/:tableName/:recordId/").handler(
-            resourceService.handleRoute(imposterConfig, pluginConfig, vertx) { routingContext: RoutingContext ->
-                val tableName = routingContext.request().getParam("tableName")
-                val recordId = routingContext.request().getParam("recordId")
+            resourceService.handleRoute(imposterConfig, pluginConfig, vertx) { httpExchange: HttpExchange ->
+                val tableName = httpExchange.pathParam("tableName")!!
+                val recordId = httpExchange.pathParam("recordId")!!
 
                 val recordInfo = RecordInfo(recordId)
                 val config: HBasePluginConfig
@@ -132,7 +132,7 @@ class HBasePluginImpl @Inject constructor(
                 // check that the table is registered
                 if (!tableConfigs.containsKey(tableName)) {
                     LOGGER.error("Received row request for unknown table: {}", tableName)
-                    routingContext.response()
+                    httpExchange.response()
                         .setStatusCode(HttpUtil.HTTP_NOT_FOUND)
                         .end()
                     return@handleRoute
@@ -148,14 +148,14 @@ class HBasePluginImpl @Inject constructor(
                     recordInfo,
                     scannerFilterPrefix = null
                 )
-                scriptHandler(config, routingContext, injector, bindings) { responseBehaviour ->
+                scriptHandler(config, httpExchange, injector, bindings) { responseBehaviour ->
                     // find the right row from results
                     val results = responseService.loadResponseAsJsonArray(config, responseBehaviour)
                     val result = findRow(config.idField, recordInfo.recordId, results)
-                    val response = routingContext.response()
+                    val response = httpExchange.response()
 
                     result?.let {
-                        val serialiser = findSerialiser(routingContext)
+                        val serialiser = findSerialiser(httpExchange)
                         val buffer = serialiser.serialise(tableName, recordInfo.recordId, result)
                         response.setStatusCode(HttpUtil.HTTP_OK).end(buffer)
                     } ?: run {
@@ -175,15 +175,15 @@ class HBasePluginImpl @Inject constructor(
      * @param router
      * @param path
      */
-    private fun addCreateScannerRoute(pluginConfig: PluginConfig, router: Router, path: String) {
+    private fun addCreateScannerRoute(pluginConfig: PluginConfig, router: HttpRouter, path: String) {
         router.post("$path/:tableName/scanner").handler(
-            resourceService.handleRoute(imposterConfig, pluginConfig, vertx) { routingContext: RoutingContext ->
-                val tableName = routingContext.request().getParam("tableName")
+            resourceService.handleRoute(imposterConfig, pluginConfig, vertx) { httpExchange: HttpExchange ->
+                val tableName = httpExchange.pathParam("tableName")!!
 
                 // check that the table is registered
                 if (!tableConfigs.containsKey(tableName)) {
                     LOGGER.error("Received scanner request for unknown table: {}", tableName)
-                    routingContext.response()
+                    httpExchange.response()
                         .setStatusCode(HttpUtil.HTTP_NOT_FOUND)
                         .end()
                     return@handleRoute
@@ -191,11 +191,11 @@ class HBasePluginImpl @Inject constructor(
                 LOGGER.info("Received scanner request for table: {}", tableName)
                 val config = tableConfigs[tableName]!!
 
-                val deserialiser = findDeserialiser(routingContext)
+                val deserialiser = findDeserialiser(httpExchange)
                 val scanner = try {
-                    deserialiser.decodeScanner(routingContext)
+                    deserialiser.decodeScanner(httpExchange)
                 } catch (e: Exception) {
-                    routingContext.fail(e)
+                    httpExchange.fail(e)
                     return@handleRoute
                 }
                 val scannerFilterPrefix = deserialiser.decodeScannerFilterPrefix(scanner)
@@ -214,16 +214,16 @@ class HBasePluginImpl @Inject constructor(
                         "Scanner filter prefix '{}' does not match expected value: {}}",
                         scannerFilterPrefix, config.prefix
                     )
-                    routingContext.fail(HttpUtil.HTTP_INTERNAL_ERROR)
+                    httpExchange.fail(HttpUtil.HTTP_INTERNAL_ERROR)
                     return@handleRoute
                 }
 
                 // script should fire first
                 val bindings = buildScriptBindings(ResponsePhase.SCANNER, tableName, null, scannerFilterPrefix)
-                scriptHandler(config, routingContext, injector, bindings) {
+                scriptHandler(config, httpExchange, injector, bindings) {
                     val scannerId = scannerService.registerScanner(config, scanner)
                     val resultUrl = imposterConfig.serverUrl + path + "/" + tableName + "/scanner/" + scannerId
-                    routingContext.response()
+                    httpExchange.response()
                         .putHeader("Location", resultUrl)
                         .setStatusCode(HttpUtil.HTTP_CREATED)
                         .end()
@@ -239,19 +239,19 @@ class HBasePluginImpl @Inject constructor(
      * @param router
      * @param path
      */
-    private fun addReadScannerResultsRoute(pluginConfig: HBasePluginConfig, router: Router, path: String) {
+    private fun addReadScannerResultsRoute(pluginConfig: HBasePluginConfig, router: HttpRouter, path: String) {
         router.get("$path/:tableName/scanner/:scannerId").handler(
-            resourceService.handleRoute(imposterConfig, pluginConfig, vertx) { routingContext: RoutingContext ->
-                val tableName = routingContext.request().getParam("tableName")
-                val scannerId = routingContext.request().getParam("scannerId")
+            resourceService.handleRoute(imposterConfig, pluginConfig, vertx) { httpExchange: HttpExchange ->
+                val tableName = httpExchange.pathParam("tableName")!!
+                val scannerId = httpExchange.pathParam("scannerId")!!
 
                 // query param e.g. ?n=1
-                val rows = Integer.valueOf(routingContext.request().getParam("n"))
+                val rows = Integer.valueOf(httpExchange.queryParam("n"))
 
                 // check that the table is registered
                 if (!tableConfigs.containsKey(tableName)) {
                     LOGGER.error("Received result request for unknown table: {}", tableName)
-                    routingContext.response()
+                    httpExchange.response()
                         .setStatusCode(HttpUtil.HTTP_NOT_FOUND)
                         .end()
                     return@handleRoute
@@ -265,7 +265,7 @@ class HBasePluginImpl @Inject constructor(
                         scannerId,
                         tableName
                     )
-                    routingContext.response()
+                    httpExchange.response()
                         .setStatusCode(HttpUtil.HTTP_NOT_FOUND)
                         .end()
                     return@handleRoute
@@ -281,18 +281,18 @@ class HBasePluginImpl @Inject constructor(
                 val config = tableConfigs[tableName]!!
 
                 // script should fire first
-                val deserialiser = findDeserialiser(routingContext)
+                val deserialiser = findDeserialiser(httpExchange)
                 val bindings = buildScriptBindings(
                     responsePhase = ResponsePhase.RESULTS,
                     tableName = tableName,
                     scannerFilterPrefix = deserialiser.decodeScannerFilterPrefix(scanner.scanner)
                 )
-                scriptHandler(config, routingContext, injector, bindings) { responseBehaviour ->
+                scriptHandler(config, httpExchange, injector, bindings) { responseBehaviour ->
                     // build results
                     val results = responseService.loadResponseAsJsonArray(config, responseBehaviour)
-                    val serialiser = findSerialiser(routingContext)
+                    val serialiser = findSerialiser(httpExchange)
                     val buffer = serialiser.serialise(tableName, scannerId, results, scanner, rows)
-                    routingContext.response()
+                    httpExchange.response()
                         .setStatusCode(HttpUtil.HTTP_OK)
                         .end(buffer)
                 }
@@ -302,11 +302,11 @@ class HBasePluginImpl @Inject constructor(
     /**
      * Find the serialiser binding based on the content types accepted by the client.
      *
-     * @param routingContext the Vert.x routing context
+     * @param httpExchange the HTTP exchange
      * @return the serialiser
      */
-    private fun findSerialiser(routingContext: RoutingContext): SerialisationService {
-        val acceptedContentTypes = readAcceptedContentTypes(routingContext).toMutableList()
+    private fun findSerialiser(httpExchange: HttpExchange): SerialisationService {
+        val acceptedContentTypes = readAcceptedContentTypes(httpExchange).toMutableList()
 
         // add as default to end of the list
         if (!acceptedContentTypes.contains(CONTENT_TYPE_JSON)) {
@@ -337,11 +337,11 @@ class HBasePluginImpl @Inject constructor(
     /**
      * Find the deserialiser binding based on the content types sent by the client.
      *
-     * @param routingContext the Vert.x routing context
+     * @param httpExchange the HTTP exchange
      * @return the deserialiser
      */
-    private fun findDeserialiser(routingContext: RoutingContext): DeserialisationService {
-        var contentType = routingContext.request().getHeader("Content-Type")
+    private fun findDeserialiser(httpExchange: HttpExchange): DeserialisationService {
+        var contentType = httpExchange.request().getHeader("Content-Type")
 
         // use JSON as default
         if (Strings.isNullOrEmpty(contentType)) {

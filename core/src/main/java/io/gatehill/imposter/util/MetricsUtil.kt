@@ -43,11 +43,8 @@
 package io.gatehill.imposter.util
 
 import io.micrometer.core.instrument.MeterRegistry
-import io.vertx.core.Handler
 import io.vertx.core.VertxOptions
-import io.vertx.ext.web.RoutingContext
 import io.vertx.micrometer.MicrometerMetricsOptions
-import io.vertx.micrometer.PrometheusScrapingHandler
 import io.vertx.micrometer.VertxPrometheusOptions
 import io.vertx.micrometer.backends.BackendRegistries
 import org.apache.logging.log4j.LogManager
@@ -86,11 +83,6 @@ object MetricsUtil {
             LOGGER.debug("Metrics disabled - skipping {}", description)
             ChainableMetricsStarter(false)
         }
-    }
-
-    @JvmStatic
-    fun createHandler(): Handler<RoutingContext> {
-        return PrometheusScrapingHandler.create()
     }
 
     class ChainableMetricsStarter internal constructor(private val primaryCondition: Boolean) {

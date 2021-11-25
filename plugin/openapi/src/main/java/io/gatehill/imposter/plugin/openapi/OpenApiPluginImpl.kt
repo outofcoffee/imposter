@@ -43,11 +43,15 @@
 package io.gatehill.imposter.plugin.openapi
 
 import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.http.HttpRequestHandler
+import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.http.StatusCodeFactory
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.RequireModules
 import io.gatehill.imposter.plugin.ScriptedPlugin.scriptHandler
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin
+import io.gatehill.imposter.plugin.config.resource.ResourceMethod
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig
 import io.gatehill.imposter.plugin.openapi.http.OpenApiResponseBehaviourFactory
@@ -55,6 +59,7 @@ import io.gatehill.imposter.plugin.openapi.loader.SpecificationLoader
 import io.gatehill.imposter.plugin.openapi.service.ExampleService
 import io.gatehill.imposter.plugin.openapi.service.SpecificationService
 import io.gatehill.imposter.script.ResponseBehaviour
+import io.gatehill.imposter.server.ServerFactory
 import io.gatehill.imposter.service.ResourceService
 import io.gatehill.imposter.service.ResponseService
 import io.gatehill.imposter.service.ResponseService.ResponseSender
@@ -69,14 +74,8 @@ import io.swagger.v3.oas.models.Operation
 import io.swagger.v3.oas.models.PathItem
 import io.swagger.v3.oas.models.media.Content
 import io.swagger.v3.oas.models.responses.ApiResponse
-import io.vertx.core.Handler
 import io.vertx.core.Vertx
-import io.vertx.core.http.HttpMethod
-import io.vertx.ext.web.Router
-import io.vertx.ext.web.RoutingContext
-import io.vertx.ext.web.handler.StaticHandler
 import org.apache.logging.log4j.LogManager
-import java.util.function.Consumer
 import javax.inject.Inject
 import kotlin.collections.component1
 import kotlin.collections.component2
@@ -96,7 +95,8 @@ class OpenApiPluginImpl @Inject constructor(
     private val specificationService: SpecificationService,
     private val exampleService: ExampleService,
     private val responseService: ResponseService,
-    private val openApiResponseBehaviourFactory: OpenApiResponseBehaviourFactory
+    private val openApiResponseBehaviourFactory: OpenApiResponseBehaviourFactory,
+    private val serverFactory: ServerFactory
 ) : ConfiguredPlugin<OpenApiPluginConfig>(
     vertx, imposterConfig
 ) {
@@ -119,7 +119,7 @@ class OpenApiPluginImpl @Inject constructor(
         }
     }
 
-    override fun configureRoutes(router: Router) {
+    override fun configureRoutes(router: HttpRouter) {
         parseSpecs(router)
 
         val deriveBasePathFromServerEntries = configs.any { it.isUseServerPathAsBaseUrl }
@@ -127,22 +127,22 @@ class OpenApiPluginImpl @Inject constructor(
         // serve specification and UI
         LOGGER.debug("Adding specification UI at: {}{}", imposterConfig.serverUrl, SPECIFICATION_PATH)
         router.get(COMBINED_SPECIFICATION_PATH).handler(
-            resourceService.handleRoute(imposterConfig, configs, vertx) { routingContext: RoutingContext ->
-                handleCombinedSpec(routingContext, deriveBasePathFromServerEntries)
+            resourceService.handleRoute(imposterConfig, configs, vertx) { httpExchange: HttpExchange ->
+                handleCombinedSpec(httpExchange, deriveBasePathFromServerEntries)
             }
         )
         router.getWithRegex("$SPECIFICATION_PATH$").handler(
-            resourceService.handleRoute(imposterConfig, configs, vertx) { routingContext: RoutingContext ->
-                routingContext.response()
+            resourceService.handleRoute(imposterConfig, configs, vertx) { httpExchange: HttpExchange ->
+                httpExchange.response()
                     .putHeader("Location", "$SPECIFICATION_PATH/")
                     .setStatusCode(HttpUtil.HTTP_MOVED_PERM)
                     .end()
             }
         )
-        router.get("$SPECIFICATION_PATH/*").handler(StaticHandler.create(UI_WEB_ROOT))
+        router.get("$SPECIFICATION_PATH/*").handler(serverFactory.createStaticHttpHandler(UI_WEB_ROOT))
     }
 
-    private fun parseSpecs(router: Router) {
+    private fun parseSpecs(router: HttpRouter) {
         val parsedSpecs = mutableListOf<OpenAPI>()
 
         // specification mock endpoints
@@ -167,7 +167,7 @@ class OpenApiPluginImpl @Inject constructor(
      * @param pathConfig the path configuration
      */
     private fun handlePathOperations(
-        router: Router,
+        router: HttpRouter,
         config: OpenApiPluginConfig,
         spec: OpenAPI,
         path: String,
@@ -179,7 +179,7 @@ class OpenApiPluginImpl @Inject constructor(
             LOGGER.debug("Adding mock endpoint: {} -> {}", httpMethod, fullPath)
 
             // convert an io.swagger.models.HttpMethod to an io.vertx.core.http.HttpMethod
-            val method = HttpMethod.valueOf(httpMethod.name)
+            val method = ResourceMethod.valueOf(httpMethod.name)
             router.route(method, fullPath).handler(buildHandler(config, operation, spec))
         }
     }
@@ -211,15 +211,15 @@ class OpenApiPluginImpl @Inject constructor(
     /**
      * Returns an OpenAPI specification combining all the given specifications.
      *
-     * @param routingContext the Vert.x routing context
+     * @param httpExchange the HTTP exchange
      */
-    private fun handleCombinedSpec(routingContext: RoutingContext, deriveBasePathFromServerEntries: Boolean) {
+    private fun handleCombinedSpec(httpExchange: HttpExchange, deriveBasePathFromServerEntries: Boolean) {
         try {
-            routingContext.response()
+            httpExchange.response()
                 .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_JSON)
                 .end(specificationService.getCombinedSpecSerialised(allSpecs, deriveBasePathFromServerEntries))
         } catch (e: Exception) {
-            routingContext.fail(e)
+            httpExchange.fail(e)
         }
     }
 
@@ -235,31 +235,31 @@ class OpenApiPluginImpl @Inject constructor(
         pluginConfig: OpenApiPluginConfig,
         operation: Operation,
         spec: OpenAPI
-    ): Handler<RoutingContext> {
+    ): HttpRequestHandler {
         // statically calculate as much as possible
         val statusCodeFactory = buildStatusCodeCalculator(operation)
-        return resourceService.handleRoute(imposterConfig, pluginConfig, vertx) { routingContext: RoutingContext ->
-            if (!specificationService.isValidRequest(pluginConfig, routingContext, allSpecs)) {
+        return resourceService.handleRoute(imposterConfig, pluginConfig, vertx) { httpExchange: HttpExchange ->
+            if (!specificationService.isValidRequest(pluginConfig, httpExchange, allSpecs)) {
                 return@handleRoute
             }
 
             val context: MutableMap<String, Any> = mutableMapOf()
             context["operation"] = operation
 
-            val request = routingContext.request()
-            val resourceConfig = routingContext.get<ResponseConfigHolder>(ResourceUtil.RESPONSE_CONFIG_HOLDER_KEY)
-            val defaultBehaviourHandler = Consumer { responseBehaviour: ResponseBehaviour ->
+            val request = httpExchange.request()
+            val resourceConfig = httpExchange.get<ResponseConfigHolder>(ResourceUtil.RESPONSE_CONFIG_HOLDER_KEY)
 
+            val defaultBehaviourHandler = { responseBehaviour: ResponseBehaviour ->
                 // set status code regardless of response strategy
-                val response = routingContext.response().setStatusCode(responseBehaviour.statusCode)
+                val response = httpExchange.response().setStatusCode(responseBehaviour.statusCode)
 
                 findApiResponse(operation, responseBehaviour.statusCode)?.let { specResponse ->
                     if (!responseBehaviour.responseHeaders.containsKey(HttpUtil.CONTENT_TYPE)) {
-                        setContentTypeFromSpec(routingContext, responseBehaviour, specResponse)
+                        setContentTypeFromSpec(httpExchange, responseBehaviour, specResponse)
                     }
 
                     // build a response from the specification
-                    val exampleSender = ResponseSender { rc: RoutingContext, rb: ResponseBehaviour ->
+                    val exampleSender = ResponseSender { rc: HttpExchange, rb: ResponseBehaviour ->
                         exampleService.serveExample(
                             imposterConfig,
                             pluginConfig,
@@ -274,12 +274,12 @@ class OpenApiPluginImpl @Inject constructor(
                     responseService.sendResponse(
                         pluginConfig,
                         resourceConfig,
-                        routingContext,
+                        httpExchange,
                         responseBehaviour,
                         exampleSender,
-                        ResponseSender { routingContext: RoutingContext, responseBehaviour: ResponseBehaviour ->
+                        ResponseSender { httpExchange: HttpExchange, responseBehaviour: ResponseBehaviour ->
                             fallback(
-                                routingContext,
+                                httpExchange,
                                 responseBehaviour
                             )
                         })
@@ -297,7 +297,7 @@ class OpenApiPluginImpl @Inject constructor(
             scriptHandler(
                 pluginConfig,
                 resourceConfig,
-                routingContext,
+                httpExchange,
                 injector,
                 context,
                 statusCodeFactory,
@@ -308,7 +308,7 @@ class OpenApiPluginImpl @Inject constructor(
     }
 
     private fun setContentTypeFromSpec(
-        routingContext: RoutingContext,
+        httpExchange: HttpExchange,
         responseBehaviour: ResponseBehaviour,
         optionalResponse: ApiResponse
     ) {
@@ -319,12 +319,12 @@ class OpenApiPluginImpl @Inject constructor(
                     1 -> LOGGER.debug(
                         "Setting content type [{}] from specification for {}",
                         firstContentType,
-                        describeRequestShort(routingContext)
+                        describeRequestShort(httpExchange)
                     )
                     else -> LOGGER.warn(
                         "Multiple content types in specification - selecting first [{}] for {}",
                         firstContentType,
-                        describeRequestShort(routingContext)
+                        describeRequestShort(httpExchange)
                     )
                 }
                 responseBehaviour.responseHeaders[HttpUtil.CONTENT_TYPE] = firstContentType
@@ -364,15 +364,15 @@ class OpenApiPluginImpl @Inject constructor(
     /**
      * Handles the scenario when no example is found.
      *
-     * @param routingContext    the Vert.x routing context
+     * @param httpExchange    the HTTP exchange
      * @param responseBehaviour the response behaviour
      */
-    private fun fallback(routingContext: RoutingContext, responseBehaviour: ResponseBehaviour): Boolean {
+    private fun fallback(httpExchange: HttpExchange, responseBehaviour: ResponseBehaviour): Boolean {
         LOGGER.warn(
             "No example match found and no response file set for mock response for URI {} with status code {}" +
-                    " - sending empty response", routingContext.request().absoluteURI(), responseBehaviour.statusCode
+                    " - sending empty response", httpExchange.request().absoluteURI(), responseBehaviour.statusCode
         )
-        routingContext.response().end()
+        httpExchange.response().end()
         return true
     }
 }

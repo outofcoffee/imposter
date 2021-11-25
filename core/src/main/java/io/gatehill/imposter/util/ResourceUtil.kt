@@ -62,19 +62,29 @@ object ResourceUtil {
     private val PATH_PARAM_PLACEHOLDER = Pattern.compile("\\{([a-zA-Z0-9._\\-]+)}")
 
     /**
+     * Extracts the resource method.
+     */
+    @JvmStatic
+    fun extractResourceMethod(resourceConfig: ContentTypedConfig?): ResourceMethod {
+        return if (resourceConfig is MethodResourceConfig) {
+            return (resourceConfig as MethodResourceConfig).method ?: ResourceMethod.GET
+        } else {
+            ResourceMethod.GET
+        }
+    }
+
+    /**
      * Converts [ResourceMethod]s to [HttpMethod]s.
      */
     @JvmStatic
     fun convertMethodToVertx(resourceConfig: ContentTypedConfig?): HttpMethod {
-        return if (resourceConfig is MethodResourceConfig) {
-            val method = (resourceConfig as MethodResourceConfig).method ?: ResourceMethod.GET
-            METHODS[method] ?: throw UnsupportedOperationException("Unknown method: $method")
-        } else {
-            HttpMethod.GET
-        }
+        return convertMethodToVertx(extractResourceMethod(resourceConfig))
     }
 
-    fun convertMethodFromVertx(method: HttpMethod?): ResourceMethod {
+    fun convertMethodToVertx(method: ResourceMethod) =
+        METHODS[method] ?: throw UnsupportedOperationException("Unknown method: $method")
+
+    fun convertMethodFromVertx(method: HttpMethod): ResourceMethod {
         return METHODS.inverse()[method] ?: throw UnsupportedOperationException("Unknown method: $method")
     }
 
@@ -112,15 +122,11 @@ object ResourceUtil {
 
     init {
         METHODS[ResourceMethod.GET] = HttpMethod.GET
-        METHODS[ResourceMethod.HEAD] =
-            HttpMethod.HEAD
-        METHODS[ResourceMethod.POST] =
-            HttpMethod.POST
-        METHODS[ResourceMethod.PUT] =
-            HttpMethod.PUT
+        METHODS[ResourceMethod.HEAD] = HttpMethod.HEAD
+        METHODS[ResourceMethod.POST] = HttpMethod.POST
+        METHODS[ResourceMethod.PUT] = HttpMethod.PUT
         METHODS[ResourceMethod.PATCH] = HttpMethod.PATCH
-        METHODS[ResourceMethod.DELETE] =
-            HttpMethod.DELETE
+        METHODS[ResourceMethod.DELETE] = HttpMethod.DELETE
         METHODS[ResourceMethod.CONNECT] = HttpMethod.CONNECT
         METHODS[ResourceMethod.OPTIONS] = HttpMethod.OPTIONS
         METHODS[ResourceMethod.TRACE] = HttpMethod.TRACE

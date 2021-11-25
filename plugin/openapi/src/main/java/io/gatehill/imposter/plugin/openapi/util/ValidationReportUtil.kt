@@ -42,19 +42,19 @@
  */
 package io.gatehill.imposter.plugin.openapi.util
 
+import io.gatehill.imposter.http.HttpExchange
 import io.vertx.ext.web.MIMEHeader
-import io.vertx.ext.web.RoutingContext
 
 /**
  * @author Pete Cornish
  */
 object ValidationReportUtil {
-    fun sendValidationReport(routingContext: RoutingContext, reportMessages: String) {
-        if (routingContext.parsedHeaders().accept().any { a: MIMEHeader -> a.rawValue() == "text/html" }) {
-            routingContext.response().putHeader("Content-Type", "text/html")
+    fun sendValidationReport(httpExchange: HttpExchange, reportMessages: String) {
+        if (httpExchange.parsedAcceptHeader().any { a: MIMEHeader -> a.rawValue() == "text/html" }) {
+            httpExchange.response().putHeader("Content-Type", "text/html")
                 .end(buildResponseReportHtml(reportMessages))
         } else {
-            routingContext.response().putHeader("Content-Type", "text/plain")
+            httpExchange.response().putHeader("Content-Type", "text/plain")
                 .end(buildResponseReportPlain(reportMessages))
         }
     }

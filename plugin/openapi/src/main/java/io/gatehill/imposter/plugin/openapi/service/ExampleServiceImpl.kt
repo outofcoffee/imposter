@@ -44,6 +44,7 @@ package io.gatehill.imposter.plugin.openapi.service
 
 import com.google.common.base.Strings
 import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig
 import io.gatehill.imposter.plugin.openapi.model.ContentTypedHolder
 import io.gatehill.imposter.plugin.openapi.util.RefUtil
@@ -55,7 +56,6 @@ import io.swagger.v3.oas.models.media.Content
 import io.swagger.v3.oas.models.media.MediaType
 import io.swagger.v3.oas.models.media.Schema
 import io.swagger.v3.oas.models.responses.ApiResponse
-import io.vertx.ext.web.RoutingContext
 import org.apache.logging.log4j.LogManager
 import java.util.*
 import javax.inject.Inject
@@ -74,27 +74,27 @@ class ExampleServiceImpl @Inject constructor(
     override fun serveExample(
         imposterConfig: ImposterConfig,
         config: OpenApiPluginConfig,
-        routingContext: RoutingContext,
+        httpExchange: HttpExchange,
         responseBehaviour: ResponseBehaviour,
         specResponse: ApiResponse,
         spec: OpenAPI
     ): Boolean {
         return findContent(spec, specResponse)?.let { responseContent ->
-            findInlineExample(config, routingContext, responseBehaviour, responseContent)?.let { inlineExample ->
-                responseTransmissionService.transmitExample(routingContext, inlineExample)
+            findInlineExample(config, httpExchange, responseBehaviour, responseContent)?.let { inlineExample ->
+                responseTransmissionService.transmitExample(httpExchange, inlineExample)
                 true
 
             } ?: run {
                 LOGGER.trace("No inline examples found; checking schema")
-                findResponseSchema(config, routingContext, responseContent)?.let { schema ->
-                    return@run serveFromSchema(routingContext, spec, schema)
+                findResponseSchema(config, httpExchange, responseContent)?.let { schema ->
+                    return@run serveFromSchema(httpExchange, spec, schema)
                 }
             } ?: false
 
         } ?: run {
             LOGGER.debug(
                 "No matching examples found in specification for URI {} and status code {}",
-                routingContext.request().absoluteURI(), responseBehaviour.statusCode
+                httpExchange.request().absoluteURI(), responseBehaviour.statusCode
             )
 
             // no matching example
@@ -122,7 +122,7 @@ class ExampleServiceImpl @Inject constructor(
 
     private fun findInlineExample(
         config: OpenApiPluginConfig,
-        routingContext: RoutingContext,
+        httpExchange: HttpExchange,
         responseBehaviour: ResponseBehaviour,
         responseContent: Content
     ): ContentTypedHolder<Any>? {
@@ -151,9 +151,9 @@ class ExampleServiceImpl @Inject constructor(
         val example: ContentTypedHolder<Any>? = if (examples.size > 0) {
             LOGGER.trace(
                 "Checking for mock example in specification ({} candidates) for URI {}",
-                examples.size, routingContext.request().absoluteURI()
+                examples.size, httpExchange.request().absoluteURI()
             )
-            matchExample(routingContext, config, responseBehaviour, examples)
+            matchExample(httpExchange, config, responseBehaviour, examples)
         } else {
             null
         }
@@ -162,7 +162,7 @@ class ExampleServiceImpl @Inject constructor(
 
     private fun findResponseSchema(
         config: OpenApiPluginConfig,
-        routingContext: RoutingContext,
+        httpExchange: HttpExchange,
         responseContent: Content
     ): ContentTypedHolder<Schema<*>>? {
         val schemas: MutableList<ResponseEntities<Schema<*>>> = mutableListOf()
@@ -171,21 +171,21 @@ class ExampleServiceImpl @Inject constructor(
                 schemas.add(ResponseEntities.of("response schema", mimeTypeName, mediaType.schema))
             }
         }
-        return matchByContentType(routingContext, config, schemas)
+        return matchByContentType(httpExchange, config, schemas)
     }
 
     /**
      * Locate an item of type [T], first by searching the matched examples by name,
      * then by content type, then, optionally, falling back to the first found.
      *
-     * @param routingContext    the Vert.x routing context
+     * @param httpExchange    the HTTP exchange
      * @param config            the plugin configuration
      * @param responseBehaviour the response behaviour
      * @param entriesToSearch   the examples
      * @return an optional, containing the object for the given content type
      */
     private fun <T> matchExample(
-        routingContext: RoutingContext,
+        httpExchange: HttpExchange,
         config: OpenApiPluginConfig,
         responseBehaviour: ResponseBehaviour,
         entriesToSearch: List<ResponseEntities<T>>
@@ -197,20 +197,20 @@ class ExampleServiceImpl @Inject constructor(
                 return convertToContentTypedExample(responseEntities)
             } ?: LOGGER.warn("No example named '{}' was present", responseBehaviour.exampleName)
         }
-        return matchByContentType(routingContext, config, entriesToSearch)
+        return matchByContentType(httpExchange, config, entriesToSearch)
     }
 
     /**
      * Locate an entity of type [T], first by searching the matched content types, then, optionally,
      * falling back to the first found.
      *
-     * @param routingContext  the Vert.x routing context
+     * @param httpExchange  the HTTP exchange
      * @param config          the plugin configuration
      * @param entriesToSearch the examples
      * @return an optional, containing the object for the given content type
      */
     private fun <T> matchByContentType(
-        routingContext: RoutingContext,
+        httpExchange: HttpExchange,
         config: OpenApiPluginConfig,
         entriesToSearch: List<ResponseEntities<T>>
     ): ContentTypedHolder<T>? {
@@ -218,7 +218,7 @@ class ExampleServiceImpl @Inject constructor(
         val produces = entriesToSearch.map { entry: ResponseEntities<T> -> entry.contentType }.distinct()
 
         // match accepted content types to those produced by this response operation
-        val matchedContentTypes = readAcceptedContentTypes(routingContext).filter { produces.contains(it) }
+        val matchedContentTypes = readAcceptedContentTypes(httpExchange).filter { produces.contains(it) }
 
         // match example by produced and accepted content types, assuming example name is a content type
         if (matchedContentTypes.isNotEmpty()) {
@@ -262,13 +262,13 @@ class ExampleServiceImpl @Inject constructor(
     }
 
     private fun serveFromSchema(
-        routingContext: RoutingContext,
+        httpExchange: HttpExchange,
         spec: OpenAPI,
         schema: ContentTypedHolder<Schema<*>>
     ): Boolean {
         return try {
-            val dynamicExamples = schemaService.collectExamples(routingContext.request(), spec, schema)
-            responseTransmissionService.transmitExample(routingContext, dynamicExamples)
+            val dynamicExamples = schemaService.collectExamples(httpExchange.request(), spec, schema)
+            responseTransmissionService.transmitExample(httpExchange, dynamicExamples)
             true
         } catch (e: Exception) {
             LOGGER.error("Error serving example from schema", e)

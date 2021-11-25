@@ -44,6 +44,8 @@ package io.gatehill.imposter.service.script
 
 import com.google.common.cache.CacheBuilder
 import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
 import io.gatehill.imposter.lifecycle.EngineLifecycleListener
 import io.gatehill.imposter.lifecycle.ScriptExecLifecycleHooks
@@ -61,8 +63,6 @@ import io.gatehill.imposter.util.EnvVars
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.MetricsUtil
 import io.micrometer.core.instrument.Timer
-import io.vertx.ext.web.Router
-import io.vertx.ext.web.RoutingContext
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.apache.logging.log4j.util.Supplier
@@ -96,7 +96,7 @@ class ScriptedResponseServiceImpl @Inject constructor(
         engineLifecycle.registerListener(this)
     }
 
-    override fun afterRoutesConfigured(imposterConfig: ImposterConfig, allPluginConfigs: List<PluginConfig>, router: Router) {
+    override fun afterRoutesConfigured(imposterConfig: ImposterConfig, allPluginConfigs: List<PluginConfig>, router: HttpRouter) {
         initScripts(allPluginConfigs)
     }
 
@@ -126,7 +126,7 @@ class ScriptedResponseServiceImpl @Inject constructor(
     }
 
     override fun determineResponseFromScript(
-        routingContext: RoutingContext,
+        httpExchange: HttpExchange,
         pluginConfig: PluginConfig,
         resourceConfig: ResponseConfigHolder?,
         additionalContext: Map<String, Any>?,
@@ -135,7 +135,7 @@ class ScriptedResponseServiceImpl @Inject constructor(
         return try {
             val scriptExecutor = {
                 determineResponseFromScriptInternal(
-                    routingContext,
+                    httpExchange,
                     pluginConfig,
                     resourceConfig,
                     additionalContext,
@@ -150,7 +150,7 @@ class ScriptedResponseServiceImpl @Inject constructor(
     }
 
     private fun determineResponseFromScriptInternal(
-        routingContext: RoutingContext,
+        httpExchange: HttpExchange,
         pluginConfig: PluginConfig,
         resourceConfig: ResponseConfigHolder?,
         additionalContext: Map<String, Any>?,
@@ -166,14 +166,14 @@ class ScriptedResponseServiceImpl @Inject constructor(
             LOGGER.trace(
                 "Executing script '{}' for request: {} {}",
                 responseConfig.scriptFile,
-                routingContext.request().method(),
-                routingContext.request().absoluteURI()
+                httpExchange.request().method(),
+                httpExchange.request().absoluteURI()
             )
-            val executionContext = ScriptUtil.buildContext(routingContext, additionalContext)
+            val executionContext = ScriptUtil.buildContext(httpExchange, additionalContext)
             LOGGER.trace("Context for request: {}", Supplier<Any> { executionContext })
 
             val finalAdditionalBindings = finaliseAdditionalBindings(
-                routingContext,
+                httpExchange,
                 additionalBindings ?: emptyMap(),
                 executionContext
             )
@@ -202,8 +202,8 @@ class ScriptedResponseServiceImpl @Inject constructor(
                 String.format(
                     "Executed script '%s' for request: %s %s in %.2fms",
                     responseConfig.scriptFile,
-                    routingContext.request().method(),
-                    routingContext.request().absoluteURI(),
+                    httpExchange.request().method(),
+                    httpExchange.request().absoluteURI(),
                     (System.nanoTime() - executionStart) / 1000000f
                 )
             )
@@ -211,7 +211,7 @@ class ScriptedResponseServiceImpl @Inject constructor(
         } catch (e: Exception) {
             throw RuntimeException(
                 "Error executing script: '${responseConfig.scriptFile}' for request: " +
-                    "${routingContext.request().method()} ${routingContext.request().absoluteURI()}", e
+                    "${httpExchange.request().method()} ${httpExchange.request().absoluteURI()}", e
             )
         }
     }
@@ -231,7 +231,7 @@ class ScriptedResponseServiceImpl @Inject constructor(
     }
 
     private fun finaliseAdditionalBindings(
-        routingContext: RoutingContext,
+        httpExchange: HttpExchange,
         additionalBindings: Map<String, Any>,
         executionContext: ExecutionContext
     ): Map<String, Any> {
@@ -242,7 +242,7 @@ class ScriptedResponseServiceImpl @Inject constructor(
             val listenerAdditionalBindings: MutableMap<String, Any> = mutableMapOf()
             engineLifecycle.forEach { listener: EngineLifecycleListener ->
                 listener.beforeBuildingRuntimeContext(
-                    routingContext, listenerAdditionalBindings, executionContext
+                    httpExchange, listenerAdditionalBindings, executionContext
                 )
             }
             if (listenerAdditionalBindings.isNotEmpty()) {

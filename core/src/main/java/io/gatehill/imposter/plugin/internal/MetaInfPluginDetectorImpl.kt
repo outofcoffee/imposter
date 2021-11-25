@@ -43,11 +43,11 @@
 package io.gatehill.imposter.plugin.internal
 
 import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.PluginProvider
 import io.gatehill.imposter.util.MetaUtil
-import io.vertx.ext.web.Router
 import java.io.File
 
 /**
@@ -60,7 +60,7 @@ import java.io.File
  */
 @PluginInfo("meta-detector")
 class MetaInfPluginDetectorImpl : Plugin, PluginProvider {
-    override fun configureRoutes(router: Router) {
+    override fun configureRoutes(router: HttpRouter) {
         // no op
     }
 

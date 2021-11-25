@@ -40,39 +40,70 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.service
+package io.gatehill.imposter.http
 
-import io.gatehill.imposter.http.HttpExchange
-import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.config.security.SecurityConfig
+import io.gatehill.imposter.plugin.config.resource.ResourceMethod
+import io.vertx.core.MultiMap
+import io.vertx.core.buffer.Buffer
+import io.vertx.core.json.JsonObject
+import io.vertx.ext.web.MIMEHeader
 
 /**
  * @author Pete Cornish
  */
-interface SecurityService {
-    /**
-     * Find a plugin configuration with a 'security' block if one is non-null.
-     *
-     *
-     * Only zero or one configurations can specify the 'security' block.
-     * If none are found, the first configuration is returned, indicating no security policy is specified.
-     * If more than one configuration has a security block, an [IllegalStateException] is thrown.
-     *
-     * @param allPluginConfigs all plugin configurations
-     * @return a single plugin configuration that *may* have a security configuration.
-     */
-    fun findConfigPreferringSecurityPolicy(allPluginConfigs: List<PluginConfig>): PluginConfig
+interface HttpExchange {
+    fun request(): HttpRequest
+    fun response(): HttpResponse
+    fun queryParams(): Map<String, String>
+    fun pathParams(): Map<String, String>
+    fun pathParam(paramName: String): String?
+    fun queryParam(queryParam: String): String?
 
     /**
-     * Enforces the given security policy on the current request.
-     *
-     *
-     * If the request is to be denied, then this method sends HTTP 401 to the [HttpExchange].
-     * If the request is to be permitted, no modification is made to the [HttpExchange].
-     *
-     * @param security       the security policy
-     * @param httpExchange the current request
-     * @return `true` of the request is permitted to continue, otherwise `false`
+     * TODO remove dependency on vertx-web
      */
-    fun enforce(security: SecurityConfig?, httpExchange: HttpExchange): Boolean
+    fun parsedAcceptHeader(): List<MIMEHeader>
+
+    /**
+     * Note: not all routes have a path.
+     */
+    val currentRoutePath: String?
+
+    val body: Buffer?
+
+    val bodyAsString: String?
+
+    val bodyAsJson: JsonObject?
+
+    fun fail(cause: Throwable?)
+    fun fail(statusCode: Int)
+    fun failure(): Throwable?
+
+    fun <T> get(key: String): T?
+    fun put(key: String, value: Any)
+}
+
+/**
+ * @author Pete Cornish
+ */
+interface HttpRequest {
+    fun path(): String
+    fun method(): ResourceMethod
+    fun absoluteURI(): String
+    fun headers(): Map<String, String>
+    fun getHeader(headerKey: String): String?
+}
+
+/**
+ * @author Pete Cornish
+ */
+interface HttpResponse {
+    fun setStatusCode(statusCode: Int): HttpResponse
+    fun getStatusCode(): Int
+    fun putHeader(headerKey: String, headerValue: String): HttpResponse
+    fun headers(): MultiMap
+    fun sendFile(filePath: String): HttpResponse
+    fun end()
+    fun end(body: Buffer)
+    fun end(body: String?)
 }

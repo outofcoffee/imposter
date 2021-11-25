@@ -43,10 +43,10 @@
 
 package io.gatehill.imposter.script
 
+import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.util.CollectionUtil
 import io.gatehill.imposter.util.EnvVars
-import io.vertx.ext.web.RoutingContext
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -62,30 +62,30 @@ object ScriptUtil {
     /**
      * Build the {@code context}, containing lazily-evaluated values.
      *
-     * @param routingContext
+     * @param httpExchange
      * @param additionalContext
      * @return the context
      */
     @JvmStatic
-    fun buildContext(routingContext: RoutingContext, additionalContext: Map<String, Any>?): ExecutionContext {
-        val vertxRequest = routingContext.request()
+    fun buildContext(httpExchange: HttpExchange, additionalContext: Map<String, Any>?): ExecutionContext {
+        val vertxRequest = httpExchange.request()
 
         val headersSupplier: () -> Map<String, String> = {
             val entries = vertxRequest.headers()
             if (forceHeaderKeyNormalisation) {
                 CollectionUtil.convertKeysToLowerCase(entries)
             } else {
-                CollectionUtil.asMap(entries)
+                entries
             }
         }
 
-        val pathParamsSupplier: () -> Map<String, String> = { routingContext.pathParams() }
+        val pathParamsSupplier: () -> Map<String, String> = { httpExchange.pathParams() }
 
         val queryParamsSupplier: () -> Map<String, String> = {
-            CollectionUtil.asMap(routingContext.queryParams())
+            httpExchange.queryParams()
         }
 
-        val bodySupplier: () -> String? = { routingContext.bodyAsString }
+        val bodySupplier: () -> String? = { httpExchange.bodyAsString }
 
         // request information
         val request = ExecutionContext.Request(headersSupplier, pathParamsSupplier, queryParamsSupplier, bodySupplier)

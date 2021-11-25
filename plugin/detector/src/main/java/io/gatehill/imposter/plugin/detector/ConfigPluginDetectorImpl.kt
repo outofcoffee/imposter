@@ -43,10 +43,10 @@
 package io.gatehill.imposter.plugin.detector
 
 import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.PluginProvider
-import io.vertx.ext.web.Router
 import java.io.File
 
 /**
@@ -56,7 +56,7 @@ import java.io.File
  */
 @PluginInfo("config-detector")
 class ConfigPluginDetectorImpl : Plugin, PluginProvider {
-    override fun configureRoutes(router: Router) {
+    override fun configureRoutes(router: HttpRouter) {
         // no op
     }
 

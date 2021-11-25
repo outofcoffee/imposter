@@ -43,6 +43,7 @@
 package io.gatehill.imposter.plugin.hbase.service.serialisation
 
 import com.google.common.io.BaseEncoding
+import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.plugin.hbase.model.InMemoryScanner
 import io.gatehill.imposter.plugin.hbase.model.MockScanner
 import io.gatehill.imposter.plugin.hbase.model.ResultCell
@@ -51,12 +52,10 @@ import io.gatehill.imposter.util.MapUtil
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
-import io.vertx.ext.web.RoutingContext
 import org.apache.hadoop.hbase.HConstants
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.io.IOException
-import java.util.function.Consumer
 import javax.inject.Inject
 
 /**
@@ -68,9 +67,9 @@ class JsonSerialisationServiceImpl @Inject constructor(
 
     override val logger: Logger = LogManager.getLogger(JsonSerialisationServiceImpl::class.java)
 
-    override fun decodeScanner(routingContext: RoutingContext): MockScanner {
+    override fun decodeScanner(httpExchange: HttpExchange): MockScanner {
         return try {
-            MapUtil.JSON_MAPPER.readValue(routingContext.body.bytes, MockScanner::class.java)
+            MapUtil.JSON_MAPPER.readValue(httpExchange.body!!.bytes, MockScanner::class.java)
         } catch (e: IOException) {
             throw RuntimeException(e)
         }
@@ -129,14 +128,14 @@ class JsonSerialisationServiceImpl @Inject constructor(
         row.put("Cell", cell)
 
         // add cells in sorted order
-        buildSortedCells(result)!!.forEach(Consumer { c: ResultCell ->
+        buildSortedCells(result).forEach { c: ResultCell ->
             val column = JsonObject()
             cell.add(column)
             column.put("column", toBase64(c.fieldName))
             column.put("timestamp", java.lang.Long.toString(HConstants.LATEST_TIMESTAMP))
             column.put("$", toBase64(c.fieldValue))
             cell.add(column)
-        })
+        }
         return row
     }
 

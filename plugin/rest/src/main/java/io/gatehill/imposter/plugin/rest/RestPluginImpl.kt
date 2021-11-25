@@ -43,12 +43,13 @@
 package io.gatehill.imposter.plugin.rest
 
 import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.ScriptedPlugin.scriptHandler
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin
 import io.gatehill.imposter.plugin.config.ContentTypedConfig
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig
-import io.gatehill.imposter.plugin.rest.RestPluginImpl
 import io.gatehill.imposter.plugin.rest.config.ResourceConfigType
 import io.gatehill.imposter.plugin.rest.config.RestPluginConfig
 import io.gatehill.imposter.plugin.rest.config.RestPluginResourceConfig
@@ -56,10 +57,8 @@ import io.gatehill.imposter.service.ResourceService
 import io.gatehill.imposter.service.ResponseService
 import io.gatehill.imposter.util.FileUtil.findRow
 import io.gatehill.imposter.util.HttpUtil
-import io.gatehill.imposter.util.ResourceUtil.convertMethodToVertx
+import io.gatehill.imposter.util.ResourceUtil.extractResourceMethod
 import io.vertx.core.Vertx
-import io.vertx.ext.web.Router
-import io.vertx.ext.web.RoutingContext
 import org.apache.logging.log4j.LogManager
 import java.util.regex.Pattern
 import javax.inject.Inject
@@ -80,7 +79,7 @@ class RestPluginImpl @Inject constructor(
 ) {
     override val configClass = RestPluginConfig::class.java
 
-    override fun configureRoutes(router: Router) {
+    override fun configureRoutes(router: HttpRouter) {
         configs.forEach { config: RestPluginConfig ->
             // add root handler
             // TODO consider changing this to config.getPath() if non-null
@@ -94,7 +93,7 @@ class RestPluginImpl @Inject constructor(
     }
 
     private fun addResourceHandler(
-        router: Router,
+        router: HttpRouter,
         rootConfig: RestPluginConfig,
         resourceConfig: RestPluginResourceConfig
     ) {
@@ -105,42 +104,46 @@ class RestPluginImpl @Inject constructor(
         }
     }
 
-    private fun addObjectHandler(router: Router, pluginConfig: RestPluginConfig, resourceConfig: ContentTypedConfig) {
+    private fun addObjectHandler(
+        router: HttpRouter,
+        pluginConfig: RestPluginConfig,
+        resourceConfig: ContentTypedConfig
+    ) {
         addObjectHandler(router, pluginConfig.path, pluginConfig, resourceConfig)
     }
 
     private fun addObjectHandler(
-        router: Router,
+        router: HttpRouter,
         rootPath: String?,
         pluginConfig: RestPluginConfig,
         resourceConfig: ContentTypedConfig
     ) {
         val qualifiedPath = buildQualifiedPath(rootPath, resourceConfig)
-        val method = convertMethodToVertx(resourceConfig)
+        val method = extractResourceMethod(resourceConfig)
         LOGGER.debug("Adding {} object handler: {}", method, qualifiedPath)
 
         router.route(method, qualifiedPath).handler(
-            resourceService.handleRoute(imposterConfig, pluginConfig, vertx) { routingContext: RoutingContext ->
+            resourceService.handleRoute(imposterConfig, pluginConfig, vertx) { httpExchange: HttpExchange ->
                 // script should fire first
-                scriptHandler(pluginConfig, resourceConfig, routingContext, injector) { responseBehaviour ->
+                scriptHandler(pluginConfig, resourceConfig, httpExchange, injector) { responseBehaviour ->
                     LOGGER.info(
                         "Handling {} object request for: {}",
                         method,
-                        routingContext.request().absoluteURI()
+                        httpExchange.request().absoluteURI()
                     )
-                    responseService.sendResponse(pluginConfig, resourceConfig, routingContext, responseBehaviour)
+                    responseService.sendResponse(pluginConfig, resourceConfig, httpExchange, responseBehaviour)
                 }
             }
         )
     }
 
     private fun addArrayHandler(
-        router: Router,
+        router: HttpRouter,
         pluginConfig: RestPluginConfig,
         resourceConfig: RestPluginResourceConfig
     ) {
         val qualifiedPath = buildQualifiedPath(pluginConfig.path, resourceConfig)
-        val method = convertMethodToVertx(resourceConfig)
+        val method = extractResourceMethod(resourceConfig)
         LOGGER.debug("Adding {} array handler: {}", method, qualifiedPath)
 
         // validate path includes parameter
@@ -150,21 +153,21 @@ class RestPluginImpl @Inject constructor(
             "Resource '$resourcePath' does not contain a field ID parameter"
         }
         router.route(method, qualifiedPath).handler(
-            resourceService.handleRoute(imposterConfig, pluginConfig, vertx) { routingContext: RoutingContext ->
+            resourceService.handleRoute(imposterConfig, pluginConfig, vertx) { httpExchange: HttpExchange ->
                 // script should fire first
-                scriptHandler(pluginConfig, resourceConfig, routingContext, injector) { responseBehaviour ->
-                    LOGGER.info("Handling {} array request for: {}", method, routingContext.request().absoluteURI())
+                scriptHandler(pluginConfig, resourceConfig, httpExchange, injector) { responseBehaviour ->
+                    LOGGER.info("Handling {} array request for: {}", method, httpExchange.request().absoluteURI())
 
                     // get the first param in the path
                     val idFieldName = matcher.group(1)
-                    val idField = routingContext.request().getParam(idFieldName)
+                    val idField = httpExchange.pathParam(idFieldName)
 
                     // find row
                     val result = findRow(
                         idFieldName, idField,
                         responseService.loadResponseAsJsonArray(pluginConfig, responseBehaviour)
                     )
-                    val response = routingContext.response()
+                    val response = httpExchange.response()
 
                     result?.let {
                         LOGGER.info("Returning single row for {}:{}", idFieldName, idField)

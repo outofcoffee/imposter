@@ -42,7 +42,7 @@
  */
 package io.gatehill.imposter.util
 
-import io.vertx.ext.web.RoutingContext
+import io.gatehill.imposter.http.HttpExchange
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.core.LoggerContext
@@ -87,26 +87,26 @@ object LogUtil {
     }
 
     /**
-     * @param routingContext the routing context
+     * @param httpExchange the HTTP exchange
      * @return a short description of the request
      */
     @JvmStatic
-    fun describeRequestShort(routingContext: RoutingContext): String {
-        return routingContext.request().method().toString() + " " + routingContext.request().absoluteURI()
+    fun describeRequestShort(httpExchange: HttpExchange): String {
+        return httpExchange.request().method().toString() + " " + httpExchange.request().absoluteURI()
     }
 
     /**
-     * @param routingContext the routing context
+     * @param httpExchange the HTTP exchange
      * @param requestId      the request ID (can be null)
      * @return a description of the request
      */
     @JvmOverloads
     fun describeRequest(
-        routingContext: RoutingContext,
-        requestId: String? = routingContext.get(ResourceUtil.RC_REQUEST_ID_KEY)
+        httpExchange: HttpExchange,
+        requestId: String? = httpExchange.get(ResourceUtil.RC_REQUEST_ID_KEY)
     ): String {
         return "[" + requestId + "]" +
-            " " + routingContext.request().method() +
-            " " + routingContext.request().absoluteURI()
+            " " + httpExchange.request().method() +
+            " " + httpExchange.request().absoluteURI()
     }
 }

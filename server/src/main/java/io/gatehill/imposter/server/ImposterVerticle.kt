@@ -44,6 +44,7 @@ package io.gatehill.imposter.server
 
 import com.google.inject.Module
 import io.gatehill.imposter.Imposter
+import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
 import io.gatehill.imposter.lifecycle.EngineLifecycleListener
 import io.gatehill.imposter.plugin.Plugin
@@ -60,12 +61,8 @@ import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.HttpUtil.buildStatusResponse
 import io.gatehill.imposter.util.InjectorUtil.injector
 import io.gatehill.imposter.util.MetricsUtil
-import io.gatehill.imposter.util.MetricsUtil.createHandler
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Future
-import io.vertx.core.http.HttpServer
-import io.vertx.ext.web.Router
-import io.vertx.ext.web.handler.impl.BodyHandlerImpl
 import org.apache.logging.log4j.LogManager
 import javax.inject.Inject
 
@@ -125,10 +122,10 @@ class ImposterVerticle : AbstractVerticle() {
         httpServer?.let { server: HttpServer -> server.close(resolveFutureOnCompletion(stopFuture)) }
     }
 
-    private fun configureRoutes(): Router {
-        val router = Router.router(vertx)
+    private fun configureRoutes(): HttpRouter {
+        val router = HttpRouter.router(vertx)
         router.errorHandler(500, resourceService.buildUnhandledExceptionHandler())
-        router.route().handler(BodyHandlerImpl())
+        router.route().handler(serverFactory.createBodyHttpHandler())
 
         val allConfigs: MutableList<PluginConfig> = mutableListOf()
         pluginManager.getPlugins()
@@ -142,14 +139,14 @@ class ImposterVerticle : AbstractVerticle() {
         if (isFeatureEnabled(MetricsUtil.FEATURE_NAME_METRICS)) {
             LOGGER.trace("Metrics enabled")
             router.route("/system/metrics").handler(
-                resourceService.passthroughRoute(imposterConfig, allConfigs, vertx, createHandler())
+                resourceService.passthroughRoute(imposterConfig, allConfigs, vertx, serverFactory.createMetricsHandler())
             )
         }
 
         // status check to indicate when server is up
         router.get("/system/status").handler(
-            resourceService.handleRoute(imposterConfig, allConfigs, vertx) { routingContext ->
-                routingContext.response()
+            resourceService.handleRoute(imposterConfig, allConfigs, vertx) { httpExchange ->
+                httpExchange.response()
                     .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_JSON)
                     .end(buildStatusResponse())
             })

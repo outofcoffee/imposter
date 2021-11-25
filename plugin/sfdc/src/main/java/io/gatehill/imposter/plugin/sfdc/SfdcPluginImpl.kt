@@ -43,9 +43,13 @@
 package io.gatehill.imposter.plugin.sfdc
 
 import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.http.HttpRequestHandler
+import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.ScriptedPlugin.scriptHandler
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin
+import io.gatehill.imposter.plugin.config.resource.ResourceMethod
 import io.gatehill.imposter.plugin.sfdc.config.SfdcPluginConfig
 import io.gatehill.imposter.service.ResourceService
 import io.gatehill.imposter.service.ResponseService
@@ -53,13 +57,9 @@ import io.gatehill.imposter.util.FileUtil.findRow
 import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.HttpUtil.CONTENT_TYPE
 import io.gatehill.imposter.util.HttpUtil.CONTENT_TYPE_JSON
-import io.vertx.core.Handler
 import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
-import io.vertx.core.http.HttpMethod
 import io.vertx.core.json.JsonObject
-import io.vertx.ext.web.Router
-import io.vertx.ext.web.RoutingContext
 import org.apache.logging.log4j.LogManager
 import java.util.*
 import javax.inject.Inject
@@ -81,26 +81,26 @@ class SfdcPluginImpl @Inject constructor(
 ) {
     override val configClass = SfdcPluginConfig::class.java
 
-    override fun configureRoutes(router: Router) {
+    override fun configureRoutes(router: HttpRouter) {
         // oauth handler
         router.post("/services/oauth2/token").handler(
-            resourceService.handleRoute(imposterConfig, configs, vertx) { routingContext: RoutingContext ->
-                LOGGER.info("Handling oauth request: {}", routingContext.bodyAsString)
+            resourceService.handleRoute(imposterConfig, configs, vertx) { httpExchange: HttpExchange ->
+                LOGGER.info("Handling oauth request: {}", httpExchange.bodyAsString)
                 val authResponse = JsonObject()
                 authResponse.put("access_token", "dummyAccessToken")
                 authResponse.put("instance_url", imposterConfig.serverUrl)
-                routingContext.response().putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON)
-                routingContext.response().end(authResponse.encode())
+                httpExchange.response().putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON)
+                httpExchange.response().end(authResponse.encode())
             }
         )
 
         // query handler
         router.get("/services/data/:apiVersion/query/").handler(
-            resourceService.handleRoute(imposterConfig, configs, vertx) { routingContext: RoutingContext ->
-                val apiVersion = routingContext.request().getParam("apiVersion")
+            resourceService.handleRoute(imposterConfig, configs, vertx) { httpExchange: HttpExchange ->
+                val apiVersion = httpExchange.pathParam("apiVersion")!!
 
                 // e.g. 'SELECT Name, Id from Account LIMIT 100'
-                val query = routingContext.request().getParam("q")
+                val query = httpExchange.queryParam("q")!!
                 val sObjectName = getSObjectName(query)
                     ?: throw RuntimeException("Could not determine SObject name from query: $query")
 
@@ -109,7 +109,7 @@ class SfdcPluginImpl @Inject constructor(
                 } ?: throw RuntimeException("Unable to find mock config for SObject: $sObjectName")
 
                 // script should fire first
-                scriptHandler(config, routingContext, injector) { responseBehaviour ->
+                scriptHandler(config, httpExchange, injector) { responseBehaviour ->
                     // enrich records
                     val records = responseService.loadResponseAsJsonArray(config, responseBehaviour)
                     for (i in 0 until records.size()) {
@@ -122,7 +122,7 @@ class SfdcPluginImpl @Inject constructor(
                     responseWrapper.put("totalSize", records.size())
                     LOGGER.info("Sending {} SObjects in response to query: {}", records.size(), query)
 
-                    routingContext.response()
+                    httpExchange.response()
                         .putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON)
                         .setStatusCode(HttpUtil.HTTP_OK)
                         .end(Buffer.buffer(responseWrapper.encodePrettily()))
@@ -132,19 +132,20 @@ class SfdcPluginImpl @Inject constructor(
 
         // get SObject handler
         configs.forEach { config: SfdcPluginConfig ->
-            val handler = resourceService.handleRoute(imposterConfig, config, vertx) { routingContext: RoutingContext ->
+            val handler = resourceService.handleRoute(imposterConfig, config, vertx) { httpExchange: HttpExchange ->
                 // script should fire first
-                scriptHandler(config, routingContext, injector) { responseBehaviour ->
-                    val apiVersion = routingContext.request().getParam("apiVersion")
-                    val sObjectId = routingContext.request().getParam("sObjectId")
+                scriptHandler(config, httpExchange, injector) { responseBehaviour ->
+                    val apiVersion = httpExchange.pathParam("apiVersion")!!
+                    val sObjectId = httpExchange.pathParam("sObjectId")
 
                     // find and enrich record
                     val result = findRow(
-                        FIELD_ID, sObjectId,
-                        responseService.loadResponseAsJsonArray(config, responseBehaviour)
+                        idFieldName = FIELD_ID,
+                        rowId = sObjectId,
+                        rows = responseService.loadResponseAsJsonArray(config, responseBehaviour)
                     )?.let { r: JsonObject -> addRecordAttributes(r, apiVersion, config.sObjectName) }
 
-                    val response = routingContext.response()
+                    val response = httpExchange.response()
 
                     result?.let {
                         LOGGER.info("Sending SObject with ID: {}", sObjectId)
@@ -163,16 +164,16 @@ class SfdcPluginImpl @Inject constructor(
 
         // create SObject handler
         router.post("/services/data/:apiVersion/sobjects/:sObjectName").handler(
-            resourceService.handleRoute(imposterConfig, configs, vertx) { routingContext: RoutingContext ->
-                val sObjectName = routingContext.request().getParam("sObjectName")
-                val sObject = routingContext.bodyAsJson
+            resourceService.handleRoute(imposterConfig, configs, vertx) { httpExchange: HttpExchange ->
+                val sObjectName = httpExchange.pathParam("sObjectName")
+                val sObject = httpExchange.bodyAsJson
                 LOGGER.info("Received create request for {}: {}", sObjectName, sObject)
                 val result = JsonObject()
 
                 // Note: ID response field name has to be lowercase, for some reason
                 result.put("id", generateBase62Id())
                 result.put("success", true)
-                routingContext.response()
+                httpExchange.response()
                     .putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON)
                     .setStatusCode(HttpUtil.HTTP_CREATED)
                     .end(Buffer.buffer(result.encodePrettily()))
@@ -189,21 +190,21 @@ class SfdcPluginImpl @Inject constructor(
      *
      * @return
      */
-    private fun handleUpdateRequest(): Handler<RoutingContext> {
-        return resourceService.handleRoute(imposterConfig, configs, vertx) { routingContext: RoutingContext ->
-            val sObjectName = routingContext.request().getParam("sObjectName")
-            val sObjectId = routingContext.request().getParam("sObjectId")
-            val sObject = routingContext.bodyAsJson
+    private fun handleUpdateRequest(): HttpRequestHandler {
+        return resourceService.handleRoute(imposterConfig, configs, vertx) { httpExchange: HttpExchange ->
+            val sObjectName = httpExchange.pathParam("sObjectName")
+            val sObjectId = httpExchange.pathParam("sObjectId")
+            val sObject = httpExchange.bodyAsJson
 
             // SFDC work-around for HTTP clients that don't support PATCH
-            if (HttpMethod.PATCH != routingContext.request().method()
-                && "PATCH" != routingContext.request().getParam("_HttpMethod")
+            if (ResourceMethod.PATCH != httpExchange.request().method()
+                && "PATCH" != httpExchange.queryParam("_HttpMethod")
             ) {
-                routingContext.fail(HttpUtil.HTTP_BAD_METHOD)
+                httpExchange.fail(HttpUtil.HTTP_BAD_METHOD)
                 return@handleRoute
             }
             LOGGER.info("Received update request for {} with ID: {}: {}", sObjectName, sObjectId, sObject)
-            routingContext.response()
+            httpExchange.response()
                 .putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON)
                 .setStatusCode(HttpUtil.HTTP_NO_CONTENT)
                 .end()

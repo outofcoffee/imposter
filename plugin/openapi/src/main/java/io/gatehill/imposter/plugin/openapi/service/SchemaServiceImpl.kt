@@ -42,6 +42,7 @@
  */
 package io.gatehill.imposter.plugin.openapi.service
 
+import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.plugin.openapi.model.ContentTypedHolder
 import io.gatehill.imposter.plugin.openapi.service.valueprovider.DEFAULT_VALUE_PROVIDERS
 import io.gatehill.imposter.plugin.openapi.util.RefUtil
@@ -52,7 +53,6 @@ import io.swagger.v3.oas.models.media.DateSchema
 import io.swagger.v3.oas.models.media.DateTimeSchema
 import io.swagger.v3.oas.models.media.ObjectSchema
 import io.swagger.v3.oas.models.media.Schema
-import io.vertx.core.http.HttpServerRequest
 import org.apache.logging.log4j.LogManager
 import java.time.OffsetDateTime
 import java.time.ZoneId
@@ -68,7 +68,7 @@ import java.util.*
  */
 class SchemaServiceImpl : SchemaService {
     override fun collectExamples(
-        request: HttpServerRequest,
+        request: HttpRequest,
         spec: OpenAPI,
         schema: ContentTypedHolder<Schema<*>>
     ): ContentTypedHolder<*> {
@@ -199,9 +199,7 @@ class SchemaServiceImpl : SchemaService {
     }
 
     companion object {
-        private val LOGGER = LogManager.getLogger(
-            SchemaServiceImpl::class.java
-        )
+        private val LOGGER = LogManager.getLogger(SchemaServiceImpl::class.java)
         val DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE.withZone(ZoneId.from(ZoneOffset.UTC))
         val DATE_TIME_FORMATTER: DateTimeFormatter =
             DateTimeFormatter.ISO_OFFSET_DATE_TIME.withZone(ZoneId.from(ZoneOffset.UTC))

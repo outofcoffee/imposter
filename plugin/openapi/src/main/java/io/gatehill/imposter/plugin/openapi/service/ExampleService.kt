@@ -43,11 +43,11 @@
 package io.gatehill.imposter.plugin.openapi.service
 
 import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig
 import io.gatehill.imposter.script.ResponseBehaviour
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.responses.ApiResponse
-import io.vertx.ext.web.RoutingContext
 
 /**
  * @author Pete Cornish
@@ -58,7 +58,7 @@ interface ExampleService {
      *
      * @param imposterConfig    the Imposter engine configuration
      * @param config            the plugin configuration
-     * @param routingContext    the Vert.x routing context
+     * @param httpExchange    the HTTP exchange
      * @param responseBehaviour the response behaviour
      * @param specResponse      the specification response
      * @param spec              the OpenAPI specification
@@ -67,7 +67,7 @@ interface ExampleService {
     fun serveExample(
         imposterConfig: ImposterConfig,
         config: OpenApiPluginConfig,
-        routingContext: RoutingContext,
+        httpExchange: HttpExchange,
         responseBehaviour: ResponseBehaviour,
         specResponse: ApiResponse,
         spec: OpenAPI

@@ -42,6 +42,7 @@
  */
 package io.gatehill.imposter.service.security
 
+import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.lifecycle.SecurityLifecycleHooks
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.security.ConditionalNameValuePair
@@ -51,14 +52,11 @@ import io.gatehill.imposter.plugin.config.security.SecurityConfig
 import io.gatehill.imposter.plugin.config.security.SecurityConfigHolder
 import io.gatehill.imposter.plugin.config.security.SecurityEffect
 import io.gatehill.imposter.service.SecurityService
-import io.gatehill.imposter.util.CollectionUtil.asMap
 import io.gatehill.imposter.util.CollectionUtil.convertKeysToLowerCase
 import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.StringUtil.safeEquals
-import io.vertx.core.MultiMap
-import io.vertx.ext.web.RoutingContext
 import org.apache.logging.log4j.LogManager
-import java.util.Locale
+import java.util.*
 import javax.inject.Inject
 
 /**
@@ -100,17 +98,17 @@ class SecurityServiceImpl @Inject constructor(
     /**
      * {@inheritDoc}
      */
-    override fun enforce(security: SecurityConfig?, routingContext: RoutingContext): Boolean {
+    override fun enforce(security: SecurityConfig?, httpExchange: HttpExchange): Boolean {
         val outcome: PolicyOutcome = if (security!!.conditions.isEmpty()) {
             PolicyOutcome(security.defaultEffect, "default effect")
         } else {
-            evaluatePolicy(security, routingContext)
+            evaluatePolicy(security, httpExchange)
         }
-        return enforceEffect(routingContext, outcome)
+        return enforceEffect(httpExchange, outcome)
     }
 
-    private fun evaluatePolicy(security: SecurityConfig?, routingContext: RoutingContext): PolicyOutcome {
-        val failed = security!!.conditions.filter { c: SecurityCondition -> !checkCondition(c, routingContext) }
+    private fun evaluatePolicy(security: SecurityConfig?, httpExchange: HttpExchange): PolicyOutcome {
+        val failed = security!!.conditions.filter { c: SecurityCondition -> !checkCondition(c, httpExchange) }
 
         return if (failed.isEmpty()) {
             PolicyOutcome(SecurityEffect.Permit, "all conditions")
@@ -126,17 +124,17 @@ class SecurityServiceImpl @Inject constructor(
      * Determine if the condition permits the request to proceed.
      *
      * @param condition      the security condition
-     * @param routingContext the routing context
+     * @param httpExchange the HTTP exchange
      * @return `true` if the condition permits the request, otherwise `false`
      */
-    private fun checkCondition(condition: SecurityCondition, routingContext: RoutingContext): Boolean {
-        val results: MutableList<SecurityEffect> = mutableListOf()
+    private fun checkCondition(condition: SecurityCondition, httpExchange: HttpExchange): Boolean {
+        val results = mutableListOf<SecurityEffect>()
 
         // query params
         results.addAll(
             checkCondition(
                 condition.queryParams,
-                routingContext.queryParams(),
+                httpExchange.queryParams(),
                 condition.effect,
                 caseSensitiveKeyMatch = true
             )
@@ -146,7 +144,7 @@ class SecurityServiceImpl @Inject constructor(
         results.addAll(
             checkCondition(
                 condition.requestHeaders,
-                routingContext.request().headers(),
+                httpExchange.request().headers(),
                 condition.effect,
                 caseSensitiveKeyMatch = false
             )
@@ -169,11 +167,11 @@ class SecurityServiceImpl @Inject constructor(
      */
     private fun checkCondition(
         conditionMap: Map<String, ConditionalNameValuePair>,
-        requestMap: MultiMap,
+        requestMap: Map<String, String>,
         conditionEffect: SecurityEffect,
         caseSensitiveKeyMatch: Boolean
     ): List<SecurityEffect> {
-        val comparisonMap = if (caseSensitiveKeyMatch) asMap(requestMap) else convertKeysToLowerCase(requestMap)
+        val comparisonMap = if (caseSensitiveKeyMatch) requestMap else convertKeysToLowerCase(requestMap)
         return conditionMap.values.map { conditionValue: ConditionalNameValuePair ->
             val valueMatch = safeEquals(
                 comparisonMap[if (caseSensitiveKeyMatch) conditionValue.name else conditionValue.name.lowercase(Locale.getDefault())],
@@ -203,14 +201,14 @@ class SecurityServiceImpl @Inject constructor(
         }
     }
 
-    private fun enforceEffect(routingContext: RoutingContext, outcome: PolicyOutcome): Boolean {
-        val request = routingContext.request()
+    private fun enforceEffect(httpExchange: HttpExchange, outcome: PolicyOutcome): Boolean {
+        val request = httpExchange.request()
         return if (SecurityEffect.Permit != outcome.effect) {
             LOGGER.warn(
                 "Denying request {} {} due to security policy - {}",
                 request.method(), request.absoluteURI(), outcome.policySource
             )
-            routingContext.fail(HttpUtil.HTTP_UNAUTHORIZED)
+            httpExchange.fail(HttpUtil.HTTP_UNAUTHORIZED)
             false
         } else {
             LOGGER.trace(

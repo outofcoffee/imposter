@@ -60,8 +60,11 @@ import io.gatehill.imposter.service.security.SecurityServiceImpl
 /**
  * @author Pete Cornish
  */
-internal class ImposterModule(private val imposterConfig: ImposterConfig, private val pluginManager: PluginManager) :
-    AbstractModule() {
+internal class ImposterModule(
+    private val imposterConfig: ImposterConfig,
+    private val pluginManager: PluginManager
+) : AbstractModule() {
+
     override fun configure() {
         bind(ImposterConfig::class.java).toInstance(imposterConfig)
         bind(PluginManager::class.java).toInstance(pluginManager)

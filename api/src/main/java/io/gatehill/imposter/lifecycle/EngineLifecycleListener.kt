@@ -43,11 +43,11 @@
 package io.gatehill.imposter.lifecycle
 
 import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.script.ExecutionContext
-import io.vertx.ext.web.Router
-import io.vertx.ext.web.RoutingContext
 
 /**
  * Hooks for engine lifecycle events.
@@ -65,7 +65,7 @@ interface EngineLifecycleListener {
     fun afterRoutesConfigured(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>,
-        router: Router
+        router: HttpRouter
     ) {
         // no op
     }
@@ -73,12 +73,12 @@ interface EngineLifecycleListener {
     /**
      * Invoked before building the script runtime context.
      *
-     * @param routingContext the routing context
+     * @param httpExchange the HTTP exchange
      * @param additionalBindings the additional bindings that will be passed to the script
      * @param executionContext   the script execution context
      */
     fun beforeBuildingRuntimeContext(
-        routingContext: RoutingContext,
+        httpExchange: HttpExchange,
         additionalBindings: MutableMap<String, Any>,
         executionContext: ExecutionContext
     ) {
@@ -88,11 +88,11 @@ interface EngineLifecycleListener {
     /**
      * Invoked before sending response content when templating is enabled for the active resource.
      *
-     * @param routingContext the routing context
+     * @param httpExchange the HTTP exchange
      * @param responseTemplate the response content
      * @return the transformed response content
      */
-    fun beforeTransmittingTemplate(routingContext: RoutingContext, responseTemplate: String?): String? {
+    fun beforeTransmittingTemplate(httpExchange: HttpExchange, responseTemplate: String?): String? {
         // no op
         return responseTemplate
     }
@@ -100,20 +100,20 @@ interface EngineLifecycleListener {
     /**
      * Invoked before building the response.
      *
-     * @param routingContext the routing context
+     * @param httpExchange the HTTP exchange
      * @param resourceConfig the active resource
      */
-    fun beforeBuildingResponse(routingContext: RoutingContext, resourceConfig: ResponseConfigHolder?) {
+    fun beforeBuildingResponse(httpExchange: HttpExchange, resourceConfig: ResponseConfigHolder?) {
         // no op
     }
 
     /**
-     * Invoked after the routing context handler has returned. This assumes that the handler has blocked
+     * Invoked after the HTTP exchange handler has returned. This assumes that the handler has blocked
      * until required processing is complete, and that it is safe to perform cleanup activities.
      *
-     * @param routingContext the routing context
+     * @param httpExchange the HTTP exchange
      */
-    fun afterRoutingContextHandled(routingContext: RoutingContext) {
+    fun afterHttpExchangeHandled(httpExchange: HttpExchange) {
         // no op
     }
 }

@@ -42,8 +42,8 @@
  */
 package io.gatehill.imposter.plugin.openapi.service
 
+import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.plugin.openapi.model.ContentTypedHolder
-import io.vertx.ext.web.RoutingContext
 
 /**
  * Serialises and transmits examples to the client.
@@ -51,5 +51,5 @@ import io.vertx.ext.web.RoutingContext
  * @author Pete Cornish
  */
 interface ResponseTransmissionService {
-    fun <T> transmitExample(routingContext: RoutingContext, example: ContentTypedHolder<T>)
+    fun <T> transmitExample(httpExchange: HttpExchange, example: ContentTypedHolder<T>)
 }

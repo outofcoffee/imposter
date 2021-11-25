@@ -44,8 +44,11 @@
 package io.gatehill.imposter.scripting
 
 import com.google.inject.Guice
+import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.PluginConfigImpl
+import io.gatehill.imposter.plugin.config.resource.ResourceMethod
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.script.ResponseBehaviourType
 import io.gatehill.imposter.script.RuntimeContext
@@ -53,10 +56,6 @@ import io.gatehill.imposter.script.ScriptUtil
 import io.gatehill.imposter.service.ScriptService
 import io.gatehill.imposter.util.FeatureUtil
 import io.gatehill.imposter.util.MetricsUtil
-import io.vertx.core.http.CaseInsensitiveHeaders
-import io.vertx.core.http.HttpMethod
-import io.vertx.core.http.HttpServerRequest
-import io.vertx.ext.web.RoutingContext
 import org.apache.logging.log4j.LogManager
 import org.junit.AfterClass
 import org.junit.Assert.assertEquals
@@ -117,20 +116,20 @@ abstract class AbstractScriptServiceImplTest {
     ): RuntimeContext {
         val logger = LogManager.getLogger("script-engine-test")
 
-        val mockRequest = mock(HttpServerRequest::class.java)
-        When(mockRequest.method()).thenReturn(HttpMethod.GET)
+        val mockRequest = mock(HttpRequest::class.java)
+        When(mockRequest.method()).thenReturn(ResourceMethod.GET)
         When(mockRequest.path()).thenReturn("/example")
         When(mockRequest.absoluteURI()).thenReturn("http://localhost:8080/example")
-        When(mockRequest.headers()).thenReturn(CaseInsensitiveHeaders().addAll(headers))
+        When(mockRequest.headers()).thenReturn(headers)
 
-        val mockRoutingContext = mock(RoutingContext::class.java)
-        When(mockRoutingContext.request()).thenReturn(mockRequest)
-        When(mockRoutingContext.pathParams()).thenReturn(pathParams)
-        When(mockRoutingContext.queryParams()).thenReturn(CaseInsensitiveHeaders().addAll(queryParams))
-        When(mockRoutingContext.bodyAsString).thenReturn("")
+        val mockHttpExchange = mock(HttpExchange::class.java)
+        When(mockHttpExchange.request()).thenReturn(mockRequest)
+        When(mockHttpExchange.pathParams()).thenReturn(pathParams)
+        When(mockHttpExchange.queryParams()).thenReturn(queryParams)
+        When(mockHttpExchange.bodyAsString).thenReturn("")
 
         val pluginConfig = mock(PluginConfig::class.java)
-        val executionContext = ScriptUtil.buildContext(mockRoutingContext, null)
+        val executionContext = ScriptUtil.buildContext(mockHttpExchange, null)
         return RuntimeContext(env, logger, pluginConfig, additionalBindings, executionContext)
     }
 

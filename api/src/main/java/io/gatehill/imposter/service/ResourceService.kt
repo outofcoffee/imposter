@@ -44,12 +44,12 @@ package io.gatehill.imposter.service
 
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.ResolvedResourceConfig
+import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.http.HttpRequestHandler
 import io.gatehill.imposter.plugin.config.PluginConfig
+import io.gatehill.imposter.plugin.config.resource.ResourceMethod
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
-import io.vertx.core.Handler
 import io.vertx.core.Vertx
-import io.vertx.core.http.HttpMethod
-import io.vertx.ext.web.RoutingContext
 import java.util.function.Consumer
 import java.util.function.Supplier
 
@@ -80,7 +80,7 @@ interface ResourceService {
      */
     fun matchResourceConfig(
         resources: List<ResolvedResourceConfig>,
-        method: HttpMethod,
+        method: ResourceMethod,
         pathTemplate: String?,
         path: String?,
         pathParams: Map<String, String>,
@@ -90,103 +90,94 @@ interface ResourceService {
     ): ResponseConfigHolder?
 
     /**
-     * Builds a [Handler] that processes a request.
+     * Builds a handler that processes a request.
      *
-     *
-     * If `requestHandlingMode` is [io.gatehill.imposter.server.RequestHandlingMode.SYNC], then the `routingContextConsumer`
+     * If `requestHandlingMode` is [io.gatehill.imposter.server.RequestHandlingMode.SYNC], then the `httpExchangeConsumer`
      * is invoked on the calling thread.
      *
-     *
      * If it is [io.gatehill.imposter.server.RequestHandlingMode.ASYNC], then upon receiving a request,
-     * the `routingContextConsumer` is invoked on a worker thread, passing the `routingContext`.
-     *
+     * the `httpExchangeConsumer` is invoked on a worker thread, passing the `httpExchange`.
      *
      * Example:
-     * <pre>
-     * router.get("/example").handler(handleRoute(imposterConfig, allPluginConfigs, vertx, routingContext -> {
-     * // use routingContext
+     * ```
+     * router.get("/example").handler(handleRoute(imposterConfig, allPluginConfigs, vertx, httpExchange -> {
+     * // use httpExchange
      * });
-    </pre> *
+     * ```
      *
      * @param imposterConfig         the Imposter configuration
      * @param allPluginConfigs       all plugin configurations
      * @param vertx                  the current Vert.x instance
-     * @param routingContextConsumer the consumer of the [RoutingContext]
+     * @param httpExchangeConsumer the consumer of the [HttpExchange]
      * @return the handler
      */
     fun handleRoute(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>,
         vertx: Vertx,
-        routingContextConsumer: Consumer<RoutingContext>
-    ): Handler<RoutingContext>
+        httpExchangeConsumer: Consumer<HttpExchange>
+    ): HttpRequestHandler
 
     /**
-     * Builds a [Handler] that processes a request.
+     * Builds a handler that processes a request.
      *
-     *
-     * If `requestHandlingMode` is [io.gatehill.imposter.server.RequestHandlingMode.SYNC], then the `routingContextConsumer`
+     * If `requestHandlingMode` is [io.gatehill.imposter.server.RequestHandlingMode.SYNC], then the `httpExchangeConsumer`
      * is invoked on the calling thread.
      *
-     *
      * If it is [io.gatehill.imposter.server.RequestHandlingMode.ASYNC], then upon receiving a request,
-     * the `routingContextConsumer` is invoked on a worker thread, passing the `routingContext`.
-     *
+     * the `httpExchangeConsumer` is invoked on a worker thread, passing the `httpExchange`.
      *
      * Example:
-     * <pre>
-     * router.get("/example").handler(handleRoute(imposterConfig, pluginConfig, vertx, routingContext -> {
-     * // use routingContext
+     * ```
+     * router.get("/example").handler(handleRoute(imposterConfig, pluginConfig, vertx, httpExchange -> {
+     * // use httpExchange
      * });
-    </pre> *
+     * ```
      *
      * @param imposterConfig         the Imposter configuration
      * @param pluginConfig           the plugin configuration
      * @param vertx                  the current Vert.x instance
-     * @param routingContextConsumer the consumer of the [RoutingContext]
+     * @param httpExchangeConsumer the consumer of the [HttpExchange]
      * @return the handler
      */
     fun handleRoute(
         imposterConfig: ImposterConfig,
         pluginConfig: PluginConfig,
         vertx: Vertx,
-        routingContextConsumer: Consumer<RoutingContext>
-    ): Handler<RoutingContext>
+        httpExchangeConsumer: Consumer<HttpExchange>
+    ): HttpRequestHandler
 
     /**
-     * Builds a [Handler] that processes a request.
+     * Builds a handler that processes a request.
      *
-     *
-     * If `requestHandlingMode` is [io.gatehill.imposter.server.RequestHandlingMode.SYNC], then the `routingContextHandler`
+     * If `requestHandlingMode` is [io.gatehill.imposter.server.RequestHandlingMode.SYNC], then the `httpExchangeHandler`
      * is invoked on the calling thread.
      *
-     *
      * If it is [io.gatehill.imposter.server.RequestHandlingMode.ASYNC], then upon receiving a request,
-     * the `routingContextHandler` is invoked on a worker thread, passing the `routingContext`.
-     *
+     * the `httpExchangeHandler` is invoked on a worker thread, passing the `httpExchange`.
      *
      * Example:
-     * <pre>
-     * router.get("/example").handler(handleRoute(imposterConfig, allPluginConfigs, vertx, routingContextHandler);
-    </pre> *
+     * ```
+     * router.get("/example").handler(handleRoute(imposterConfig, allPluginConfigs, vertx, httpExchangeHandler);
+     * ```
      *
      * @param imposterConfig        the Imposter configuration
      * @param allPluginConfigs      all plugin configurations
      * @param vertx                 the current Vert.x instance
-     * @param routingContextHandler the handler of the [RoutingContext]
+     * @param httpExchangeHandler the handler of the [HttpExchange]
      * @return the handler
      */
     fun passthroughRoute(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>,
         vertx: Vertx,
-        routingContextHandler: Handler<RoutingContext>
-    ): Handler<RoutingContext>
+        httpExchangeHandler: HttpRequestHandler
+    ): HttpRequestHandler
 
     /**
      * Catches unhandled exceptions.
      *
      * @return the exception handler
      */
-    fun buildUnhandledExceptionHandler(): Handler<RoutingContext>
+    fun buildUnhandledExceptionHandler(): HttpRequestHandler
 }
