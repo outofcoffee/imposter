@@ -54,8 +54,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import static java.util.Objects.isNull;
-
 /**
  * Extends the base builder with options specific to the OpenAPI plugin.
  * <p>
@@ -111,8 +109,8 @@ public class OpenApiImposterBuilder<M extends OpenApiMockEngine, SELF extends Op
             if (!specificationFiles.isEmpty()) {
                 withConfigurationDir(ConfigGenerator.writeImposterConfig(specificationFiles));
             }
-            if (isNull(pluginClass)) {
-                pluginClass = (Class<? extends Plugin>) Class.forName(PLUGIN_FQCN);
+            if (pluginClasses.isEmpty()) {
+                withPluginClass((Class<? extends Plugin>) Class.forName(PLUGIN_FQCN));
             }
             future = super.startAsync();
 

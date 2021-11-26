@@ -62,7 +62,9 @@ import java.net.ServerSocket;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -100,7 +102,7 @@ public class ImposterBuilder<M extends MockEngine, SELF extends ImposterBuilder<
 
     private final Vertx vertx = Vertx.vertx();
     protected final List<Path> configurationDirs = new ArrayList<>();
-    protected Class<? extends Plugin> pluginClass;
+    protected Set<Class<? extends Plugin>> pluginClasses = new HashSet<>();
     private ScriptListener scriptListener;
     private Consumer<ImposterConfig> optionsListener;
 
@@ -115,7 +117,7 @@ public class ImposterBuilder<M extends MockEngine, SELF extends ImposterBuilder<
      * @param pluginClass the plugin
      */
     public SELF withPluginClass(Class<? extends Plugin> pluginClass) {
-        this.pluginClass = pluginClass;
+        this.pluginClasses.add(pluginClass);
         return self();
     }
 
@@ -154,8 +156,8 @@ public class ImposterBuilder<M extends MockEngine, SELF extends ImposterBuilder<
             if (configurationDirs.isEmpty()) {
                 throw new IllegalStateException("Must specify one of specification file or specification directory");
             }
-            if (isNull(pluginClass)) {
-                throw new IllegalStateException("Must specify plugin class implementing " + Plugin.class.getCanonicalName());
+            if (pluginClasses.isEmpty()) {
+                throw new IllegalStateException("Must specify at least one plugin class implementing " + Plugin.class.getCanonicalName());
             }
             bootMockEngine(future);
 
@@ -217,7 +219,7 @@ public class ImposterBuilder<M extends MockEngine, SELF extends ImposterBuilder<
         imposterConfig.setServerFactory(VertxWebServerFactoryImpl.class.getCanonicalName());
         imposterConfig.setHost(HOST);
         imposterConfig.setListenPort(port);
-        imposterConfig.setPlugins(new String[]{pluginClass.getCanonicalName()});
+        imposterConfig.setPlugins(pluginClasses.stream().map(Class::getCanonicalName).toArray(String[]::new));
         imposterConfig.setPluginArgs(emptyMap());
 
         imposterConfig.setConfigDirs(configurationDirs.stream().map(dir -> {
