@@ -16,6 +16,9 @@ include ':test'
 project(':test').name = 'imposter-test'
 
 // adapters
+include ':adapter:awslambda'
+project(':adapter:awslambda').name = 'adapter-awslambda'
+
 include ':adapter:vertxweb'
 project(':adapter:vertxweb').name = 'adapter-vertxweb'
 
