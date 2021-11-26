@@ -65,8 +65,8 @@ import org.apache.logging.log4j.LogManager
  *
  * @author Pete Cornish
  */
-class ImposterHandler : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-    private val logger = LogManager.getLogger(ImposterHandler::class.java)
+class Handler : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+    private val logger = LogManager.getLogger(Handler::class.java)
     private val engine: MockEngine
     private val server: LambdaServer
 
@@ -90,14 +90,19 @@ class ImposterHandler : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayPr
 
         val serverFactory = InjectorUtil.injector!!.getInstance(LambdaServerFactory::class.java)
         server = serverFactory.activeServer
+
+        logger.info("Imposter handler ready")
     }
 
     override fun handleRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent {
-        try {
-            return server.dispatch(input)
+        val response = try {
+            logger.info("Received request: $input")
+            server.dispatch(input)
         } catch (e: Exception) {
             logger.error(e)
-            return APIGatewayProxyResponseEvent().withStatusCode(500)
+            APIGatewayProxyResponseEvent().withStatusCode(500)
         }
+        logger.debug("Sending response: $response")
+        return response
     }
 }

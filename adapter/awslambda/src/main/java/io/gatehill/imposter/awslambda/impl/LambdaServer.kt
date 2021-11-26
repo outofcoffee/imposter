@@ -89,10 +89,9 @@ class LambdaServer(router: HttpRouter) : HttpServer {
             }
 
         } catch (e: Exception) {
-            response.setStatusCode(HttpUtil.HTTP_INTERNAL_ERROR)
-
             errorHandlers[HttpUtil.HTTP_INTERNAL_ERROR]?.let { errorHandler ->
                 val exchange = LambdaHttpExchange(request, response, null)
+                exchange.fail(e)
                 errorHandler(exchange)
             } ?: throw RuntimeException("Unhandled exception", e)
         }

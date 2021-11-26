@@ -22,6 +22,9 @@ project(':adapter:awslambda').name = 'adapter-awslambda'
 include ':adapter:vertxweb'
 project(':adapter:vertxweb').name = 'adapter-vertxweb'
 
+include ':adapter:awslambda'
+project(':adapter:awslambda').name = 'adapter-awslambda'
+
 // scripting
 include ':scripting:common'
 project(':scripting:common').name = 'scripting-common'

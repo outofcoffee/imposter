@@ -47,14 +47,13 @@ import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent
 import com.amazonaws.services.lambda.runtime.tests.annotations.Event
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
-import io.gatehill.imposter.awslambda.ImposterHandler
+import io.gatehill.imposter.awslambda.Handler
 import io.gatehill.imposter.plugin.openapi.loader.S3FileDownloader
 import io.gatehill.imposter.util.EnvVars
 import io.gatehill.imposter.util.TestEnvironmentUtil.assumeDockerAccessible
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.params.ParameterizedTest
 import org.mockito.Mockito.mock
@@ -62,9 +61,9 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import kotlin.io.path.absolutePathString
 
-class ImposterHandlerTest {
+class HandlerTest {
     private var s3Mock: S3MockContainer? = null
-    private var handler: ImposterHandler? = null
+    private var handler: Handler? = null
     private var context: Context? = null
 
     @BeforeEach
@@ -90,12 +89,12 @@ class ImposterHandlerTest {
             "IMPOSTER_S3_CONFIG_URL" to "s3://test/",
         ))
 
-        handler = ImposterHandler()
+        handler = Handler()
         context = mock(Context::class.java)
     }
 
     private fun uploadFileToS3(baseDir: String, filePath: String) {
-        val specFilePath = Paths.get(ImposterHandlerTest::class.java.getResource("$baseDir/$filePath")!!.toURI())
+        val specFilePath = Paths.get(HandlerTest::class.java.getResource("$baseDir/$filePath")!!.toURI())
 
         val s3 = AmazonS3ClientBuilder.standard()
             .enablePathStyleAccess()

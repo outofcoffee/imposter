@@ -80,19 +80,19 @@ class LambdaHttpExchange(
     }
 
     override fun pathParams(): Map<String, String> {
-        return request.event.pathParameters
+        return request.event.pathParameters ?: emptyMap()
     }
 
     override fun queryParams(): Map<String, String> {
-        return request.event.queryStringParameters
+        return request.event.queryStringParameters ?: emptyMap()
     }
 
     override fun pathParam(paramName: String): String? {
-        return request.event.pathParameters[paramName]
+        return request.event.pathParameters?.get(paramName)
     }
 
     override fun queryParam(queryParam: String): String? {
-        return request.event.queryStringParameters[queryParam]
+        return request.event.queryStringParameters?.get(queryParam)
     }
 
     override fun isAcceptHeaderEmpty(): Boolean {
@@ -143,23 +143,23 @@ class LambdaHttpExchange(
  */
 class LambdaHttpRequest(val event: APIGatewayProxyRequestEvent) : HttpRequest {
     override fun path(): String {
-        return event.path
+        return event.path ?: ""
     }
 
     override fun method(): ResourceMethod {
-        return ResourceMethod.valueOf(event.httpMethod)
+        return ResourceMethod.valueOf(event.httpMethod!!)
     }
 
     override fun absoluteURI(): String {
-        return "http://0.0.0.0${event.path}"
+        return "http://0.0.0.0${path()}"
     }
 
     override fun headers(): Map<String, String> {
-        return event.headers
+        return event.headers ?: emptyMap()
     }
 
     override fun getHeader(headerKey: String): String? {
-        return event.headers[headerKey]
+        return event.headers?.get(headerKey)
     }
 }
 
