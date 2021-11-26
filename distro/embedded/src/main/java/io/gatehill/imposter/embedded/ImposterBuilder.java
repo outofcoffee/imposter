@@ -64,6 +64,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 import static java.util.Collections.emptyMap;
 import static java.util.Objects.isNull;
@@ -101,6 +102,7 @@ public class ImposterBuilder<M extends MockEngine, SELF extends ImposterBuilder<
     protected final List<Path> configurationDirs = new ArrayList<>();
     protected Class<? extends Plugin> pluginClass;
     private ScriptListener scriptListener;
+    private Consumer<ImposterConfig> optionsListener;
 
     @SuppressWarnings("unchecked")
     protected SELF self() {
@@ -138,6 +140,11 @@ public class ImposterBuilder<M extends MockEngine, SELF extends ImposterBuilder<
 
     public SELF withScriptedBehaviour(ScriptListener scriptListener) {
         this.scriptListener = scriptListener;
+        return self();
+    }
+
+    public SELF withEngineOptions(Consumer<ImposterConfig> optionsListener) {
+        this.optionsListener = optionsListener;
         return self();
     }
 
@@ -223,6 +230,9 @@ public class ImposterBuilder<M extends MockEngine, SELF extends ImposterBuilder<
 
         if (nonNull(scriptListener)) {
             imposterConfig.setUseEmbeddedScriptEngine(true);
+        }
+        if (nonNull(optionsListener)) {
+            optionsListener.accept(imposterConfig);
         }
     }
 
