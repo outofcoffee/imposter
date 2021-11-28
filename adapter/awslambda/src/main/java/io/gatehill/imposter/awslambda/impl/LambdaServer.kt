@@ -45,6 +45,7 @@ package io.gatehill.imposter.awslambda.impl
 
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent
+import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpRoute
 import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.server.HttpServer
@@ -52,16 +53,21 @@ import io.gatehill.imposter.util.HttpUtil
 import io.vertx.core.AsyncResult
 import io.vertx.core.Handler
 import org.apache.logging.log4j.LogManager
-import java.util.regex.Pattern
+import java.util.Collections.synchronizedMap
 
 /**
  * @author Pete Cornish
  */
-class LambdaServer(private val router: HttpRouter) : HttpServer {
+class LambdaServer(router: HttpRouter) : HttpServer {
     private val logger = LogManager.getLogger(LambdaServer::class.java)
+    private val allRoutes: Array<HttpRoute>
+    private val catchAllRoutes: Array<HttpRoute>
+    private val errorHandlers: Map<Int, (HttpExchange) -> Unit>
 
-    override fun close(onCompletion: Handler<AsyncResult<Void>>) {
-        /* no op */
+    init {
+        allRoutes = router.routes.toTypedArray()
+        catchAllRoutes = router.routes.filter(HttpRoute::isCatchAll).toTypedArray()
+        errorHandlers = synchronizedMap(router.errorHandlers)
     }
 
     fun dispatch(event: APIGatewayProxyRequestEvent): APIGatewayProxyResponseEvent {
@@ -76,13 +82,17 @@ class LambdaServer(private val router: HttpRouter) : HttpServer {
                 } catch (e: Exception) {
                     throw RuntimeException("Unhandled error in route: $route", e)
                 }
+                // check for route failure
+                exchange.failure()?.let { cause ->
+                    throw RuntimeException("Route failed: $route", cause)
+                }
             }
 
         } catch (e: Exception) {
-            val exchange = LambdaHttpExchange(request, response, null)
+            response.setStatusCode(HttpUtil.HTTP_INTERNAL_ERROR)
 
-            router.errorHandlers[HttpUtil.HTTP_INTERNAL_ERROR]?.let { errorHandler ->
-                response.setStatusCode(HttpUtil.HTTP_INTERNAL_ERROR)
+            errorHandlers[HttpUtil.HTTP_INTERNAL_ERROR]?.let { errorHandler ->
+                val exchange = LambdaHttpExchange(request, response, null)
                 errorHandler(exchange)
             } ?: throw RuntimeException("Unhandled exception", e)
         }
@@ -103,30 +113,24 @@ class LambdaServer(private val router: HttpRouter) : HttpServer {
         event: APIGatewayProxyRequestEvent,
         response: LambdaHttpResponse
     ): List<HttpRoute> {
-        // TODO cache route patterns
-        // TODO use concurrent collection for routes
-
-        val matchedRoutes = router.routes.filter { route ->
-            val pathMatched = route.path?.let { path ->
-                request.path() == path || route.isPathPlaceholderMatch(request.path())
-            } ?: route.regex?.let { regex ->
-                Pattern.compile(regex).matcher(request.path()).matches()
-            } ?: true // routes that match all paths
-
-            return@filter pathMatched &&
-                (null == route.method || request.method() == route.method)
+        val matchedRoutes = allRoutes.filter { route ->
+            route.matches(request.path()) &&
+                    (null == route.method || request.method() == route.method)
         }
-
         if (matchedRoutes.isEmpty()) {
             logger.warn("No routes matched for: ${describeRequestShort(event)}")
             response.setStatusCode(HttpUtil.HTTP_NOT_FOUND)
-
-        } else {
-            if (logger.isTraceEnabled) {
-                logger.trace("Routes matched for: ${describeRequestShort(event)}: $matchedRoutes")
-            }
+                .putHeader("Content-Type", "text/plain")
+                .end("Resource not found")
+            return emptyList()
         }
-        return matchedRoutes
+
+        // Note: only fire catch all routes if there are explicit route matches
+        val finalRoutes = matchedRoutes + catchAllRoutes
+        if (logger.isTraceEnabled) {
+            logger.trace("Routes matched for: ${describeRequestShort(event)}: $finalRoutes")
+        }
+        return finalRoutes
     }
 
     /**
@@ -135,5 +139,9 @@ class LambdaServer(private val router: HttpRouter) : HttpServer {
      */
     private fun describeRequestShort(event: APIGatewayProxyRequestEvent): String {
         return event.httpMethod + " " + event.path
+    }
+
+    override fun close(onCompletion: Handler<AsyncResult<Void>>) {
+        /* no op */
     }
 }

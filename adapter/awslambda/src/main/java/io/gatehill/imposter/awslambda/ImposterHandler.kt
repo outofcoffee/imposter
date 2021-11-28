@@ -93,6 +93,11 @@ class ImposterHandler : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayPr
     }
 
     override fun handleRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent {
-        return server.dispatch(input)
+        try {
+            return server.dispatch(input)
+        } catch (e: Exception) {
+            logger.error(e)
+            return APIGatewayProxyResponseEvent().withStatusCode(500)
+        }
     }
 }

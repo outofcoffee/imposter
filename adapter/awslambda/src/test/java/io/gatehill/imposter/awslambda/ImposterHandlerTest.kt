@@ -54,6 +54,7 @@ import io.gatehill.imposter.util.TestEnvironmentUtil.assumeDockerAccessible
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.params.ParameterizedTest
 import org.mockito.Mockito.mock
@@ -120,6 +121,7 @@ class ImposterHandlerTest {
         val responseEvent = handler!!.handleRequest(event, context!!)
 
         assertNotNull(responseEvent, "Response event should be returned")
+        assertEquals(200, responseEvent.statusCode)
         assertEquals("""{ "id": 1, "name": "Cat" }""", responseEvent.body)
         assertEquals(4, responseEvent.headers?.size)
         assertEquals("imposter", responseEvent.headers["Server"])
@@ -131,8 +133,21 @@ class ImposterHandlerTest {
         val responseEvent = handler!!.handleRequest(event, context!!)
 
         assertNotNull(responseEvent, "Response event should be returned")
+        assertEquals(200, responseEvent.statusCode)
         assertEquals("""{ "id": 2, "name": "Dog" }""", responseEvent.body)
         assertEquals(4, responseEvent.headers?.size)
         assertEquals("imposter", responseEvent.headers["Server"])
+    }
+
+    @ParameterizedTest
+    @Event(value = "requests/request_no_route.json", type = APIGatewayProxyRequestEvent::class)
+    fun `no matching route`(event: APIGatewayProxyRequestEvent) {
+        val responseEvent = handler!!.handleRequest(event, context!!)
+
+        assertNotNull(responseEvent, "Response event should be returned")
+        assertEquals(404, responseEvent.statusCode)
+        assertEquals("Resource not found", responseEvent.body)
+        assertEquals(2, responseEvent.headers?.size)
+        assertEquals("text/plain", responseEvent.headers["Content-Type"])
     }
 }

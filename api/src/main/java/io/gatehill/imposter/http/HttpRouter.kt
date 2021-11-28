@@ -138,17 +138,28 @@ data class HttpRoute(
         Pattern.compile(pathRegex)
     }
 
+    val regexPattern : Pattern by lazy { Pattern.compile(regex!!) }
+
     fun handler(requestHandler: HttpRequestHandler): HttpRoute {
         handler = requestHandler
         return this
     }
 
-    fun isPathPlaceholderMatch(requestPath: String): Boolean {
+    fun isCatchAll(): Boolean = (null == path && null == regex && null == method)
+
+    fun matches(requestPath: String): Boolean {
+        return path?.let {
+            requestPath == path || isPathPlaceholderMatch(requestPath)
+        } ?: regex?.let {
+            regexPattern.matcher(requestPath).matches()
+        } ?: false
+    }
+
+    private fun isPathPlaceholderMatch(requestPath: String): Boolean {
         if (path?.contains(':') != true) {
             // no placeholders
             return false
         }
-
         return pathPattern.matcher(requestPath).matches()
     }
 
