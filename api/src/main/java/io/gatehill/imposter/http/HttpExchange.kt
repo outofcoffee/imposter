@@ -46,7 +46,6 @@ import io.gatehill.imposter.plugin.config.resource.ResourceMethod
 import io.vertx.core.MultiMap
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.json.JsonObject
-import io.vertx.ext.web.MIMEHeader
 
 /**
  * @author Pete Cornish
@@ -54,15 +53,13 @@ import io.vertx.ext.web.MIMEHeader
 interface HttpExchange {
     fun request(): HttpRequest
     fun response(): HttpResponse
-    fun queryParams(): Map<String, String>
     fun pathParams(): Map<String, String>
+    fun queryParams(): Map<String, String>
     fun pathParam(paramName: String): String?
     fun queryParam(queryParam: String): String?
 
-    /**
-     * TODO remove dependency on vertx-web
-     */
-    fun parsedAcceptHeader(): List<MIMEHeader>
+    fun isAcceptHeaderEmpty(): Boolean
+    fun acceptsMimeType(mimeType: String): Boolean
 
     /**
      * Note: not all routes have a path.

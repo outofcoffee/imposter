@@ -48,8 +48,8 @@ import io.gatehill.imposter.http.HttpResponse
 import io.gatehill.imposter.util.CollectionUtil
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.json.JsonObject
-import io.vertx.ext.web.MIMEHeader
 import io.vertx.ext.web.RoutingContext
+import io.vertx.ext.web.impl.ParsableMIMEValue
 
 /**
  * @author Pete Cornish
@@ -67,16 +67,13 @@ class VertxHttpExchange(
         return VertxHttpResponse(routingContext.response())
     }
 
-    override fun pathParam(paramName: String): String? {
-        return routingContext.pathParam(paramName)
+    override fun isAcceptHeaderEmpty(): Boolean {
+        return routingContext.parsedHeaders().accept().isEmpty()
     }
 
-    override fun queryParam(queryParam: String): String? {
-        return routingContext.queryParam(queryParam)?.firstOrNull()
-    }
-
-    override fun parsedAcceptHeader(): List<MIMEHeader> {
-        return routingContext.parsedHeaders().accept()
+    override fun acceptsMimeType(mimeType: String): Boolean {
+        val mimeValue = ParsableMIMEValue(mimeType)
+        return routingContext.parsedHeaders().accept().any { it.isMatchedBy(mimeValue) }
     }
 
     override val body: Buffer? by lazy { routingContext.body }
@@ -85,12 +82,20 @@ class VertxHttpExchange(
 
     override val bodyAsJson: JsonObject? by lazy { routingContext.bodyAsJson }
 
+    override fun pathParams(): Map<String, String> {
+        return routingContext.pathParams()
+    }
+
     override fun queryParams(): Map<String, String> {
         return CollectionUtil.asMap(routingContext.queryParams())
     }
 
-    override fun pathParams(): Map<String, String> {
-        return routingContext.pathParams()
+    override fun pathParam(paramName: String): String? {
+        return routingContext.pathParam(paramName)
+    }
+
+    override fun queryParam(queryParam: String): String? {
+        return routingContext.queryParam(queryParam)?.firstOrNull()
     }
 
     override fun fail(cause: Throwable?) {

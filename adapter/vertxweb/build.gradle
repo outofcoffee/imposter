@@ -8,6 +8,7 @@ compileJava {
 
 dependencies {
     implementation project(':imposter-core')
+    api "io.vertx:vertx-web:$version_vertx"
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

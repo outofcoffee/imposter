@@ -61,14 +61,14 @@ object ResourceUtil {
      * Convert the OpenAPI style path to one with colon-prefixed parameter placeholders.
      *
      * For example:
-     * `
+     * ```
      * /example/{foo}
-    ` *
+     * ```
      *
      * will be converted to:
-     * `
+     * ```
      * /example/:foo
-    ` *
+     * ```
      *
      * @param path the OpenAPI path
      * @return the converted path
@@ -78,7 +78,7 @@ object ResourceUtil {
         if (!Strings.isNullOrEmpty(path)) {
             var matchFound: Boolean
             do {
-                val matcher = PATH_PARAM_PLACEHOLDER.matcher(path)
+                val matcher = PATH_PARAM_PLACEHOLDER.matcher(path!!)
                 matchFound = matcher.find()
                 if (matchFound) {
                     path = matcher.replaceFirst(":" + matcher.group(1))

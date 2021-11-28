@@ -43,14 +43,13 @@
 package io.gatehill.imposter.plugin.openapi.util
 
 import io.gatehill.imposter.http.HttpExchange
-import io.vertx.ext.web.MIMEHeader
 
 /**
  * @author Pete Cornish
  */
 object ValidationReportUtil {
     fun sendValidationReport(httpExchange: HttpExchange, reportMessages: String) {
-        if (httpExchange.parsedAcceptHeader().any { a: MIMEHeader -> a.rawValue() == "text/html" }) {
+        if (httpExchange.acceptsMimeType("text/html")) {
             httpExchange.response().putHeader("Content-Type", "text/html")
                 .end(buildResponseReportHtml(reportMessages))
         } else {

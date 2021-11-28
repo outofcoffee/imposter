@@ -46,10 +46,8 @@ import com.adobe.testing.s3mock.testcontainers.S3MockContainer
 import com.amazonaws.client.builder.AwsClientBuilder
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig
-import io.gatehill.imposter.plugin.openapi.loader.S3SpecificationLoader
-import io.gatehill.imposter.plugin.openapi.loader.S3SpecificationLoader.Companion.destroyInstance
+import io.gatehill.imposter.plugin.openapi.loader.S3FileDownloader
 import io.gatehill.imposter.plugin.openapi.loader.SpecificationLoader.parseSpecification
-import io.gatehill.imposter.plugin.openapi.util.SpecificationLoaderTest
 import io.gatehill.imposter.util.TestEnvironmentUtil.assumeDockerAccessible
 import io.vertx.core.AsyncResult
 import io.vertx.core.Handler
@@ -63,6 +61,7 @@ import org.junit.Assert
 import org.junit.BeforeClass
 import org.junit.Test
 import java.net.ServerSocket
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.CountDownLatch
 import java.util.function.Consumer
@@ -81,8 +80,8 @@ class SpecificationLoaderTest {
             s3Mock?.takeIf { it.isRunning }?.stop()
         } catch (ignored: Exception) {
         }
-        System.clearProperty(S3SpecificationLoader.SYS_PROP_OPENAPI_S3_API_ENDPOINT)
-        destroyInstance()
+        System.clearProperty(S3FileDownloader.SYS_PROP_S3_API_ENDPOINT)
+        S3FileDownloader.destroyInstance()
     }
 
     /**
@@ -92,7 +91,8 @@ class SpecificationLoaderTest {
     @Throws(Exception::class)
     fun testLoadSpecificationFromFile() {
         val specFilePath =
-            Paths.get(SpecificationLoaderTest::class.java.getResource("/util/spec-loader/order_service.yaml").toURI())
+            Paths.get(SpecificationLoaderTest::class.java.getResource("/util/spec-loader/order_service.yaml")!!.toURI())
+
         val pluginConfig = OpenApiPluginConfig()
         pluginConfig.parentDir = specFilePath.parent.toFile()
         pluginConfig.specFile = specFilePath.fileName.toString()
@@ -110,7 +110,7 @@ class SpecificationLoaderTest {
     fun testLoadSpecificationFromUrl() {
         val listenPort = ServerSocket(0).use { it.localPort }
         val specFilePath =
-            Paths.get(SpecificationLoaderTest::class.java.getResource("/util/spec-loader/order_service.yaml").toURI())
+            Paths.get(SpecificationLoaderTest::class.java.getResource("/util/spec-loader/order_service.yaml")!!.toURI())
 
         val httpServer = vertx!!.createHttpServer(HttpServerOptions().setPort(listenPort))
         httpServer.requestHandler { request: HttpServerRequest -> request.response().sendFile(specFilePath.toString()) }
@@ -134,15 +134,23 @@ class SpecificationLoaderTest {
         // These tests need Docker
         assumeDockerAccessible()
 
-        val specFilePath =
-            Paths.get(SpecificationLoaderTest::class.java.getResource("/util/spec-loader/order_service.yaml").toURI())
-        s3Mock = S3MockContainer("2.2.1")
-        s3Mock!!.withInitialBuckets("test")
-        s3Mock!!.start()
+        s3Mock = S3MockContainer("2.2.1").apply {
+            withInitialBuckets("test")
+            start()
+        }
 
-        System.setProperty(S3SpecificationLoader.SYS_PROP_OPENAPI_S3_API_ENDPOINT, s3Mock!!.httpEndpoint)
-        destroyInstance()
+        S3FileDownloader.destroyInstance()
+        System.setProperty(S3FileDownloader.SYS_PROP_S3_API_ENDPOINT, s3Mock!!.httpEndpoint)
 
+        val specFilePath = Paths.get(SpecificationLoaderTest::class.java.getResource("/util/spec-loader/order_service.yaml")!!.toURI())
+        val pluginConfig = uploadFileToS3(specFilePath)
+
+        val spec = parseSpecification(pluginConfig)
+        Assert.assertNotNull("spec should be loaded from S3", spec)
+        Assert.assertEquals("title should match", "Sample Petstore order service", spec.info.title)
+    }
+
+    private fun uploadFileToS3(specFilePath: Path): OpenApiPluginConfig {
         val s3 = AmazonS3ClientBuilder.standard()
             .enablePathStyleAccess()
             .withEndpointConfiguration(AwsClientBuilder.EndpointConfiguration(s3Mock!!.httpEndpoint, "us-east-1"))
@@ -153,10 +161,7 @@ class SpecificationLoaderTest {
         val pluginConfig = OpenApiPluginConfig()
         pluginConfig.parentDir = specFilePath.parent.toFile()
         pluginConfig.specFile = "s3://test/order_service.yaml"
-
-        val spec = parseSpecification(pluginConfig)
-        Assert.assertNotNull("spec should be loaded from S3", spec)
-        Assert.assertEquals("title should match", "Sample Petstore order service", spec.info.title)
+        return pluginConfig
     }
 
     companion object {

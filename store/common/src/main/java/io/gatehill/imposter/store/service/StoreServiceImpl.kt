@@ -71,13 +71,12 @@ import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.MapUtil
 import io.gatehill.imposter.util.ResourceUtil
 import io.vertx.core.Vertx
-import io.vertx.ext.web.impl.ParsableMIMEValue
 import org.apache.commons.text.StringSubstitutor
 import org.apache.commons.text.lookup.StringLookupFactory
 import org.apache.logging.log4j.LogManager
 import java.io.IOException
 import java.nio.file.Paths
-import java.util.*
+import java.util.Objects
 import java.util.concurrent.atomic.AtomicReference
 import java.util.regex.Pattern
 import javax.inject.Inject
@@ -211,8 +210,7 @@ class StoreServiceImpl @Inject constructor(
                 return@handleRoute
             }
 
-            val accepted = httpExchange.parsedAcceptHeader()
-            if (accepted.isEmpty() || accepted.any { it.isMatchedBy(JSON_MIME) }) {
+            if (httpExchange.isAcceptHeaderEmpty() || httpExchange.acceptsMimeType(HttpUtil.CONTENT_TYPE_JSON)) {
                 LOGGER.debug("Listing store: {}", storeName)
                 serialiseBodyAsJson(httpExchange, store!!.loadAll())
 
@@ -531,7 +529,6 @@ class StoreServiceImpl @Inject constructor(
 
     companion object {
         private val LOGGER = LogManager.getLogger(StoreServiceImpl::class.java)
-        private val JSON_MIME = ParsableMIMEValue(HttpUtil.CONTENT_TYPE_JSON)
 
         /**
          * Default to request scope unless specified.

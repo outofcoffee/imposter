@@ -108,7 +108,7 @@ object SpecificationLoader {
         return if (specFile.startsWith("http://") || specFile.startsWith("https://")) {
             readSpecFromUrl(specFile)
         } else if (specFile.startsWith("s3://")) {
-            S3SpecificationLoader.getInstance().readSpecFromS3(specFile)
+            S3FileDownloader.getInstance().readFileFromS3(specFile)
         } else {
             readSpecFromFile(config, specFile)
         }

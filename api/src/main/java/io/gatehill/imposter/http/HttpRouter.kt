@@ -44,6 +44,7 @@ package io.gatehill.imposter.http
 
 import io.gatehill.imposter.plugin.config.resource.ResourceMethod
 import io.vertx.core.Vertx
+import java.util.regex.Pattern
 
 /**
  * @author Pete Cornish
@@ -131,8 +132,27 @@ data class HttpRoute(
 ) {
     var handler: HttpRequestHandler? = null
 
+    val pathPattern : Pattern by lazy {
+        val matcher = placeholderPattern.matcher(path!!)
+        val pathRegex = matcher.replaceAll("(.+)")
+        Pattern.compile(pathRegex)
+    }
+
     fun handler(requestHandler: HttpRequestHandler): HttpRoute {
         handler = requestHandler
         return this
+    }
+
+    fun isPathPlaceholderMatch(requestPath: String): Boolean {
+        if (path?.contains(':') != true) {
+            // no placeholders
+            return false
+        }
+
+        return pathPattern.matcher(requestPath).matches()
+    }
+
+    companion object {
+        private val placeholderPattern = Pattern.compile(":([A-Za-z][A-Za-z0-9_]*)")
     }
 }

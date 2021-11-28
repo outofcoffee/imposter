@@ -56,6 +56,7 @@ subprojects {
         awsSecretKey = awsCredentials?.AWSSecretKey ?: System.getenv('AWS_SECRET_ACCESS_KEY') ?: project.findProperty('AWS_SECRET_ACCESS_KEY')
 
         version_args4j = '2.33'
+        version_aws_sdk = '1.11.1000'
         version_commons_io = '2.9.0'
         version_commons_text = '1.9'
         version_guice = '4.1.0'
@@ -63,6 +64,7 @@ subprojects {
         version_junit = '4.12'
         version_log4j = '2.9.1'
         version_micrometer = '1.6.7'
+        version_mockito = '3.10.0'
         version_restAssured = '2.9.0'
         version_testcontainers = '1.15.3'
         version_vertx = '3.7.1'
