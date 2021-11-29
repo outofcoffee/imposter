@@ -71,6 +71,7 @@ class LambdaServer(router: HttpRouter) : HttpServer {
     fun dispatch(event: APIGatewayProxyRequestEvent): APIGatewayProxyResponseEvent {
         val request = LambdaHttpRequest(event)
         val response = LambdaHttpResponse()
+        var failureCause: Throwable? = null
         try {
             matchRoutes(request, event, response).forEach { route ->
                 val handler = route.handler ?: throw IllegalStateException("No route handler set for: $route")
@@ -87,13 +88,27 @@ class LambdaServer(router: HttpRouter) : HttpServer {
             }
 
         } catch (e: Exception) {
-            errorHandlers[HttpUtil.HTTP_INTERNAL_ERROR]?.let { errorHandler ->
-                val exchange = LambdaHttpExchange(request, response, null)
-                exchange.fail(e)
-                errorHandler(exchange)
-            } ?: throw RuntimeException("Unhandled exception", e)
+            failureCause = e
         }
 
+        when (val statusCode = response.getStatusCode()) {
+            in 400..499 -> {
+                errorHandlers[statusCode]?.let { errorHandler ->
+                    val exchange = LambdaHttpExchange(request, response, null)
+                    exchange.fail(statusCode)
+                    errorHandler(exchange)
+                } ?: logger.warn("Unhandled client error for: ${describeRequestShort(event)} [status code: $statusCode]")
+            }
+            in 500..599 -> {
+                errorHandlers[statusCode]?.let { errorHandler ->
+                    val exchange = LambdaHttpExchange(request, response, null)
+                    exchange.fail(statusCode, failureCause)
+                    errorHandler(exchange)
+                } ?: logger.error("Unhandled server error for: ${describeRequestShort(event)} [status code: $statusCode]", failureCause)
+            }
+        }
+
+        // read status again in case modified by error handler
         val responseEvent = APIGatewayProxyResponseEvent()
             .withStatusCode(response.getStatusCode())
             .withHeaders(response.headers)

@@ -72,6 +72,7 @@ interface HttpExchange {
 
     fun fail(cause: Throwable?)
     fun fail(statusCode: Int)
+    fun fail(statusCode: Int, cause: Throwable?)
     fun failure(): Throwable?
 
     fun <T> get(key: String): T?

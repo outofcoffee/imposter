@@ -106,6 +106,10 @@ class VertxHttpExchange(
         routingContext.fail(statusCode)
     }
 
+    override fun fail(statusCode: Int, cause: Throwable?) {
+        routingContext.fail(statusCode, cause)
+    }
+
     override fun failure(): Throwable? {
         return routingContext.failure()
     }

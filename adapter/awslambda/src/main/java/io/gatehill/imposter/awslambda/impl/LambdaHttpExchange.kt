@@ -116,12 +116,16 @@ class LambdaHttpExchange(
     }
 
     override fun fail(cause: Throwable?) {
-        response.setStatusCode(500)
-        failureCause = cause
+        fail(500, cause)
     }
 
     override fun fail(statusCode: Int) {
         response.setStatusCode(statusCode)
+    }
+
+    override fun fail(statusCode: Int, cause: Throwable?) {
+        response.setStatusCode(statusCode)
+        failureCause = cause
     }
 
     override fun failure(): Throwable? {
