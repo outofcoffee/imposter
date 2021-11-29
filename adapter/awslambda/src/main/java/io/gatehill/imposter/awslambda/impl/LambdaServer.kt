@@ -60,13 +60,11 @@ import java.util.Collections.synchronizedMap
  */
 class LambdaServer(router: HttpRouter) : HttpServer {
     private val logger = LogManager.getLogger(LambdaServer::class.java)
-    private val allRoutes: Array<HttpRoute>
-    private val catchAllRoutes: Array<HttpRoute>
+    private val routes: Array<HttpRoute>
     private val errorHandlers: Map<Int, (HttpExchange) -> Unit>
 
     init {
-        allRoutes = router.routes.toTypedArray()
-        catchAllRoutes = router.routes.filter(HttpRoute::isCatchAll).toTypedArray()
+        routes = router.routes.toTypedArray()
         errorHandlers = synchronizedMap(router.errorHandlers)
     }
 
@@ -112,24 +110,22 @@ class LambdaServer(router: HttpRouter) : HttpServer {
         event: APIGatewayProxyRequestEvent,
         response: LambdaHttpResponse
     ): List<HttpRoute> {
-        val matchedRoutes = allRoutes.filter { route ->
+        val matchedRoutes = routes.filter { route ->
             route.matches(request.path()) &&
                     (null == route.method || request.method() == route.method)
         }
-        if (matchedRoutes.isEmpty()) {
-            logger.warn("No routes matched for: ${describeRequestShort(event)}")
+        if (matchedRoutes.isEmpty() || matchedRoutes.all { it.isCatchAll() }) {
+            logger.trace("No explicit routes matched for: ${describeRequestShort(event)}")
             response.setStatusCode(HttpUtil.HTTP_NOT_FOUND)
                 .putHeader("Content-Type", "text/plain")
                 .end("Resource not found")
             return emptyList()
         }
 
-        // Note: only fire catch all routes if there are explicit route matches
-        val finalRoutes = matchedRoutes + catchAllRoutes
         if (logger.isTraceEnabled) {
-            logger.trace("Routes matched for: ${describeRequestShort(event)}: $finalRoutes")
+            logger.trace("Routes matched for: ${describeRequestShort(event)}: $matchedRoutes")
         }
-        return finalRoutes
+        return matchedRoutes
     }
 
     /**
