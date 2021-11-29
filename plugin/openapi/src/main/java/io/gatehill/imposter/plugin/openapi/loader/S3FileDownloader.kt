@@ -106,9 +106,10 @@ class S3FileDownloader private constructor() {
             val bucketName = determineBucketName(s3Url)
             val keyName = s3Url.substring(bucketName.length + 6)
 
-            val objects = s3client.listObjectsV2(bucketName, keyName).objectSummaries.map { it.key }
+            val objects = s3client.listObjectsV2(bucketName, keyName).objectSummaries
+                .map { it.key.substring(keyName.length) }
 
-            LOGGER.debug("Found ${objects.size} objects in S3: $s3Url")
+            LOGGER.debug("Found ${objects.size} objects in S3: $s3Url: $objects")
             return objects
 
         } catch (e: Exception) {
@@ -126,7 +127,7 @@ class S3FileDownloader private constructor() {
             throw IllegalStateException("No files found in S3 at: $s3BaseUrl")
         }
 
-        files.map { it.removePrefix("/") }.forEach { fileName ->
+        files.map { it.removePrefix("/") }.filter { it.isNotEmpty() }.forEach { fileName ->
             val s3Url = s3BaseUrl.removeSuffix("/") + "/" + fileName
             val localFile = File(destDir, fileName)
 

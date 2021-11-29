@@ -6,3 +6,5 @@ build/
 .vertx/
 out/
 target/
+node_modules/
+.serverless/
