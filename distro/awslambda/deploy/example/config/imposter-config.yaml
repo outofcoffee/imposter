@@ -1,0 +1,10 @@
+plugin: "openapi"
+specFile: "pet-api.yaml"
+
+resources:
+  - path: /pets/:petId
+    method: get
+    pathParams:
+      petId: 2
+    response:
+      staticFile: response.json

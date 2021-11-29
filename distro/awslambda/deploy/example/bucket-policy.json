@@ -1,0 +1,24 @@
+{
+  "Version": "2012-10-17",
+  "Id": "Policy1638152516795",
+  "Statement": [
+    {
+      "Sid": "Stmt1638152467919",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::000000000000:role/aws-imposter-example-dev-us-east-1-lambdaRole"
+      },
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::imposter-lambda-example/*"
+    },
+    {
+      "Sid": "Stmt1638152514429",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::000000000000:role/aws-imposter-example-dev-us-east-1-lambdaRole"
+      },
+      "Action": "s3:ListBucket",
+      "Resource": "arn:aws:s3:::imposter-lambda-example"
+    }
+  ]
+}

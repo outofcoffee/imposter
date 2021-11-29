@@ -1,0 +1,20 @@
+service: aws-imposter-example
+frameworkVersion: '2'
+
+provider:
+  name: aws
+  runtime: java8
+
+package:
+  artifact: ../build/libs/imposter-lambda.jar
+
+functions:
+  imposter:
+    handler: io.gatehill.imposter.awslambda.Handler
+    timeout: 30
+    environment:
+      IMPOSTER_S3_CONFIG_URL: "s3://imposter-lambda-example/config/"
+    events:
+      - http:
+          method: any
+          path: /{proxy+}
