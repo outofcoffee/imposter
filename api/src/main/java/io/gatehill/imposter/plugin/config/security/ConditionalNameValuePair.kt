@@ -76,6 +76,7 @@ class ConditionalNameValuePair(
             // HeaderName:
             //   value: <value>
             //   operator: <operator>
+            @Suppress("UNCHECKED_CAST")
             val structuredMatch = value as Map<String, String>
             return ConditionalNameValuePair(
                 key,

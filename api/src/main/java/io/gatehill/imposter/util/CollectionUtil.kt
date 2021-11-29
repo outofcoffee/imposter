@@ -62,7 +62,10 @@ object CollectionUtil {
      */
     @JvmStatic
     fun <V> convertKeysToLowerCase(input: MultiMap): Map<String, V> {
-        return input.associate { (k, v) -> k.lowercase(Locale.getDefault()) to v as V }
+        return input.associate { (k, v) ->
+            @Suppress("UNCHECKED_CAST")
+            k.lowercase(Locale.getDefault()) to v as V
+        }
     }
 
     /**

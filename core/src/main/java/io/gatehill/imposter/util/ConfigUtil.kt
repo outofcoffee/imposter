@@ -93,7 +93,8 @@ object ConfigUtil {
         val allPluginConfigs = mutableMapOf<String, MutableList<File>>()
         for (configDir in configDirs) {
             try {
-                val configFiles: Array<File> = File(configDir).listFiles(this::isConfigFile) ?: emptyArray()
+                val configFiles: Array<File> = File(configDir).listFiles { _, name -> this.isConfigFile(name) }
+                    ?: emptyArray()
 
                 for (configFile in configFiles) {
                     LOGGER.debug("Loading configuration file: {}", configFile)
@@ -123,7 +124,7 @@ object ConfigUtil {
         return allPluginConfigs
     }
 
-    private fun isConfigFile(dir: File, name: String): Boolean {
+    private fun isConfigFile(name: String): Boolean {
         return CONFIG_FILE_MAPPERS.keys.any { extension -> name.endsWith(CONFIG_FILE_SUFFIX + extension) }
     }
 
