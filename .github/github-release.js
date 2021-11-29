@@ -19,15 +19,25 @@ module.exports = async ({github, context}) => {
         body: 'See [change log](https://github.com/outofcoffee/imposter/blob/main/CHANGELOG.md)',
     });
 
+    await releaseMainDistro(github, release, releaseVersion);
+    await releaseLambdaDistro(github, release, releaseVersion);
+
+    console.log(`Assets uploaded to release: ${releaseVersion}`);
+};
+
+async function releaseMainDistro(github, release, releaseVersion) {
     const localFilePath = './distro/all/build/libs/imposter-all.jar';
     await uploadAsset(github, release.data.id, 'imposter.jar', localFilePath, release.data.id);
 
     // upload with version suffix, for compatibility with cli < 0.7.0
     const numericVersion = releaseVersion.startsWith('v') ? releaseVersion.substr(1) : releaseVersion;
     await uploadAsset(github, release.data.id, `imposter-${numericVersion}.jar`, localFilePath, release.data.id);
+}
 
-    console.log(`Assets uploaded to release: ${releaseVersion}`);
-};
+async function releaseLambdaDistro(github, release, releaseVersion) {
+    const localFilePath = './distro/awslambda/build/libs/imposter-awslambda.jar';
+    await uploadAsset(github, release.data.id, 'imposter-awslambda.jar', localFilePath, release.data.id);
+}
 
 async function uploadAsset(github, releaseId, assetFileName, localFilePath) {
     console.log(`Uploading ${localFilePath} as release asset ${assetFileName}...`);

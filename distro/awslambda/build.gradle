@@ -12,7 +12,7 @@ dependencies {
 }
 
 shadowJar {
-    baseName = 'imposter-lambda'
+    baseName = 'imposter-awslambda'
     classifier = ''
     version = ''
 

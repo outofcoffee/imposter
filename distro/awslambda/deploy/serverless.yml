@@ -6,7 +6,7 @@ provider:
   runtime: java8
 
 package:
-  artifact: ../build/libs/imposter-lambda.jar
+  artifact: ../build/libs/imposter-awslambda.jar
 
 functions:
   imposter:

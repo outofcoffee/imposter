@@ -24,9 +24,11 @@ Builds JAR to `./build/libs`
 
 ### Deploy
 
-     npx serverless deploy
+    cd deploy
+    npx serverless deploy
 
 Or:
 
+    cd deploy
     npm install
     npm run deploy
