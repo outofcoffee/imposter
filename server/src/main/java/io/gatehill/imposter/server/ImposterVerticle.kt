@@ -49,6 +49,7 @@ import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
 import io.gatehill.imposter.lifecycle.EngineLifecycleListener
 import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.plugin.PluginManager
+import io.gatehill.imposter.plugin.RoutablePlugin
 import io.gatehill.imposter.plugin.config.ConfigurablePlugin
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.scripting.groovy.GroovyScriptingModule
@@ -127,13 +128,12 @@ class ImposterVerticle : AbstractVerticle() {
         router.errorHandler(500, resourceService.buildUnhandledExceptionHandler())
         router.route().handler(serverFactory.createBodyHttpHandler())
 
-        val allConfigs: MutableList<PluginConfig> = mutableListOf()
-        pluginManager.getPlugins()
+        val allConfigs: List<PluginConfig> = pluginManager.getPlugins()
             .filter { p: Plugin -> p is ConfigurablePlugin<*> }
-            .forEach { p: Plugin -> allConfigs.addAll((p as ConfigurablePlugin<*>).configs) }
+            .flatMap { p: Plugin -> (p as ConfigurablePlugin<*>).configs }
 
         check(allConfigs.isNotEmpty()) {
-            "No plugin configurations were found. The configuration directory must contain one or more valid Imposter configuration files compatible with installed plugins."
+            "No plugin configurations were found. Configuration directories [${imposterConfig.configDirs.joinToString()}] must contain one or more valid Imposter configuration files compatible with installed plugins."
         }
 
         if (isFeatureEnabled(MetricsUtil.FEATURE_NAME_METRICS)) {
@@ -151,7 +151,8 @@ class ImposterVerticle : AbstractVerticle() {
                     .end(buildStatusResponse())
             })
 
-        pluginManager.getPlugins().forEach { plugin: Plugin -> plugin.configureRoutes(router) }
+        pluginManager.getPlugins().filterIsInstance<RoutablePlugin>()
+            .forEach { plugin -> plugin.configureRoutes(router) }
 
         // fire post route config hooks
         engineLifecycle.forEach { listener: EngineLifecycleListener -> listener.afterRoutesConfigured(imposterConfig, allConfigs, router) }

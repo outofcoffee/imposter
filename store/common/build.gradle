@@ -7,10 +7,10 @@ compileJava {
 }
 
 dependencies {
-    api project(':imposter-core')
+    api project(':core:imposter-engine')
 
     // test
-    testImplementation  "junit:junit:$version_junit"
+    testImplementation "junit:junit:$version_junit"
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

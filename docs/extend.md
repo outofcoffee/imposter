@@ -28,7 +28,7 @@ repositories {
 
 dependencies {
     // core imposter dependencies
-    implementation "io.gatehill.imposter:imposter-core:$imposter_version"
+    implementation "io.gatehill.imposter:core:imposter-engine:$imposter_version"
     implementation "io.gatehill.imposter:imposter-server:$imposter_version"
     
     // specific plugins

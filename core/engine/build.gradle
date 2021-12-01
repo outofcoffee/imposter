@@ -1,0 +1,75 @@
+apply plugin: 'java-library'
+apply plugin: 'kotlin'
+apply plugin: 'maven-publish'
+
+ext {
+    version_classgraph = '4.8.54'
+    version_json_path = '2.6.0'
+}
+
+compileJava {
+    sourceCompatibility = 1.8
+}
+
+dependencies {
+    api project(':core:imposter-api')
+    api project(':core:config')
+    api project(':core:s3resolver')
+
+    implementation "org.apache.logging.log4j:log4j-core:$version_log4j"
+
+    api "com.jayway.jsonpath:json-path:$version_json_path"
+
+    // metrics
+    api "io.vertx:vertx-micrometer-metrics:$version_vertx"
+    api "io.micrometer:micrometer-registry-prometheus:$version_micrometer"
+
+    testImplementation "junit:junit:$version_junit"
+    testImplementation group: 'org.hamcrest', name: 'hamcrest-all', version: '1.3'
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    archiveClassifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives sourcesJar
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+
+            repositories {
+                maven {
+                    url = version.endsWith('SNAPSHOT') ? mavenSnapshotRepository : mavenReleaseRepository
+                    credentials(AwsCredentials) {
+                        accessKey awsAccessKey
+                        secretKey awsSecretKey
+                    }
+                }
+            }
+        }
+    }
+}
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+
+        // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
+        freeCompilerArgs = ["-Xjvm-default=all"]
+    }
+}
+
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+
+        // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
+        freeCompilerArgs = ["-Xjvm-default=all"]
+    }
+}

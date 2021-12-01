@@ -44,10 +44,10 @@ package io.gatehill.imposter.store
 
 import com.google.inject.AbstractModule
 import com.google.inject.Module
+import io.gatehill.imposter.config.util.EnvVars.Companion.getEnv
 import io.gatehill.imposter.store.inmem.InMemoryStoreModule
 import io.gatehill.imposter.store.service.StoreService
 import io.gatehill.imposter.store.service.StoreServiceImpl
-import io.gatehill.imposter.util.EnvVars.Companion.getEnv
 import org.apache.logging.log4j.LogManager
 
 /**

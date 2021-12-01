@@ -54,7 +54,6 @@ import io.gatehill.imposter.awslambda.util.ImposterBuilderKt
 import io.gatehill.imposter.awslambda.util.LambdaPlugin
 import io.gatehill.imposter.embedded.MockEngine
 import io.gatehill.imposter.plugin.openapi.OpenApiPluginImpl
-import io.gatehill.imposter.plugin.openapi.loader.S3FileDownloader
 import io.gatehill.imposter.plugin.rest.RestPluginImpl
 import io.gatehill.imposter.server.RequestHandlingMode
 import io.gatehill.imposter.util.InjectorUtil
@@ -75,14 +74,11 @@ class Handler : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyRespo
         System.setProperty("vertx.cacheDirBase", "/tmp/.vertx")
         System.setProperty("java.io.tmpdir", "/tmp")
 
-        logger.debug("Retrieving configuration from ${Settings.s3ConfigUrl}")
-        S3FileDownloader.getInstance().downloadAllFiles(Settings.s3ConfigUrl, Settings.configDir)
-
         engine = ImposterBuilderKt()
             .withPluginClass(LambdaPlugin::class.java)
             .withPluginClass(OpenApiPluginImpl::class.java)
             .withPluginClass(RestPluginImpl::class.java)
-            .withConfigurationDir(Settings.configDir.path)
+            .withConfigurationDir(Settings.configDir ?: Settings.s3ConfigUrl)
             .withEngineOptions { options ->
                 options.serverFactory = LambdaServerFactory::class.qualifiedName
                 options.requestHandlingMode = RequestHandlingMode.SYNC

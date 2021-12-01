@@ -60,7 +60,6 @@ import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -101,7 +100,7 @@ public class ImposterBuilder<M extends MockEngine, SELF extends ImposterBuilder<
     static final String HOST = "localhost";
 
     private final Vertx vertx = Vertx.vertx();
-    protected final List<Path> configurationDirs = new ArrayList<>();
+    protected final List<String> configurationDirs = new ArrayList<>();
     protected Set<Class<? extends Plugin>> pluginClasses = new HashSet<>();
     private ScriptListener scriptListener;
     private Consumer<ImposterConfig> optionsListener;
@@ -127,7 +126,8 @@ public class ImposterBuilder<M extends MockEngine, SELF extends ImposterBuilder<
      * @param configurationDir the directory
      */
     public SELF withConfigurationDir(String configurationDir) {
-        return withConfigurationDir(Paths.get(configurationDir));
+        this.configurationDirs.add(configurationDir);
+        return self();
     }
 
     /**
@@ -136,8 +136,7 @@ public class ImposterBuilder<M extends MockEngine, SELF extends ImposterBuilder<
      * @param configurationDir the directory
      */
     public SELF withConfigurationDir(Path configurationDir) {
-        this.configurationDirs.add(configurationDir);
-        return self();
+        return withConfigurationDir(configurationDir.toAbsolutePath().toString());
     }
 
     public SELF withScriptedBehaviour(ScriptListener scriptListener) {
@@ -221,14 +220,7 @@ public class ImposterBuilder<M extends MockEngine, SELF extends ImposterBuilder<
         imposterConfig.setListenPort(port);
         imposterConfig.setPlugins(pluginClasses.stream().map(Class::getCanonicalName).toArray(String[]::new));
         imposterConfig.setPluginArgs(emptyMap());
-
-        imposterConfig.setConfigDirs(configurationDirs.stream().map(dir -> {
-            try {
-                return dir.toString();
-            } catch (Exception e) {
-                throw new RuntimeException("Error parsing directory: " + dir, e);
-            }
-        }).toArray(String[]::new));
+        imposterConfig.setConfigDirs(configurationDirs.toArray(new String[0]));
 
         if (nonNull(scriptListener)) {
             imposterConfig.setUseEmbeddedScriptEngine(true);

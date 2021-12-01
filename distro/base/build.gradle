@@ -7,7 +7,7 @@ compileJava {
 }
 
 dependencies {
-    api project (':imposter-core')
+    api project (':core:imposter-engine')
     api project (':imposter-server')
 }
 

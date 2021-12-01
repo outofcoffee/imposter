@@ -7,7 +7,7 @@ compileJava {
 }
 
 dependencies {
-    implementation project (':imposter-core')
+    implementation project (':core:imposter-engine')
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

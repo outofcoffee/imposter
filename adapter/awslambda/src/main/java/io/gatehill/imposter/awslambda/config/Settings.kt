@@ -43,15 +43,14 @@
 
 package io.gatehill.imposter.awslambda.config
 
-import io.gatehill.imposter.util.EnvVars
-import java.io.File
+import io.gatehill.imposter.config.util.EnvVars
 
 /**
  * @author Pete Cornish
  */
 object Settings {
-    val configDir: File by lazy {
-        File(EnvVars.getEnv("IMPOSTER_CONFIG_DIR") ?: "/tmp/imposter-config")
+    val configDir: String? by lazy {
+        EnvVars.getEnv("IMPOSTER_CONFIG_DIR")
     }
     val s3ConfigUrl: String by lazy {
         EnvVars.getEnv("IMPOSTER_S3_CONFIG_URL") ?: throw IllegalStateException("Missing S3 configuration URL")

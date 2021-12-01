@@ -1,13 +1,19 @@
 rootProject.name = 'imposter'
 
-include ':api'
-project(':api').name = 'imposter-api'
-
-include ':core'
-project(':core').name = 'imposter-core'
-
 include ':cmd'
 project(':cmd').name = 'imposter-cmd'
+
+include ':core:api'
+project(':core:api').name = 'imposter-api'
+
+include ':core:config'
+project(':core:config').name = 'config'
+
+include ':core:engine'
+project(':core:engine').name = 'imposter-engine'
+
+include ':core:s3resolver'
+project(':core:s3resolver').name = 's3resolver'
 
 include ':server'
 project(':server').name = 'imposter-server'

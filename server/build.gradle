@@ -7,7 +7,7 @@ compileJava {
 }
 
 dependencies {
-    api project(':imposter-core')
+    api project(':core:imposter-engine')
 
     // scripting
     implementation project (':scripting:scripting-groovy')
@@ -25,8 +25,8 @@ dependencies {
     implementation "org.apache.logging.log4j:log4j-jul:$version_log4j"
 
     // test
-    testImplementation  project(':imposter-test')
-    testImplementation  "com.jayway.restassured:rest-assured:$version_restAssured"
+    testImplementation project(':imposter-test')
+    testImplementation "com.jayway.restassured:rest-assured:$version_restAssured"
 
     // java 11 compatibility
     testImplementation ('javax.xml.bind:jaxb-api:2.3.0')

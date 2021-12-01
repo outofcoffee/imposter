@@ -7,7 +7,7 @@ compileJava {
 }
 
 dependencies {
-    implementation project(':imposter-core')
+    implementation project(':core:imposter-engine')
     api "io.vertx:vertx-web:$version_vertx"
 }
 

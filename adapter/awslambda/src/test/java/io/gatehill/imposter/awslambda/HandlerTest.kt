@@ -48,8 +48,8 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent
 import com.amazonaws.services.lambda.runtime.tests.annotations.Event
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import io.gatehill.imposter.awslambda.Handler
-import io.gatehill.imposter.plugin.openapi.loader.S3FileDownloader
-import io.gatehill.imposter.util.EnvVars
+import io.gatehill.imposter.config.S3FileDownloader
+import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.util.TestEnvironmentUtil.assumeDockerAccessible
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -57,9 +57,7 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.params.ParameterizedTest
 import org.mockito.Mockito.mock
-import java.nio.file.Files
 import java.nio.file.Paths
-import kotlin.io.path.absolutePathString
 
 class HandlerTest {
     private var s3Mock: S3MockContainer? = null
@@ -83,9 +81,7 @@ class HandlerTest {
         uploadFileToS3("/config", "pet-api.yaml")
         uploadFileToS3("/config", "subdir/response.json")
 
-        val configDir = Files.createTempDirectory("imposter-config")
         EnvVars.populate(mapOf(
-            "IMPOSTER_CONFIG_DIR" to configDir.absolutePathString(),
             "IMPOSTER_S3_CONFIG_URL" to "s3://test/",
         ))
 

@@ -24,6 +24,8 @@ shadowJar {
         attributes 'Imposter-Version': project.version
     }
 
+    append 'META-INF/imposter.properties'
+
     mergeServiceFiles {
         include 'META-INF/services/io.vertx.core.spi.VerticleFactory'
     }

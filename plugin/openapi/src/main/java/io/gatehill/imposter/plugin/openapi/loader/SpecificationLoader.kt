@@ -43,6 +43,7 @@
 package io.gatehill.imposter.plugin.openapi.loader
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.gatehill.imposter.config.S3FileDownloader
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig
 import io.gatehill.imposter.util.MapUtil.JSON_MAPPER
 import io.gatehill.imposter.util.MapUtil.YAML_MAPPER
@@ -53,7 +54,7 @@ import io.swagger.v3.parser.core.models.ParseOptions
 import io.swagger.v3.parser.core.models.SwaggerParseResult
 import io.swagger.v3.parser.util.RemoteUrl
 import org.apache.commons.io.FileUtils
-import org.slf4j.LoggerFactory
+import org.apache.logging.log4j.LogManager
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Paths
@@ -64,7 +65,7 @@ import java.nio.file.Paths
  * @author Pete Cornish
  */
 object SpecificationLoader {
-    private val LOGGER = LoggerFactory.getLogger(SpecificationLoader::class.java)
+    private val LOGGER = LogManager.getLogger(SpecificationLoader::class.java)
 
     @JvmStatic
     fun parseSpecification(config: OpenApiPluginConfig): OpenAPI {

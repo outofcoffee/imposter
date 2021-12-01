@@ -42,18 +42,18 @@
  */
 package io.gatehill.imposter.cmd
 
+import io.gatehill.imposter.config.util.EnvVars.Companion.getEnv
+import io.gatehill.imposter.config.util.MetaUtil.readVersion
 import io.gatehill.imposter.plugin.internal.MetaInfPluginDetectorImpl
 import io.gatehill.imposter.server.ConfigHolder
 import io.gatehill.imposter.server.vertxweb.VertxWebServerFactoryImpl
 import io.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PASSWORD
 import io.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PATH
-import io.gatehill.imposter.util.EnvVars.Companion.getEnv
 import io.gatehill.imposter.util.FileUtil.CLASSPATH_PREFIX
 import io.gatehill.imposter.util.HttpUtil.BIND_ALL_HOSTS
 import io.gatehill.imposter.util.HttpUtil.DEFAULT_HTTPS_LISTEN_PORT
 import io.gatehill.imposter.util.HttpUtil.DEFAULT_HTTP_LISTEN_PORT
 import io.gatehill.imposter.util.LogUtil
-import io.gatehill.imposter.util.MetaUtil.readVersion
 import io.vertx.core.logging.SLF4JLogDelegateFactory
 import org.apache.logging.log4j.LogManager
 import org.kohsuke.args4j.CmdLineException

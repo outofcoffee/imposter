@@ -43,7 +43,6 @@
 
 package io.gatehill.imposter.awslambda.util
 
-import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.plugin.RequireModules
 
@@ -52,6 +51,4 @@ import io.gatehill.imposter.plugin.RequireModules
  * @author Pete Cornish
  */
 @RequireModules(LambdaModule::class)
-class LambdaPlugin : Plugin {
-    override fun configureRoutes(router: HttpRouter) {}
-}
+class LambdaPlugin : Plugin

@@ -43,7 +43,7 @@
 package io.gatehill.imposter.plugin.openapi.config
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import io.gatehill.imposter.util.EnvVars.Companion.getEnv
+import io.gatehill.imposter.config.util.EnvVars.Companion.getEnv
 import java.util.*
 
 /**

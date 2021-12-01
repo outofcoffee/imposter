@@ -43,6 +43,7 @@
 package io.gatehill.imposter.scripting.nashorn.service
 
 import com.google.common.cache.CacheBuilder
+import io.gatehill.imposter.config.util.EnvVars.Companion.getEnv
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
@@ -51,7 +52,6 @@ import io.gatehill.imposter.script.ScriptUtil
 import io.gatehill.imposter.scripting.common.JavaScriptUtil.wrapScript
 import io.gatehill.imposter.scripting.nashorn.shim.ConsoleShim
 import io.gatehill.imposter.service.ScriptService
-import io.gatehill.imposter.util.EnvVars.Companion.getEnv
 import io.gatehill.imposter.util.MetricsUtil.doIfMetricsEnabled
 import io.micrometer.core.instrument.Gauge
 import jdk.nashorn.api.scripting.NashornScriptEngine

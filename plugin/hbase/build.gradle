@@ -11,7 +11,7 @@ compileJava {
 }
 
 dependencies {
-    implementation project(':imposter-core')
+    implementation project(':core:imposter-engine')
 
     // hbase
     implementation("org.apache.hbase:hbase-client:$version_hbaseApi") {
@@ -22,7 +22,7 @@ dependencies {
     }
 
     // test
-    testImplementation  project(':imposter-test')
+    testImplementation project(':imposter-test')
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

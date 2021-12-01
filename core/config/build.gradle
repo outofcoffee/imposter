@@ -1,0 +1,78 @@
+apply plugin: 'java-library'
+apply plugin: 'kotlin'
+apply plugin: 'maven-publish'
+
+ext {
+    version_classgraph = '4.8.54'
+    version_json_path = '2.6.0'
+}
+
+compileJava {
+    sourceCompatibility = 1.8
+}
+
+dependencies {
+    implementation project(':core:imposter-api')
+
+    api "com.fasterxml.jackson.core:jackson-databind:$version_jackson"
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$version_jackson"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$version_jackson"
+    implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$version_jackson"
+
+    implementation "io.github.classgraph:classgraph:$version_classgraph"
+
+    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+
+    api "commons-io:commons-io:$version_commons_io"
+    api "org.apache.commons:commons-text:$version_commons_text"
+
+    // test
+    testImplementation "junit:junit:$version_junit"
+    testImplementation group: 'org.hamcrest', name: 'hamcrest-all', version: '1.3'
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    archiveClassifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives sourcesJar
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+
+            repositories {
+                maven {
+                    url = version.endsWith('SNAPSHOT') ? mavenSnapshotRepository : mavenReleaseRepository
+                    credentials(AwsCredentials) {
+                        accessKey awsAccessKey
+                        secretKey awsSecretKey
+                    }
+                }
+            }
+        }
+    }
+}
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+
+        // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
+        freeCompilerArgs = ["-Xjvm-default=all"]
+    }
+}
+
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+
+        // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
+        freeCompilerArgs = ["-Xjvm-default=all"]
+    }
+}

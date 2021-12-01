@@ -7,11 +7,11 @@ compileJava {
 }
 
 dependencies {
-    implementation project(':imposter-core')
+    implementation project(':core:imposter-engine')
 
     // test
-    testImplementation  project(':imposter-test')
-    testImplementation  'com.frejo:force-rest-api:0.0.29'
+    testImplementation project(':imposter-test')
+    testImplementation 'com.frejo:force-rest-api:0.0.29'
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

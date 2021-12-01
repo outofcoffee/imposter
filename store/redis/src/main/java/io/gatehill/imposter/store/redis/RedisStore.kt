@@ -42,9 +42,8 @@
  */
 package io.gatehill.imposter.store.redis
 
+import io.gatehill.imposter.config.util.EnvVars.Companion.getEnv
 import io.gatehill.imposter.store.model.Store
-import io.gatehill.imposter.store.redis.RedisStore
-import io.gatehill.imposter.util.EnvVars.Companion.getEnv
 import org.apache.logging.log4j.LogManager
 import org.redisson.api.RMapCache
 import org.redisson.api.RedissonClient

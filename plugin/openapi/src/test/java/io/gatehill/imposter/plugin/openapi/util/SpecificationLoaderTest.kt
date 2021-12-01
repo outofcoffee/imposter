@@ -45,8 +45,8 @@ package io.gatehill.imposter.plugin.openapi.util
 import com.adobe.testing.s3mock.testcontainers.S3MockContainer
 import com.amazonaws.client.builder.AwsClientBuilder
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
+import io.gatehill.imposter.config.S3FileDownloader
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig
-import io.gatehill.imposter.plugin.openapi.loader.S3FileDownloader
 import io.gatehill.imposter.plugin.openapi.loader.SpecificationLoader.parseSpecification
 import io.gatehill.imposter.util.TestEnvironmentUtil.assumeDockerAccessible
 import io.vertx.core.AsyncResult
@@ -142,7 +142,8 @@ class SpecificationLoaderTest {
         S3FileDownloader.destroyInstance()
         System.setProperty(S3FileDownloader.SYS_PROP_S3_API_ENDPOINT, s3Mock!!.httpEndpoint)
 
-        val specFilePath = Paths.get(SpecificationLoaderTest::class.java.getResource("/util/spec-loader/order_service.yaml")!!.toURI())
+        val specFilePath =
+            Paths.get(SpecificationLoaderTest::class.java.getResource("/util/spec-loader/order_service.yaml")!!.toURI())
         val pluginConfig = uploadFileToS3(specFilePath)
 
         val spec = parseSpecification(pluginConfig)
