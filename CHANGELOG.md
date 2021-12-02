@@ -3,9 +3,20 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [2.2.0] - 2021-12-02
 ### Added
-- ...
+- feat: adds multiple plugin support to embedded distro.
+- feat: allows advanced customisation of engine settings in embedded distro.
+- feat: adds Lambda adapter and distro.
+- docs: adds Lambda example.
+- 
+### Changed
+- refactor: moves vertx-web adapter implementation and dependency into separate module.
+- refactor: moves api, config, engine and S3 config resolver modules under core.
+
+### Fixed
+- fix: correctly serialises security schemes in OpenAPI plugin.
+- fix: resolves some compiler warnings.
 
 ## [2.1.0] - 2021-11-23
 ### Added
