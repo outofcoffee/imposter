@@ -54,8 +54,8 @@ import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginValidationConfig.ValidationIssueBehaviour
 import io.gatehill.imposter.plugin.openapi.util.ValidationReportUtil
-import io.gatehill.imposter.util.MapUtil
 import io.swagger.models.Scheme
+import io.swagger.v3.core.util.Json
 import io.swagger.v3.oas.models.Components
 import io.swagger.v3.oas.models.ExternalDocumentation
 import io.swagger.v3.oas.models.OpenAPI
@@ -98,7 +98,11 @@ class SpecificationServiceImpl @Inject constructor(
     override fun getCombinedSpecSerialised(allSpecs: List<OpenAPI>, deriveBasePathFromServerEntries: Boolean): String {
         return cache.get("combinedSpecSerialised") {
             try {
-                return@get MapUtil.JSON_MAPPER.writeValueAsString(
+                // Use the v3 swagger-core serialiser (io.swagger.v3.core.util.Json) to serialise the spec,
+                // to benefit from its various mixins that are not present in the io.swagger.util.Json implementation.
+                // In particular, these mixins correctly serialise extensions and components, like SecurityScheme,
+                // to their formal values, rather than the Java enum/toString() defaults.
+                return@get Json.mapper().writeValueAsString(
                     getCombinedSpec(allSpecs, deriveBasePathFromServerEntries)
                 )
             } catch (e: JsonGenerationException) {
