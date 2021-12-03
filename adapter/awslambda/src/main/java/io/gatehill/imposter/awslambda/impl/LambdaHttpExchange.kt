@@ -146,6 +146,11 @@ class LambdaHttpExchange(
  * @author Pete Cornish
  */
 class LambdaHttpRequest(val event: APIGatewayProxyRequestEvent) : HttpRequest {
+    private val baseUrl: String
+    init {
+        baseUrl = "http://" + (getHeader("Host") ?: "0.0.0.0")
+    }
+
     override fun path(): String {
         return event.path ?: ""
     }
@@ -155,7 +160,7 @@ class LambdaHttpRequest(val event: APIGatewayProxyRequestEvent) : HttpRequest {
     }
 
     override fun absoluteURI(): String {
-        return "http://0.0.0.0${path()}"
+        return "$baseUrl${path()}"
     }
 
     override fun headers(): Map<String, String> {
