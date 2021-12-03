@@ -48,6 +48,7 @@ import com.google.common.base.Strings
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.http.HttpResponse
+import io.gatehill.imposter.http.HttpRoute
 import io.gatehill.imposter.plugin.config.resource.ResourceMethod
 import io.gatehill.imposter.util.HttpUtil
 import io.vertx.core.MultiMap
@@ -62,7 +63,7 @@ import java.nio.charset.Charset
 class LambdaHttpExchange(
     private val request: LambdaHttpRequest,
     private val response: LambdaHttpResponse,
-    override val currentRoutePath: String?
+    private val currentRoute: HttpRoute?
 ) : HttpExchange {
     private val attributes = mutableMapOf<String, Any>()
     private var failureCause: Throwable? = null
@@ -79,8 +80,15 @@ class LambdaHttpExchange(
         return response
     }
 
+    override val currentRoutePath: String?
+        get() = currentRoute?.path
+
+    private val pathParameters by lazy {
+        currentRoute?.extractPathParams(request.path()) ?: emptyMap()
+    }
+
     override fun pathParams(): Map<String, String> {
-        return request.event.pathParameters ?: emptyMap()
+        return pathParameters
     }
 
     override fun queryParams(): Map<String, String> {
@@ -88,7 +96,7 @@ class LambdaHttpExchange(
     }
 
     override fun pathParam(paramName: String): String? {
-        return request.event.pathParameters?.get(paramName)
+        return pathParameters[paramName]
     }
 
     override fun queryParam(queryParam: String): String? {
@@ -108,7 +116,7 @@ class LambdaHttpExchange(
         request.event.body?.let { Buffer.buffer(it) }
     }
 
-    override val bodyAsString: String
+    override val bodyAsString: String?
         get() = request.event.body
 
     override val bodyAsJson: JsonObject? by lazy {

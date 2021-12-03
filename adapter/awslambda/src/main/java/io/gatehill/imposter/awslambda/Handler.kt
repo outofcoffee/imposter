@@ -92,13 +92,23 @@ class Handler : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyRespo
 
     override fun handleRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent {
         val response = try {
-            logger.info("Received request: $input")
+            if (logger.isTraceEnabled) {
+                logger.trace("Received request: $input")
+            } else {
+                logger.info("Received request: ${input.httpMethod} ${input.path}")
+            }
             server.dispatch(input)
+
         } catch (e: Exception) {
             logger.error(e)
             APIGatewayProxyResponseEvent().withStatusCode(500)
         }
-        logger.debug("Sending response: $response")
+
+        if (logger.isTraceEnabled) {
+            logger.trace("Sending response: $response")
+        } else {
+            logger.info("Sending response: [statusCode=${response.statusCode},body=${response.body?.length}]")
+        }
         return response
     }
 }

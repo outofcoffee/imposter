@@ -132,20 +132,38 @@ data class HttpRoute(
 ) {
     var handler: HttpRequestHandler? = null
 
-    val pathPattern : Pattern by lazy {
+    private data class ParsedPathParams(
+        val paramNames: List<String>,
+        val pathPattern: Pattern
+    )
+
+    private val parsedPathParams by lazy {
+        val paramNames = mutableListOf<String>()
+
         val matcher = placeholderPattern.matcher(path!!)
-        val pathRegex = matcher.replaceAll("(.+)")
-        Pattern.compile(pathRegex)
+        val sb = StringBuffer()
+        var index = 0
+        while (matcher.find()) {
+            val paramName: String = matcher.group().substring(1)
+            require(!paramNames.contains(paramName)) { "Cannot use param name '$paramName' more than once in path" }
+
+            matcher.appendReplacement(sb, "(?<$paramName>[^/]+)")
+            paramNames.add(paramName)
+            index++
+        }
+        matcher.appendTail(sb)
+
+        return@lazy ParsedPathParams(paramNames, Pattern.compile(sb.toString()))
     }
 
-    val regexPattern : Pattern by lazy { Pattern.compile(regex!!) }
+    val regexPattern: Pattern by lazy { Pattern.compile(regex!!) }
 
     fun handler(requestHandler: HttpRequestHandler): HttpRoute {
         handler = requestHandler
         return this
     }
 
-    fun isCatchAll(): Boolean = (null == path && null == regex && null == method)
+    fun isCatchAll(): Boolean = (null == path && null == regex)
 
     fun matches(requestPath: String): Boolean {
         return path?.let {
@@ -160,7 +178,15 @@ data class HttpRoute(
             // no placeholders
             return false
         }
-        return pathPattern.matcher(requestPath).matches()
+        return parsedPathParams.pathPattern.matcher(requestPath).matches()
+    }
+
+    fun extractPathParams(requestPath: String): Map<String, String> {
+        val matcher = parsedPathParams.pathPattern.matcher(requestPath)
+        if (matcher.matches()) {
+            return parsedPathParams.paramNames.associateWith { matcher.group(it) }
+        }
+        return emptyMap()
     }
 
     companion object {

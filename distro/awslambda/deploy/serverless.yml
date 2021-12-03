@@ -6,12 +6,14 @@ provider:
   runtime: java8
 
 package:
-  artifact: ../build/libs/imposter-awslambda.jar
+  individually: true
 
 functions:
   imposter:
     handler: io.gatehill.imposter.awslambda.Handler
     timeout: 30
+    package:
+      artifact: ../build/libs/imposter-awslambda.jar
     environment:
       IMPOSTER_S3_CONFIG_URL: "s3://imposter-lambda-example/config/"
     events:

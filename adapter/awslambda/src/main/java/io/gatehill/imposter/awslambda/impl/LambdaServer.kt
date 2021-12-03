@@ -75,7 +75,7 @@ class LambdaServer(router: HttpRouter) : HttpServer {
         try {
             matchRoutes(request, event, response).forEach { route ->
                 val handler = route.handler ?: throw IllegalStateException("No route handler set for: $route")
-                val exchange = LambdaHttpExchange(request, response, route.path)
+                val exchange = LambdaHttpExchange(request, response, route)
                 try {
                     handler(exchange)
                 } catch (e: Exception) {
