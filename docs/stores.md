@@ -177,4 +177,5 @@ You must provide an object with key/value pairs, such as that shown above, or in
 Different store implementations exist:
 
 * In memory store (default)
-* [Redis store](../store/redis)
+* [DynamoDB store](https://github.com/outofcoffee/imposter/tree/main/store/dynamodb)
+* [Redis store](https://github.com/outofcoffee/imposter/tree/main/store/redis)

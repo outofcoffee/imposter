@@ -48,6 +48,9 @@ project(':store:common').name = 'store-common'
 include ':store:redis'
 project(':store:redis').name = 'store-redis'
 
+include ':store:dynamodb'
+project(':store:dynamodb').name = 'store-dynamodb'
+
 // plugins
 include ':plugin:detector'
 project(':plugin:detector').name = 'plugin-detector'

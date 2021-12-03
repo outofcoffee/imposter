@@ -40,51 +40,17 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.store.inmem
+package io.gatehill.imposter.store.dynamodb
 
-import org.junit.Assert
-import org.junit.Before
-import org.junit.Test
+import com.google.inject.AbstractModule
+import com.google.inject.Singleton
+import io.gatehill.imposter.store.model.StoreFactory
 
 /**
- * Tests for in-memory store implementation.
- *
  * @author Pete Cornish
  */
-class InMemoryStoreTest {
-    private var factory: InMemoryStoreFactoryImpl? = null
-
-    @Before
-    fun setUp() {
-        factory = InMemoryStoreFactoryImpl()
-    }
-
-    @Test
-    fun testBuildNewStore() {
-        val store = factory!!.buildNewStore("test")
-        Assert.assertEquals("inmem", store.typeDescription)
-    }
-
-    @Test
-    fun testSaveLoadItem() {
-        val store = factory!!.buildNewStore("sli")
-        Assert.assertEquals(0, store.count())
-        store.save("foo", "bar")
-        Assert.assertEquals("bar", store.load("foo"))
-        val allItems = store.loadAll()
-        Assert.assertEquals(1, allItems.size)
-        Assert.assertEquals("bar", allItems["foo"])
-        Assert.assertTrue("Item should exist", store.hasItemWithKey("foo"))
-        Assert.assertEquals(1, store.count())
-    }
-
-    @Test
-    fun testDeleteItem() {
-        val store = factory!!.buildNewStore("di")
-        Assert.assertFalse("Item should not exist", store.hasItemWithKey("baz"))
-        store.save("baz", "qux")
-        Assert.assertTrue("Item should exist", store.hasItemWithKey("baz"))
-        store.delete("baz")
-        Assert.assertFalse("Item should not exist", store.hasItemWithKey("baz"))
+class DynamoDBStoreModule : AbstractModule() {
+    override fun configure() {
+        bind(StoreFactory::class.java).to(DynamoDBStoreFactoryImpl::class.java).`in`(Singleton::class.java)
     }
 }

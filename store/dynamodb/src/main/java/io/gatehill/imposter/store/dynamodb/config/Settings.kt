@@ -40,51 +40,37 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.store.inmem
+package io.gatehill.imposter.store.dynamodb.config
 
-import org.junit.Assert
-import org.junit.Before
-import org.junit.Test
+import com.amazonaws.regions.DefaultAwsRegionProviderChain
+import io.gatehill.imposter.config.util.EnvVars
+import java.util.Objects.isNull
 
 /**
- * Tests for in-memory store implementation.
- *
  * @author Pete Cornish
  */
-class InMemoryStoreTest {
-    private var factory: InMemoryStoreFactoryImpl? = null
+internal object Settings {
+    val awsAccessKeys: AwsAccessKeys?
+        get() {
+            val accessKey = EnvVars.getEnv("AWS_ACCESS_KEY_ID")
+            val secretKey = EnvVars.getEnv("AWS_SECRET_ACCESS_KEY")
+            if (isNull(accessKey) || isNull(secretKey)) {
+                return null
+            }
+            return AwsAccessKeys(accessKey!!, secretKey!!)
+        }
 
-    @Before
-    fun setUp() {
-        factory = InMemoryStoreFactoryImpl()
-    }
+    data class AwsAccessKeys(
+        val accessKey: String,
+        val secretKey: String
+    )
 
-    @Test
-    fun testBuildNewStore() {
-        val store = factory!!.buildNewStore("test")
-        Assert.assertEquals("inmem", store.typeDescription)
-    }
+    val dynamoDbApiEndpoint: String?
+        get() = EnvVars.getEnv("IMPOSTER_DYNAMODB_ENDPOINT")
 
-    @Test
-    fun testSaveLoadItem() {
-        val store = factory!!.buildNewStore("sli")
-        Assert.assertEquals(0, store.count())
-        store.save("foo", "bar")
-        Assert.assertEquals("bar", store.load("foo"))
-        val allItems = store.loadAll()
-        Assert.assertEquals(1, allItems.size)
-        Assert.assertEquals("bar", allItems["foo"])
-        Assert.assertTrue("Item should exist", store.hasItemWithKey("foo"))
-        Assert.assertEquals(1, store.count())
-    }
+    val dynamoDbSigningRegion: String
+        get() = EnvVars.getEnv("IMPOSTER_DYNAMODB_SIGNING_REGION") ?: DefaultAwsRegionProviderChain().region
 
-    @Test
-    fun testDeleteItem() {
-        val store = factory!!.buildNewStore("di")
-        Assert.assertFalse("Item should not exist", store.hasItemWithKey("baz"))
-        store.save("baz", "qux")
-        Assert.assertTrue("Item should exist", store.hasItemWithKey("baz"))
-        store.delete("baz")
-        Assert.assertFalse("Item should not exist", store.hasItemWithKey("baz"))
-    }
+    val tableName: String
+        get() = EnvVars.getEnv("IMPOSTER_DYNAMODB_TABLE") ?: "Imposter"
 }

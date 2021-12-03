@@ -42,92 +42,117 @@
  */
 package io.gatehill.imposter.store.redis
 
-import com.google.common.base.Charsets
+import com.amazonaws.auth.AWSStaticCredentialsProvider
+import com.amazonaws.auth.BasicAWSCredentials
+import com.amazonaws.client.builder.AwsClientBuilder
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder
+import com.amazonaws.services.dynamodbv2.model.AttributeDefinition
+import com.amazonaws.services.dynamodbv2.model.CreateTableRequest
+import com.amazonaws.services.dynamodbv2.model.KeySchemaElement
+import com.amazonaws.services.dynamodbv2.model.KeyType
+import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput
+import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType
 import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.config.util.EnvVars
+import io.gatehill.imposter.store.dynamodb.DynamoDBStoreFactoryImpl
+import io.gatehill.imposter.store.dynamodb.config.Settings
 import io.gatehill.imposter.util.TestEnvironmentUtil
-import org.apache.commons.io.FileUtils
 import org.junit.AfterClass
 import org.junit.Assert
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
-import org.testcontainers.containers.GenericContainer
-import org.testcontainers.containers.GenericKontainer
-import org.testcontainers.containers.wait.strategy.Wait
+import org.testcontainers.containers.localstack.LocalStackContainer
 import org.testcontainers.utility.DockerImageName
-import java.io.File
-import java.io.IOException
 import java.nio.file.Files
-import java.nio.file.Path
 
 /**
- * Tests for Redis store implementation.
+ * Tests for DynamoDB store implementation.
  *
  * @author Pete Cornish
  */
-class RedisStoreFactoryImplTest {
-    private var factory: RedisStoreFactoryImpl? = null
+class DynamoDBStoreFactoryImplTest {
+    private var factory: DynamoDBStoreFactoryImpl? = null
 
     companion object {
-        private var redis: GenericContainer<*>? = null
-        private var imposterConfig: ImposterConfig? = null
+        private var dynamo: LocalStackContainer? = null
 
         @BeforeClass
         @JvmStatic
-        @Throws(Exception::class)
         fun setUp() {
             // These tests need Docker
             TestEnvironmentUtil.assumeDockerAccessible()
 
-            startRedis()
-
-            val configDir = Files.createTempDirectory("imposter")
-            writeRedissonConfig(configDir)
-
-            imposterConfig = ImposterConfig().apply {
-                configDirs = arrayOf(configDir.toString())
-            }
+            startDynamoDb()
+            createTable("Imposter")
         }
 
         @AfterClass
         @JvmStatic
         fun tearDown() {
             try {
-                if (redis?.isRunning == true) {
-                    redis!!.stop()
+                if (dynamo?.isRunning == true) {
+                    dynamo!!.stop()
                 }
             } catch (ignored: Exception) {
             }
         }
 
-        private fun startRedis() {
-            redis = GenericKontainer(DockerImageName.parse("redis:5-alpine"))
-                .withExposedPorts(6379)
-                .waitingFor(Wait.forListeningPort())
+        private fun startDynamoDb() {
+            dynamo = LocalStackContainer(DockerImageName.parse("localstack/localstack:0.11.2"))
+                .withServices(LocalStackContainer.Service.DYNAMODB)
                 .apply { start() }
+
+            val dynamoDbEndpoint = dynamo!!.getEndpointOverride(LocalStackContainer.Service.DYNAMODB).toString()
+            EnvVars.populate(
+                mapOf(
+                    "IMPOSTER_DYNAMODB_ENDPOINT" to dynamoDbEndpoint,
+                    "AWS_ACCESS_KEY_ID" to "dummy",
+                    "AWS_SECRET_ACCESS_KEY" to "dummy",
+                )
+            )
         }
 
-        @Throws(IOException::class)
-        private fun writeRedissonConfig(configDir: Path) {
-            val redissonConfig = """
-singleServerConfig:
-  address: "redis://${redis!!.host}:${redis!!.getMappedPort(6379)}"
-"""
+        private fun createTable(tableName: String) {
+            val ddb = AmazonDynamoDBClientBuilder.standard().withEndpointConfiguration(
+                AwsClientBuilder.EndpointConfiguration(Settings.dynamoDbApiEndpoint, Settings.dynamoDbSigningRegion)
+            ).withCredentials(
+                AWSStaticCredentialsProvider(BasicAWSCredentials("dummy", "dummy"))
+            ).build()
 
-            val redissonConfigFile = File(configDir.toFile(), "redisson.yaml")
-            FileUtils.write(redissonConfigFile, redissonConfig, Charsets.UTF_8)
+            val keySchema = listOf(
+                KeySchemaElement("Store", KeyType.HASH),
+                KeySchemaElement("Key", KeyType.RANGE),
+            )
+            val attributeDefs = listOf(
+                AttributeDefinition("Store", ScalarAttributeType.S),
+                AttributeDefinition("Key", ScalarAttributeType.S),
+            )
+            val request = CreateTableRequest(tableName, keySchema)
+                .withAttributeDefinitions(attributeDefs)
+                .withProvisionedThroughput(
+                    ProvisionedThroughput()
+                        .withReadCapacityUnits(5L)
+                        .withWriteCapacityUnits(6L)
+                )
+
+            ddb.createTable(request)
         }
     }
 
     @Before
     fun before() {
-        factory = RedisStoreFactoryImpl(imposterConfig!!)
+        val configDir = Files.createTempDirectory("imposter")
+
+        val imposterConfig = ImposterConfig()
+        imposterConfig.configDirs = arrayOf(configDir.toString())
+        factory = DynamoDBStoreFactoryImpl()
     }
 
     @Test
     fun testBuildNewStore() {
         val store = factory!!.buildNewStore("test")
-        Assert.assertEquals("redis", store.typeDescription)
+        Assert.assertEquals("dynamodb", store.typeDescription)
     }
 
     @Test

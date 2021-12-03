@@ -40,51 +40,36 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.store.inmem
+package io.gatehill.imposter.store.dynamodb
 
-import org.junit.Assert
-import org.junit.Before
-import org.junit.Test
+import com.amazonaws.auth.AWSStaticCredentialsProvider
+import com.amazonaws.auth.BasicAWSCredentials
+import com.amazonaws.client.builder.AwsClientBuilder
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder
+import io.gatehill.imposter.store.dynamodb.config.Settings
+import io.gatehill.imposter.store.factory.AbstractStoreFactory
+import io.gatehill.imposter.store.model.Store
 
 /**
- * Tests for in-memory store implementation.
- *
  * @author Pete Cornish
  */
-class InMemoryStoreTest {
-    private var factory: InMemoryStoreFactoryImpl? = null
+class DynamoDBStoreFactoryImpl : AbstractStoreFactory() {
+    private val ddb: AmazonDynamoDB
 
-    @Before
-    fun setUp() {
-        factory = InMemoryStoreFactoryImpl()
+    init {
+        val builder = AmazonDynamoDBClientBuilder.standard()
+        Settings.dynamoDbApiEndpoint?.let {
+            val endpointConfig = AwsClientBuilder.EndpointConfiguration(Settings.dynamoDbApiEndpoint, Settings.dynamoDbSigningRegion)
+            builder.withEndpointConfiguration(endpointConfig)
+        }
+        Settings.awsAccessKeys?.let {
+            builder.withCredentials(AWSStaticCredentialsProvider(BasicAWSCredentials(it.accessKey, it.secretKey)))
+        }
+        ddb = builder.build()
     }
 
-    @Test
-    fun testBuildNewStore() {
-        val store = factory!!.buildNewStore("test")
-        Assert.assertEquals("inmem", store.typeDescription)
-    }
-
-    @Test
-    fun testSaveLoadItem() {
-        val store = factory!!.buildNewStore("sli")
-        Assert.assertEquals(0, store.count())
-        store.save("foo", "bar")
-        Assert.assertEquals("bar", store.load("foo"))
-        val allItems = store.loadAll()
-        Assert.assertEquals(1, allItems.size)
-        Assert.assertEquals("bar", allItems["foo"])
-        Assert.assertTrue("Item should exist", store.hasItemWithKey("foo"))
-        Assert.assertEquals(1, store.count())
-    }
-
-    @Test
-    fun testDeleteItem() {
-        val store = factory!!.buildNewStore("di")
-        Assert.assertFalse("Item should not exist", store.hasItemWithKey("baz"))
-        store.save("baz", "qux")
-        Assert.assertTrue("Item should exist", store.hasItemWithKey("baz"))
-        store.delete("baz")
-        Assert.assertFalse("Item should not exist", store.hasItemWithKey("baz"))
+    override fun buildNewStore(storeName: String): Store {
+        return DynamoDBStore(storeName, ddb, Settings.tableName)
     }
 }
