@@ -12,7 +12,7 @@ nav:
   - Scripting: 'scripting.md'
   - Security: 'security.md'
 
-  - Plugins:
+  - Mock types:
     - OpenAPI (and Swagger) plugin: 'openapi_plugin.md'
     - REST plugin: 'rest_plugin.md'
     - HBase plugin: 'hbase_plugin.md'

@@ -1,11 +1,12 @@
 # Getting started
 
-There are many ways to run Imposter. They broadly fit in two categories - running a standalone server, or embedding within tests.
+There are many ways to run Imposter. They broadly fit in two categories - running a standalone server, or embedded within tests.
 
 ### Standalone mock server
 
 - Using the command line client - see [Imposter CLI](./run_imposter_cli.md)
 - As a Docker container - see [Imposter Docker container](./run_imposter_docker.md)
+- As a Lambda function in AWS - see [Imposter AWS Lambda](./run_imposter_aws_lambda.md)
 - As a JAR file on the JVM - see [Imposter JAR file](./run_imposter_jar.md)
 
 ### Embedded in tests

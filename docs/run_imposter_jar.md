@@ -9,6 +9,7 @@ There are many ways to run Imposter. This section describes how to use a JAR fil
 
 - Using the command line client - see [Imposter CLI](./run_imposter_cli.md)
 - As a Docker container - see [Imposter Docker container](./run_imposter_docker.md)
+- As a Lambda function in AWS - see [Imposter AWS Lambda](./run_imposter_aws_lambda.md)
 
 #### Embedded in tests
 

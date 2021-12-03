@@ -9,7 +9,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - feat: allows advanced customisation of engine settings in embedded distro.
 - feat: adds Lambda adapter and distro.
 - docs: adds Lambda example.
-- 
+
 ### Changed
 - refactor: moves vertx-web adapter implementation and dependency into separate module.
 - refactor: moves api, config, engine and S3 config resolver modules under core.
