@@ -54,20 +54,26 @@ import org.apache.logging.log4j.LogManager
  * Common store factory methods. Supports adding a prefix to keys by setting the [.ENV_VAR_KEY_PREFIX]
  * environment variable.
  *
+ * Ephemeral stores are always backed by an in-memory implementation, regardless of store implementation.
+ *
  * @author Pete Cornish
  */
 abstract class AbstractStoreFactory : StoreFactory {
-    private val stores: MutableMap<String, Store> = mutableMapOf()
+    private val stores = mutableMapOf<String, Store>()
     private val keyPrefix: String
+
+    init {
+        keyPrefix = getEnv(ENV_VAR_KEY_PREFIX)?.let { "$it." } ?: ""
+    }
 
     override fun hasStoreWithName(storeName: String): Boolean {
         return if (StoreUtil.isRequestScopedStore(storeName)) true else stores.containsKey(storeName)
     }
 
-    override fun getStoreByName(storeName: String, forceInMemory: Boolean): Store {
+    override fun getStoreByName(storeName: String, isEphemeralStore: Boolean): Store {
         val store: Store = stores.getOrPut(storeName) {
             LOGGER.trace("Initialising new store: {}", storeName)
-            return@getOrPut if (forceInMemory) {
+            return@getOrPut if (isEphemeralStore) {
                 InMemoryStore(storeName)
             } else {
                 PrefixedKeyStore(keyPrefix, buildNewStore(storeName))
@@ -77,7 +83,7 @@ abstract class AbstractStoreFactory : StoreFactory {
         return store
     }
 
-    override fun deleteStoreByName(storeName: String) {
+    override fun deleteStoreByName(storeName: String, isEphemeralStore: Boolean) {
         stores.remove(storeName)?.let {
             LOGGER.trace("Deleted store: {}", storeName)
         }
@@ -88,9 +94,5 @@ abstract class AbstractStoreFactory : StoreFactory {
     companion object {
         private const val ENV_VAR_KEY_PREFIX = "IMPOSTER_STORE_KEY_PREFIX"
         private val LOGGER = LogManager.getLogger(AbstractStoreFactory::class.java)
-    }
-
-    init {
-        keyPrefix = getEnv(ENV_VAR_KEY_PREFIX)?.let { "$it." } ?: ""
     }
 }

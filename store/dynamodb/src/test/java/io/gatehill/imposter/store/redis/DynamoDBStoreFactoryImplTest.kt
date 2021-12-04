@@ -121,11 +121,11 @@ class DynamoDBStoreFactoryImplTest {
             ).build()
 
             val keySchema = listOf(
-                KeySchemaElement("Store", KeyType.HASH),
+                KeySchemaElement("StoreName", KeyType.HASH),
                 KeySchemaElement("Key", KeyType.RANGE),
             )
             val attributeDefs = listOf(
-                AttributeDefinition("Store", ScalarAttributeType.S),
+                AttributeDefinition("StoreName", ScalarAttributeType.S),
                 AttributeDefinition("Key", ScalarAttributeType.S),
             )
             val request = CreateTableRequest(tableName, keySchema)
@@ -176,5 +176,12 @@ class DynamoDBStoreFactoryImplTest {
         Assert.assertTrue("Item should exist", store.hasItemWithKey("baz"))
         store.delete("baz")
         Assert.assertFalse("Item should not exist", store.hasItemWithKey("baz"))
+    }
+
+    @Test
+    fun testDeleteStore() {
+        factory!!.buildNewStore("ds")
+        factory!!.deleteStoreByName("ds", false)
+        Assert.assertFalse("Store should not exist", factory!!.hasStoreWithName("ds"))
     }
 }

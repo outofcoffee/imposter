@@ -50,12 +50,14 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder
 import io.gatehill.imposter.store.dynamodb.config.Settings
 import io.gatehill.imposter.store.factory.AbstractStoreFactory
 import io.gatehill.imposter.store.model.Store
+import org.apache.logging.log4j.LogManager
 
 /**
  * @author Pete Cornish
  */
 class DynamoDBStoreFactoryImpl : AbstractStoreFactory() {
     private val ddb: AmazonDynamoDB
+    private val logger = LogManager.getLogger(DynamoDBStore::class.java)
 
     init {
         val builder = AmazonDynamoDBClientBuilder.standard()
@@ -71,5 +73,14 @@ class DynamoDBStoreFactoryImpl : AbstractStoreFactory() {
 
     override fun buildNewStore(storeName: String): Store {
         return DynamoDBStore(storeName, ddb, Settings.tableName)
+    }
+
+    override fun deleteStoreByName(storeName: String, isEphemeralStore: Boolean) {
+        if (!isEphemeralStore) {
+            logger.info("Deleting all items from store: $storeName in table: ${Settings.tableName}")
+            val store = buildNewStore(storeName)
+            store.loadAll().onEach { store.delete(it.key) }
+        }
+        super.deleteStoreByName(storeName, isEphemeralStore)
     }
 }

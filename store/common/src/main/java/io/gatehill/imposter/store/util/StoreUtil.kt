@@ -50,5 +50,5 @@ object StoreUtil {
 
     fun isRequestScopedStore(storeName: String?): Boolean = REQUEST_SCOPED_STORE_NAME == storeName
 
-    fun buildRequestStoreName(requestId: String): String = "request_$requestId"
+    fun buildRequestStoreName(requestId: String): String = "${REQUEST_SCOPED_STORE_NAME}_$requestId"
 }

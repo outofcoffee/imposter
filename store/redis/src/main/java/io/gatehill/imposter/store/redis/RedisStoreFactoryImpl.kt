@@ -46,7 +46,6 @@ import com.google.inject.Inject
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.store.factory.AbstractStoreFactory
 import io.gatehill.imposter.store.model.Store
-import io.gatehill.imposter.store.redis.RedisStoreFactoryImpl
 import org.apache.logging.log4j.LogManager
 import org.redisson.Redisson
 import org.redisson.api.RedissonClient
@@ -88,9 +87,15 @@ class RedisStoreFactoryImpl @Inject constructor(imposterConfig: ImposterConfig) 
         return RedisStore(storeName, redisson)
     }
 
+    override fun deleteStoreByName(storeName: String, isEphemeralStore: Boolean) {
+        if (!isEphemeralStore) {
+            LOGGER.info("Deleting all items from store: $storeName")
+            redisson.getMapCache<String, Any>(storeName).clear()
+        }
+        super.deleteStoreByName(storeName, isEphemeralStore)
+    }
+
     companion object {
-        private val LOGGER = LogManager.getLogger(
-            RedisStoreFactoryImpl::class.java
-        )
+        private val LOGGER = LogManager.getLogger(RedisStoreFactoryImpl::class.java)
     }
 }

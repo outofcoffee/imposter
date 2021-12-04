@@ -231,7 +231,7 @@ class StoreServiceImpl @Inject constructor(
     ): HttpRequestHandler {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { httpExchange: HttpExchange ->
             val storeName = httpExchange.pathParam("storeName")!!
-            storeFactory.deleteStoreByName(storeName)
+            storeFactory.deleteStoreByName(storeName, isEphemeralStore = false)
             LOGGER.debug("Deleted store: {}", storeName)
 
             httpExchange.response()
@@ -522,7 +522,7 @@ class StoreServiceImpl @Inject constructor(
         // clean up request store if one exists
         httpExchange.get<String?>(ResourceUtil.RC_REQUEST_ID_KEY)?.let { uniqueRequestId: String ->
             storeFactory.deleteStoreByName(
-                StoreUtil.buildRequestStoreName(uniqueRequestId)
+                StoreUtil.buildRequestStoreName(uniqueRequestId), isEphemeralStore = true
             )
         }
     }

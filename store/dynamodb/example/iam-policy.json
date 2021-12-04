@@ -5,11 +5,11 @@
       "Sid": "VisualEditor0",
       "Effect": "Allow",
       "Action": [
+        "dynamodb:BatchWriteItem",
         "dynamodb:PutItem",
         "dynamodb:DeleteItem",
         "dynamodb:GetItem",
-        "dynamodb:Scan",
-        "dynamodb:UpdateItem"
+        "dynamodb:Scan"
       ],
       "Resource": "arn:aws:dynamodb:us-east-1:000000000000:table/Imposter"
     }

@@ -83,7 +83,7 @@ class DynamoDBStore(
         ddb.putItem(
             PutItemRequest().withTableName(tableName).withItem(
                 mapOf(
-                    "Store" to AttributeValue().withS(storeName),
+                    "StoreName" to AttributeValue().withS(storeName),
                     "Key" to AttributeValue().withS(key),
                     "Value" to valueAttribute
                 )
@@ -96,7 +96,7 @@ class DynamoDBStore(
         val result = ddb.getItem(
             GetItemRequest().withTableName(tableName).withKey(
                 mapOf(
-                    "Store" to AttributeValue().withS(storeName),
+                    "StoreName" to AttributeValue().withS(storeName),
                     "Key" to AttributeValue().withS(key)
                 )
             )
@@ -113,7 +113,7 @@ class DynamoDBStore(
         ddb.deleteItem(
             DeleteItemRequest().withTableName(tableName).withKey(
                 mapOf(
-                    "Store" to AttributeValue().withS(storeName),
+                    "StoreName" to AttributeValue().withS(storeName),
                     "Key" to AttributeValue().withS(key)
                 )
             )
@@ -121,10 +121,17 @@ class DynamoDBStore(
     }
 
     override fun loadAll(): Map<String, Any> {
-        val queryResult = ddb.scan(ScanRequest().withTableName(tableName))
+        val queryResult = scanStore()
         logger.trace("Loading all items in store: {}", storeName)
         return queryResult.items.associate { destructure(it) }
     }
+
+    private fun scanStore() = ddb.scan(
+        ScanRequest()
+            .withTableName(tableName)
+            .withFilterExpression("StoreName = :storeName")
+            .withExpressionAttributeValues(mapOf(":storeName" to AttributeValue().withS(storeName)))
+    )
 
     override fun hasItemWithKey(key: String): Boolean {
         logger.trace("Checking for item with key: {} in store: {}", key, storeName)
@@ -132,7 +139,7 @@ class DynamoDBStore(
     }
 
     override fun count(): Int {
-        val count = ddb.scan(ScanRequest().withTableName(tableName)).count
+        val count = scanStore().count
         logger.trace("Returning item count {} from store: {}", count, storeName)
         return count
     }
