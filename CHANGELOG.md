@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.2.1] - 2021-12-02
+### Fixed
+- fix: bumps log4j2 to mitigate CVE-2021-44228.
+
 ## [2.2.0] - 2021-12-02
 ### Added
 - feat: adds multiple plugin support to embedded distro.
