@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- ...
+
 ## [2.2.3] - 2021-12-12
 ### Fixed
 - fix: disable unneeded file upload directory and interception in Vert.x Web. 
