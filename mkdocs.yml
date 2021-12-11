@@ -4,6 +4,11 @@ theme:
   favicon: images/favicon.ico
 site_name: Imposter Mocks
 
+extra:
+  analytics:
+    provider: google
+    property: G-K7GTJGJQ2S
+
 nav:
   - Home: 'https://www.imposter.sh'
   - Introduction: 'index.md'
