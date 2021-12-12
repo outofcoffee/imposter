@@ -141,7 +141,7 @@ class VertxWebServerFactoryImpl : ServerFactory {
     }
 
     override fun createBodyHttpHandler(): HttpRequestHandler {
-        val handler = BodyHandlerImpl()
+        val handler = BodyHandlerImpl(false)
         return { he -> handler.handle((he as VertxHttpExchange).routingContext) }
     }
 
