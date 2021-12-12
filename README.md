@@ -34,7 +34,7 @@ The quickest way to get up and running is to use the free cloud-hosted service a
 
 *****
 
-# Plugins
+# Mock types
 
 Imposter provides specialised mocks for the following scenarios:
 
