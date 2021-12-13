@@ -16,7 +16,7 @@ DEFAULT_IMAGE_DIRS=(
 PUSH_IMAGES="true"
 
 function usage() {
-  echo -e "Usage:\n  $( basename $0 ) [-e]"
+  echo -e "Usage:\n  $( basename $0 ) [-p <true|false> -e]"
   exit 1
 }
 
@@ -35,7 +35,7 @@ while getopts "ep:" OPT; do
     case ${OPT} in
         e) DOCKER_LOGIN_ARGS="--email dummy@example.com"
         ;;
-        p) PUSH_IMAGES=$OPTARG
+        p) PUSH_IMAGES="$OPTARG"
         ;;
         *) usage
         ;;
@@ -79,6 +79,16 @@ function push_image()
 function build_images()
 {
     IMAGE_DIR="$1"
+    echo -e "\nBuilding '${IMAGE_DIR}' image"
+
+    for IMAGE_NAME in $( get_image_names ${IMAGE_DIR} ); do
+        build_image ${IMAGE_DIR} ${IMAGE_NAME} "distro/${IMAGE_DIR}"
+    done
+}
+
+function push_images()
+{
+    IMAGE_DIR="$1"
 
     for IMAGE_NAME in $( get_image_names ${IMAGE_DIR} ); do
         if [[ "dev" == "${IMAGE_TAG}" ]]; then
@@ -86,16 +96,6 @@ function build_images()
         else
             push_image ${IMAGE_NAME}
         fi
-    done
-}
-
-function push_images()
-{
-    IMAGE_DIR="$1"
-    echo -e "\nBuilding '${IMAGE_DIR}' image"
-
-    for IMAGE_NAME in $( get_image_names ${IMAGE_DIR} ); do
-        build_image ${IMAGE_DIR} ${IMAGE_NAME} "distro/${IMAGE_DIR}"
     done
 }
 
@@ -108,7 +108,9 @@ function login() {
     fi
 }
 
-login
+if [[ "${PUSH_IMAGES}" == "true" ]]; then
+  login
+fi
 
 cd ${ROOT_DIR}
 

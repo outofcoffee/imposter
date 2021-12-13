@@ -25,9 +25,79 @@ jobs:
       - name: Test
         run: ./gradlew test --info --stacktrace
 
-      - name: Build JARs
+      - name: Build distributions
         if: ${{ startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop' }}
-        run: ./gradlew shadowJar --info --stacktrace
+        run: |
+          chmod +x ./scripts/*.sh
+          ./gradlew dist --info --stacktrace
+
+      - name: Build Docker images
+        if: ${{ startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop' }}
+        run: |
+          if [[ "develop" == "$( git branch --show-current )" ]]; then
+            EFFECTIVE_BRANCH_NAME="develop"
+          else
+            EFFECTIVE_BRANCH_NAME="main"
+          fi
+          IMAGE_TAG_NAME="$( ./scripts/branch-to-tag-name.sh ${EFFECTIVE_BRANCH_NAME} )"
+
+          case ${EFFECTIVE_BRANCH_NAME} in
+            develop)
+              if [[ ! -z ${IMAGE_TAG_NAME} ]]; then
+                ./scripts/docker-build.sh -p false "${IMAGE_TAG_NAME}"
+              fi
+            ;;
+
+            main)
+              CURRENT_VERSION="$( git describe --tags --exact-match )"
+              if [[ "${CURRENT_VERSION:0:1}" == "v" ]]; then
+                CURRENT_VERSION="$( echo ${CURRENT_VERSION} | cut -c 2- )"
+              fi
+              ./scripts/docker-build.sh -p false "${CURRENT_VERSION}"
+              ./scripts/docker-build.sh -p false "latest"
+            ;;
+          esac
+
+      - name: Integration test
+        if: ${{ startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop' }}
+        run: |
+          if [[ "develop" == "$( git branch --show-current )" ]]; then
+            EFFECTIVE_BRANCH_NAME="develop"
+          else
+            EFFECTIVE_BRANCH_NAME="main"
+          fi
+          IMAGE_TAG_NAME="$( ./scripts/branch-to-tag-name.sh $EFFECTIVE_BRANCH_NAME )"
+          ./scripts/integration-tests.sh "${IMAGE_TAG_NAME}"
+
+      - name: Push Docker images
+        if: ${{ startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop' }}
+        run: |
+          if [[ "develop" == "$( git branch --show-current )" ]]; then
+            EFFECTIVE_BRANCH_NAME="develop"
+          else
+            EFFECTIVE_BRANCH_NAME="main"
+          fi
+          IMAGE_TAG_NAME="$( ./scripts/branch-to-tag-name.sh ${EFFECTIVE_BRANCH_NAME} )"
+
+          case ${EFFECTIVE_BRANCH_NAME} in
+            develop)
+              if [[ ! -z ${IMAGE_TAG_NAME} ]]; then
+                ./scripts/docker-build.sh -p true "${IMAGE_TAG_NAME}"
+              fi
+            ;;
+
+            main)
+              CURRENT_VERSION="$( git describe --tags --exact-match )"
+              if [[ "${CURRENT_VERSION:0:1}" == "v" ]]; then
+                  CURRENT_VERSION="$( echo ${CURRENT_VERSION} | cut -c 2- )"
+              fi
+              ./scripts/docker-build.sh -p true "${CURRENT_VERSION}"
+              ./scripts/docker-build.sh -p true "latest"
+            ;;
+          esac
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Publish maven artifacts
         if: ${{ startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop' }}
@@ -35,32 +105,6 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-      - name: Build and push beta Docker image
-        if: ${{ github.ref == 'refs/heads/develop' }}
-        run: |
-          chmod +x ./scripts/*.sh
-          IMAGE_TAG_NAME="$( ./scripts/branch-to-tag-name.sh develop )"
-          if [[ ! -z ${IMAGE_TAG_NAME} ]]; then
-            ./scripts/docker-build.sh "${IMAGE_TAG_NAME}"
-          fi
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Push versioned release Docker tags
-        if: startsWith(github.ref, 'refs/tags/')
-        run: |
-          chmod +x ./scripts/*.sh
-          CURRENT_VERSION="$( git describe --tags --exact-match )"
-          if [[ "${CURRENT_VERSION:0:1}" == "v" ]]; then
-          	CURRENT_VERSION="$( echo ${CURRENT_VERSION} | cut -c 2- )"
-          fi
-          ./scripts/docker-build.sh "${CURRENT_VERSION}"
-          ./scripts/docker-build.sh "latest"
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Release versioned JAR
         if: startsWith(github.ref, 'refs/tags/')

@@ -16,7 +16,7 @@ module.exports = async ({github, context}) => {
         owner: 'outofcoffee',
         repo: 'imposter',
         tag_name: releaseVersion,
-        body: 'See [change log](https://github.com/outofcoffee/imposter/blob/main/CHANGELOG.md)',
+        body: 'See [change log](https://github.com/outofcoffee/imposter/blob/main/CHANGELOG.md).',
     });
 
     await releaseMainDistro(github, release, releaseVersion);
