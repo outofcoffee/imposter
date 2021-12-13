@@ -3,9 +3,15 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [2.3.0] - 2021-12-13
 ### Added
-- ...
+- feat: adds DynamoDB store implementation.
+- feat: adds DynamoDB store support to Lambda distro.
+- feat: implements store-wide deletion in Redis and DynamoDB stores.
+
+### Fixed
+- fix: uses host header if available for Lambda adapter base URL.
+- fix: captures Lambda path parameters explicitly instead of relying on request event.
 
 ## [2.2.3] - 2021-12-12
 ### Fixed
