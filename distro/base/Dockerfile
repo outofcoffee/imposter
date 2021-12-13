@@ -21,7 +21,8 @@ COPY ./distro/base/files/docker-entrypoint.sh /opt/imposter/bin
 
 ONBUILD ARG DISTRO_NAME
 ONBUILD ENV DISTRO_NAME="${DISTRO_NAME}"
-ONBUILD ADD ./distro/${DISTRO_NAME}/build/libs/imposter-${DISTRO_NAME}.jar /opt/imposter/lib/imposter.jar
+ONBUILD ADD ./distro/${DISTRO_NAME}/build/install/imposter/bin/* /opt/imposter/bin/
+ONBUILD ADD ./distro/${DISTRO_NAME}/build/install/imposter/lib/* /opt/imposter/lib/
 ONBUILD RUN chmod +x /opt/imposter/bin/docker-entrypoint.sh
 
 EXPOSE 8080 8443

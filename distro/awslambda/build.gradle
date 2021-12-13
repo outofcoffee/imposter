@@ -31,3 +31,7 @@ shadowJar {
         include 'META-INF/services/io.vertx.core.spi.VerticleFactory'
     }
 }
+
+task dist {
+    dependsOn shadowJar
+}

@@ -13,6 +13,7 @@ DEFAULT_IMAGE_DIRS=(
     "rest"
     "sfdc"
 )
+PUSH_IMAGES="true"
 
 function usage() {
   echo -e "Usage:\n  $( basename $0 ) [-e]"
@@ -30,9 +31,11 @@ else
   )
 fi
 
-while getopts "e" OPT; do
+while getopts "ep:" OPT; do
     case ${OPT} in
         e) DOCKER_LOGIN_ARGS="--email dummy@example.com"
+        ;;
+        p) PUSH_IMAGES=$OPTARG
         ;;
         *) usage
         ;;
@@ -73,19 +76,26 @@ function push_image()
     docker push ${FULL_IMAGE_NAME}
 }
 
-function build_push_image()
+function build_images()
+{
+    IMAGE_DIR="$1"
+
+    for IMAGE_NAME in $( get_image_names ${IMAGE_DIR} ); do
+        if [[ "dev" == "${IMAGE_TAG}" ]]; then
+            echo -e "\nSkipped pushing dev image"
+        else
+            push_image ${IMAGE_NAME}
+        fi
+    done
+}
+
+function push_images()
 {
     IMAGE_DIR="$1"
     echo -e "\nBuilding '${IMAGE_DIR}' image"
 
     for IMAGE_NAME in $( get_image_names ${IMAGE_DIR} ); do
         build_image ${IMAGE_DIR} ${IMAGE_NAME} "distro/${IMAGE_DIR}"
-
-        if [[ "dev" == "${IMAGE_TAG}" ]]; then
-            echo -e "\nSkipped pushing dev image"
-        else
-            push_image ${IMAGE_NAME}
-        fi
     done
 }
 
@@ -104,5 +114,8 @@ cd ${ROOT_DIR}
 
 echo "Images to build: ${IMAGE_DIRS[*]}"
 for IMAGE_DIR in "${IMAGE_DIRS[@]}"; do
-    build_push_image ${IMAGE_DIR}
+    build_images ${IMAGE_DIR}
+    if [[ "${PUSH_IMAGES}" == "true" ]]; then
+        push_images ${IMAGE_DIR}
+    fi
 done

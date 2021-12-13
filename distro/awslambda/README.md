@@ -18,7 +18,7 @@ Using Node.js:
 
 ### Build
 
-    ./gradlew shadowJar
+    ./gradlew dist
 
 Builds JAR to `./build/libs`
 

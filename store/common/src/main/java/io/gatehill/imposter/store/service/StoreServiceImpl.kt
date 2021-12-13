@@ -76,7 +76,7 @@ import org.apache.commons.text.lookup.StringLookupFactory
 import org.apache.logging.log4j.LogManager
 import java.io.IOException
 import java.nio.file.Paths
-import java.util.Objects
+import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 import java.util.regex.Pattern
 import javax.inject.Inject
@@ -91,7 +91,7 @@ class StoreServiceImpl @Inject constructor(
     lifecycleHooks: EngineLifecycleHooks,
 ) : StoreService, EngineLifecycleListener {
 
-    private var storeItemSubstituter: StringSubstitutor
+    private val storeItemSubstituter: StringSubstitutor
 
     init {
         LOGGER.trace("Stores enabled")

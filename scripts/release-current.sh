@@ -29,7 +29,7 @@ fi
 
 echo -e "\nBuilding distribution"
 cd ${ROOT_DIR}
-./gradlew clean test shadowJar publish
+./gradlew clean test dist publish
 
 echo -e "\nPackaging and pushing"
 cd ${SCRIPT_DIR}

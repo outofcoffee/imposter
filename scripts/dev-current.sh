@@ -54,26 +54,26 @@ GRADLE_ARGS=
 if [[ "$RUN_TESTS" == "false" ]]; then
   GRADLE_ARGS="-xtest"
 fi
-./gradlew shadowJar ${GRADLE_ARGS}
+# using installDist instead of dist to avoid unneeded shadow JAR for local dev
+./gradlew installDist ${GRADLE_ARGS}
+
+# consumed below
+export IMPOSTER_LOG_LEVEL
 
 case ${LAUNCH_MODE} in
   docker)
     export IMAGE_DIR="${PLUGIN_NAME}"
     ./scripts/docker-build.sh
 
-    # consumed below
-    export IMPOSTER_LOG_LEVEL
-
     docker run -ti --rm -p 8080:8080 \
       -v "${CONFIG_DIR}":/opt/imposter/config \
       -e IMPOSTER_LOG_LEVEL \
       -e JAVA_ARGS="${JAVA_ARGS}" \
-      outofcoffee/imposter-${PLUGIN_NAME}:dev
+      "outofcoffee/imposter-${PLUGIN_NAME}:dev"
     ;;
 
   java)
-    java ${JAVA_ARGS} \
-      -jar distro/${PLUGIN_NAME}/build/libs/imposter-${PLUGIN_NAME}.jar \
-      --configDir ${CONFIG_DIR}
+    cd "distro/${PLUGIN_NAME}/build/install/imposter"
+    "./bin/imposter" --configDir "${CONFIG_DIR}"
     ;;
 esac

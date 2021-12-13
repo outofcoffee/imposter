@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "cd .. && ../../gradlew shadowJar",
+    "build": "cd .. && ../../gradlew dist",
     "deploy": "npm run build && serverless deploy"
   },
   "author": "",

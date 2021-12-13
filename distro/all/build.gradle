@@ -1,4 +1,5 @@
 apply plugin: 'java'
+apply plugin: 'application'
 apply plugin: 'com.github.johnrengelman.shadow'
 
 compileJava {
@@ -17,13 +18,19 @@ dependencies {
     implementation project (':plugin:plugin-sfdc')
 }
 
+mainClassName = 'io.gatehill.imposter.cmd.ImposterLauncher'
+
+application {
+    applicationName = 'imposter'
+}
+
 shadowJar {
     baseName = 'imposter-all'
     version = ''
     classifier = ''
 
     manifest {
-        attributes 'Main-Class': 'io.gatehill.imposter.cmd.ImposterLauncher'
+        attributes 'Main-Class': mainClassName
         attributes 'Imposter-Version': project.version
     }
 
@@ -32,4 +39,8 @@ shadowJar {
     mergeServiceFiles {
         include 'META-INF/services/io.vertx.core.spi.VerticleFactory'
     }
+}
+
+task dist {
+    dependsOn installDist, shadowJar
 }

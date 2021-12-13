@@ -32,7 +32,7 @@ For distribution, Imposter is built as an all-in-one JAR file. This is available
 
 To get started with the examples here, first run:
 
-    ./gradlew clean shadowJar
+    ./gradlew clean dist
 
 The JAR is created under the `distro/all/build/libs` directory.
 

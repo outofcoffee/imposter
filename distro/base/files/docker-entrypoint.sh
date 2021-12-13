@@ -12,5 +12,6 @@ else
   if [ -z "${JAVA_OPTS}" ]; then
     export JAVA_OPTS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
   fi
-  exec java ${JAVA_ARGS} ${JAVA_OPTS} -jar /opt/imposter/lib/imposter.jar "$@"
+  export JAVA_OPTS="$JAVA_ARGS $JAVA_OPTS"
+  exec "/opt/imposter/bin/imposter" "$@"
 fi
