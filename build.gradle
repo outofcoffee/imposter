@@ -23,6 +23,28 @@ ext {
     }
 }
 
+ext {
+    mavenSnapshotRepository = 's3://gatehillsoftware-maven/snapshots'
+    mavenReleaseRepository = 's3://gatehillsoftware-maven/releases'
+
+    awsAccessKey = awsCredentials?.AWSAccessKeyId ?: System.getenv('AWS_ACCESS_KEY_ID') ?: project.findProperty('AWS_ACCESS_KEY_ID')
+    awsSecretKey = awsCredentials?.AWSSecretKey ?: System.getenv('AWS_SECRET_ACCESS_KEY') ?: project.findProperty('AWS_SECRET_ACCESS_KEY')
+
+    version_args4j = '2.33'
+    version_aws_sdk = '1.11.1000'
+    version_commons_io = '2.9.0'
+    version_commons_text = '1.9'
+    version_guice = '4.1.0'
+    version_jackson = '2.12.5'
+    version_junit = '4.12'
+    version_log4j = '2.15.0'
+    version_micrometer = '1.6.7'
+    version_mockito = '3.10.0'
+    version_restAssured = '2.9.0'
+    version_testcontainers = '1.15.3'
+    version_vertx = '3.7.1'
+}
+
 subprojects {
     group 'io.gatehill.imposter'
     version '2.3.1-SNAPSHOT'
@@ -48,26 +70,8 @@ subprojects {
         jcenter()
     }
 
-    ext {
-        mavenSnapshotRepository = 's3://gatehillsoftware-maven/snapshots'
-        mavenReleaseRepository = 's3://gatehillsoftware-maven/releases'
-
-        awsAccessKey = awsCredentials?.AWSAccessKeyId ?: System.getenv('AWS_ACCESS_KEY_ID') ?: project.findProperty('AWS_ACCESS_KEY_ID')
-        awsSecretKey = awsCredentials?.AWSSecretKey ?: System.getenv('AWS_SECRET_ACCESS_KEY') ?: project.findProperty('AWS_SECRET_ACCESS_KEY')
-
-        version_args4j = '2.33'
-        version_aws_sdk = '1.11.1000'
-        version_commons_io = '2.9.0'
-        version_commons_text = '1.9'
-        version_guice = '4.1.0'
-        version_jackson = '2.12.5'
-        version_junit = '4.12'
-        version_log4j = '2.15.0'
-        version_micrometer = '1.6.7'
-        version_mockito = '3.10.0'
-        version_restAssured = '2.9.0'
-        version_testcontainers = '1.15.3'
-        version_vertx = '3.7.1'
+    plugins.withType(JavaPlugin).whenPluginAdded {
+        project.archivesBaseName = project.name.startsWith('imposter-') ? project.name : 'imposter-' + project.name
     }
 }
 
