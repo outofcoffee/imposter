@@ -3,11 +3,9 @@ FROM adoptopenjdk/openjdk8:x86_64-alpine-jre8u312-b07
 LABEL MAINTAINER="Pete Cornish <outofcoffee@gmail.com>"
 ENV JAVA_ARGS=""
 
-# CLI support
-ENV IMPOSTER_ENGINE=jvm \
-    IMPOSTER_JVM_JARFILE=/opt/imposter/lib/imposter.jar
-
-ARG IMPOSTER_CLI_VERSION="0.7.3"
+# add CLI
+ENV IMPOSTER_ENGINE=unpacked IMPOSTER_JVM_DISTRODIR=/opt/imposter
+ARG IMPOSTER_CLI_VERSION="0.7.6"
 ADD https://github.com/gatehill/imposter-cli/releases/download/v${IMPOSTER_CLI_VERSION}/imposter_${IMPOSTER_CLI_VERSION}_Linux_x86_64.tar.gz /tmp/imposter-cli/imposter.tar.gz
 
 RUN cd /tmp/imposter-cli && \
