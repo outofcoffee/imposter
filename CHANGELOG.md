@@ -3,9 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
-### Added
-- ...
+## [2.3.1] - 2021-12-15
+### Changed
+- feat: switches boot to CLI unpacked method.
+- build: improves JAR naming for non-distribution archives.
 
 ## [2.3.0] - 2021-12-13
 ### Added
