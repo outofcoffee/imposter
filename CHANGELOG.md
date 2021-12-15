@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- ...
+
 ## [2.3.2] - 2021-12-16
 ### Fixed
 - fix: bumps log4j2 to 2.16.0 to mitigate CVE-2021-45046.
