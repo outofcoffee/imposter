@@ -198,6 +198,38 @@ In the example above, an item corresponding to the `userId` parameter in the req
 
 > Note: Values do not have to be constant - you can combine dynamic item names and captured data.
 
+## Enable or disable capture configuration
+
+You can selectively enable or disable a capture configuration using the `enabled` key.
+
+```yaml
+# ...other configuration
+capture:
+  firstName:
+    enabled: true # or false
+    jsonPath: $.name
+    store: testStore
+```
+
+> The default value of `enabled` is `true`.
+
+This can be helpful when used in conjunction with environment variable [placeholders](./configuration.md).
+
+For example, if you set the environment variable:
+
+    NAME_CAPTURE_ENABLED=true
+
+You can refer to it in your configuration to selectively enable the capture configuration:
+
+```yaml
+# ...other configuration
+capture:
+  firstName:
+    enabled: ${env.NAME_CAPTURE_ENABLED}
+    jsonPath: $.name
+    store: testStore
+```
+
 ## Capture performance
 
 Data capture incurs overhead on response times, depending on the speed of the store implementation used. If using the in-memory store, the performance impact is lower than using an external store. For store providers backed by external datastores, requests will incur a synchronous write to the store when capturing data.

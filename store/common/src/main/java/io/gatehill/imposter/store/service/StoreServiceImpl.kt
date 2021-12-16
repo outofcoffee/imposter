@@ -377,7 +377,7 @@ class StoreServiceImpl @Inject constructor(
             val captureConfig = (resourceConfig as CaptureConfigHolder).captureConfig
             captureConfig?.let {
                 val jsonPathContextHolder = AtomicReference<DocumentContext>()
-                captureConfig.forEach { (captureConfigKey: String, itemConfig: ItemCaptureConfig) ->
+                captureConfig.filterValues { it.enabled }.forEach { (captureConfigKey: String, itemConfig: ItemCaptureConfig) ->
                     val storeName = itemConfig.store ?: DEFAULT_CAPTURE_STORE_NAME
                     val itemName: String? = determineItemName(httpExchange, jsonPathContextHolder, captureConfigKey, itemConfig, storeName)
 

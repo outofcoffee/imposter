@@ -147,6 +147,14 @@ class CaptureTest : BaseVerticleTest() {
             .then()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
             .body(Matchers.equalTo("PO5 7CO"))
+
+        // the capture configuration for 'street' is disabled, so it
+        // should not exist in the store.
+        RestAssured.given().`when`()
+            .pathParam("storeId", "captureTest")
+            .pathParam("key", "street")["/system/store/{storeId}/{key}"]
+            .then()
+            .statusCode(Matchers.equalTo(HttpUtil.HTTP_NOT_FOUND))
     }
 
     /**

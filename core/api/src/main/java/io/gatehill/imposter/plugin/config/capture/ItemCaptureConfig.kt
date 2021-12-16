@@ -45,7 +45,7 @@ package io.gatehill.imposter.plugin.config.capture
 import com.fasterxml.jackson.annotation.JsonProperty
 
 /**
- * A capture configuration for values, that allows the key and store to be overrriden.
+ * A capture configuration for values, that allows the key and store to be overridden.
  *
  * @author Pete Cornish
  */
@@ -55,4 +55,7 @@ class ItemCaptureConfig : CaptureConfig() {
 
     @JsonProperty("store")
     val store: String? = null
+
+    @JsonProperty("enabled")
+    val enabled: Boolean = true
 }

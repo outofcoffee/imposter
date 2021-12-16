@@ -25,6 +25,11 @@ resources:
     postCode:
       jsonPath: "$.address.postCode"
       store: captureTest
+    street:
+      # should not be captured
+      enabled: false
+      jsonPath: "$.address.street"
+      store: captureTest
   response:
     statusCode: 200
 
