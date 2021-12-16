@@ -40,21 +40,22 @@ To begin, check out the [Getting started](getting_started.md) guide. See the _Us
 * [Tips and tricks](tips_tricks.md)
 * [Benchmarks](./benchmarks.md)
 
-## Plugins
+## Mock types
 
-Imposter uses plugins to control its behaviour and provide specialised mocks. Learn about [plugins and features](features_plugins.md).
-
-The following sections describe the built-in plugins.
+Imposter provides specialised mocks for the following scenarios:
 
 * [OpenAPI (and Swagger) plugin](openapi_plugin.md)
 * [REST plugin](rest_plugin.md)
 * [HBase plugin](hbase_plugin.md)
 * [SFDC (Salesforce) plugin](sfdc_plugin.md)
 
+> Learn more about [plugins and features](features_plugins.md).
+
 ## Developers
 
 * [Build](build.md)
 * [Roadmap](roadmap.md)
+* [Github](https://github.com/outofcoffee/imposter)
 
 ## Tutorials
 
