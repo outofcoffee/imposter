@@ -38,10 +38,10 @@ The quickest way to get up and running is to use the free cloud-hosted service a
 
 Imposter provides specialised mocks for the following scenarios:
 
-* **[OpenAPI](docs/openapi_plugin.md)** - Support for [OpenAPI](https://github.com/OAI/OpenAPI-Specification) (and Swagger) API specifications.
+* **[OpenAPI](docs/openapi_plugin.md)** - Support for OpenAPI (and Swagger) API specifications.
 * **[REST](docs/rest_plugin.md)** - Mocks RESTful or plain HTTP APIs.
 * **[HBase](docs/hbase_plugin.md)** - Basic HBase mock implementation.
-* **[SFDC (Salesforce) plugin](docs/sfdc_plugin.md)** - Basic Salesforce mock implementation.
+* **[SFDC (Salesforce)](docs/sfdc_plugin.md)** - Basic Salesforce mock implementation.
 
 These use a plugin system, so you can also create your own plugins, using any JVM language.
 
