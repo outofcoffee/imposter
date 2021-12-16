@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.4.1] - 2021-12-16
+### Added
+- feat: allows individual capture configuration to be enabled/disabled.
+
 ## [2.4.0] - 2021-12-16
 ### Added
 - feat: adds structured logging with durations, request and response properties.
