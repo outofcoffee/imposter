@@ -3,9 +3,9 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [2.4.0] - 2021-12-16
 ### Added
-- ...
+- feat: adds structured logging with durations, request and response properties.
 
 ## [2.3.2] - 2021-12-16
 ### Fixed
