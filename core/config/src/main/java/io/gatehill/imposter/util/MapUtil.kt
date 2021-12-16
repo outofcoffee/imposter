@@ -49,6 +49,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import io.gatehill.imposter.config.util.EnvVars
 import java.util.*
 
 /**
@@ -60,6 +61,15 @@ object MapUtil {
 
     @JvmField
     val YAML_MAPPER = YAMLMapper()
+
+    /**
+     * Don't apply standard configuration to this mapper.
+     */
+    val STATS_MAPPER = ObjectMapper().also {
+        if (EnvVars.getEnv("IMPOSTER_LOG_SUMMARY_PRETTY")?.toBoolean() != false) {
+            it.enable(SerializationFeature.INDENT_OUTPUT)
+        }
+    }
 
     private val DESERIALISERS = arrayOf(
         JSON_MAPPER,

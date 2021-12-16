@@ -47,7 +47,9 @@ import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.http.HttpExchange
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 import org.apache.logging.log4j.core.LoggerContext
+import java.time.OffsetDateTime
 
 /**
  * Common logging functionality.
@@ -55,6 +57,9 @@ import org.apache.logging.log4j.core.LoggerContext
  * @author Pete Cornish
  */
 object LogUtil {
+    const val KEY_REQUEST_START = "requestStartNanos"
+    const val KET_SCRIPT_DURATION = "scriptExecutionDuration"
+
     /**
      * The prefix for script logger names.
      */
@@ -65,6 +70,32 @@ object LogUtil {
     )
     private const val ENV_VAR_LOG_LEVEL = "IMPOSTER_LOG_LEVEL"
     private val DEFAULT_LOG_LEVEL = Level.DEBUG
+
+    private val LOGGER: Logger = LogManager.getLogger(LogUtil::class.java)
+    private val statsLogger: Logger = LogManager.getLogger("stats")
+    private var shouldLogSummary: Boolean
+
+    /**
+     * Lowercase list of request header names to log.
+     */
+    private var requestHeaderNames: Array<String>
+
+    /**
+     * Lowercase list of response header names to log.
+     */
+    private var responseHeaderNames: Array<String>
+
+    init {
+        shouldLogSummary = EnvVars.getEnv("IMPOSTER_LOG_SUMMARY")?.toBoolean() == true
+
+        requestHeaderNames = EnvVars.getEnv("IMPOSTER_LOG_REQUEST_HEADERS")
+            ?.split(",")?.map(String::lowercase)?.toTypedArray()
+            ?: emptyArray()
+
+        responseHeaderNames = EnvVars.getEnv("IMPOSTER_LOG_RESPONSE_HEADERS")
+            ?.split(",")?.map(String::lowercase)?.toTypedArray()
+            ?: emptyArray()
+    }
 
     /**
      * Configure the logging level using the value of [.ENV_VAR_LOG_LEVEL], falling back
@@ -107,7 +138,44 @@ object LogUtil {
         requestId: String? = httpExchange.get(ResourceUtil.RC_REQUEST_ID_KEY)
     ): String {
         return "[" + requestId + "]" +
-            " " + httpExchange.request().method() +
-            " " + httpExchange.request().absoluteURI()
+                " " + httpExchange.request().method() +
+                " " + httpExchange.request().absoluteURI()
+    }
+
+    private fun formatDuration(input: Any) = String.format("%.2f", input)
+
+    fun logCompletion(httpExchange: HttpExchange) {
+        if (!shouldLogSummary || !statsLogger.isInfoEnabled) {
+            return
+        }
+        try {
+            val scriptTime = httpExchange.get<Float>(KET_SCRIPT_DURATION)?.let(::formatDuration) ?: "0"
+            val fields = mutableMapOf<String, String?>(
+                "timestamp" to OffsetDateTime.now().toString(),
+                "uri" to httpExchange.request().absoluteURI(),
+                "path" to httpExchange.request().path(),
+                "method" to httpExchange.request().method().toString(),
+                "statusCode" to httpExchange.response().getStatusCode().toString(),
+                "scriptTime" to scriptTime,
+            )
+
+            httpExchange.get<Long>(KEY_REQUEST_START)?.let { startNanos ->
+                val duration = formatDuration((System.nanoTime() - startNanos) / 1000000f)
+                fields["duration"] = duration
+            }
+            if (requestHeaderNames.isNotEmpty()) {
+                val requestHeaders = CollectionUtil.convertKeysToLowerCase(httpExchange.request().headers())
+                requestHeaderNames.forEach { headerName -> fields[headerName] = requestHeaders[headerName] }
+            }
+            if (responseHeaderNames.isNotEmpty()) {
+                val responseHeaders = CollectionUtil.convertKeysToLowerCase<String>(httpExchange.response().headers())
+                responseHeaderNames.forEach { headerName -> fields[headerName] = responseHeaders[headerName] }
+            }
+
+            statsLogger.info(MapUtil.STATS_MAPPER.writeValueAsString(fields))
+
+        } catch (e: Exception) {
+            LOGGER.trace("Failed to log completion message", e)
+        }
     }
 }

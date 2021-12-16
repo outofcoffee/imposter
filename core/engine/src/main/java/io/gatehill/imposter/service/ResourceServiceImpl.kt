@@ -66,6 +66,7 @@ import io.gatehill.imposter.plugin.config.resource.RestResourceConfig
 import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyConfig
 import io.gatehill.imposter.server.RequestHandlingMode
 import io.gatehill.imposter.util.CollectionUtil.convertKeysToLowerCase
+import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.LogUtil.describeRequest
 import io.gatehill.imposter.util.ResourceUtil
 import io.gatehill.imposter.util.StringUtil.safeEquals
@@ -337,6 +338,9 @@ class ResourceServiceImpl @Inject constructor(
             "Unhandled routing exception for request " + describeRequest(httpExchange),
             httpExchange.failure()
         )
+
+        // print summary
+        LogUtil.logCompletion(httpExchange)
     }
 
     private fun determineLogLevel(httpExchange: HttpExchange): Level {
@@ -356,9 +360,12 @@ class ResourceServiceImpl @Inject constructor(
         httpExchange: HttpExchange,
         resolvedResourceConfigs: List<ResolvedResourceConfig>
     ) {
+        httpExchange.put(LogUtil.KEY_REQUEST_START, System.nanoTime())
+
         // every request has a unique ID
         val requestId = UUID.randomUUID().toString()
         httpExchange.put(ResourceUtil.RC_REQUEST_ID_KEY, requestId)
+
         val response = httpExchange.response()
 
         if (shouldAddEngineResponseHeaders) {
@@ -396,6 +403,9 @@ class ResourceServiceImpl @Inject constructor(
         } else {
             LOGGER.trace("Request {} was not permitted to continue", describeRequest(httpExchange, requestId))
         }
+
+        // print summary
+        LogUtil.logCompletion(httpExchange)
     }
 
     private fun handleFailure(httpExchange: HttpExchange, e: Throwable) {

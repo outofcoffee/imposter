@@ -114,26 +114,26 @@ class VertxWebServerFactoryImpl : ServerFactory {
         return VertxHttpServer(vertxServer)
     }
 
-    private fun convertRouterToVertx(router: HttpRouter) = Router.router(router.vertx).also { vr ->
-        router.routes.forEach { hr ->
-            val route = hr.regex?.let { regex ->
-                hr.method?.let { method -> vr.routeWithRegex(convertMethodToVertx(method), regex) }
-                    ?: vr.routeWithRegex(regex)
+    private fun convertRouterToVertx(router: HttpRouter) = Router.router(router.vertx).also { vertxRouter ->
+        router.routes.forEach { httpRoute ->
+            val route = httpRoute.regex?.let { regex ->
+                httpRoute.method?.let { method -> vertxRouter.routeWithRegex(convertMethodToVertx(method), regex) }
+                    ?: vertxRouter.routeWithRegex(regex)
 
-            } ?: hr.path?.let { path ->
-                hr.method?.let { method -> vr.route(convertMethodToVertx(method), path) } ?: vr.route(path)
+            } ?: httpRoute.path?.let { path ->
+                httpRoute.method?.let { method -> vertxRouter.route(convertMethodToVertx(method), path) } ?: vertxRouter.route(path)
 
-            } ?: vr.route()
+            } ?: vertxRouter.route()
 
-            val routeHandler = hr.handler ?: throw IllegalStateException("No route handler set for: $hr")
+            val handler = httpRoute.handler ?: throw IllegalStateException("No route handler set for: $httpRoute")
             route.handler { rc ->
                 // current route can technically be null, so propagate null
-                routeHandler(VertxHttpExchange(rc, rc.currentRoute()?.path))
+                handler(VertxHttpExchange(rc, rc.currentRoute()?.path))
             }
         }
 
         router.errorHandlers.forEach { (statusCode, errorHandler) ->
-            vr.errorHandler(statusCode) { rc ->
+            vertxRouter.errorHandler(statusCode) { rc ->
                 // current route can technically be null, so propagate null
                 errorHandler(VertxHttpExchange(rc, rc.currentRoute()?.path))
             }

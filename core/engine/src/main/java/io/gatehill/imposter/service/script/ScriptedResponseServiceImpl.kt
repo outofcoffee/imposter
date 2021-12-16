@@ -198,13 +198,19 @@ class ScriptedResponseServiceImpl @Inject constructor(
             scriptExecLifecycle.forEach { listener: ScriptExecutionLifecycleListener ->
                 listener.afterSuccessfulScriptExecution(finalAdditionalBindings, responseBehaviour)
             }
+
+            val scriptDuration = (System.nanoTime() - executionStart) / 1000000f
+
+            // used for summary logging
+            httpExchange.put(LogUtil.KET_SCRIPT_DURATION, scriptDuration)
+
             LOGGER.debug(
                 String.format(
                     "Executed script '%s' for request: %s %s in %.2fms",
                     responseConfig.scriptFile,
                     httpExchange.request().method(),
                     httpExchange.request().absoluteURI(),
-                    (System.nanoTime() - executionStart) / 1000000f
+                    scriptDuration
                 )
             )
             responseBehaviour

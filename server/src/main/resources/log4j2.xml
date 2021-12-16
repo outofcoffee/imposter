@@ -4,11 +4,17 @@
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{HH:mm:ss} %-5level %logger{1.} - %msg%n"/>
         </Console>
+        <Console name="ConsoleBare" target="SYSTEM_OUT">
+            <PatternLayout pattern="%msg%n"/>
+        </Console>
     </Appenders>
     <Loggers>
-        <Root level="debug">
+        <Root level="debug" additivity="false">
             <AppenderRef ref="Console"/>
         </Root>
+        <Logger name="stats" level="info" additivity="false">
+            <AppenderRef ref="ConsoleBare"/>
+        </Logger>
         <Logger name="io.gatehill.imposter" level="debug"/>
 
         <!-- due to Netty Docker logging bug -->

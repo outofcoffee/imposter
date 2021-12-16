@@ -70,3 +70,45 @@ You can control the logging level using the following environment variable:
     export IMPOSTER_LOG_LEVEL="TRACE"
 
 Internally, Log4J2 is used, so the usual configuration options apply.
+
+### Structured logging
+
+Imposter can log a JSON summary of each request, such as the following:
+
+```json
+{
+  "timestamp" : "2021-12-16T22:13:24.999Z",
+  "uri" : "http://localhost:8080/pets/1",
+  "path" : "/pets/1",
+  "method" : "GET",
+  "statusCode" : "200",
+  "scriptTime" : "30.80",
+  "duration" : "34.49"
+}
+```
+
+To enable this, set the environment variable `IMPOSTER_LOG_SUMMARY=true`.
+
+You can optionally include request and response headers in the JSON summary such as:
+
+```json
+{
+  "timestamp" : "2021-12-16T22:13:24.999Z",
+  "uri" : "http://localhost:8080/pets/1",
+  "path" : "/pets/1",
+  "method" : "GET",
+  "statusCode" : "200",
+  "scriptTime" : "350.80",
+  "duration" : "374.49",
+  "x-correlation-id" : "aabbcc12345",
+  "user-agent" : "Mozilla/5.0 (platform; rv:17.0) Gecko/geckotrail Firefox/90",
+  "content-length" : "123"
+}
+```
+
+> Note the presence of `x-correlation`, `user-agent` and `content-length` fields.
+
+To add these, set the following environment variables:
+
+    IMPOSTER_LOG_REQUEST_HEADERS="X-Correlation-ID,User-Agent"
+    IMPOSTER_LOG_RESPONSE_HEADERS="Content-Length"
