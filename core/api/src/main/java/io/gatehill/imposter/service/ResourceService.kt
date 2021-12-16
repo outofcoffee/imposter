@@ -45,12 +45,11 @@ package io.gatehill.imposter.service
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.ResolvedResourceConfig
 import io.gatehill.imposter.http.HttpExchange
-import io.gatehill.imposter.http.HttpRequestHandler
+import io.gatehill.imposter.http.HttpExchangeHandler
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.ResourceMethod
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.vertx.core.Vertx
-import java.util.function.Consumer
 import java.util.function.Supplier
 
 /**
@@ -92,11 +91,11 @@ interface ResourceService {
     /**
      * Builds a handler that processes a request.
      *
-     * If `requestHandlingMode` is [io.gatehill.imposter.server.RequestHandlingMode.SYNC], then the `httpExchangeConsumer`
+     * If `requestHandlingMode` is [io.gatehill.imposter.server.RequestHandlingMode.SYNC], then the `httpExchangeHandler`
      * is invoked on the calling thread.
      *
      * If it is [io.gatehill.imposter.server.RequestHandlingMode.ASYNC], then upon receiving a request,
-     * the `httpExchangeConsumer` is invoked on a worker thread, passing the `httpExchange`.
+     * the `httpExchangeHandler` is invoked on a worker thread, passing the `httpExchange`.
      *
      * Example:
      * ```
@@ -108,24 +107,24 @@ interface ResourceService {
      * @param imposterConfig         the Imposter configuration
      * @param allPluginConfigs       all plugin configurations
      * @param vertx                  the current Vert.x instance
-     * @param httpExchangeConsumer the consumer of the [HttpExchange]
+     * @param httpExchangeHandler the consumer of the [HttpExchange]
      * @return the handler
      */
     fun handleRoute(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>,
         vertx: Vertx,
-        httpExchangeConsumer: Consumer<HttpExchange>
-    ): HttpRequestHandler
+        httpExchangeHandler: HttpExchangeHandler
+    ): HttpExchangeHandler
 
     /**
      * Builds a handler that processes a request.
      *
-     * If `requestHandlingMode` is [io.gatehill.imposter.server.RequestHandlingMode.SYNC], then the `httpExchangeConsumer`
+     * If `requestHandlingMode` is [io.gatehill.imposter.server.RequestHandlingMode.SYNC], then the `httpExchangeHandler`
      * is invoked on the calling thread.
      *
      * If it is [io.gatehill.imposter.server.RequestHandlingMode.ASYNC], then upon receiving a request,
-     * the `httpExchangeConsumer` is invoked on a worker thread, passing the `httpExchange`.
+     * the `httpExchangeHandler` is invoked on a worker thread, passing the `httpExchange`.
      *
      * Example:
      * ```
@@ -137,15 +136,15 @@ interface ResourceService {
      * @param imposterConfig         the Imposter configuration
      * @param pluginConfig           the plugin configuration
      * @param vertx                  the current Vert.x instance
-     * @param httpExchangeConsumer the consumer of the [HttpExchange]
+     * @param httpExchangeHandler the consumer of the [HttpExchange]
      * @return the handler
      */
     fun handleRoute(
         imposterConfig: ImposterConfig,
         pluginConfig: PluginConfig,
         vertx: Vertx,
-        httpExchangeConsumer: Consumer<HttpExchange>
-    ): HttpRequestHandler
+        httpExchangeHandler: HttpExchangeHandler
+    ): HttpExchangeHandler
 
     /**
      * Builds a handler that processes a request.
@@ -171,13 +170,13 @@ interface ResourceService {
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>,
         vertx: Vertx,
-        httpExchangeHandler: HttpRequestHandler
-    ): HttpRequestHandler
+        httpExchangeHandler: HttpExchangeHandler
+    ): HttpExchangeHandler
 
     /**
      * Catches unhandled exceptions.
      *
      * @return the exception handler
      */
-    fun buildUnhandledExceptionHandler(): HttpRequestHandler
+    fun buildUnhandledExceptionHandler(): HttpExchangeHandler
 }

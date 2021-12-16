@@ -48,8 +48,9 @@ import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.PathNotFoundException
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.ResolvedResourceConfig
+import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.http.HttpExchange
-import io.gatehill.imposter.http.HttpRequestHandler
+import io.gatehill.imposter.http.HttpExchangeHandler
 import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
 import io.gatehill.imposter.lifecycle.EngineLifecycleListener
 import io.gatehill.imposter.lifecycle.SecurityLifecycleHooks
@@ -75,7 +76,6 @@ import io.vertx.core.Vertx
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
 import java.util.*
-import java.util.function.Consumer
 import java.util.function.Function
 import java.util.function.Supplier
 import java.util.regex.Pattern
@@ -89,6 +89,12 @@ class ResourceServiceImpl @Inject constructor(
     private val engineLifecycle: EngineLifecycleHooks,
     private val securityLifecycle: SecurityLifecycleHooks
 ) : ResourceService {
+
+    private val shouldAddEngineResponseHeaders: Boolean
+
+    init {
+        shouldAddEngineResponseHeaders = EnvVars.getEnv("IMPOSTER_ADD_ENGINE_RESPONSE_HEADERS")?.toBoolean() != false
+    }
 
     /**
      * {@inheritDoc}
@@ -260,10 +266,10 @@ class ResourceServiceImpl @Inject constructor(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>,
         vertx: Vertx,
-        httpExchangeConsumer: Consumer<HttpExchange>
-    ): HttpRequestHandler {
+        httpExchangeHandler: HttpExchangeHandler
+    ): HttpExchangeHandler {
         val selectedConfig = securityService.findConfigPreferringSecurityPolicy(allPluginConfigs)
-        return handleRoute(imposterConfig, selectedConfig, vertx, httpExchangeConsumer)
+        return handleRoute(imposterConfig, selectedConfig, vertx, httpExchangeHandler)
     }
 
     /**
@@ -273,13 +279,13 @@ class ResourceServiceImpl @Inject constructor(
         imposterConfig: ImposterConfig,
         pluginConfig: PluginConfig,
         vertx: Vertx,
-        httpExchangeConsumer: Consumer<HttpExchange>
-    ): HttpRequestHandler {
+        httpExchangeHandler: HttpExchangeHandler
+    ): HttpExchangeHandler {
         val resolvedResourceConfigs = resolveResourceConfigs(pluginConfig)
         return when (imposterConfig.requestHandlingMode) {
             RequestHandlingMode.SYNC -> { httpExchange: HttpExchange ->
                 try {
-                    handleResource(pluginConfig, httpExchangeConsumer, httpExchange, resolvedResourceConfigs)
+                    handleResource(pluginConfig, httpExchangeHandler, httpExchange, resolvedResourceConfigs)
                 } catch (e: Exception) {
                     handleFailure(httpExchange, e)
                 }
@@ -287,7 +293,7 @@ class ResourceServiceImpl @Inject constructor(
             RequestHandlingMode.ASYNC -> { httpExchange: HttpExchange ->
                 val handler = Handler { future: Future<Any?> ->
                     try {
-                        handleResource(pluginConfig, httpExchangeConsumer, httpExchange, resolvedResourceConfigs)
+                        handleResource(pluginConfig, httpExchangeHandler, httpExchange, resolvedResourceConfigs)
                         future.complete()
                     } catch (e: Exception) {
                         future.fail(e)
@@ -313,8 +319,8 @@ class ResourceServiceImpl @Inject constructor(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>,
         vertx: Vertx,
-        httpExchangeHandler: HttpRequestHandler
-    ): HttpRequestHandler {
+        httpExchangeHandler: HttpExchangeHandler
+    ): HttpExchangeHandler {
         val selectedConfig = securityService.findConfigPreferringSecurityPolicy(allPluginConfigs)
         return handleRoute(imposterConfig, selectedConfig, vertx) { event: HttpExchange ->
             httpExchangeHandler(event)
@@ -346,7 +352,7 @@ class ResourceServiceImpl @Inject constructor(
 
     private fun handleResource(
         pluginConfig: PluginConfig,
-        httpExchangeConsumer: Consumer<HttpExchange>,
+        httpExchangeHandler: HttpExchangeHandler,
         httpExchange: HttpExchange,
         resolvedResourceConfigs: List<ResolvedResourceConfig>
     ) {
@@ -354,8 +360,11 @@ class ResourceServiceImpl @Inject constructor(
         val requestId = UUID.randomUUID().toString()
         httpExchange.put(ResourceUtil.RC_REQUEST_ID_KEY, requestId)
         val response = httpExchange.response()
-        response.putHeader("X-Imposter-Request", requestId)
-        response.putHeader("Server", "imposter")
+
+        if (shouldAddEngineResponseHeaders) {
+            response.putHeader("X-Imposter-Request", requestId)
+            response.putHeader("Server", "imposter")
+        }
 
         val rootResourceConfig = (pluginConfig as ResponseConfigHolder?)!!
         val request = httpExchange.request()
@@ -371,12 +380,13 @@ class ResourceServiceImpl @Inject constructor(
 
         // allows plugins to customise behaviour
         httpExchange.put(ResourceUtil.RESPONSE_CONFIG_HOLDER_KEY, resourceConfig)
+
         if (securityLifecycle.allMatch { listener: SecurityLifecycleListener ->
                 listener.isRequestPermitted(rootResourceConfig, resourceConfig, resolvedResourceConfigs, httpExchange)
             }) {
             // request is permitted to continue
             try {
-                httpExchangeConsumer.accept(httpExchange)
+                httpExchangeHandler(httpExchange)
             } finally {
                 // always perform tidy up once handled, regardless of outcome
                 engineLifecycle.forEach { listener: EngineLifecycleListener ->
@@ -390,9 +400,7 @@ class ResourceServiceImpl @Inject constructor(
 
     private fun handleFailure(httpExchange: HttpExchange, e: Throwable) {
         httpExchange.fail(
-            RuntimeException(
-                "Unhandled exception processing request ${describeRequest(httpExchange)}", e
-            )
+            RuntimeException("Unhandled exception processing request ${describeRequest(httpExchange)}", e)
         )
     }
 

@@ -43,7 +43,7 @@
 package io.gatehill.imposter.server
 
 import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.http.HttpRequestHandler
+import io.gatehill.imposter.http.HttpExchangeHandler
 import io.gatehill.imposter.http.HttpRouter
 import io.vertx.core.Future
 import io.vertx.core.Vertx
@@ -67,9 +67,9 @@ interface ServerFactory {
      */
     fun provide(imposterConfig: ImposterConfig, startFuture: Future<*>, vertx: Vertx, router: HttpRouter): HttpServer
 
-    fun createBodyHttpHandler(): HttpRequestHandler
+    fun createBodyHttpHandler(): HttpExchangeHandler
 
-    fun createStaticHttpHandler(root: String): HttpRequestHandler
+    fun createStaticHttpHandler(root: String): HttpExchangeHandler
 
-    fun createMetricsHandler(): HttpRequestHandler
+    fun createMetricsHandler(): HttpExchangeHandler
 }

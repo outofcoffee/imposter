@@ -92,7 +92,6 @@ object LogUtil {
      * @param httpExchange the HTTP exchange
      * @return a short description of the request
      */
-    @JvmStatic
     fun describeRequestShort(httpExchange: HttpExchange): String {
         return httpExchange.request().method().toString() + " " + httpExchange.request().absoluteURI()
     }

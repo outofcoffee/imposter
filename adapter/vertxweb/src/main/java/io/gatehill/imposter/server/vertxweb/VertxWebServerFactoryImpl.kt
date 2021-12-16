@@ -43,7 +43,7 @@
 package io.gatehill.imposter.server.vertxweb
 
 import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.http.HttpRequestHandler
+import io.gatehill.imposter.http.HttpExchangeHandler
 import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.server.HttpServer
 import io.gatehill.imposter.server.ServerFactory
@@ -140,17 +140,17 @@ class VertxWebServerFactoryImpl : ServerFactory {
         }
     }
 
-    override fun createBodyHttpHandler(): HttpRequestHandler {
+    override fun createBodyHttpHandler(): HttpExchangeHandler {
         val handler = BodyHandlerImpl(false)
         return { he -> handler.handle((he as VertxHttpExchange).routingContext) }
     }
 
-    override fun createStaticHttpHandler(root: String): HttpRequestHandler {
+    override fun createStaticHttpHandler(root: String): HttpExchangeHandler {
         val handler = StaticHandler.create(root)
         return { he -> handler.handle((he as VertxHttpExchange).routingContext) }
     }
 
-    override fun createMetricsHandler(): HttpRequestHandler {
+    override fun createMetricsHandler(): HttpExchangeHandler {
         val handler = PrometheusScrapingHandler.create()
         return { he -> handler.handle((he as VertxHttpExchange).routingContext) }
     }

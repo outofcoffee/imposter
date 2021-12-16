@@ -50,7 +50,7 @@ import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.http.HttpExchange
-import io.gatehill.imposter.http.HttpRequestHandler
+import io.gatehill.imposter.http.HttpExchangeHandler
 import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
 import io.gatehill.imposter.lifecycle.EngineLifecycleListener
@@ -202,7 +202,7 @@ class StoreServiceImpl @Inject constructor(
     private fun handleLoadAll(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>
-    ): HttpRequestHandler {
+    ): HttpExchangeHandler {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { httpExchange: HttpExchange ->
             val storeName = httpExchange.pathParam("storeName")!!
             val store = openStore(httpExchange, storeName)
@@ -228,7 +228,7 @@ class StoreServiceImpl @Inject constructor(
     private fun handleDeleteStore(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>
-    ): HttpRequestHandler {
+    ): HttpExchangeHandler {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { httpExchange: HttpExchange ->
             val storeName = httpExchange.pathParam("storeName")!!
             storeFactory.deleteStoreByName(storeName, isEphemeralStore = false)
@@ -243,7 +243,7 @@ class StoreServiceImpl @Inject constructor(
     private fun handleLoadSingle(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>
-    ): HttpRequestHandler {
+    ): HttpExchangeHandler {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { httpExchange: HttpExchange ->
             val storeName = httpExchange.pathParam("storeName")!!
             val store = openStore(httpExchange, storeName)
@@ -275,7 +275,7 @@ class StoreServiceImpl @Inject constructor(
     private fun handleSaveSingle(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>
-    ): HttpRequestHandler {
+    ): HttpExchangeHandler {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { httpExchange: HttpExchange ->
             val storeName = httpExchange.pathParam("storeName")!!
             val store = openStore(httpExchange, storeName, true)
@@ -303,7 +303,7 @@ class StoreServiceImpl @Inject constructor(
     private fun handleSaveMultiple(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>
-    ): HttpRequestHandler {
+    ): HttpExchangeHandler {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { httpExchange: HttpExchange ->
             val storeName = httpExchange.pathParam("storeName")!!
             val store = openStore(httpExchange, storeName, true)
@@ -325,7 +325,7 @@ class StoreServiceImpl @Inject constructor(
     private fun handleDeleteSingle(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>
-    ): HttpRequestHandler {
+    ): HttpExchangeHandler {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { httpExchange: HttpExchange ->
             val storeName = httpExchange.pathParam("storeName")!!
             val store = openStore(httpExchange, storeName, true)

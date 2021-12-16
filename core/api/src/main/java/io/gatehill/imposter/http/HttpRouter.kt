@@ -51,7 +51,7 @@ import java.util.regex.Pattern
  */
 class HttpRouter(val vertx: Vertx) {
     val routes = mutableListOf<HttpRoute>()
-    val errorHandlers = mutableMapOf<Int, HttpRequestHandler>()
+    val errorHandlers = mutableMapOf<Int, HttpExchangeHandler>()
 
     fun route(): HttpRoute {
         return HttpRoute().also(routes::add)
@@ -109,7 +109,7 @@ class HttpRouter(val vertx: Vertx) {
         return routeWithRegex(ResourceMethod.GET, regex)
     }
 
-    fun errorHandler(statusCode: Int, handler: HttpRequestHandler) {
+    fun errorHandler(statusCode: Int, handler: HttpExchangeHandler) {
         errorHandlers[statusCode] = handler
     }
 
@@ -120,7 +120,7 @@ class HttpRouter(val vertx: Vertx) {
     }
 }
 
-typealias HttpRequestHandler = (HttpExchange) -> Unit
+typealias HttpExchangeHandler = (HttpExchange) -> Unit
 
 /**
  * @author Pete Cornish
@@ -130,7 +130,7 @@ data class HttpRoute(
     val regex: String? = null,
     val method: ResourceMethod? = null
 ) {
-    var handler: HttpRequestHandler? = null
+    var handler: HttpExchangeHandler? = null
 
     private data class ParsedPathParams(
         val paramNames: List<String>,
@@ -158,7 +158,7 @@ data class HttpRoute(
 
     val regexPattern: Pattern by lazy { Pattern.compile(regex!!) }
 
-    fun handler(requestHandler: HttpRequestHandler): HttpRoute {
+    fun handler(requestHandler: HttpExchangeHandler): HttpRoute {
         handler = requestHandler
         return this
     }

@@ -87,9 +87,10 @@ class Imposter constructor(
         val configDirs = imposterConfig.configDirs
 
         // resolve relative config paths
+        val workingDir = System.getProperty("user.dir")
         for (i in configDirs.indices) {
             if (configDirs[i].startsWith("./")) {
-                configDirs[i] = Paths.get(System.getProperty("user.dir"), configDirs[i].substring(2)).toString()
+                configDirs[i] = Paths.get(workingDir, configDirs[i].substring(2)).toString()
             }
         }
 

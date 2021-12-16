@@ -44,7 +44,7 @@ package io.gatehill.imposter.plugin.openapi
 
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.http.HttpExchange
-import io.gatehill.imposter.http.HttpRequestHandler
+import io.gatehill.imposter.http.HttpExchangeHandler
 import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.http.StatusCodeFactory
 import io.gatehill.imposter.plugin.PluginInfo
@@ -235,7 +235,7 @@ class OpenApiPluginImpl @Inject constructor(
         pluginConfig: OpenApiPluginConfig,
         operation: Operation,
         spec: OpenAPI
-    ): HttpRequestHandler {
+    ): HttpExchangeHandler {
         // statically calculate as much as possible
         val statusCodeFactory = buildStatusCodeCalculator(operation)
         return resourceService.handleRoute(imposterConfig, pluginConfig, vertx) { httpExchange: HttpExchange ->

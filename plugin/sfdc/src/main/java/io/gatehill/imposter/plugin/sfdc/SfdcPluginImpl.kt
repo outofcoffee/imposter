@@ -44,7 +44,7 @@ package io.gatehill.imposter.plugin.sfdc
 
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.http.HttpExchange
-import io.gatehill.imposter.http.HttpRequestHandler
+import io.gatehill.imposter.http.HttpExchangeHandler
 import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.ScriptedPlugin.scriptHandler
@@ -190,7 +190,7 @@ class SfdcPluginImpl @Inject constructor(
      *
      * @return
      */
-    private fun handleUpdateRequest(): HttpRequestHandler {
+    private fun handleUpdateRequest(): HttpExchangeHandler {
         return resourceService.handleRoute(imposterConfig, configs, vertx) { httpExchange: HttpExchange ->
             val sObjectName = httpExchange.pathParam("sObjectName")
             val sObjectId = httpExchange.pathParam("sObjectId")
