@@ -202,7 +202,7 @@ class ScriptedResponseServiceImpl @Inject constructor(
             val scriptDuration = (System.nanoTime() - executionStart) / 1000000f
 
             // used for summary logging
-            httpExchange.put(LogUtil.KET_SCRIPT_DURATION, scriptDuration)
+            httpExchange.put(LogUtil.KEY_SCRIPT_DURATION, scriptDuration)
 
             LOGGER.debug(
                 String.format(

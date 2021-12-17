@@ -58,7 +58,7 @@ import java.time.OffsetDateTime
  */
 object LogUtil {
     const val KEY_REQUEST_START = "requestStartNanos"
-    const val KET_SCRIPT_DURATION = "scriptExecutionDuration"
+    const val KEY_SCRIPT_DURATION = "scriptExecutionDuration"
 
     /**
      * The prefix for script logger names.
@@ -142,26 +142,27 @@ object LogUtil {
                 " " + httpExchange.request().absoluteURI()
     }
 
-    private fun formatDuration(input: Any) = String.format("%.2f", input)
+    fun formatDuration(input: Any) = String.format("%.2f", input)
 
     fun logCompletion(httpExchange: HttpExchange) {
         if (!shouldLogSummary || !statsLogger.isInfoEnabled) {
             return
         }
         try {
-            val scriptTime = httpExchange.get<Float>(KET_SCRIPT_DURATION)?.let(::formatDuration) ?: "0"
             val fields = mutableMapOf<String, String?>(
                 "timestamp" to OffsetDateTime.now().toString(),
                 "uri" to httpExchange.request().absoluteURI(),
                 "path" to httpExchange.request().path(),
                 "method" to httpExchange.request().method().toString(),
                 "statusCode" to httpExchange.response().getStatusCode().toString(),
-                "scriptTime" to scriptTime,
             )
-
             httpExchange.get<Long>(KEY_REQUEST_START)?.let { startNanos ->
                 val duration = formatDuration((System.nanoTime() - startNanos) / 1000000f)
                 fields["duration"] = duration
+            }
+            httpExchange.get<Float>(KEY_SCRIPT_DURATION)?.let { scriptDuration ->
+                val scriptTime = formatDuration(scriptDuration)
+                fields["scriptTime"] = scriptTime
             }
             if (requestHeaderNames.isNotEmpty()) {
                 val requestHeaders = CollectionUtil.convertKeysToLowerCase(httpExchange.request().headers())
