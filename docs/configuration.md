@@ -240,6 +240,22 @@ EXAMPLE_RESPONSE="Hello"
 
 > You can use environment variables anywhere within your configuration files, for example, in the `security` section to avoid including secrets in your configuration files. 
 
+### Default environment variable values
+
+You can use the following syntax to set defaults for environment variables:
+
+```
+${env.NAME_OF_VAR:-defaultValue}
+```
+
+For example:
+
+```
+${env.MY_VAR:-foo}
+```
+
+This would resolve to the value `foo` if the `MY_VAR` environment variable was empty or missing.
+
 ## Security
 
 Imposter can require specific header values to authenticate incoming HTTP requests. [Read about how to do this](./security.md).
