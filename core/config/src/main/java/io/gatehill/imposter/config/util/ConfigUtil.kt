@@ -131,7 +131,7 @@ object ConfigUtil {
                         imposterConfig,
                         configFile,
                         PluginConfigImpl::class.java,
-                        substitutePlaceholders = false,
+                        substitutePlaceholders = true,
                         convertPathParameters = false
                     )
 
