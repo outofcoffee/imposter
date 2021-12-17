@@ -3,9 +3,9 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
-### Added
-- ...
+## [2.4.5] - 2021-12-17
+### Changed
+- refactor: switches boot to direct invocation of unpacked wrapper script.
 
 ## [2.4.4] - 2021-12-17
 ### Changed
