@@ -3,9 +3,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
-### Added
-- ...
+## [2.4.4] - 2021-12-17
+### Changed
+- chore: bumps CLI version to 0.7.7.
+
+### Fixed
+- fix: resolves placeholders when preparsing configuration files.
 
 ## [2.4.3] - 2021-12-17
 ### Fixed
