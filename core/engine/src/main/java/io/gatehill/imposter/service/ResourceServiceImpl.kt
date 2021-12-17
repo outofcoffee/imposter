@@ -66,6 +66,7 @@ import io.gatehill.imposter.plugin.config.resource.RestResourceConfig
 import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyConfig
 import io.gatehill.imposter.server.RequestHandlingMode
 import io.gatehill.imposter.util.CollectionUtil.convertKeysToLowerCase
+import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.LogUtil.describeRequest
 import io.gatehill.imposter.util.ResourceUtil
@@ -331,16 +332,34 @@ class ResourceServiceImpl @Inject constructor(
     /**
      * {@inheritDoc}
      */
+    override fun buildNotFoundExceptionHandler() = { httpExchange: HttpExchange ->
+        if (null == httpExchange.get(ResourceUtil.RC_REQUEST_ID_KEY)) {
+            // only override response processing if the 404 did not originate from the mock engine
+            logAppropriatelyForPath(httpExchange)
+            httpExchange.response().setStatusCode(HttpUtil.HTTP_NOT_FOUND).end()
+        }
+
+        // print summary
+        LogUtil.logCompletion(httpExchange)
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     override fun buildUnhandledExceptionHandler() = { httpExchange: HttpExchange ->
+        logAppropriatelyForPath(httpExchange)
+
+        // print summary
+        LogUtil.logCompletion(httpExchange)
+    }
+
+    private fun logAppropriatelyForPath(httpExchange: HttpExchange) {
         val level = determineLogLevel(httpExchange)
         LOGGER.log(
             level,
             "Unhandled routing exception for request " + describeRequest(httpExchange),
             httpExchange.failure()
         )
-
-        // print summary
-        LogUtil.logCompletion(httpExchange)
     }
 
     private fun determineLogLevel(httpExchange: HttpExchange): Level {

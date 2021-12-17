@@ -125,7 +125,9 @@ class ImposterVerticle : AbstractVerticle() {
 
     private fun configureRoutes(): HttpRouter {
         val router = HttpRouter.router(vertx)
-        router.errorHandler(500, resourceService.buildUnhandledExceptionHandler())
+
+        router.errorHandler(HttpUtil.HTTP_NOT_FOUND, resourceService.buildNotFoundExceptionHandler())
+        router.errorHandler(HttpUtil.HTTP_INTERNAL_ERROR, resourceService.buildUnhandledExceptionHandler())
         router.route().handler(serverFactory.createBodyHttpHandler())
 
         val allConfigs: List<PluginConfig> = pluginManager.getPlugins()

@@ -174,6 +174,11 @@ interface ResourceService {
     ): HttpExchangeHandler
 
     /**
+     * Catches 404 responses.
+     */
+    fun buildNotFoundExceptionHandler(): HttpExchangeHandler
+
+    /**
      * Catches unhandled exceptions.
      *
      * @return the exception handler

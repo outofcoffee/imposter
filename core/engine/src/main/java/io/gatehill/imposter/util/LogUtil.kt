@@ -149,12 +149,15 @@ object LogUtil {
             return
         }
         try {
+            val request = httpExchange.request()
+            val response = httpExchange.response()
+
             val fields = mutableMapOf<String, String?>(
                 "timestamp" to OffsetDateTime.now().toString(),
-                "uri" to httpExchange.request().absoluteURI(),
-                "path" to httpExchange.request().path(),
-                "method" to httpExchange.request().method().toString(),
-                "statusCode" to httpExchange.response().getStatusCode().toString(),
+                "uri" to request.absoluteURI(),
+                "path" to request.path(),
+                "method" to request.method().toString(),
+                "statusCode" to response.getStatusCode().toString(),
             )
             httpExchange.get<Long>(KEY_REQUEST_START)?.let { startNanos ->
                 val duration = formatDuration((System.nanoTime() - startNanos) / 1000000f)
@@ -165,11 +168,11 @@ object LogUtil {
                 fields["scriptTime"] = scriptTime
             }
             if (requestHeaderNames.isNotEmpty()) {
-                val requestHeaders = CollectionUtil.convertKeysToLowerCase(httpExchange.request().headers())
+                val requestHeaders = CollectionUtil.convertKeysToLowerCase(request.headers())
                 requestHeaderNames.forEach { headerName -> fields[headerName] = requestHeaders[headerName] }
             }
             if (responseHeaderNames.isNotEmpty()) {
-                val responseHeaders = CollectionUtil.convertKeysToLowerCase<String>(httpExchange.response().headers())
+                val responseHeaders = CollectionUtil.convertKeysToLowerCase<String>(response.headers())
                 responseHeaderNames.forEach { headerName -> fields[headerName] = responseHeaders[headerName] }
             }
 

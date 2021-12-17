@@ -66,7 +66,7 @@ object MapUtil {
      * Don't apply standard configuration to this mapper.
      */
     val STATS_MAPPER = ObjectMapper().also {
-        if (EnvVars.getEnv("IMPOSTER_LOG_SUMMARY_PRETTY")?.toBoolean() != false) {
+        if (EnvVars.getEnv("IMPOSTER_LOG_SUMMARY_PRETTY")?.toBoolean() == true) {
             it.enable(SerializationFeature.INDENT_OUTPUT)
         }
     }
