@@ -17,6 +17,13 @@ dependencies {
 
 mainClassName = 'io.gatehill.imposter.cmd.ImposterLauncher'
 
+jar {
+    manifest {
+        attributes 'Main-Class': mainClassName
+        attributes 'Imposter-Version': project.version
+    }
+}
+
 application {
     applicationName = 'imposter'
 }
@@ -25,11 +32,6 @@ shadowJar {
     baseName = 'imposter-rest'
     version = ''
     classifier = ''
-
-    manifest {
-        attributes 'Main-Class': mainClassName
-        attributes 'Imposter-Version': project.version
-    }
 
     append 'META-INF/imposter.properties'
 

@@ -4,7 +4,7 @@ set -e
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT_DIR="${SCRIPT_DIR}/../"
 DEFAULT_PLUGIN_NAME="openapi"
-JAVA_ARGS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000"
+JAVA_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000"
 IMPOSTER_LOG_LEVEL="DEBUG"
 RUN_TESTS="true"
 
@@ -59,6 +59,7 @@ fi
 
 # consumed below
 export IMPOSTER_LOG_LEVEL
+export JAVA_OPTS
 
 case ${LAUNCH_MODE} in
   docker)
@@ -68,7 +69,7 @@ case ${LAUNCH_MODE} in
     docker run -ti --rm -p 8080:8080 \
       -v "${CONFIG_DIR}":/opt/imposter/config \
       -e IMPOSTER_LOG_LEVEL \
-      -e JAVA_ARGS="${JAVA_ARGS}" \
+      -e JAVA_OPTS \
       "outofcoffee/imposter-${PLUGIN_NAME}:dev"
     ;;
 

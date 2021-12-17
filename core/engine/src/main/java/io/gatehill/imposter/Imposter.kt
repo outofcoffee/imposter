@@ -44,6 +44,7 @@ package io.gatehill.imposter
 
 import com.google.inject.Module
 import io.gatehill.imposter.config.util.ConfigUtil
+import io.gatehill.imposter.config.util.MetaUtil
 import io.gatehill.imposter.plugin.PluginManager
 import io.gatehill.imposter.plugin.PluginManagerImpl
 import io.gatehill.imposter.util.HttpUtil
@@ -63,7 +64,7 @@ class Imposter constructor(
     private val pluginManager: PluginManager = PluginManagerImpl()
 
     fun start() {
-        LOGGER.info("Starting mock engine")
+        LOGGER.info("Starting mock engine ${MetaUtil.readVersion()}")
 
         val pluginConfigs = processConfiguration()
         val plugins = imposterConfig.plugins?.toList() ?: emptyList()

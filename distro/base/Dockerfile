@@ -1,7 +1,6 @@
 FROM adoptopenjdk/openjdk8:x86_64-alpine-jre8u312-b07
 
 LABEL MAINTAINER="Pete Cornish <outofcoffee@gmail.com>"
-ENV JAVA_ARGS=""
 
 # add CLI
 ENV IMPOSTER_ENGINE=unpacked IMPOSTER_JVM_DISTRODIR=/opt/imposter

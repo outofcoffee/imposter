@@ -30,7 +30,7 @@ function boot_cli() {
 if [[ -z "${JAVA_OPTS}" ]]; then
   export JAVA_OPTS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
 fi
-export JAVA_OPTS="$JAVA_ARGS $JAVA_OPTS"
+export JAVA_OPTS
 
 if [[ "${IMPOSTER_BOOT}" == "classic" ]]; then
   boot_direct_jvm "$@"
