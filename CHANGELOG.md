@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.4.6] - 2021-12-20
+### Fixed
+- fix: bumps log4j2 to 2.17.0 to mitigate CVE-2021-45105.
+
 ## [2.4.5] - 2021-12-17
 ### Changed
 - refactor: switches boot to direct invocation of unpacked wrapper script.
