@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- ...
+
 ## [2.4.14] - 2022-01-08
 ### Changed
 - feat: switches Lambda adapter logging to AWS Lambda appender.
