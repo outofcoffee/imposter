@@ -3,9 +3,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
-### Added
-- ...
+## [2.4.7] - 2021-12-21
+### Changed
+- feat: uses application specific user in Docker image.
+- feat: hardens container image to remove alpine distro bin.
+- chore: bumps CLI to 0.8.0.
 
 ## [2.4.6] - 2021-12-20
 ### Fixed
