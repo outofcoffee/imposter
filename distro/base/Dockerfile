@@ -17,16 +17,16 @@ RUN cd /tmp/imposter-cli && \
 
 # add distro
 RUN mkdir -p /opt/imposter/bin /opt/imposter/lib /opt/imposter/config
-COPY ./distro/base/files/docker-entrypoint.sh /opt/imposter/bin
 
 ONBUILD ARG DISTRO_NAME
 ONBUILD ENV DISTRO_NAME="${DISTRO_NAME}"
-ONBUILD ADD ./distro/${DISTRO_NAME}/build/install/imposter/bin/* /opt/imposter/bin/
 ONBUILD ADD ./distro/${DISTRO_NAME}/build/install/imposter/lib/* /opt/imposter/lib/
-ONBUILD RUN chmod +x /opt/imposter/bin/docker-entrypoint.sh && \
-            chown -R imposter:imposter /opt/imposter
+ONBUILD RUN chown -R imposter:imposter /opt/imposter && \
+            rm /bin/busybox
 
 ONBUILD USER imposter
+
+ENV JAVA_TOOL_OPTIONS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
 EXPOSE 8080 8443
 
-ENTRYPOINT ["/opt/imposter/bin/docker-entrypoint.sh"]
+ENTRYPOINT ["java", "-classpath", "/opt/imposter/lib/*", "io.gatehill.imposter.cmd.ImposterLauncher"]
