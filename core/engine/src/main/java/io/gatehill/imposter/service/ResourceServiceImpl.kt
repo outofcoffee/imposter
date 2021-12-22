@@ -77,7 +77,9 @@ import io.vertx.core.Handler
 import io.vertx.core.Vertx
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
-import java.util.*
+import java.util.Locale
+import java.util.Objects
+import java.util.UUID
 import java.util.function.Function
 import java.util.function.Supplier
 import java.util.regex.Pattern
@@ -413,6 +415,7 @@ class ResourceServiceImpl @Inject constructor(
             // request is permitted to continue
             try {
                 httpExchangeHandler(httpExchange)
+                LogUtil.logCompletion(httpExchange)
             } finally {
                 // always perform tidy up once handled, regardless of outcome
                 engineLifecycle.forEach { listener: EngineLifecycleListener ->
@@ -422,9 +425,6 @@ class ResourceServiceImpl @Inject constructor(
         } else {
             LOGGER.trace("Request {} was not permitted to continue", describeRequest(httpExchange, requestId))
         }
-
-        // print summary
-        LogUtil.logCompletion(httpExchange)
     }
 
     private fun handleFailure(httpExchange: HttpExchange, e: Throwable) {
