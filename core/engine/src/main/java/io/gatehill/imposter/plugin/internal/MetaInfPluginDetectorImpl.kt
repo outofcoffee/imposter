@@ -52,7 +52,6 @@ import java.io.File
 /**
  * Provides the plugin class names present in the metadata information ('META-INF') files.
  *
- *
  * Checks for a list of comma-separated plugin names or fully qualified classes.
  *
  * @author Pete Cornish

@@ -120,6 +120,11 @@ class OpenApiPluginImpl @Inject constructor(
     }
 
     override fun configureRoutes(router: HttpRouter) {
+        if (configs.isEmpty()) {
+            LOGGER.debug("No OpenAPI configuration files provided - skipping plugin setup")
+            return
+        }
+
         parseSpecs(router)
 
         val deriveBasePathFromServerEntries = configs.any { it.isUseServerPathAsBaseUrl }

@@ -82,7 +82,7 @@ class RestPluginImpl @Inject constructor(
     override fun configureRoutes(router: HttpRouter) {
         configs.forEach { config: RestPluginConfig ->
             // add root handler
-            // TODO consider changing this to config.getPath() if non-null
+            // TODO consider changing this to config.path if non-null
             addObjectHandler(router, "", config, config)
 
             // add child resource handlers
