@@ -43,62 +43,93 @@
 
 package io.gatehill.imposter.scripting.common
 
-import io.gatehill.imposter.script.MutableResponseBehaviour
+import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.impl.RunnableResponseBehaviourImpl
+import io.gatehill.imposter.scripting.common.shim.ConsoleShim
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.nio.file.Files
 import java.nio.file.Path
+
 
 /**
  * @author Pete Cornish
  */
 object JavaScriptUtil {
     private val LOGGER: Logger = LogManager.getLogger(JavaScriptUtil::class)
-    private val DSL_FUNCTIONS: String = buildDslFunctions()
 
-    /**
-     * Expose superclass methods as DSL functions.
-     *
-     * @return the JavaScript function variables
-     */
-    private fun buildDslFunctions(): String {
-        val dslMethods = MutableResponseBehaviour::class.java.declaredMethods.map { it.name }
+    private const val DSL_OBJECT_PREFIX = "__imposter_dsl_"
+    private val globals = listOf(
+        "context",
+        "env",
+        "logger",
+        "respond",
+        "stores",
+    )
 
-        return dslMethods.distinct().joinToString("\r\n") { methodName ->
-            "var $methodName = Java.super(responseBehaviour).${methodName};"
+    private val DSL_FUNCTIONS: String
+    private val GLOBAL_DSL_OBJECTS: String
+
+    init {
+        // expose superclass methods as DSL functions
+        val dslMethods = listOf(
+            "respond",
+        )
+        DSL_FUNCTIONS = dslMethods.distinct().joinToString("\r\n") { methodName ->
+            "${DSL_OBJECT_PREFIX}${methodName} = Java.super(responseBehaviour).${methodName};"
+        }
+
+        // optionally expose as global objects
+        GLOBAL_DSL_OBJECTS = globals.distinct().joinToString("\r\n") { methodName ->
+            "$methodName = ${DSL_OBJECT_PREFIX}${methodName};"
         }
     }
 
-    @JvmStatic
+    fun transformRuntimeMap(runtimeContext: RuntimeContext, addConsoleShim: Boolean): Map<String, *> {
+        val runtimeObjects = runtimeContext.asMap().toMutableMap()
+        if (!runtimeObjects.containsKey("stores")) {
+            runtimeObjects["stores"] = Any()
+        }
+        if (addConsoleShim) {
+            runtimeObjects["console"] = ConsoleShim(runtimeObjects)
+        }
+        return runtimeObjects
+            .mapKeys { if (globals.contains(it.key)) DSL_OBJECT_PREFIX + it.key else it.key }
+    }
+
     fun wrapScript(scriptFile: Path): String {
         // wrap mock script
         val mockScript = String(Files.readAllBytes(scriptFile))
-        val wrappedScript = buildWrappedScript(mockScript)
 
-        LOGGER.trace("Wrapped script: $wrappedScript")
+        val setGlobalDslObjects = !mockScript.contains("@imposter-js/types")
+        val wrappedScript = buildWrappedScript(mockScript, setGlobalDslObjects)
+
+        if (LOGGER.isTraceEnabled) {
+            LOGGER.trace("Wrapped script: $wrappedScript")
+        }
         return wrappedScript
     }
 
-    private fun buildWrappedScript(mockScript: String): String = """
+    private fun buildWrappedScript(mockScript: String, setGlobalDslObjects: Boolean): String = """
 var RunnableResponseBehaviourImpl = Java.type('${RunnableResponseBehaviourImpl::class.java.canonicalName}');
 
 var responseBehaviour = new RunnableResponseBehaviourImpl() {
     run: function() {
 
 /* ------------------------------------------------------------------------- */
-/* Exposed DSL functions                                                     */
+/* DSL functions                                                             */
 /* ------------------------------------------------------------------------- */
 $DSL_FUNCTIONS
+${if (setGlobalDslObjects) GLOBAL_DSL_OBJECTS else ""}
 /* ------------------------------------------------------------------------- */
 /* Shim for '__imposter_types' module exports                                */
 /* ------------------------------------------------------------------------- */
 var __imposter_types = {
-    env: (function() { return env })(),
-    context: (function() { return context })(),
-    logger: (function() { return logger })(),
-    respond: respond,
-    stores: (function() { try { return stores } catch(e) { return undefined } })()
+    env: (function() { return ${DSL_OBJECT_PREFIX}env })(),
+    context: (function() { return ${DSL_OBJECT_PREFIX}context })(),
+    logger: (function() { return ${DSL_OBJECT_PREFIX}logger })(),
+    respond: ${DSL_OBJECT_PREFIX}respond,
+    stores: (function() { try { return ${DSL_OBJECT_PREFIX}stores } catch(e) { return undefined } })()
 };
 /* ------------------------------------------------------------------------- */
 /* Shim for 'require()'                                                      */

@@ -43,96 +43,17 @@
 
 package io.gatehill.imposter.scripting
 
-import com.google.inject.Guice
-import io.gatehill.imposter.http.HttpExchange
-import io.gatehill.imposter.http.HttpRequest
-import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.config.PluginConfigImpl
-import io.gatehill.imposter.plugin.config.resource.ResourceMethod
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.script.ResponseBehaviourType
-import io.gatehill.imposter.script.RuntimeContext
-import io.gatehill.imposter.script.ScriptUtil
-import io.gatehill.imposter.service.ScriptService
-import io.gatehill.imposter.util.FeatureUtil
-import io.gatehill.imposter.util.MetricsUtil
-import org.apache.logging.log4j.LogManager
-import org.junit.AfterClass
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
-import org.junit.Before
-import org.junit.BeforeClass
 import org.junit.Test
-import org.mockito.Mockito.mock
-import java.nio.file.Paths
-import org.mockito.Mockito.`when` as When
 
 /**
  * @author Pete Cornish
  */
-abstract class AbstractScriptServiceImplTest {
-    companion object {
-        @JvmStatic
-        @BeforeClass
-        fun beforeClass() {
-            FeatureUtil.disableFeature(MetricsUtil.FEATURE_NAME_METRICS)
-        }
-
-        @JvmStatic
-        @AfterClass
-        fun afterClass() {
-            FeatureUtil.clearSystemPropertyOverrides()
-        }
-    }
-
-    @Before
-    fun setUp() {
-        Guice.createInjector().injectMembers(this)
-    }
-
-    protected abstract fun getService(): ScriptService
-
-    protected abstract fun getScriptName(): String
-
-    protected fun configureScript(): PluginConfig {
-        val script =
-            Paths.get(AbstractScriptServiceImplTest::class.java.getResource("/script/${getScriptName()}").toURI())
-
-        return PluginConfigImpl().apply {
-            parentDir = script.parent.toFile()
-            responseConfig.apply {
-                this.scriptFile = getScriptName()
-            }
-        }
-    }
-
-    protected fun buildRuntimeContext(
-        additionalBindings: Map<String, String>,
-        headers: Map<String, String> = emptyMap(),
-        pathParams: Map<String, String> = emptyMap(),
-        queryParams: Map<String, String> = emptyMap(),
-        env: Map<String, String> = emptyMap()
-    ): RuntimeContext {
-        val logger = LogManager.getLogger("script-engine-test")
-
-        val mockRequest = mock(HttpRequest::class.java)
-        When(mockRequest.method()).thenReturn(ResourceMethod.GET)
-        When(mockRequest.path()).thenReturn("/example")
-        When(mockRequest.absoluteURI()).thenReturn("http://localhost:8080/example")
-        When(mockRequest.headers()).thenReturn(headers)
-
-        val mockHttpExchange = mock(HttpExchange::class.java)
-        When(mockHttpExchange.request()).thenReturn(mockRequest)
-        When(mockHttpExchange.pathParams()).thenReturn(pathParams)
-        When(mockHttpExchange.queryParams()).thenReturn(queryParams)
-        When(mockHttpExchange.bodyAsString).thenReturn("")
-
-        val pluginConfig = mock(PluginConfig::class.java)
-        val executionContext = ScriptUtil.buildContext(mockHttpExchange, null)
-        return RuntimeContext(env, logger, pluginConfig, additionalBindings, executionContext)
-    }
-
+abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
     @Test
     fun testExecuteScript_Immediate() {
         val pluginConfig = configureScript()

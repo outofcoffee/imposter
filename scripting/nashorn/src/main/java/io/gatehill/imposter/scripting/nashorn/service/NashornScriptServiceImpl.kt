@@ -49,8 +49,8 @@ import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.ScriptUtil
+import io.gatehill.imposter.scripting.common.JavaScriptUtil
 import io.gatehill.imposter.scripting.common.JavaScriptUtil.wrapScript
-import io.gatehill.imposter.scripting.nashorn.shim.ConsoleShim
 import io.gatehill.imposter.service.ScriptService
 import io.gatehill.imposter.util.MetricsUtil.doIfMetricsEnabled
 import io.micrometer.core.instrument.Gauge
@@ -108,11 +108,9 @@ class NashornScriptServiceImpl @Inject constructor(
         LOGGER.trace("Executing script file: {}", scriptFile)
 
         return try {
-            val compiledScript = getCompiledScript(scriptFile)
-            val bindings = SimpleBindings(runtimeContext.asMap())
+            val bindings = SimpleBindings(JavaScriptUtil.transformRuntimeMap(runtimeContext, true))
 
-            // JS environment affordances
-            bindings["console"] = ConsoleShim(bindings)
+            val compiledScript = getCompiledScript(scriptFile)
             compiledScript.eval(bindings) as ReadWriteResponseBehaviour
 
         } catch (e: Exception) {

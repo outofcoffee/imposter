@@ -47,7 +47,7 @@ import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.ScriptUtil
-import io.gatehill.imposter.scripting.common.JavaScriptUtil.wrapScript
+import io.gatehill.imposter.scripting.common.JavaScriptUtil
 import io.gatehill.imposter.service.ScriptService
 import org.apache.logging.log4j.LogManager
 import javax.inject.Inject
@@ -84,9 +84,11 @@ class GraalvmScriptServiceImpl @Inject constructor(
         bindings["polyglot.js.allowAllAccess"] = true
 
         return try {
+            val globals = JavaScriptUtil.transformRuntimeMap(runtimeContext, false)
+
             scriptEngine.eval(
-                wrapScript(scriptFile),
-                SimpleBindings(runtimeContext.asMap())
+                JavaScriptUtil.wrapScript(scriptFile),
+                SimpleBindings(globals)
             ) as ReadWriteResponseBehaviour
         } catch (e: Exception) {
             throw RuntimeException("Script execution terminated abnormally", e)

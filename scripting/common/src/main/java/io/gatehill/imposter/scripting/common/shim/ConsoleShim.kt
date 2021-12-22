@@ -40,17 +40,16 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.scripting.nashorn.shim
+package io.gatehill.imposter.scripting.common.shim
 
 import org.apache.logging.log4j.Logger
-import javax.script.SimpleBindings
 
 /**
  * Basic shim for JavaScript console.
  *
  * @author Pete Cornish
  */
-class ConsoleShim(private val bindings: SimpleBindings) {
+class ConsoleShim(private val bindings: Map<String, *>) {
     private var logger: Logger? = null
         get() {
             if (null == field) {
