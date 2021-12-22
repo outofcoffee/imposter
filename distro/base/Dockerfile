@@ -1,13 +1,10 @@
-FROM eclipse-temurin:8u322-b06-jre-focal
+FROM alpine
 
 LABEL MAINTAINER="Pete Cornish <outofcoffee@gmail.com>"
 
-RUN addgroup imposter --gid 2048 && \
-    adduser imposter --uid 2048 --gid 2048
-
 # add CLI
-ARG IMPOSTER_VERSION
-ENV IMPOSTER_VERSION="${IMPOSTER_VERSION}" \
+ONBUILD ARG IMPOSTER_VERSION
+ONBUILD ENV IMPOSTER_VERSION="${IMPOSTER_VERSION}" \
     IMPOSTER_ENGINE=unpacked \
     IMPOSTER_JVM_DISTRODIR=/opt/imposter
 
@@ -17,7 +14,7 @@ ADD https://github.com/gatehill/imposter-cli/releases/download/v${IMPOSTER_CLI_V
 RUN cd /tmp/imposter-cli && \
     tar xvf /tmp/imposter-cli/imposter.tar.gz && \
     mv /tmp/imposter-cli/imposter /usr/local/bin/imposter && \
-    rm -rf /tmp/imposter-cli
+    chmod 744 /usr/local/bin/imposter
 
 # add distro
 RUN mkdir -p \
@@ -27,15 +24,9 @@ RUN mkdir -p \
     /opt/imposter/plugins
 
 ONBUILD ARG DISTRO_NAME
-ONBUILD ENV DISTRO_NAME="${DISTRO_NAME}"
 ONBUILD ADD ./distro/${DISTRO_NAME}/build/install/imposter/lib/* /opt/imposter/lib/
-ONBUILD RUN chown -R imposter:imposter /opt/imposter && \
-            rm -rf /bin/*
 
-ONBUILD USER imposter
+ONBUILD ENV JAVA_TOOL_OPTIONS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
+ONBUILD EXPOSE 8080 8443
 
-ENV IMPOSTER_PLUGIN_DIR=/opt/imposter/plugins \
-    JAVA_TOOL_OPTIONS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
-
-EXPOSE 8080 8443
-ENTRYPOINT ["java", "-classpath", "/opt/imposter/lib/*", "io.gatehill.imposter.cmd.ImposterLauncher"]
+ONBUILD ENTRYPOINT ["java", "-classpath", "/opt/imposter/lib/*", "io.gatehill.imposter.cmd.ImposterLauncher"]
