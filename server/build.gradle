@@ -11,7 +11,7 @@ dependencies {
 
     // scripting
     implementation project (':scripting:scripting-groovy')
-    implementation project(':scripting:scripting-nashorn-standalone')
+    implementation project(':scripting:scripting-nashorn-graalvm')
 
     // needed for plugin delegation
     implementation project(':scripting:scripting-common')
