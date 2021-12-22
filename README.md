@@ -83,14 +83,15 @@ There are many ways to run Imposter.
 
 ### Standalone mock server
 
-1. Using the command line client - see [Imposter CLI](./docs/run_imposter_cli.md)
-2. As a Docker container - see [Imposter Docker container](./docs/run_imposter_docker.md)
-3. As a JAR file on the JVM - see [Imposter JAR file](./docs/run_imposter_jar.md)
+- Using the command line client - see [Imposter CLI](./docs/run_imposter_cli.md)
+- As a Docker container - see [Imposter Docker container](./docs/run_imposter_docker.md)
+- As a Lambda function in AWS - see [Imposter AWS Lambda](./docs/run_imposter_aws_lambda.md)
+- As a JAR file on the JVM - see [Imposter JAR file](./docs/run_imposter_jar.md)
 
 ### Embedded in tests
 
-4. Embedded within your **Java/Kotlin/Scala/JVM** unit tests - see [JVM bindings](./docs/embed_jvm.md)
-5. Embedded within your **JavaScript/Node.js** unit tests - see [JavaScript bindings](https://github.com/gatehill/imposter-js)
+- Embedded within your **Java/Kotlin/Scala/JVM** unit tests - see [JVM bindings](./docs/embed_jvm.md)
+- Embedded within your **JavaScript/Node.js** unit tests - see [JavaScript bindings](https://github.com/gatehill/imposter-js)
 
 ---
 
