@@ -16,12 +16,12 @@ Read the [Configuration](configuration.md) section to understand how to configur
 
 ### Additional context objects
 
-| Object | Type | Description
-| --- | --- | ---
-| `tableName` | `String` | The name of the HBase table.
-| `responsePhase` | `io.gatehill.imposter.plugin.hbase.model.ResponsePhase` | The type of response being served.
-| `scannerFilterPrefix` | `String` | The prefix from the filter of the result scanner.
-| `recordInfo` | `io.gatehill.imposter.plugin.hbase.model.RecordInfo` | Information about the requested record, if a single record is requested.
+| Object                | Type                                                    | Description                                                              |
+|-----------------------|---------------------------------------------------------|--------------------------------------------------------------------------|
+| `tableName`           | `String`                                                | The name of the HBase table.                                             |
+| `responsePhase`       | `io.gatehill.imposter.plugin.hbase.model.ResponsePhase` | The type of response being served.                                       |
+| `scannerFilterPrefix` | `String`                                                | The prefix from the filter of the result scanner.                        |
+| `recordInfo`          | `io.gatehill.imposter.plugin.hbase.model.RecordInfo`    | Information about the requested record, if a single record is requested. |
 
 ## Using the plugin
 

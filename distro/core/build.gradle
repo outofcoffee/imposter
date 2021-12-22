@@ -12,10 +12,8 @@ dependencies {
 
     // plugins
     implementation project (':plugin:plugin-detector')
-    implementation project (':plugin:plugin-hbase')
     implementation project (':plugin:plugin-openapi')
     implementation project (':plugin:plugin-rest')
-    implementation project (':plugin:plugin-sfdc')
 }
 
 mainClassName = 'io.gatehill.imposter.cmd.ImposterLauncher'
@@ -32,7 +30,7 @@ application {
 }
 
 shadowJar {
-    baseName = 'imposter-all'
+    baseName = 'imposter-core'
     version = ''
     classifier = ''
 
@@ -44,5 +42,5 @@ shadowJar {
 }
 
 task dist {
-    dependsOn installDist
+    dependsOn installDist, shadowJar
 }

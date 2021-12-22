@@ -26,7 +26,7 @@ module.exports = async ({github, context}) => {
 };
 
 async function releaseMainDistro(github, release, releaseVersion) {
-    const localFilePath = './distro/all/build/libs/imposter-all.jar';
+    const localFilePath = './distro/core/build/libs/imposter-core.jar';
     await uploadAsset(github, release.data.id, 'imposter.jar', localFilePath, release.data.id);
 
     // upload with version suffix, for compatibility with cli < 0.7.0

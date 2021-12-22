@@ -77,6 +77,9 @@ project(':distro:awslambda').name = 'distro-awslambda'
 include ':distro:base'
 project(':distro:base').name = 'distro-base'
 
+include ':distro:core'
+project(':distro:core').name = 'distro-core'
+
 include ':distro:embedded'
 project(':distro:embedded').name = 'distro-embedded'
 

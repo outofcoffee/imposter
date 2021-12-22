@@ -7,11 +7,12 @@ DOCKER_LOGIN_ARGS=""
 IMAGE_REPOSITORY="outofcoffee/"
 DEFAULT_IMAGE_DIRS=(
     "base"
-    "all"
+    "core"
     "hbase"
     "openapi"
     "rest"
     "sfdc"
+    "all"
 )
 PUSH_IMAGES="true"
 
@@ -46,7 +47,7 @@ shift $((OPTIND-1))
 IMAGE_TAG="${1-dev}"
 
 function get_image_names() { case $1 in
-    all) echo "imposter" ;;
+    core) echo "imposter" ;;
     **) echo "imposter-$1" ;;
 esac }
 
