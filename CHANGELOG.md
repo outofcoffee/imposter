@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.4.8] - 2021-12-22
+### Changed
+- build: uses managed dependency versions in lambda adapter.
+
 ## [2.4.7] - 2021-12-21
 ### Changed
 - feat: uses application specific user in Docker image.
