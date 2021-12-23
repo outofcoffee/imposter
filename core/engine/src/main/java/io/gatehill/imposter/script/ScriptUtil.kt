@@ -56,6 +56,11 @@ import java.nio.file.Paths
  * @author Pete Cornish
  */
 object ScriptUtil {
+    const val ENV_SCRIPT_CACHE_ENTRIES = "IMPOSTER_SCRIPT_CACHE_ENTRIES"
+    const val DEFAULT_SCRIPT_CACHE_ENTRIES = 20L
+
+    val shouldPrecompile = EnvVars.getEnv("IMPOSTER_SCRIPT_PRECOMPILE")?.toBoolean() != false
+
     private val forceHeaderKeyNormalisation =
         EnvVars.getEnv("IMPOSTER_NORMALISE_HEADER_KEYS")?.toBoolean() == true
 

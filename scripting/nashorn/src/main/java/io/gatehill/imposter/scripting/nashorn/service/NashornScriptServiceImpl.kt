@@ -50,14 +50,12 @@ import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.ScriptUtil
 import io.gatehill.imposter.scripting.common.JavaScriptUtil
-import io.gatehill.imposter.scripting.common.JavaScriptUtil.wrapScript
 import io.gatehill.imposter.service.ScriptService
 import io.gatehill.imposter.util.MetricsUtil.doIfMetricsEnabled
 import io.micrometer.core.instrument.Gauge
 import jdk.nashorn.api.scripting.NashornScriptEngine
 import org.apache.logging.log4j.LogManager
 import java.nio.file.Path
-import java.util.concurrent.ExecutionException
 import javax.inject.Inject
 import javax.script.CompiledScript
 import javax.script.ScriptEngineManager
@@ -72,28 +70,26 @@ class NashornScriptServiceImpl @Inject constructor(
 ) : ScriptService {
     private val scriptEngine: NashornScriptEngine
 
+    /**
+     * Holds compiled scripts, with maximum number of entries determined by the environment
+     * variable [ScriptUtil.ENV_SCRIPT_CACHE_ENTRIES].
+     */
+    private val compiledScripts = CacheBuilder.newBuilder()
+        .maximumSize(getEnv(ScriptUtil.ENV_SCRIPT_CACHE_ENTRIES)?.toLong() ?: ScriptUtil.DEFAULT_SCRIPT_CACHE_ENTRIES)
+        .build<Path, CompiledScript>()
+
     init {
         scriptEngine = scriptEngineManager.getEngineByName("nashorn") as NashornScriptEngine
 
-        doIfMetricsEnabled(METRIC_SCRIPT_CACHE_ENTRIES) { registry ->
-            Gauge.builder(METRIC_SCRIPT_CACHE_ENTRIES) { compiledScripts.size() }
-                .description("The number of cached compiled scripts")
+        doIfMetricsEnabled(METRIC_SCRIPT_JS_CACHE_ENTRIES) { registry ->
+            Gauge.builder(METRIC_SCRIPT_JS_CACHE_ENTRIES) { compiledScripts.size() }
+                .description("The number of cached compiled JavaScript scripts")
                 .register(registry)
         }
     }
 
-    /**
-     * Holds compiled scripts, with maximum number of entries determined by the environment
-     * variable [.ENV_SCRIPT_CACHE_ENTRIES].
-     */
-    private val compiledScripts = CacheBuilder.newBuilder()
-        .maximumSize(getEnv(ENV_SCRIPT_CACHE_ENTRIES)?.toLong() ?: DEFAULT_SCRIPT_CACHE_ENTRIES)
-        .build<Path, CompiledScript>()
-
-    private val shouldPrecompile = getEnv(ENV_SCRIPT_PRECOMPILE)?.toBoolean() != false
-
     override fun initScript(scriptFile: Path) {
-        if (shouldPrecompile) {
+        if (ScriptUtil.shouldPrecompile) {
             LOGGER.debug("Precompiling script: $scriptFile")
             getCompiledScript(scriptFile)
         }
@@ -118,15 +114,14 @@ class NashornScriptServiceImpl @Inject constructor(
         }
     }
 
-    @Throws(ExecutionException::class)
     private fun getCompiledScript(scriptFile: Path): CompiledScript {
         return compiledScripts.get(scriptFile) {
             try {
                 LOGGER.trace("Compiling script file: {}", scriptFile)
                 val compileStartMs = System.currentTimeMillis()
-                val cs = scriptEngine.compile(wrapScript(scriptFile))
+                val compiled = scriptEngine.compile(JavaScriptUtil.wrapScript(scriptFile))
                 LOGGER.debug("Script: {} compiled in {}ms", scriptFile, System.currentTimeMillis() - compileStartMs)
-                return@get cs
+                return@get compiled
             } catch (e: Exception) {
                 throw RuntimeException("Failed to compile script: $scriptFile", e)
             }
@@ -135,9 +130,6 @@ class NashornScriptServiceImpl @Inject constructor(
 
     companion object {
         private val LOGGER = LogManager.getLogger(NashornScriptServiceImpl::class.java)
-        private const val ENV_SCRIPT_CACHE_ENTRIES = "IMPOSTER_SCRIPT_CACHE_ENTRIES"
-        private const val ENV_SCRIPT_PRECOMPILE = "IMPOSTER_SCRIPT_PRECOMPILE"
-        private const val DEFAULT_SCRIPT_CACHE_ENTRIES = 20L
-        private const val METRIC_SCRIPT_CACHE_ENTRIES = "script.cache.entries"
+        const val METRIC_SCRIPT_JS_CACHE_ENTRIES = "script.js.cache.entries"
     }
 }
