@@ -91,7 +91,7 @@ class PerformanceSimulationTest : BaseVerticleTest() {
 
     /**
      * The response should have a latency of roughly between 200ms-400ms,
-     * plus the [.MEASUREMENT_TOLERANCE].
+     * plus the [MEASUREMENT_TOLERANCE].
      */
     @Test
     fun testRequestDelayed_StaticRange() {
@@ -124,7 +124,7 @@ class PerformanceSimulationTest : BaseVerticleTest() {
 
     /**
      * The response should have a latency of roughly between 200ms-400ms,
-     * plus the [.MEASUREMENT_TOLERANCE].
+     * plus the [MEASUREMENT_TOLERANCE].
      */
     @Test
     fun testRequestDelayed_ScriptedRange() {

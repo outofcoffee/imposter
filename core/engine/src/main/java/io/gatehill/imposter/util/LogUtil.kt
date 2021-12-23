@@ -98,8 +98,8 @@ object LogUtil {
     }
 
     /**
-     * Configure the logging level using the value of [.ENV_VAR_LOG_LEVEL], falling back
-     * to [.DEFAULT_LOG_LEVEL] if empty.
+     * Configure the logging level using the value of [ENV_VAR_LOG_LEVEL], falling back
+     * to [DEFAULT_LOG_LEVEL] if empty.
      */
     fun configureLoggingFromEnvironment() {
         configureLogging(EnvVars.getEnv(ENV_VAR_LOG_LEVEL) ?: DEFAULT_LOG_LEVEL.toString())

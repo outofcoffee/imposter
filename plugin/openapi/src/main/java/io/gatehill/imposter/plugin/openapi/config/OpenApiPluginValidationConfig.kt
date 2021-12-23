@@ -44,7 +44,9 @@ package io.gatehill.imposter.plugin.openapi.config
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.gatehill.imposter.config.util.EnvVars.Companion.getEnv
-import java.util.*
+import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginValidationConfig.ValidationIssueBehaviour.FAIL
+import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginValidationConfig.ValidationIssueBehaviour.IGNORE
+import java.util.Locale
 
 /**
  * @author Pete Cornish
@@ -87,7 +89,7 @@ class OpenApiPluginValidationConfig {
 
     /**
      * Supports backwards compatible boolean-style values, mapping
-     * to [.IGNORE] and [.FAIL] respectively.
+     * to [IGNORE] and [FAIL] respectively.
      */
     enum class ValidationIssueBehaviour {
         IGNORE, LOG_ONLY, FAIL;

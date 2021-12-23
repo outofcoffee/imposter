@@ -169,7 +169,7 @@ class HBasePluginImpl @Inject constructor(
 
     /**
      * Handles the first part of a request for results - creation of a scanner. Results are read from the scanner
-     * in the handler [.addReadScannerResultsRoute].
+     * in the handler [addReadScannerResultsRoute].
      *
      * @param pluginConfig
      * @param router
@@ -233,7 +233,7 @@ class HBasePluginImpl @Inject constructor(
 
     /**
      * Handles the second part of a request for results - reading rows from the scanner created
-     * in [.addCreateScannerRoute].
+     * in [addCreateScannerRoute].
      *
      * @param pluginConfig
      * @param router

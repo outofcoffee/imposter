@@ -82,8 +82,8 @@ object FeatureUtil {
     }
 
     /**
-     * Converts a string list from environment variable [.ENV_IMPOSTER_FEATURES] or
-     * system property [.SYS_PROP_IMPOSTER_FEATURES] to a [Map].
+     * Converts a string list from environment variable [ENV_IMPOSTER_FEATURES] or
+     * system property [SYS_PROP_IMPOSTER_FEATURES] to a [Map].
      *
      *
      * For example:

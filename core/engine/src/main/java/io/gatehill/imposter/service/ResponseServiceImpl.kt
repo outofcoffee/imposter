@@ -96,7 +96,7 @@ class ResponseServiceImpl @Inject constructor(
 
     /**
      * Holds response files, with maximum number of entries determined by the environment
-     * variable [.ENV_RESPONSE_FILE_CACHE_ENTRIES].
+     * variable [ENV_RESPONSE_FILE_CACHE_ENTRIES].
      */
     private val responseFileCache = CacheBuilder.newBuilder()
         .maximumSize(getEnv(ENV_RESPONSE_FILE_CACHE_ENTRIES)?.toLong() ?: DEFAULT_RESPONSE_FILE_CACHE_ENTRIES)

@@ -44,6 +44,7 @@ package io.gatehill.imposter.store.redis
 
 import io.gatehill.imposter.config.util.EnvVars.Companion.getEnv
 import io.gatehill.imposter.store.model.Store
+import io.gatehill.imposter.store.redis.RedisStore.Companion.ENV_VAR_EXPIRY
 import org.apache.logging.log4j.LogManager
 import org.redisson.api.RMapCache
 import org.redisson.api.RedissonClient
@@ -51,7 +52,7 @@ import java.util.concurrent.TimeUnit
 
 /**
  * A Redis store implementation. Supports configurable item expiry in seconds,
- * by setting the [.ENV_VAR_EXPIRY] environment variable.
+ * by setting the [ENV_VAR_EXPIRY] environment variable.
  *
  * @author Pete Cornish
  */

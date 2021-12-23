@@ -123,7 +123,7 @@ class ExecutionContext(
         }
 
         /**
-         * @return the [.getHeaders] map, but with all keys in lowercase
+         * @return the [headers] map, but with all keys in lowercase
          */
         val normalisedHeaders: Map<String, String>
             get() = CollectionUtil.convertKeysToLowerCase(headers)

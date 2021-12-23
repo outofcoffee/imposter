@@ -43,6 +43,7 @@
 package io.gatehill.imposter.store.factory
 
 import io.gatehill.imposter.config.util.EnvVars.Companion.getEnv
+import io.gatehill.imposter.store.factory.AbstractStoreFactory.Companion.ENV_VAR_KEY_PREFIX
 import io.gatehill.imposter.store.inmem.InMemoryStore
 import io.gatehill.imposter.store.model.PrefixedKeyStore
 import io.gatehill.imposter.store.model.Store
@@ -51,7 +52,7 @@ import io.gatehill.imposter.store.util.StoreUtil
 import org.apache.logging.log4j.LogManager
 
 /**
- * Common store factory methods. Supports adding a prefix to keys by setting the [.ENV_VAR_KEY_PREFIX]
+ * Common store factory methods. Supports adding a prefix to keys by setting the [ENV_VAR_KEY_PREFIX]
  * environment variable.
  *
  * Ephemeral stores are always backed by an in-memory implementation, regardless of store implementation.

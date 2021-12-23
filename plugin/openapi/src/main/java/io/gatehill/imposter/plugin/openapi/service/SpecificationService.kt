@@ -67,7 +67,7 @@ interface SpecificationService {
     fun getCombinedSpec(allSpecs: List<OpenAPI>, deriveBasePathFromServerEntries: Boolean): OpenAPI
 
     /**
-     * As [.getCombinedSpec] but serialised to JSON.
+     * As [getCombinedSpec] but serialised to JSON.
      */
     @Throws(ExecutionException::class)
     fun getCombinedSpecSerialised(allSpecs: List<OpenAPI>, deriveBasePathFromServerEntries: Boolean): String
