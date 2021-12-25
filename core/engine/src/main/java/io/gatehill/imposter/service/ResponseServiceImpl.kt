@@ -81,7 +81,6 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.ThreadLocalRandom
-import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Consumer
 import javax.inject.Inject
 
@@ -303,7 +302,7 @@ class ResponseServiceImpl @Inject constructor(
             httpExchange.fail(
                 ResponseException(
                     "Error sending mock response with status code ${responseBehaviour.statusCode} for " +
-                            describeRequest(httpExchange), e
+                        describeRequest(httpExchange), e
                 )
             )
         }
@@ -338,10 +337,7 @@ class ResponseServiceImpl @Inject constructor(
 
         if (responseBehaviour.isTemplate) {
             val responseData = responseFileCache[normalisedPath, {
-                FileUtils.readFileToString(
-                    normalisedPath.toFile(),
-                    StandardCharsets.UTF_8
-                )
+                FileUtils.readFileToString(normalisedPath.toFile(), StandardCharsets.UTF_8)
             }]
             writeResponseData(resourceConfig, httpExchange, normalisedPath.fileName.toString(), responseData)
         } else {
@@ -389,13 +385,9 @@ class ResponseServiceImpl @Inject constructor(
 
         // listeners may transform response data
         if (!engineLifecycle.isEmpty) {
-            val dataHolder = AtomicReference(responseData)
             engineLifecycle.forEach { listener: EngineLifecycleListener ->
-                dataHolder.set(
-                    listener.beforeTransmittingTemplate(httpExchange, dataHolder.get()!!)
-                )
+                responseData = listener.beforeTransmittingTemplate(httpExchange, responseData)
             }
-            responseData = dataHolder.get()
         }
         response.end(Buffer.buffer(responseData))
     }
