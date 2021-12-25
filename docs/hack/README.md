@@ -19,10 +19,11 @@ dev-current.sh [args]
 Arguments:
 
   -m <docker|java>  How to run Imposter, e.g. docker
-  [-p plugin-name]  The plugin name, e.g. openapi
-  [-c config-dir]   Fully qualified path to the Imposter configuration directory
+  -c config-dir     Path to the Imposter configuration directory
+  [-d distro-name]  The distro name, e.g. openapi
   [-l log-level]    Logging level, e.g. DEBUG or TRACE
   [-t run-tests]    Whether to run tests (true or false). Default is true
+  [-z debug-mode]   Whether to enable Java debug mode on port 8000
 ```
 
 Example:

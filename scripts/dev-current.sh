@@ -3,18 +3,18 @@ set -e
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT_DIR="${SCRIPT_DIR}/../"
-DEFAULT_PLUGIN_NAME="openapi"
-JAVA_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000"
+DEFAULT_DISTRO_NAME="core"
 IMPOSTER_LOG_LEVEL="DEBUG"
 RUN_TESTS="true"
+DEBUG_MODE="true"
 
-while getopts ":m:p:c:l:t:" opt; do
+while getopts ":m:d:c:l:t:z:" opt; do
   case ${opt} in
     m )
       LAUNCH_MODE=$OPTARG
       ;;
-    p )
-      PLUGIN_NAME=$OPTARG
+    d )
+      DISTRO_NAME=$OPTARG
       ;;
     c )
       CONFIG_DIR=$OPTARG
@@ -24,6 +24,9 @@ while getopts ":m:p:c:l:t:" opt; do
       ;;
     t )
       RUN_TESTS=$OPTARG
+      ;;
+    z )
+      DEBUG_MODE=$OPTARG
       ;;
     \? )
       echo "Invalid option: $OPTARG" 1>&2
@@ -36,15 +39,19 @@ done
 shift $((OPTIND -1))
 
 function usage() {
-  echo -e "Usage:\n  $( basename $0 ) -m <docker|java> [-p plugin-name] [-c config-dir] [-l log-level] [-t run-tests]"
+  echo -e "Usage:\n  $( basename $0 ) -m <docker|java> -c config-dir [-d distro-name] [-l log-level] [-t run-tests] [-z debug-mode]"
   exit 1
 }
 
-if [[ -z ${LAUNCH_MODE} ]]; then
+JAVA_TOOL_OPTIONS=
+if [[ "$DEBUG_MODE" == "true" ]]; then
+  JAVA_TOOL_OPTIONS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000"
+fi
+
+if [[ -z ${LAUNCH_MODE} || -z "${CONFIG_DIR}" ]]; then
   usage
 else
-  PLUGIN_NAME="${PLUGIN_NAME:-${DEFAULT_PLUGIN_NAME}}"
-  CONFIG_DIR="${CONFIG_DIR:-$PWD/plugin/${PLUGIN_NAME}/src/test/resources/config}"
+  DISTRO_NAME="${DISTRO_NAME:-${DEFAULT_DISTRO_NAME}}"
   CONFIG_DIR="$( cd ${CONFIG_DIR} && pwd )"
 fi
 
@@ -59,22 +66,31 @@ fi
 
 # consumed below
 export IMPOSTER_LOG_LEVEL
-export JAVA_OPTS
+export JAVA_TOOL_OPTIONS
 
 case ${LAUNCH_MODE} in
   docker)
-    export IMAGE_DIR="${PLUGIN_NAME}"
+    export IMAGE_DIR="${DISTRO_NAME}"
     ./scripts/docker-build.sh
+
+    case "${DISTRO_NAME}" in
+    core)
+      DOCKER_IMAGE_NAME="imposter"
+      ;;
+    **)
+      DOCKER_IMAGE_NAME="imposter-${DISTRO_NAME}"
+      ;;
+    esac
 
     docker run -ti --rm -p 8080:8080 \
       -v "${CONFIG_DIR}":/opt/imposter/config \
       -e IMPOSTER_LOG_LEVEL \
-      -e JAVA_OPTS \
-      "outofcoffee/imposter-${PLUGIN_NAME}:dev"
+      -e JAVA_TOOL_OPTIONS \
+      "outofcoffee/${DOCKER_IMAGE_NAME}:dev"
     ;;
 
   java)
-    cd "distro/${PLUGIN_NAME}/build/install/imposter"
+    cd "distro/${DISTRO_NAME}/build/install/imposter"
     "./bin/imposter" --configDir "${CONFIG_DIR}"
     ;;
 esac
