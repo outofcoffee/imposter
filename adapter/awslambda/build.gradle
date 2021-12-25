@@ -2,7 +2,8 @@ apply plugin: 'java-library'
 apply plugin: 'kotlin'
 
 ext {
-  version_junit_jupiter = '5.8.1'
+    version_junit_jupiter = '5.8.1'
+    version_lambda_logger = '1.5.0'
 }
 
 compileJava {
@@ -20,6 +21,7 @@ dependencies {
     implementation "org.apache.logging.log4j:log4j-api:$version_log4j"
     implementation "org.apache.logging.log4j:log4j-core:$version_log4j"
     implementation "org.apache.logging.log4j:log4j-slf4j18-impl:$version_log4j"
+    implementation "com.amazonaws:aws-lambda-java-log4j2:$version_lambda_logger"
 
     // test
     testImplementation project(':imposter-test')

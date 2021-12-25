@@ -107,7 +107,7 @@ class Handler : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyRespo
         if (logger.isTraceEnabled) {
             logger.trace("Sending response: $response")
         } else {
-            logger.info("Sending response: [statusCode=${response.statusCode},body=${response.body?.length}]")
+            logger.info("Sending response: [statusCode=${response.statusCode},body=<${response.body?.let { "${it.length} bytes" } ?: "null"}>]")
         }
         return response
     }
