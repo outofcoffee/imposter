@@ -90,9 +90,10 @@ interface EngineLifecycleListener {
      *
      * @param httpExchange the HTTP exchange
      * @param responseTemplate the response content
+     * @param trustedData whether the response content is trusted/untainted
      * @return the transformed response content
      */
-    fun beforeTransmittingTemplate(httpExchange: HttpExchange, responseTemplate: String?): String? {
+    fun beforeTransmittingTemplate(httpExchange: HttpExchange, responseTemplate: String?, trustedData: Boolean): String? {
         // no op
         return responseTemplate
     }

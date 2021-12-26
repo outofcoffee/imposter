@@ -44,6 +44,7 @@ package io.gatehill.imposter.server
 
 import com.jayway.restassured.RestAssured
 import com.jayway.restassured.http.ContentType
+import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.plugin.test.TestPluginImpl
 import io.gatehill.imposter.util.HttpUtil
 import io.vertx.ext.unit.TestContext
@@ -51,6 +52,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner
 import org.apache.commons.io.FileUtils
 import org.hamcrest.Matchers
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
@@ -64,6 +66,18 @@ import java.nio.charset.StandardCharsets
 @RunWith(VertxUnitRunner::class)
 class ResponseTemplateTest : BaseVerticleTest() {
     override val pluginClass = TestPluginImpl::class.java
+
+    companion object {
+        @JvmStatic
+        @BeforeClass
+        fun setUp() {
+            EnvVars.populate(
+                mapOf(
+                    "IMPOSTER_PERMIT_UNTRUSTED_TEMPLATING" to "true",
+                )
+            )
+        }
+    }
 
     @Before
     @Throws(Exception::class)

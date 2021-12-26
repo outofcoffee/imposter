@@ -339,7 +339,14 @@ class ResponseServiceImpl @Inject constructor(
             val responseData = responseFileCache[normalisedPath, {
                 FileUtils.readFileToString(normalisedPath.toFile(), StandardCharsets.UTF_8)
             }]
-            writeResponseData(resourceConfig, httpExchange, normalisedPath.fileName.toString(), responseData)
+            writeResponseData(
+                resourceConfig = resourceConfig,
+                httpExchange = httpExchange,
+                filenameHintForContentType = normalisedPath.fileName.toString(),
+                rawResponseData = responseData,
+                template = responseBehaviour.isTemplate,
+                trustedData = false
+            )
         } else {
             response.sendFile(normalisedPath.toString())
         }
@@ -364,7 +371,15 @@ class ResponseServiceImpl @Inject constructor(
             httpExchange.request().absoluteURI(),
             httpExchange.response().getStatusCode()
         )
-        writeResponseData(resourceConfig, httpExchange, null, responseBehaviour.responseData)
+        // raw data should be considered untrusted as it is not sanitised
+        writeResponseData(
+            resourceConfig = resourceConfig,
+            httpExchange = httpExchange,
+            filenameHintForContentType = null,
+            rawResponseData = responseBehaviour.responseData,
+            template = responseBehaviour.isTemplate,
+            trustedData = false
+        )
     }
 
     /**
@@ -377,16 +392,20 @@ class ResponseServiceImpl @Inject constructor(
         resourceConfig: ResourceConfig?,
         httpExchange: HttpExchange,
         filenameHintForContentType: String?,
-        rawResponseData: String?
+        rawResponseData: String?,
+        template: Boolean,
+        trustedData: Boolean
     ) {
         var responseData = rawResponseData
         val response = httpExchange.response()
         setContentTypeIfAbsent(resourceConfig, response, filenameHintForContentType)
 
-        // listeners may transform response data
-        if (!engineLifecycle.isEmpty) {
-            engineLifecycle.forEach { listener: EngineLifecycleListener ->
-                responseData = listener.beforeTransmittingTemplate(httpExchange, responseData)
+        if (template) {
+            // listeners may transform response data
+            if (!engineLifecycle.isEmpty) {
+                engineLifecycle.forEach { listener: EngineLifecycleListener ->
+                    responseData = listener.beforeTransmittingTemplate(httpExchange, responseData, trustedData)
+                }
             }
         }
         response.end(Buffer.buffer(responseData))

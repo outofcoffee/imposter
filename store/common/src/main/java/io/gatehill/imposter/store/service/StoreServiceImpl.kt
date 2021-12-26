@@ -49,6 +49,7 @@ import com.jayway.jsonpath.DocumentContext
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider
 import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpExchangeHandler
 import io.gatehill.imposter.http.HttpRouter
@@ -76,7 +77,7 @@ import org.apache.commons.text.lookup.StringLookupFactory
 import org.apache.logging.log4j.LogManager
 import java.io.IOException
 import java.nio.file.Paths
-import java.util.*
+import java.util.Objects
 import java.util.concurrent.atomic.AtomicReference
 import java.util.regex.Pattern
 import javax.inject.Inject
@@ -91,11 +92,27 @@ class StoreServiceImpl @Inject constructor(
     lifecycleHooks: EngineLifecycleHooks,
 ) : StoreService, EngineLifecycleListener {
 
-    private val storeItemSubstituter: StringSubstitutor
+    /**
+     * Whether to permit interpreting/templating of untrusted data.
+     */
+    private val permitUnsafeTemplating: Boolean
+
+    private val recursiveStoreItemSubstituter: StringSubstitutor
+    private val nonrecursiveStoreItemSubstituter: StringSubstitutor
 
     init {
         LOGGER.trace("Stores enabled")
-        storeItemSubstituter = buildStoreItemSubstituter()
+        recursiveStoreItemSubstituter = buildStoreItemSubstituter()
+        nonrecursiveStoreItemSubstituter = buildStoreItemSubstituter().setDisableSubstitutionInValues(true)
+
+        // disabled by default
+        permitUnsafeTemplating = EnvVars.getEnv("IMPOSTER_UNTRUSTED_RECURSIVE_TEMPLATES")?.toBoolean() == true
+        if (permitUnsafeTemplating) {
+            LOGGER.warn("Unsafe templating is permitted - this is a security risk if untrusted/unsanitised data is recursively templated. Use a response file instead.")
+        } else {
+            LOGGER.debug("Recursive templating of untrusted data is disabled")
+        }
+
         lifecycleHooks.registerListener(this)
     }
 
@@ -506,7 +523,7 @@ class StoreServiceImpl @Inject constructor(
         additionalBindings["stores"] = StoreHolder(storeFactory, requestId)
     }
 
-    override fun beforeTransmittingTemplate(httpExchange: HttpExchange, responseTemplate: String?): String? {
+    override fun beforeTransmittingTemplate(httpExchange: HttpExchange, responseTemplate: String?, trustedData: Boolean): String? {
         return responseTemplate?.let {
             // shim for request scoped store
             val uniqueRequestId = httpExchange.get<String>(ResourceUtil.RC_REQUEST_ID_KEY)!!
@@ -514,7 +531,21 @@ class StoreServiceImpl @Inject constructor(
                 .matcher(responseTemplate)
                 .replaceAll("\\$\\{" + StoreUtil.buildRequestStoreName(uniqueRequestId) + ".")
 
-            storeItemSubstituter.replace(responseData)
+            val substitutor: StringSubstitutor
+
+            if (trustedData) {
+                substitutor = recursiveStoreItemSubstituter
+            } else {
+                // do not permit recursive interpolation of untrusted data by default, for security reasons
+                if (permitUnsafeTemplating) {
+                    LOGGER.warn("Recursive templating of untrusted data is enabled. Templating untrusted data is a security risk!")
+                    substitutor = recursiveStoreItemSubstituter
+                } else {
+                    substitutor = nonrecursiveStoreItemSubstituter
+                }
+            }
+
+            substitutor.replace(responseData)
         }
     }
 
