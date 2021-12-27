@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.4.9] - 2021-12-27
+### Changed
+- chore: bumps okhttp3 to 4.9.3.
+
 ## [2.4.8] - 2021-12-22
 ### Changed
 - build: uses managed dependency versions in lambda adapter.
