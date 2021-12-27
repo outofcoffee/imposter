@@ -1,8 +1,17 @@
-# Imposter: A scriptable, multipurpose mock server [![CI](https://github.com/outofcoffee/imposter/actions/workflows/ci.yaml/badge.svg)](https://github.com/outofcoffee/imposter/actions/workflows/ci.yaml)
+# Imposter: Scriptable, multipurpose mock server
 
-Reliable, scriptable and extensible mock server for REST APIs, OpenAPI (and Swagger) specifications, Salesforce and HBase APIs.
+[![CI](https://github.com/outofcoffee/imposter/actions/workflows/ci.yaml/badge.svg)](https://github.com/outofcoffee/imposter/actions/workflows/ci.yaml)
 
-Run standalone mock servers, or embed mocks within your tests (supports JVM and Node.js). Dynamic responses can be scripted using JavaScript, Groovy or Java.
+> Reliable, scriptable and extensible mock server for REST APIs, OpenAPI (and Swagger) specifications, Salesforce and HBase APIs.
+>
+> - Run **standalone** mock servers in Docker, Kubernetes, AWS Lambda or on the JVM.
+> - **Embed** mocks within your tests (JVM or Node.js) to remove external dependencies.
+> - Script **dynamic** responses using JavaScript, Groovy or Java.
+> - **Capture** data from requests, then store it or return a **templated** response.
+
+![Imposter logo](./docs/images/composite_logo13_cropped.png)
+
+## [Read the documentation here](https://docs.imposter.sh/)
 
 ## Features
 
@@ -18,7 +27,6 @@ Send dynamic responses:
 - Power users can control mock responses with JavaScript or Java/Groovy script engines.
 - Advanced users can write their own plugins in a JVM language of their choice.
 
-*****
 ## Getting started
 
 The quickest way to get up and running is to use the free cloud-hosted service at **[mocks.cloud](https://www.mocks.cloud)**
@@ -34,7 +42,7 @@ The quickest way to get up and running is to use the free cloud-hosted service a
 
 *****
 
-# Mock types
+## Mock types
 
 Imposter provides specialised mocks for the following scenarios:
 
@@ -45,7 +53,7 @@ Imposter provides specialised mocks for the following scenarios:
 
 These use a plugin system, so you can also create your own plugins, using any JVM language.
 
-# Example
+## Example
 
 ```shell
 $ imposter up
@@ -69,7 +77,7 @@ Content-Type: application/json
 
 This is a trivial example, which you can extend with conditional logic, request validation, data capture and much more... 
 
-# How to run Imposter
+## How to run Imposter
 
 There are many ways to run Imposter.
 
@@ -84,15 +92,17 @@ There are many ways to run Imposter.
 4. Embedded within your **Java/Kotlin/Scala/JVM** unit tests - see [JVM bindings](./docs/embed_jvm.md)
 5. Embedded within your **JavaScript/Node.js** unit tests - see [JavaScript bindings](https://github.com/gatehill/imposter-js)
 
-# Recent changes and Roadmap
+---
+
+## Recent changes and Roadmap
   
 For recent changes see the [Changelog](CHANGELOG.md), or view the [Roadmap](docs/roadmap.md).
 
-# Contributing
+## Contributing
 
 * Pull requests are welcome.
 * PRs should target the `develop` branch.
 
-# Author
+## Author
 
 Pete Cornish (outofcoffee@gmail.com)
