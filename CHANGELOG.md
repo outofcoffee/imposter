@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.4.10] - 2021-12-27
+### Changed
+- chore: bumps Groovy to 2.5.15.
+- chore: bumps Guice to 4.2.3.
+- refactor: removes unneeded Gson dependency from Lambda adapter.
+
 ## [2.4.9] - 2021-12-27
 ### Changed
 - chore: bumps okhttp3 to 4.9.3.
