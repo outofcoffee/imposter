@@ -42,120 +42,36 @@
  */
 package io.gatehill.imposter.store.service
 
-import com.fasterxml.jackson.core.JsonProcessingException
-import com.google.common.base.Strings
-import com.jayway.jsonpath.Configuration
-import com.jayway.jsonpath.DocumentContext
-import com.jayway.jsonpath.JsonPath
-import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider
 import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.http.HttpExchange
-import io.gatehill.imposter.http.HttpExchangeHandler
 import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
 import io.gatehill.imposter.lifecycle.EngineLifecycleListener
 import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.config.capture.CaptureConfig
-import io.gatehill.imposter.plugin.config.capture.CaptureConfigHolder
-import io.gatehill.imposter.plugin.config.capture.ItemCaptureConfig
-import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.plugin.config.system.StoreConfig
 import io.gatehill.imposter.plugin.config.system.SystemConfigHolder
 import io.gatehill.imposter.script.ExecutionContext
-import io.gatehill.imposter.service.ResourceService
-import io.gatehill.imposter.store.model.Store
 import io.gatehill.imposter.store.model.StoreFactory
 import io.gatehill.imposter.store.model.StoreHolder
 import io.gatehill.imposter.store.util.StoreUtil
-import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.MapUtil
 import io.gatehill.imposter.util.ResourceUtil
-import io.vertx.core.Vertx
-import org.apache.commons.text.StringSubstitutor
-import org.apache.commons.text.lookup.StringLookupFactory
 import org.apache.logging.log4j.LogManager
 import java.io.IOException
 import java.nio.file.Paths
-import java.util.Objects
-import java.util.concurrent.atomic.AtomicReference
-import java.util.regex.Pattern
 import javax.inject.Inject
 
 /**
  * @author Pete Cornish
  */
 class StoreServiceImpl @Inject constructor(
-    private val vertx: Vertx,
-    private val resourceService: ResourceService,
     private val storeFactory: StoreFactory,
     lifecycleHooks: EngineLifecycleHooks,
 ) : StoreService, EngineLifecycleListener {
 
-    /**
-     * Whether to permit interpreting/templating of untrusted data.
-     */
-    private val permitUnsafeTemplating: Boolean
-
-    private val recursiveStoreItemSubstituter: StringSubstitutor
-    private val nonrecursiveStoreItemSubstituter: StringSubstitutor
-
     init {
         LOGGER.trace("Stores enabled")
-        recursiveStoreItemSubstituter = buildStoreItemSubstituter()
-        nonrecursiveStoreItemSubstituter = buildStoreItemSubstituter().setDisableSubstitutionInValues(true)
-
-        // disabled by default
-        permitUnsafeTemplating = EnvVars.getEnv("IMPOSTER_UNTRUSTED_RECURSIVE_TEMPLATES")?.toBoolean() == true
-        if (permitUnsafeTemplating) {
-            LOGGER.warn("Unsafe templating is permitted - this is a security risk if untrusted/unsanitised data is recursively templated. Use a response file instead.")
-        } else {
-            LOGGER.debug("Recursive templating of untrusted data is disabled")
-        }
-
         lifecycleHooks.registerListener(this)
-    }
-
-    /**
-     * @return a string substituter that replaces placeholders like 'example.foo' with the value of the
-     * item 'foo' in the store 'example'.
-     */
-    private fun buildStoreItemSubstituter(): StringSubstitutor {
-        val variableResolver = StringLookupFactory.INSTANCE.functionStringLookup { key: String ->
-            try {
-                val dotIndex = key.indexOf(".")
-                if (dotIndex > 0) {
-                    val storeName = key.substring(0, dotIndex)
-                    if (storeFactory.hasStoreWithName(storeName)) {
-                        val itemKey = key.substring(dotIndex + 1)
-                        return@functionStringLookup loadItemFromStore(storeName, itemKey)
-                    }
-                }
-            } catch (e: Exception) {
-                throw RuntimeException("Error replacing template placeholder '$key' with store item", e)
-            }
-            throw IllegalStateException("Unknown store for template placeholder: $key")
-        }
-        return StringSubstitutor(variableResolver)
-    }
-
-    private fun loadItemFromStore(storeName: String, rawItemKey: String): Any? {
-        // check for jsonpath expression
-        var itemKey = rawItemKey
-        val colonIndex = itemKey.indexOf(":")
-
-        val jsonPath: String?
-        if (colonIndex > 0) {
-            jsonPath = itemKey.substring(colonIndex + 1)
-            itemKey = itemKey.substring(0, colonIndex)
-        } else {
-            jsonPath = null
-        }
-
-        val store = storeFactory.getStoreByName(storeName, false)
-        val itemValue = store.load<Any>(itemKey)
-
-        return jsonPath?.let { JSONPATH_PARSE_CONTEXT.parse(itemValue).read(jsonPath) } ?: itemValue
     }
 
     override fun afterRoutesConfigured(
@@ -163,13 +79,6 @@ class StoreServiceImpl @Inject constructor(
         allPluginConfigs: List<PluginConfig>,
         router: HttpRouter
     ) {
-        router.get("/system/store/:storeName").handler(handleLoadAll(imposterConfig, allPluginConfigs))
-        router.delete("/system/store/:storeName").handler(handleDeleteStore(imposterConfig, allPluginConfigs))
-        router.get("/system/store/:storeName/:key").handler(handleLoadSingle(imposterConfig, allPluginConfigs))
-        router.put("/system/store/:storeName/:key").handler(handleSaveSingle(imposterConfig, allPluginConfigs))
-        router.post("/system/store/:storeName").handler(handleSaveMultiple(imposterConfig, allPluginConfigs))
-        router.delete("/system/store/:storeName/:key").handler(handleDeleteSingle(imposterConfig, allPluginConfigs))
-
         preloadStores(allPluginConfigs)
     }
 
@@ -216,337 +125,14 @@ class StoreServiceImpl @Inject constructor(
         }
     }
 
-    private fun handleLoadAll(
-        imposterConfig: ImposterConfig,
-        allPluginConfigs: List<PluginConfig>
-    ): HttpExchangeHandler {
-        return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { httpExchange: HttpExchange ->
-            val storeName = httpExchange.pathParam("storeName")!!
-            val store = openStore(httpExchange, storeName)
-            if (Objects.isNull(store)) {
-                return@handleRoute
-            }
-
-            if (httpExchange.isAcceptHeaderEmpty() || httpExchange.acceptsMimeType(HttpUtil.CONTENT_TYPE_JSON)) {
-                LOGGER.debug("Listing store: {}", storeName)
-                serialiseBodyAsJson(httpExchange, store!!.loadAll())
-
-            } else {
-                // client doesn't accept JSON
-                LOGGER.warn("Cannot serialise store: {} as client does not accept JSON", storeName)
-                httpExchange.response()
-                    .setStatusCode(HttpUtil.HTTP_NOT_ACCEPTABLE)
-                    .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_PLAIN_TEXT)
-                    .end("Stores are only available as JSON. Please set an appropriate Accept header.")
-            }
-        }
-    }
-
-    private fun handleDeleteStore(
-        imposterConfig: ImposterConfig,
-        allPluginConfigs: List<PluginConfig>
-    ): HttpExchangeHandler {
-        return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { httpExchange: HttpExchange ->
-            val storeName = httpExchange.pathParam("storeName")!!
-            storeFactory.deleteStoreByName(storeName, isEphemeralStore = false)
-            LOGGER.debug("Deleted store: {}", storeName)
-
-            httpExchange.response()
-                .setStatusCode(HttpUtil.HTTP_NO_CONTENT)
-                .end()
-        }
-    }
-
-    private fun handleLoadSingle(
-        imposterConfig: ImposterConfig,
-        allPluginConfigs: List<PluginConfig>
-    ): HttpExchangeHandler {
-        return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { httpExchange: HttpExchange ->
-            val storeName = httpExchange.pathParam("storeName")!!
-            val store = openStore(httpExchange, storeName)
-            if (Objects.isNull(store)) {
-                return@handleRoute
-            }
-
-            val key = httpExchange.pathParam("key")!!
-            store!!.load<Any>(key)?.let { value ->
-                if (value is String) {
-                    LOGGER.debug("Returning string item: {} from store: {}", key, storeName)
-                    httpExchange.response()
-                        .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_PLAIN_TEXT)
-                        .end(value)
-                } else {
-                    LOGGER.debug("Returning object item: {} from store: {}", key, storeName)
-                    serialiseBodyAsJson(httpExchange, value)
-                }
-
-            } ?: run {
-                LOGGER.debug("Nonexistent item: {} in store: {}", key, storeName)
-                httpExchange.response()
-                    .setStatusCode(HttpUtil.HTTP_NOT_FOUND)
-                    .end()
-            }
-        }
-    }
-
-    private fun handleSaveSingle(
-        imposterConfig: ImposterConfig,
-        allPluginConfigs: List<PluginConfig>
-    ): HttpExchangeHandler {
-        return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { httpExchange: HttpExchange ->
-            val storeName = httpExchange.pathParam("storeName")!!
-            val store = openStore(httpExchange, storeName, true)
-            if (Objects.isNull(store)) {
-                return@handleRoute
-            }
-            val key = httpExchange.pathParam("key")!!
-
-            // "If the target resource does not have a current representation and the
-            // PUT successfully creates one, then the origin server MUST inform the
-            // user agent by sending a 201 (Created) response."
-            // See: https://datatracker.ietf.org/doc/html/rfc7231#section-4.3.4
-            val statusCode = if (store!!.hasItemWithKey(key)) HttpUtil.HTTP_OK else HttpUtil.HTTP_CREATED
-
-            val value = httpExchange.bodyAsString
-            store.save(key, value)
-            LOGGER.debug("Saved item: {} to store: {}", key, storeName)
-
-            httpExchange.response()
-                .setStatusCode(statusCode)
-                .end()
-        }
-    }
-
-    private fun handleSaveMultiple(
-        imposterConfig: ImposterConfig,
-        allPluginConfigs: List<PluginConfig>
-    ): HttpExchangeHandler {
-        return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { httpExchange: HttpExchange ->
-            val storeName = httpExchange.pathParam("storeName")!!
-            val store = openStore(httpExchange, storeName, true)
-            if (Objects.isNull(store)) {
-                return@handleRoute
-            }
-
-            val items = httpExchange.bodyAsJson
-            items?.forEach { (key: String, value: Any?) -> store!!.save(key, value) }
-            val itemCount = items?.size() ?: 0
-            LOGGER.debug("Saved {} items to store: {}", itemCount, storeName)
-
-            httpExchange.response()
-                .setStatusCode(HttpUtil.HTTP_OK)
-                .end()
-        }
-    }
-
-    private fun handleDeleteSingle(
-        imposterConfig: ImposterConfig,
-        allPluginConfigs: List<PluginConfig>
-    ): HttpExchangeHandler {
-        return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { httpExchange: HttpExchange ->
-            val storeName = httpExchange.pathParam("storeName")!!
-            val store = openStore(httpExchange, storeName, true)
-            if (Objects.isNull(store)) {
-                return@handleRoute
-            }
-
-            val key = httpExchange.pathParam("key")!!
-            store!!.delete(key)
-            LOGGER.debug("Deleted item: {} from store: {}", key, storeName)
-
-            httpExchange.response()
-                .setStatusCode(HttpUtil.HTTP_NO_CONTENT)
-                .end()
-        }
-    }
-
-    private fun openStore(
-        httpExchange: HttpExchange,
-        storeName: String,
-        createIfNotExist: Boolean = false
-    ): Store? {
-        if (!storeFactory.hasStoreWithName(storeName)) {
-            LOGGER.debug("No store found named: {}", storeName)
-            if (!createIfNotExist) {
-                httpExchange.response()
-                    .setStatusCode(HttpUtil.HTTP_NOT_FOUND)
-                    .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_PLAIN_TEXT)
-                    .end("No store named '$storeName'.")
-                return null
-            }
-            // ...otherwise fall through and implicitly create below
-        }
-        return storeFactory.getStoreByName(storeName, false)
-    }
-
-    private fun serialiseBodyAsJson(httpExchange: HttpExchange, body: Any?) {
-        try {
-            httpExchange.response()
-                .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_JSON)
-                .end(MapUtil.JSON_MAPPER.writeValueAsString(body))
-        } catch (e: JsonProcessingException) {
-            httpExchange.fail(e)
-        }
-    }
-
-    override fun beforeBuildingResponse(httpExchange: HttpExchange, resourceConfig: ResponseConfigHolder?) {
-        if (resourceConfig is CaptureConfigHolder) {
-            val captureConfig = (resourceConfig as CaptureConfigHolder).captureConfig
-            captureConfig?.let {
-                val jsonPathContextHolder = AtomicReference<DocumentContext>()
-                captureConfig.filterValues { it.enabled }.forEach { (captureConfigKey: String, itemConfig: ItemCaptureConfig) ->
-                    val storeName = itemConfig.store ?: DEFAULT_CAPTURE_STORE_NAME
-                    val itemName: String? = determineItemName(httpExchange, jsonPathContextHolder, captureConfigKey, itemConfig, storeName)
-
-                    // itemname may not be set, if dynamic value was null
-                    itemName?.let {
-                        val itemValue = captureItemValue(httpExchange, jsonPathContextHolder, captureConfigKey, itemConfig)
-                        val store = openCaptureStore(httpExchange, storeName)
-                        store.save(itemName, itemValue)
-
-                    } ?: run {
-                        LOGGER.warn(
-                            "Could not capture item: {} into store: {} as dynamic item name resolved to null",
-                            captureConfigKey,
-                            storeName
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Determines the item name, if possible.
-     * May return `null` if dynamic value could not be resolved or resolves to `null`.
-     */
-    private fun determineItemName(
-        httpExchange: HttpExchange,
-        jsonPathContextHolder: AtomicReference<DocumentContext>,
-        captureConfigKey: String,
-        itemConfig: ItemCaptureConfig,
-        storeName: String
-    ): String? {
-        if (Objects.isNull(itemConfig.key)) {
-            LOGGER.debug("Capturing item: {} into store: {}", captureConfigKey, storeName)
-            return captureConfigKey
-
-        } else {
-            try {
-                captureValue<String?>(httpExchange, itemConfig.key, jsonPathContextHolder)?.let { itemName ->
-                    LOGGER.debug(
-                        "Capturing item: {} into store: {} with dynamic name: {}",
-                        captureConfigKey,
-                        storeName,
-                        itemName
-                    )
-                    return itemName
-
-                } ?: run {
-                    LOGGER.trace(
-                        "Could not capture item name for: {} as dynamic item name resolved to null",
-                        captureConfigKey,
-                    )
-                    return null
-                }
-
-            } catch (e: Exception) {
-                throw RuntimeException("Error capturing item name: $captureConfigKey", e)
-            }
-        }
-    }
-
-    private fun captureItemValue(
-        httpExchange: HttpExchange,
-        jsonPathContextHolder: AtomicReference<DocumentContext>,
-        captureConfigKey: String,
-        itemConfig: ItemCaptureConfig
-    ): Any? {
-        val itemValue = if (!Strings.isNullOrEmpty(itemConfig.constValue)) {
-            itemConfig.constValue
-        } else {
-            try {
-                captureValue<Any>(httpExchange, itemConfig, jsonPathContextHolder)
-            } catch (e: Exception) {
-                throw RuntimeException("Error capturing item value: $captureConfigKey", e)
-            }
-        }
-        return itemValue
-    }
-
-    private fun openCaptureStore(httpExchange: HttpExchange, storeName: String): Store {
-        val store: Store?
-        if (StoreUtil.isRequestScopedStore(storeName)) {
-            val uniqueRequestId = httpExchange.get<String>(ResourceUtil.RC_REQUEST_ID_KEY)!!
-            val requestStoreName = StoreUtil.buildRequestStoreName(uniqueRequestId)
-            store = storeFactory.getStoreByName(requestStoreName, true)
-        } else {
-            store = storeFactory.getStoreByName(storeName, false)
-        }
-        return store
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    private fun <T> captureValue(
-        httpExchange: HttpExchange,
-        itemConfig: CaptureConfig?,
-        jsonPathContextHolder: AtomicReference<DocumentContext>
-    ): T? {
-        return if (!Strings.isNullOrEmpty(itemConfig!!.pathParam)) {
-            httpExchange.pathParam(itemConfig.pathParam!!) as T
-
-        } else if (!Strings.isNullOrEmpty(itemConfig.queryParam)) {
-            httpExchange.queryParam(itemConfig.queryParam!!) as T
-
-        } else if (!Strings.isNullOrEmpty(itemConfig.requestHeader)) {
-            httpExchange.request().getHeader(itemConfig.requestHeader!!) as T
-
-        } else if (!Strings.isNullOrEmpty(itemConfig.jsonPath)) {
-            var jsonPathContext = jsonPathContextHolder.get()
-            if (Objects.isNull(jsonPathContext)) {
-                jsonPathContext = JSONPATH_PARSE_CONTEXT.parse(httpExchange.bodyAsString)
-                jsonPathContextHolder.set(jsonPathContext)
-            }
-            jsonPathContext.read<T>(itemConfig.jsonPath)
-
-        } else {
-            null
-        }
-    }
-
     override fun beforeBuildingRuntimeContext(
         httpExchange: HttpExchange,
         additionalBindings: MutableMap<String, Any>,
         executionContext: ExecutionContext
     ) {
+        // inject store object into script engine
         val requestId = httpExchange.get<String>(ResourceUtil.RC_REQUEST_ID_KEY)!!
         additionalBindings["stores"] = StoreHolder(storeFactory, requestId)
-    }
-
-    override fun beforeTransmittingTemplate(httpExchange: HttpExchange, responseTemplate: String?, trustedData: Boolean): String? {
-        return responseTemplate?.let {
-            // shim for request scoped store
-            val uniqueRequestId = httpExchange.get<String>(ResourceUtil.RC_REQUEST_ID_KEY)!!
-            val responseData = requestStorePrefixPattern
-                .matcher(responseTemplate)
-                .replaceAll("\\$\\{" + StoreUtil.buildRequestStoreName(uniqueRequestId) + ".")
-
-            val substitutor: StringSubstitutor
-
-            if (trustedData) {
-                substitutor = recursiveStoreItemSubstituter
-            } else {
-                // do not permit recursive interpolation of untrusted data by default, for security reasons
-                if (permitUnsafeTemplating) {
-                    LOGGER.warn("Recursive templating of untrusted data is enabled. Templating untrusted data is a security risk!")
-                    substitutor = recursiveStoreItemSubstituter
-                } else {
-                    substitutor = nonrecursiveStoreItemSubstituter
-                }
-            }
-
-            substitutor.replace(responseData)
-        }
     }
 
     override fun afterHttpExchangeHandled(httpExchange: HttpExchange) {
@@ -560,18 +146,5 @@ class StoreServiceImpl @Inject constructor(
 
     companion object {
         private val LOGGER = LogManager.getLogger(StoreServiceImpl::class.java)
-
-        /**
-         * Default to request scope unless specified.
-         */
-        private const val DEFAULT_CAPTURE_STORE_NAME: String = StoreUtil.REQUEST_SCOPED_STORE_NAME
-
-        private val JSONPATH_PARSE_CONTEXT = JsonPath.using(
-            Configuration.builder()
-                .mappingProvider(JacksonMappingProvider())
-                .build()
-        )
-
-        private val requestStorePrefixPattern = Pattern.compile("\\$\\{" + StoreUtil.REQUEST_SCOPED_STORE_NAME + "\\.")
     }
 }

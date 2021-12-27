@@ -79,7 +79,6 @@ import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.concurrent.ExecutionException
 import java.util.concurrent.ThreadLocalRandom
 import java.util.function.Consumer
 import javax.inject.Inject
@@ -317,7 +316,6 @@ class ResponseServiceImpl @Inject constructor(
      * @param httpExchange    the HTTP exchange
      * @param responseBehaviour the response behaviour
      */
-    @Throws(ExecutionException::class)
     private fun serveResponseFile(
         pluginConfig: PluginConfig,
         resourceConfig: ResourceConfig?,
