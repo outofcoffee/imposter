@@ -6,7 +6,7 @@ description: Imposter Mock Engine
 
 ## Welcome
 
-Imposter is a reliable, scriptable and extensible mock server for REST APIs, OpenAPI (and Swagger) specifications, Salesforce and HBase APIs.
+Imposter is a mock server for REST APIs, OpenAPI (and Swagger) specifications, Salesforce and HBase APIs.
 
 - Run **standalone** mock servers in Docker, Kubernetes, AWS Lambda or on the JVM.
 - **Embed** mocks within your tests (JVM or Node.js) to remove external dependencies.
