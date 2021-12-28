@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.4.11] - 2021-12-28
+### Changed
+- refactor: removes log4j S3 appender from lambda adapter.
+
 ## [2.4.10] - 2021-12-27
 ### Changed
 - chore: bumps Groovy to 2.5.15.
