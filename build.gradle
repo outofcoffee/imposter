@@ -37,7 +37,7 @@ ext {
     version_guice = '4.2.3'
     version_jackson = '2.12.5'
     version_junit = '4.12'
-    version_log4j = '2.17.0'
+    version_log4j = '2.17.1'
     version_micrometer = '1.6.7'
     version_mockito = '3.10.0'
     version_restAssured = '2.9.0'
