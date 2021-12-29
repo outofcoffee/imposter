@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.4.12] - 2021-12-29
+### Changed
+- chore: bumps log4j2 to 2.17.1.
+
 ## [2.4.11] - 2021-12-28
 ### Changed
 - refactor: removes log4j S3 appender from lambda adapter.
