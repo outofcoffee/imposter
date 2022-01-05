@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.4.13] - 2022-01-05
+### Changed
+- feat: sets explicit uid/gid for container user.
+
 ## [2.4.12] - 2021-12-29
 ### Changed
 - chore: bumps log4j2 to 2.17.1.
