@@ -40,7 +40,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.store.redis
+package io.gatehill.imposter.store.dynamodb
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider
 import com.amazonaws.auth.BasicAWSCredentials
@@ -54,8 +54,8 @@ import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput
 import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.util.EnvVars
-import io.gatehill.imposter.store.dynamodb.DynamoDBStoreFactoryImpl
 import io.gatehill.imposter.store.dynamodb.config.Settings
+import io.gatehill.imposter.store.dynamodb.support.Example
 import io.gatehill.imposter.util.TestEnvironmentUtil
 import org.junit.AfterClass
 import org.junit.Assert
@@ -156,16 +156,43 @@ class DynamoDBStoreFactoryImplTest {
     }
 
     @Test
-    fun testSaveLoadItem() {
+    fun testSaveLoadSimpleItems() {
         val store = factory!!.buildNewStore("sli")
         Assert.assertEquals(0, store.count())
         store.save("foo", "bar")
+        store.save("baz", 123L)
+        store.save("qux", true)
+        store.save("corge", null)
+
         Assert.assertEquals("bar", store.load("foo"))
+        Assert.assertEquals(123L, store.load("baz"))
+        Assert.assertEquals(true, store.load("qux"))
+        Assert.assertNull(store.load("corge"))
+
         val allItems = store.loadAll()
-        Assert.assertEquals(1, allItems.size)
+        Assert.assertEquals(4, allItems.size)
         Assert.assertEquals("bar", allItems["foo"])
         Assert.assertTrue("Item should exist", store.hasItemWithKey("foo"))
-        Assert.assertEquals(1, store.count())
+        Assert.assertEquals(4, store.count())
+    }
+
+    @Test
+    fun testSaveLoadComplexItems() {
+        val store = factory!!.buildNewStore("complex")
+        Assert.assertEquals(0, store.count())
+        store.save("grault", mapOf("foo" to "bar"))
+        store.save("garply", Example("test"))
+
+        val loadedMap = store.load<Map<String, *>>("grault")
+        Assert.assertNotNull(loadedMap)
+        Assert.assertTrue("Returned value should be a Map", loadedMap is Map)
+        Assert.assertEquals("bar", loadedMap!!["foo"])
+
+        // POJO is deserialised as a Map
+        val loadedMap2 = store.load<Map<String, *>>("garply")
+        Assert.assertNotNull(loadedMap2)
+        Assert.assertTrue("Returned value should be a Map", loadedMap2 is Map)
+        Assert.assertEquals("test", loadedMap2!!["name"])
     }
 
     @Test

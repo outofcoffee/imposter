@@ -49,7 +49,11 @@ import com.amazonaws.services.dynamodbv2.model.GetItemRequest
 import com.amazonaws.services.dynamodbv2.model.PutItemRequest
 import com.amazonaws.services.dynamodbv2.model.ScanRequest
 import io.gatehill.imposter.store.model.Store
+import io.gatehill.imposter.util.MapUtil
 import org.apache.logging.log4j.LogManager
+import java.nio.ByteBuffer
+import java.text.NumberFormat
+import java.util.Objects.nonNull
 
 /**
  * Store implementation using DynamoDB.
@@ -72,22 +76,21 @@ class DynamoDBStore(
         logger.trace("Saving item with key: {} to store: {}", key, storeName)
         val valueAttribute = AttributeValue().apply {
             when (value) {
+                null -> withNULL(true)
                 is String -> withS(value.toString())
                 is Number -> withN(value.toString())
                 is Boolean -> withBOOL(value.toString().toBoolean())
-                null -> withNULL(true)
-                else -> withS(value.toString())
+                else -> withB(ByteBuffer.wrap(MapUtil.JSON_MAPPER.writeValueAsBytes(value)))
             }
         }
 
+        val itemData = mutableMapOf(
+            "StoreName" to AttributeValue().withS(storeName),
+            "Key" to AttributeValue().withS(key),
+            "Value" to valueAttribute
+        )
         ddb.putItem(
-            PutItemRequest().withTableName(tableName).withItem(
-                mapOf(
-                    "StoreName" to AttributeValue().withS(storeName),
-                    "Key" to AttributeValue().withS(key),
-                    "Value" to valueAttribute
-                )
-            )
+            PutItemRequest().withTableName(tableName).withItem(itemData)
         )
     }
 
@@ -147,8 +150,20 @@ class DynamoDBStore(
     private fun <T> destructure(attributeItem: Map<String, AttributeValue>): Pair<String, T> {
         val attributeKey = attributeItem.getValue("Key").s
         val attributeValue = attributeItem.getValue("Value")
-        val rawValue = attributeValue.s ?: attributeValue.b ?: attributeValue.n
+
+        val value : Any? = when {
+            attributeValue.isNULL ?: false -> null
+            nonNull(attributeValue.s) -> attributeValue.s
+            nonNull(attributeValue.bool) -> attributeValue.bool
+            nonNull(attributeValue.n) -> NumberFormat.getInstance().parse(attributeValue.n)
+            nonNull(attributeValue.b) -> MapUtil.JSON_MAPPER.readValue(attributeValue.b.array(), Map::class.java)
+            else -> {
+                logger.warn("Unable to read value of item: $attributeKey")
+                null
+            }
+        }
+
         @Suppress("UNCHECKED_CAST")
-        return attributeKey to rawValue as T
+        return attributeKey to value as T
     }
 }
