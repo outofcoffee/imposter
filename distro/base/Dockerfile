@@ -2,8 +2,8 @@ FROM adoptopenjdk/openjdk8:x86_64-alpine-jre8u312-b07
 
 LABEL MAINTAINER="Pete Cornish <outofcoffee@gmail.com>"
 
-RUN addgroup -S imposter && \
-    adduser -S imposter -G imposter
+RUN addgroup -S imposter -g 2048 && \
+    adduser -S imposter -u 2048 -G imposter
 
 # add CLI
 ENV IMPOSTER_ENGINE=unpacked IMPOSTER_JVM_DISTRODIR=/opt/imposter
