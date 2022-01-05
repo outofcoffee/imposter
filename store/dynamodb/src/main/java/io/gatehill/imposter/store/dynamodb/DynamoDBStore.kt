@@ -48,11 +48,14 @@ import com.amazonaws.services.dynamodbv2.model.DeleteItemRequest
 import com.amazonaws.services.dynamodbv2.model.GetItemRequest
 import com.amazonaws.services.dynamodbv2.model.PutItemRequest
 import com.amazonaws.services.dynamodbv2.model.ScanRequest
+import io.gatehill.imposter.store.dynamodb.config.Settings
 import io.gatehill.imposter.store.model.Store
 import io.gatehill.imposter.util.MapUtil
 import org.apache.logging.log4j.LogManager
 import java.nio.ByteBuffer
 import java.text.NumberFormat
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.util.Objects.nonNull
 
 /**
@@ -89,9 +92,15 @@ class DynamoDBStore(
             "Key" to AttributeValue().withS(key),
             "Value" to valueAttribute
         )
-        ddb.putItem(
-            PutItemRequest().withTableName(tableName).withItem(itemData)
-        )
+        if (Settings.Ttl.enabled) {
+            itemData[Settings.Ttl.attributeName] = AttributeValue().withN(
+                LocalDateTime.now()
+                    .plusSeconds(Settings.Ttl.seconds)
+                    .toEpochSecond(ZoneOffset.UTC)
+                    .toString()
+            )
+        }
+        ddb.putItem(PutItemRequest().withTableName(tableName).withItem(itemData))
     }
 
     override fun <T> load(key: String): T? {
@@ -151,7 +160,7 @@ class DynamoDBStore(
         val attributeKey = attributeItem.getValue("Key").s
         val attributeValue = attributeItem.getValue("Value")
 
-        val value : Any? = when {
+        val value: Any? = when {
             attributeValue.isNULL ?: false -> null
             nonNull(attributeValue.s) -> attributeValue.s
             nonNull(attributeValue.bool) -> attributeValue.bool

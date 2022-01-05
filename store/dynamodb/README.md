@@ -19,3 +19,24 @@ Create a DynamoDB table with the following configuration:
 * Sort key: `Key` (type String)
 
 By default, this table should be called `Imposter`. If you choose a different name, set the `IMPOSTER_DYNAMODB_TABLE` environment variable to match.
+
+## Time to Live (TTL)
+
+DynamoDB supports setting a TTL so items are removed after a period of time.
+
+To use this, enable TTL for your table per the [AWS documentation](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/time-to-live-ttl-how-to.html).
+
+Once you have enabled TTL (and allowed time for it to apply to your table), set the following environment variables:
+
+    IMPOSTER_DYNAMODB_TTL=<number of seconds>
+    IMPOSTER_DYNAMODB_TTL_ATTRIBUTE=<name of TTL attribute in table>
+
+> By default, `IMPOSTER_DYNAMODB_TTL_ATTRIBUTE` is set to `ttl`.
+
+Example:
+
+    # five minutes
+    IMPOSTER_DYNAMODB_TTL="300"
+    
+    # name of TTL attribute
+    IMPOSTER_DYNAMODB_TTL_ATTRIBUTE="ttl"

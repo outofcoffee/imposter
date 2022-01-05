@@ -73,4 +73,19 @@ internal object Settings {
 
     val tableName: String
         get() = EnvVars.getEnv("IMPOSTER_DYNAMODB_TABLE") ?: "Imposter"
+
+    object Ttl {
+        private const val disabledValue = -1L
+
+        val enabled: Boolean
+            get() = seconds != disabledValue
+
+        val seconds: Long
+            get() {
+                return EnvVars.getEnv("IMPOSTER_DYNAMODB_TTL")?.toLong() ?: disabledValue
+            }
+
+        val attributeName: String
+            get() = EnvVars.getEnv("IMPOSTER_DYNAMODB_TTL_ATTRIBUTE") ?: "ttl"
+    }
 }

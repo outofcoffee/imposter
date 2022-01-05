@@ -42,10 +42,12 @@
  */
 package io.gatehill.imposter.store.dynamodb
 
-import io.gatehill.imposter.store.dynamodb.support.Example
+import com.amazonaws.services.dynamodbv2.model.AttributeValue
+import com.amazonaws.services.dynamodbv2.model.GetItemRequest
 import io.gatehill.imposter.util.TestEnvironmentUtil
 import org.junit.AfterClass
-import org.junit.Assert
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.BeforeClass
 import org.junit.Test
 import org.testcontainers.containers.localstack.LocalStackContainer
@@ -55,8 +57,9 @@ import org.testcontainers.containers.localstack.LocalStackContainer
  *
  * @author Pete Cornish
  */
-class DynamoDBStoreFactoryImplTest : AbstractDynamoDBStoreTest() {
+class DynamoDBStoreTtlTest : AbstractDynamoDBStoreTest() {
     companion object {
+        private const val ttlSeconds = 300
         private var dynamo: LocalStackContainer? = null
 
         @BeforeClass
@@ -65,11 +68,13 @@ class DynamoDBStoreFactoryImplTest : AbstractDynamoDBStoreTest() {
             // These tests need Docker
             TestEnvironmentUtil.assumeDockerAccessible()
 
-            dynamo = startDynamoDb(mapOf(
-                "IMPOSTER_DYNAMODB_TABLE" to "Imposter",
-                "IMPOSTER_DYNAMODB_TTL" to "-1",
-            ))
-            createTable("Imposter")
+            dynamo = startDynamoDb(
+                mapOf(
+                    "IMPOSTER_DYNAMODB_TABLE" to "TtlTest",
+                    "IMPOSTER_DYNAMODB_TTL" to ttlSeconds.toString(),
+                )
+            )
+            createTable("TtlTest")
         }
 
         @AfterClass
@@ -85,65 +90,28 @@ class DynamoDBStoreFactoryImplTest : AbstractDynamoDBStoreTest() {
     }
 
     @Test
-    fun testBuildNewStore() {
-        val store = factory.buildNewStore("test")
-        Assert.assertEquals("dynamodb", store.typeDescription)
-    }
+    fun testSaveWithTtl() {
+        val store = factory.buildNewStore("ttltest")
 
-    @Test
-    fun testSaveLoadSimpleItems() {
-        val store = factory.buildNewStore("sli")
-        Assert.assertEquals(0, store.count())
+        val persistenceTime = System.currentTimeMillis() / 1000
         store.save("foo", "bar")
-        store.save("baz", 123L)
-        store.save("qux", true)
-        store.save("corge", null)
 
-        Assert.assertEquals("bar", store.load("foo"))
-        Assert.assertEquals(123L, store.load("baz"))
-        Assert.assertEquals(true, store.load("qux"))
-        Assert.assertNull(store.load("corge"))
+        val item = ddb.getItem(
+            GetItemRequest().withTableName("TtlTest").withKey(
+                mapOf(
+                    "StoreName" to AttributeValue().withS("ttltest"),
+                    "Key" to AttributeValue().withS("foo")
+                )
+            )
+        )
 
-        val allItems = store.loadAll()
-        Assert.assertEquals(4, allItems.size)
-        Assert.assertEquals("bar", allItems["foo"])
-        Assert.assertTrue("Item should exist", store.hasItemWithKey("foo"))
-        Assert.assertEquals(4, store.count())
-    }
+        assertNotNull("Item should exist", item?.item)
 
-    @Test
-    fun testSaveLoadComplexItems() {
-        val store = factory.buildNewStore("complex")
-        Assert.assertEquals(0, store.count())
-        store.save("grault", mapOf("foo" to "bar"))
-        store.save("garply", Example("test"))
+        val ttlAttribute = item.item["ttl"]
+        assertNotNull("TTL attribute should exist", ttlAttribute)
 
-        val loadedMap = store.load<Map<String, *>>("grault")
-        Assert.assertNotNull(loadedMap)
-        Assert.assertTrue("Returned value should be a Map", loadedMap is Map)
-        Assert.assertEquals("bar", loadedMap!!["foo"])
-
-        // POJO is deserialised as a Map
-        val loadedMap2 = store.load<Map<String, *>>("garply")
-        Assert.assertNotNull(loadedMap2)
-        Assert.assertTrue("Returned value should be a Map", loadedMap2 is Map)
-        Assert.assertEquals("test", loadedMap2!!["name"])
-    }
-
-    @Test
-    fun testDeleteItem() {
-        val store = factory.buildNewStore("di")
-        Assert.assertFalse("Item should not exist", store.hasItemWithKey("baz"))
-        store.save("baz", "qux")
-        Assert.assertTrue("Item should exist", store.hasItemWithKey("baz"))
-        store.delete("baz")
-        Assert.assertFalse("Item should not exist", store.hasItemWithKey("baz"))
-    }
-
-    @Test
-    fun testDeleteStore() {
-        factory.buildNewStore("ds")
-        factory.deleteStoreByName("ds", false)
-        Assert.assertFalse("Store should not exist", factory.hasStoreWithName("ds"))
+        val ttlValue = ttlAttribute!!.n
+        assertNotNull("TTL should be set to number", ttlValue)
+        assertTrue("TTL should be persistence time + configured value", ttlValue.toLong() >= (persistenceTime + ttlSeconds))
     }
 }
