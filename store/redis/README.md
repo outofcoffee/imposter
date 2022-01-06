@@ -1,8 +1,13 @@
 # Redis store
 
-Redis store implementation. Ensure [Stores](../../docs/stores.md) are enabled, then activate this module with the environment variable:
+Redis store implementation. 
 
-    IMPOSTER_STORE_MODULE="io.gatehill.imposter.store.redis.RedisStoreModule" 
+To use this plugin, download the plugin JAR file from the [Releases page](https://github.com/outofcoffee/imposter/releases).
+
+Enable it with the following environment variables:
+
+    IMPOSTER_PLUGIN_DIR="/path/to/dir/containing/plugin"
+    IMPOSTER_STORE_MODULE="io.gatehill.imposter.store.redis.RedisStoreModule"
 
 Add a `redisson.yaml` file to your Imposter configuration directory, e.g.
 
@@ -22,18 +27,54 @@ singleServerConfig:
 
 ## Example
 
-Start Redis:
+> See the [example](https://raw.githubusercontent.com/outofcoffee/imposter/store/redis/example) directory for sample configuration files.
+
+Start a local Redis instance:
 
     docker run --rm -it -p6379:6379 redis:5-alpine
 
 > There should now be a running Redis instance on your local machine, on port 6379.
 
+Place the plugin JAR file into a directory named `plugins`. Let's add a simple config file as well, under `config`:
+
+### Simple example
+
+```yaml
+# imposter-config.yaml
+plugin: rest
+```
+
+Your local filesystem should look like:
+
+```
+.
+├── config
+│  ├── imposter-config.yaml
+│  └── redisson.yaml
+└── plugins
+   └── imposter-plugin-store-redis.jar
+```
+
 Start Imposter:
 
     docker run --rm -ti -p 8080:8080 \
         -e IMPOSTER_STORE_MODULE=io.gatehill.imposter.store.redis.RedisStoreModule \
-        -v $PWD/store/redis/example:/opt/imposter/config \
+        -v $PWD/config:/opt/imposter/config \
+        -v $PWD/plugins:/opt/imposter/plugins \
         outofcoffee/imposter
+
+Test writing a value:
+
+    $ curl -XPUT http://localhost:8080/system/store/test/foo -d 'bar'
+
+Test retrieving the value:
+
+    $ curl http://localhost:8080/system/store/test/foo
+    bar
+
+### Scripted example
+
+Start Imposter as above, using the scripted example configuration files in the [example](https://raw.githubusercontent.com/outofcoffee/imposter/store/redis/example) directory.
 
 Test writing a value:
 

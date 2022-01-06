@@ -40,41 +40,54 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.server
 
-import com.google.inject.AbstractModule
-import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
-import io.gatehill.imposter.lifecycle.ScriptExecLifecycleHooks
-import io.gatehill.imposter.lifecycle.SecurityLifecycleHooks
-import io.gatehill.imposter.util.ClassLoaderUtil
-import io.vertx.core.Vertx
-import javax.inject.Singleton
+package io.gatehill.imposter.util
 
-/**
- * @author Pete Cornish
- */
-class BootstrapModule(
-    private val vertx: Vertx,
-    private val imposterConfig: ImposterConfig?,
-    private val serverFactory: String
-) : AbstractModule() {
+import io.gatehill.imposter.config.util.EnvVars
+import io.gatehill.imposter.plugin.PluginClassLoader
+import org.apache.logging.log4j.LogManager
+import java.io.File
+import java.util.Objects
 
-    override fun configure() {
-        bind(Vertx::class.java).toInstance(vertx)
-        bind(ImposterConfig::class.java).toInstance(imposterConfig)
+object ClassLoaderUtil {
+    val pluginClassLoader: ClassLoader
 
-        try {
-            @Suppress("UNCHECKED_CAST")
-            val serverFactoryClass = ClassLoaderUtil.loadClass<ServerFactory>(serverFactory)
+    private val logger = LogManager.getLogger(ClassLoaderUtil::class.java)
+    private const val pluginFileExtension = ".jar"
 
-            bind(ServerFactory::class.java).to(serverFactoryClass).`in`(Singleton::class.java)
-            bind(EngineLifecycleHooks::class.java).`in`(Singleton::class.java)
-            bind(SecurityLifecycleHooks::class.java).`in`(Singleton::class.java)
-            bind(ScriptExecLifecycleHooks::class.java).`in`(Singleton::class.java)
+    init {
+        pluginClassLoader = determineClassLoader()
+    }
 
-        } catch (e: ClassNotFoundException) {
-            throw RuntimeException("Could not load server factory: $serverFactory", e)
+    private fun determineClassLoader(): ClassLoader {
+        val pluginDirPath = EnvVars.getEnv("IMPOSTER_PLUGIN_DIR")?.trim()?.takeIf(Objects::nonNull)
+
+        val jarUrls = pluginDirPath?.let {
+            val pluginDir = File(pluginDirPath).also {
+                if (!it.exists() || !it.isDirectory) {
+                    logger.warn("Path $pluginDirPath is not a valid directory")
+                    return@let null
+                }
+            }
+            return@let pluginDir.listFiles()
+                ?.filter { !it.isDirectory && it.name.endsWith(pluginFileExtension) }
+                ?.map { it.toURI().toURL() }
+                ?.toTypedArray()
         }
+
+        val thisClassloader = ClassLoaderUtil::class.java.classLoader
+
+        return jarUrls?.let {
+            logger.trace("Plugins will use plugin classloader with plugin directory: $pluginDirPath and files: $jarUrls")
+            return@let PluginClassLoader(jarUrls, thisClassloader)
+        } ?: run {
+            logger.trace("Plugins will use default classloader")
+            thisClassloader
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    fun <T> loadClass(className: String): Class<T> {
+        return pluginClassLoader.loadClass(className) as Class<T>
     }
 }

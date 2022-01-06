@@ -47,6 +47,7 @@ import com.google.inject.Module
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.util.ConfigUtil
 import io.gatehill.imposter.plugin.config.ConfigurablePlugin
+import io.gatehill.imposter.util.ClassLoaderUtil
 import io.github.classgraph.ClassGraph
 import io.github.classgraph.ClassInfo
 import org.apache.logging.log4j.LogManager
@@ -188,7 +189,7 @@ class PluginManagerImpl : PluginManager {
     @Suppress("UNCHECKED_CAST")
     private fun registerPluginClass(className: String) {
         try {
-            val clazz = Class.forName(className) as Class<out Plugin>
+            val clazz = ClassLoaderUtil.loadClass<Plugin>(className)
             if (registerClass(clazz)) {
                 val pluginName = PluginMetadata.getPluginName(clazz)
                 LOGGER.trace("Registered plugin: {} with class: {}", pluginName, className)
@@ -288,7 +289,10 @@ class PluginManagerImpl : PluginManager {
                     val configFiles = pluginConfigs[plugin.javaClass.canonicalName] ?: emptyList()
                     plugin.loadConfiguration(configFiles)
                 } catch (e: Exception) {
-                    throw RuntimeException("Error configuring plugin: ${PluginMetadata.getPluginName(plugin.javaClass)}", e)
+                    throw RuntimeException(
+                        "Error configuring plugin: ${PluginMetadata.getPluginName(plugin.javaClass)}",
+                        e
+                    )
                 }
             }
     }

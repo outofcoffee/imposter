@@ -51,6 +51,7 @@ import io.gatehill.imposter.store.service.StoreRestApiServiceImpl
 import io.gatehill.imposter.store.service.StoreService
 import io.gatehill.imposter.store.service.StoreServiceImpl
 import io.gatehill.imposter.store.service.TemplateServiceImpl
+import io.gatehill.imposter.util.ClassLoaderUtil
 import org.apache.logging.log4j.LogManager
 
 /**
@@ -78,8 +79,7 @@ class StoreModule : AbstractModule() {
         LOGGER.trace("Loading store module: {}", storeModule)
 
         return try {
-            @Suppress("UNCHECKED_CAST")
-            val moduleClass = Class.forName(storeModule) as Class<out Module>
+            val moduleClass = ClassLoaderUtil.loadClass<Module>(storeModule)
             moduleClass.getDeclaredConstructor().newInstance()
 
         } catch (e: Exception) {

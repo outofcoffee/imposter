@@ -48,6 +48,7 @@ import io.gatehill.imposter.config.resolver.ConfigResolver
 import io.gatehill.imposter.plugin.PluginManager
 import io.gatehill.imposter.plugin.config.PluginConfigImpl
 import io.gatehill.imposter.plugin.config.ResourcesHolder
+import io.gatehill.imposter.util.ClassLoaderUtil
 import io.gatehill.imposter.util.MapUtil
 import io.gatehill.imposter.util.ResourceUtil
 import org.apache.commons.io.FileUtils
@@ -90,8 +91,8 @@ object ConfigUtil {
         LOGGER.trace("Configuration resolvers: $configResolvers")
         return configResolvers.distinct().map { resolver ->
             try {
-                val resolverClass = Class.forName(resolver)
-                resolverClass.getDeclaredConstructor().newInstance() as ConfigResolver
+                val resolverClass = ClassLoaderUtil.loadClass<ConfigResolver>(resolver)
+                resolverClass.getDeclaredConstructor().newInstance()
             } catch (e: Exception) {
                 throw RuntimeException("Error instantiating configuration resolver: $resolver", e)
             }

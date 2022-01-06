@@ -108,7 +108,7 @@ class ImposterVerticle : AbstractVerticle() {
 
     private fun startEngine() {
         val bootstrapModules: MutableList<Module> = mutableListOf(
-            BootstrapModule(vertx, imposterConfig, imposterConfig.serverFactory),
+            BootstrapModule(vertx, imposterConfig, imposterConfig.serverFactory!!),
             GroovyScriptingModule(),
             NashornScriptingModule()
         )

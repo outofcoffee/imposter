@@ -1,0 +1,7 @@
+singleServerConfig:
+  address: "redis://host.docker.internal:6379"
+  idleConnectionTimeout: 10000
+  connectTimeout: 10000
+  timeout: 3000
+  retryAttempts: 3
+  retryInterval: 1500

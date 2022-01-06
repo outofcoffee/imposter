@@ -1,8 +1,15 @@
 # DynamoDB store
 
-DynamoDB store implementation. Ensure [Stores](../../docs/stores.md) are enabled, then activate this module with the environment variable:
+DynamoDB store implementation.
 
+To use this plugin, download the plugin JAR file from the [Releases page](https://github.com/outofcoffee/imposter/releases).
+
+Enable it with the following environment variables:
+
+    IMPOSTER_PLUGIN_DIR="/path/to/dir/containing/plugin"
     IMPOSTER_STORE_MODULE="io.gatehill.imposter.store.dynamodb.DynamoDBStoreModule"
+
+## Configuration
 
 The following variables can be set:
 
@@ -10,6 +17,8 @@ The following variables can be set:
 |----------------------------------|---------------------------------------------|----------------------------|
 | IMPOSTER_DYNAMODB_TABLE          | DynamoDB table name.                        | `"Imposter"`               |
 | IMPOSTER_DYNAMODB_SIGNING_REGION | The signing region for the DynamoDB client. | Inferred from environment. |
+| IMPOSTER_DYNAMODB_TTL            | The number of seconds to use for item TTL.  | No TTL set.                |
+| IMPOSTER_DYNAMODB_TTL_ATTRIBUTE  | The name of TTL attribute in the table.     | `ttl`                      |
 
 ## DynamoDB set up
 

@@ -40,41 +40,28 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.server
 
-import com.google.inject.AbstractModule
-import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
-import io.gatehill.imposter.lifecycle.ScriptExecLifecycleHooks
-import io.gatehill.imposter.lifecycle.SecurityLifecycleHooks
-import io.gatehill.imposter.util.ClassLoaderUtil
-import io.vertx.core.Vertx
-import javax.inject.Singleton
+package io.gatehill.imposter.plugin
+
+import java.net.URL
+import java.net.URLClassLoader
 
 /**
+ * A child-first [ClassLoader] that delegates to the superclass only when the requested
+ * class is not found in the provided URLs.
+ *
  * @author Pete Cornish
  */
-class BootstrapModule(
-    private val vertx: Vertx,
-    private val imposterConfig: ImposterConfig?,
-    private val serverFactory: String
-) : AbstractModule() {
-
-    override fun configure() {
-        bind(Vertx::class.java).toInstance(vertx)
-        bind(ImposterConfig::class.java).toInstance(imposterConfig)
-
-        try {
-            @Suppress("UNCHECKED_CAST")
-            val serverFactoryClass = ClassLoaderUtil.loadClass<ServerFactory>(serverFactory)
-
-            bind(ServerFactory::class.java).to(serverFactoryClass).`in`(Singleton::class.java)
-            bind(EngineLifecycleHooks::class.java).`in`(Singleton::class.java)
-            bind(SecurityLifecycleHooks::class.java).`in`(Singleton::class.java)
-            bind(ScriptExecLifecycleHooks::class.java).`in`(Singleton::class.java)
-
+class PluginClassLoader(urls: Array<URL>, parent: ClassLoader) : URLClassLoader(urls, parent) {
+    override fun loadClass(name: String, resolve: Boolean): Class<*>? {
+        val loadedClass = findLoadedClass(name) ?: try {
+            findClass(name)
         } catch (e: ClassNotFoundException) {
-            throw RuntimeException("Could not load server factory: $serverFactory", e)
+            super.loadClass(name, resolve)
         }
+        if (resolve) {
+            resolveClass(loadedClass)
+        }
+        return loadedClass
     }
 }
