@@ -65,6 +65,11 @@ subprojects {
         }
     }
 
+    configurations {
+        pluginImplementation.description = 'Only dependencies (and their transitive dependencies) using this configuration will be bundled in the plugin shadow JAR.'
+        implementation.extendsFrom(pluginImplementation)
+    }
+
     repositories {
         mavenCentral()
         jcenter()
