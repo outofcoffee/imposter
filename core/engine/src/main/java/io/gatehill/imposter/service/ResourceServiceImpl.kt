@@ -337,7 +337,7 @@ class ResourceServiceImpl @Inject constructor(
     override fun buildNotFoundExceptionHandler() = { httpExchange: HttpExchange ->
         if (null == httpExchange.get(ResourceUtil.RC_REQUEST_ID_KEY)) {
             // only override response processing if the 404 did not originate from the mock engine
-            logAppropriatelyForPath(httpExchange)
+            logAppropriatelyForPath(httpExchange, "File not found")
             httpExchange.response().setStatusCode(HttpUtil.HTTP_NOT_FOUND).end()
         }
 
@@ -349,17 +349,17 @@ class ResourceServiceImpl @Inject constructor(
      * {@inheritDoc}
      */
     override fun buildUnhandledExceptionHandler() = { httpExchange: HttpExchange ->
-        logAppropriatelyForPath(httpExchange)
+        logAppropriatelyForPath(httpExchange, "Unhandled routing exception for request")
 
         // print summary
         LogUtil.logCompletion(httpExchange)
     }
 
-    private fun logAppropriatelyForPath(httpExchange: HttpExchange) {
+    private fun logAppropriatelyForPath(httpExchange: HttpExchange, description: String) {
         val level = determineLogLevel(httpExchange)
         LOGGER.log(
             level,
-            "Unhandled routing exception for request " + describeRequest(httpExchange),
+            "$description: ${describeRequest(httpExchange)}",
             httpExchange.failure()
         )
     }

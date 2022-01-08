@@ -137,9 +137,9 @@ object LogUtil {
         httpExchange: HttpExchange,
         requestId: String? = httpExchange.get(ResourceUtil.RC_REQUEST_ID_KEY)
     ): String {
-        return "[" + requestId + "]" +
-                " " + httpExchange.request().method() +
-                " " + httpExchange.request().absoluteURI()
+        val request = httpExchange.request()
+        val requestIdDescription = requestId?.let { "[$it] " } ?: ""
+        return requestIdDescription + request.method() + " " + request.absoluteURI()
     }
 
     fun formatDuration(input: Any) = String.format("%.2f", input)
