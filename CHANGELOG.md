@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.4.14] - 2022-01-08
+### Changed
+- feat: switches Lambda adapter logging to AWS Lambda appender.
+- feat: improves file not found logging.
+
+### Fixed
+- fix: skips OpenAPI plugin setup if no compatible configuration files are provided.
+
 ## [2.4.13] - 2022-01-05
 ### Changed
 - feat: sets explicit uid/gid for container user.
