@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- ...
+
 ## [2.5.0] - 2022-01-09
 ### Added
 - feat: improves supported data types for DynamoDB store.
