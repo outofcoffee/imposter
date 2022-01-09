@@ -52,7 +52,7 @@ import io.github.classgraph.ClassGraph
 import io.github.classgraph.ClassInfo
 import org.apache.logging.log4j.LogManager
 import java.io.File
-import java.util.*
+import java.util.Collections
 import java.util.regex.Pattern
 
 /**
@@ -263,15 +263,15 @@ class PluginManagerImpl : PluginManager {
             }
         }
 
-        val pluginCount = getPlugins().size
-        if (pluginCount > 0) {
-            val pluginNames = getPlugins().joinToString(", ", "[", "]") { p: Plugin ->
-                PluginMetadata.getPluginName(p.javaClass)
+        val allPlugins = getPlugins()
+        when (val pluginCount = allPlugins.size) {
+            0 -> throw IllegalStateException("No plugins were loaded")
+            else -> if (LOGGER.isTraceEnabled) {
+                val pluginNames = allPlugins.joinToString(", ", "[", "]") { p: Plugin ->
+                    PluginMetadata.getPluginName(p.javaClass)
+                }
+                LOGGER.trace("Loaded {} plugin(s): {}", pluginCount, pluginNames)
             }
-
-            LOGGER.trace("Loaded {} plugin(s): {}", pluginCount, pluginNames)
-        } else {
-            throw IllegalStateException("No plugins were loaded")
         }
     }
 
@@ -289,10 +289,8 @@ class PluginManagerImpl : PluginManager {
                     val configFiles = pluginConfigs[plugin.javaClass.canonicalName] ?: emptyList()
                     plugin.loadConfiguration(configFiles)
                 } catch (e: Exception) {
-                    throw RuntimeException(
-                        "Error configuring plugin: ${PluginMetadata.getPluginName(plugin.javaClass)}",
-                        e
-                    )
+                    val pluginName = PluginMetadata.getPluginName(plugin.javaClass)
+                    throw RuntimeException("Error configuring plugin: $pluginName", e)
                 }
             }
     }
