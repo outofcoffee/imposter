@@ -3,9 +3,19 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [2.5.0] - 2022-01-09
 ### Added
-- ...
+- feat: improves supported data types for DynamoDB store.
+- feat: adds support for TTL in DynamoDB store.
+- feat: denies recursive templating of untrusted response data by default.
+- feat: increases speed of Groovy scripts by two orders of magnitude.
+- feat: functionally aligns Graal with Nashorn for JavaScript engine.
+- feat: introduces 'core' distribution supporting OpenAPI and REST plugins.
+
+### Changed
+- build: replaces server-bundled store implementations with standalone plugins.
+- refactor: routes all plugin-like classloading through dedicated ClassLoader.
+- chore: bumps CLI to 0.8.2.
 
 ## [2.4.14] - 2022-01-08
 ### Changed
