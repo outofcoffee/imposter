@@ -166,7 +166,9 @@ class PluginManagerImpl : PluginManager {
             registerProvider(providerClass)
             val pluginProvider = createPluginProvider(providerClass)
             val provided = pluginProvider.providePlugins(imposterConfig, pluginConfigs)
-            LOGGER.trace("{} plugin(s) provided by: {}", provided.size, PluginMetadata.getPluginName(providerClass))
+            if (LOGGER.isTraceEnabled) {
+                LOGGER.trace("${provided.size} plugin(s) provided by: ${PluginMetadata.getPluginName(providerClass)}")
+            }
 
             // recurse for new providers
             if (provided.isNotEmpty()) {
@@ -182,7 +184,7 @@ class PluginManagerImpl : PluginManager {
             val clazz = ClassLoaderUtil.loadClass<Plugin>(className)
             if (registerClass(clazz)) {
                 val pluginName = PluginMetadata.getPluginName(clazz)
-                LOGGER.trace("Registered plugin: {} with class: {}", pluginName, className)
+                LOGGER.trace("Registered plugin: $pluginName with class: $className")
             }
         } catch (e: Exception) {
             throw RuntimeException("Failed to register plugin: $className", e)
@@ -256,11 +258,11 @@ class PluginManagerImpl : PluginManager {
         val allPlugins = getPlugins()
         when (val pluginCount = allPlugins.size) {
             0 -> throw IllegalStateException("No plugins were loaded")
-            else -> if (LOGGER.isTraceEnabled) {
+            else -> if (LOGGER.isDebugEnabled) {
                 val pluginNames = allPlugins.joinToString(", ", "[", "]") { p: Plugin ->
                     PluginMetadata.getPluginName(p.javaClass)
                 }
-                LOGGER.trace("Loaded {} plugin(s): {}", pluginCount, pluginNames)
+                LOGGER.debug("Loaded $pluginCount plugin(s): $pluginNames")
             }
         }
     }
@@ -293,6 +295,7 @@ class PluginManagerImpl : PluginManager {
          */
         private val PLUGIN_BASE_PACKAGES = arrayOf(
             ConfigUtil.CURRENT_PACKAGE + ".plugin",
+            ConfigUtil.CURRENT_PACKAGE + ".scripting",
             ConfigUtil.CURRENT_PACKAGE + ".store",
         )
     }

@@ -49,7 +49,7 @@ import org.apache.logging.log4j.LogManager
 import javax.inject.Inject
 
 /**
- * A delegating store factory that uses the environment variable named by [envStoreDriver]
+ * A delegating store factory that uses the environment variable named by [StoreUtil.envStoreDriver]
  * to determine the [StoreFactory] to use.
  *
  * @author Pete Cornish

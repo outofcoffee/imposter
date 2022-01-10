@@ -40,17 +40,22 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.scripting.graalvm
+package io.gatehill.imposter.scripting.common
 
-import com.google.inject.AbstractModule
-import com.google.inject.Singleton
-import io.gatehill.imposter.scripting.graalvm.service.GraalvmScriptServiceImpl
+import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.plugin.Plugin
+import io.gatehill.imposter.plugin.PluginInfo
+import io.gatehill.imposter.plugin.PluginProvider
+import java.io.File
 
 /**
+ * Provides the JavaScript plugin based on configuration.
+ *
  * @author Pete Cornish
  */
-class GraalvmScriptingModule : AbstractModule() {
-    override fun configure() {
-        bind(GraalvmScriptServiceImpl::class.java).`in`(Singleton::class.java)
+@PluginInfo("js-detector")
+class JavaScriptPluginDetectorImpl : Plugin, PluginProvider {
+    override fun providePlugins(imposterConfig: ImposterConfig, pluginConfigs: Map<String, List<File>>): List<String> {
+        return listOf(JavaScriptUtil.activePlugin)
     }
 }

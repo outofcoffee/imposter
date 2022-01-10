@@ -13,7 +13,8 @@ dependencies {
     implementation project (':scripting:scripting-groovy')
     implementation project (':scripting:scripting-nashorn')
 
-    // needed for store plugins
+    // needed for plugin delegation
+    implementation project(':scripting:scripting-common')
     implementation project(':store:store-common')
 
     // logging

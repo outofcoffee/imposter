@@ -9,6 +9,9 @@ compileJava {
 
 dependencies {
     implementation project (':adapter:adapter-awslambda')
+
+    // opinionated implementations
+    implementation project (':scripting:scripting-nashorn')
     implementation project (':store:store-dynamodb')
 }
 

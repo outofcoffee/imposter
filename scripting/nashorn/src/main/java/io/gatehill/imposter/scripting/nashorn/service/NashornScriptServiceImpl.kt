@@ -44,12 +44,16 @@ package io.gatehill.imposter.scripting.nashorn.service
 
 import com.google.common.cache.CacheBuilder
 import io.gatehill.imposter.config.util.EnvVars.Companion.getEnv
+import io.gatehill.imposter.plugin.Plugin
+import io.gatehill.imposter.plugin.PluginInfo
+import io.gatehill.imposter.plugin.RequireModules
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.ScriptUtil
 import io.gatehill.imposter.scripting.common.JavaScriptUtil
+import io.gatehill.imposter.scripting.nashorn.NashornScriptingModule
 import io.gatehill.imposter.service.ScriptService
 import io.gatehill.imposter.util.MetricsUtil.doIfMetricsEnabled
 import io.micrometer.core.instrument.Gauge
@@ -62,12 +66,16 @@ import javax.script.ScriptEngineManager
 import javax.script.SimpleBindings
 
 /**
+ * Nashorn implementation of JavaScript scripting engine.
+ *
  * @author Pete Cornish
  */
 @Suppress("DEPRECATION")
+@PluginInfo("js-nashorn")
+@RequireModules(NashornScriptingModule::class)
 class NashornScriptServiceImpl @Inject constructor(
     scriptEngineManager: ScriptEngineManager
-) : ScriptService {
+) : ScriptService, Plugin {
     private val scriptEngine: NashornScriptEngine
 
     /**

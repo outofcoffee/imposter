@@ -1,6 +1,7 @@
 apply plugin: 'java-library'
 apply plugin: 'kotlin'
 apply plugin: 'maven-publish'
+apply plugin: 'com.github.johnrengelman.shadow'
 
 compileJava {
     sourceCompatibility = 1.8
@@ -9,8 +10,10 @@ compileJava {
 dependencies {
     implementation project(':core:imposter-engine')
     implementation project(':scripting:scripting-common')
-    implementation "org.graalvm.js:js:21.2.0"
-    implementation "org.graalvm.js:js-scriptengine:21.2.0"
+
+    pluginImplementation "org.graalvm.js:js:21.2.0"
+    pluginImplementation "org.graalvm.truffle:truffle-api:21.2.0"
+    pluginImplementation "org.graalvm.js:js-scriptengine:21.2.0"
 
     // test
     testImplementation project(':imposter-test')
@@ -61,4 +64,16 @@ compileTestKotlin {
         // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
         freeCompilerArgs = ["-Xjvm-default=all"]
     }
+}
+
+shadowJar {
+    // override plugin archive name
+    archiveBaseName.set("imposter-plugin-js-graal")
+    archiveVersion.set('')
+    archiveClassifier.set('')
+    configurations = [project.configurations.pluginImplementation]
+}
+
+task dist {
+    dependsOn shadowJar
 }

@@ -72,8 +72,11 @@ internal class ImposterModule(
         bind(ResponseService::class.java).to(ResponseServiceImpl::class.java).`in`(Singleton::class.java)
 
         bind(ScriptServiceFactory::class.java).`in`(Singleton::class.java)
-        bind(ScriptedResponseService::class.java).to(ScriptedResponseServiceImpl::class.java)
-            .`in`(Singleton::class.java)
+
+        // needs to be eager to register lifecycle listener
+        bind(ScriptedResponseService::class.java)
+            .to(ScriptedResponseServiceImpl::class.java)
+            .asEagerSingleton()
 
         bind(EmbeddedScriptService::class.java).to(EmbeddedScriptServiceImpl::class.java).`in`(Singleton::class.java)
 

@@ -40,6 +40,7 @@ async function releaseLambdaDistro(github, release) {
 }
 
 async function releasePlugins(github, release) {
+    await releaseJar(github, release, './scripting/graalvm/build/libs/imposter-plugin-js-graal.jar');
     await releaseJar(github, release, './store/dynamodb/build/libs/imposter-plugin-store-dynamodb.jar');
     await releaseJar(github, release, './store/redis/build/libs/imposter-plugin-store-redis.jar');
 }

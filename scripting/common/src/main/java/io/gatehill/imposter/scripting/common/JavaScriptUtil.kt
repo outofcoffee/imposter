@@ -43,6 +43,7 @@
 
 package io.gatehill.imposter.scripting.common
 
+import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.impl.RunnableResponseBehaviourImpl
 import io.gatehill.imposter.scripting.common.shim.ConsoleShim
@@ -69,6 +70,8 @@ object JavaScriptUtil {
 
     private val DSL_FUNCTIONS: String
     private val GLOBAL_DSL_OBJECTS: String
+    private const val envJavaScriptPlugin = "IMPOSTER_JS_PLUGIN"
+    private const val defaultJavaScriptPlugin = "js-nashorn"
 
     init {
         // expose superclass methods as DSL functions
@@ -84,6 +87,12 @@ object JavaScriptUtil {
             "$methodName = ${DSL_OBJECT_PREFIX}${methodName};"
         }
     }
+
+    /**
+     * @return the plugin name of the active JavaScript implementation
+     */
+    val activePlugin: String
+        get() = EnvVars.getEnv(envJavaScriptPlugin) ?: defaultJavaScriptPlugin
 
     fun transformRuntimeMap(runtimeContext: RuntimeContext, addConsoleShim: Boolean): Map<String, *> {
         val runtimeObjects = runtimeContext.asMap().toMutableMap()

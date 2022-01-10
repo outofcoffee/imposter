@@ -52,8 +52,8 @@ import io.gatehill.imposter.plugin.PluginManager
 import io.gatehill.imposter.plugin.RoutablePlugin
 import io.gatehill.imposter.plugin.config.ConfigurablePlugin
 import io.gatehill.imposter.plugin.config.PluginConfig
+import io.gatehill.imposter.scripting.common.CommonScriptingModule
 import io.gatehill.imposter.scripting.groovy.GroovyScriptingModule
-import io.gatehill.imposter.scripting.nashorn.NashornScriptingModule
 import io.gatehill.imposter.server.util.FeatureModuleUtil
 import io.gatehill.imposter.service.ResourceService
 import io.gatehill.imposter.util.AsyncUtil.resolveFutureOnCompletion
@@ -110,7 +110,7 @@ class ImposterVerticle : AbstractVerticle() {
         val bootstrapModules: MutableList<Module> = mutableListOf(
             BootstrapModule(vertx, imposterConfig, imposterConfig.serverFactory!!),
             GroovyScriptingModule(),
-            NashornScriptingModule()
+            CommonScriptingModule(),
         )
         bootstrapModules.addAll(FeatureModuleUtil.discoverFeatureModules())
 
@@ -141,7 +141,12 @@ class ImposterVerticle : AbstractVerticle() {
         if (isFeatureEnabled(MetricsUtil.FEATURE_NAME_METRICS)) {
             LOGGER.trace("Metrics enabled")
             router.route("/system/metrics").handler(
-                resourceService.passthroughRoute(imposterConfig, allConfigs, vertx, serverFactory.createMetricsHandler())
+                resourceService.passthroughRoute(
+                    imposterConfig,
+                    allConfigs,
+                    vertx,
+                    serverFactory.createMetricsHandler()
+                )
             )
         }
 
@@ -153,11 +158,14 @@ class ImposterVerticle : AbstractVerticle() {
                     .end(buildStatusResponse())
             })
 
-        pluginManager.getPlugins().filterIsInstance<RoutablePlugin>()
-            .forEach { plugin -> plugin.configureRoutes(router) }
+        pluginManager.getPlugins().filterIsInstance<RoutablePlugin>().forEach { plugin ->
+            plugin.configureRoutes(router)
+        }
 
         // fire post route config hooks
-        engineLifecycle.forEach { listener: EngineLifecycleListener -> listener.afterRoutesConfigured(imposterConfig, allConfigs, router) }
+        engineLifecycle.forEach { listener: EngineLifecycleListener ->
+            listener.afterRoutesConfigured(imposterConfig, allConfigs, router)
+        }
         return router
     }
 

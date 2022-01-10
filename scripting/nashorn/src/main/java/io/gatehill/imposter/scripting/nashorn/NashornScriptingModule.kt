@@ -45,15 +45,12 @@ package io.gatehill.imposter.scripting.nashorn
 import com.google.inject.AbstractModule
 import com.google.inject.Singleton
 import io.gatehill.imposter.scripting.nashorn.service.NashornScriptServiceImpl
-import io.gatehill.imposter.service.ScriptService
-import io.gatehill.imposter.util.annotation.JavascriptImpl
 
 /**
  * @author Pete Cornish
  */
 class NashornScriptingModule : AbstractModule() {
     override fun configure() {
-        bind(ScriptService::class.java).annotatedWith(JavascriptImpl::class.java)
-            .to(NashornScriptServiceImpl::class.java).`in`(Singleton::class.java)
+        bind(NashornScriptServiceImpl::class.java).`in`(Singleton::class.java)
     }
 }
