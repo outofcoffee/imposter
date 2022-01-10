@@ -42,14 +42,23 @@
  */
 package io.gatehill.imposter.store.inmem
 
+import io.gatehill.imposter.plugin.Plugin
+import io.gatehill.imposter.plugin.PluginInfo
+import io.gatehill.imposter.plugin.RequireModules
 import io.gatehill.imposter.store.factory.AbstractStoreFactory
 import io.gatehill.imposter.store.model.Store
 
 /**
  * @author Pete Cornish
  */
-class InMemoryStoreFactoryImpl : AbstractStoreFactory() {
+@PluginInfo(InMemoryStoreFactoryImpl.pluginName)
+@RequireModules(InMemoryStoreModule::class)
+class InMemoryStoreFactoryImpl : AbstractStoreFactory(), Plugin {
     override fun buildNewStore(storeName: String): Store {
         return InMemoryStore(storeName)
+    }
+
+    companion object {
+        internal const val pluginName = "store-inmem"
     }
 }

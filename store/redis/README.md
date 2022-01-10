@@ -7,7 +7,7 @@ To use this plugin, download the plugin JAR file from the [Releases page](https:
 Enable it with the following environment variables:
 
     IMPOSTER_PLUGIN_DIR="/path/to/dir/containing/plugin"
-    IMPOSTER_STORE_MODULE="io.gatehill.imposter.store.redis.RedisStoreModule"
+    IMPOSTER_STORE_DRIVER="store-redis"
 
 Add a `redisson.yaml` file to your Imposter configuration directory, e.g.
 
@@ -58,7 +58,7 @@ Your local filesystem should look like:
 Start Imposter:
 
     docker run --rm -ti -p 8080:8080 \
-        -e IMPOSTER_STORE_MODULE=io.gatehill.imposter.store.redis.RedisStoreModule \
+        -e IMPOSTER_STORE_DRIVER=store-redis \
         -v $PWD/config:/opt/imposter/config \
         -v $PWD/plugins:/opt/imposter/plugins \
         outofcoffee/imposter

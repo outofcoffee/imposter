@@ -47,6 +47,9 @@ import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.client.builder.AwsClientBuilder
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder
+import io.gatehill.imposter.plugin.Plugin
+import io.gatehill.imposter.plugin.PluginInfo
+import io.gatehill.imposter.plugin.RequireModules
 import io.gatehill.imposter.store.dynamodb.config.Settings
 import io.gatehill.imposter.store.factory.AbstractStoreFactory
 import io.gatehill.imposter.store.model.Store
@@ -55,7 +58,9 @@ import org.apache.logging.log4j.LogManager
 /**
  * @author Pete Cornish
  */
-class DynamoDBStoreFactoryImpl : AbstractStoreFactory() {
+@PluginInfo("store-dynamodb")
+@RequireModules(DynamoDBStoreModule::class)
+class DynamoDBStoreFactoryImpl : AbstractStoreFactory(), Plugin {
     private val ddb: AmazonDynamoDB
     private val logger = LogManager.getLogger(DynamoDBStore::class.java)
 

@@ -44,6 +44,9 @@ package io.gatehill.imposter.store.redis
 
 import com.google.inject.Inject
 import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.plugin.Plugin
+import io.gatehill.imposter.plugin.PluginInfo
+import io.gatehill.imposter.plugin.RequireModules
 import io.gatehill.imposter.store.factory.AbstractStoreFactory
 import io.gatehill.imposter.store.model.Store
 import org.apache.logging.log4j.LogManager
@@ -56,7 +59,11 @@ import java.io.IOException
 /**
  * @author Pete Cornish
  */
-class RedisStoreFactoryImpl @Inject constructor(imposterConfig: ImposterConfig) : AbstractStoreFactory() {
+@PluginInfo("store-redis")
+@RequireModules(RedisStoreModule::class)
+class RedisStoreFactoryImpl @Inject constructor(
+    imposterConfig: ImposterConfig
+) : AbstractStoreFactory(), Plugin {
     private val redisson: RedissonClient
 
     init {

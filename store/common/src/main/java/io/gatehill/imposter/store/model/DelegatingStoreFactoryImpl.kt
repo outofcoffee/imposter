@@ -40,56 +40,55 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.store.model
 
-package io.gatehill.imposter.store.inmem
-
-import com.google.common.collect.Maps
-import io.gatehill.imposter.store.model.Store
+import io.gatehill.imposter.plugin.Plugin
+import io.gatehill.imposter.plugin.PluginManager
+import io.gatehill.imposter.store.util.StoreUtil
 import org.apache.logging.log4j.LogManager
+import javax.inject.Inject
 
 /**
- * An in-memory store implementation. Does not have any support for item expiration,
- * so data must be managed by the caller.
+ * A delegating store factory that uses the environment variable named by [envStoreDriver]
+ * to determine the [StoreFactory] to use.
  *
  * @author Pete Cornish
  */
-class InMemoryStore(override val storeName: String) : Store {
-    private val store: MutableMap<String, Any> = Maps.newConcurrentMap()
-    override val typeDescription = "inmem"
+class DelegatingStoreFactoryImpl @Inject constructor(
+    private val pluginManager: PluginManager,
+) : StoreFactory {
+    private val logger = LogManager.getLogger(DelegatingStoreFactoryImpl::class.java)
 
-    override fun save(key: String, value: Any?) {
-        LOGGER.trace("Saving item with key: {} to store: {}", key, storeName)
-        value?.let { store[key] = value } ?: store.remove(key)
+    private val impl: StoreFactory by lazy { loadStoreFactory() }
+
+    private fun loadStoreFactory(): StoreFactory {
+        val storeDriver = StoreUtil.activeDriver
+        val pluginClass = pluginManager.determinePluginClass(storeDriver)
+        logger.trace("Resolved store driver: {} to class: {}", storeDriver, pluginClass)
+
+        try {
+            val plugin = pluginManager.getPlugin<Plugin>(pluginClass)
+                ?: throw IllegalStateException("Unable to load store driver plugin: $pluginClass")
+
+            return plugin as StoreFactory
+
+        } catch (e: Exception) {
+            throw RuntimeException(
+                "Unable to load store driver: $storeDriver. Must be an installed plugin implementing ${StoreFactory::class.java.canonicalName}",
+                e
+            )
+        }
     }
 
-    override fun <T> load(key: String): T? {
-        LOGGER.trace("Loading item with key: {} from store: {}", key, storeName)
-        @Suppress("UNCHECKED_CAST")
-        return store[key] as T?
+    override fun hasStoreWithName(storeName: String): Boolean {
+        return impl.hasStoreWithName(storeName)
     }
 
-    override fun delete(key: String) {
-        LOGGER.trace("Deleting item with key: {} from store: {}", key, storeName)
-        store.remove(key)
+    override fun getStoreByName(storeName: String, isEphemeralStore: Boolean): Store {
+        return impl.getStoreByName(storeName, isEphemeralStore)
     }
 
-    override fun loadAll(): Map<String, Any> {
-        LOGGER.trace("Loading all items in store: {}", storeName)
-        return store
-    }
-
-    override fun hasItemWithKey(key: String): Boolean {
-        LOGGER.trace("Checking for item with key: {} in store: {}", key, storeName)
-        return store.containsKey(key)
-    }
-
-    override fun count(): Int {
-        val count = store.size
-        LOGGER.trace("Returning item count {} from store: {}", count, storeName)
-        return count
-    }
-
-    companion object {
-        private val LOGGER = LogManager.getLogger(InMemoryStore::class.java)
+    override fun deleteStoreByName(storeName: String, isEphemeralStore: Boolean) {
+        impl.deleteStoreByName(storeName, isEphemeralStore)
     }
 }

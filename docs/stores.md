@@ -106,10 +106,10 @@ $ curl -XPOST http://localhost:8080/system/store/test --data '{ "foo": "bar", "b
 
 The following environment variables are supported:
 
-| Variable name             | Purpose                                                              | Example(s)                                                                |
-|---------------------------|----------------------------------------------------------------------|---------------------------------------------------------------------------|
-| IMPOSTER_STORE_MODULE     | Sets the store implementation (see _Store implementations_ section). | `io.gatehill.imposter.store.redis.RedisStoreModule`                       |
-| IMPOSTER_STORE_KEY_PREFIX | Sets an optional prefix for all keys in the store, like a namespace. | A prefix of `foo` would result in the key `bar` being stored as `foo.bar` |
+| Variable name             | Purpose                                                              | Default       | Example(s)                                                                |
+|---------------------------|----------------------------------------------------------------------|---------------|---------------------------------------------------------------------------|
+| IMPOSTER_STORE_DRIVER     | Sets the store implementation (see _Store implementations_ section). | `store-inmem` | `store-dynamodb`                                                          |
+| IMPOSTER_STORE_KEY_PREFIX | Sets an optional prefix for all keys in the store, like a namespace. | Empty         | A prefix of `foo` would result in the key `bar` being stored as `foo.bar` |
 
 ## Request scoped store
 

@@ -56,7 +56,7 @@ import java.util.concurrent.TimeUnit
  *
  * @author Pete Cornish
  */
-internal class RedisStore(override val storeName: String, redisson: RedissonClient) : Store {
+class RedisStore(override val storeName: String, redisson: RedissonClient) : Store {
     override val typeDescription = "redis"
     private val store: RMapCache<String, Any>
     private var expirationSecs = 0

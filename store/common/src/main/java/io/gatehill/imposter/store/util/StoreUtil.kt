@@ -42,13 +42,27 @@
  */
 package io.gatehill.imposter.store.util
 
+import io.gatehill.imposter.config.util.EnvVars
+import io.gatehill.imposter.store.inmem.InMemoryStoreFactoryImpl
+
 /**
  * @author Pete Cornish
  */
 object StoreUtil {
     const val REQUEST_SCOPED_STORE_NAME = "request"
 
-    fun isRequestScopedStore(storeName: String?): Boolean = REQUEST_SCOPED_STORE_NAME == storeName
+    private const val envStoreDriver = "IMPOSTER_STORE_DRIVER"
+    private const val defaultStoreDriver = InMemoryStoreFactoryImpl.pluginName
 
-    fun buildRequestStoreName(requestId: String): String = "${REQUEST_SCOPED_STORE_NAME}_$requestId"
+    fun isRequestScopedStore(storeName: String?): Boolean =
+        REQUEST_SCOPED_STORE_NAME == storeName
+
+    fun buildRequestStoreName(requestId: String): String =
+        "${REQUEST_SCOPED_STORE_NAME}_$requestId"
+
+    /**
+     * @return the plugin name of the active store driver
+     */
+    val activeDriver: String
+        get() = EnvVars.getEnv(envStoreDriver) ?: defaultStoreDriver
 }

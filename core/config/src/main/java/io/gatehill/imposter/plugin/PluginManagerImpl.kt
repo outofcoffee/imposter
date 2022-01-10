@@ -92,7 +92,8 @@ class PluginManagerImpl : PluginManager {
         val pluginClasses: MutableMap<String, String> = mutableMapOf()
 
         ClassGraph().enableClassInfo().enableAnnotationInfo()
-            .whitelistPackages(PLUGIN_BASE_PACKAGE).scan().use { result ->
+            .overrideClassLoaders(ClassLoaderUtil.pluginClassLoader)
+            .whitelistPackages(*PLUGIN_BASE_PACKAGES).scan().use { result ->
                 val pluginClassInfos = result
                     .getClassesImplementing(Plugin::class.qualifiedName)
                     .filter { classInfo: ClassInfo -> classInfo.hasAnnotation(PluginInfo::class.qualifiedName) }
@@ -288,15 +289,11 @@ class PluginManagerImpl : PluginManager {
         private val LOGGER = LogManager.getLogger(PluginManager::class.java)
 
         /**
-         * The base package to scan recursively for plugins.
+         * The base packages to scan recursively for plugins.
          */
-        private const val PLUGIN_BASE_PACKAGE = ConfigUtil.CURRENT_PACKAGE + ".plugin"
-
-        /**
-         * Package for legacy plugins.
-         */
-        private const val LEGACY_PACKAGE = "com.gatehill.imposter"
-
-        private val legacyPackagePattern = Pattern.compile("^$LEGACY_PACKAGE\\.")
+        private val PLUGIN_BASE_PACKAGES = arrayOf(
+            ConfigUtil.CURRENT_PACKAGE + ".plugin",
+            ConfigUtil.CURRENT_PACKAGE + ".store",
+        )
     }
 }

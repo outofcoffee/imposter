@@ -44,13 +44,12 @@ package io.gatehill.imposter.store.dynamodb
 
 import com.google.inject.AbstractModule
 import com.google.inject.Singleton
-import io.gatehill.imposter.store.model.StoreFactory
 
 /**
  * @author Pete Cornish
  */
 class DynamoDBStoreModule : AbstractModule() {
     override fun configure() {
-        bind(StoreFactory::class.java).to(DynamoDBStoreFactoryImpl::class.java).`in`(Singleton::class.java)
+        bind(DynamoDBStoreFactoryImpl::class.java).`in`(Singleton::class.java)
     }
 }

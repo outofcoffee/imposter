@@ -7,7 +7,7 @@ To use this plugin, download the plugin JAR file from the [Releases page](https:
 Enable it with the following environment variables:
 
     IMPOSTER_PLUGIN_DIR="/path/to/dir/containing/plugin"
-    IMPOSTER_STORE_MODULE="io.gatehill.imposter.store.dynamodb.DynamoDBStoreModule"
+    IMPOSTER_STORE_DRIVER="store-dynamodb"
 
 ## Configuration
 
