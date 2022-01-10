@@ -81,17 +81,6 @@ class ConfigUtilTest {
 
     @Test
     @Throws(Exception::class)
-    fun testLoadLegacyPluginConfig() {
-        val configDir = File(ConfigUtilTest::class.java.getResource("/legacy").toURI()).path
-        val configs: Map<String, List<File>> = loadPluginConfigs(ImposterConfig(), pluginManager!!, arrayOf(configDir))
-        Assert.assertEquals(1, configs.size.toLong())
-        val configFiles = configs["io.gatehill.imposter.core.test.ExamplePluginImpl"]!!
-        Assert.assertNotNull("Legacy config file should be discovered", configFiles)
-        Assert.assertEquals(1, configFiles.size.toLong())
-    }
-
-    @Test
-    @Throws(Exception::class)
     fun testLoadInterpolatedPluginConfig() {
         // override environment variables in string interpolators
         val environment: Map<String, String> = mapOf(

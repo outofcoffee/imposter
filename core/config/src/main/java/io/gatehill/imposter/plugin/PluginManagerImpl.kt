@@ -52,14 +52,13 @@ import io.github.classgraph.ClassGraph
 import io.github.classgraph.ClassInfo
 import org.apache.logging.log4j.LogManager
 import java.io.File
-import java.util.Collections
-import java.util.regex.Pattern
+import java.util.*
 
 /**
  * @author Pete Cornish
  */
 class PluginManagerImpl : PluginManager {
-    private val classpathPlugins = mutableMapOf<String?, String>()
+    private val classpathPlugins = mutableMapOf<String, String>()
     private val pluginClasses = mutableSetOf<Class<out Plugin>>()
     private val providers = mutableSetOf<Class<out PluginProvider>>()
     private val plugins = mutableMapOf<String, Plugin>()
@@ -81,17 +80,7 @@ class PluginManagerImpl : PluginManager {
                 }
             }
         }
-        return classpathPlugins[plugin] ?: replaceLegacyPackage(plugin)
-    }
-
-    /**
-     * Shim plugin packages from legacy [LEGACY_PACKAGE] to current.
-     *
-     * @param plugin plugin FQCN
-     * @return shimmed plugin FQCN
-     */
-    private fun replaceLegacyPackage(plugin: String): String {
-        return legacyPackagePattern.matcher(plugin).replaceAll("${ConfigUtil.CURRENT_PACKAGE}.")
+        return classpathPlugins[plugin] ?: plugin
     }
 
     /**
