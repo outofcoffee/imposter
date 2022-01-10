@@ -47,6 +47,7 @@ import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.plugin.PluginClassLoader
 import org.apache.logging.log4j.LogManager
 import java.io.File
+import java.net.URLClassLoader
 import java.util.Objects
 
 object ClassLoaderUtil {
@@ -54,6 +55,7 @@ object ClassLoaderUtil {
 
     private val logger = LogManager.getLogger(ClassLoaderUtil::class.java)
     private const val pluginFileExtension = ".jar"
+    private const val childClassloaderStrategy = "child"
 
     init {
         pluginClassLoader = determineClassLoader()
@@ -72,14 +74,19 @@ object ClassLoaderUtil {
             return@let pluginDir.listFiles()
                 ?.filter { !it.isDirectory && it.name.endsWith(pluginFileExtension) }
                 ?.map { it.toURI().toURL() }
-                ?.toTypedArray()
         }
 
         val thisClassloader = ClassLoaderUtil::class.java.classLoader
 
         return jarUrls?.let {
-            logger.trace("Plugins will use plugin classloader with plugin directory: $pluginDirPath and files: $jarUrls")
-            return@let PluginClassLoader(jarUrls, thisClassloader)
+            if (EnvVars.getEnv("IMPOSTER_PLUGIN_CLASSLOADER_STRATEGY") == childClassloaderStrategy) {
+                logger.trace("Plugins will use child-first classloader with plugin directory: $pluginDirPath and files: $jarUrls")
+                return@let PluginClassLoader(jarUrls.toTypedArray(), thisClassloader)
+            } else {
+                logger.trace("Plugins will use URL classloader with plugin directory: $pluginDirPath and files: $jarUrls")
+                return@let URLClassLoader(jarUrls.toTypedArray(), thisClassloader)
+            }
+
         } ?: run {
             logger.trace("Plugins will use default classloader")
             thisClassloader
