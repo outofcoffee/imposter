@@ -42,22 +42,22 @@
  */
 package io.gatehill.imposter.scripting.graalvm.service
 
-import com.oracle.truffle.js.scriptengine.GraalJSEngineFactory
-import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine
 import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.RequireModules
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
+import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.ScriptUtil
 import io.gatehill.imposter.scripting.common.util.JavaScriptUtil
 import io.gatehill.imposter.scripting.graalvm.GraalvmScriptingModule
 import io.gatehill.imposter.service.ScriptService
 import org.apache.logging.log4j.LogManager
-import javax.script.ScriptContext
-import javax.script.SimpleBindings
+import org.graalvm.polyglot.Context
+import org.graalvm.polyglot.Source
+import javax.inject.Inject
 
 /**
  * Graal implementation of JavaScript scripting engine.
@@ -66,18 +66,15 @@ import javax.script.SimpleBindings
  */
 @PluginInfo("js-graal")
 @RequireModules(GraalvmScriptingModule::class)
-class GraalvmScriptServiceImpl : ScriptService, Plugin {
-    private var scriptEngine: GraalJSScriptEngine
+class GraalvmScriptServiceImpl @Inject constructor() : ScriptService, Plugin {
 
     init {
         // see https://www.graalvm.org/reference-manual/js/NashornMigrationGuide/#nashorn-compatibility-mode
         System.setProperty("polyglot.js.nashorn-compat", "true")
 
-        // quieten interpreter mode warning until native graal compiler included in module path - see:
-        // https://www.graalvm.org/reference-manual/js/RunOnJDK/
-        System.setProperty("polyglot.engine.WarnInterpreterOnly", "false")
-
-        scriptEngine = GraalJSEngineFactory().scriptEngine
+//        // quieten interpreter mode warning until native graal compiler included in module path - see:
+//        // https://www.graalvm.org/reference-manual/js/RunOnJDK/
+//        System.setProperty("polyglot.engine.WarnInterpreterOnly", "false")
     }
 
     override fun executeScript(
@@ -88,19 +85,41 @@ class GraalvmScriptServiceImpl : ScriptService, Plugin {
         val scriptFile = ScriptUtil.resolveScriptPath(pluginConfig, resourceConfig.responseConfig.scriptFile)
         LOGGER.trace("Executing script file: {}", scriptFile)
 
-        val bindings = scriptEngine.getBindings(ScriptContext.ENGINE_SCOPE)
-        bindings["polyglot.js.allowAllAccess"] = true
-
         return try {
             val globals = JavaScriptUtil.transformRuntimeMap(runtimeContext, false)
-
-            scriptEngine.eval(
-                JavaScriptUtil.wrapScript(scriptFile),
-                SimpleBindings(globals)
-            ) as ReadWriteResponseBehaviour
+            val wrappedScript = JavaScriptUtil.wrapScript(scriptFile)
+            executeGraalJs(wrappedScript, globals, scriptFile.fileName.toString())
         } catch (e: Exception) {
             throw RuntimeException("Script execution terminated abnormally", e)
         }
+    }
+
+    private fun executeGraalJs(
+        wrappedScript: String,
+        globals: Map<String, *>,
+        scriptName: String
+    ): ReadWriteResponseBehaviour {
+
+        val resultClone = ReadWriteResponseBehaviourImpl()
+
+        Context.newBuilder("js").allowAllAccess(true).build().use { context ->
+            val bindings = context.getBindings("js")
+            globals.forEach { (key, value) -> bindings.putMember(key, value) }
+            val source = Source.newBuilder("js", wrappedScript, scriptName).build()
+
+            context.eval(source).`as`(ReadWriteResponseBehaviour::class.java).also { result ->
+                resultClone.behaviourType = result.behaviourType
+                resultClone.exampleName = result.exampleName
+                resultClone.isTemplate = result.isTemplate
+                resultClone.performanceSimulation = result.performanceSimulation
+                resultClone.responseData = result.responseData
+                resultClone.responseFile = result.responseFile
+                resultClone.responseHeaders.putAll(result.responseHeaders)
+                resultClone.statusCode = result.statusCode
+            }
+        }
+
+        return resultClone
     }
 
     companion object {

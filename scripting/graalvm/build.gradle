@@ -1,7 +1,16 @@
-apply plugin: 'java-library'
-apply plugin: 'kotlin'
-apply plugin: 'maven-publish'
-apply plugin: 'com.github.johnrengelman.shadow'
+plugins {
+    id 'java-library'
+    id 'kotlin'
+    id 'maven-publish'
+    id 'com.github.johnrengelman.shadow'
+    id "org.graalvm.plugin.compiler" version "0.1.0-alpha2"
+}
+
+ext.version_graal = '21.2.0'
+
+graal {
+    version "$version_graal"
+}
 
 compileJava {
     sourceCompatibility = 1.8
@@ -11,9 +20,9 @@ dependencies {
     implementation project(':core:imposter-engine')
     implementation project(':scripting:scripting-common')
 
-    pluginImplementation "org.graalvm.js:js:21.2.0"
-    pluginImplementation "org.graalvm.truffle:truffle-api:21.2.0"
-    pluginImplementation "org.graalvm.js:js-scriptengine:21.2.0"
+    pluginImplementation "org.graalvm.js:js:$version_graal"
+    pluginImplementation "org.graalvm.truffle:truffle-api:$version_graal"
+    pluginImplementation "org.graalvm.sdk:graal-sdk:$version_graal"
 
     // test
     testImplementation project(':imposter-test')
