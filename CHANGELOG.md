@@ -3,9 +3,9 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [2.5.1] - 2022-01-10
 ### Added
-- ...
+- feat: allows plugin classloader strategy to be configured.
 
 ## [2.5.0] - 2022-01-09
 ### Added
