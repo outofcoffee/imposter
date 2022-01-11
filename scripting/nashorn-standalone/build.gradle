@@ -4,7 +4,8 @@ apply plugin: 'maven-publish'
 apply plugin: 'com.github.johnrengelman.shadow'
 
 compileJava {
-    sourceCompatibility = 1.8
+    sourceCompatibility = 11
+    targetCompatibility = 11
 }
 
 dependencies {
@@ -16,6 +17,9 @@ dependencies {
     // test
     testImplementation project(':imposter-test')
     testImplementation "com.jayway.restassured:rest-assured:$version_restAssured"
+
+    // java 11 compatibility
+    testImplementation ('javax.xml.bind:jaxb-api:2.3.0')
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

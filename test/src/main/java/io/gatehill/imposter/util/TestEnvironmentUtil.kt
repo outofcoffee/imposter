@@ -57,8 +57,6 @@ object TestEnvironmentUtil {
     /**
      * Skips a JUnit test if Docker is not accessible.
      */
-    @JvmStatic
-    @Throws(Exception::class)
     fun assumeDockerAccessible() {
         Assume.assumeThat("Docker is running", testDockerRunning(), CoreMatchers.`is`(0))
     }
@@ -66,13 +64,12 @@ object TestEnvironmentUtil {
     /**
      * Tests if the Docker process can be started successfully.
      *
-     *
      * Typically used with a [org.junit.Assume.assumeThat] statement in a JUnit test,
      * for example:
      *
-     * <pre>
+     * ```
      * assumeThat("Docker is running", TestEnvironmentUtil.testDockerRunning(), is(0));
-    </pre> *
+     * ```
      *
      * @return the exit code of running the 'docker ps' command
      */
@@ -86,5 +83,12 @@ object TestEnvironmentUtil {
             e.printStackTrace()
             255
         }
+    }
+
+    /**
+     * Skips a JUnit test if Java version does not meet expectations.
+     */
+    fun assumeJavaVersionLessThanOrEqualTo(majorVersion: Int) {
+        Assume.assumeTrue(getJvmVersion() <= majorVersion)
     }
 }

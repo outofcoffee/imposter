@@ -44,6 +44,8 @@ package io.gatehill.imposter.service
 
 import io.gatehill.imposter.scripting.AbstractScriptServiceImplTest
 import io.gatehill.imposter.scripting.nashorn.service.NashornScriptServiceImpl
+import io.gatehill.imposter.util.TestEnvironmentUtil
+import org.junit.BeforeClass
 import javax.inject.Inject
 
 /**
@@ -56,4 +58,12 @@ class NashornScriptServiceImplTest : AbstractScriptServiceImplTest() {
     override fun getService() = service!!
 
     override fun getScriptName() = "test.js"
+
+    companion object {
+        @JvmStatic
+        @BeforeClass
+        fun beforeClass() {
+            TestEnvironmentUtil.assumeJavaVersionLessThanOrEqualTo(10)
+        }
+    }
 }

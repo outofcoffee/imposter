@@ -45,6 +45,7 @@ package io.gatehill.imposter.plugin.hbase
 
 
 import io.gatehill.imposter.server.BaseVerticleTest
+import io.gatehill.imposter.util.TestEnvironmentUtil
 import io.vertx.ext.unit.TestContext
 import org.apache.hadoop.hbase.client.Get
 import org.apache.hadoop.hbase.client.Result
@@ -55,6 +56,7 @@ import org.apache.hadoop.hbase.rest.client.Cluster
 import org.apache.hadoop.hbase.rest.client.RemoteHTable
 import org.apache.hadoop.hbase.util.Bytes
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Test
 import java.io.IOException
 
@@ -67,6 +69,14 @@ class HBasePluginTest : BaseVerticleTest() {
     private var client: Client? = null
 
     override val pluginClass = HBasePluginImpl::class.java
+
+    companion object {
+        @JvmStatic
+        @BeforeClass
+        fun beforeClass() {
+            TestEnvironmentUtil.assumeJavaVersionLessThanOrEqualTo(8)
+        }
+    }
 
     @Before
     @Throws(Exception::class)
@@ -83,9 +93,9 @@ class HBasePluginTest : BaseVerticleTest() {
         var rowCount = 0
         for (result in scanner) {
             rowCount++
-            testContext.assertEquals("exampleValue${rowCount}A".toString(), getStringValue(result, "abc", "exampleStringA"))
-            testContext.assertEquals("exampleValue${rowCount}B".toString(), getStringValue(result, "abc", "exampleStringB"))
-            testContext.assertEquals("exampleValue${rowCount}C".toString(), getStringValue(result, "abc", "exampleStringC"))
+            testContext.assertEquals("exampleValue${rowCount}A", getStringValue(result, "abc", "exampleStringA"))
+            testContext.assertEquals("exampleValue${rowCount}B", getStringValue(result, "abc", "exampleStringB"))
+            testContext.assertEquals("exampleValue${rowCount}C", getStringValue(result, "abc", "exampleStringC"))
         }
 
         testContext.assertEquals(2, rowCount)
@@ -140,7 +150,7 @@ class HBasePluginTest : BaseVerticleTest() {
             testContext.fail(IOException::class.java.simpleName + " expected")
 
         } catch (e: IOException) {
-            testContext.assertTrue(e.getLocalizedMessage().contains("400"))
+            testContext.assertTrue(e.localizedMessage.contains("400"))
         }
     }
 
@@ -156,7 +166,7 @@ class HBasePluginTest : BaseVerticleTest() {
             testContext.fail(IOException::class.java.simpleName + " expected")
 
         } catch (e: IOException) {
-            testContext.assertTrue(e.getLocalizedMessage().contains("404"))
+            testContext.assertTrue(e.localizedMessage.contains("404"))
         }
     }
 
@@ -172,7 +182,7 @@ class HBasePluginTest : BaseVerticleTest() {
             testContext.fail(IOException::class.java.simpleName + " expected")
 
         } catch (e: IOException) {
-            testContext.assertTrue(e.getLocalizedMessage().contains("500"))
+            testContext.assertTrue(e.localizedMessage.contains("500"))
         }
     }
 }

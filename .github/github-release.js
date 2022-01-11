@@ -1,6 +1,14 @@
 const fs = require('fs');
 
-module.exports = async ({github, context}) => {
+const MainDistroAlias = 'main';
+
+/**
+ * @param github github client
+ * @param context job context
+ * @param assetPaths {Array<string>|string}
+ * @returns {Promise<void>}
+ */
+module.exports = async ({github, context}, assetPaths) => {
     if (!context.ref.match(/refs\/tags\/.+/)) {
         console.warn(`Unsupported ref: ${context.ref}`);
         return;
@@ -10,7 +18,57 @@ module.exports = async ({github, context}) => {
         console.warn('No release version - aborting');
         return;
     }
+    if (!assetPaths) {
+        console.warn('No asset paths - aborting');
+        return;
+    }
 
+    let releaseId = await getExistingRelease(releaseVersion, github);
+    if (!releaseId) {
+        releaseId = await createRelease(releaseVersion, github);
+    }
+
+    if (!Array.isArray(assetPaths)) {
+        assetPaths = [assetPaths];
+    }
+    for (const assetPath of assetPaths) {
+        if (assetPath === MainDistroAlias) {
+            await releaseMainDistro(github, releaseId, releaseVersion);
+        } else {
+            await releaseJar(github, releaseId, assetPath)
+        }
+    }
+    console.log(`Assets uploaded to release: ${releaseVersion}`);
+};
+
+/**
+ * @param releaseVersion
+ * @param github
+ * @returns {Promise<string|null>} the release ID, or `null`
+ */
+async function getExistingRelease(releaseVersion, github) {
+    console.log(`Checking for release: ${releaseVersion}`);
+    const releases = await github.rest.repos.listReleases({
+        owner: 'outofcoffee',
+        repo: 'imposter',
+    });
+    let releaseId;
+    for (const release of releases.data) {
+        if (release.tag_name === releaseVersion) {
+            releaseId = release.id;
+            console.log(`Found existing release with ID: ${releaseId}`);
+            break;
+        }
+    }
+    return releaseId;
+}
+
+/**
+ * @param releaseVersion
+ * @param github
+ * @returns {Promise<string>} the release ID
+ */
+async function createRelease(releaseVersion, github) {
     console.log(`Creating release: ${releaseVersion}`);
     const release = await github.rest.repos.createRelease({
         owner: 'outofcoffee',
@@ -18,36 +76,21 @@ module.exports = async ({github, context}) => {
         tag_name: releaseVersion,
         body: 'See [change log](https://github.com/outofcoffee/imposter/blob/main/CHANGELOG.md).',
     });
+    return release.data.id;
+}
 
-    await releaseMainDistro(github, release, releaseVersion);
-    await releaseLambdaDistro(github, release);
-    await releasePlugins(github, release);
-
-    console.log(`Assets uploaded to release: ${releaseVersion}`);
-};
-
-async function releaseMainDistro(github, release, releaseVersion) {
+async function releaseMainDistro(github, releaseId, releaseVersion) {
     const localFilePath = './distro/core/build/libs/imposter-core.jar';
-    await uploadAsset(github, release.data.id, 'imposter.jar', localFilePath, release.data.id);
+    await uploadAsset(github, releaseId, 'imposter.jar', localFilePath);
 
     // upload with version suffix, for compatibility with cli < 0.7.0
     const numericVersion = releaseVersion.startsWith('v') ? releaseVersion.substr(1) : releaseVersion;
-    await uploadAsset(github, release.data.id, `imposter-${numericVersion}.jar`, localFilePath, release.data.id);
+    await uploadAsset(github, releaseId, `imposter-${numericVersion}.jar`, localFilePath);
 }
 
-async function releaseLambdaDistro(github, release) {
-    await releaseJar(github, release, './distro/awslambda/build/libs/imposter-awslambda.jar');
-}
-
-async function releasePlugins(github, release) {
-    await releaseJar(github, release, './scripting/graalvm/build/libs/imposter-plugin-js-graal.jar');
-    await releaseJar(github, release, './store/dynamodb/build/libs/imposter-plugin-store-dynamodb.jar');
-    await releaseJar(github, release, './store/redis/build/libs/imposter-plugin-store-redis.jar');
-}
-
-async function releaseJar(github, release, localFilePath) {
+async function releaseJar(github, releaseId, localFilePath) {
     const assetFileName = localFilePath.substr(localFilePath.lastIndexOf('/') + 1);
-    await uploadAsset(github, release.data.id, assetFileName, localFilePath, release.data.id);
+    await uploadAsset(github, releaseId, assetFileName, localFilePath);
 }
 
 async function uploadAsset(github, releaseId, assetFileName, localFilePath) {

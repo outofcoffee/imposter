@@ -3,6 +3,9 @@ on: [ push ]
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: [ '8', '11' ]
     permissions:
       contents: write
     env:
@@ -13,7 +16,7 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v2
         with:
-          java-version: '8'
+          java-version: ${{ matrix.java }}
           distribution: 'temurin'
           cache: 'gradle'
 
@@ -32,7 +35,7 @@ jobs:
           ./gradlew dist --info --stacktrace
 
       - name: Build Docker images
-        if: ${{ startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop' }}
+        if: ${{ (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop') && matrix.java == '8' }}
         run: |
           if [[ "develop" == "$( git branch --show-current )" ]]; then
             EFFECTIVE_BRANCH_NAME="develop"
@@ -59,7 +62,7 @@ jobs:
           esac
 
       - name: Integration test
-        if: ${{ startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop' }}
+        if: ${{ (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop') && matrix.java == '8' }}
         run: |
           if [[ "develop" == "$( git branch --show-current )" ]]; then
             EFFECTIVE_BRANCH_NAME="develop"
@@ -70,7 +73,7 @@ jobs:
           ./scripts/integration-tests.sh "${IMAGE_TAG_NAME}"
 
       - name: Push Docker images
-        if: ${{ startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop' }}
+        if: ${{ (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop') && matrix.java == '8' }}
         run: |
           if [[ "develop" == "$( git branch --show-current )" ]]; then
             EFFECTIVE_BRANCH_NAME="develop"
@@ -99,17 +102,33 @@ jobs:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Publish maven artifacts
-        if: ${{ startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop' }}
+      - name: Publish Maven artifacts
+        if: ${{ (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop') && matrix.java == '8' }}
         run: ./gradlew publish --info --stacktrace
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      - name: Release versioned JAR
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Release Java 8 assets
+        if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.java == '8' }}
         uses: actions/github-script@v5
         with:
           script: |
             const script = require('./.github/github-release.js')
-            await script({github, context})
+            await script({github, context}, [
+              'main',
+              './distro/awslambda/build/libs/imposter-awslambda.jar',
+              './scripting/graalvm/build/libs/imposter-plugin-js-graal.jar',
+              './store/dynamodb/build/libs/imposter-plugin-store-dynamodb.jar',
+              './store/redis/build/libs/imposter-plugin-store-redis.jar',
+            ])
+
+      - name: Release Java 11 assets
+        if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.java == '11' }}
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const script = require('./.github/github-release.js')
+            await script({github, context}, [
+              './scripting/nashorn-standalone/build/libs/imposter-plugin-js-nashorn-standalone.jar',
+            ])

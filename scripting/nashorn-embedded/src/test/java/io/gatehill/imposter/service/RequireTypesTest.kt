@@ -46,7 +46,9 @@ import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.script.ResponseBehaviourType
 import io.gatehill.imposter.scripting.AbstractBaseScriptTest
 import io.gatehill.imposter.scripting.nashorn.service.NashornScriptServiceImpl
+import io.gatehill.imposter.util.TestEnvironmentUtil
 import org.junit.Assert
+import org.junit.BeforeClass
 import org.junit.Test
 import javax.inject.Inject
 
@@ -60,6 +62,14 @@ class RequireTypesTest : AbstractBaseScriptTest() {
     override fun getService() = service!!
 
     override fun getScriptName() = "require_types.js"
+
+    companion object {
+        @JvmStatic
+        @BeforeClass
+        fun beforeClass() {
+            TestEnvironmentUtil.assumeJavaVersionLessThanOrEqualTo(10)
+        }
+    }
 
     @Test
     fun testRequireTypes() {
