@@ -3,9 +3,16 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [2.5.2] - 2022-01-11
 ### Added
-- ...
+- feat: adds standalone Nashorn JavaScript implementation.
+- feat: allows Graal.js to be used as JavaScript implementation using plugin system.
+- feat: automatically detects store driver plugins on the classpath.
+- build: adds Java 11 build.
+- 
+### Changed
+- refactor: removes support for legacy plugin package.
+- chore: bumps CLI to 0.9.1.
 
 ## [2.5.1] - 2022-01-10
 ### Added
