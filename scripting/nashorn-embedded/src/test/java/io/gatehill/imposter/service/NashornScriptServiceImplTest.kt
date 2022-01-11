@@ -40,16 +40,20 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.scripting.common
+package io.gatehill.imposter.service
 
-import com.google.inject.AbstractModule
-import io.gatehill.imposter.scripting.common.service.DelegatingJsScriptServiceImpl
-import io.gatehill.imposter.service.ScriptService
-import io.gatehill.imposter.util.annotation.JavascriptImpl
+import io.gatehill.imposter.scripting.AbstractScriptServiceImplTest
+import io.gatehill.imposter.scripting.nashorn.service.NashornScriptServiceImpl
+import javax.inject.Inject
 
-class CommonScriptingModule : AbstractModule() {
-    override fun configure() {
-        bind(ScriptService::class.java).annotatedWith(JavascriptImpl::class.java)
-            .to(DelegatingJsScriptServiceImpl::class.java)
-    }
+/**
+ * @author Pete Cornish
+ */
+class NashornScriptServiceImplTest : AbstractScriptServiceImplTest() {
+    @Inject
+    private var service: NashornScriptServiceImpl? = null
+
+    override fun getService() = service!!
+
+    override fun getScriptName() = "test.js"
 }

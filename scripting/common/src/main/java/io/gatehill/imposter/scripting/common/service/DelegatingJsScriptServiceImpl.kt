@@ -40,44 +40,54 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.scripting.graalvm.service
+package io.gatehill.imposter.scripting.common.service
 
-import com.oracle.truffle.js.scriptengine.GraalJSEngineFactory
-import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine
 import io.gatehill.imposter.plugin.Plugin
-import io.gatehill.imposter.plugin.PluginInfo
-import io.gatehill.imposter.plugin.RequireModules
+import io.gatehill.imposter.plugin.PluginManager
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
-import io.gatehill.imposter.script.ScriptUtil
 import io.gatehill.imposter.scripting.common.util.JavaScriptUtil
-import io.gatehill.imposter.scripting.graalvm.GraalvmScriptingModule
 import io.gatehill.imposter.service.ScriptService
 import org.apache.logging.log4j.LogManager
-import javax.script.ScriptContext
-import javax.script.SimpleBindings
+import java.nio.file.Path
+import javax.inject.Inject
 
 /**
- * Graal implementation of JavaScript scripting engine.
+ * A delegating JavaScript script service that uses the environment variable named by [JavaScriptUtil.envJavaScriptPlugin]
+ * to determine the [ScriptService] to use.
  *
  * @author Pete Cornish
  */
-@PluginInfo("js-graal")
-@RequireModules(GraalvmScriptingModule::class)
-class GraalvmScriptServiceImpl : ScriptService, Plugin {
-    private var scriptEngine: GraalJSScriptEngine
+class DelegatingJsScriptServiceImpl @Inject constructor(
+    private val pluginManager: PluginManager,
+) : ScriptService {
+    private val logger = LogManager.getLogger(DelegatingJsScriptServiceImpl::class.java)
 
-    init {
-        // see https://www.graalvm.org/reference-manual/js/NashornMigrationGuide/#nashorn-compatibility-mode
-        System.setProperty("polyglot.js.nashorn-compat", "true")
+    private val impl: ScriptService by lazy { loadJsImpl() }
 
-        // quieten interpreter mode warning until native graal compiler included in module path - see:
-        // https://www.graalvm.org/reference-manual/js/RunOnJDK/
-        System.setProperty("polyglot.engine.WarnInterpreterOnly", "false")
+    private fun loadJsImpl(): ScriptService {
+        val jsPlugin = JavaScriptUtil.activePlugin
+        val pluginClass = pluginManager.determinePluginClass(jsPlugin)
+        logger.trace("Resolved JavaScript plugin: {} to class: {}", jsPlugin, pluginClass)
 
-        scriptEngine = GraalJSEngineFactory().scriptEngine
+        try {
+            val plugin = pluginManager.getPlugin<Plugin>(pluginClass)
+                ?: throw IllegalStateException("Unable to load JavaScript plugin: $pluginClass")
+
+            return plugin as ScriptService
+
+        } catch (e: Exception) {
+            throw RuntimeException(
+                "Unable to load JavaScript plugin: $jsPlugin. Must be an installed plugin implementing ${ScriptService::class.java.canonicalName}",
+                e
+            )
+        }
+    }
+
+    override fun initScript(scriptFile: Path) {
+        impl.initScript(scriptFile)
     }
 
     override fun executeScript(
@@ -85,25 +95,6 @@ class GraalvmScriptServiceImpl : ScriptService, Plugin {
         resourceConfig: ResponseConfigHolder,
         runtimeContext: RuntimeContext
     ): ReadWriteResponseBehaviour {
-        val scriptFile = ScriptUtil.resolveScriptPath(pluginConfig, resourceConfig.responseConfig.scriptFile)
-        LOGGER.trace("Executing script file: {}", scriptFile)
-
-        val bindings = scriptEngine.getBindings(ScriptContext.ENGINE_SCOPE)
-        bindings["polyglot.js.allowAllAccess"] = true
-
-        return try {
-            val globals = JavaScriptUtil.transformRuntimeMap(runtimeContext, false)
-
-            scriptEngine.eval(
-                JavaScriptUtil.wrapScript(scriptFile),
-                SimpleBindings(globals)
-            ) as ReadWriteResponseBehaviour
-        } catch (e: Exception) {
-            throw RuntimeException("Script execution terminated abnormally", e)
-        }
-    }
-
-    companion object {
-        private val LOGGER = LogManager.getLogger(GraalvmScriptServiceImpl::class.java)
+        return impl.executeScript(pluginConfig, resourceConfig, runtimeContext)
     }
 }

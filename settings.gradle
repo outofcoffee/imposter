@@ -38,8 +38,13 @@ project(':scripting:graalvm').name = 'scripting-graalvm'
 include ':scripting:groovy'
 project(':scripting:groovy').name = 'scripting-groovy'
 
-include ':scripting:nashorn'
-project(':scripting:nashorn').name = 'scripting-nashorn'
+include ':scripting:nashorn-embedded'
+project(':scripting:nashorn-embedded').name = 'scripting-nashorn-embedded'
+
+if (JavaVersion.current() >= JavaVersion.VERSION_11) {
+    include ':scripting:nashorn-standalone'
+    project(':scripting:nashorn-standalone').name = 'scripting-nashorn-standalone'
+}
 
 // store
 include ':store:common'

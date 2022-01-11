@@ -40,16 +40,41 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.scripting.common
+package io.gatehill.imposter.service
 
-import com.google.inject.AbstractModule
-import io.gatehill.imposter.scripting.common.service.DelegatingJsScriptServiceImpl
-import io.gatehill.imposter.service.ScriptService
-import io.gatehill.imposter.util.annotation.JavascriptImpl
+import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
+import io.gatehill.imposter.script.ResponseBehaviourType
+import io.gatehill.imposter.scripting.AbstractBaseScriptTest
+import io.gatehill.imposter.scripting.nashorn.service.NashornStandaloneScriptServiceImpl
+import org.junit.Assert
+import org.junit.Test
+import javax.inject.Inject
 
-class CommonScriptingModule : AbstractModule() {
-    override fun configure() {
-        bind(ScriptService::class.java).annotatedWith(JavascriptImpl::class.java)
-            .to(DelegatingJsScriptServiceImpl::class.java)
+/**
+ * @author Pete Cornish
+ */
+class RequireTypesTest : AbstractBaseScriptTest() {
+    @Inject
+    private var service: NashornStandaloneScriptServiceImpl? = null
+
+    override fun getService() = service!!
+
+    override fun getScriptName() = "require_types.js"
+
+    @Test
+    fun testRequireTypes() {
+        val pluginConfig = configureScript()
+        val resourceConfig = pluginConfig as ResponseConfigHolder
+
+        val runtimeContext = buildRuntimeContext(
+            additionalBindings = emptyMap(),
+            headers = mapOf("X-Example" to "foo")
+        )
+        val actual = getService().executeScript(pluginConfig, resourceConfig, runtimeContext)
+
+        Assert.assertNotNull(actual)
+        Assert.assertEquals(201, actual.statusCode)
+        Assert.assertEquals("foo", actual.responseData)
+        Assert.assertEquals(ResponseBehaviourType.DEFAULT_BEHAVIOUR, actual.behaviourType)
     }
 }

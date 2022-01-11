@@ -92,7 +92,7 @@ class PluginManagerImpl : PluginManager {
         val pluginClasses: MutableMap<String, String> = mutableMapOf()
 
         ClassGraph().enableClassInfo().enableAnnotationInfo()
-            .overrideClassLoaders(ClassLoaderUtil.pluginClassLoader)
+            .addClassLoader(ClassLoaderUtil.pluginClassLoader)
             .whitelistPackages(*PLUGIN_BASE_PACKAGES).scan().use { result ->
                 val pluginClassInfos = result
                     .getClassesImplementing(Plugin::class.qualifiedName)

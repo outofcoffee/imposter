@@ -161,7 +161,7 @@ class ScriptedResponseServiceImpl @Inject constructor(
         checkNotNull(responseConfig.scriptFile) { "Script file not set" }
         val scriptFile = responseConfig.scriptFile!!
 
-        return try {
+        try {
             val executionStart = System.nanoTime()
             LOGGER.trace(
                 "Executing script '{}' for request: {} {}",
@@ -213,7 +213,8 @@ class ScriptedResponseServiceImpl @Inject constructor(
                     scriptDuration
                 )
             )
-            responseBehaviour
+            return responseBehaviour
+
         } catch (e: Exception) {
             throw RuntimeException(
                 "Error executing script: '${responseConfig.scriptFile}' for request: " +

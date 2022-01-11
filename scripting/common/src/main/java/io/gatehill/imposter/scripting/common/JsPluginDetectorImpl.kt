@@ -42,14 +42,21 @@
  */
 package io.gatehill.imposter.scripting.common
 
-import com.google.inject.AbstractModule
-import io.gatehill.imposter.scripting.common.service.DelegatingJsScriptServiceImpl
-import io.gatehill.imposter.service.ScriptService
-import io.gatehill.imposter.util.annotation.JavascriptImpl
+import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.plugin.Plugin
+import io.gatehill.imposter.plugin.PluginInfo
+import io.gatehill.imposter.plugin.PluginProvider
+import io.gatehill.imposter.scripting.common.util.JavaScriptUtil
+import java.io.File
 
-class CommonScriptingModule : AbstractModule() {
-    override fun configure() {
-        bind(ScriptService::class.java).annotatedWith(JavascriptImpl::class.java)
-            .to(DelegatingJsScriptServiceImpl::class.java)
+/**
+ * Provides the JavaScript plugin based on configuration.
+ *
+ * @author Pete Cornish
+ */
+@PluginInfo("js-detector")
+class JsPluginDetectorImpl : Plugin, PluginProvider {
+    override fun providePlugins(imposterConfig: ImposterConfig, pluginConfigs: Map<String, List<File>>): List<String> {
+        return listOf(JavaScriptUtil.activePlugin)
     }
 }
