@@ -44,13 +44,13 @@ package io.gatehill.imposter.scripting.nashorn
 
 import com.google.inject.AbstractModule
 import com.google.inject.Singleton
-import io.gatehill.imposter.scripting.nashorn.service.NashornScriptServiceImpl
+import io.gatehill.imposter.scripting.nashorn.service.NashornEmbeddedScriptServiceImpl
 
 /**
  * @author Pete Cornish
  */
-class NashornScriptingModule : AbstractModule() {
+class NashornEmbeddedScriptingModule : AbstractModule() {
     override fun configure() {
-        bind(NashornScriptServiceImpl::class.java).`in`(Singleton::class.java)
+        bind(NashornEmbeddedScriptServiceImpl::class.java).`in`(Singleton::class.java)
     }
 }

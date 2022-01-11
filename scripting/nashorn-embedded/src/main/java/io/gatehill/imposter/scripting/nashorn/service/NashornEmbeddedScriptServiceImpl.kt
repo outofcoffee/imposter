@@ -53,17 +53,16 @@ import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.ScriptUtil
 import io.gatehill.imposter.scripting.common.util.JavaScriptUtil
-import io.gatehill.imposter.scripting.nashorn.NashornScriptingModule
+import io.gatehill.imposter.scripting.nashorn.NashornEmbeddedScriptingModule
 import io.gatehill.imposter.service.ScriptService
 import io.gatehill.imposter.util.MetricsUtil.doIfMetricsEnabled
 import io.gatehill.imposter.util.getJvmVersion
 import io.micrometer.core.instrument.Gauge
 import jdk.nashorn.api.scripting.NashornScriptEngine
+import jdk.nashorn.api.scripting.NashornScriptEngineFactory
 import org.apache.logging.log4j.LogManager
 import java.nio.file.Path
-import javax.inject.Inject
 import javax.script.CompiledScript
-import javax.script.ScriptEngineManager
 import javax.script.SimpleBindings
 
 /**
@@ -74,10 +73,8 @@ import javax.script.SimpleBindings
  */
 @Suppress("DEPRECATION")
 @PluginInfo("js-nashorn-embedded")
-@RequireModules(NashornScriptingModule::class)
-class NashornScriptServiceImpl @Inject constructor(
-    scriptEngineManager: ScriptEngineManager
-) : ScriptService, Plugin {
+@RequireModules(NashornEmbeddedScriptingModule::class)
+class NashornEmbeddedScriptServiceImpl : ScriptService, Plugin {
     private val scriptEngine: NashornScriptEngine
 
     /**
@@ -93,7 +90,7 @@ class NashornScriptServiceImpl @Inject constructor(
             throw UnsupportedOperationException("Embedded Nashorn JavaScript plugin is not supported on Java 11+. Use js-nashorn-standalone plugin instead.")
         }
 
-        scriptEngine = scriptEngineManager.getEngineByName("nashorn") as NashornScriptEngine
+        scriptEngine = NashornScriptEngineFactory().scriptEngine as NashornScriptEngine
 
         doIfMetricsEnabled(METRIC_SCRIPT_JS_CACHE_ENTRIES) { registry ->
             Gauge.builder(METRIC_SCRIPT_JS_CACHE_ENTRIES) { compiledScripts.size() }
@@ -143,7 +140,7 @@ class NashornScriptServiceImpl @Inject constructor(
     }
 
     companion object {
-        private val LOGGER = LogManager.getLogger(NashornScriptServiceImpl::class.java)
+        private val LOGGER = LogManager.getLogger(NashornEmbeddedScriptServiceImpl::class.java)
         const val METRIC_SCRIPT_JS_CACHE_ENTRIES = "script.js.cache.entries"
     }
 }

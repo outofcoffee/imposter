@@ -45,7 +45,7 @@ package io.gatehill.imposter.service
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.script.ResponseBehaviourType
 import io.gatehill.imposter.scripting.AbstractBaseScriptTest
-import io.gatehill.imposter.scripting.nashorn.service.NashornScriptServiceImpl
+import io.gatehill.imposter.scripting.nashorn.service.NashornEmbeddedScriptServiceImpl
 import io.gatehill.imposter.util.TestEnvironmentUtil
 import org.junit.Assert
 import org.junit.BeforeClass
@@ -57,7 +57,7 @@ import javax.inject.Inject
  */
 class RequireTypesTest : AbstractBaseScriptTest() {
     @Inject
-    private var service: NashornScriptServiceImpl? = null
+    private var service: NashornEmbeddedScriptServiceImpl? = null
 
     override fun getService() = service!!
 

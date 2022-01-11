@@ -58,6 +58,7 @@ import io.gatehill.imposter.service.ScriptService
 import io.gatehill.imposter.util.MetricsUtil.doIfMetricsEnabled
 import io.micrometer.core.instrument.Gauge
 import org.openjdk.nashorn.api.scripting.NashornScriptEngine
+import org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory
 import org.apache.logging.log4j.LogManager
 import java.nio.file.Path
 import javax.inject.Inject
@@ -74,9 +75,7 @@ import javax.script.SimpleBindings
 @Suppress("DEPRECATION")
 @PluginInfo("js-nashorn-standalone")
 @RequireModules(NashornStandaloneScriptingModule::class)
-class NashornStandaloneScriptServiceImpl @Inject constructor(
-    scriptEngineManager: ScriptEngineManager
-) : ScriptService, Plugin {
+class NashornStandaloneScriptServiceImpl : ScriptService, Plugin {
     private val scriptEngine: NashornScriptEngine
 
     /**
@@ -88,7 +87,7 @@ class NashornStandaloneScriptServiceImpl @Inject constructor(
         .build<Path, CompiledScript>()
 
     init {
-        scriptEngine = scriptEngineManager.getEngineByName("nashorn") as NashornScriptEngine
+        scriptEngine = NashornScriptEngineFactory().scriptEngine as NashornScriptEngine
 
         doIfMetricsEnabled(METRIC_SCRIPT_JS_CACHE_ENTRIES) { registry ->
             Gauge.builder(METRIC_SCRIPT_JS_CACHE_ENTRIES) { compiledScripts.size() }
