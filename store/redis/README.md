@@ -27,7 +27,7 @@ singleServerConfig:
 
 ## Example
 
-> See the [example](https://raw.githubusercontent.com/outofcoffee/imposter/store/redis/example) directory for sample configuration files.
+> See the [example](https://github.com/outofcoffee/imposter/tree/main/store/redis/example) directory for sample configuration files.
 
 Start a local Redis instance:
 
@@ -74,7 +74,7 @@ Test retrieving the value:
 
 ### Scripted example
 
-Start Imposter as above, using the scripted example configuration files in the [example](https://raw.githubusercontent.com/outofcoffee/imposter/store/redis/example) directory.
+Start Imposter as above, using the scripted example configuration files in the [example](https://github.com/outofcoffee/imposter/tree/main/store/redis/example) directory.
 
 Test writing a value:
 

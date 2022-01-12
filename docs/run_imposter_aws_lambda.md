@@ -102,7 +102,7 @@ functions:
 
 *Important:* Ensure the Lambda execution role has permission to access the S3 bucket containing your configuration.
 
-See [deploy/example/bucket-policy.json](https://raw.githubusercontent.com/outofcoffee/imposter/distro/awslambda/deploy/example/bucket-policy.json) for an example IAM role.
+See [deploy/example/bucket-policy.json](https://raw.githubusercontent.com/outofcoffee/imposter/main/distro/awslambda/deploy/example/bucket-policy.json) for an example IAM role.
 
 Deploy your Lambda function with the Serverless CLI:
 
@@ -144,7 +144,7 @@ IMPOSTER_S3_CONFIG_URL="s3://example-imposter-bucket/config/"
 
 *Important:* Ensure the Lambda execution role has permission to access the S3 bucket containing your configuration.
 
-See [deploy/example/bucket-policy.json](https://raw.githubusercontent.com/outofcoffee/imposter/distro/awslambda/deploy/example/bucket-policy.json) for an example IAM role.
+See [deploy/example/bucket-policy.json](https://raw.githubusercontent.com/outofcoffee/imposter/main/distro/awslambda/deploy/example/bucket-policy.json) for an example IAM role.
 
 #### Step 3: Expose your function via API Gateway
 
