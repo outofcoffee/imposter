@@ -111,7 +111,6 @@ jobs:
             await script({github, context}, [
               'main',
               './distro/awslambda/build/libs/imposter-awslambda.jar',
-              './scripting/graalvm/build/libs/imposter-plugin-js-graal.jar',
               './store/dynamodb/build/libs/imposter-plugin-store-dynamodb.jar',
               './store/redis/build/libs/imposter-plugin-store-redis.jar',
             ])
