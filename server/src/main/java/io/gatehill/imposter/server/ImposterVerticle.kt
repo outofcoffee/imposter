@@ -56,14 +56,14 @@ import io.gatehill.imposter.scripting.common.CommonScriptingModule
 import io.gatehill.imposter.scripting.groovy.GroovyScriptingModule
 import io.gatehill.imposter.server.util.FeatureModuleUtil
 import io.gatehill.imposter.service.ResourceService
-import io.gatehill.imposter.util.AsyncUtil.resolveFutureOnCompletion
+import io.gatehill.imposter.util.AsyncUtil.resolvePromiseOnCompletion
 import io.gatehill.imposter.util.FeatureUtil.isFeatureEnabled
 import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.HttpUtil.buildStatusResponse
 import io.gatehill.imposter.util.InjectorUtil.injector
 import io.gatehill.imposter.util.MetricsUtil
 import io.vertx.core.AbstractVerticle
-import io.vertx.core.Future
+import io.vertx.core.Promise
 import org.apache.logging.log4j.LogManager
 import javax.inject.Inject
 
@@ -86,28 +86,28 @@ class ImposterVerticle : AbstractVerticle() {
     private val imposterConfig = ConfigHolder.config
     private var httpServer: HttpServer? = null
 
-    override fun start(startFuture: Future<Void>) {
+    override fun start(startPromise: Promise<Void>) {
         LOGGER.trace("Initialising mock engine")
-        vertx.executeBlocking<Nothing>({ future ->
+        vertx.executeBlocking<Unit>({ promise ->
             try {
                 startEngine()
                 injector!!.injectMembers(this@ImposterVerticle)
-                httpServer = serverFactory.provide(imposterConfig, future, vertx, configureRoutes())
+                httpServer = serverFactory.provide(imposterConfig, promise, vertx, configureRoutes())
             } catch (e: Exception) {
-                future.fail(e)
+                promise.fail(e)
             }
         }) { result ->
             if (result.failed()) {
-                startFuture.fail(result.cause())
+                startPromise.fail(result.cause())
             } else {
                 LOGGER.info("Mock engine up and running on {}", imposterConfig.serverUrl)
-                startFuture.complete()
+                startPromise.complete()
             }
         }
     }
 
     private fun startEngine() {
-        val bootstrapModules: MutableList<Module> = mutableListOf(
+        val bootstrapModules = mutableListOf<Module>(
             BootstrapModule(vertx, imposterConfig, imposterConfig.serverFactory!!),
             GroovyScriptingModule(),
             CommonScriptingModule(),
@@ -118,9 +118,9 @@ class ImposterVerticle : AbstractVerticle() {
         imposter.start()
     }
 
-    override fun stop(stopFuture: Future<Void>) {
+    override fun stop(stopPromise: Promise<Void>) {
         LOGGER.info("Stopping mock server on {}:{}", imposterConfig.host, imposterConfig.listenPort)
-        httpServer?.let { server: HttpServer -> server.close(resolveFutureOnCompletion(stopFuture)) }
+        httpServer?.let { server: HttpServer -> server.close(resolvePromiseOnCompletion(stopPromise)) }
     }
 
     private fun configureRoutes(): HttpRouter {

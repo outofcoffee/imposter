@@ -71,9 +71,8 @@ import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.LogUtil.describeRequest
 import io.gatehill.imposter.util.ResourceUtil
 import io.gatehill.imposter.util.StringUtil.safeEquals
-import io.vertx.core.AsyncResult
-import io.vertx.core.Future
 import io.vertx.core.Handler
+import io.vertx.core.Promise
 import io.vertx.core.Vertx
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
@@ -206,10 +205,10 @@ class ResourceServiceImpl @Inject constructor(
         )
 
         return pathMatch && resourceMethod == resourceConfig.method &&
-                matchPairs(pathParams, resource.pathParams, true) &&
-                matchPairs(queryParams, resource.queryParams, true) &&
-                matchPairs(requestHeaders, resource.requestHeaders, false) &&
-                matchRequestBody(bodySupplier, resource.config.requestBody)
+            matchPairs(pathParams, resource.pathParams, true) &&
+            matchPairs(queryParams, resource.queryParams, true) &&
+            matchPairs(requestHeaders, resource.requestHeaders, false) &&
+            matchRequestBody(bodySupplier, resource.config.requestBody)
     }
 
     /**
@@ -295,18 +294,18 @@ class ResourceServiceImpl @Inject constructor(
                 }
             }
             RequestHandlingMode.ASYNC -> { httpExchange: HttpExchange ->
-                val handler = Handler { future: Future<Any?> ->
+                val handler = Handler<Promise<Unit>> { promise ->
                     try {
                         handleResource(pluginConfig, httpExchangeHandler, httpExchange, resolvedResourceConfigs)
-                        future.complete()
+                        promise.complete()
                     } catch (e: Exception) {
-                        future.fail(e)
+                        promise.fail(e)
                     }
                 }
 
                 // explicitly disable ordered execution - responses should not block each other
                 // as this causes head of line blocking performance issues
-                vertx.orCreateContext.executeBlocking(handler, false) { result: AsyncResult<Any?> ->
+                vertx.orCreateContext.executeBlocking(handler, false) { result ->
                     if (result.failed()) {
                         handleFailure(httpExchange, result.cause())
                     }

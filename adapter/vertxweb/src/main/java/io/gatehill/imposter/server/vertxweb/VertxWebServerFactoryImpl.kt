@@ -52,7 +52,7 @@ import io.gatehill.imposter.server.vertxweb.impl.VertxHttpServer
 import io.gatehill.imposter.server.vertxweb.util.VertxResourceUtil.convertMethodToVertx
 import io.gatehill.imposter.util.AsyncUtil
 import io.gatehill.imposter.util.FileUtil
-import io.vertx.core.Future
+import io.vertx.core.Promise
 import io.vertx.core.Vertx
 import io.vertx.core.http.HttpServerOptions
 import io.vertx.core.net.JksOptions
@@ -71,7 +71,7 @@ import java.nio.file.Paths
 class VertxWebServerFactoryImpl : ServerFactory {
     override fun provide(
         imposterConfig: ImposterConfig,
-        startFuture: Future<*>,
+        startPromise: Promise<*>,
         vertx: Vertx,
         router: HttpRouter
     ): HttpServer {
@@ -109,7 +109,7 @@ class VertxWebServerFactoryImpl : ServerFactory {
         val vertxRouter = convertRouterToVertx(router)
         val vertxServer = vertx.createHttpServer(serverOptions)
             .requestHandler(vertxRouter)
-            .listen(imposterConfig.listenPort, imposterConfig.host, AsyncUtil.resolveFutureOnCompletion(startFuture))
+            .listen(imposterConfig.listenPort, imposterConfig.host, AsyncUtil.resolvePromiseOnCompletion(startPromise))
 
         return VertxHttpServer(vertxServer)
     }

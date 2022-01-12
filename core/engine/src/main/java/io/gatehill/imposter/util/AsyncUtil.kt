@@ -43,20 +43,20 @@
 package io.gatehill.imposter.util
 
 import io.vertx.core.AsyncResult
-import io.vertx.core.Future
 import io.vertx.core.Handler
+import io.vertx.core.Promise
 
 /**
  * @author Pete Cornish
  */
 object AsyncUtil {
     @JvmStatic
-    fun <T> resolveFutureOnCompletion(future: Future<*>): Handler<AsyncResult<T>> {
+    fun <T> resolvePromiseOnCompletion(promise: Promise<*>): Handler<AsyncResult<T>> {
         return Handler { completion: AsyncResult<T> ->
             if (completion.succeeded()) {
-                future.complete()
+                promise.complete()
             } else {
-                future.fail(completion.cause())
+                promise.fail(completion.cause())
             }
         }
     }

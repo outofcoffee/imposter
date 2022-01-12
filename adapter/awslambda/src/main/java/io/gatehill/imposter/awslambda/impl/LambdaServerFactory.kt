@@ -48,7 +48,7 @@ import io.gatehill.imposter.http.HttpExchangeHandler
 import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.server.HttpServer
 import io.gatehill.imposter.server.ServerFactory
-import io.vertx.core.Future
+import io.vertx.core.Promise
 import io.vertx.core.Vertx
 
 /**
@@ -58,9 +58,9 @@ class LambdaServerFactory : ServerFactory {
     lateinit var activeServer: LambdaServer
         private set
 
-    override fun provide(imposterConfig: ImposterConfig, startFuture: Future<*>, vertx: Vertx, router: HttpRouter): HttpServer {
+    override fun provide(imposterConfig: ImposterConfig, startPromise: Promise<*>, vertx: Vertx, router: HttpRouter): HttpServer {
         activeServer = LambdaServer(router)
-        startFuture.complete()
+        startPromise.complete()
         return activeServer
     }
 
