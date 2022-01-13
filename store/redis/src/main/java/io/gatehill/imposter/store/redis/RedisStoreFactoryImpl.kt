@@ -77,6 +77,11 @@ class RedisStoreFactoryImpl @Inject constructor(
         redisson = Redisson.create(config)
     }
 
+    /**
+     * Always assume exists, to avoid need to check with backing store.
+     */
+    override fun hasStoreWithName(storeName: String) = true
+
     private fun discoverConfigFile(imposterConfig: ImposterConfig): File {
         return imposterConfig.configDirs.map { dir: String? ->
             val configFile = File(dir, "redisson.yaml")

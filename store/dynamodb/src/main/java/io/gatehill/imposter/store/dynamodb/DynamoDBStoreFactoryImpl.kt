@@ -76,6 +76,11 @@ class DynamoDBStoreFactoryImpl : AbstractStoreFactory(), Plugin {
         ddb = builder.build()
     }
 
+    /**
+     * Always assume exists, to avoid need to check with backing store.
+     */
+    override fun hasStoreWithName(storeName: String) = true
+
     override fun buildNewStore(storeName: String): Store {
         return DynamoDBStore(storeName, ddb, Settings.tableName)
     }

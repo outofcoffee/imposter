@@ -48,7 +48,6 @@ import io.gatehill.imposter.store.inmem.InMemoryStore
 import io.gatehill.imposter.store.model.PrefixedKeyStore
 import io.gatehill.imposter.store.model.Store
 import io.gatehill.imposter.store.model.StoreFactory
-import io.gatehill.imposter.store.util.StoreUtil
 import org.apache.logging.log4j.LogManager
 
 /**
@@ -60,15 +59,11 @@ import org.apache.logging.log4j.LogManager
  * @author Pete Cornish
  */
 abstract class AbstractStoreFactory : StoreFactory {
-    private val stores = mutableMapOf<String, Store>()
+    protected val stores = mutableMapOf<String, Store>()
     private val keyPrefix: String
 
     init {
         keyPrefix = getEnv(ENV_VAR_KEY_PREFIX)?.let { "$it." } ?: ""
-    }
-
-    override fun hasStoreWithName(storeName: String): Boolean {
-        return if (StoreUtil.isRequestScopedStore(storeName)) true else stores.containsKey(storeName)
     }
 
     override fun getStoreByName(storeName: String, isEphemeralStore: Boolean): Store {

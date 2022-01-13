@@ -67,7 +67,6 @@ import java.nio.file.Paths
 object SpecificationLoader {
     private val LOGGER = LogManager.getLogger(SpecificationLoader::class.java)
 
-    @JvmStatic
     fun parseSpecification(config: OpenApiPluginConfig): OpenAPI {
         val specFile = config.specFile ?: throw IllegalStateException("No specification file configured")
         val specData = loadSpecData(config, specFile)
@@ -94,7 +93,7 @@ object SpecificationLoader {
         }
         checkNotNull(parseResult) { "Unable to parse specification: $specFile" }
 
-        if (null != parseResult.messages && parseResult.messages.isNotEmpty()) {
+        if (parseResult.messages?.isNotEmpty() == true) {
             LOGGER.info(
                 "OpenAPI parser messages for: {}: {}",
                 specFile, java.lang.String.join(System.lineSeparator(), parseResult.messages)

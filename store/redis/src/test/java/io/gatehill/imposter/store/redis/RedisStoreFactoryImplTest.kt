@@ -66,7 +66,7 @@ import java.nio.file.Path
  * @author Pete Cornish
  */
 class RedisStoreFactoryImplTest {
-    private var factory: RedisStoreFactoryImpl? = null
+    private lateinit var factory: RedisStoreFactoryImpl
 
     companion object {
         private var redis: GenericContainer<*>? = null
@@ -126,13 +126,13 @@ singleServerConfig:
 
     @Test
     fun testBuildNewStore() {
-        val store = factory!!.buildNewStore("test")
+        val store = factory.buildNewStore("test")
         Assert.assertEquals("redis", store.typeDescription)
     }
 
     @Test
     fun testSaveLoadItem() {
-        val store = factory!!.buildNewStore("sli")
+        val store = factory.buildNewStore("sli")
         Assert.assertEquals(0, store.count())
         store.save("foo", "bar")
         Assert.assertEquals("bar", store.load("foo"))
@@ -145,7 +145,7 @@ singleServerConfig:
 
     @Test
     fun testDeleteItem() {
-        val store = factory!!.buildNewStore("di")
+        val store = factory.buildNewStore("di")
         Assert.assertFalse("Item should not exist", store.hasItemWithKey("baz"))
         store.save("baz", "qux")
         Assert.assertTrue("Item should exist", store.hasItemWithKey("baz"))
@@ -155,8 +155,10 @@ singleServerConfig:
 
     @Test
     fun testDeleteStore() {
-        factory!!.buildNewStore("ds")
-        factory!!.deleteStoreByName("ds", false)
-        Assert.assertFalse("Store should not exist", factory!!.hasStoreWithName("ds"))
+        factory.buildNewStore("ds")
+        factory.deleteStoreByName("ds", false)
+        
+        // redist implementation always reports true
+        Assert.assertTrue("Store should still exist", factory.hasStoreWithName("ds"))
     }
 }
