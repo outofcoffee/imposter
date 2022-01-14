@@ -40,49 +40,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.util
+package io.gatehill.imposter.service
 
-import com.google.common.base.Strings
-import io.gatehill.imposter.config.util.EnvVars
-import io.vertx.core.json.JsonArray
-import io.vertx.core.json.JsonObject
-import java.nio.file.Path
-import java.nio.file.Paths
-import kotlin.io.path.createDirectories
-import kotlin.io.path.exists
+interface FileCacheService {
+    fun readFromCache(cacheKey: String): CacheResult
+    fun writeToCache(cacheKey: String, content: String)
 
-/**
- * @author Pete Cornish
- */
-object FileUtil {
-    const val CLASSPATH_PREFIX = "classpath:"
-
-    val engineCacheDir: Path by lazy {
-        val cacheDirPath = (EnvVars.getEnv("IMPOSTER_CACHE_DIR")?.let { Paths.get(it) }
-            ?: Paths.get(System.getProperty("java.io.tmpdir"), "imposter-cache"))
-
-        if (!cacheDirPath.exists()) {
-            cacheDirPath.createDirectories()
-        }
-        return@lazy cacheDirPath
-    }
-
-    /**
-     * Return the row with the given ID.
-     *
-     * @param idFieldName
-     * @param rowId
-     * @param rows
-     * @return
-     */
-    fun findRow(idFieldName: String?, rowId: String?, rows: JsonArray): JsonObject? {
-        check(!Strings.isNullOrEmpty(idFieldName)) { "ID field name not configured" }
-        for (i in 0 until rows.size()) {
-            val row = rows.getJsonObject(i)
-            if (row.getValue(idFieldName)?.toString()?.equals(rowId, ignoreCase = true) == true) {
-                return row
-            }
-        }
-        return null
-    }
+    class CacheResult(
+        val hit: Boolean,
+        val value: ByteArray? = null,
+    )
 }

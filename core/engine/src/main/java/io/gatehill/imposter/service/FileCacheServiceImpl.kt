@@ -40,49 +40,49 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.util
+package io.gatehill.imposter.service
 
-import com.google.common.base.Strings
-import io.gatehill.imposter.config.util.EnvVars
-import io.vertx.core.json.JsonArray
-import io.vertx.core.json.JsonObject
+import com.google.common.io.BaseEncoding
+import io.gatehill.imposter.util.FileUtil
+import org.apache.logging.log4j.LogManager
 import java.nio.file.Path
 import java.nio.file.Paths
-import kotlin.io.path.createDirectories
+import java.security.MessageDigest
+import kotlin.io.path.absolutePathString
 import kotlin.io.path.exists
+import kotlin.io.path.readBytes
+import kotlin.io.path.writeText
 
 /**
+ * Simple local filesystem cache.
+ *
  * @author Pete Cornish
  */
-object FileUtil {
-    const val CLASSPATH_PREFIX = "classpath:"
+class FileCacheServiceImpl : FileCacheService {
+    private val logger = LogManager.getLogger(ResourceServiceImpl::class.java)
 
-    val engineCacheDir: Path by lazy {
-        val cacheDirPath = (EnvVars.getEnv("IMPOSTER_CACHE_DIR")?.let { Paths.get(it) }
-            ?: Paths.get(System.getProperty("java.io.tmpdir"), "imposter-cache"))
-
-        if (!cacheDirPath.exists()) {
-            cacheDirPath.createDirectories()
+    override fun readFromCache(cacheKey: String): FileCacheService.CacheResult {
+        val cachedPath = generateCachedPath(cacheKey)
+        if (!cachedPath.exists()) {
+            return FileCacheService.CacheResult(false)
         }
-        return@lazy cacheDirPath
+        val content = cachedPath.readBytes()
+        logger.trace("Read cached file: $cachedPath [${content.size} bytes] with key: $cacheKey")
+        return FileCacheService.CacheResult(true, content)
     }
+
+    override fun writeToCache(cacheKey: String, content: String) {
+        val cachedPath = generateCachedPath(cacheKey)
+        logger.trace("Writing cached file [${content.length} bytes]: $cachedPath with key: $cacheKey")
+        cachedPath.writeText(content)
+    }
+
+    private fun generateCachedPath(cacheKey: String): Path =
+        Paths.get(FileUtil.engineCacheDir.absolutePathString(), hashKey(cacheKey))
 
     /**
-     * Return the row with the given ID.
-     *
-     * @param idFieldName
-     * @param rowId
-     * @param rows
-     * @return
+     * @return hashed, hex encoded representation of the cache key
      */
-    fun findRow(idFieldName: String?, rowId: String?, rows: JsonArray): JsonObject? {
-        check(!Strings.isNullOrEmpty(idFieldName)) { "ID field name not configured" }
-        for (i in 0 until rows.size()) {
-            val row = rows.getJsonObject(i)
-            if (row.getValue(idFieldName)?.toString()?.equals(rowId, ignoreCase = true) == true) {
-                return row
-            }
-        }
-        return null
-    }
+    private fun hashKey(cacheKey: String): String =
+        BaseEncoding.base16().encode(MessageDigest.getInstance("SHA-256").digest(cacheKey.toByteArray()))
 }

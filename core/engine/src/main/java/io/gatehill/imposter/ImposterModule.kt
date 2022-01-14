@@ -45,6 +45,8 @@ package io.gatehill.imposter
 import com.google.inject.AbstractModule
 import com.google.inject.Singleton
 import io.gatehill.imposter.plugin.PluginManager
+import io.gatehill.imposter.service.FileCacheService
+import io.gatehill.imposter.service.FileCacheServiceImpl
 import io.gatehill.imposter.service.ResourceService
 import io.gatehill.imposter.service.ResourceServiceImpl
 import io.gatehill.imposter.service.ResponseService
@@ -70,7 +72,7 @@ internal class ImposterModule(
         bind(PluginManager::class.java).toInstance(pluginManager)
         bind(ResourceService::class.java).to(ResourceServiceImpl::class.java).`in`(Singleton::class.java)
         bind(ResponseService::class.java).to(ResponseServiceImpl::class.java).`in`(Singleton::class.java)
-
+        bind(FileCacheService::class.java).to(FileCacheServiceImpl::class.java).`in`(Singleton::class.java)
         bind(ScriptServiceFactory::class.java).`in`(Singleton::class.java)
 
         // needs to be eager to register lifecycle listener

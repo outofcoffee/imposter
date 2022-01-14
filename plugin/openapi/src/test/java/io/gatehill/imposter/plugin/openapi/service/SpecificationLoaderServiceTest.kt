@@ -40,14 +40,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.plugin.openapi.util
+package io.gatehill.imposter.plugin.openapi.service
 
 import com.adobe.testing.s3mock.testcontainers.S3MockContainer
 import com.amazonaws.client.builder.AwsClientBuilder
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import io.gatehill.imposter.config.S3FileDownloader
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig
-import io.gatehill.imposter.plugin.openapi.loader.SpecificationLoader.parseSpecification
+import io.gatehill.imposter.service.FileCacheService
 import io.gatehill.imposter.util.TestEnvironmentUtil.assumeDockerAccessible
 import io.vertx.core.AsyncResult
 import io.vertx.core.Handler
@@ -71,7 +71,12 @@ import java.util.function.Consumer
  *
  * @author Pete Cornish
  */
-class SpecificationLoaderTest {
+class SpecificationLoaderServiceTest {
+    private val noOpFileCacheService = object : FileCacheService {
+        override fun readFromCache(cacheKey: String) = FileCacheService.CacheResult(false)
+        override fun writeToCache(cacheKey: String, content: String) {}
+    }
+    private val service = SpecificationLoaderService(noOpFileCacheService)
     private var s3Mock: S3MockContainer? = null
 
     @After
@@ -91,13 +96,15 @@ class SpecificationLoaderTest {
     @Throws(Exception::class)
     fun testLoadSpecificationFromFile() {
         val specFilePath =
-            Paths.get(SpecificationLoaderTest::class.java.getResource("/util/spec-loader/order_service.yaml")!!.toURI())
+            Paths.get(
+                SpecificationLoaderServiceTest::class.java.getResource("/util/spec-loader/order_service.yaml")!!.toURI()
+            )
 
         val pluginConfig = OpenApiPluginConfig()
         pluginConfig.parentDir = specFilePath.parent.toFile()
         pluginConfig.specFile = specFilePath.fileName.toString()
 
-        val spec = parseSpecification(pluginConfig)
+        val spec = service.parseSpecification(pluginConfig)
         Assert.assertNotNull("spec should be loaded from file", spec)
         Assert.assertEquals("title should match", "Sample Petstore order service", spec.info.title)
     }
@@ -110,7 +117,9 @@ class SpecificationLoaderTest {
     fun testLoadSpecificationFromUrl() {
         val listenPort = ServerSocket(0).use { it.localPort }
         val specFilePath =
-            Paths.get(SpecificationLoaderTest::class.java.getResource("/util/spec-loader/order_service.yaml")!!.toURI())
+            Paths.get(
+                SpecificationLoaderServiceTest::class.java.getResource("/util/spec-loader/order_service.yaml")!!.toURI()
+            )
 
         val httpServer = vertx!!.createHttpServer(HttpServerOptions().setPort(listenPort))
         httpServer.requestHandler { request: HttpServerRequest -> request.response().sendFile(specFilePath.toString()) }
@@ -120,7 +129,7 @@ class SpecificationLoaderTest {
         pluginConfig.parentDir = specFilePath.parent.toFile()
         pluginConfig.specFile = "http://localhost:$listenPort"
 
-        val spec = parseSpecification(pluginConfig)
+        val spec = service.parseSpecification(pluginConfig)
         Assert.assertNotNull("spec should be loaded from URL", spec)
         Assert.assertEquals("title should match", "Sample Petstore order service", spec.info.title)
     }
@@ -143,10 +152,12 @@ class SpecificationLoaderTest {
         System.setProperty(S3FileDownloader.SYS_PROP_S3_API_ENDPOINT, s3Mock!!.httpEndpoint)
 
         val specFilePath =
-            Paths.get(SpecificationLoaderTest::class.java.getResource("/util/spec-loader/order_service.yaml")!!.toURI())
+            Paths.get(
+                SpecificationLoaderServiceTest::class.java.getResource("/util/spec-loader/order_service.yaml")!!.toURI()
+            )
         val pluginConfig = uploadFileToS3(specFilePath)
 
-        val spec = parseSpecification(pluginConfig)
+        val spec = service.parseSpecification(pluginConfig)
         Assert.assertNotNull("spec should be loaded from S3", spec)
         Assert.assertEquals("title should match", "Sample Petstore order service", spec.info.title)
     }

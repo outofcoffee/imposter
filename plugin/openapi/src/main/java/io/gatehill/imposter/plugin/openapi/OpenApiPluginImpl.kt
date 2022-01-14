@@ -55,8 +55,8 @@ import io.gatehill.imposter.plugin.config.resource.ResourceMethod
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig
 import io.gatehill.imposter.plugin.openapi.http.OpenApiResponseBehaviourFactory
-import io.gatehill.imposter.plugin.openapi.loader.SpecificationLoader
 import io.gatehill.imposter.plugin.openapi.service.ExampleService
+import io.gatehill.imposter.plugin.openapi.service.SpecificationLoaderService
 import io.gatehill.imposter.plugin.openapi.service.SpecificationService
 import io.gatehill.imposter.script.ResponseBehaviour
 import io.gatehill.imposter.server.ServerFactory
@@ -96,7 +96,8 @@ class OpenApiPluginImpl @Inject constructor(
     private val exampleService: ExampleService,
     private val responseService: ResponseService,
     private val openApiResponseBehaviourFactory: OpenApiResponseBehaviourFactory,
-    private val serverFactory: ServerFactory
+    private val serverFactory: ServerFactory,
+    private val specificationLoaderService: SpecificationLoaderService,
 ) : ConfiguredPlugin<OpenApiPluginConfig>(
     vertx, imposterConfig
 ) {
@@ -152,7 +153,7 @@ class OpenApiPluginImpl @Inject constructor(
 
         // specification mock endpoints
         configs.forEach { config: OpenApiPluginConfig ->
-            val spec = SpecificationLoader.parseSpecification(config)
+            val spec = specificationLoaderService.parseSpecification(config)
             spec.paths.forEach { path: String, pathConfig: PathItem ->
                 handlePathOperations(router, config, spec, path, pathConfig)
             }
