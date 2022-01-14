@@ -3,9 +3,14 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [2.6.0]
 ### Added
-- ...
+- feat: supports recursive configuration file discovery.
+- feat: adds option to cache remote OpenAPI specifications on local filesystem.
+
+### Fixed
+- fix: ensures Redis and DynamoDB stores always indicate they exist.
+- ci: removes Graal plugin release asset.
 
 ## [2.5.4] - 2022-01-12
 ### Changed
