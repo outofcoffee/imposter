@@ -266,7 +266,7 @@ By default, Imposter reads configuration files within the configuration director
 
 To also load configuration files within subdirectories, set the following environment variable:
 
-    IMPOSTER_CONFIG_SCAN_RECURSIVE="true
+    IMPOSTER_CONFIG_SCAN_RECURSIVE="true"
 
 ## Scripted responses (advanced)
 
