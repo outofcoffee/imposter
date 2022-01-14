@@ -3,7 +3,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.6.0]
+## [Unreleased]
+### Added
+- ...
+
+## [2.6.0] - 2022-01-14
 ### Added
 - feat: supports recursive configuration file discovery.
 - feat: adds option to cache remote OpenAPI specifications on local filesystem.
