@@ -260,6 +260,14 @@ This would resolve to the value `foo` if the `MY_VAR` environment variable was e
 
 Imposter can require specific header values to authenticate incoming HTTP requests. [Read about how to do this](./security.md).
 
+## Config file discovery
+
+By default, Imposter reads configuration files within the configuration directories, but not their subdirectories.
+
+To also load configuration files within subdirectories, set the following environment variable:
+
+    IMPOSTER_CONFIG_SCAN_RECURSIVE="true
+
 ## Scripted responses (advanced)
 
 For more advanced scenarios, you can also control Imposter's responses using JavaScript or Groovy scripts.

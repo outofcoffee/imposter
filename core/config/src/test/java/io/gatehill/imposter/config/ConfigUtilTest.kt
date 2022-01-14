@@ -43,19 +43,22 @@
 package io.gatehill.imposter.config
 
 import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.config.util.ConfigUtil.initInterpolators
+import io.gatehill.imposter.config.util.ConfigUtil
 import io.gatehill.imposter.config.util.ConfigUtil.loadPluginConfig
 import io.gatehill.imposter.config.util.ConfigUtil.loadPluginConfigs
+import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.plugin.PluginManager
 import io.gatehill.imposter.plugin.PluginManagerImpl
 import io.gatehill.imposter.plugin.config.PluginConfigImpl
 import org.junit.Assert
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import java.io.File
 
 /**
- * Tests for [ConfigUtil].
+ * Tests for [io.gatehill.imposter.config.util.ConfigUtil].
  *
  * @author Pete Cornish
  */
@@ -63,32 +66,79 @@ class ConfigUtilTest {
     var pluginManager: PluginManager? = null
 
     @Before
-    @Throws(Exception::class)
     fun setUp() {
         pluginManager = PluginManagerImpl()
     }
 
     @Test
-    @Throws(Exception::class)
     fun testLoadPluginConfigs() {
         val configDir = File(ConfigUtilTest::class.java.getResource("/config").toURI()).path
         val configs: Map<String, List<File>> = loadPluginConfigs(ImposterConfig(), pluginManager!!, arrayOf(configDir))
-        Assert.assertEquals(1, configs.size.toLong())
+        assertEquals(1, configs.size)
         val configFiles = configs["io.gatehill.imposter.core.test.ExamplePluginImpl"]!!
         Assert.assertNotNull("Config files should be discovered", configFiles)
-        Assert.assertEquals(2, configFiles.size.toLong())
+        assertEquals(2, configFiles.size)
     }
 
     @Test
-    @Throws(Exception::class)
     fun testLoadInterpolatedPluginConfig() {
         // override environment variables in string interpolators
         val environment: Map<String, String> = mapOf(
             "EXAMPLE_PATH" to "/test"
         )
-        initInterpolators(environment)
+        ConfigUtil.initInterpolators(environment)
         val configFile = File(ConfigUtilTest::class.java.getResource("/interpolated/test-config.yaml").toURI())
         val config = loadPluginConfig(ImposterConfig(), configFile, PluginConfigImpl::class.java, true, true)
-        Assert.assertEquals("/test", config.path)
+        assertEquals("/test", config.path)
+    }
+
+    /**
+     * All config files within the config dir and its subdirectories should be returned.
+     */
+    @Test
+    fun testLoadRecursive_Enabled() {
+        EnvVars.populate(
+            mapOf(
+                "IMPOSTER_CONFIG_SCAN_RECURSIVE" to "true"
+            )
+        )
+
+        val configDir = File(ConfigUtilTest::class.java.getResource("/recursive").toURI())
+        val configFiles = ConfigUtil.listConfigFiles(configDir)
+
+        assertEquals(3, configFiles.size)
+        assertTrue(
+            "discovered files should include top level dir config",
+            configFiles.map { it.toString() }.any { it.endsWith("/recursive/test-config.yaml") }
+        )
+        assertTrue(
+            "discovered files should include subdir1 config",
+            configFiles.map { it.toString() }.any { it.endsWith("/recursive/subdir1/test-config.yaml") }
+        )
+        assertTrue(
+            "discovered files should include subdir2 config",
+            configFiles.map { it.toString() }.any { it.endsWith("/recursive/subdir2/test-config.yaml") }
+        )
+    }
+
+    /**
+     * Only the top level config file within the config dir and its subdirectories should be returned.
+     */
+    @Test
+    fun testLoadRecursive_Disabled() {
+        EnvVars.populate(
+            mapOf(
+                "IMPOSTER_CONFIG_SCAN_RECURSIVE" to "false"
+            )
+        )
+
+        val configDir = File(ConfigUtilTest::class.java.getResource("/recursive").toURI())
+        val configFiles = ConfigUtil.listConfigFiles(configDir)
+
+        assertEquals(1, configFiles.size)
+        assertTrue(
+            "discovered files should include top level dir config",
+            configFiles.map { it.toString() }.any { it.endsWith("/recursive/test-config.yaml") }
+        )
     }
 }
