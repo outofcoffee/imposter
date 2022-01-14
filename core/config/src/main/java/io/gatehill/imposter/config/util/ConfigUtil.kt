@@ -74,6 +74,7 @@ object ConfigUtil {
         ".yml" to MapUtil.YAML_MAPPER
     )
 
+    private val scanRecursiveConfig = EnvVars.getEnv("IMPOSTER_CONFIG_SCAN_RECURSIVE")?.toBoolean() == true
     private var placeholderSubstitutor: StringSubstitutor? = null
 
     val resolvers: Set<ConfigResolver>
@@ -120,10 +121,7 @@ object ConfigUtil {
         val allPluginConfigs = mutableMapOf<String, MutableList<File>>()
         for (configDir in configDirs) {
             try {
-                val configFiles: Array<File> = configDir.listFiles { _, name -> isConfigFile(name) }
-                    ?: emptyArray()
-
-                for (configFile in configFiles) {
+                for (configFile in listConfigFiles(configDir)) {
                     LOGGER.debug("Loading configuration file: {}", configFile)
                     configCount++
 
@@ -146,6 +144,22 @@ object ConfigUtil {
         }
         LOGGER.trace("Loaded $configCount plugin configuration file(s) from: $configDirs")
         return allPluginConfigs
+    }
+
+    private fun listConfigFiles(configDir: File): List<File> {
+        val topLevelFiles: MutableList<File> = configDir.listFiles { _, name -> isConfigFile(name) }?.toMutableList()
+            ?: mutableListOf()
+
+        topLevelFiles.forEach { file ->
+            if (isConfigFile(file.name)) {
+                topLevelFiles += file
+            }
+            if (scanRecursiveConfig && file.isDirectory) {
+                topLevelFiles += listConfigFiles(file)
+            }
+        }
+
+        return topLevelFiles
     }
 
     private fun resolveToLocal(rawConfigDirs: Array<String>): List<File> {
