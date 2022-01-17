@@ -134,8 +134,13 @@ class VertxWebServerFactoryImpl : ServerFactory {
 
         router.errorHandlers.forEach { (statusCode, errorHandler) ->
             vertxRouter.errorHandler(statusCode) { rc ->
-                // current route can technically be null, so propagate null
-                errorHandler(VertxHttpExchange(rc, rc.currentRoute()?.path))
+                // current route can trigger NPE
+                val currentRoute = try {
+                    rc.currentRoute()
+                } catch (e: NullPointerException) {
+                    null
+                }
+                errorHandler(VertxHttpExchange(rc, currentRoute?.path))
             }
         }
     }
