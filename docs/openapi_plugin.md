@@ -413,7 +413,19 @@ paths:
 - [scripted-named-example-js](https://github.com/outofcoffee/imposter/blob/main/docs/examples/openapi/scripted-named-example-js)
 - [static-named-example](https://github.com/outofcoffee/imposter/blob/main/docs/examples/openapi/static-named-example)
 
-### OpenAPI specification locations
+### Configuration reference
+
+In addition to the standard [configuration](./configuration.md) options, the following additional properties are supported.
+
+| Configuration name       | Purpose                                                                                                                                                                | Default value |
+|--------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------|
+| `path`                   | (Optional) A string to prepend to each operation's path.                                                                                                               | Empty         |
+| `isPickFirstIfNoneMatch` | (Optional) If no exact match is found for an example in a operation, based on matching name to accepted content types, choose the first item found from specification. | `false`       |
+| `specFile`               | (Required) path to OpenAPI specification file (see below).                                                                                                             | Empty         |
+| `stripServerPath`        | (Optional) Whether to remove the path component from the OpenAPI `servers` entries from the mock resource paths.                                                       | `false`       |
+| `validation`             | (Optional) Controls request validation - see [Validation](./openapi_validation.md).                                                                                    | Empty         |
+
+#### OpenAPI specification locations
 
 OpenAPI files can be provided as a relative file, an HTTP(S) URL or a file in an S3 bucket.
 
@@ -441,3 +453,5 @@ specFile: s3://example-bucket/sample_spec.yaml
 ```
 
 When using S3, set up your AWS profile/region/credentials as per standard AWS practice. For example, using an instance profile in EC2, environment variables or the various local environment configuration locations for providing AWS credentials. 
+
+> Note: Remote specification files can be cached locally by setting the environment variable `IMPOSTER_OPENAPI_REMOTE_FILE_CACHE=true`.
