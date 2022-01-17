@@ -52,6 +52,7 @@ import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.ScriptUtil
+import io.gatehill.imposter.scripting.common.util.CompiledJsScript
 import io.gatehill.imposter.scripting.common.util.JavaScriptUtil
 import io.gatehill.imposter.scripting.nashorn.NashornStandaloneScriptingModule
 import io.gatehill.imposter.service.ScriptService
@@ -62,8 +63,8 @@ import org.openjdk.nashorn.api.scripting.NashornScriptEngine
 import org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory
 import org.apache.logging.log4j.LogManager
 import java.nio.file.Path
-import javax.inject.Inject
 import javax.script.CompiledScript
+import javax.script.ScriptException
 import javax.script.ScriptEngineManager
 import javax.script.SimpleBindings
 
@@ -85,7 +86,7 @@ class NashornStandaloneScriptServiceImpl : ScriptService, Plugin {
      */
     private val compiledScripts = CacheBuilder.newBuilder()
         .maximumSize(getEnv(ScriptUtil.ENV_SCRIPT_CACHE_ENTRIES)?.toLong() ?: ScriptUtil.DEFAULT_SCRIPT_CACHE_ENTRIES)
-        .build<Path, CompiledScript>()
+        .build<Path, CompiledJsScript<CompiledScript>>()
 
     init {
         if (getJvmVersion() < 11) {
@@ -119,22 +120,37 @@ class NashornStandaloneScriptServiceImpl : ScriptService, Plugin {
         return try {
             val bindings = SimpleBindings(JavaScriptUtil.transformRuntimeMap(runtimeContext, true))
 
-            val compiledScript = getCompiledScript(scriptFile)
-            compiledScript.eval(bindings) as ReadWriteResponseBehaviour
+            val compiled = getCompiledScript(scriptFile)
+            try {
+                compiled.code.eval(bindings) as ReadWriteResponseBehaviour
+            } catch (e: ScriptException) {
+                throw JavaScriptUtil.unwrapScriptException(e, compiled)
+            }
 
         } catch (e: Exception) {
             throw RuntimeException("Script execution terminated abnormally", e)
         }
     }
 
-    private fun getCompiledScript(scriptFile: Path): CompiledScript {
+    private fun getCompiledScript(scriptFile: Path): CompiledJsScript<CompiledScript> {
         return compiledScripts.get(scriptFile) {
             try {
                 LOGGER.trace("Compiling script file: {}", scriptFile)
                 val compileStartMs = System.currentTimeMillis()
-                val compiled = scriptEngine.compile(JavaScriptUtil.wrapScript(scriptFile))
+                val wrapped = JavaScriptUtil.wrapScript(scriptFile)
+
+                val compiled = try {
+                    CompiledJsScript<CompiledScript>(
+                        preScriptLength = wrapped.preScriptLength,
+                        code = scriptEngine.compile(wrapped.script),
+                    )
+                } catch (e: ScriptException) {
+                    throw JavaScriptUtil.unwrapScriptException(e, wrapped)
+                }
+
                 LOGGER.debug("Script: {} compiled in {}ms", scriptFile, System.currentTimeMillis() - compileStartMs)
                 return@get compiled
+
             } catch (e: Exception) {
                 throw RuntimeException("Failed to compile script: $scriptFile", e)
             }

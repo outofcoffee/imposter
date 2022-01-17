@@ -50,8 +50,9 @@ import io.gatehill.imposter.scripting.common.shim.ConsoleShim
 import io.gatehill.imposter.util.getJvmVersion
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
-import java.nio.file.Files
 import java.nio.file.Path
+import javax.script.ScriptException
+import kotlin.io.path.readText
 
 
 /**
@@ -108,12 +109,10 @@ object JavaScriptUtil {
             .mapKeys { if (globals.contains(it.key)) DSL_OBJECT_PREFIX + it.key else it.key }
     }
 
-    fun wrapScript(scriptFile: Path): String {
-        // wrap mock script
-        val mockScript = String(Files.readAllBytes(scriptFile))
-
-        val setGlobalDslObjects = !mockScript.contains("@imposter-js/types")
-        val wrappedScript = buildWrappedScript(mockScript, setGlobalDslObjects)
+    fun wrapScript(scriptFile: Path): WrappedScript {
+        val script = scriptFile.readText()
+        val setGlobalDslObjects = !script.contains("@imposter-js/types")
+        val wrappedScript = buildWrappedScript(script, setGlobalDslObjects)
 
         if (LOGGER.isTraceEnabled) {
             LOGGER.trace("Wrapped script: $wrappedScript")
@@ -121,7 +120,8 @@ object JavaScriptUtil {
         return wrappedScript
     }
 
-    private fun buildWrappedScript(mockScript: String, setGlobalDslObjects: Boolean): String = """
+    private fun buildWrappedScript(script: String, setGlobalDslObjects: Boolean): WrappedScript {
+        val preScript = """
 var RunnableResponseBehaviourImpl = Java.type('${RunnableResponseBehaviourImpl::class.java.canonicalName}');
 
 var responseBehaviour = new RunnableResponseBehaviourImpl() {
@@ -154,7 +154,8 @@ function require(moduleName) {
 /* ------------------------------------------------------------------------- */
 /* Mock script                                                               */
 /* ------------------------------------------------------------------------- */
-$mockScript
+"""
+        val postScript = """
 /* ------------------------------------------------------------------------- */
 
     }
@@ -165,4 +166,16 @@ responseBehaviour.run();
 /* return the configured behaviour */
 responseBehaviour;
 """
+        return WrappedScript(preScript.lines().size, preScript + script + postScript)
+    }
+
+    /**
+     * Adjust line number to allow for script wrapper.
+     */
+    fun unwrapScriptException(e: ScriptException, meta: ScriptMetadata): ScriptException {
+        val lineNumber = e.lineNumber - meta.preScriptLength + 1
+        return ScriptException(
+            e.cause?.message ?: e.message, e.fileName, lineNumber, e.columnNumber
+        )
+    }
 }

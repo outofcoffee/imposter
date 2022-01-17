@@ -93,11 +93,9 @@ class GraalvmScriptServiceImpl : ScriptService, Plugin {
 
         return try {
             val globals = JavaScriptUtil.transformRuntimeMap(runtimeContext, false)
+            val wrapped = JavaScriptUtil.wrapScript(scriptFile)
+            scriptEngine.eval(wrapped.script, SimpleBindings(globals)) as ReadWriteResponseBehaviour
 
-            scriptEngine.eval(
-                JavaScriptUtil.wrapScript(scriptFile),
-                SimpleBindings(globals)
-            ) as ReadWriteResponseBehaviour
         } catch (e: Exception) {
             throw RuntimeException("Script execution terminated abnormally", e)
         }
