@@ -62,8 +62,18 @@ class OpenApiPluginConfig : ContentTypedPluginConfigImpl(), ResourcesHolder<Open
     @JsonProperty("pickFirstIfNoneMatch")
     val isPickFirstIfNoneMatch = true
 
+    @Deprecated("use stripServerPath instead")
     @JsonProperty("useServerPathAsBaseUrl")
-    val isUseServerPathAsBaseUrl = true
+    val isUseServerPathAsBaseUrl: Boolean? = null
+
+    @field:JsonProperty("stripServerPath")
+    private val _stripServerPath: Boolean? = null
+
+    val stripServerPath: Boolean by lazy {
+        _stripServerPath
+            ?: isUseServerPathAsBaseUrl?.let { !it }
+            ?: false
+    }
 
     @JsonProperty("response")
     override val responseConfig = OpenApiResponseConfig()

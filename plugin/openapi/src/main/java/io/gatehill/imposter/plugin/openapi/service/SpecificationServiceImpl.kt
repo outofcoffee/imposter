@@ -81,13 +81,12 @@ class SpecificationServiceImpl @Inject constructor(
     private val reportFormatter = SimpleValidationReportFormat.getInstance()
 
     @Throws(ExecutionException::class)
-    override fun getCombinedSpec(allSpecs: List<OpenAPI>, deriveBasePathFromServerEntries: Boolean): OpenAPI {
+    override fun getCombinedSpec(allSpecs: List<OpenAPI>, basePath: String?): OpenAPI {
         return cache.get("combinedSpecObject") {
             try {
                 val scheme = Scheme.forValue(imposterConfig.pluginArgs!![ARG_SCHEME])
-                val basePath = imposterConfig.pluginArgs!![ARG_BASEPATH]
                 val title = imposterConfig.pluginArgs!![ARG_TITLE]
-                return@get combineSpecs(allSpecs, basePath, scheme, title, deriveBasePathFromServerEntries)
+                return@get combineSpecs(allSpecs, basePath, scheme, title)
             } catch (e: Exception) {
                 throw ExecutionException(e)
             }
@@ -95,7 +94,7 @@ class SpecificationServiceImpl @Inject constructor(
     }
 
     @Throws(ExecutionException::class)
-    override fun getCombinedSpecSerialised(allSpecs: List<OpenAPI>, deriveBasePathFromServerEntries: Boolean): String {
+    override fun getCombinedSpecSerialised(allSpecs: List<OpenAPI>, basePath: String?): String {
         return cache.get("combinedSpecSerialised") {
             try {
                 // Use the v3 swagger-core serialiser (io.swagger.v3.core.util.Json) to serialise the spec,
@@ -103,7 +102,7 @@ class SpecificationServiceImpl @Inject constructor(
                 // In particular, these mixins correctly serialise extensions and components, like SecurityScheme,
                 // to their formal values, rather than the Java enum/toString() defaults.
                 return@get Json.mapper().writeValueAsString(
-                    getCombinedSpec(allSpecs, deriveBasePathFromServerEntries)
+                    getCombinedSpec(allSpecs, basePath)
                 )
             } catch (e: JsonGenerationException) {
                 throw ExecutionException(e)
@@ -115,8 +114,7 @@ class SpecificationServiceImpl @Inject constructor(
         specs: List<OpenAPI>,
         basePath: String?,
         scheme: Scheme?,
-        title: String?,
-        deriveBasePathFromServerEntries: Boolean
+        title: String?
     ): OpenAPI {
         Objects.requireNonNull(specs, "Input specifications must not be null")
         LOGGER.debug("Generating combined specification from {} inputs", specs.size)
@@ -184,7 +182,7 @@ class SpecificationServiceImpl @Inject constructor(
         components.schemas = aggregate(allComponents) { it.schemas }
         components.securitySchemes = aggregate(allComponents) { it.securitySchemes }
         combined.components = components
-        combined.servers = buildServerList(deriveBasePathFromServerEntries, servers, scheme, basePath)
+        combined.servers = buildServerList(servers, scheme, basePath)
         combined.paths = paths
         combined.security = security
         combined.tags = tags
@@ -194,7 +192,8 @@ class SpecificationServiceImpl @Inject constructor(
     override fun isValidRequest(
         pluginConfig: OpenApiPluginConfig,
         httpExchange: HttpExchange,
-        allSpecs: List<OpenAPI>
+        allSpecs: List<OpenAPI>,
+        basePath: String?,
     ): Boolean {
         if (Objects.isNull(pluginConfig.validation)) {
             LOGGER.trace("Validation is disabled")
@@ -209,7 +208,7 @@ class SpecificationServiceImpl @Inject constructor(
         }
 
         val validator: OpenApiInteractionValidator = try {
-            getValidator(pluginConfig, allSpecs)
+            getValidator(pluginConfig, allSpecs, basePath)
         } catch (e: ExecutionException) {
             httpExchange.fail(RuntimeException("Error building spec validator", e))
             return false
@@ -248,9 +247,9 @@ class SpecificationServiceImpl @Inject constructor(
      * Returns the specification validator from cache, creating it first on cache miss.
      */
     @Throws(ExecutionException::class)
-    private fun getValidator(pluginConfig: OpenApiPluginConfig, allSpecs: List<OpenAPI>): OpenApiInteractionValidator {
+    private fun getValidator(pluginConfig: OpenApiPluginConfig, allSpecs: List<OpenAPI>, basePath: String?): OpenApiInteractionValidator {
         return cache.get("specValidator") {
-            val combined = getCombinedSpec(allSpecs, pluginConfig.isUseServerPathAsBaseUrl)
+            val combined = getCombinedSpec(allSpecs, basePath)
             val builder = OpenApiInteractionValidator.createFor(combined)
 
             // custom validation levels
@@ -266,12 +265,7 @@ class SpecificationServiceImpl @Inject constructor(
         } as OpenApiInteractionValidator
     }
 
-    private fun buildServerList(
-        deriveBasePathFromServerEntries: Boolean,
-        servers: List<Server>,
-        scheme: Scheme?,
-        basePath: String?
-    ): List<Server> {
+    private fun buildServerList(servers: List<Server>, scheme: Scheme?, basePath: String?): List<Server> {
         val finalServers = servers.toMutableList()
 
         scheme?.let {
@@ -290,9 +284,7 @@ class SpecificationServiceImpl @Inject constructor(
         val mockEndpoints = mutableListOf<Server>()
         finalServers.forEach { server ->
             mockEndpoints += Server().apply {
-                this.url = URI.create(
-                    imposterConfig.serverUrl + determineBasePathFromServer(deriveBasePathFromServerEntries, server)
-                ).toString()
+                this.url = URI.create(imposterConfig.serverUrl!!).toString() + determinePathFromServer(server)
             }
         }
         // prepend mock endpoints to servers list
@@ -373,13 +365,12 @@ class SpecificationServiceImpl @Inject constructor(
      * This attempts to derive the path from the first `server` entry in the spec, if one is present
      * and `ImposterConfig.isUseServerPathAsBaseUrl == true`.
      *
-     * @param deriveBasePathFromServerEntries whether to derive the path from server entries in the spec
      * @param spec   the OpenAPI specification
      * @return the base path
      */
-    override fun determineBasePathFromSpec(spec: OpenAPI, deriveBasePathFromServerEntries: Boolean): String {
+    override fun determinePathFromSpec(spec: OpenAPI): String {
         spec.servers.firstOrNull()?.let { firstServer ->
-            return determineBasePathFromServer(deriveBasePathFromServerEntries, firstServer)
+            return determinePathFromServer(firstServer)
         }
         return ""
     }
@@ -389,21 +380,19 @@ class SpecificationServiceImpl @Inject constructor(
      *
      * This attempts to derive the path from the `server`, if `ImposterConfig.isUseServerPathAsBaseUrl == true`.
      *
-     * @param deriveBasePathFromServerEntries whether to derive the path from server entries in the spec
      * @param server   the Server configuration
      * @return the base path
      */
-    private fun determineBasePathFromServer(deriveBasePathFromServerEntries: Boolean, server: Server): String {
-        if (deriveBasePathFromServerEntries) {
-            // Treat the mock server as substitute for 'the' server.
-            // Note: OASv2 'basePath' is converted to OASv3 'server' entries.
-            val url = server.url ?: ""
-            if (url.length > 1) {
-                // attempt to parse as URI and extract path
-                try {
-                    return URI(url).path
-                } catch (ignored: URISyntaxException) {
-                }
+    private fun determinePathFromServer(server: Server): String {
+        // Treat the mock server as substitute for 'the' server.
+        // Note: OASv2 'basePath' is converted to OASv3 'server' entries.
+        val url = server.url ?: ""
+        if (url.length > 1) {
+            // attempt to parse as URI and extract path
+            try {
+                return URI(url).path
+            } catch (ignored: URISyntaxException) {
+                LOGGER.trace("Failed to parse server URL: $url - setting path as empty")
             }
         }
         return ""
@@ -412,7 +401,6 @@ class SpecificationServiceImpl @Inject constructor(
     companion object {
         private val LOGGER = LogManager.getLogger(SpecificationServiceImpl::class.java)
         private const val DEFAULT_TITLE = "Imposter Mock APIs"
-        private const val ARG_BASEPATH = "openapi.basepath"
         private const val ARG_SCHEME = "openapi.scheme"
         private const val ARG_TITLE = "openapi.title"
 

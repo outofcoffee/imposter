@@ -1,0 +1,8 @@
+plugin: "openapi"
+specFile: "pet-api.yaml"
+
+# custom path prefix
+path: /animals
+
+# ignore the server path ('/petstore') from the spec
+stripServerPath: true

@@ -40,29 +40,62 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.plugin.config.resource
+package io.gatehill.imposter.plugin.openapi
 
-import com.fasterxml.jackson.annotation.JsonProperty
-import io.gatehill.imposter.plugin.config.capture.CaptureConfigHolder
-import io.gatehill.imposter.plugin.config.capture.ItemCaptureConfig
-import io.gatehill.imposter.plugin.config.security.SecurityConfig
-import io.gatehill.imposter.plugin.config.security.SecurityConfigHolder
+import com.jayway.restassured.RestAssured
+import com.jayway.restassured.http.ContentType
+import io.gatehill.imposter.server.BaseVerticleTest
+import io.gatehill.imposter.util.HttpUtil
+import io.vertx.ext.unit.TestContext
+import org.hamcrest.Matchers
+import org.junit.Before
+import org.junit.Test
 
 /**
- * Base configuration for plugins and sub-resources.
+ * Tests for operation base path.
  *
  * @author Pete Cornish
  */
-abstract class AbstractResourceConfig : ResponseConfigHolder, SecurityConfigHolder, CaptureConfigHolder {
-    @JsonProperty("path")
-    override var path: String? = null
+class BasePathTest : BaseVerticleTest() {
+    override val pluginClass = OpenApiPluginImpl::class.java
 
-    @JsonProperty("security")
-    override val securityConfig: SecurityConfig? = null
+    @Before
+    @Throws(Exception::class)
+    override fun setUp(testContext: TestContext) {
+        super.setUp(testContext)
+        RestAssured.baseURI = "http://$host:$listenPort"
+    }
 
-    @JsonProperty("capture")
-    override val captureConfig: Map<String, ItemCaptureConfig>? = null
+    override val testConfigDirs = listOf(
+        "/openapi3/base-path"
+    )
 
-    @JsonProperty("response")
-    override val responseConfig = ResponseConfig()
+    @Test
+    fun `different base paths for different specs`() {
+        // the server path ('/petstore') in the spec should be stripped
+        RestAssured.given()
+            .log().ifValidationFails()
+            .accept(ContentType.JSON)
+            .`when`()["/animals/pets/1"]
+            .then()
+            .log().ifValidationFails()
+            .statusCode(HttpUtil.HTTP_OK)
+            .body("id", Matchers.equalTo(1))
+            .body("name", Matchers.equalTo("Cat"))
+
+        RestAssured.given()
+            .log().ifValidationFails()
+            .accept(ContentType.JSON)
+            .`when`()["/shop/supplies"]
+            .then()
+            .log().ifValidationFails()
+            .statusCode(HttpUtil.HTTP_OK)
+            .body("$", Matchers.hasSize<Any>(2))
+            .body(
+                "$", Matchers.allOf(
+                    Matchers.hasItem(Matchers.hasEntry("name", "Brush")),
+                    Matchers.hasItem(Matchers.hasEntry("name", "Food bowl")),
+                )
+            )
+    }
 }

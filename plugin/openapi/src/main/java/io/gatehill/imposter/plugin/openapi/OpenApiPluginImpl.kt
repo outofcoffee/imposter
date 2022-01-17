@@ -107,6 +107,7 @@ class OpenApiPluginImpl @Inject constructor(
     companion object {
         private val LOGGER = LogManager.getLogger(OpenApiPluginImpl::class.java)
         private const val UI_WEB_ROOT = "swagger-ui"
+        private const val ARG_BASEPATH = "openapi.basepath"
 
         /**
          * 'default' is a special case in OpenAPI that does not have a status code.
@@ -120,6 +121,10 @@ class OpenApiPluginImpl @Inject constructor(
         }
     }
 
+    private val basePath: String? by lazy {
+        imposterConfig.pluginArgs!![ARG_BASEPATH]
+    }
+
     override fun configureRoutes(router: HttpRouter) {
         if (configs.isEmpty()) {
             LOGGER.debug("No OpenAPI configuration files provided - skipping plugin setup")
@@ -128,13 +133,11 @@ class OpenApiPluginImpl @Inject constructor(
 
         parseSpecs(router)
 
-        val deriveBasePathFromServerEntries = configs.any { it.isUseServerPathAsBaseUrl }
-
         // serve specification and UI
         LOGGER.debug("Adding specification UI at: {}{}", imposterConfig.serverUrl, SPECIFICATION_PATH)
         router.get(COMBINED_SPECIFICATION_PATH).handler(
             resourceService.handleRoute(imposterConfig, configs, vertx) { httpExchange: HttpExchange ->
-                handleCombinedSpec(httpExchange, deriveBasePathFromServerEntries)
+                handleCombinedSpec(httpExchange)
             }
         )
         router.getWithRegex("$SPECIFICATION_PATH$").handler(
@@ -180,8 +183,7 @@ class OpenApiPluginImpl @Inject constructor(
         pathConfig: PathItem
     ) {
         pathConfig.readOperationsMap().forEach { (httpMethod: PathItem.HttpMethod, operation: Operation) ->
-            val basePath = specificationService.determineBasePathFromSpec(spec, config.isUseServerPathAsBaseUrl)
-            val fullPath = buildFullPath(basePath, path)
+            val fullPath = buildFullPath(config, spec, path)
             LOGGER.debug("Adding mock endpoint: {} -> {}", httpMethod, fullPath)
 
             // convert an io.swagger.models.HttpMethod to an io.vertx.core.http.HttpMethod
@@ -193,23 +195,32 @@ class OpenApiPluginImpl @Inject constructor(
     /**
      * Construct the full path from the base path and the operation path.
      *
-     * @param basePath          the base path
+     * @param config            the plugin configuration
+     * @param spec              the OpenAPI specification
      * @param specOperationPath the operation path from the OpenAPI specification
      * @return the full path
      */
-    private fun buildFullPath(basePath: String, specOperationPath: String): String {
+    private fun buildFullPath(config: OpenApiPluginConfig, spec: OpenAPI, specOperationPath: String): String {
+        // the prefix is built from a concatenation of:
+        // 1. the server 'basePath'
+        // 2. the plugin configuration path
+        // 3. the path of the first 'server' entry in the spec
+        val pathPrefix = (basePath ?: "") + (config.path ?: "") +
+                if (config.stripServerPath) "" else specificationService.determinePathFromSpec(spec)
+
         val operationPath = convertPathFromOpenApi(specOperationPath)
-        return if (basePath.endsWith("/")) {
+
+        return if (pathPrefix.endsWith("/")) {
             if (operationPath!!.startsWith("/")) {
-                basePath + operationPath.substring(1)
+                pathPrefix + operationPath.substring(1)
             } else {
-                basePath + operationPath
+                pathPrefix + operationPath
             }
         } else {
             if (operationPath!!.startsWith("/")) {
-                basePath + operationPath
+                pathPrefix + operationPath
             } else {
-                "$basePath/$operationPath"
+                "$pathPrefix/$operationPath"
             }
         }
     }
@@ -219,11 +230,11 @@ class OpenApiPluginImpl @Inject constructor(
      *
      * @param httpExchange the HTTP exchange
      */
-    private fun handleCombinedSpec(httpExchange: HttpExchange, deriveBasePathFromServerEntries: Boolean) {
+    private fun handleCombinedSpec(httpExchange: HttpExchange) {
         try {
             httpExchange.response()
                 .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_JSON)
-                .end(specificationService.getCombinedSpecSerialised(allSpecs, deriveBasePathFromServerEntries))
+                .end(specificationService.getCombinedSpecSerialised(allSpecs, basePath))
         } catch (e: Exception) {
             httpExchange.fail(e)
         }
@@ -245,11 +256,11 @@ class OpenApiPluginImpl @Inject constructor(
         // statically calculate as much as possible
         val statusCodeFactory = buildStatusCodeCalculator(operation)
         return resourceService.handleRoute(imposterConfig, pluginConfig, vertx) { httpExchange: HttpExchange ->
-            if (!specificationService.isValidRequest(pluginConfig, httpExchange, allSpecs)) {
+            if (!specificationService.isValidRequest(pluginConfig, httpExchange, allSpecs, basePath)) {
                 return@handleRoute
             }
 
-            val context: MutableMap<String, Any> = mutableMapOf()
+            val context = mutableMapOf<String, Any>()
             context["operation"] = operation
 
             val request = httpExchange.request()
@@ -265,16 +276,17 @@ class OpenApiPluginImpl @Inject constructor(
                     }
 
                     // build a response from the specification
-                    val exampleSender = ResponseSender { httpExchange: HttpExchange, responseBehaviour: ResponseBehaviour ->
-                        exampleService.serveExample(
-                            imposterConfig,
-                            pluginConfig,
-                            httpExchange,
-                            responseBehaviour,
-                            specResponse,
-                            spec
-                        )
-                    }
+                    val exampleSender =
+                        ResponseSender { httpExchange: HttpExchange, responseBehaviour: ResponseBehaviour ->
+                            exampleService.serveExample(
+                                imposterConfig,
+                                pluginConfig,
+                                httpExchange,
+                                responseBehaviour,
+                                specResponse,
+                                spec
+                            )
+                        }
 
                     // attempt to serve an example from the specification, falling back if not present
                     responseService.sendResponse(

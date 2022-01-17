@@ -175,7 +175,7 @@ class OpenApiPluginImplTest : BaseVerticleTest() {
         testContext.assertEquals(6, combined.paths.size)
 
         // should contain mock server endpoint
-        testContext.assertTrue(combined.servers.any { it.url.equals("http://$host:$listenPort/simple") })
+        testContext.assertTrue(combined.servers.any { it.url == "http://$host:$listenPort/simple" })
 
         // OASv2
         testContext.assertTrue(combined.paths.containsKey("/apis"))

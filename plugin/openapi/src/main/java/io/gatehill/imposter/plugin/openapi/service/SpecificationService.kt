@@ -57,42 +57,40 @@ interface SpecificationService {
         basePath: String?,
         deriveBasePathFromServerEntries: Boolean
     ): OpenAPI? {
-        return combineSpecs(specs, basePath, null, null, deriveBasePathFromServerEntries)
+        return combineSpecs(specs, basePath, null, null)
     }
 
     /**
      * Returns the combined specification from cache, generating it first on cache miss.
      */
     @Throws(ExecutionException::class)
-    fun getCombinedSpec(allSpecs: List<OpenAPI>, deriveBasePathFromServerEntries: Boolean): OpenAPI
+    fun getCombinedSpec(allSpecs: List<OpenAPI>, basePath: String?): OpenAPI
 
     /**
      * As [getCombinedSpec] but serialised to JSON.
      */
     @Throws(ExecutionException::class)
-    fun getCombinedSpecSerialised(allSpecs: List<OpenAPI>, deriveBasePathFromServerEntries: Boolean): String
+    fun getCombinedSpecSerialised(allSpecs: List<OpenAPI>, basePath: String?): String
 
     fun combineSpecs(
         specs: List<OpenAPI>,
         basePath: String?,
         scheme: Scheme?,
         title: String?,
-        deriveBasePathFromServerEntries: Boolean
     ): OpenAPI?
 
     fun isValidRequest(
         pluginConfig: OpenApiPluginConfig,
         httpExchange: HttpExchange,
-        allSpecs: List<OpenAPI>
+        allSpecs: List<OpenAPI>,
+        basePath: String?,
     ): Boolean
 
     /**
-     * Construct the base path, optionally dependent on the server path,
-     * from which the example response will be served.
+     * Construct the path using the server path, from which the example response will be served.
      *
      * @param spec   the OpenAPI specification
-     * @param deriveBasePathFromServerEntries whether to derive the path from server entries in the spec
-     * @return the base path
+     * @return the path
      */
-    fun determineBasePathFromSpec(spec: OpenAPI, deriveBasePathFromServerEntries: Boolean): String
+    fun determinePathFromSpec(spec: OpenAPI): String
 }
