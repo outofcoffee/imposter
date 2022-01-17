@@ -55,6 +55,11 @@ import kotlin.io.path.inputStream
  */
 class EnvVars(private val env: Map<String, String>) {
     companion object {
+        /**
+         * Precedes parsing, so uses system environment.
+         */
+        val discoverEnvFiles: Boolean = System.getenv("IMPOSTER_CONFIG_DISCOVER_ENVFILES")?.toBoolean() != false
+
         private val logger = LogManager.getLogger(EnvVars::class.java)
         private lateinit var INSTANCE: EnvVars
 

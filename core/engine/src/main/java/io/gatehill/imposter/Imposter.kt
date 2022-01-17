@@ -54,6 +54,7 @@ import org.apache.logging.log4j.LogManager
 import java.io.File
 import java.net.URI
 import java.nio.file.Paths
+import kotlin.io.path.exists
 
 /**
  * @author Pete Cornish
@@ -87,23 +88,18 @@ class Imposter constructor(
 
     private fun processConfiguration(): Map<String, List<File>> {
         imposterConfig.serverUrl = buildServerUrl().toString()
-        val configDirs = imposterConfig.configDirs
 
-        // resolve relative config paths
-        val workingDir = System.getProperty("user.dir")
-        for (i in configDirs.indices) {
-            if (configDirs[i].startsWith("./")) {
-                configDirs[i] = Paths.get(workingDir, configDirs[i].substring(2)).toString()
-            }
+        val configFiles = ConfigUtil.discoverConfigFiles(imposterConfig.configDirs)
+
+        if (EnvVars.discoverEnvFiles) {
+            EnvVars.reset(configFiles.map { Paths.get(it.parent, ".env") }.filter { it.exists() })
         }
-
-        val pluginConfigs = ConfigUtil.loadPluginConfigs(imposterConfig, pluginManager, imposterConfig.configDirs)
 
         EnvVars.getEnv("IMPOSTER_EMBEDDED_SCRIPT_ENGINE")?.let {
             imposterConfig.useEmbeddedScriptEngine = it.toBoolean()
         }
 
-        return pluginConfigs
+        return ConfigUtil.loadPluginConfigs(imposterConfig, pluginManager, configFiles)
     }
 
     private fun buildServerUrl(): URI {

@@ -57,8 +57,6 @@ import org.apache.logging.log4j.LogManager
 import java.io.File
 import java.io.IOException
 import java.nio.charset.StandardCharsets
-import java.nio.file.Paths
-import kotlin.io.path.exists
 
 /**
  * Utility methods for reading configuration.
@@ -112,17 +110,31 @@ object ConfigUtil {
         placeholderSubstitutor = StringSubstitutor(environmentVars)
     }
 
+    /**
+     * Resolves configuration directories to local paths, then
+     * discovers configuration files. File discovery is optionally
+     * recursive, defaulting to the value of [scanRecursiveConfig].
+     */
+    fun discoverConfigFiles(rawConfigDirs: Array<String>, scanRecursive: Boolean = scanRecursiveConfig): List<File> {
+        val configDirs = resolveToLocal(rawConfigDirs)
+
+        val configFiles = mutableListOf<File>()
+        for (configDir in configDirs) {
+            try {
+                configFiles += listConfigFiles(configDir, scanRecursive)
+            } catch (e: Exception) {
+                throw RuntimeException(e)
+            }
+        }
+        return configFiles
+    }
+
     fun loadPluginConfigs(
         imposterConfig: ImposterConfig,
         pluginManager: PluginManager,
-        rawConfigDirs: Array<String>
+        configFiles: List<File>
     ): Map<String, List<File>> {
         var configCount = 0
-
-        val configFiles = discoverConfigFiles(rawConfigDirs, scanRecursiveConfig)
-
-        // reload env
-        EnvVars.reset(configFiles.map { Paths.get(it.parent, ".env") }.filter { it.exists() })
 
         // read all config files
         val allPluginConfigs = mutableMapOf<String, MutableList<File>>()
@@ -149,20 +161,6 @@ object ConfigUtil {
         }
         LOGGER.trace("Loaded $configCount plugin configuration file(s): $configFiles")
         return allPluginConfigs
-    }
-
-    private fun discoverConfigFiles(rawConfigDirs: Array<String>, scanRecursive: Boolean): List<File> {
-        val configDirs = resolveToLocal(rawConfigDirs)
-
-        val configFiles = mutableListOf<File>()
-        for (configDir in configDirs) {
-            try {
-                configFiles += listConfigFiles(configDir, scanRecursive)
-            } catch (e: Exception) {
-                throw RuntimeException(e)
-            }
-        }
-        return configFiles
     }
 
     fun listConfigFiles(configDir: File, scanRecursive: Boolean): List<File> {

@@ -43,17 +43,26 @@
 package io.gatehill.imposter.config.resolver
 
 import java.io.File
+import java.nio.file.Paths
 
 class LocalFileConfigResolver : ConfigResolver {
+    private val workingDir = System.getProperty("user.dir")
+
     override fun handles(configPath: String): Boolean {
-        try {
-            return !configPath.contains("://")
+        return try {
+            !configPath.contains("://")
         } catch (e: Exception) {
-            return false
+            false
         }
     }
 
     override fun resolve(configPath: String): File {
-        return File(configPath)
+        // resolve relative config paths
+        val configFilePath = if (configPath.startsWith("./")) {
+            Paths.get(workingDir, configPath.substring(2)).toString()
+        } else {
+            configPath
+        }
+        return File(configFilePath)
     }
 }

@@ -72,11 +72,14 @@ class ConfigUtilTest {
     @Test
     fun testLoadPluginConfigs() {
         val configDir = File(ConfigUtilTest::class.java.getResource("/config").toURI()).path
-        val configs: Map<String, List<File>> = loadPluginConfigs(ImposterConfig(), pluginManager!!, arrayOf(configDir))
+        val configFiles = ConfigUtil.discoverConfigFiles(arrayOf(configDir), false)
+
+        val configs: Map<String, List<File>> = loadPluginConfigs(ImposterConfig(), pluginManager!!, configFiles)
         assertEquals(1, configs.size)
-        val configFiles = configs["io.gatehill.imposter.core.test.ExamplePluginImpl"]!!
-        Assert.assertNotNull("Config files should be discovered", configFiles)
-        assertEquals(2, configFiles.size)
+
+        val pluginConfigs = configs["io.gatehill.imposter.core.test.ExamplePluginImpl"]!!
+        Assert.assertNotNull("Config files should be discovered", pluginConfigs)
+        assertEquals(2, pluginConfigs.size)
     }
 
     @Test
