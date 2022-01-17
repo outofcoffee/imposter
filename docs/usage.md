@@ -48,10 +48,20 @@ The following environment variables are supported:
 
 > Note: other features may include their own environment variables. See the feature specific documentation for more details.
 
+## Setting environment variables using a file
+
+You can use an environment file ('envfile') to pass environment variables to Imposter. To do this, add a file named `.env` to one of your configuration directories, for example:
+
+```
+# .env
+IMPOSTER_LOG_LEVEL=info
+OTHER_ENV_VAR=example
+```
+
 ## Server URL
 
 For some responses, such as from the [SFDC plugin](sfdc_plugin.md), Imposter uses the 'server URL', which is computed automatically from the `host` and `listenPort` command line arguments. If this is not the URL you wish to use, you can override this with the `serverUrl` command line argument.
 
-## Security
+## Security configuration
 
-See [Security](security.md).
+See the [Security](security.md) section.

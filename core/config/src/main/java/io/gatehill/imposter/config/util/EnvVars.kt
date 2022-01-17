@@ -42,6 +42,12 @@
  */
 package io.gatehill.imposter.config.util
 
+import org.apache.logging.log4j.LogManager
+import java.nio.file.Path
+import java.util.*
+import kotlin.io.path.exists
+import kotlin.io.path.inputStream
+
 /**
  * Wrapper for retrieving environment variables, allowing for
  * overrides.
@@ -50,7 +56,38 @@ package io.gatehill.imposter.config.util
  */
 class EnvVars(private val env: Map<String, String>) {
     companion object {
-        private var INSTANCE: EnvVars? = null
+        private val logger = LogManager.getLogger(EnvVars::class.java)
+        private lateinit var INSTANCE: EnvVars
+
+        init {
+            reset(emptyList())
+        }
+
+        /**
+         * Reset using the environment and any envfile.
+         */
+        fun reset(dotEnvPath: List<Path>) {
+            val env = mutableMapOf<String, String>()
+            dotEnvPath.forEach { env += loadEnvFile(it) }
+            env += System.getenv()
+            populate(env)
+        }
+
+        /**
+         * Reads a file containing key-value pairs and removes any surrounding quotes from values,
+         * representing both keys and values as [String]s.
+         */
+        private fun loadEnvFile(path: Path): Map<String, String> {
+            if (!path.exists()) {
+                return emptyMap()
+            }
+            logger.trace("Loading envfile: $path")
+            return path.inputStream().use { stream ->
+                return@use Properties().apply { this.load(stream) }
+            }.entries.associate { (key, value) ->
+                key.toString() to value.toString().removeSurrounding("\"")
+            }
+        }
 
         @JvmStatic
         fun populate(entries: Map<String, String>) {
@@ -59,16 +96,12 @@ class EnvVars(private val env: Map<String, String>) {
 
         @JvmStatic
         fun getEnv(): Map<String, String> {
-            return INSTANCE!!.env
+            return INSTANCE.env
         }
 
         @JvmStatic
         fun getEnv(key: String): String? {
-            return INSTANCE!!.env[key]
-        }
-
-        init {
-            populate(System.getenv())
+            return INSTANCE.env[key]
         }
     }
 }

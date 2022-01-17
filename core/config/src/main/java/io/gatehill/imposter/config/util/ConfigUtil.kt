@@ -150,12 +150,15 @@ object ConfigUtil {
 
     fun listConfigFiles(configDir: File): List<File> {
         val configFiles = mutableListOf<File>()
+        val scanRecursive = scanRecursiveConfig
 
         configDir.listFiles()?.forEach { file ->
             if (isConfigFile(file.name)) {
                 configFiles += file
-            } else if (scanRecursiveConfig && file.isDirectory) {
-                configFiles += listConfigFiles(file)
+            } else {
+                if (scanRecursive && file.isDirectory) {
+                    configFiles += listConfigFiles(file)
+                }
             }
         }
 

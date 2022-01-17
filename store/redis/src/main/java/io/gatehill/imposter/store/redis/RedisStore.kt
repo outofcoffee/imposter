@@ -42,7 +42,7 @@
  */
 package io.gatehill.imposter.store.redis
 
-import io.gatehill.imposter.config.util.EnvVars.Companion.getEnv
+import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.store.model.Store
 import io.gatehill.imposter.store.redis.RedisStore.Companion.ENV_VAR_EXPIRY
 import org.apache.logging.log4j.LogManager
@@ -63,7 +63,7 @@ class RedisStore(override val storeName: String, redisson: RedissonClient) : Sto
 
     init {
         store = redisson.getMapCache(storeName)
-        val expiration = getEnv(ENV_VAR_EXPIRY)?.toInt() ?: DEFAULT_EXPIRY_SECS
+        val expiration = EnvVars.getEnv(ENV_VAR_EXPIRY)?.toInt() ?: DEFAULT_EXPIRY_SECS
         if (expiration < 0) {
             expirationSecs = Int.MAX_VALUE
             LOGGER.debug("Opened Redis store: {} with no item expiry", storeName)

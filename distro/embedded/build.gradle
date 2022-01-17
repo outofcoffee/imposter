@@ -19,7 +19,7 @@ dependencies {
     // test
     testImplementation project(':imposter-test')
     testImplementation "com.jayway.restassured:rest-assured:$version_restAssured"
-    testImplementation group: 'org.hamcrest', name: 'hamcrest-all', version: '1.3'
+    testImplementation group: 'org.hamcrest', name: 'hamcrest-all', version: version_hamcrest
 
     // java 11 compatibility
     testImplementation ('javax.xml.bind:jaxb-api:2.3.0')

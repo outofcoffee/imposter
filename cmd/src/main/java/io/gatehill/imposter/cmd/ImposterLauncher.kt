@@ -42,7 +42,6 @@
  */
 package io.gatehill.imposter.cmd
 
-import io.gatehill.imposter.config.util.EnvVars.Companion.getEnv
 import io.gatehill.imposter.config.util.MetaUtil.readVersion
 import io.gatehill.imposter.plugin.internal.MetaInfPluginDetectorImpl
 import io.gatehill.imposter.server.ConfigHolder
@@ -71,7 +70,12 @@ class ImposterLauncher(args: Array<String>) {
     @Option(name = "--version", aliases = ["-v"], usage = "Print version and exit", help = true)
     private var displayVersion = false
 
-    @Option(name = "--configDir", aliases = ["-c"], usage = "Directory containing mock configuration files", required = true)
+    @Option(
+        name = "--configDir",
+        aliases = ["-c"],
+        usage = "Directory containing mock configuration files",
+        required = true
+    )
     private var configDirs = arrayOf<String>()
 
     @Option(name = "--plugin", aliases = ["-p"], usage = "Plugin name (e.g. rest) or fully qualified class")
@@ -90,7 +94,11 @@ class ImposterLauncher(args: Array<String>) {
     @Option(name = "--serverUrl", aliases = ["-u"], usage = "Explicitly set the server address")
     private var serverUrl: String? = null
 
-    @Option(name = "--tlsEnabled", aliases = ["-t"], usage = "Whether TLS (HTTPS) is enabled (requires keystore to be configured)")
+    @Option(
+        name = "--tlsEnabled",
+        aliases = ["-t"],
+        usage = "Whether TLS (HTTPS) is enabled (requires keystore to be configured)"
+    )
     private var tlsEnabled = false
 
     @Option(name = "--keystorePath", usage = "Path to the keystore")
@@ -193,7 +201,6 @@ class ImposterLauncher(args: Array<String>) {
         imposterConfig.configDirs = configDirs
         imposterConfig.plugins = plugins
         imposterConfig.pluginArgs = splitArgs
-        imposterConfig.useEmbeddedScriptEngine = getEnv("IMPOSTER_EMBEDDED_SCRIPT_ENGINE")?.toBoolean() == true
 
         LifecycleAwareLauncher().dispatch(originalArgs)
     }

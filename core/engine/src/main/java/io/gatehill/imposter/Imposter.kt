@@ -44,6 +44,7 @@ package io.gatehill.imposter
 
 import com.google.inject.Module
 import io.gatehill.imposter.config.util.ConfigUtil
+import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.config.util.MetaUtil
 import io.gatehill.imposter.plugin.PluginManager
 import io.gatehill.imposter.plugin.PluginManagerImpl
@@ -65,6 +66,7 @@ class Imposter constructor(
 
     fun start() {
         LOGGER.info("Starting mock engine ${MetaUtil.readVersion()}")
+        EnvVars.reset(imposterConfig.configDirs.map { Paths.get(it, ".env") })
 
         val pluginConfigs = processConfiguration()
         val plugins = mutableListOf("js-detector", "store-detector")
@@ -85,6 +87,10 @@ class Imposter constructor(
     }
 
     private fun processConfiguration(): Map<String, MutableList<File>> {
+        EnvVars.getEnv("IMPOSTER_EMBEDDED_SCRIPT_ENGINE")?.let {
+            imposterConfig.useEmbeddedScriptEngine = it.toBoolean()
+        }
+
         imposterConfig.serverUrl = buildServerUrl().toString()
         val configDirs = imposterConfig.configDirs
 

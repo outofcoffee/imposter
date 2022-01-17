@@ -42,36 +42,38 @@
  */
 package io.gatehill.imposter.config
 
-import io.gatehill.imposter.config.util.EnvVars.Companion.getEnv
-import io.gatehill.imposter.config.util.EnvVars.Companion.populate
+import io.gatehill.imposter.config.util.EnvVars
 import org.hamcrest.CoreMatchers
-import org.hamcrest.MatcherAssert
+import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers
 import org.hamcrest.collection.IsMapContaining
-import org.junit.BeforeClass
 import org.junit.Test
+import java.nio.file.Paths
 
 /**
  * Tests for [EnvVars].
  */
 class EnvVarsTest {
-    companion object {
-        @JvmStatic
-        @BeforeClass
-        fun beforeClass() {
-            populate(mapOf("foo" to "bar"))
-        }
-    }
-
     @Test
     fun testGetEnvSingle() {
-        MatcherAssert.assertThat(getEnv("foo"), CoreMatchers.equalTo("bar"))
+        EnvVars.populate(mapOf("foo" to "bar"))
+
+        assertThat(EnvVars.getEnv("foo"), CoreMatchers.equalTo("bar"))
     }
 
     @Test
     fun testGetEnvAll() {
-        val entries = getEnv()
-        MatcherAssert.assertThat(entries.entries, Matchers.hasSize(1))
-        MatcherAssert.assertThat(entries, IsMapContaining.hasEntry("foo", "bar"))
+        EnvVars.populate(mapOf("foo" to "bar"))
+
+        val entries = EnvVars.getEnv()
+        assertThat(entries.entries, Matchers.hasSize(1))
+        assertThat(entries, IsMapContaining.hasEntry("foo", "bar"))
+    }
+
+    @Test
+    fun testLoadFromDotenv() {
+        val envFileDir = Paths.get(EnvVarsTest::class.java.getResource("/.env").toURI())
+        EnvVars.reset(listOf(envFileDir))
+        assertThat(EnvVars.getEnv("TEST_DOT_ENV"), CoreMatchers.equalTo("foo"))
     }
 }
