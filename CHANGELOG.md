@@ -3,9 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
-### Added
-- ...
+## [2.6.1] - 2022-01-17
+### Fixed
+- fix: stops S3 config downloader from attempting to download directories.
+- chore: bumps sample project dependency 'follow-redirects' to 1.14.7.
 
 ## [2.6.0] - 2022-01-14
 ### Added
