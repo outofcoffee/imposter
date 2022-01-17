@@ -102,7 +102,7 @@ class GroovyScriptServiceImpl : ScriptService {
 
         return try {
             val scriptClass = getCompiledScript(scriptFile)
-            val script = scriptClass.newInstance()
+            val script = scriptClass.getDeclaredConstructor().newInstance()
             script.apply {
                 binding = convertBindings(runtimeContext)
                 run()
