@@ -3,9 +3,9 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [2.6.3] - 2022-01-17
 ### Added
-- ...
+- feat: adds envfile resolution relative to configuration files.
 
 ## [2.6.2] - 2022-01-17
 ### Added
