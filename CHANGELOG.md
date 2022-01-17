@@ -3,9 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [2.6.2] - 2022-01-17
 ### Added
-- ...
+- feat: allows OpenAPI path prefix to be configured.
+- feat: adds support for envfiles.
 
 ## [2.6.1] - 2022-01-17
 ### Fixed
