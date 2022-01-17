@@ -6,14 +6,22 @@ compileJava {
 }
 
 dependencies {
-    implementation project(':distro:distro-base')
-    implementation project(':adapter:adapter-vertxweb')
-
     api project (':embedded:embedded-core')
-    api project (':embedded:embedded-openapi')
+    implementation project (':plugin:plugin-openapi')
 
-    // plugins
-    implementation project (':plugin:plugin-detector')
+    // test server
+    testImplementation project(':adapter:adapter-vertxweb')
+
+    // examples
+    testImplementation project (':plugin:plugin-rest')
+
+    // test
+    testImplementation project(':imposter-test')
+    testImplementation "com.jayway.restassured:rest-assured:$version_restAssured"
+    testImplementation group: 'org.hamcrest', name: 'hamcrest-all', version: version_hamcrest
+
+    // java 11 compatibility
+    testImplementation ('javax.xml.bind:jaxb-api:2.3.0')
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

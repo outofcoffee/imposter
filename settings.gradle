@@ -72,6 +72,13 @@ project(':plugin:hbase').name = 'plugin-hbase'
 include ':plugin:sfdc'
 project(':plugin:sfdc').name = 'plugin-sfdc'
 
+// embedded
+include ':embedded:core'
+project (':embedded:core').name = 'embedded-core'
+
+include ':embedded:openapi'
+project (':embedded:openapi').name = 'embedded-openapi'
+
 // distributions
 include ':distro:all'
 project(':distro:all').name = 'distro-all'

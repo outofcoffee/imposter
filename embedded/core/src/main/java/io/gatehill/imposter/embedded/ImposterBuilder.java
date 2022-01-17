@@ -48,7 +48,6 @@ import io.gatehill.imposter.plugin.Plugin;
 import io.gatehill.imposter.script.listener.ScriptListener;
 import io.gatehill.imposter.server.ConfigHolder;
 import io.gatehill.imposter.server.ImposterVerticle;
-import io.gatehill.imposter.server.vertxweb.VertxWebServerFactoryImpl;
 import io.gatehill.imposter.service.script.EmbeddedScriptService;
 import io.gatehill.imposter.util.FeatureUtil;
 import io.gatehill.imposter.util.InjectorUtil;
@@ -98,6 +97,7 @@ import static java.util.Objects.nonNull;
 public class ImposterBuilder<M extends MockEngine, SELF extends ImposterBuilder<M, SELF>> {
     protected static final Logger LOGGER = LogManager.getLogger(ImposterBuilder.class);
     static final String HOST = "localhost";
+    private static final String SERVER_FQCN = "io.gatehill.imposter.server.vertxweb.VertxWebServerFactoryImpl";
 
     private final Vertx vertx = Vertx.vertx();
     protected final List<String> configurationDirs = new ArrayList<>();
@@ -215,7 +215,7 @@ public class ImposterBuilder<M extends MockEngine, SELF extends ImposterBuilder<
     }
 
     private void configure(ImposterConfig imposterConfig, int port) {
-        imposterConfig.setServerFactory(VertxWebServerFactoryImpl.class.getCanonicalName());
+        imposterConfig.setServerFactory(SERVER_FQCN);
         imposterConfig.setHost(HOST);
         imposterConfig.setListenPort(port);
         imposterConfig.setPlugins(pluginClasses.stream().map(Class::getCanonicalName).toArray(String[]::new));

@@ -11,7 +11,7 @@ compileJava {
 }
 
 dependencies {
-    implementation project(':distro:distro-embedded')
+    implementation project(':embedded:embedded-core')
     implementation project(':plugin:plugin-openapi')
     implementation project(':plugin:plugin-rest')
 

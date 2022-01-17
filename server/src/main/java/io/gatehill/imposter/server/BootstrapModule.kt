@@ -67,14 +67,14 @@ class BootstrapModule(
         try {
             @Suppress("UNCHECKED_CAST")
             val serverFactoryClass = ClassLoaderUtil.loadClass<ServerFactory>(serverFactory)
-
             bind(ServerFactory::class.java).to(serverFactoryClass).`in`(Singleton::class.java)
-            bind(EngineLifecycleHooks::class.java).`in`(Singleton::class.java)
-            bind(SecurityLifecycleHooks::class.java).`in`(Singleton::class.java)
-            bind(ScriptExecLifecycleHooks::class.java).`in`(Singleton::class.java)
 
         } catch (e: ClassNotFoundException) {
             throw RuntimeException("Could not load server factory: $serverFactory", e)
         }
+
+        bind(EngineLifecycleHooks::class.java).`in`(Singleton::class.java)
+        bind(SecurityLifecycleHooks::class.java).`in`(Singleton::class.java)
+        bind(ScriptExecLifecycleHooks::class.java).`in`(Singleton::class.java)
     }
 }
