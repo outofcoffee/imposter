@@ -69,6 +69,7 @@ class OpenApiPluginConfig : ContentTypedPluginConfigImpl(), ResourcesHolder<Open
     @field:JsonProperty("stripServerPath")
     private val _stripServerPath: Boolean? = null
 
+    @Suppress("DEPRECATION")
     val stripServerPath: Boolean by lazy {
         _stripServerPath
             ?: isUseServerPathAsBaseUrl?.let { !it }
