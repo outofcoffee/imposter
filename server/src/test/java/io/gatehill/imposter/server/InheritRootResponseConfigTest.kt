@@ -78,7 +78,8 @@ class InheritRootResponseConfigTest : BaseVerticleTest() {
      */
     @Test
     fun testAlwaysReceiveHeader() {
-        RestAssured.given().`when`()["/example"]
+        RestAssured.given().`when`()
+            .get("/example")
             .then()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
             .body(Matchers.equalTo("Hello world")) // header inherited from root response config

@@ -79,7 +79,8 @@ class PerformanceSimulationTest : BaseVerticleTest() {
     @Test
     fun testRequestDelayed_StaticExact() {
         val startMs = System.currentTimeMillis()
-        RestAssured.given().`when`()["/static-exact-delay"]
+        RestAssured.given().`when`()
+            .get("/static-exact-delay")
             .then()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
         val latency = System.currentTimeMillis() - startMs
@@ -96,7 +97,8 @@ class PerformanceSimulationTest : BaseVerticleTest() {
     @Test
     fun testRequestDelayed_StaticRange() {
         val startMs = System.currentTimeMillis()
-        RestAssured.given().`when`()["/static-range-delay"]
+        RestAssured.given().`when`()
+            .get("/static-range-delay")
             .then()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
         val latency = System.currentTimeMillis() - startMs
@@ -112,7 +114,8 @@ class PerformanceSimulationTest : BaseVerticleTest() {
     @Test
     fun testRequestDelayed_ScriptedExact() {
         val startMs = System.currentTimeMillis()
-        RestAssured.given().`when`()["/scripted-exact-delay"]
+        RestAssured.given().`when`()
+            .get("/scripted-exact-delay")
             .then()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
         val latency = System.currentTimeMillis() - startMs
@@ -129,7 +132,8 @@ class PerformanceSimulationTest : BaseVerticleTest() {
     @Test
     fun testRequestDelayed_ScriptedRange() {
         val startMs = System.currentTimeMillis()
-        RestAssured.given().`when`()["/scripted-range-delay"]
+        RestAssured.given().`when`()
+            .get("/scripted-range-delay")
             .then()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
         val latency = System.currentTimeMillis() - startMs

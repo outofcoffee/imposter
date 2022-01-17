@@ -107,7 +107,8 @@ class ImposterVerticleTest : BaseVerticleTest() {
     @Test
     @Throws(Exception::class)
     fun testRequestSuccess() {
-        RestAssured.given().`when`()["/example"]
+        RestAssured.given().`when`()
+            .get("/example")
             .then()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
     }
@@ -115,7 +116,8 @@ class ImposterVerticleTest : BaseVerticleTest() {
     @Test
     @Throws(Exception::class)
     fun testRequestNotFound() {
-        RestAssured.given().`when`()["/does_not_match"]
+        RestAssured.given().`when`()
+            .get("/does_not_match")
             .then()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_NOT_FOUND))
     }

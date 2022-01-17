@@ -87,28 +87,32 @@ class CaptureTest : BaseVerticleTest() {
         RestAssured.given().`when`()
             .pathParam("userId", "foo")
             .queryParam("page", 2)
-            .header("X-Correlation-ID", "abc123")["/users/{userId}"]
+            .header("X-Correlation-ID", "abc123")
+            .get("/users/{userId}")
             .then()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
 
         // retrieve via system
         RestAssured.given().`when`()
             .pathParam("storeId", "captureTest")
-            .pathParam("key", "userId")["/system/store/{storeId}/{key}"]
+            .pathParam("key", "userId")
+            .get("/system/store/{storeId}/{key}")
             .then()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
             .body(Matchers.equalTo("foo"))
 
         RestAssured.given().`when`()
             .pathParam("storeId", "captureTest")
-            .pathParam("key", "page")["/system/store/{storeId}/{key}"]
+            .pathParam("key", "page")
+            .get("/system/store/{storeId}/{key}")
             .then()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
             .body(Matchers.equalTo("2"))
 
         RestAssured.given().`when`()
             .pathParam("storeId", "captureTest")
-            .pathParam("key", "correlationId")["/system/store/{storeId}/{key}"]
+            .pathParam("key", "correlationId")
+            .get("/system/store/{storeId}/{key}")
             .then()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
             .body(Matchers.equalTo("abc123"))
@@ -136,14 +140,16 @@ class CaptureTest : BaseVerticleTest() {
         // retrieve via system
         RestAssured.given().`when`()
             .pathParam("storeId", "captureTest")
-            .pathParam("key", "name")["/system/store/{storeId}/{key}"]
+            .pathParam("key", "name")
+            .get("/system/store/{storeId}/{key}")
             .then()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
             .body(Matchers.equalTo("Alice"))
 
         RestAssured.given().`when`()
             .pathParam("storeId", "captureTest")
-            .pathParam("key", "postCode")["/system/store/{storeId}/{key}"]
+            .pathParam("key", "postCode")
+            .get("/system/store/{storeId}/{key}")
             .then()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
             .body(Matchers.equalTo("PO5 7CO"))
@@ -152,7 +158,8 @@ class CaptureTest : BaseVerticleTest() {
         // should not exist in the store.
         RestAssured.given().`when`()
             .pathParam("storeId", "captureTest")
-            .pathParam("key", "street")["/system/store/{storeId}/{key}"]
+            .pathParam("key", "street")
+            .get("/system/store/{storeId}/{key}")
             .then()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_NOT_FOUND))
     }
@@ -177,7 +184,8 @@ class CaptureTest : BaseVerticleTest() {
 
         // retrieve via system
         val body = RestAssured.given().`when`()
-            .pathParam("storeId", "captureTestAdmins")["/system/store/{storeId}"]
+            .pathParam("storeId", "captureTestAdmins")
+            .get("/system/store/{storeId}")
             .then()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
             .contentType(ContentType.JSON)
