@@ -56,6 +56,7 @@ import io.gatehill.imposter.scripting.common.util.JavaScriptUtil
 import io.gatehill.imposter.scripting.nashorn.NashornStandaloneScriptingModule
 import io.gatehill.imposter.service.ScriptService
 import io.gatehill.imposter.util.MetricsUtil.doIfMetricsEnabled
+import io.gatehill.imposter.util.getJvmVersion
 import io.micrometer.core.instrument.Gauge
 import org.openjdk.nashorn.api.scripting.NashornScriptEngine
 import org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory
@@ -87,6 +88,10 @@ class NashornStandaloneScriptServiceImpl : ScriptService, Plugin {
         .build<Path, CompiledScript>()
 
     init {
+        if (getJvmVersion() < 11) {
+            throw UnsupportedOperationException("Standalone Nashorn JavaScript plugin is only supported on Java 11+. Use js-nashorn-embedded plugin instead.")
+        }
+
         scriptEngine = NashornScriptEngineFactory().scriptEngine as NashornScriptEngine
 
         doIfMetricsEnabled(METRIC_SCRIPT_JS_CACHE_ENTRIES) { registry ->
