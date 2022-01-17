@@ -50,10 +50,14 @@ The following environment variables are supported:
 
 ## Setting environment variables using a file
 
-You can use an environment file ('envfile') to pass environment variables to Imposter. To do this, add a file named `.env` to one of your configuration directories, for example:
+You can use an environment file ('envfile') to pass environment variables to Imposter. To do this, add a file named `.env` adjacent to your configuration files, for example:
 
 ```
-# .env
+$ ls
+.env
+imposter-config.yaml
+
+$ cat .env
 IMPOSTER_LOG_LEVEL=info
 OTHER_ENV_VAR=example
 ```

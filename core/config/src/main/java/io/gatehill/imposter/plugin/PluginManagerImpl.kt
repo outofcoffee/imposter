@@ -152,7 +152,7 @@ class PluginManagerImpl : PluginManager {
     override fun preparePluginsFromConfig(
         imposterConfig: ImposterConfig,
         plugins: List<String>,
-        pluginConfigs: Map<String, MutableList<File>>
+        pluginConfigs: Map<String, List<File>>
     ): List<PluginDependencies> {
 
         // prepare plugins
@@ -272,7 +272,7 @@ class PluginManagerImpl : PluginManager {
      *
      * @param pluginConfigs configurations keyed by plugin
      */
-    override fun configurePlugins(pluginConfigs: Map<String, MutableList<File>>) {
+    override fun configurePlugins(pluginConfigs: Map<String, List<File>>) {
         getPlugins()
             .filter { plugin: Plugin -> plugin is ConfigurablePlugin<*> }
             .map { plugin: Plugin -> plugin as ConfigurablePlugin<*> }

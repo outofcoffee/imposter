@@ -57,6 +57,8 @@ import org.apache.logging.log4j.LogManager
 import java.io.File
 import java.io.IOException
 import java.nio.charset.StandardCharsets
+import java.nio.file.Paths
+import kotlin.io.path.exists
 
 /**
  * Utility methods for reading configuration.
@@ -114,50 +116,64 @@ object ConfigUtil {
         imposterConfig: ImposterConfig,
         pluginManager: PluginManager,
         rawConfigDirs: Array<String>
-    ): Map<String, MutableList<File>> {
+    ): Map<String, List<File>> {
         var configCount = 0
 
-        val configDirs = resolveToLocal(rawConfigDirs)
+        val configFiles = discoverConfigFiles(rawConfigDirs, scanRecursiveConfig)
+
+        // reload env
+        EnvVars.reset(configFiles.map { Paths.get(it.parent, ".env") }.filter { it.exists() })
 
         // read all config files
         val allPluginConfigs = mutableMapOf<String, MutableList<File>>()
+        try {
+            for (configFile in configFiles) {
+                LOGGER.debug("Loading configuration file: {}", configFile)
+                configCount++
+
+                // load to determine plugin
+                val config = loadPluginConfig(
+                    imposterConfig,
+                    configFile,
+                    PluginConfigImpl::class.java,
+                    substitutePlaceholders = true,
+                    convertPathParameters = false
+                )
+
+                val pluginClass = pluginManager.determinePluginClass(config.plugin!!)
+                val pluginConfigs = allPluginConfigs.getOrPut(pluginClass) { mutableListOf() }
+                pluginConfigs.add(configFile)
+            }
+        } catch (e: Exception) {
+            throw RuntimeException(e)
+        }
+        LOGGER.trace("Loaded $configCount plugin configuration file(s): $configFiles")
+        return allPluginConfigs
+    }
+
+    private fun discoverConfigFiles(rawConfigDirs: Array<String>, scanRecursive: Boolean): List<File> {
+        val configDirs = resolveToLocal(rawConfigDirs)
+
+        val configFiles = mutableListOf<File>()
         for (configDir in configDirs) {
             try {
-                for (configFile in listConfigFiles(configDir)) {
-                    LOGGER.debug("Loading configuration file: {}", configFile)
-                    configCount++
-
-                    // load to determine plugin
-                    val config = loadPluginConfig(
-                        imposterConfig,
-                        configFile,
-                        PluginConfigImpl::class.java,
-                        substitutePlaceholders = true,
-                        convertPathParameters = false
-                    )
-
-                    val pluginClass = pluginManager.determinePluginClass(config.plugin!!)
-                    val pluginConfigs = allPluginConfigs.getOrPut(pluginClass) { mutableListOf() }
-                    pluginConfigs.add(configFile)
-                }
+                configFiles += listConfigFiles(configDir, scanRecursive)
             } catch (e: Exception) {
                 throw RuntimeException(e)
             }
         }
-        LOGGER.trace("Loaded $configCount plugin configuration file(s) from: $configDirs")
-        return allPluginConfigs
+        return configFiles
     }
 
-    fun listConfigFiles(configDir: File): List<File> {
+    fun listConfigFiles(configDir: File, scanRecursive: Boolean): List<File> {
         val configFiles = mutableListOf<File>()
-        val scanRecursive = scanRecursiveConfig
 
         configDir.listFiles()?.forEach { file ->
             if (isConfigFile(file.name)) {
                 configFiles += file
             } else {
                 if (scanRecursive && file.isDirectory) {
-                    configFiles += listConfigFiles(file)
+                    configFiles += listConfigFiles(file, scanRecursive)
                 }
             }
         }

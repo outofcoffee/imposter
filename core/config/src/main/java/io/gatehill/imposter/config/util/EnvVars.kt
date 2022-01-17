@@ -45,7 +45,6 @@ package io.gatehill.imposter.config.util
 import org.apache.logging.log4j.LogManager
 import java.nio.file.Path
 import java.util.*
-import kotlin.io.path.exists
 import kotlin.io.path.inputStream
 
 /**
@@ -78,9 +77,6 @@ class EnvVars(private val env: Map<String, String>) {
          * representing both keys and values as [String]s.
          */
         private fun loadEnvFile(path: Path): Map<String, String> {
-            if (!path.exists()) {
-                return emptyMap()
-            }
             logger.trace("Loading envfile: $path")
             return path.inputStream().use { stream ->
                 return@use Properties().apply { this.load(stream) }

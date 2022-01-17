@@ -46,7 +46,6 @@ import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.util.ConfigUtil
 import io.gatehill.imposter.config.util.ConfigUtil.loadPluginConfig
 import io.gatehill.imposter.config.util.ConfigUtil.loadPluginConfigs
-import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.plugin.PluginManager
 import io.gatehill.imposter.plugin.PluginManagerImpl
 import io.gatehill.imposter.plugin.config.PluginConfigImpl
@@ -97,14 +96,8 @@ class ConfigUtilTest {
      */
     @Test
     fun testLoadRecursive_Enabled() {
-        EnvVars.populate(
-            mapOf(
-                "IMPOSTER_CONFIG_SCAN_RECURSIVE" to "true"
-            )
-        )
-
         val configDir = File(ConfigUtilTest::class.java.getResource("/recursive").toURI())
-        val configFiles = ConfigUtil.listConfigFiles(configDir)
+        val configFiles = ConfigUtil.listConfigFiles(configDir, true)
 
         assertEquals(3, configFiles.size)
         assertTrue(
@@ -126,14 +119,8 @@ class ConfigUtilTest {
      */
     @Test
     fun testLoadRecursive_Disabled() {
-        EnvVars.populate(
-            mapOf(
-                "IMPOSTER_CONFIG_SCAN_RECURSIVE" to "false"
-            )
-        )
-
         val configDir = File(ConfigUtilTest::class.java.getResource("/recursive").toURI())
-        val configFiles = ConfigUtil.listConfigFiles(configDir)
+        val configFiles = ConfigUtil.listConfigFiles(configDir, false)
 
         assertEquals(1, configFiles.size)
         assertTrue(

@@ -66,7 +66,6 @@ class Imposter constructor(
 
     fun start() {
         LOGGER.info("Starting mock engine ${MetaUtil.readVersion()}")
-        EnvVars.reset(imposterConfig.configDirs.map { Paths.get(it, ".env") })
 
         val pluginConfigs = processConfiguration()
         val plugins = mutableListOf("js-detector", "store-detector")
@@ -86,11 +85,7 @@ class Imposter constructor(
         pluginManager.configurePlugins(pluginConfigs)
     }
 
-    private fun processConfiguration(): Map<String, MutableList<File>> {
-        EnvVars.getEnv("IMPOSTER_EMBEDDED_SCRIPT_ENGINE")?.let {
-            imposterConfig.useEmbeddedScriptEngine = it.toBoolean()
-        }
-
+    private fun processConfiguration(): Map<String, List<File>> {
         imposterConfig.serverUrl = buildServerUrl().toString()
         val configDirs = imposterConfig.configDirs
 
@@ -102,7 +97,13 @@ class Imposter constructor(
             }
         }
 
-        return ConfigUtil.loadPluginConfigs(imposterConfig, pluginManager, imposterConfig.configDirs)
+        val pluginConfigs = ConfigUtil.loadPluginConfigs(imposterConfig, pluginManager, imposterConfig.configDirs)
+
+        EnvVars.getEnv("IMPOSTER_EMBEDDED_SCRIPT_ENGINE")?.let {
+            imposterConfig.useEmbeddedScriptEngine = it.toBoolean()
+        }
+
+        return pluginConfigs
     }
 
     private fun buildServerUrl(): URI {

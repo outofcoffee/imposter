@@ -53,12 +53,12 @@ interface PluginManager {
     fun preparePluginsFromConfig(
         imposterConfig: ImposterConfig,
         plugins: List<String>,
-        pluginConfigs: Map<String, MutableList<File>>
+        pluginConfigs: Map<String, List<File>>
     ): List<PluginDependencies>
 
     fun determinePluginClass(plugin: String): String
     fun registerPlugins(injector: Injector)
-    fun configurePlugins(pluginConfigs: Map<String, MutableList<File>>)
+    fun configurePlugins(pluginConfigs: Map<String, List<File>>)
 
     fun isProviderRegistered(provider: Class<out PluginProvider>): Boolean
     fun registerProvider(provider: Class<out PluginProvider>)
