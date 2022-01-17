@@ -51,7 +51,7 @@ import io.vertx.core.AsyncResult
 import io.vertx.core.Vertx
 import org.junit.After
 import org.junit.AfterClass
-import org.junit.Assert
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
@@ -79,6 +79,9 @@ class S3FileDownloaderTest {
         uploadFileToS3(s3Mock!!, "/config", "imposter-config.yaml")
         uploadFileToS3(s3Mock!!, "/config", "pet-api.yaml")
         uploadFileToS3(s3Mock!!, "/config", "subdir/response.json")
+
+        // this directory should not be downloaded, but should be created locally
+        uploadFileToS3(s3Mock!!, "/config", "unused-subdir/")
     }
 
     @After
@@ -102,13 +105,17 @@ class S3FileDownloaderTest {
         S3FileDownloader.getInstance().downloadAllFiles("s3://test", configDir)
 
         val configFile = File(configDir, "imposter-config.yaml")
-        Assert.assertTrue("config should be fetched from S3", configFile.exists() && configFile.isFile)
+        assertTrue("config should be fetched from S3", configFile.exists() && configFile.isFile)
 
-        Assert.assertTrue("spec file should be fetched from S3", File(configDir, "pet-api.yaml").exists())
-        Assert.assertTrue(
+        assertTrue("spec file should be fetched from S3", File(configDir, "pet-api.yaml").exists())
+        assertTrue(
             "response file should be fetched from S3 subdir",
             File(configDir, "subdir/response.json").exists()
         )
+
+        val localSubDir = File(configDir, "unused-subdir")
+        assertTrue("local subdir should exist", localSubDir.exists())
+        assertTrue("local subdir should be a directory", localSubDir.isDirectory)
     }
 
     companion object {

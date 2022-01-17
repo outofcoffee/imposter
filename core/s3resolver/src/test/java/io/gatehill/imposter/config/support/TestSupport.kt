@@ -18,14 +18,17 @@ object TestSupport {
     }
 
     fun uploadFileToS3(s3Mock: S3MockContainer, baseDir: String, filePath: String) {
-        val specFilePath = Paths.get(S3FileDownloaderTest::class.java.getResource("$baseDir/$filePath")!!.toURI())
-
         val s3 = AmazonS3ClientBuilder.standard()
             .enablePathStyleAccess()
             .withEndpointConfiguration(AwsClientBuilder.EndpointConfiguration(s3Mock.httpEndpoint, "us-east-1"))
             .build()
 
-        s3.putObject("test", filePath, specFilePath.toFile())
+        if (filePath.endsWith("/")){
+            s3.putObject("test", filePath, "")
+        } else {
+            val specFilePath = Paths.get(S3FileDownloaderTest::class.java.getResource("$baseDir/$filePath")!!.toURI())
+            s3.putObject("test", filePath, specFilePath.toFile())
+        }
     }
 
     /**

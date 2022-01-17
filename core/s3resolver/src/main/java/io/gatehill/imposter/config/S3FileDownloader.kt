@@ -137,18 +137,28 @@ class S3FileDownloader private constructor() {
             if (fileName.contains('/')) {
                 val subDirs = fileName.substring(0, fileName.lastIndexOf('/'))
                 try {
-                    File(destDir, subDirs).mkdirs()
+                    val localSubDirs = File(destDir, subDirs)
+                    if (localSubDirs.exists()) {
+                        if (!localSubDirs.isDirectory) {
+                            throw IllegalStateException("Unable to create $localSubDirs - path exists but is not a directory")
+                        }
+                    } else {
+                        localSubDirs.mkdirs()
+                    }
                 } catch (e: Exception) {
                     throw RuntimeException("Error creating subdirectories: $subDirs", e)
                 }
             }
 
-            try {
-                val content = readFileFromS3(s3Url)
-                localFile.writeText(content)
-                LOGGER.debug("Downloaded file: $s3Url [${content.length} bytes] to: $localFile")
-            } catch (e: Exception) {
-                throw RuntimeException("Error downloading file: $s3Url to: $localFile", e)
+            // only fetch files
+            if (!fileName.endsWith("/")) {
+                try {
+                    val content = readFileFromS3(s3Url)
+                    localFile.writeText(content)
+                    LOGGER.debug("Downloaded file: $s3Url [${content.length} bytes] to: $localFile")
+                } catch (e: Exception) {
+                    throw RuntimeException("Error downloading file: $s3Url to: $localFile", e)
+                }
             }
         }
     }
