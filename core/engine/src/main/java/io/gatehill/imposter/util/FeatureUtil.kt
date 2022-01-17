@@ -87,15 +87,14 @@ object FeatureUtil {
      *
      *
      * For example:
-     * <pre>
+     * ```
      * "foo=true,bar=false"
-    </pre> *
-     *
+     * ```
      *
      * becomes:
-     * <pre>
+     * ```
      * [foo: true, bar: false]
-    </pre> *
+     * ```
      *
      * @return a map of feature name to enabled status
      */

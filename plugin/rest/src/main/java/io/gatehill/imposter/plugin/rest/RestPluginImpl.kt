@@ -192,7 +192,7 @@ class RestPluginImpl @Inject constructor(
         private val LOGGER = LogManager.getLogger(RestPluginImpl::class.java)
 
         /**
-         * Example: <pre>/anything/:id/something</pre>
+         * Example: `/anything/:id/something`
          */
         private val PARAM_MATCHER = Pattern.compile(".*:(.+).*")
     }
