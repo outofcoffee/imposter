@@ -73,26 +73,25 @@ object LogUtil {
 
     private val LOGGER: Logger = LogManager.getLogger(LogUtil::class.java)
     private val statsLogger: Logger = LogManager.getLogger("stats")
-    private var shouldLogSummary: Boolean
+
+    private val shouldLogSummary: Boolean by lazy {
+        EnvVars.getEnv("IMPOSTER_LOG_SUMMARY")?.toBoolean() == true
+    }
 
     /**
      * Lowercase list of request header names to log.
      */
-    private var requestHeaderNames: Array<String>
+    private val requestHeaderNames: Array<String> by lazy {
+        EnvVars.getEnv("IMPOSTER_LOG_REQUEST_HEADERS")
+            ?.split(",")?.map(String::lowercase)?.toTypedArray()
+            ?: emptyArray()
+    }
 
     /**
      * Lowercase list of response header names to log.
      */
-    private var responseHeaderNames: Array<String>
-
-    init {
-        shouldLogSummary = EnvVars.getEnv("IMPOSTER_LOG_SUMMARY")?.toBoolean() == true
-
-        requestHeaderNames = EnvVars.getEnv("IMPOSTER_LOG_REQUEST_HEADERS")
-            ?.split(",")?.map(String::lowercase)?.toTypedArray()
-            ?: emptyArray()
-
-        responseHeaderNames = EnvVars.getEnv("IMPOSTER_LOG_RESPONSE_HEADERS")
+    private val responseHeaderNames: Array<String> by lazy {
+        EnvVars.getEnv("IMPOSTER_LOG_RESPONSE_HEADERS")
             ?.split(",")?.map(String::lowercase)?.toTypedArray()
             ?: emptyArray()
     }
