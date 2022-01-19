@@ -68,9 +68,10 @@ class Imposter constructor(
     fun start() {
         LOGGER.info("Starting mock engine ${MetaUtil.readVersion()}")
 
-        val pluginConfigs = processConfiguration()
         val plugins = mutableListOf("js-detector", "store-detector")
         imposterConfig.plugins?.let { plugins.addAll(it) }
+
+        val pluginConfigs = processConfiguration()
         val dependencies = pluginManager.preparePluginsFromConfig(imposterConfig, plugins, pluginConfigs)
 
         val allModules = mutableListOf<Module>().apply {
