@@ -2,13 +2,14 @@
 set -e
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-ROOT_DIR="${SCRIPT_DIR}/../"
+ROOT_DIR="$( cd "${SCRIPT_DIR}"/../ && pwd )"
 DEFAULT_DISTRO_NAME="core"
 IMPOSTER_LOG_LEVEL="DEBUG"
 RUN_TESTS="true"
 DEBUG_MODE="true"
+MEASURE_PERF="false"
 
-while getopts ":m:d:c:l:t:z:" opt; do
+while getopts ":m:d:c:l:p:t:z:" opt; do
   case ${opt} in
     m )
       LAUNCH_MODE=$OPTARG
@@ -21,6 +22,9 @@ while getopts ":m:d:c:l:t:z:" opt; do
       ;;
     l )
       IMPOSTER_LOG_LEVEL=$OPTARG
+      ;;
+    p )
+      MEASURE_PERF=$OPTARG
       ;;
     t )
       RUN_TESTS=$OPTARG
@@ -63,6 +67,11 @@ if [[ "$RUN_TESTS" == "false" ]]; then
 fi
 # using installDist instead of dist to avoid unneeded shadow JAR for local dev
 ./gradlew installDist ${GRADLE_ARGS}
+
+if [[ "true" == "${MEASURE_PERF}" ]]; then
+  ./gradlew :tools:perf-monitor:shadowJar
+  JAVA_TOOL_OPTIONS="-javaagent:${ROOT_DIR}/tools/perf-monitor/build/libs/imposter-perf-monitor.jar=/tmp/imposter-method-perf.csv ${JAVA_TOOL_OPTIONS}"
+fi
 
 # consumed below
 export IMPOSTER_LOG_LEVEL

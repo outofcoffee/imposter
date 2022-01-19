@@ -1,0 +1,19 @@
+plugins {
+    id 'java-library'
+    id 'com.github.johnrengelman.shadow'
+}
+
+dependencies {
+    implementation 'net.bytebuddy:byte-buddy-dep:1.12.7'
+    implementation 'net.bytebuddy:byte-buddy-agent:1.12.7'
+}
+
+jar {
+    manifest {
+        attributes 'Premain-Class': 'io.gatehill.imposter.perf.Agent'
+    }
+}
+
+shadowJar {
+    archiveName 'imposter-perf-monitor.jar'
+}
