@@ -56,7 +56,7 @@ import io.gatehill.imposter.store.model.StoreFactory
 import io.gatehill.imposter.store.util.StoreUtil
 import io.gatehill.imposter.util.ResourceUtil
 import org.apache.logging.log4j.LogManager
-import java.util.Objects
+import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 
@@ -67,6 +67,7 @@ import javax.inject.Inject
  */
 class CaptureServiceImpl @Inject constructor(
     private val storeFactory: StoreFactory,
+    private val expressionService: ExpressionService,
     lifecycleHooks: EngineLifecycleHooks,
 ) : EngineLifecycleListener {
 
@@ -80,13 +81,13 @@ class CaptureServiceImpl @Inject constructor(
             captureConfig?.let {
                 val jsonPathContextHolder = AtomicReference<DocumentContext>()
                 captureConfig.filterValues { it.enabled }.forEach { (captureConfigKey: String, itemConfig: ItemCaptureConfig) ->
-                    captureItem(captureConfigKey, itemConfig, httpExchange, jsonPathContextHolder)
-                }
+                        captureItem(captureConfigKey, itemConfig, httpExchange, jsonPathContextHolder)
+                    }
             }
         }
     }
 
-    private fun captureItem(
+    fun captureItem(
         captureConfigKey: String,
         itemConfig: ItemCaptureConfig,
         httpExchange: HttpExchange,
@@ -181,13 +182,13 @@ class CaptureServiceImpl @Inject constructor(
         jsonPathContextHolder: AtomicReference<DocumentContext>
     ): T? {
         return if (!Strings.isNullOrEmpty(itemConfig!!.pathParam)) {
-            httpExchange.pathParam(itemConfig.pathParam!!) as T
+            httpExchange.pathParam(itemConfig.pathParam!!) as T?
 
         } else if (!Strings.isNullOrEmpty(itemConfig.queryParam)) {
-            httpExchange.queryParam(itemConfig.queryParam!!) as T
+            httpExchange.queryParam(itemConfig.queryParam!!) as T?
 
         } else if (!Strings.isNullOrEmpty(itemConfig.requestHeader)) {
-            httpExchange.request().getHeader(itemConfig.requestHeader!!) as T
+            httpExchange.request().getHeader(itemConfig.requestHeader!!) as T?
 
         } else if (!Strings.isNullOrEmpty(itemConfig.jsonPath)) {
             var jsonPathContext = jsonPathContextHolder.get()
@@ -196,6 +197,9 @@ class CaptureServiceImpl @Inject constructor(
                 jsonPathContextHolder.set(jsonPathContext)
             }
             jsonPathContext.read<T>(itemConfig.jsonPath)
+
+        } else if (!Strings.isNullOrEmpty(itemConfig.expression)) {
+            expressionService.eval(itemConfig.expression!!, httpExchange) as T?
 
         } else {
             null

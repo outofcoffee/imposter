@@ -1,6 +1,6 @@
 package io.gatehill.imposter.plugin.openapi.service.valueprovider
 
-import io.gatehill.imposter.plugin.openapi.service.SchemaServiceImpl
+import io.gatehill.imposter.util.DateTimeUtil
 import io.swagger.v3.oas.models.media.Schema
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
@@ -24,10 +24,10 @@ internal class StringDefaultValueProvider : DefaultValueProvider<String> {
         return schema.format?.let {
             // see https://swagger.io/docs/specification/data-models/data-types/
             when (schema.format) {
-                "date" -> return SchemaServiceImpl.DATE_FORMATTER.format(
+                "date" -> return DateTimeUtil.DATE_FORMATTER.format(
                     LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS)
                 )
-                "date-time" -> return SchemaServiceImpl.DATE_TIME_FORMATTER.format(
+                "date-time" -> return DateTimeUtil.DATE_TIME_FORMATTER.format(
                     OffsetDateTime.now().truncatedTo(ChronoUnit.SECONDS)
                 )
                 "password" -> return "changeme"

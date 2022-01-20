@@ -40,40 +40,16 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.store
+package io.gatehill.imposter.util
 
-import com.google.inject.AbstractModule
-import com.google.inject.Singleton
-import io.gatehill.imposter.store.model.DelegatingStoreFactoryImpl
-import io.gatehill.imposter.store.model.StoreFactory
-import io.gatehill.imposter.store.service.CaptureServiceImpl
-import io.gatehill.imposter.store.service.ExpressionService
-import io.gatehill.imposter.store.service.ExpressionServiceImpl
-import io.gatehill.imposter.store.service.StoreRestApiServiceImpl
-import io.gatehill.imposter.store.service.StoreService
-import io.gatehill.imposter.store.service.StoreServiceImpl
-import io.gatehill.imposter.store.service.TemplateServiceImpl
+import java.time.ZoneId
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
-/**
- * @author Pete Cornish
- */
-class StoreModule : AbstractModule() {
-    override fun configure() {
-        bind(ExpressionService::class.java).to(ExpressionServiceImpl::class.java).`in`(Singleton::class.java)
+object DateTimeUtil {
+    val DATE_FORMATTER: DateTimeFormatter =
+        DateTimeFormatter.ISO_LOCAL_DATE.withZone(ZoneId.from(ZoneOffset.UTC))
 
-        // needs to be eager to register lifecycle listener
-        bind(StoreService::class.java).to(StoreServiceImpl::class.java).asEagerSingleton()
-
-        // needs to be eager to register lifecycle listener
-        bind(StoreRestApiServiceImpl::class.java).asEagerSingleton()
-
-        // needs to be eager to register lifecycle listener
-        bind(CaptureServiceImpl::class.java).asEagerSingleton()
-
-        // needs to be eager to register lifecycle listener
-        bind(TemplateServiceImpl::class.java).asEagerSingleton()
-
-        // determines driver
-        bind(StoreFactory::class.java).to(DelegatingStoreFactoryImpl::class.java).`in`(Singleton::class.java)
-    }
+    val DATE_TIME_FORMATTER: DateTimeFormatter =
+        DateTimeFormatter.ISO_OFFSET_DATE_TIME.withZone(ZoneId.from(ZoneOffset.UTC))
 }

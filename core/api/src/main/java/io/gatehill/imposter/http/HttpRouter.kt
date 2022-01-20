@@ -142,14 +142,12 @@ data class HttpRoute(
 
         val matcher = placeholderPattern.matcher(path!!)
         val sb = StringBuffer()
-        var index = 0
         while (matcher.find()) {
             val paramName: String = matcher.group().substring(1)
             require(!paramNames.contains(paramName)) { "Cannot use param name '$paramName' more than once in path" }
 
             matcher.appendReplacement(sb, "(?<$paramName>[^/]+)")
             paramNames.add(paramName)
-            index++
         }
         matcher.appendTail(sb)
 

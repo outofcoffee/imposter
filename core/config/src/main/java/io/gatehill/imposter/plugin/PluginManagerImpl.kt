@@ -89,7 +89,8 @@ class PluginManagerImpl : PluginManager {
      * @return a map of plugin short names to full qualified class names
      */
     private fun discoverClasspathPlugins(): Map<String, String> {
-        val pluginClasses: MutableMap<String, String> = mutableMapOf()
+        val startMs = System.currentTimeMillis()
+        val pluginClasses = mutableMapOf<String, String>()
 
         ClassGraph().enableClassInfo().enableAnnotationInfo()
             .addClassLoader(ClassLoaderUtil.pluginClassLoader)
@@ -108,7 +109,8 @@ class PluginManagerImpl : PluginManager {
                 }
             }
 
-        LOGGER.trace("Annotated plugins on classpath: {}", pluginClasses)
+        val duration = System.currentTimeMillis() - startMs
+        LOGGER.trace("Discovered [{} ms] annotated plugins on classpath: {}", duration, pluginClasses)
         return pluginClasses
     }
 

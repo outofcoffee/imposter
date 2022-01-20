@@ -46,23 +46,26 @@ import com.fasterxml.jackson.annotation.JsonProperty
 
 /**
  * A capture configuration that supports path parameters, query parameters,
- * request headers and request body.
+ * request headers, request body, expressions and constants.
  *
  * @author Pete Cornish
  */
-open class CaptureConfig {
-    @JsonProperty("pathParam")
-    val pathParam: String? = null
+open class CaptureConfig(
+    @field:JsonProperty("pathParam")
+    val pathParam: String? = null,
 
-    @JsonProperty("queryParam")
-    val queryParam: String? = null
+    @field:JsonProperty("queryParam")
+    val queryParam: String? = null,
 
-    @JsonProperty("requestHeader")
-    val requestHeader: String? = null
+    @field:JsonProperty("requestHeader")
+    val requestHeader: String? = null,
 
-    @JsonProperty("jsonPath")
-    val jsonPath: String? = null
+    @field:JsonProperty("jsonPath")
+    val jsonPath: String? = null,
 
-    @JsonProperty("const")
-    val constValue: String? = null
-}
+    @field:JsonProperty("expression")
+    val expression: String? = null,
+
+    @field:JsonProperty("const")
+    val constValue: String? = null,
+)

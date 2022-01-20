@@ -155,12 +155,56 @@ plugin: rest
     # constant value
     receivedRequest:
       store: example
-      const: yes
+      const: received
   response:
     statusCode: 200
 ```
 
-In the example above, the value `yes` is stored in the 'example' store, with the name 'receivedRequest', when the given endpoint is hit.
+In the example above, the value `received` is stored in the 'example' store, with the name 'receivedRequest', when the given endpoint is hit.
+
+### Expressions
+
+You can use an expression in a key name or value.
+
+For example:
+
+    ${context.request.header.Correlation-ID}
+
+Or composite expressions such as:
+
+    example_${context.request.header.Correlation-ID}_${context.request.header.User-Agent}
+
+The following expressions are supported:
+
+| Expression                             | Example expression                  | Example value                |
+|----------------------------------------|-------------------------------------|------------------------------|
+| `context.request.header.HEADERNAME`    | `context.request.header.User-Agent` | `"Mozilla"`                  |
+| `context.request.pathParam.PARAMNAME`  | `context.request.pathParam.account` | `"example"`                  |
+| `context.request.queryParam.PARAMNAME` | `context.request.queryParam.page`   | `"1"`                        |
+| `datetime.now.iso8601_date`            | `datetime.now.iso8601_date`         | `"2022-01-20"`               |
+| `datetime.now.iso8601_datetime`        | `datetime.now.iso8601_datetime`     | `"2022-01-20T14:23:25.737Z"` |
+| `datetime.now.millis`                  | `datetime.now.millis`               | `"1642688570140"`            |
+| `datetime.now.nanos`                   | `datetime.now.nanos`                | `"30225267785430"`           |
+
+Example:
+
+```yaml
+# part of your configuration file
+
+resources:
+  - path: "/people/:team/:person"
+    method: POST
+    capture:
+      personInTeam:
+        expression: "person=${context.request.pathParams.name},team=${context.request.pathParams.team}"
+        store: testStore
+```
+
+For a request such as the following:
+
+    GET /people/engineering/jane
+
+The captured item, named `personInTeam`, would have the value: `"person=jane,team=engineering"`
 
 ### Capturing an object
 

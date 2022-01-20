@@ -49,13 +49,27 @@ import com.fasterxml.jackson.annotation.JsonProperty
  *
  * @author Pete Cornish
  */
-class ItemCaptureConfig : CaptureConfig() {
-    @JsonProperty("key")
-    val key: CaptureConfig? = null
+class ItemCaptureConfig(
+    pathParam: String? = null,
+    queryParam: String? = null,
+    requestHeader: String? = null,
+    jsonPath: String? = null,
+    expression: String? = null,
+    constValue: String? = null,
 
-    @JsonProperty("store")
-    val store: String? = null
+    @field:JsonProperty("key")
+    val key: CaptureConfig? = null,
 
-    @JsonProperty("enabled")
-    val enabled: Boolean = true
-}
+    @field:JsonProperty("store")
+    val store: String? = null,
+
+    @field:JsonProperty("enabled")
+    val enabled: Boolean = true,
+) : CaptureConfig(
+    pathParam,
+    queryParam,
+    requestHeader,
+    jsonPath,
+    expression,
+    constValue,
+)

@@ -11,6 +11,9 @@ dependencies {
 
     // test
     testImplementation "junit:junit:$version_junit"
+    testImplementation "org.mockito:mockito-core:$version_mockito"
+    testImplementation "org.mockito.kotlin:mockito-kotlin:4.0.0"
+    testImplementation group: 'org.hamcrest', name: 'hamcrest-all', version: version_hamcrest
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

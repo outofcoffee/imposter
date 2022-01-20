@@ -46,6 +46,7 @@ import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.plugin.openapi.model.ContentTypedHolder
 import io.gatehill.imposter.plugin.openapi.service.valueprovider.DEFAULT_VALUE_PROVIDERS
 import io.gatehill.imposter.plugin.openapi.util.RefUtil
+import io.gatehill.imposter.util.DateTimeUtil
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.media.ArraySchema
 import io.swagger.v3.oas.models.media.ComposedSchema
@@ -55,9 +56,6 @@ import io.swagger.v3.oas.models.media.ObjectSchema
 import io.swagger.v3.oas.models.media.Schema
 import org.apache.logging.log4j.LogManager
 import java.time.OffsetDateTime
-import java.time.ZoneId
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 import java.util.*
 
 /**
@@ -94,9 +92,9 @@ class SchemaServiceImpl : SchemaService {
             collectSchemaExample(spec, referent)
         } else if (Objects.nonNull(schema.example)) {
             if (schema is DateTimeSchema) {
-                DATE_TIME_FORMATTER.format(schema.getExample() as OffsetDateTime)
+                DateTimeUtil.DATE_TIME_FORMATTER.format(schema.getExample() as OffsetDateTime)
             } else if (schema is DateSchema) {
-                DATE_FORMATTER.format((schema.getExample() as Date).toInstant())
+                DateTimeUtil.DATE_FORMATTER.format((schema.getExample() as Date).toInstant())
             } else {
                 schema.example
             }
@@ -200,8 +198,5 @@ class SchemaServiceImpl : SchemaService {
 
     companion object {
         private val LOGGER = LogManager.getLogger(SchemaServiceImpl::class.java)
-        val DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE.withZone(ZoneId.from(ZoneOffset.UTC))
-        val DATE_TIME_FORMATTER: DateTimeFormatter =
-            DateTimeFormatter.ISO_OFFSET_DATE_TIME.withZone(ZoneId.from(ZoneOffset.UTC))
     }
 }
