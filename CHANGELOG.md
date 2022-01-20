@@ -3,9 +3,17 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [2.7.0] - 2022-01-20
 ### Added
-- ...
+- feat: adds expressions for capture keys and values.
+
+### Changed
+- refactor: splits embedded distro into submodules.
+- refactor: adds Java version guard to standalone script service.
+
+### Fixed
+- fix: improves accuracy of Nashorn error line numbers.
+- fix: improves error trapping in Vert.x Web error handler.
 
 ## [2.6.4] - 2022-01-17
 ### Added
