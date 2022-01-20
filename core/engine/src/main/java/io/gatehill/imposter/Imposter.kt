@@ -46,6 +46,7 @@ import com.google.inject.Module
 import io.gatehill.imposter.config.util.ConfigUtil
 import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.config.util.MetaUtil
+import io.gatehill.imposter.plugin.PluginDiscoveryStrategy
 import io.gatehill.imposter.plugin.PluginManager
 import io.gatehill.imposter.plugin.PluginManagerImpl
 import io.gatehill.imposter.util.HttpUtil
@@ -62,8 +63,9 @@ import kotlin.io.path.exists
 class Imposter constructor(
     private val imposterConfig: ImposterConfig,
     private val bootstrapModules: Array<Module>,
+    pluginDiscoveryStrategy: PluginDiscoveryStrategy,
 ) {
-    private val pluginManager: PluginManager = PluginManagerImpl()
+    private val pluginManager: PluginManager = PluginManagerImpl(pluginDiscoveryStrategy)
 
     fun start() {
         LOGGER.info("Starting mock engine ${MetaUtil.readVersion()}")

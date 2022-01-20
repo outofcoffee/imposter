@@ -48,6 +48,7 @@ import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
 import io.gatehill.imposter.lifecycle.EngineLifecycleListener
 import io.gatehill.imposter.plugin.Plugin
+import io.gatehill.imposter.plugin.PluginDiscoveryStrategy
 import io.gatehill.imposter.plugin.PluginManager
 import io.gatehill.imposter.plugin.RoutablePlugin
 import io.gatehill.imposter.plugin.config.ConfigurablePlugin
@@ -57,6 +58,7 @@ import io.gatehill.imposter.scripting.groovy.GroovyScriptingModule
 import io.gatehill.imposter.server.util.FeatureModuleUtil
 import io.gatehill.imposter.service.ResourceService
 import io.gatehill.imposter.util.AsyncUtil.resolvePromiseOnCompletion
+import io.gatehill.imposter.util.ClassLoaderUtil
 import io.gatehill.imposter.util.FeatureUtil.isFeatureEnabled
 import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.HttpUtil.buildStatusResponse
@@ -83,6 +85,9 @@ class ImposterVerticle : AbstractVerticle() {
     @Inject
     private lateinit var resourceService: ResourceService
 
+    @Inject
+    private lateinit var pluginDiscoveryStrategy: PluginDiscoveryStrategy
+
     private val imposterConfig = ConfigHolder.config
     private var httpServer: HttpServer? = null
 
@@ -107,14 +112,19 @@ class ImposterVerticle : AbstractVerticle() {
     }
 
     private fun startEngine() {
+        val pluginDiscoveryStrategyClass =
+            ClassLoaderUtil.loadClass<PluginDiscoveryStrategy>(imposterConfig.pluginDiscoveryStrategy!!)
+
+        val pluginDiscoveryStrategy = pluginDiscoveryStrategyClass.getDeclaredConstructor().newInstance()
+
         val bootstrapModules = mutableListOf<Module>(
-            BootstrapModule(vertx, imposterConfig, imposterConfig.serverFactory!!),
+            BootstrapModule(vertx, imposterConfig, imposterConfig.serverFactory!!, pluginDiscoveryStrategy),
             GroovyScriptingModule(),
             CommonScriptingModule(),
         )
         bootstrapModules.addAll(FeatureModuleUtil.discoverFeatureModules())
 
-        val imposter = Imposter(imposterConfig, bootstrapModules.toTypedArray())
+        val imposter = Imposter(imposterConfig, bootstrapModules.toTypedArray(), pluginDiscoveryStrategy)
         imposter.start()
     }
 

@@ -43,6 +43,7 @@
 package io.gatehill.imposter.server
 
 import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.plugin.DynamicPluginDiscoveryStrategyImpl
 import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.server.vertxweb.VertxWebServerFactoryImpl
 import io.gatehill.imposter.util.MetricsUtil.configureMetrics
@@ -85,7 +86,8 @@ abstract class BaseVerticleTest {
 
     @Throws(Exception::class)
     protected open fun configure(imposterConfig: ImposterConfig) {
-        imposterConfig.serverFactory = VertxWebServerFactoryImpl::class.java.canonicalName
+        imposterConfig.serverFactory = VertxWebServerFactoryImpl::class.qualifiedName
+        imposterConfig.pluginDiscoveryStrategy = DynamicPluginDiscoveryStrategyImpl::class.qualifiedName
         imposterConfig.host = host
         imposterConfig.listenPort = findFreePort()
         imposterConfig.plugins = arrayOf(pluginClass.canonicalName)

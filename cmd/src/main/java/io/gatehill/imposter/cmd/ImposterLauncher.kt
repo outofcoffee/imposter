@@ -43,6 +43,7 @@
 package io.gatehill.imposter.cmd
 
 import io.gatehill.imposter.config.util.MetaUtil.readVersion
+import io.gatehill.imposter.plugin.DynamicPluginDiscoveryStrategyImpl
 import io.gatehill.imposter.plugin.internal.MetaInfPluginDetectorImpl
 import io.gatehill.imposter.server.ConfigHolder
 import io.gatehill.imposter.server.vertxweb.VertxWebServerFactoryImpl
@@ -192,6 +193,7 @@ class ImposterLauncher(args: Array<String>) {
 
         val imposterConfig = ConfigHolder.config
         imposterConfig.serverFactory = serverFactory
+        imposterConfig.pluginDiscoveryStrategy = DynamicPluginDiscoveryStrategyImpl::class.qualifiedName
         imposterConfig.listenPort = port
         imposterConfig.host = host
         imposterConfig.serverUrl = serverUrl

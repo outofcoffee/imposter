@@ -43,26 +43,29 @@
 package io.gatehill.imposter.plugin
 
 import com.google.inject.Injector
-import com.google.inject.Module
 import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.config.util.ConfigUtil
 import io.gatehill.imposter.plugin.config.ConfigurablePlugin
-import io.gatehill.imposter.util.ClassLoaderUtil
-import io.github.classgraph.ClassGraph
-import io.github.classgraph.ClassInfo
 import org.apache.logging.log4j.LogManager
 import java.io.File
 import java.util.*
 
 /**
+ * Registers plugins with the injector and triggers configuration.
+ *
  * @author Pete Cornish
  */
-class PluginManagerImpl : PluginManager {
-    private val classpathPlugins = mutableMapOf<String, String>()
-    private val pluginClasses = mutableSetOf<Class<out Plugin>>()
-    private val providers = mutableSetOf<Class<out PluginProvider>>()
+class PluginManagerImpl(
+    private val discoveryStrategy: PluginDiscoveryStrategy,
+) : PluginManager {
     private val plugins = mutableMapOf<String, Plugin>()
-    private var hasScannedForPlugins = false
+
+    override fun preparePluginsFromConfig(
+        imposterConfig: ImposterConfig,
+        plugins: List<String>,
+        pluginConfigs: Map<String, List<File>>
+    ): List<PluginDependencies> {
+        return discoveryStrategy.preparePluginsFromConfig(imposterConfig, plugins, pluginConfigs)
+    }
 
     /**
      * Determines the plugin class if it matches its short name, otherwise assumes
@@ -72,58 +75,7 @@ class PluginManagerImpl : PluginManager {
      * @return the fully qualified plugin class name
      */
     override fun determinePluginClass(plugin: String): String {
-        if (!hasScannedForPlugins) {
-            synchronized(classpathPlugins) {
-                if (!hasScannedForPlugins) { // double-guard
-                    classpathPlugins.putAll(discoverClasspathPlugins())
-                    hasScannedForPlugins = true
-                }
-            }
-        }
-        return classpathPlugins[plugin] ?: plugin
-    }
-
-    /**
-     * Finds plugins on the classpath annotated with [PluginInfo].
-     *
-     * @return a map of plugin short names to full qualified class names
-     */
-    private fun discoverClasspathPlugins(): Map<String, String> {
-        val startMs = System.currentTimeMillis()
-        val pluginClasses = mutableMapOf<String, String>()
-
-        ClassGraph().enableClassInfo().enableAnnotationInfo()
-            .addClassLoader(ClassLoaderUtil.pluginClassLoader)
-            .whitelistPackages(*PLUGIN_BASE_PACKAGES).scan().use { result ->
-                val pluginClassInfos = result
-                    .getClassesImplementing(Plugin::class.qualifiedName)
-                    .filter { classInfo: ClassInfo -> classInfo.hasAnnotation(PluginInfo::class.qualifiedName) }
-
-                for (pluginClassInfo in pluginClassInfos) {
-                    try {
-                        val pluginName = pluginClassInfo.annotationInfo[0].parameterValues[0].value
-                        pluginClasses[pluginName as String] = pluginClassInfo.name
-                    } catch (e: Exception) {
-                        LOGGER.warn("Error reading plugin class info for: {}", pluginClassInfo.name, e)
-                    }
-                }
-            }
-
-        val duration = System.currentTimeMillis() - startMs
-        LOGGER.trace("Discovered [{} ms] annotated plugins on classpath: {}", duration, pluginClasses)
-        return pluginClasses
-    }
-
-    override fun registerClass(plugin: Class<out Plugin>): Boolean {
-        return pluginClasses.add(plugin)
-    }
-
-    override fun getPluginClasses(): Collection<Class<out Plugin>> {
-        return Collections.unmodifiableCollection(pluginClasses)
-    }
-
-    override fun registerInstance(instance: Plugin) {
-        plugins[instance.javaClass.canonicalName] = instance
+        return discoveryStrategy.determinePluginClass(plugin)
     }
 
     override fun getPlugins(): Collection<Plugin> {
@@ -135,123 +87,16 @@ class PluginManagerImpl : PluginManager {
         return plugins[pluginClassName] as P?
     }
 
-    override fun registerProvider(provider: Class<out PluginProvider>) {
-        providers.add(provider)
-    }
-
-    override fun isProviderRegistered(provider: Class<out PluginProvider>): Boolean {
-        return providers.contains(provider)
-    }
-
-    /**
-     * Registers plugin providers and discovers dependencies from configuration.
-     *
-     * @param imposterConfig the Imposter engine configuration
-     * @param plugins        configured plugins
-     * @param pluginConfigs  plugin configurations
-     * @return list of dependencies
-     */
-    override fun preparePluginsFromConfig(
-        imposterConfig: ImposterConfig,
-        plugins: List<String>,
-        pluginConfigs: Map<String, List<File>>
-    ): List<PluginDependencies> {
-
-        // prepare plugins
-        plugins.map { plugin -> determinePluginClass(plugin) }.forEach { className -> registerPluginClass(className) }
-
-        val dependencies = mutableListOf<PluginDependencies>()
-
-        dependencies.addAll(getPluginClasses().map { pluginClass -> examinePlugin(pluginClass) })
-
-        findUnregisteredProviders().forEach { providerClass: Class<PluginProvider> ->
-            registerProvider(providerClass)
-            val pluginProvider = createPluginProvider(providerClass)
-            val provided = pluginProvider.providePlugins(imposterConfig, pluginConfigs)
-            if (LOGGER.isTraceEnabled) {
-                LOGGER.trace("${provided.size} plugin(s) provided by: ${PluginMetadata.getPluginName(providerClass)}")
-            }
-
-            // recurse for new providers
-            if (provided.isNotEmpty()) {
-                dependencies.addAll(preparePluginsFromConfig(imposterConfig, provided, pluginConfigs))
-            }
-        }
-        return dependencies
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    private fun registerPluginClass(className: String) {
-        try {
-            val clazz = ClassLoaderUtil.loadClass<Plugin>(className)
-            if (registerClass(clazz)) {
-                val pluginName = PluginMetadata.getPluginName(clazz)
-                LOGGER.trace("Registered plugin: $pluginName with class: $className")
-            }
-        } catch (e: Exception) {
-            throw RuntimeException("Failed to register plugin: $className", e)
-        }
-    }
-
-    /**
-     * Examine the plugin for any required dependencies.
-     *
-     * @param pluginClass the plugin to examine
-     * @return the plugin's dependencies
-     */
-    private fun examinePlugin(pluginClass: Class<out Plugin>): PluginDependencies {
-        val moduleAnnotation = pluginClass.getAnnotation(RequireModules::class.java)
-        val requiredModules = if (null != moduleAnnotation && moduleAnnotation.value.isNotEmpty()) {
-            instantiateModules(moduleAnnotation)
-        } else {
-            emptyList()
-        }
-        return PluginDependencies(requiredModules)
-    }
-
-    private fun instantiateModules(moduleAnnotation: RequireModules): List<Module> {
-        val modules = mutableListOf<Module>()
-        for (moduleClass in moduleAnnotation.value) {
-            try {
-                modules.add(moduleClass.java.getDeclaredConstructor().newInstance())
-            } catch (e: Exception) {
-                throw RuntimeException(e)
-            }
-        }
-        return modules
-    }
-
-    /**
-     * @return any [PluginProvider]s not yet registered with the plugin manager
-     */
-    private fun findUnregisteredProviders(): List<Class<PluginProvider>> {
-        return getPluginClasses().filter { cls ->
-            PluginProvider::class.java.isAssignableFrom(cls)
-        }.map { pluginClass ->
-            @Suppress("UNCHECKED_CAST")
-            pluginClass.asSubclass(PluginProvider::class.java) as Class<PluginProvider>
-        }.filter { providerClass ->
-            !isProviderRegistered(providerClass)
-        }
-    }
-
-    private fun createPluginProvider(providerClass: Class<PluginProvider>): PluginProvider {
-        return try {
-            providerClass.getDeclaredConstructor().newInstance()
-        } catch (e: Exception) {
-            throw RuntimeException("Error instantiating plugin provider: ${providerClass.canonicalName}", e)
-        }
-    }
-
     /**
      * Instantiate all plugins and register them with the plugin manager.
      *
      * @param injector the injector from which the plugins can be instantiated
      */
     override fun registerPlugins(injector: Injector) {
-        getPluginClasses().forEach { pluginClass: Class<out Plugin> ->
+        discoveryStrategy.getPluginClasses().forEach { pluginClass: Class<out Plugin> ->
             try {
-                registerInstance(injector.getInstance(pluginClass))
+                val instance = injector.getInstance(pluginClass)
+                plugins[pluginClass.canonicalName] = instance
             } catch (e: Exception) {
                 throw RuntimeException("Error registering plugin: $pluginClass", e)
             }
@@ -262,7 +107,7 @@ class PluginManagerImpl : PluginManager {
             0 -> throw IllegalStateException("No plugins were loaded")
             else -> if (LOGGER.isDebugEnabled) {
                 val pluginNames = allPlugins.joinToString(", ", "[", "]") { p: Plugin ->
-                    PluginMetadata.getPluginName(p.javaClass)
+                    discoveryStrategy.getPluginName(p.javaClass)
                 }
                 LOGGER.debug("Loaded $pluginCount plugin(s): $pluginNames")
             }
@@ -283,7 +128,7 @@ class PluginManagerImpl : PluginManager {
                     val configFiles = pluginConfigs[plugin.javaClass.canonicalName] ?: emptyList()
                     plugin.loadConfiguration(configFiles)
                 } catch (e: Exception) {
-                    val pluginName = PluginMetadata.getPluginName(plugin.javaClass)
+                    val pluginName = discoveryStrategy.getPluginName(plugin.javaClass)
                     throw RuntimeException("Error configuring plugin: $pluginName", e)
                 }
             }
@@ -291,14 +136,5 @@ class PluginManagerImpl : PluginManager {
 
     companion object {
         private val LOGGER = LogManager.getLogger(PluginManager::class.java)
-
-        /**
-         * The base packages to scan recursively for plugins.
-         */
-        private val PLUGIN_BASE_PACKAGES = arrayOf(
-            ConfigUtil.CURRENT_PACKAGE + ".plugin",
-            ConfigUtil.CURRENT_PACKAGE + ".scripting",
-            ConfigUtil.CURRENT_PACKAGE + ".store",
-        )
     }
 }

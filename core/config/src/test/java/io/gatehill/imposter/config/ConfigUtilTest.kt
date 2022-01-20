@@ -46,6 +46,7 @@ import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.util.ConfigUtil
 import io.gatehill.imposter.config.util.ConfigUtil.loadPluginConfig
 import io.gatehill.imposter.config.util.ConfigUtil.loadPluginConfigs
+import io.gatehill.imposter.plugin.DynamicPluginDiscoveryStrategyImpl
 import io.gatehill.imposter.plugin.PluginManager
 import io.gatehill.imposter.plugin.PluginManagerImpl
 import io.gatehill.imposter.plugin.config.PluginConfigImpl
@@ -66,7 +67,7 @@ class ConfigUtilTest {
 
     @Before
     fun setUp() {
-        pluginManager = PluginManagerImpl()
+        pluginManager = PluginManagerImpl(DynamicPluginDiscoveryStrategyImpl())
     }
 
     @Test

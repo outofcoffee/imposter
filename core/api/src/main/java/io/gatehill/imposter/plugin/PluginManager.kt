@@ -59,12 +59,6 @@ interface PluginManager {
     fun determinePluginClass(plugin: String): String
     fun registerPlugins(injector: Injector)
     fun configurePlugins(pluginConfigs: Map<String, List<File>>)
-
-    fun isProviderRegistered(provider: Class<out PluginProvider>): Boolean
-    fun registerProvider(provider: Class<out PluginProvider>)
     fun <P : Plugin?> getPlugin(pluginClassName: String): P?
     fun getPlugins(): Collection<Plugin>
-    fun registerInstance(instance: Plugin)
-    fun getPluginClasses(): Collection<Class<out Plugin>>
-    fun registerClass(plugin: Class<out Plugin>): Boolean
 }

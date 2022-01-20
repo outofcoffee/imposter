@@ -44,6 +44,7 @@
 package io.gatehill.imposter.embedded;
 
 import io.gatehill.imposter.ImposterConfig;
+import io.gatehill.imposter.plugin.DynamicPluginDiscoveryStrategyImpl;
 import io.gatehill.imposter.plugin.Plugin;
 import io.gatehill.imposter.script.listener.ScriptListener;
 import io.gatehill.imposter.server.ConfigHolder;
@@ -216,6 +217,7 @@ public class ImposterBuilder<M extends MockEngine, SELF extends ImposterBuilder<
 
     private void configure(ImposterConfig imposterConfig, int port) {
         imposterConfig.setServerFactory(SERVER_FQCN);
+        imposterConfig.setPluginDiscoveryStrategy(DynamicPluginDiscoveryStrategyImpl.class.getCanonicalName());
         imposterConfig.setHost(HOST);
         imposterConfig.setListenPort(port);
         imposterConfig.setPlugins(pluginClasses.stream().map(Class::getCanonicalName).toArray(String[]::new));

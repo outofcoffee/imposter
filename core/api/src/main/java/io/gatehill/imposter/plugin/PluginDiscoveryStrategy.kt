@@ -40,43 +40,20 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.server
 
-import com.google.inject.AbstractModule
+package io.gatehill.imposter.plugin
+
 import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
-import io.gatehill.imposter.lifecycle.ScriptExecLifecycleHooks
-import io.gatehill.imposter.lifecycle.SecurityLifecycleHooks
-import io.gatehill.imposter.plugin.PluginDiscoveryStrategy
-import io.gatehill.imposter.util.ClassLoaderUtil
-import io.vertx.core.Vertx
-import javax.inject.Singleton
+import java.io.File
 
-/**
- * @author Pete Cornish
- */
-class BootstrapModule(
-    private val vertx: Vertx,
-    private val imposterConfig: ImposterConfig?,
-    private val serverFactory: String,
-    private val pluginDiscoveryStrategy: PluginDiscoveryStrategy,
-) : AbstractModule() {
+interface PluginDiscoveryStrategy {
+    fun preparePluginsFromConfig(
+        imposterConfig: ImposterConfig,
+        plugins: List<String>,
+        pluginConfigs: Map<String, List<File>>
+    ): List<PluginDependencies>
 
-    @Suppress("UNCHECKED_CAST")
-    override fun configure() {
-        bind(Vertx::class.java).toInstance(vertx)
-        bind(ImposterConfig::class.java).toInstance(imposterConfig)
-        bind(PluginDiscoveryStrategy::class.java).toInstance(pluginDiscoveryStrategy)
-
-        try {
-            val serverFactoryClass = ClassLoaderUtil.loadClass<ServerFactory>(serverFactory)
-            bind(ServerFactory::class.java).to(serverFactoryClass).`in`(Singleton::class.java)
-        } catch (e: ClassNotFoundException) {
-            throw RuntimeException("Could not load server factory: $serverFactory", e)
-        }
-
-        bind(EngineLifecycleHooks::class.java).`in`(Singleton::class.java)
-        bind(SecurityLifecycleHooks::class.java).`in`(Singleton::class.java)
-        bind(ScriptExecLifecycleHooks::class.java).`in`(Singleton::class.java)
-    }
+    fun getPluginClasses(): Collection<Class<out Plugin>>
+    fun getPluginName(clazz: Class<in Plugin>): String
+    fun determinePluginClass(plugin: String): String
 }
