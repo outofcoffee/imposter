@@ -59,7 +59,7 @@ import kotlin.io.path.readText
  * @author Pete Cornish
  */
 object JavaScriptUtil {
-    private val LOGGER: Logger = LogManager.getLogger(JavaScriptUtil::class)
+    private val LOGGER: Logger = LogManager.getLogger(JavaScriptUtil::class.java)
     private const val envJsPlugin = "IMPOSTER_JS_PLUGIN"
 
     private const val DSL_OBJECT_PREFIX = "__imposter_dsl_"

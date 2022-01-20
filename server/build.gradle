@@ -20,7 +20,7 @@ dependencies {
 
     // needed for plugin delegation
     implementation project(':scripting:scripting-common')
-    implementation project(':store:store-common')
+    api project(':store:store-common')
 
     // logging
     implementation "org.apache.logging.log4j:log4j-core:$version_log4j"

@@ -47,13 +47,30 @@ import io.gatehill.imposter.ImposterConfig
 import java.io.File
 
 interface PluginDiscoveryStrategy {
+    /**
+     * Registers plugin providers and discovers dependencies from configuration.
+     *
+     * @param imposterConfig the Imposter engine configuration
+     * @param plugins        configured plugins
+     * @param pluginConfigs  plugin configurations
+     * @return list of dependencies
+     */
     fun preparePluginsFromConfig(
         imposterConfig: ImposterConfig,
         plugins: List<String>,
         pluginConfigs: Map<String, List<File>>
     ): List<PluginDependencies>
 
-    fun getPluginClasses(): Collection<Class<out Plugin>>
-    fun getPluginName(clazz: Class<in Plugin>): String
+    /**
+     * Determines the plugin class if it matches its short name, otherwise assumes
+     * the plugin is a fully qualified class name.
+     *
+     * @param plugin the plugin short name or fully qualified class name
+     * @return the fully qualified plugin class name
+     */
     fun determinePluginClass(plugin: String): String
+
+    fun getPluginClasses(): Collection<Class<out Plugin>>
+
+    fun getPluginName(clazz: Class<in Plugin>): String
 }

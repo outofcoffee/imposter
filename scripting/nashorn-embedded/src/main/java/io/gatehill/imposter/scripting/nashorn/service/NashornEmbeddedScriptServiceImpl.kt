@@ -89,7 +89,7 @@ class NashornEmbeddedScriptServiceImpl : ScriptService, Plugin {
 
     init {
         if (getJvmVersion() >= 11) {
-            throw UnsupportedOperationException("Embedded Nashorn JavaScript plugin is not supported on Java 11+. Use js-nashorn-standalone plugin instead.")
+            LOGGER.warn("Embedded Nashorn JavaScript plugin is not supported on Java 11+. Use js-nashorn-standalone plugin instead.")
         }
 
         scriptEngine = NashornScriptEngineFactory().scriptEngine as NashornScriptEngine

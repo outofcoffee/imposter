@@ -9,10 +9,6 @@ compileJava {
 
 dependencies {
     implementation project (':adapter:adapter-awslambda')
-
-    // opinionated implementations
-    implementation project (':scripting:scripting-nashorn-embedded')
-    implementation project (':store:store-dynamodb')
 }
 
 shadowJar {

@@ -85,9 +85,6 @@ class ImposterVerticle : AbstractVerticle() {
     @Inject
     private lateinit var resourceService: ResourceService
 
-    @Inject
-    private lateinit var pluginDiscoveryStrategy: PluginDiscoveryStrategy
-
     private val imposterConfig = ConfigHolder.config
     private var httpServer: HttpServer? = null
 

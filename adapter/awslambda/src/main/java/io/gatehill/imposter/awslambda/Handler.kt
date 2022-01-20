@@ -48,10 +48,10 @@ import com.amazonaws.services.lambda.runtime.RequestHandler
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent
 import io.gatehill.imposter.awslambda.config.Settings
+import io.gatehill.imposter.awslambda.config.StaticPluginDiscoveryStrategyImpl
 import io.gatehill.imposter.awslambda.impl.LambdaServer
 import io.gatehill.imposter.awslambda.impl.LambdaServerFactory
 import io.gatehill.imposter.awslambda.util.ImposterBuilderKt
-import io.gatehill.imposter.awslambda.util.LambdaPlugin
 import io.gatehill.imposter.embedded.MockEngine
 import io.gatehill.imposter.plugin.openapi.OpenApiPluginImpl
 import io.gatehill.imposter.plugin.rest.RestPluginImpl
@@ -75,11 +75,11 @@ class Handler : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyRespo
         System.setProperty("java.io.tmpdir", "/tmp")
 
         engine = ImposterBuilderKt()
-            .withPluginClass(LambdaPlugin::class.java)
             .withPluginClass(OpenApiPluginImpl::class.java)
             .withPluginClass(RestPluginImpl::class.java)
             .withConfigurationDir(Settings.configDir ?: Settings.s3ConfigUrl)
             .withEngineOptions { options ->
+                options.pluginDiscoveryStrategy = StaticPluginDiscoveryStrategyImpl::class.qualifiedName
                 options.serverFactory = LambdaServerFactory::class.qualifiedName
                 options.requestHandlingMode = RequestHandlingMode.SYNC
             }.startBlocking()

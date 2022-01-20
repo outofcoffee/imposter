@@ -51,7 +51,7 @@ import io.github.classgraph.ClassGraph
 import io.github.classgraph.ClassInfo
 import org.apache.logging.log4j.LogManager
 import java.io.File
-import java.util.*
+import java.util.Collections
 
 /**
  * Scans the classpath to find classes implementing [Plugin] and [PluginProvider],
@@ -66,12 +66,7 @@ class DynamicPluginDiscoveryStrategyImpl : PluginDiscoveryStrategy {
     private var hasScannedForPlugins = false
 
     /**
-     * Registers plugin providers and discovers dependencies from configuration.
-     *
-     * @param imposterConfig the Imposter engine configuration
-     * @param plugins        configured plugins
-     * @param pluginConfigs  plugin configurations
-     * @return list of dependencies
+     * {@inheritDoc}
      */
     override fun preparePluginsFromConfig(
         imposterConfig: ImposterConfig,
@@ -103,11 +98,7 @@ class DynamicPluginDiscoveryStrategyImpl : PluginDiscoveryStrategy {
     }
 
     /**
-     * Determines the plugin class if it matches its short name, otherwise assumes
-     * the plugin is a fully qualified class name.
-     *
-     * @param plugin the plugin short name or fully qualified class name
-     * @return the fully qualified plugin class name
+     * {@inheritDoc}
      */
     override fun determinePluginClass(plugin: String): String {
         if (!hasScannedForPlugins) {
@@ -147,8 +138,8 @@ class DynamicPluginDiscoveryStrategyImpl : PluginDiscoveryStrategy {
 
                 for (pluginClassInfo in pluginClassInfos) {
                     try {
-                        val pluginName = pluginClassInfo.annotationInfo[0].parameterValues[0].value
-                        pluginClasses[pluginName as String] = pluginClassInfo.name
+                        val pluginName = pluginClassInfo.annotationInfo[0].parameterValues[0].value as String
+                        pluginClasses[pluginName] = pluginClassInfo.name
                     } catch (e: Exception) {
                         logger.warn("Error reading plugin class info for: {}", pluginClassInfo.name, e)
                     }
@@ -172,13 +163,12 @@ class DynamicPluginDiscoveryStrategyImpl : PluginDiscoveryStrategy {
         return providers.contains(provider)
     }
 
-    @Suppress("UNCHECKED_CAST")
     private fun registerPluginClass(className: String) {
         try {
             val clazz = ClassLoaderUtil.loadClass<Plugin>(className)
-            if (registerClass(clazz)) {
-                val pluginName = PluginMetadata.getPluginName(clazz)
-                logger.trace("Registered plugin: $pluginName with class: $className")
+            val registered = registerClass(clazz)
+            if (registered && logger.isTraceEnabled) {
+                logger.trace("Registered plugin: ${getPluginName(clazz)} with class: $className")
             }
         } catch (e: Exception) {
             throw RuntimeException("Failed to register plugin: $className", e)

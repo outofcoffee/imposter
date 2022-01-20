@@ -23,6 +23,10 @@ dependencies {
     implementation "org.apache.logging.log4j:log4j-slf4j18-impl:$version_log4j"
     implementation "com.amazonaws:aws-lambda-java-log4j2:$version_lambda_logger"
 
+    // opinionated implementations
+    implementation project (':scripting:scripting-nashorn-embedded')
+    implementation project (':store:store-dynamodb')
+
     // test
     testImplementation project(':imposter-test')
     testImplementation 'com.amazonaws:aws-lambda-java-tests:1.1.1'
