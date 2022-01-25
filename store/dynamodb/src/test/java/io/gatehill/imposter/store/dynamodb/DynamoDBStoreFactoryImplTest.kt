@@ -42,6 +42,8 @@
  */
 package io.gatehill.imposter.store.dynamodb
 
+import io.gatehill.imposter.config.util.EnvVars
+import io.gatehill.imposter.store.dynamodb.config.Settings
 import io.gatehill.imposter.store.dynamodb.support.Example
 import io.gatehill.imposter.util.TestEnvironmentUtil
 import org.junit.AfterClass
@@ -112,22 +114,49 @@ class DynamoDBStoreFactoryImplTest : AbstractDynamoDBStoreTest() {
     }
 
     @Test
-    fun testSaveLoadComplexItems() {
-        val store = factory.buildNewStore("complex")
+    fun testSaveLoadMap() {
+        val store = factory.buildNewStore("map")
         Assert.assertEquals(0, store.count())
         store.save("grault", mapOf("foo" to "bar"))
-        store.save("garply", Example("test"))
 
         val loadedMap = store.load<Map<String, *>>("grault")
         Assert.assertNotNull(loadedMap)
         Assert.assertTrue("Returned value should be a Map", loadedMap is Map)
         Assert.assertEquals("bar", loadedMap!!["foo"])
+    }
+
+    @Test
+    fun testSaveLoadComplexItemBinary() {
+        EnvVars.populate(EnvVars.getEnv().toMutableMap().apply {
+            put("IMPOSTER_DYNAMODB_OBJECT_SERIALISATION", Settings.ObjectSerialisation.BINARY.name) }
+        )
+
+        val store = factory.buildNewStore("complex-binary")
+        Assert.assertEquals(0, store.count())
+        store.save("garply", Example("test"))
 
         // POJO is deserialised as a Map
-        val loadedMap2 = store.load<Map<String, *>>("garply")
-        Assert.assertNotNull(loadedMap2)
-        Assert.assertTrue("Returned value should be a Map", loadedMap2 is Map)
-        Assert.assertEquals("test", loadedMap2!!["name"])
+        val loadedMap = store.load<Map<String, *>>("garply")
+        Assert.assertNotNull(loadedMap)
+        Assert.assertTrue("Returned value should be a Map", loadedMap is Map)
+        Assert.assertEquals("test", loadedMap!!["name"])
+    }
+
+    @Test
+    fun testSaveLoadComplexItemMap() {
+        EnvVars.populate(EnvVars.getEnv().toMutableMap().apply {
+            put("IMPOSTER_DYNAMODB_OBJECT_SERIALISATION", Settings.ObjectSerialisation.MAP.name) }
+        )
+
+        val store = factory.buildNewStore("complex-map")
+        Assert.assertEquals(0, store.count())
+        store.save("garply", Example("test"))
+
+        // POJO is deserialised as a Map
+        val loadedMap = store.load<Map<String, *>>("garply")
+        Assert.assertNotNull(loadedMap)
+        Assert.assertTrue("Returned value should be a Map", loadedMap is Map)
+        Assert.assertEquals("test", loadedMap!!["name"])
     }
 
     @Test
@@ -141,11 +170,10 @@ class DynamoDBStoreFactoryImplTest : AbstractDynamoDBStoreTest() {
     }
 
     @Test
-    fun testDeleteStore() {
-        factory.buildNewStore("ds")
-        factory.deleteStoreByName("ds", false)
-
-        // dynamodb implementation always reports true
-        Assert.assertTrue("Store should still exist", factory.hasStoreWithName("ds"))
+    fun testClearStore() {
+        val store = factory.buildNewStore("ds")
+        store.save("baz", "qux")
+        factory.clearStore("ds", false)
+        Assert.assertEquals("Store should be empty", 0, factory.getStoreByName("ds", false).count())
     }
 }

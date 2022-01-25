@@ -47,7 +47,6 @@ import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.RequireModules
 import io.gatehill.imposter.store.factory.AbstractStoreFactory
 import io.gatehill.imposter.store.model.Store
-import io.gatehill.imposter.store.util.StoreUtil
 
 /**
  * @author Pete Cornish
@@ -57,10 +56,6 @@ import io.gatehill.imposter.store.util.StoreUtil
 class InMemoryStoreFactoryImpl : AbstractStoreFactory(), Plugin {
     override fun buildNewStore(storeName: String): Store {
         return InMemoryStore(storeName)
-    }
-
-    override fun hasStoreWithName(storeName: String): Boolean {
-        return if (StoreUtil.isRequestScopedStore(storeName)) true else stores.containsKey(storeName)
     }
 
     companion object {

@@ -138,7 +138,7 @@ class StoreServiceImpl @Inject constructor(
     override fun afterHttpExchangeHandled(httpExchange: HttpExchange) {
         // clean up request store if one exists
         httpExchange.get<String?>(ResourceUtil.RC_REQUEST_ID_KEY)?.let { uniqueRequestId: String ->
-            storeFactory.deleteStoreByName(
+            storeFactory.clearStore(
                 StoreUtil.buildRequestStoreName(uniqueRequestId), isEphemeralStore = true
             )
         }

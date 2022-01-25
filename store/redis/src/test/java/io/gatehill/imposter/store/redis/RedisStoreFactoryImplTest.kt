@@ -154,11 +154,10 @@ singleServerConfig:
     }
 
     @Test
-    fun testDeleteStore() {
-        factory.buildNewStore("ds")
-        factory.deleteStoreByName("ds", false)
-        
-        // redist implementation always reports true
-        Assert.assertTrue("Store should still exist", factory.hasStoreWithName("ds"))
+    fun testClearStore() {
+        val store = factory.buildNewStore("ds")
+        store.save("baz", "qux")
+        factory.clearStore("ds", false)
+        Assert.assertEquals("Store should be empty", 0, factory.getStoreByName("ds", false).count())
     }
 }

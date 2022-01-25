@@ -80,15 +80,11 @@ class DelegatingStoreFactoryImpl @Inject constructor(
         }
     }
 
-    override fun hasStoreWithName(storeName: String): Boolean {
-        return impl.hasStoreWithName(storeName)
-    }
-
     override fun getStoreByName(storeName: String, isEphemeralStore: Boolean): Store {
         return impl.getStoreByName(storeName, isEphemeralStore)
     }
 
-    override fun deleteStoreByName(storeName: String, isEphemeralStore: Boolean) {
-        impl.deleteStoreByName(storeName, isEphemeralStore)
+    override fun clearStore(storeName: String, isEphemeralStore: Boolean) {
+        impl.clearStore(storeName, isEphemeralStore)
     }
 }

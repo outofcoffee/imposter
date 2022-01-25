@@ -60,10 +60,10 @@ import org.apache.logging.log4j.LogManager
  */
 abstract class AbstractStoreFactory : StoreFactory {
     protected val stores = mutableMapOf<String, Store>()
-    private val keyPrefix: String
+    private val keyPrefix: String?
 
     init {
-        keyPrefix = getEnv(ENV_VAR_KEY_PREFIX)?.let { "$it." } ?: ""
+        keyPrefix = getEnv(ENV_VAR_KEY_PREFIX)?.let { "$it." }
     }
 
     override fun getStoreByName(storeName: String, isEphemeralStore: Boolean): Store {
@@ -72,16 +72,17 @@ abstract class AbstractStoreFactory : StoreFactory {
             return@getOrPut if (isEphemeralStore) {
                 InMemoryStore(storeName)
             } else {
-                PrefixedKeyStore(keyPrefix, buildNewStore(storeName))
+                val rawStore = buildNewStore(storeName)
+                keyPrefix?.let { PrefixedKeyStore(keyPrefix, rawStore) } ?: rawStore
             }
         }
         LOGGER.trace("Got store: {} (type: {})", storeName, store.typeDescription)
         return store
     }
 
-    override fun deleteStoreByName(storeName: String, isEphemeralStore: Boolean) {
+    override fun clearStore(storeName: String, isEphemeralStore: Boolean) {
         stores.remove(storeName)?.let {
-            LOGGER.trace("Deleted store: {}", storeName)
+            LOGGER.trace("Cleared store: {}", storeName)
         }
     }
 

@@ -48,7 +48,11 @@ import io.gatehill.imposter.plugin.test.TestPluginImpl
 import io.gatehill.imposter.util.HttpUtil
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
-import org.hamcrest.Matchers
+import org.hamcrest.Matchers.allOf
+import org.hamcrest.Matchers.any
+import org.hamcrest.Matchers.equalTo
+import org.hamcrest.Matchers.hasEntry
+import org.hamcrest.Matchers.not
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -84,13 +88,13 @@ class StoreTest : BaseVerticleTest() {
             .queryParam("foo", "qux")
             .put("/store")
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_CREATED))
+            .statusCode(equalTo(HttpUtil.HTTP_CREATED))
 
         // load via script
         RestAssured.given().`when`()["/load"]
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
-            .body(Matchers.equalTo("qux"))
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .body(equalTo("qux"))
     }
 
     /**
@@ -101,7 +105,7 @@ class StoreTest : BaseVerticleTest() {
         RestAssured.given().`when`()
             .pathParam("storeId", "nonexistent")["/system/store/{storeId}"]
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_NOT_FOUND))
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
     }
 
     /**
@@ -117,21 +121,21 @@ class StoreTest : BaseVerticleTest() {
             .body("baz")
             .put("/system/store/{storeId}/{key}")
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_CREATED))
+            .statusCode(equalTo(HttpUtil.HTTP_CREATED))
 
         // incorrect mime type
         RestAssured.given().`when`()
             .pathParam("storeId", "umt")
             .accept(ContentType.XML)["/system/store/{storeId}"]
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_NOT_ACCEPTABLE))
+            .statusCode(equalTo(HttpUtil.HTTP_NOT_ACCEPTABLE))
 
         // correct mime type
         RestAssured.given().`when`()
             .pathParam("storeId", "umt")
             .accept(ContentType.JSON)["/system/store/{storeId}"]
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
     }
 
     /**
@@ -144,7 +148,7 @@ class StoreTest : BaseVerticleTest() {
             .pathParam("storeId", "sgs")
             .pathParam("key", "bar")["/system/store/{storeId}/{key}"]
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_NOT_FOUND))
+            .statusCode(equalTo(HttpUtil.HTTP_NOT_FOUND))
 
         // create via system
         RestAssured.given().`when`()
@@ -154,7 +158,7 @@ class StoreTest : BaseVerticleTest() {
             .body("corge")
             .put("/system/store/{storeId}/{key}")
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_CREATED))
+            .statusCode(equalTo(HttpUtil.HTTP_CREATED))
 
         // update via system
         RestAssured.given().`when`()
@@ -164,15 +168,15 @@ class StoreTest : BaseVerticleTest() {
             .body("quux")
             .put("/system/store/{storeId}/{key}")
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
 
         // retrieve via system
         RestAssured.given().`when`()
             .pathParam("storeId", "sgs")
             .pathParam("key", "bar")["/system/store/{storeId}/{key}"]
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
-            .body(Matchers.equalTo("quux"))
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .body(equalTo("quux"))
     }
 
     /**
@@ -184,7 +188,7 @@ class StoreTest : BaseVerticleTest() {
         RestAssured.given().`when`()
             .pathParam("storeId", "sgm")["/system/store/{storeId}"]
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_NOT_FOUND))
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
 
         val body = mapOf(
             "baz" to "quuz",
@@ -198,17 +202,17 @@ class StoreTest : BaseVerticleTest() {
             .body(body)
             .post("/system/store/{storeId}")
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
 
         // load all
         RestAssured.given().`when`()
             .pathParam("storeId", "sgm")["/system/store/{storeId}"]
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
             .body(
-                "$", Matchers.allOf(
-                    Matchers.hasEntry("baz", "quuz"),
-                    Matchers.hasEntry("corge", "grault")
+                "$", allOf(
+                    hasEntry("baz", "quuz"),
+                    hasEntry("corge", "grault")
                 )
             )
     }
@@ -226,21 +230,21 @@ class StoreTest : BaseVerticleTest() {
             .body("quux")
             .put("/system/store/{storeId}/{key}")
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_CREATED))
+            .statusCode(equalTo(HttpUtil.HTTP_CREATED))
 
         RestAssured.given().`when`()
             .pathParam("storeId", "ditem")
             .pathParam("key", "corge")
             .delete("/system/store/{storeId}/{key}")
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_NO_CONTENT))
+            .statusCode(equalTo(HttpUtil.HTTP_NO_CONTENT))
 
         // should not exist
         RestAssured.given().`when`()
             .pathParam("storeId", "ditem")
             .pathParam("key", "corge")["/system/store/{storeId}/{key}"]
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_NOT_FOUND))
+            .statusCode(equalTo(HttpUtil.HTTP_NOT_FOUND))
     }
 
     /**
@@ -256,21 +260,21 @@ class StoreTest : BaseVerticleTest() {
             .body("quuz")
             .put("/system/store/{storeId}/{key}")
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_CREATED))
+            .statusCode(equalTo(HttpUtil.HTTP_CREATED))
 
         // load all
         RestAssured.given().`when`()
             .pathParam("storeId", "sga")["/system/store/{storeId}"]
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
-            .body("$", Matchers.hasEntry("baz", "quuz"))
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .body("$", hasEntry("baz", "quuz"))
     }
 
     /**
-     * Save and load from the store across multiple requests.
+     * Clear the contents of a store.
      */
     @Test
-    fun testDeleteStore() {
+    fun testClearStore() {
         // save via system
         RestAssured.given().`when`()
             .pathParam("storeId", "dstore")
@@ -279,19 +283,20 @@ class StoreTest : BaseVerticleTest() {
             .body("quuz")
             .put("/system/store/{storeId}/{key}")
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_CREATED))
+            .statusCode(equalTo(HttpUtil.HTTP_CREATED))
 
         // delete
         RestAssured.given().`when`()
             .pathParam("storeId", "dstore")
             .delete("/system/store/{storeId}")
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_NO_CONTENT))
+            .statusCode(equalTo(HttpUtil.HTTP_NO_CONTENT))
 
         // should not exist
         RestAssured.given().`when`()
             .pathParam("storeId", "dstore")["/system/store/{storeId}"]
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_NOT_FOUND))
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .body("$", not(hasEntry(any(Any::class.java), any(Any::class.java))))
     }
 }

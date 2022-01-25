@@ -74,6 +74,10 @@ internal object Settings {
     val tableName: String
         get() = EnvVars.getEnv("IMPOSTER_DYNAMODB_TABLE") ?: "Imposter"
 
+    val objectSerialisation: ObjectSerialisation
+        get() = EnvVars.getEnv("IMPOSTER_DYNAMODB_OBJECT_SERIALISATION")?.let { ObjectSerialisation.valueOf(it) }
+            ?: ObjectSerialisation.BINARY
+
     object Ttl {
         private const val disabledValue = -1L
 
@@ -87,5 +91,10 @@ internal object Settings {
 
         val attributeName: String
             get() = EnvVars.getEnv("IMPOSTER_DYNAMODB_TTL_ATTRIBUTE") ?: "ttl"
+    }
+
+    enum class ObjectSerialisation {
+        BINARY,
+        MAP,
     }
 }

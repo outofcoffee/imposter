@@ -77,11 +77,6 @@ class RedisStoreFactoryImpl @Inject constructor(
         redisson = Redisson.create(config)
     }
 
-    /**
-     * Always assume exists, to avoid need to check with backing store.
-     */
-    override fun hasStoreWithName(storeName: String) = true
-
     private fun discoverConfigFile(imposterConfig: ImposterConfig): File {
         return imposterConfig.configDirs.map { dir: String? ->
             val configFile = File(dir, "redisson.yaml")
@@ -99,12 +94,12 @@ class RedisStoreFactoryImpl @Inject constructor(
         return RedisStore(storeName, redisson)
     }
 
-    override fun deleteStoreByName(storeName: String, isEphemeralStore: Boolean) {
+    override fun clearStore(storeName: String, isEphemeralStore: Boolean) {
         if (!isEphemeralStore) {
             LOGGER.info("Deleting all items from store: $storeName")
             redisson.getMapCache<String, Any>(storeName).clear()
         }
-        super.deleteStoreByName(storeName, isEphemeralStore)
+        super.clearStore(storeName, isEphemeralStore)
     }
 
     companion object {

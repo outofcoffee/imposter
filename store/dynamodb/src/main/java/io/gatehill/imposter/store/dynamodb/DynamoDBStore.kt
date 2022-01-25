@@ -77,15 +77,7 @@ class DynamoDBStore(
 
     override fun save(key: String, value: Any?) {
         logger.trace("Saving item with key: {} to store: {}", key, storeName)
-        val valueAttribute = AttributeValue().apply {
-            when (value) {
-                null -> withNULL(true)
-                is String -> withS(value.toString())
-                is Number -> withN(value.toString())
-                is Boolean -> withBOOL(value.toString().toBoolean())
-                else -> withB(ByteBuffer.wrap(MapUtil.JSON_MAPPER.writeValueAsBytes(value)))
-            }
-        }
+        val valueAttribute = convertToAttributeValue(value)
 
         val itemData = mutableMapOf(
             "StoreName" to AttributeValue().withS(storeName),
@@ -101,6 +93,28 @@ class DynamoDBStore(
             )
         }
         ddb.putItem(PutItemRequest().withTableName(tableName).withItem(itemData))
+    }
+
+    private fun convertToAttributeValue(value: Any?): AttributeValue {
+        return AttributeValue().apply {
+            when (value) {
+                null -> withNULL(true)
+                is String -> withS(value.toString())
+                is Number -> withN(value.toString())
+                is Boolean -> withBOOL(value.toString().toBoolean())
+                is Map<*, *> -> withM(convertToDynamoMap(value))
+                else -> {
+                    when (Settings.objectSerialisation) {
+                        Settings.ObjectSerialisation.BINARY -> {
+                            withB(ByteBuffer.wrap(MapUtil.JSON_MAPPER.writeValueAsBytes(value)))
+                        }
+                        Settings.ObjectSerialisation.MAP -> {
+                            withM(convertToDynamoMap(value))
+                        }
+                    }
+                }
+            }
+        }
     }
 
     override fun <T> load(key: String): T? {
@@ -132,10 +146,10 @@ class DynamoDBStore(
         )
     }
 
-    override fun loadAll(): Map<String, Any> {
+    override fun loadAll(): Map<String, Any?> {
         val queryResult = scanStore()
         logger.trace("Loading all items in store: {}", storeName)
-        return queryResult.items.associate { destructure(it) }
+        return queryResult.items.associate { destructure<Any>(it) }
     }
 
     private fun scanStore() = ddb.scan(
@@ -156,23 +170,42 @@ class DynamoDBStore(
         return count
     }
 
-    private fun <T> destructure(attributeItem: Map<String, AttributeValue>): Pair<String, T> {
+    private fun <T> destructure(attributeItem: Map<String, AttributeValue>): Pair<String, T?> {
         val attributeKey = attributeItem.getValue("Key").s
         val attributeValue = attributeItem.getValue("Value")
-
-        val value: Any? = when {
-            attributeValue.isNULL ?: false -> null
-            nonNull(attributeValue.s) -> attributeValue.s
-            nonNull(attributeValue.bool) -> attributeValue.bool
-            nonNull(attributeValue.n) -> NumberFormat.getInstance().parse(attributeValue.n)
-            nonNull(attributeValue.b) -> MapUtil.JSON_MAPPER.readValue(attributeValue.b.array(), Map::class.java)
-            else -> {
-                logger.warn("Unable to read value of item: $attributeKey")
-                null
-            }
-        }
-
-        @Suppress("UNCHECKED_CAST")
-        return attributeKey to value as T
+        return attributeKey to convertFromAttributeValue(attributeKey, attributeValue)
     }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T> convertFromAttributeValue(
+        attributeKey: String,
+        attributeValue: AttributeValue,
+    ): T? = when {
+        attributeValue.isNULL ?: false -> null
+        nonNull(attributeValue.s) -> attributeValue.s as T?
+        nonNull(attributeValue.bool) -> attributeValue.bool as T?
+        nonNull(attributeValue.n) -> NumberFormat.getInstance().parse(attributeValue.n) as T?
+        nonNull(attributeValue.b) -> MapUtil.JSON_MAPPER.readValue(attributeValue.b.array(), Map::class.java) as T?
+        nonNull(attributeValue.m) -> convertFromDynamoMap(attributeKey, attributeValue.m) as T?
+        else -> {
+            logger.warn("Unable to read value of item: $attributeKey")
+            null
+        }
+    }
+
+    private fun convertToDynamoMap(value: Any?): Map<String, AttributeValue> {
+        val mapValue: Map<out Any?, Any?> = when (value) {
+            is Map<*, *> -> value
+            else -> MapUtil.JSON_MAPPER.convertValue(value, Map::class.java)
+        }
+        val dynamoMap: Map<String, AttributeValue> = mapValue.entries.associate { (key, value) ->
+            key as String to convertToAttributeValue(value)
+        }
+        return dynamoMap
+    }
+
+    private fun convertFromDynamoMap(attributeKey: String, m: Map<String, AttributeValue>): Map<String, Any?> =
+        m.entries.associate { (key, value) ->
+            key to convertFromAttributeValue<Any>(attributeKey, value)
+        }
 }

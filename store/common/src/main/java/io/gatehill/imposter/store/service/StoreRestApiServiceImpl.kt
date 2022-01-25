@@ -57,7 +57,7 @@ import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.MapUtil
 import io.vertx.core.Vertx
 import org.apache.logging.log4j.LogManager
-import java.util.Objects
+import java.util.*
 import javax.inject.Inject
 
 /**
@@ -95,14 +95,14 @@ class StoreRestApiServiceImpl @Inject constructor(
     ): HttpExchangeHandler {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { httpExchange: HttpExchange ->
             val storeName = httpExchange.pathParam("storeName")!!
-            val store = openStore(httpExchange, storeName)
+            val store = openStore(storeName)
             if (Objects.isNull(store)) {
                 return@handleRoute
             }
 
             if (httpExchange.isAcceptHeaderEmpty() || httpExchange.acceptsMimeType(HttpUtil.CONTENT_TYPE_JSON)) {
                 LOGGER.debug("Listing store: {}", storeName)
-                serialiseBodyAsJson(httpExchange, store!!.loadAll())
+                serialiseBodyAsJson(httpExchange, store.loadAll())
 
             } else {
                 // client doesn't accept JSON
@@ -121,7 +121,7 @@ class StoreRestApiServiceImpl @Inject constructor(
     ): HttpExchangeHandler {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { httpExchange: HttpExchange ->
             val storeName = httpExchange.pathParam("storeName")!!
-            storeFactory.deleteStoreByName(storeName, isEphemeralStore = false)
+            storeFactory.clearStore(storeName, isEphemeralStore = false)
             LOGGER.debug("Deleted store: {}", storeName)
 
             httpExchange.response()
@@ -136,13 +136,13 @@ class StoreRestApiServiceImpl @Inject constructor(
     ): HttpExchangeHandler {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { httpExchange: HttpExchange ->
             val storeName = httpExchange.pathParam("storeName")!!
-            val store = openStore(httpExchange, storeName)
+            val store = openStore(storeName)
             if (Objects.isNull(store)) {
                 return@handleRoute
             }
 
             val key = httpExchange.pathParam("key")!!
-            store!!.load<Any>(key)?.let { value ->
+            store.load<Any>(key)?.let { value ->
                 if (value is String) {
                     LOGGER.debug("Returning string item: {} from store: {}", key, storeName)
                     httpExchange.response()
@@ -168,7 +168,7 @@ class StoreRestApiServiceImpl @Inject constructor(
     ): HttpExchangeHandler {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { httpExchange: HttpExchange ->
             val storeName = httpExchange.pathParam("storeName")!!
-            val store = openStore(httpExchange, storeName, true)
+            val store = openStore(storeName)
             if (Objects.isNull(store)) {
                 return@handleRoute
             }
@@ -178,7 +178,7 @@ class StoreRestApiServiceImpl @Inject constructor(
             // PUT successfully creates one, then the origin server MUST inform the
             // user agent by sending a 201 (Created) response."
             // See: https://datatracker.ietf.org/doc/html/rfc7231#section-4.3.4
-            val statusCode = if (store!!.hasItemWithKey(key)) HttpUtil.HTTP_OK else HttpUtil.HTTP_CREATED
+            val statusCode = if (store.hasItemWithKey(key)) HttpUtil.HTTP_OK else HttpUtil.HTTP_CREATED
 
             val value = httpExchange.bodyAsString
             store.save(key, value)
@@ -196,13 +196,13 @@ class StoreRestApiServiceImpl @Inject constructor(
     ): HttpExchangeHandler {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { httpExchange: HttpExchange ->
             val storeName = httpExchange.pathParam("storeName")!!
-            val store = openStore(httpExchange, storeName, true)
+            val store = openStore(storeName)
             if (Objects.isNull(store)) {
                 return@handleRoute
             }
 
             val items = httpExchange.bodyAsJson
-            items?.forEach { (key: String, value: Any?) -> store!!.save(key, value) }
+            items?.forEach { (key: String, value: Any?) -> store.save(key, value) }
             val itemCount = items?.size() ?: 0
             LOGGER.debug("Saved {} items to store: {}", itemCount, storeName)
 
@@ -218,13 +218,13 @@ class StoreRestApiServiceImpl @Inject constructor(
     ): HttpExchangeHandler {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { httpExchange: HttpExchange ->
             val storeName = httpExchange.pathParam("storeName")!!
-            val store = openStore(httpExchange, storeName, true)
+            val store = openStore(storeName)
             if (Objects.isNull(store)) {
                 return@handleRoute
             }
 
             val key = httpExchange.pathParam("key")!!
-            store!!.delete(key)
+            store.delete(key)
             LOGGER.debug("Deleted item: {} from store: {}", key, storeName)
 
             httpExchange.response()
@@ -233,22 +233,7 @@ class StoreRestApiServiceImpl @Inject constructor(
         }
     }
 
-    private fun openStore(
-        httpExchange: HttpExchange,
-        storeName: String,
-        createIfNotExist: Boolean = false
-    ): Store? {
-        if (!storeFactory.hasStoreWithName(storeName)) {
-            LOGGER.debug("No store found named: {}", storeName)
-            if (!createIfNotExist) {
-                httpExchange.response()
-                    .setStatusCode(HttpUtil.HTTP_NOT_FOUND)
-                    .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_PLAIN_TEXT)
-                    .end("No store named '$storeName'.")
-                return null
-            }
-            // ...otherwise fall through and implicitly create below
-        }
+    private fun openStore(storeName: String): Store {
         return storeFactory.getStoreByName(storeName, false)
     }
 

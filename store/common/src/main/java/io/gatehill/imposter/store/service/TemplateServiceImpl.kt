@@ -98,15 +98,15 @@ class TemplateServiceImpl @Inject constructor(
                 val dotIndex = key.indexOf(".")
                 if (dotIndex > 0) {
                     val storeName = key.substring(0, dotIndex)
-                    if (storeFactory.hasStoreWithName(storeName)) {
-                        val itemKey = key.substring(dotIndex + 1)
-                        return@functionStringLookup loadItemFromStore(storeName, itemKey)
-                    }
+                    val itemKey = key.substring(dotIndex + 1)
+                    return@functionStringLookup loadItemFromStore(storeName, itemKey)
                 }
+                LOGGER.warn("Unknown store for template placeholder: $key")
+                return@functionStringLookup ""
+
             } catch (e: Exception) {
                 throw RuntimeException("Error replacing template placeholder '$key' with store item", e)
             }
-            throw IllegalStateException("Unknown store for template placeholder: $key")
         }
         return StringSubstitutor(variableResolver)
     }

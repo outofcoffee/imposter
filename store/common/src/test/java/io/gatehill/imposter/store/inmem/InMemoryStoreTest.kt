@@ -52,7 +52,7 @@ import org.junit.Test
  * @author Pete Cornish
  */
 class InMemoryStoreTest {
-    private var factory: InMemoryStoreFactoryImpl? = null
+    private lateinit var factory: InMemoryStoreFactoryImpl
 
     @Before
     fun setUp() {
@@ -61,13 +61,13 @@ class InMemoryStoreTest {
 
     @Test
     fun testBuildNewStore() {
-        val store = factory!!.buildNewStore("test")
+        val store = factory.buildNewStore("test")
         Assert.assertEquals("inmem", store.typeDescription)
     }
 
     @Test
     fun testSaveLoadItem() {
-        val store = factory!!.buildNewStore("sli")
+        val store = factory.buildNewStore("sli")
         Assert.assertEquals(0, store.count())
         store.save("foo", "bar")
         Assert.assertEquals("bar", store.load("foo"))
@@ -80,7 +80,7 @@ class InMemoryStoreTest {
 
     @Test
     fun testDeleteItem() {
-        val store = factory!!.buildNewStore("di")
+        val store = factory.buildNewStore("di")
         Assert.assertFalse("Item should not exist", store.hasItemWithKey("baz"))
         store.save("baz", "qux")
         Assert.assertTrue("Item should exist", store.hasItemWithKey("baz"))
@@ -89,9 +89,10 @@ class InMemoryStoreTest {
     }
 
     @Test
-    fun testDeleteStore() {
-        factory!!.buildNewStore("ds")
-        factory!!.deleteStoreByName("ds", false)
-        Assert.assertFalse("Store should not exist", factory!!.hasStoreWithName("ds"))
+    fun testClearStore() {
+        val store = factory.buildNewStore("ds")
+        store.save("baz", "qux")
+        factory.clearStore("ds", false)
+        Assert.assertEquals("Store should be empty", 0, factory.getStoreByName("ds", false).count())
     }
 }

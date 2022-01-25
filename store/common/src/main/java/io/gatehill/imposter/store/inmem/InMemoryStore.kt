@@ -73,7 +73,7 @@ class InMemoryStore(override val storeName: String) : Store {
         store.remove(key)
     }
 
-    override fun loadAll(): Map<String, Any> {
+    override fun loadAll(): Map<String, Any?> {
         LOGGER.trace("Loading all items in store: {}", storeName)
         return store
     }

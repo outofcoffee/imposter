@@ -53,7 +53,7 @@ import org.junit.Test
 import org.testcontainers.containers.localstack.LocalStackContainer
 
 /**
- * Tests for DynamoDB store implementation.
+ * Tests for DynamoDB TTL logic.
  *
  * @author Pete Cornish
  */

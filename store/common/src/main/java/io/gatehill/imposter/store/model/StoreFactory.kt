@@ -46,7 +46,6 @@ package io.gatehill.imposter.store.model
  * @author Pete Cornish
  */
 interface StoreFactory {
-    fun hasStoreWithName(storeName: String): Boolean
     fun getStoreByName(storeName: String, isEphemeralStore: Boolean): Store
-    fun deleteStoreByName(storeName: String, isEphemeralStore: Boolean)
+    fun clearStore(storeName: String, isEphemeralStore: Boolean)
 }

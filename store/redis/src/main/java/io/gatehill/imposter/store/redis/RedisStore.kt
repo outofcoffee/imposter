@@ -89,7 +89,7 @@ class RedisStore(override val storeName: String, redisson: RedissonClient) : Sto
         store.remove(key)
     }
 
-    override fun loadAll(): Map<String, Any> {
+    override fun loadAll(): Map<String, Any?> {
         LOGGER.trace("Loading all items in store: {}", storeName)
         return store
     }

@@ -69,7 +69,7 @@ class PrefixedKeyStore(private val keyPrefix: String, private val delegate: Stor
         delegate.delete(buildKey(key))
     }
 
-    override fun loadAll(): Map<String, Any> {
+    override fun loadAll(): Map<String, Any?> {
         // strip out key prefix
         return delegate.loadAll().entries.associate { (key, value) ->
             key.substring(keyPrefix.length) to value
