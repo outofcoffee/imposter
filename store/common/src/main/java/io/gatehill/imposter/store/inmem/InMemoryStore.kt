@@ -54,7 +54,7 @@ import org.apache.logging.log4j.LogManager
  * @author Pete Cornish
  */
 class InMemoryStore(override val storeName: String) : Store {
-    private val store: MutableMap<String, Any> = Maps.newConcurrentMap()
+    private val store: MutableMap<String, Any> by lazy { Maps.newConcurrentMap() }
     override val typeDescription = "inmem"
 
     override fun save(key: String, value: Any?) {
