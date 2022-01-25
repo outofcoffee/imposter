@@ -54,37 +54,41 @@ import org.apache.logging.log4j.LogManager
  * @author Pete Cornish
  */
 class InMemoryStore(override val storeName: String) : Store {
+    private var modified = false
     private val store: MutableMap<String, Any> by lazy { Maps.newConcurrentMap() }
     override val typeDescription = "inmem"
 
     override fun save(key: String, value: Any?) {
         LOGGER.trace("Saving item with key: {} to store: {}", key, storeName)
+        modified = true
         value?.let { store[key] = value } ?: store.remove(key)
     }
 
     override fun <T> load(key: String): T? {
         LOGGER.trace("Loading item with key: {} from store: {}", key, storeName)
         @Suppress("UNCHECKED_CAST")
-        return store[key] as T?
+        return if (!modified) null else store[key] as T?
     }
 
     override fun delete(key: String) {
         LOGGER.trace("Deleting item with key: {} from store: {}", key, storeName)
-        store.remove(key)
+        if (modified) {
+            store.remove(key)
+        }
     }
 
     override fun loadAll(): Map<String, Any?> {
         LOGGER.trace("Loading all items in store: {}", storeName)
-        return store
+        return if (!modified) emptyMap() else store
     }
 
     override fun hasItemWithKey(key: String): Boolean {
         LOGGER.trace("Checking for item with key: {} in store: {}", key, storeName)
-        return store.containsKey(key)
+        return if (!modified) false else store.containsKey(key)
     }
 
     override fun count(): Int {
-        val count = store.size
+        val count = if (!modified) 0 else store.size
         LOGGER.trace("Returning item count {} from store: {}", count, storeName)
         return count
     }
