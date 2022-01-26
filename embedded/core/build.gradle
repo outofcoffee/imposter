@@ -13,8 +13,8 @@ dependencies {
     testImplementation project(':adapter:adapter-vertxweb')
 
     // examples
-    testImplementation project (':plugin:plugin-openapi')
-    testImplementation project (':plugin:plugin-rest')
+    testImplementation project (':mock:mock-openapi')
+    testImplementation project (':mock:mock-rest')
 
     // test
     testImplementation project(':imposter-test')

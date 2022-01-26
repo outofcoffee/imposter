@@ -7,13 +7,13 @@ compileJava {
 
 dependencies {
     api project (':embedded:embedded-core')
-    implementation project (':plugin:plugin-openapi')
+    implementation project (':mock:mock-openapi')
 
     // test server
     testImplementation project(':adapter:adapter-vertxweb')
 
     // examples
-    testImplementation project (':plugin:plugin-rest')
+    testImplementation project (':mock:mock-rest')
 
     // test
     testImplementation project(':imposter-test')

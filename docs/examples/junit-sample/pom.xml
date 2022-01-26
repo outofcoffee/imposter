@@ -75,7 +75,7 @@
     </dependency>
     <dependency>
       <groupId>io.gatehill.imposter</groupId>
-      <artifactId>plugin-openapi</artifactId>
+      <artifactId>mock-openapi</artifactId>
       <version>${imposter.version}</version>
       <scope>test</scope>
     </dependency>

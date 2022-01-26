@@ -12,8 +12,8 @@ compileJava {
 
 dependencies {
     implementation project(':embedded:embedded-core')
-    implementation project(':plugin:plugin-openapi')
-    implementation project(':plugin:plugin-rest')
+    implementation project(':mock:mock-openapi')
+    implementation project(':mock:mock-rest')
 
     implementation 'com.amazonaws:aws-lambda-java-core:1.2.1'
     implementation 'com.amazonaws:aws-lambda-java-events:3.9.0'

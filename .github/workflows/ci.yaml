@@ -111,8 +111,8 @@ jobs:
             await script({github, context}, [
               'main',
               './distro/awslambda/build/libs/imposter-awslambda.jar',
-              './plugin/hbase/build/libs/imposter-plugin-mock-hbase.jar',
-              './plugin/sfdc/build/libs/imposter-plugin-mock-sfdc.jar',
+              './mock/hbase/build/libs/imposter-plugin-mock-hbase.jar',
+              './mock/sfdc/build/libs/imposter-plugin-mock-sfdc.jar',
               './store/dynamodb/build/libs/imposter-plugin-store-dynamodb.jar',
               './store/redis/build/libs/imposter-plugin-store-redis.jar',
             ])

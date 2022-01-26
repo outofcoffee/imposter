@@ -41,7 +41,7 @@ Enable it with the following environment variables:
 
 For working examples, see:
 
-    plugin/sfdc/src/test/resources/config
+    mock/sfdc/src/test/resources/config
 
 Let's assume your configuration is in a folder named `config`.
 

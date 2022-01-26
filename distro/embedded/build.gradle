@@ -13,7 +13,7 @@ dependencies {
     api project (':embedded:embedded-openapi')
 
     // plugins
-    implementation project (':plugin:plugin-detector')
+    implementation project (':core:plugin-detector')
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

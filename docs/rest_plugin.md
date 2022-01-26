@@ -138,7 +138,7 @@ Once you're finished, stop the server with CTRL+C.
 > For more working examples, see:
 >
 > * docs/examples/rest
-> * plugin/rest/src/test/resources/config
+> * mock/rest/src/test/resources/config
 
 ## Scripted responses (advanced)
 

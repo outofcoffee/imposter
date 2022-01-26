@@ -38,7 +38,7 @@ Enable it with the following environment variables:
 
 For working examples, see:
 
-    plugin/hbase/src/test/resources/config
+    mock/hbase/src/test/resources/config
 
 Let's assume your configuration is in a folder named `config`.
 

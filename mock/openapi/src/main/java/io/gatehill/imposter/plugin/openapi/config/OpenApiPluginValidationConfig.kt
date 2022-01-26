@@ -46,7 +46,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import io.gatehill.imposter.config.util.EnvVars.Companion.getEnv
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginValidationConfig.ValidationIssueBehaviour.FAIL
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginValidationConfig.ValidationIssueBehaviour.IGNORE
-import java.util.Locale
+import java.util.*
 
 /**
  * @author Pete Cornish

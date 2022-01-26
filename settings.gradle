@@ -12,6 +12,8 @@ project(':core:config').name = 'config'
 include ':core:engine'
 project(':core:engine').name = 'imposter-engine'
 
+include ':core:plugin-detector'
+
 include ':core:s3resolver'
 project(':core:s3resolver').name = 's3resolver'
 
@@ -46,7 +48,7 @@ if (JavaVersion.current() >= JavaVersion.VERSION_11) {
     project(':scripting:nashorn-standalone').name = 'scripting-nashorn-standalone'
 }
 
-// store
+// stores
 include ':store:common'
 project(':store:common').name = 'store-common'
 
@@ -56,21 +58,18 @@ project(':store:redis').name = 'store-redis'
 include ':store:dynamodb'
 project(':store:dynamodb').name = 'store-dynamodb'
 
-// plugins
-include ':plugin:detector'
-project(':plugin:detector').name = 'plugin-detector'
+// mocks
+include ':mock:rest'
+project(':mock:rest').name = 'mock-rest'
 
-include ':plugin:rest'
-project(':plugin:rest').name = 'plugin-rest'
+include ':mock:openapi'
+project(':mock:openapi').name = 'mock-openapi'
 
-include ':plugin:openapi'
-project(':plugin:openapi').name = 'plugin-openapi'
+include ':mock:hbase'
+project(':mock:hbase').name = 'mock-hbase'
 
-include ':plugin:hbase'
-project(':plugin:hbase').name = 'plugin-hbase'
-
-include ':plugin:sfdc'
-project(':plugin:sfdc').name = 'plugin-sfdc'
+include ':mock:sfdc'
+project(':mock:sfdc').name = 'mock-sfdc'
 
 // embedded
 include ':embedded:core'

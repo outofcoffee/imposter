@@ -22,7 +22,7 @@ Add the following Maven dependencies in your build tool:
 |-------------------|------------------------|-------------------|------------------------------------------------------------------------------------|
 | Unit test library | `io.gatehill.imposter` | `distro-embedded` | As per [Releases](https://github.com/outofcoffee/imposter/releases), e.g. `1.24.3` |
 | HTTP server       | `io.gatehill.imposter` | `imposter-server` | As per [Releases](https://github.com/outofcoffee/imposter/releases), e.g. `1.24.3` |
-| OpenAPI plugin    | `io.gatehill.imposter` | `plugin-openapi`  | As per [Releases](https://github.com/outofcoffee/imposter/releases), e.g. `1.24.3` |
+| OpenAPI plugin    | `io.gatehill.imposter` | `mock-openapi`    | As per [Releases](https://github.com/outofcoffee/imposter/releases), e.g. `1.24.3` |
 
 > See the _Dependencies_ section for full Maven and Gradle examples.
 
@@ -99,7 +99,7 @@ repositories {
 dependencies {
     testImplementation "io.gatehill.imposter:distro-embedded:$imposter_version"
     testImplementation "io.gatehill.imposter:imposter-server:$imposter_version"
-    testImplementation "io.gatehill.imposter:plugin-openapi:$imposter_version"
+    testImplementation "io.gatehill.imposter:mock-openapi:$imposter_version"
     
     // ...
 }
@@ -139,7 +139,7 @@ Using Maven, add the following to your POM:
         </dependency>
         <dependency>
             <groupId>io.gatehill.imposter</groupId>
-            <artifactId>plugin-openapi</artifactId>
+            <artifactId>mock-openapi</artifactId>
             <version>${imposter.version}</version>
             <scope>test</scope>
         </dependency>

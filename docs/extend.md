@@ -32,7 +32,7 @@ dependencies {
     implementation "io.gatehill.imposter:imposter-server:$imposter_version"
     
     // specific plugins
-    implementation "io.gatehill.imposter:plugin-openapi:$imposter_version"
+    implementation "io.gatehill.imposter:mock-openapi:$imposter_version"
     
     // ...
 }
@@ -70,7 +70,7 @@ Using Maven, add the following to your POM:
         </dependency>
         <dependency>
             <groupId>io.gatehill.imposter</groupId>
-            <artifactId>plugin-openapi</artifactId>
+            <artifactId>mock-openapi</artifactId>
             <version>${imposter.version}</version>
         </dependency>
         ...

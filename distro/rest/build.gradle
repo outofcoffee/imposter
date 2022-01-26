@@ -11,8 +11,8 @@ dependencies {
     implementation project (':distro:distro-base')
 
     // plugins
-    implementation project (':plugin:plugin-detector')
-    implementation project (':plugin:plugin-rest')
+    implementation project (':core:plugin-detector')
+    implementation project (':mock:mock-rest')
 }
 
 mainClassName = 'io.gatehill.imposter.cmd.ImposterLauncher'
