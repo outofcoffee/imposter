@@ -95,17 +95,11 @@ project(':distro:core').name = 'distro-core'
 include ':distro:embedded'
 project(':distro:embedded').name = 'distro-embedded'
 
-include ':distro:hbase'
-project(':distro:hbase').name = 'distro-hbase'
-
 include ':distro:openapi'
 project(':distro:openapi').name = 'distro-openapi'
 
 include ':distro:rest'
 project(':distro:rest').name = 'distro-rest'
-
-include ':distro:sfdc'
-project(':distro:sfdc').name = 'distro-sfdc'
 
 // observability
 include ':tools:perf-monitor'

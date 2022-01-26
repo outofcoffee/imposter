@@ -42,11 +42,9 @@ The following images are available:
 | Image       | Docker Hub link                                                                       | Plugins       | Notes                                                                                                                 |
 |-------------|---------------------------------------------------------------------------------------|---------------|-----------------------------------------------------------------------------------------------------------------------|
 | **core**    | [outofcoffee/imposter](https://hub.docker.com/r/outofcoffee/imposter)                 | openapi, rest | This is the primary Imposter Docker image supporting both OpenAPI and plain REST APIs. Most users should choose this. |
-| **openapi** | [outofcoffee/imposter-openapi](https://hub.docker.com/r/outofcoffee/imposter-openapi) | openapi       | Only contains the [OpenAPI plugin](./openapi_plugin.md).                                                              |
-| **rest**    | [outofcoffee/imposter-rest](https://hub.docker.com/r/outofcoffee/imposter-rest)       | rest          | Only contains the [REST plugin](./rest_plugin.md).                                                                    |
-| **hbase**   | [outofcoffee/imposter-hbase](https://hub.docker.com/r/outofcoffee/imposter-hbase)     | hbase         | Only contains the [HBase plugin](./hbase_plugin.md).                                                                  |
-| **sfdc**    | [outofcoffee/imposter-sfdc](https://hub.docker.com/r/outofcoffee/imposter-sfdc)       | sfdc          | Only contains the [SFDC plugin](./sfdc_plugin.md).                                                                    |
-| **all**     | [outofcoffee/imposter-all](https://hub.docker.com/r/outofcoffee/imposter-all)         | All plugins   | Contains all plugins, and is the largest and has the most dependencies.                                               |
+| **openapi** | [outofcoffee/imposter-openapi](https://hub.docker.com/r/outofcoffee/imposter-openapi) | openapi       | Only contains the [OpenAPI mock plugin](./openapi_plugin.md).                                                         |
+| **rest**    | [outofcoffee/imposter-rest](https://hub.docker.com/r/outofcoffee/imposter-rest)       | rest          | Only contains the [REST mock plugin](./rest_plugin.md).                                                               |
+| **all**     | [outofcoffee/imposter-all](https://hub.docker.com/r/outofcoffee/imposter-all)         | All plugins   | Contains all mock plugins, and is the largest and has the most dependencies.                                          |
 
 > You can also use the these images to create your own custom images with embedded configuration.
 

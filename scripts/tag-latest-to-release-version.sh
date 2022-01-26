@@ -7,10 +7,8 @@ ROOT_DIR="${SCRIPT_DIR}/../"
 IMAGES=(
 	outofcoffee/imposter
 	outofcoffee/imposter-base
-	outofcoffee/imposter-hbase
 	outofcoffee/imposter-openapi
 	outofcoffee/imposter-rest
-	outofcoffee/imposter-sfdc
 )
 
 cd "${ROOT_DIR}"

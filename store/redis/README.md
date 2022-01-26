@@ -1,13 +1,27 @@
 # Redis store
 
-Redis store implementation. 
+Redis store implementation.
 
-To use this plugin, download the plugin JAR file from the [Releases page](https://github.com/outofcoffee/imposter/releases).
+## Install plugin
+
+### Option 1: Using the CLI
+
+To use this plugin, install it with the [Imposter CLI](../../docs/run_imposter_cli.md):
+
+    imposter plugin install store-redis
+
+This will install the plugin version matching the current engine version used by the CLI. The next time you run `imposter up`, the plugin will be available.
+
+### Option 2: Using the JAR
+
+To use this plugin, download the plugin `imposter-plugin-store-redis.jar` JAR file from the [Releases page](https://github.com/outofcoffee/imposter/releases).
 
 Enable it with the following environment variables:
 
     IMPOSTER_PLUGIN_DIR="/path/to/dir/containing/plugin"
     IMPOSTER_STORE_DRIVER="store-redis"
+
+## Configuration
 
 Add a `redisson.yaml` file to your Imposter configuration directory, e.g.
 
@@ -24,6 +38,12 @@ singleServerConfig:
 > See an [example Redisson configuration](example/redisson.yaml) file.
 >
 > For full details refer to the [official Redisson documentation](https://github.com/redisson/redisson/wiki/2.-Configuration).
+
+The following variables can be set:
+
+| Environment variable         | Purpose                                                  | Default    |
+|------------------------------|----------------------------------------------------------|------------|
+| IMPOSTER_STORE_REDIS_EXPIRY  | The expiration time (in seconds) for items in the store. | No expiry. |
 
 ## Example
 

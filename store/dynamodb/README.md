@@ -2,7 +2,19 @@
 
 DynamoDB store implementation.
 
-To use this plugin, download the plugin JAR file from the [Releases page](https://github.com/outofcoffee/imposter/releases).
+## Install plugin
+
+### Option 1: Using the CLI
+
+To use this plugin, install it with the [Imposter CLI](../../docs/run_imposter_cli.md):
+
+    imposter plugin install store-dynamodb
+
+This will install the plugin version matching the current engine version used by the CLI. The next time you run `imposter up`, the plugin will be available.
+
+### Option 2: Using the JAR
+
+To use this plugin, download the plugin `imposter-plugin-store-dynamodb.jar` JAR file from the [Releases page](https://github.com/outofcoffee/imposter/releases).
 
 Enable it with the following environment variables:
 

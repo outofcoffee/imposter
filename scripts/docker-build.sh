@@ -8,10 +8,8 @@ IMAGE_REPOSITORY="outofcoffee/"
 DEFAULT_IMAGE_DIRS=(
     "base"
     "core"
-    "hbase"
     "openapi"
     "rest"
-    "sfdc"
     "all"
 )
 PUSH_IMAGES="true"

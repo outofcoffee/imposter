@@ -1,6 +1,7 @@
 apply plugin: 'java-library'
 apply plugin: 'kotlin'
 apply plugin: 'maven-publish'
+apply plugin: 'com.github.johnrengelman.shadow'
 
 ext {
     version_hbaseApi = '0.98.18-hadoop2'
@@ -14,10 +15,10 @@ dependencies {
     implementation project(':core:imposter-engine')
 
     // hbase
-    implementation("org.apache.hbase:hbase-client:$version_hbaseApi") {
+    pluginImplementation("org.apache.hbase:hbase-client:$version_hbaseApi") {
         exclude module: 'slf4j-log4j12'
     }
-    implementation("org.apache.hbase:hbase-rest:$version_hbaseApi") {
+    pluginImplementation("org.apache.hbase:hbase-rest:$version_hbaseApi") {
         exclude module: 'slf4j-log4j12'
     }
 
@@ -69,4 +70,16 @@ compileTestKotlin {
         // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
         freeCompilerArgs = ["-Xjvm-default=all"]
     }
+}
+
+shadowJar {
+    // override plugin archive name
+    archiveBaseName.set("imposter-plugin-mock-hbase")
+    archiveVersion.set('')
+    archiveClassifier.set('')
+    configurations = [project.configurations.pluginImplementation]
+}
+
+task dist {
+    dependsOn shadowJar
 }
