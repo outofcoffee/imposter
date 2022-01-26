@@ -6,14 +6,18 @@ Imposter uses plugins to control its behaviour and provide specialised mocks. Yo
 
 The following sections describe the built-in plugins. You can also write your own, if you want to customise behaviour further.
 
-| Plugin name       | Description                            | Details                                           |
-|-------------------|----------------------------------------|---------------------------------------------------|
-| `config-detector` | Detects plugins from `META-INF`.       | Built-in.                                         |
-| `hbase`           | HBase plugin.                          | [HBase plugin](hbase_plugin.md)                   |
-| `meta-detector`   | Detects plugins from `*-config` files. | Built-in.                                         |
-| `openapi`         | OpenAPI (and Swagger) plugin.          | [OpenAPI (and Swagger) plugin](openapi_plugin.md) |
-| `rest`            | REST plugin.                           | [REST plugin](rest_plugin.md)                     |
-| `sfdc`            | SFDC (Salesforce) plugin.              | [SFDC (Salesforce) plugin](sfdc_plugin.md)        |
+| Category        | Plugin name             | Description                            | Details                                                                            |
+|-----------------|-------------------------|----------------------------------------|------------------------------------------------------------------------------------|
+| Mock            | `hbase`                 | HBase mocks.                           | [HBase plugin](hbase_plugin.md)                                                    |
+| Mock            | `openapi`               | OpenAPI (and Swagger) mocks.           | [OpenAPI (and Swagger) plugin](openapi_plugin.md)                                  |
+| Mock            | `rest`                  | REST mocks.                            | [REST plugin](rest_plugin.md)                                                      |
+| Mock            | `sfdc`                  | SFDC (Salesforce) mocks.               | [SFDC (Salesforce) plugin](sfdc_plugin.md)                                         |
+| Scripting       | `js-graal`              | Graal.js scripting.                    | Graal.js JavaScript scripting support.                                             |
+| Scripting       | `js-nashorn-standalone` | Nashorn standalone scripting.          | Nashorn JavaScript scripting support for Java 11+.                                 |
+| Store           | `redis`                 | DynamoDB store implementation.         | [DynamoDB store](https://github.com/outofcoffee/imposter/tree/main/store/dynamodb) |
+| Store           | `dynamodb`              | Redis store implementation.            | [Redis store](https://github.com/outofcoffee/imposter/tree/main/store/redis)       |
+| Configuration   | `config-detector`       | Detects plugins from `META-INF`.       | Built-in.                                                                          |
+| Configuration   | `meta-detector`         | Detects plugins from `*-config` files. | Built-in.                                                                          |
 
 ## Features
 

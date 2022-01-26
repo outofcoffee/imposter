@@ -47,10 +47,10 @@ To begin, check out the [Getting started](getting_started.md) guide. See the _Us
 
 Imposter provides specialised mocks for the following scenarios:
 
-* **[OpenAPI](docs/openapi_plugin.md)** - Support for OpenAPI (and Swagger) API specifications.
-* **[REST](docs/rest_plugin.md)** - Mocks RESTful or plain HTTP APIs.
-* **[HBase](docs/hbase_plugin.md)** - Basic HBase mock implementation.
-* **[SFDC (Salesforce)](docs/sfdc_plugin.md)** - Basic Salesforce mock implementation.
+* **[OpenAPI](openapi_plugin.md)** - Support for OpenAPI (and Swagger) API specifications.
+* **[REST](rest_plugin.md)** - Mocks RESTful or plain HTTP APIs.
+* **[HBase](hbase_plugin.md)** - Basic HBase mock implementation.
+* **[SFDC (Salesforce)](sfdc_plugin.md)** - Basic Salesforce mock implementation.
 
 > Learn more about [plugins and features](features_plugins.md).
 
