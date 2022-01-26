@@ -19,48 +19,49 @@ To begin, check out the [Getting started](getting_started.md) guide. See the _Us
 
 ## User documentation
 
-* [Configuration guide](configuration.md)
-* [Usage (arguments and environment variables)](usage.md)
-* [Scripting](scripting.md)
-* [Security](security.md)
+- [Configuration guide](configuration.md)
+- [Usage (arguments and environment variables)](usage.md)
+- [Scripting](scripting.md)
+- [Security](security.md)
 
 ### Data capture, storage and templates
 
-* [Data capture](data_capture.md)
-* [Response templates](templates.md)
-* [Stores](stores.md)
+- [Data capture](data_capture.md)
+- [Response templates](templates.md)
+- [Stores](stores.md)
 
 ### Advanced
 
-* [Advanced request matching](request_matching.md)
-* [OpenAPI validation](openapi_validation.md)
-* [Performance simulation](performance_simulation.md)
-* [Metrics, logs and telemetry](metrics_logs_telemetry.md)
-* [Performance tuning](./performance_tuning.md)
+- [Advanced request matching](request_matching.md)
+- [OpenAPI validation](openapi_validation.md)
+- [Performance simulation](performance_simulation.md)
+- [Metrics, logs and telemetry](metrics_logs_telemetry.md)
+- [Performance tuning](./performance_tuning.md)
+- [Plugins and features](./features_plugins.md)
 
 ### Other
 
-* [Tips and tricks](tips_tricks.md)
-* [Benchmarks](./benchmarks.md)
+- [Tips and tricks](tips_tricks.md)
+- [Benchmarks](./benchmarks.md)
 
 ## Mock types
 
 Imposter provides specialised mocks for the following scenarios:
 
-* **[OpenAPI](openapi_plugin.md)** - Support for OpenAPI (and Swagger) API specifications.
-* **[REST](rest_plugin.md)** - Mocks RESTful or plain HTTP APIs.
-* **[HBase](hbase_plugin.md)** - Basic HBase mock implementation.
-* **[SFDC (Salesforce)](sfdc_plugin.md)** - Basic Salesforce mock implementation.
+- **[OpenAPI](openapi_plugin.md)** - Support for OpenAPI (and Swagger) API specifications.
+- **[REST](rest_plugin.md)** - Mocks RESTful or plain HTTP APIs.
+- **[HBase](hbase_plugin.md)** - Basic HBase mock implementation.
+- **[SFDC (Salesforce)](sfdc_plugin.md)** - Basic Salesforce mock implementation.
 
 > Learn more about [plugins and features](features_plugins.md).
 
 ## Developers
 
-* [Build](build.md)
-* [Roadmap](roadmap.md)
-* [Github](https://github.com/outofcoffee/imposter)
+- [Build](build.md)
+- [Roadmap](roadmap.md)
+- [Github](https://github.com/outofcoffee/imposter)
 
 ## Tutorials
 
-* [Mocking APIs with Swagger and Imposter](https://medium.com/@outofcoffee/mocking-apis-with-swagger-and-imposter-3694bd1733c0)
-* [Mocking REST APIs with Imposter](https://medium.com/@outofcoffee/mocking-apis-with-imposter-53bd908632e5)
+- [Mocking APIs with Swagger and Imposter](https://medium.com/@outofcoffee/mocking-apis-with-swagger-and-imposter-3694bd1733c0)
+- [Mocking REST APIs with Imposter](https://medium.com/@outofcoffee/mocking-apis-with-imposter-53bd908632e5)

@@ -2,7 +2,7 @@
 
 ## Plugins
 
-Imposter uses plugins to control its behaviour and provide specialised mocks. You load one or more plugins.
+Imposter uses plugins to control its behaviour and provide specialised mocks.
 
 See the [Plugins](./plugins.md) documentation for a list of available and built-in plugins.
 

@@ -1,8 +1,10 @@
 # Plugins
 
-Imposter uses plugins to control its behaviour and provide specialised mocks. You load one or more plugins.
+Imposter uses plugins to control its behaviour and provide specialised mocks.
 
-The following sections describe the available and built-in plugins. You can also write your own, if you want to customise behaviour further.
+> You can also write your own plugins, if you want to customise behaviour further.
+
+The following sections describe the available and built-in plugins.
 
 | Category        | Plugin name             | Description                            | Details                                                                            |
 |-----------------|-------------------------|----------------------------------------|------------------------------------------------------------------------------------|
@@ -17,7 +19,7 @@ The following sections describe the available and built-in plugins. You can also
 | Configuration   | `config-detector`       | Detects plugins from `META-INF`.       | Built-in.                                                                          |
 | Configuration   | `meta-detector`         | Detects plugins from `*-config` files. | Built-in.                                                                          |
 
-## The plugin directory
+## Plugin loading
 
 Imposter loads plugins from the _plugin directory_. This is configured using the following environment variable:
 
@@ -38,3 +40,17 @@ For example:
     imposter plugin install stores-dynamodb
 
 This will install the plugin version matching the current engine version used by the CLI. The next time you run `imposter up`, the plugin will be available.
+
+## Using the Docker image
+
+If you are using the [Docker image](./run_imposter_docker.md), you can bind-mount a local directory to the `/opt/imposter/plugins` directory within the container.
+
+For example:
+
+    docker run --rm -it \
+        -v /path/to/plugin/dir:/opt/imposter/plugins \
+        -v /path/to/config/dir:/opt/imposter/config \
+        -p 8080:8080 \
+        outofcoffee/imposter
+
+The Docker container sets the environment variable `IMPOSTER_PLUGIN_DIR=/opt/imposter/config`, so you do not have to set it explicitly.
