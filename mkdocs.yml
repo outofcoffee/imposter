@@ -35,6 +35,7 @@ nav:
     - Performance simulation: 'performance_simulation.md'
     - Metrics, logs and telemetry: 'metrics_logs_telemetry.md'
     - Performance tuning: './performance_tuning.md'
+    - Plugins and features: './features_plugins.md'
     - TLS/SSL: './tls_ssl.md'
 
   - Other:

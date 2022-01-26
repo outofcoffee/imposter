@@ -4,20 +4,7 @@
 
 Imposter uses plugins to control its behaviour and provide specialised mocks. You load one or more plugins.
 
-The following sections describe the built-in plugins. You can also write your own, if you want to customise behaviour further.
-
-| Category        | Plugin name             | Description                            | Details                                                                            |
-|-----------------|-------------------------|----------------------------------------|------------------------------------------------------------------------------------|
-| Mock            | `hbase`                 | HBase mocks.                           | [HBase plugin](hbase_plugin.md)                                                    |
-| Mock            | `openapi`               | OpenAPI (and Swagger) mocks.           | [OpenAPI (and Swagger) plugin](openapi_plugin.md)                                  |
-| Mock            | `rest`                  | REST mocks.                            | [REST plugin](rest_plugin.md)                                                      |
-| Mock            | `sfdc`                  | SFDC (Salesforce) mocks.               | [SFDC (Salesforce) plugin](sfdc_plugin.md)                                         |
-| Scripting       | `js-graal`              | Graal.js scripting.                    | Graal.js JavaScript scripting support.                                             |
-| Scripting       | `js-nashorn-standalone` | Nashorn standalone scripting.          | Nashorn JavaScript scripting support for Java 11+.                                 |
-| Store           | `redis`                 | DynamoDB store implementation.         | [DynamoDB store](https://github.com/outofcoffee/imposter/tree/main/store/dynamodb) |
-| Store           | `dynamodb`              | Redis store implementation.            | [Redis store](https://github.com/outofcoffee/imposter/tree/main/store/redis)       |
-| Configuration   | `config-detector`       | Detects plugins from `META-INF`.       | Built-in.                                                                          |
-| Configuration   | `meta-detector`         | Detects plugins from `*-config` files. | Built-in.                                                                          |
+See the [Plugins](./plugins.md) documentation for a list of available and built-in plugins.
 
 ## Features
 
