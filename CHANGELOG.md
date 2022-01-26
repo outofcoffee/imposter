@@ -3,9 +3,17 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [2.7.1] - 2022-01-26
 ### Added
-- ...
+- feat: adds map data type support to DynamoDB store.
+
+### Changed
+- refactor: switches Lambda adapter to static plugin discovery to improve boot time.
+- refactor: short-circuits in memory store creation if unmodified.
+- refactor: defers in memory store instantiation until first use.
+
+### Fixed
+- fix: non-existent stores no longer throw an exception.
 
 ## [2.7.0] - 2022-01-20
 ### Added
