@@ -71,6 +71,9 @@ project(':mock:hbase').name = 'mock-hbase'
 include ':mock:sfdc'
 project(':mock:sfdc').name = 'mock-sfdc'
 
+include ':mock:soap'
+project(':mock:soap').name = 'mock-soap'
+
 // embedded
 include ':embedded:core'
 project (':embedded:core').name = 'embedded-core'

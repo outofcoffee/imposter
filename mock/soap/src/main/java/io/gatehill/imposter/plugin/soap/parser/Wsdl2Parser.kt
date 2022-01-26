@@ -1,0 +1,176 @@
+/*
+ * Copyright (c) 2022-2022.
+ *
+ * This file is part of Imposter.
+ *
+ * "Commons Clause" License Condition v1.0
+ *
+ * The Software is provided to you by the Licensor under the License, as
+ * defined below, subject to the following condition.
+ *
+ * Without limiting other conditions in the License, the grant of rights
+ * under the License will not include, and the License does not grant to
+ * you, the right to Sell the Software.
+ *
+ * For purposes of the foregoing, "Sell" means practicing any or all of
+ * the rights granted to you under the License to provide to third parties,
+ * for a fee or other consideration (including without limitation fees for
+ * hosting or consulting/support services related to the Software), a
+ * product or service whose value derives, entirely or substantially, from
+ * the functionality of the Software. Any license notice or attribution
+ * required by the License must also include this Commons Clause License
+ * Condition notice.
+ *
+ * Software: Imposter
+ *
+ * License: GNU Lesser General Public License version 3
+ *
+ * Licensor: Peter Cornish
+ *
+ * Imposter is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Imposter is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package io.gatehill.imposter.plugin.soap.parser
+
+import io.gatehill.imposter.plugin.soap.util.SoapUtil
+import org.jdom2.Document
+import org.jdom2.Element
+import org.jdom2.Namespace
+import java.io.File
+import java.net.URI
+import javax.xml.namespace.QName
+
+/**
+ * WDSL 2.0 parser.
+ *
+ * @author pete
+ */
+class Wsdl2Parser(
+    wsdlFile: File,
+    document: Document
+) : AbstractWsdlParser(wsdlFile, document) {
+
+    override val version = WsdlParser.WsdlVersion.Version_2
+
+    override val services: List<WsdlService>
+        get() {
+            val services = xPathSelectNodes(document, "/wsdl:description/wsdl:service")
+
+            return services.map { element ->
+                WsdlService(
+                    name = element.getAttributeValue("name"),
+                    endpoints = getEndpoints(element),
+                )
+            }
+        }
+
+    override fun getBinding(bindingName: String): WsdlBinding? {
+        val binding = selectSingleNodeWithName(
+            context = document,
+            expressionTemplate = "/wsdl:description/wsdl:binding[@name='%s']",
+            name = bindingName
+        ) ?: return null
+
+        val interfaceName = binding.getAttributeValue("interface")!!
+        val operations = xPathSelectNodes(binding, "./wsdl:operation").map { op ->
+            getOperation(interfaceName, op.getAttributeValue("ref"))!!
+        }
+
+        return WsdlBinding(
+            name = bindingName,
+            interfaceRef = interfaceName,
+            operations = operations,
+        )
+    }
+
+    override fun getInterface(interfaceName: String): WsdlInterface? {
+        return getInterfaceNode(interfaceName)?.let { interfaceNode ->
+            val operationNames = xPathSelectNodes(interfaceNode, "./wsdl:operation").map { node ->
+                node.getAttributeValue("name")
+            }
+
+            WsdlInterface(
+                name = interfaceName,
+                operationNames = operationNames,
+            )
+        }
+    }
+
+    private fun getEndpoints(serviceNode: Element): List<WsdlEndpoint> {
+        return xPathSelectNodes(serviceNode, "./wsdl:endpoint").map { node ->
+            WsdlEndpoint(
+                name = node.getAttributeValue("name"),
+                bindingName = node.getAttributeValue("binding"),
+                address = URI(node.getAttributeValue("address")),
+            )
+        }
+    }
+
+    private fun getOperation(interfaceName: String, operationName: String): WsdlOperation? {
+        val interfaceNode: Element = getInterfaceNode(interfaceName)!!
+        val operation = selectSingleNodeWithName(
+            context = interfaceNode,
+            expressionTemplate = "./wsdl:operation[@name='%s']",
+            name = operationName
+        )
+        return operation?.let { parseOperation(operation) }
+    }
+
+    private fun getInterfaceNode(interfaceName: String): Element? {
+        return selectSingleNodeWithName(
+            context = document,
+            expressionTemplate = "/wsdl:description/wsdl:interface[@name='%s']",
+            name = interfaceName
+        )
+    }
+
+    private fun parseOperation(operation: Element): WsdlOperation {
+        val soapOperation = selectSingleNode(operation, "./soap:operation")!!
+        val input = getMessagePartElementName(operation, "./wsdl:input")
+        val output = getMessagePartElementName(operation, "./wsdl:output")
+
+        return WsdlOperation(
+            name = operation.getAttributeValue("name"),
+            soapAction = soapOperation.getAttributeValue("soapAction"),
+            style = soapOperation.getAttributeValue("style"),
+            inputElementRef = input,
+            outputElementRef = output,
+        )
+    }
+
+    /**
+     * Extract the WSDL message part element attribute, then attempt
+     * to resolve it from within the XSD.
+     */
+    private fun getMessagePartElementName(context: Element, expression: String): QName? {
+        val inputOrOutputNode = selectSingleNode(context, expression)!!
+        val elementName = inputOrOutputNode.getAttributeValue("element")
+        return resolveElementFromXsd(elementName)
+    }
+
+    override val xPathNamespaces = listOf(
+        Namespace.getNamespace("wsdl", wsdl2Namespace),
+        Namespace.getNamespace("soap", "http://www.w3.org/ns/wsdl/soap"),
+    )
+
+    override fun findEmbeddedTypesSchemaNode(): Element? {
+        val xsNamespaces = xPathNamespaces + Namespace.getNamespace("xs", "http://www.w3.org/2001/XMLSchema")
+        return SoapUtil.buildXPath("/wsdl:description/wsdl:types/xs:schema", xsNamespaces)
+            .selectSingleNode(document) as Element?
+    }
+
+    companion object {
+        const val wsdl2Namespace = "http://www.w3.org/ns/wsdl"
+    }
+}

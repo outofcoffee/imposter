@@ -1,0 +1,82 @@
+apply plugin: 'java-library'
+apply plugin: 'kotlin'
+apply plugin: 'maven-publish'
+apply plugin: 'com.github.johnrengelman.shadow'
+
+compileJava {
+    sourceCompatibility = 1.8
+}
+
+dependencies {
+    implementation project(':core:imposter-engine')
+
+    implementation 'org.apache.xmlbeans:xmlbeans:5.0.3'
+
+    implementation 'org.jdom:jdom2:2.0.6.1'
+    implementation 'jaxen:jaxen:1.2.0'
+
+    // test
+    testImplementation project(':imposter-test')
+    testImplementation "com.jayway.restassured:rest-assured:$version_restAssured"
+
+    // java 11 compatibility
+    testImplementation ('javax.xml.bind:jaxb-api:2.3.0')
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    archiveClassifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives sourcesJar
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+
+            repositories {
+                maven {
+                    url = version.endsWith('SNAPSHOT') ? mavenSnapshotRepository : mavenReleaseRepository
+                    credentials(AwsCredentials) {
+                        accessKey awsAccessKey
+                        secretKey awsSecretKey
+                    }
+                }
+            }
+        }
+    }
+}
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+
+        // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
+        freeCompilerArgs = ["-Xjvm-default=all"]
+    }
+}
+
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+
+        // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
+        freeCompilerArgs = ["-Xjvm-default=all"]
+    }
+}
+
+shadowJar {
+    // override plugin archive name
+    archiveBaseName.set("imposter-plugin-mock-soap")
+    archiveVersion.set('')
+    archiveClassifier.set('')
+    configurations = [project.configurations.pluginImplementation]
+}
+
+task dist {
+    dependsOn shadowJar
+}

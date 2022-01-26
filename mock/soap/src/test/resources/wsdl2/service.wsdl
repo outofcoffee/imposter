@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<description xmlns="http://www.w3.org/ns/wsdl"
+             xmlns:tns="urn:com:example:petstore"
+             xmlns:whttp="http://www.w3.org/ns/wsdl/http"
+             xmlns:wsoap="http://www.w3.org/ns/wsdl/soap"
+             targetNamespace="urn:com:example:petstore" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://www.w3.org/ns/wsdl/http http://www.w3.org/2002/ws/desc/ns/http.xsd
+http://www.w3.org/ns/wsdl/soap http://www.w3.org/2002/ws/desc/ns/soap.xsd">
+
+    <documentation>
+        This is a sample WSDL 2.0 document describing the pet service.
+    </documentation>
+
+    <!-- Abstract type -->
+    <types>
+        <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                   xmlns="urn:com:example:petstore"
+                   targetNamespace="urn:com:example:petstore">
+
+            <xs:import namespace="urn:com:example:petstore"
+                       schemaLocation="schema.xsd"/>
+        </xs:schema>
+    </types>
+
+    <!-- Abstract interfaces -->
+    <interface name="PetInterface">
+        <fault name="Error1" element="tns:fault"/>
+        <operation name="getPetById" pattern="http://www.w3.org/ns/wsdl/in-out">
+            <wsoap:operation soapAction="getPetById" style="document"/>
+            <input messageLabel="In" element="tns:getPetByIdRequest"/>
+            <output messageLabel="Out" element="tns:getPetByIdResponse"/>
+        </operation>
+    </interface>
+
+    <!-- Concrete Binding Over HTTP -->
+    <binding name="HttpBinding" interface="tns:PetInterface"
+             type="http://www.w3.org/ns/wsdl/http">
+        <operation ref="tns:getPetById" whttp:method="GET"/>
+    </binding>
+
+    <!-- Concrete Binding with SOAP-->
+    <binding name="SoapBinding" interface="tns:PetInterface"
+             type="http://www.w3.org/ns/wsdl/soap"
+             wsoap:protocol="http://www.w3.org/2003/05/soap/bindings/HTTP/"
+             wsoap:mepDefault="http://www.w3.org/2003/05/soap/mep/request-response">
+        <operation ref="tns:getPetById"/>
+    </binding>
+
+    <!-- Web Service offering endpoints for both bindings-->
+    <service name="PetService" interface="tns:PetInterface">
+        <endpoint name="HttpEndpoint"
+                  binding="tns:HttpBinding"
+                  address="http://www.example.com/rest/"/>
+        <endpoint name="SoapEndpoint"
+                  binding="tns:SoapBinding"
+                  address="http://www.example.com/soap/"/>
+    </service>
+</description>
