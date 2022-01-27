@@ -176,7 +176,7 @@ object ConfigUtil {
             }
         }
 
-        LOGGER.trace("Configuration files discovered: {}", configFiles)
+        LOGGER.trace("Configuration files discovered in {}: {}", configDir, configFiles)
         return configFiles
     }
 
