@@ -47,7 +47,6 @@ import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpExchangeHandler
 import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.plugin.PluginInfo
-import io.gatehill.imposter.plugin.ScriptedPlugin.scriptHandler
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin
 import io.gatehill.imposter.plugin.config.resource.ResourceMethod
 import io.gatehill.imposter.plugin.sfdc.config.SfdcPluginConfig
@@ -75,7 +74,7 @@ class SfdcPluginImpl @Inject constructor(
     vertx: Vertx,
     imposterConfig: ImposterConfig,
     private val resourceService: ResourceService,
-    private val responseService: ResponseService
+    private val responseService: ResponseService,
 ) : ConfiguredPlugin<SfdcPluginConfig>(
     vertx, imposterConfig
 ) {
@@ -109,7 +108,7 @@ class SfdcPluginImpl @Inject constructor(
                 } ?: throw RuntimeException("Unable to find mock config for SObject: $sObjectName")
 
                 // script should fire first
-                scriptHandler(config, httpExchange, injector) { responseBehaviour ->
+                responseService.handle(config, httpExchange) { responseBehaviour ->
                     // enrich records
                     val records = responseService.loadResponseAsJsonArray(config, responseBehaviour)
                     for (i in 0 until records.size()) {
@@ -134,7 +133,7 @@ class SfdcPluginImpl @Inject constructor(
         configs.forEach { config: SfdcPluginConfig ->
             val handler = resourceService.handleRoute(imposterConfig, config, vertx) { httpExchange: HttpExchange ->
                 // script should fire first
-                scriptHandler(config, httpExchange, injector) { responseBehaviour ->
+                responseService.handle(config, httpExchange) { responseBehaviour ->
                     val apiVersion = httpExchange.pathParam("apiVersion")!!
                     val sObjectId = httpExchange.pathParam("sObjectId")
 

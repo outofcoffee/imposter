@@ -45,7 +45,6 @@ package io.gatehill.imposter.service
 import com.google.common.base.Preconditions
 import com.google.common.base.Strings
 import com.google.common.cache.CacheBuilder
-import com.google.inject.Injector
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.util.EnvVars.Companion.getEnv
 import io.gatehill.imposter.exception.ResponseException
@@ -115,7 +114,6 @@ class ResponseServiceImpl @Inject constructor(
         pluginConfig: PluginConfig,
         resourceConfig: ResponseConfigHolder?,
         httpExchange: HttpExchange,
-        injector: Injector,
         additionalContext: Map<String, Any>?,
         statusCodeFactory: StatusCodeFactory,
         responseBehaviourFactory: ResponseBehaviourFactory,

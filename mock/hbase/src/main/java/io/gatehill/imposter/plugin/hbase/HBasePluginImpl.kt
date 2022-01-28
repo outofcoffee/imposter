@@ -51,7 +51,6 @@ import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.RequireModules
-import io.gatehill.imposter.plugin.ScriptedPlugin.scriptHandler
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.hbase.config.HBasePluginConfig
@@ -66,6 +65,7 @@ import io.gatehill.imposter.util.FileUtil.findRow
 import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.HttpUtil.CONTENT_TYPE_JSON
 import io.gatehill.imposter.util.HttpUtil.readAcceptedContentTypes
+import io.gatehill.imposter.util.InjectorUtil
 import io.vertx.core.Vertx
 import org.apache.logging.log4j.LogManager
 import javax.inject.Inject
@@ -82,7 +82,7 @@ class HBasePluginImpl @Inject constructor(
     imposterConfig: ImposterConfig,
     private val resourceService: ResourceService,
     private val responseService: ResponseService,
-    private val scannerService: ScannerService
+    private val scannerService: ScannerService,
 ) : ConfiguredPlugin<HBasePluginConfig>(
     vertx, imposterConfig
 ) {
@@ -91,6 +91,8 @@ class HBasePluginImpl @Inject constructor(
 
     private val tableConfigs
         get() = tables!!
+
+    private val injector = InjectorUtil.injector!!
 
     override fun configurePlugin(configs: List<HBasePluginConfig>) {
         tables = configs.associateBy { it.tableName }
@@ -148,7 +150,7 @@ class HBasePluginImpl @Inject constructor(
                     recordInfo,
                     scannerFilterPrefix = null
                 )
-                scriptHandler(config, httpExchange, injector, bindings) { responseBehaviour ->
+                responseService.handle(config, httpExchange, bindings) { responseBehaviour ->
                     // find the right row from results
                     val results = responseService.loadResponseAsJsonArray(config, responseBehaviour)
                     val result = findRow(config.idField, recordInfo.recordId, results)
@@ -220,7 +222,7 @@ class HBasePluginImpl @Inject constructor(
 
                 // script should fire first
                 val bindings = buildScriptBindings(ResponsePhase.SCANNER, tableName, null, scannerFilterPrefix)
-                scriptHandler(config, httpExchange, injector, bindings) {
+                responseService.handle(config, httpExchange, bindings) {
                     val scannerId = scannerService.registerScanner(config, scanner)
                     val resultUrl = imposterConfig.serverUrl + path + "/" + tableName + "/scanner/" + scannerId
                     httpExchange.response()
@@ -287,7 +289,7 @@ class HBasePluginImpl @Inject constructor(
                     tableName = tableName,
                     scannerFilterPrefix = deserialiser.decodeScannerFilterPrefix(scanner.scanner)
                 )
-                scriptHandler(config, httpExchange, injector, bindings) { responseBehaviour ->
+                responseService.handle(config, httpExchange, bindings) { responseBehaviour ->
                     // build results
                     val results = responseService.loadResponseAsJsonArray(config, responseBehaviour)
                     val serialiser = findSerialiser(httpExchange)

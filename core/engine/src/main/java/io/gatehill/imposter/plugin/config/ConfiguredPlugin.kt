@@ -42,11 +42,9 @@
  */
 package io.gatehill.imposter.plugin.config
 
-import com.google.inject.Injector
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.util.ConfigUtil
 import io.gatehill.imposter.plugin.RoutablePlugin
-import io.gatehill.imposter.util.InjectorUtil
 import io.vertx.core.Vertx
 import java.io.File
 import javax.inject.Inject
@@ -84,7 +82,4 @@ abstract class ConfiguredPlugin<T : PluginConfigImpl> @Inject constructor(
     protected open fun configurePlugin(configs: List<T>) {
         /* no op */
     }
-
-    protected val injector: Injector
-        get() = InjectorUtil.injector!!
 }

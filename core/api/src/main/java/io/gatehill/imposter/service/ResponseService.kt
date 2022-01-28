@@ -42,11 +42,13 @@
  */
 package io.gatehill.imposter.service
 
-import com.google.inject.Injector
+import io.gatehill.imposter.http.DefaultResponseBehaviourFactory
+import io.gatehill.imposter.http.DefaultStatusCodeFactory
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.ResponseBehaviourFactory
 import io.gatehill.imposter.http.StatusCodeFactory
 import io.gatehill.imposter.plugin.config.PluginConfig
+import io.gatehill.imposter.plugin.config.PluginConfigImpl
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.script.ResponseBehaviour
@@ -61,16 +63,70 @@ interface ResponseService {
 
     fun loadResponseAsJsonArray(config: PluginConfig, responseFile: String): JsonArray
 
+    /**
+     * Determines the response behaviour, using a script if configured,
+     * then either responds directly to the client of the [HttpExchange],
+     * or delegates to the [defaultBehaviourHandler].
+     */
     fun handle(
         pluginConfig: PluginConfig,
         resourceConfig: ResponseConfigHolder?,
         httpExchange: HttpExchange,
-        injector: Injector,
         additionalContext: Map<String, Any>?,
         statusCodeFactory: StatusCodeFactory,
         responseBehaviourFactory: ResponseBehaviourFactory,
         defaultBehaviourHandler: Consumer<ResponseBehaviour>
     )
+
+    fun <C : PluginConfigImpl> handle(
+        pluginConfig: C,
+        httpExchange: HttpExchange,
+        defaultBehaviourHandler: Consumer<ResponseBehaviour>
+    ) {
+        handle(
+            pluginConfig,
+            pluginConfig,
+            httpExchange,
+            null,
+            DefaultStatusCodeFactory.instance,
+            DefaultResponseBehaviourFactory.instance,
+            defaultBehaviourHandler
+        )
+    }
+
+    fun <C : PluginConfigImpl> handle(
+        pluginConfig: C,
+        resourceConfig: ResponseConfigHolder?,
+        httpExchange: HttpExchange,
+        defaultBehaviourHandler: Consumer<ResponseBehaviour>
+    ) {
+        handle(
+            pluginConfig,
+            resourceConfig,
+            httpExchange,
+            null,
+            DefaultStatusCodeFactory.instance,
+            DefaultResponseBehaviourFactory.instance,
+            defaultBehaviourHandler
+        )
+    }
+
+    fun <C : PluginConfigImpl> handle(
+        pluginConfig: C,
+        httpExchange: HttpExchange,
+        additionalContext: Map<String, Any>?,
+        defaultBehaviourHandler: Consumer<ResponseBehaviour>
+    ) {
+        handle(
+            pluginConfig,
+            pluginConfig,
+            httpExchange,
+            additionalContext,
+            DefaultStatusCodeFactory.instance,
+            DefaultResponseBehaviourFactory.instance,
+            defaultBehaviourHandler
+        )
+    }
 
     /**
      * Send an empty response to the client, typically used as a fallback when no

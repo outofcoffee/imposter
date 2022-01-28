@@ -44,7 +44,6 @@ package io.gatehill.imposter.plugin.test
 
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.http.HttpRouter
-import io.gatehill.imposter.plugin.ScriptedPlugin.scriptHandler
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.script.ResponseBehaviour
@@ -60,7 +59,7 @@ class TestPluginImpl @Inject constructor(
     vertx: Vertx,
     imposterConfig: ImposterConfig,
     private val resourceService: ResourceService,
-    private val responseService: ResponseService
+    private val responseService: ResponseService,
 ) : ConfiguredPlugin<TestPluginConfig>(vertx, imposterConfig) {
 
     override val configClass: Class<TestPluginConfig>
@@ -78,7 +77,12 @@ class TestPluginImpl @Inject constructor(
         }
     }
 
-    private fun configureRoute(pluginConfig: TestPluginConfig, resourceConfig: ResponseConfigHolder, router: HttpRouter, path: String) {
+    private fun configureRoute(
+        pluginConfig: TestPluginConfig,
+        resourceConfig: ResponseConfigHolder,
+        router: HttpRouter,
+        path: String
+    ) {
         router.route(path).handler(resourceService.handleRoute(imposterConfig, pluginConfig, vertx) { httpExchange ->
             val defaultBehaviourHandler = { responseBehaviour: ResponseBehaviour ->
                 responseService.sendResponse(
@@ -88,11 +92,10 @@ class TestPluginImpl @Inject constructor(
                     responseBehaviour
                 )
             }
-            scriptHandler(
+            responseService.handle(
                 pluginConfig,
                 resourceConfig,
                 httpExchange,
-                injector,
                 defaultBehaviourHandler
             )
         })

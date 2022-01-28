@@ -49,7 +49,6 @@ import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.http.StatusCodeFactory
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.RequireModules
-import io.gatehill.imposter.plugin.ScriptedPlugin.scriptHandler
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin
 import io.gatehill.imposter.plugin.config.resource.ResourceMethod
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
@@ -309,11 +308,10 @@ class OpenApiPluginImpl @Inject constructor(
                 }
             }
 
-            scriptHandler(
+            responseService.handle(
                 pluginConfig,
                 resourceConfig,
                 httpExchange,
-                injector,
                 context,
                 statusCodeFactory,
                 openApiResponseBehaviourFactory,

@@ -75,7 +75,7 @@ import javax.inject.Inject
 class ScriptedResponseServiceImpl @Inject constructor(
     private val engineLifecycle: EngineLifecycleHooks,
     private val scriptExecLifecycle: ScriptExecLifecycleHooks,
-    private val scriptServiceFactory: ScriptServiceFactory
+    private val scriptServiceFactory: ScriptServiceFactory,
 ) : ScriptedResponseService, EngineLifecycleListener {
 
     /**
@@ -96,7 +96,11 @@ class ScriptedResponseServiceImpl @Inject constructor(
         engineLifecycle.registerListener(this)
     }
 
-    override fun afterRoutesConfigured(imposterConfig: ImposterConfig, allPluginConfigs: List<PluginConfig>, router: HttpRouter) {
+    override fun afterRoutesConfigured(
+        imposterConfig: ImposterConfig,
+        allPluginConfigs: List<PluginConfig>,
+        router: HttpRouter
+    ) {
         initScripts(allPluginConfigs)
     }
 
@@ -218,7 +222,7 @@ class ScriptedResponseServiceImpl @Inject constructor(
         } catch (e: Exception) {
             throw RuntimeException(
                 "Error executing script: '${responseConfig.scriptFile}' for request: " +
-                    "${httpExchange.request().method()} ${httpExchange.request().absoluteURI()}", e
+                        "${httpExchange.request().method()} ${httpExchange.request().absoluteURI()}", e
             )
         }
     }

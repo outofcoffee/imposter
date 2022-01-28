@@ -46,7 +46,6 @@ import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.plugin.PluginInfo
-import io.gatehill.imposter.plugin.ScriptedPlugin.scriptHandler
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin
 import io.gatehill.imposter.plugin.config.ContentTypedConfig
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig
@@ -73,7 +72,7 @@ class RestPluginImpl @Inject constructor(
     vertx: Vertx,
     imposterConfig: ImposterConfig,
     private val resourceService: ResourceService,
-    private val responseService: ResponseService
+    private val responseService: ResponseService,
 ) : ConfiguredPlugin<RestPluginConfig>(
     vertx, imposterConfig
 ) {
@@ -125,7 +124,7 @@ class RestPluginImpl @Inject constructor(
         router.route(method, qualifiedPath).handler(
             resourceService.handleRoute(imposterConfig, pluginConfig, vertx) { httpExchange: HttpExchange ->
                 // script should fire first
-                scriptHandler(pluginConfig, resourceConfig, httpExchange, injector) { responseBehaviour ->
+                responseService.handle(pluginConfig, resourceConfig, httpExchange) { responseBehaviour ->
                     LOGGER.info(
                         "Handling {} object request for: {}",
                         method,
@@ -155,7 +154,7 @@ class RestPluginImpl @Inject constructor(
         router.route(method, qualifiedPath).handler(
             resourceService.handleRoute(imposterConfig, pluginConfig, vertx) { httpExchange: HttpExchange ->
                 // script should fire first
-                scriptHandler(pluginConfig, resourceConfig, httpExchange, injector) { responseBehaviour ->
+                responseService.handle(pluginConfig, resourceConfig, httpExchange) { responseBehaviour ->
                     LOGGER.info("Handling {} array request for: {}", method, httpExchange.request().absoluteURI())
 
                     // get the first param in the path
