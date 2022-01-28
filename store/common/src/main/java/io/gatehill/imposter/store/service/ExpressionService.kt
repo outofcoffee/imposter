@@ -18,5 +18,5 @@ interface ExpressionService {
      * ${expression1}...${expression2}...
      * ```
      */
-    fun eval(expression: String, httpExchange: HttpExchange): String?
+    fun eval(expression: String, httpExchange: HttpExchange, default: String? = null): String?
 }
