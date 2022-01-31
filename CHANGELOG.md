@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- ...
+
 ## [2.7.3] - 2022-01-31
 ### Added
 - feat: allows store name to be set using a capture config.
