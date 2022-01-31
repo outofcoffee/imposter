@@ -60,6 +60,8 @@ The following configuration options are available for a capture:
 | `queryParam`      | The name of the query parameter to capture.                                                                               | 
 | `requestHeader`   | The name of the request header to capture.                                                                                | 
 | `jsonPath`        | The JsonPath expression to query the JSON body. Only works with JSON request bodies.                                      | 
+| `expression`      | A placeholder expression, e.g. `${context.request.queryParams.foo}` - see _Expressions_ section.                          | 
+| `const`           | A constant value, e.g. `example`.                                                                                         | 
 
 ## Request scoped store
 
@@ -168,23 +170,23 @@ You can use an expression in a key name or value.
 
 For example:
 
-    ${context.request.header.Correlation-ID}
+    ${context.request.headers.Correlation-ID}
 
 Or composite expressions such as:
 
-    example_${context.request.header.Correlation-ID}_${context.request.header.User-Agent}
+    example_${context.request.headers.Correlation-ID}_${context.request.headers.User-Agent}
 
 The following expressions are supported:
 
-| Expression                             | Example expression                  | Example value                |
-|----------------------------------------|-------------------------------------|------------------------------|
-| `context.request.header.HEADERNAME`    | `context.request.header.User-Agent` | `"Mozilla"`                  |
-| `context.request.pathParam.PARAMNAME`  | `context.request.pathParam.account` | `"example"`                  |
-| `context.request.queryParam.PARAMNAME` | `context.request.queryParam.page`   | `"1"`                        |
-| `datetime.now.iso8601_date`            | `datetime.now.iso8601_date`         | `"2022-01-20"`               |
-| `datetime.now.iso8601_datetime`        | `datetime.now.iso8601_datetime`     | `"2022-01-20T14:23:25.737Z"` |
-| `datetime.now.millis`                  | `datetime.now.millis`               | `"1642688570140"`            |
-| `datetime.now.nanos`                   | `datetime.now.nanos`                | `"30225267785430"`           |
+| Expression                              | Example expression                   | Example value                |
+|-----------------------------------------|--------------------------------------|------------------------------|
+| `context.request.headers.HEADERNAME`    | `context.request.headers.User-Agent` | `"Mozilla"`                  |
+| `context.request.pathParams.PARAMNAME`  | `context.request.pathParams.account` | `"example"`                  |
+| `context.request.queryParams.PARAMNAME` | `context.request.queryParams.page`   | `"1"`                        |
+| `datetime.now.iso8601_date`             | `datetime.now.iso8601_date`          | `"2022-01-20"`               |
+| `datetime.now.iso8601_datetime`         | `datetime.now.iso8601_datetime`      | `"2022-01-20T14:23:25.737Z"` |
+| `datetime.now.millis`                   | `datetime.now.millis`                | `"1642688570140"`            |
+| `datetime.now.nanos`                    | `datetime.now.nanos`                 | `"30225267785430"`           |
 
 Example:
 
