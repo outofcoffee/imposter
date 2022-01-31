@@ -42,74 +42,13 @@
  */
 package io.gatehill.imposter.plugin.soap
 
-import com.jayway.restassured.RestAssured
-import io.gatehill.imposter.server.BaseVerticleTest
-import io.gatehill.imposter.util.HttpUtil
-import io.vertx.ext.unit.TestContext
-import org.junit.Assert.assertNotNull
-import org.junit.Before
-import org.junit.Test
-
 /**
  * Tests for [SoapPluginImpl] using WSDL v1.
  *
  * @author Pete Cornish
  */
-class Wsdl1EndToEndTest : BaseVerticleTest() {
-    override val pluginClass = SoapPluginImpl::class.java
-
-    @Before
-    @Throws(Exception::class)
-    override fun setUp(testContext: TestContext) {
-        super.setUp(testContext)
-        RestAssured.baseURI = "http://$host:$listenPort"
-    }
-
+class Wsdl1EndToEndTest : AbstractEndToEndTest() {
     override val testConfigDirs = listOf(
         "/wsdl1"
     )
-
-    @Test
-    fun testRequestResponseUsingSoapAction(testContext: TestContext) {
-        val body = RestAssured.given()
-            .log().ifValidationFails()
-            .accept("application/soap+xml")
-            .header("SOAPAction", "getPetById")
-            .`when`()
-            .post("/soap/")
-            .then()
-            .log().ifValidationFails()
-            .statusCode(HttpUtil.HTTP_OK)
-            .extract().asString()
-
-        assertNotNull(body)
-    }
-
-    @Test
-    fun testRequestResponseUsingRequestBody(testContext: TestContext) {
-        val soapEnv = """
-<?xml version="1.0" encoding="UTF-8"?>
-<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope"> 
- <env:Header/>
- <env:Body>
-   <getPetByIdRequest xmlns="urn:com:example:petstore">
-     <id>3</id>
-   </getPetByIdRequest>
- </env:Body>
-</env:Envelope>
-            """.trimIndent()
-
-        val body = RestAssured.given()
-            .log().ifValidationFails()
-            .accept("application/soap+xml")
-            .`when`()
-            .body(soapEnv)
-            .post("/soap/")
-            .then()
-            .log().ifValidationFails()
-            .statusCode(HttpUtil.HTTP_OK)
-            .extract().asString()
-
-        assertNotNull(body)
-    }
 }
