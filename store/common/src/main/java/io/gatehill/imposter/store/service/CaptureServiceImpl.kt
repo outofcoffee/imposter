@@ -94,15 +94,14 @@ class CaptureServiceImpl @Inject constructor(
         httpExchange: HttpExchange,
         jsonPathContextHolder: AtomicReference<DocumentContext>
     ) {
-        val storeName = itemConfig.store?.let { expressionService.eval(it, httpExchange, default = it) }
-            ?: StoreService.DEFAULT_CAPTURE_STORE_NAME
+        val storeName = determineStoreName(itemConfig, httpExchange, jsonPathContextHolder)
 
         val itemName: String? =
-            determineItemName(httpExchange, jsonPathContextHolder, captureConfigKey, itemConfig, storeName)
+            determineItemName(itemConfig, httpExchange, jsonPathContextHolder, storeName, captureConfigKey)
 
         // itemname may not be set, if dynamic value was null
         itemName?.let {
-            val itemValue = captureItemValue(httpExchange, jsonPathContextHolder, captureConfigKey, itemConfig)
+            val itemValue = captureItemValue(itemConfig, httpExchange, jsonPathContextHolder, captureConfigKey)
             val store = openCaptureStore(httpExchange, storeName)
             store.save(itemName, itemValue)
 
@@ -115,16 +114,30 @@ class CaptureServiceImpl @Inject constructor(
         }
     }
 
+    private fun determineStoreName(
+        itemConfig: ItemCaptureConfig,
+        httpExchange: HttpExchange,
+        jsonPathContextHolder: AtomicReference<DocumentContext>
+    ): String {
+        try {
+            return (itemConfig.store?.let { capture<String>(httpExchange, it, jsonPathContextHolder) }
+                    ?: StoreService.DEFAULT_CAPTURE_STORE_NAME)
+
+        } catch (e: Exception) {
+            throw RuntimeException("Error capturing store name: $itemConfig", e)
+        }
+    }
+
     /**
      * Determines the item name, if possible.
      * May return `null` if dynamic value could not be resolved or resolves to `null`.
      */
     private fun determineItemName(
+        itemConfig: ItemCaptureConfig,
         httpExchange: HttpExchange,
         jsonPathContextHolder: AtomicReference<DocumentContext>,
-        captureConfigKey: String,
-        itemConfig: ItemCaptureConfig,
-        storeName: String
+        storeName: String,
+        captureConfigKey: String
     ): String? {
         if (Objects.isNull(itemConfig.key)) {
             LOGGER.debug("Capturing item: {} into store: {}", captureConfigKey, storeName)
@@ -134,13 +147,13 @@ class CaptureServiceImpl @Inject constructor(
             try {
                 capture<String?>(httpExchange, itemConfig.key, jsonPathContextHolder)?.let { itemName ->
                     LOGGER.debug(
-                        "Capturing item: $captureConfigKey into store: $storeName with dynamic name: $itemName"
+                        "Capturing item: $captureConfigKey into store: $storeName with name: $itemName"
                     )
                     return itemName
 
                 } ?: run {
                     LOGGER.trace(
-                        "Could not capture item name for: $captureConfigKey as dynamic item name resolved to null",
+                        "Could not capture item name for: $captureConfigKey as item name resolved to null",
                     )
                     return null
                 }
@@ -152,10 +165,10 @@ class CaptureServiceImpl @Inject constructor(
     }
 
     private fun captureItemValue(
+        itemConfig: ItemCaptureConfig,
         httpExchange: HttpExchange,
         jsonPathContextHolder: AtomicReference<DocumentContext>,
-        captureConfigKey: String,
-        itemConfig: ItemCaptureConfig
+        captureConfigKey: String
     ): Any? {
         try {
             return capture(httpExchange, itemConfig, jsonPathContextHolder)
@@ -181,31 +194,31 @@ class CaptureServiceImpl @Inject constructor(
     @Suppress("UNCHECKED_CAST")
     private fun <T> capture(
         httpExchange: HttpExchange,
-        itemConfig: CaptureConfig?,
-        jsonPathContextHolder: AtomicReference<DocumentContext>
+        captureConfig: CaptureConfig?,
+        jsonPathContextHolder: AtomicReference<DocumentContext>,
     ): T? {
-        return if (!Strings.isNullOrEmpty(itemConfig?.constValue)) {
-            itemConfig!!.constValue as T?
+        return if (!Strings.isNullOrEmpty(captureConfig?.constValue)) {
+            captureConfig!!.constValue as T?
 
-        } else if (!Strings.isNullOrEmpty(itemConfig?.pathParam)) {
-            httpExchange.pathParam(itemConfig!!.pathParam!!) as T?
+        } else if (!Strings.isNullOrEmpty(captureConfig?.pathParam)) {
+            httpExchange.pathParam(captureConfig!!.pathParam!!) as T?
 
-        } else if (!Strings.isNullOrEmpty(itemConfig?.queryParam)) {
-            httpExchange.queryParam(itemConfig!!.queryParam!!) as T?
+        } else if (!Strings.isNullOrEmpty(captureConfig?.queryParam)) {
+            httpExchange.queryParam(captureConfig!!.queryParam!!) as T?
 
-        } else if (!Strings.isNullOrEmpty(itemConfig?.requestHeader)) {
-            httpExchange.request().getHeader(itemConfig!!.requestHeader!!) as T?
+        } else if (!Strings.isNullOrEmpty(captureConfig?.requestHeader)) {
+            httpExchange.request().getHeader(captureConfig!!.requestHeader!!) as T?
 
-        } else if (!Strings.isNullOrEmpty(itemConfig?.jsonPath)) {
+        } else if (!Strings.isNullOrEmpty(captureConfig?.jsonPath)) {
             var jsonPathContext = jsonPathContextHolder.get()
             if (Objects.isNull(jsonPathContext)) {
                 jsonPathContext = StoreService.JSONPATH_PARSE_CONTEXT.parse(httpExchange.bodyAsString)
                 jsonPathContextHolder.set(jsonPathContext)
             }
-            jsonPathContext.read<T>(itemConfig!!.jsonPath!!)
+            jsonPathContext.read<T>(captureConfig!!.jsonPath!!)
 
-        } else if (!Strings.isNullOrEmpty(itemConfig?.expression)) {
-            expressionService.eval(itemConfig!!.expression!!, httpExchange) as T?
+        } else if (!Strings.isNullOrEmpty(captureConfig?.expression)) {
+            expressionService.eval(captureConfig!!.expression!!, httpExchange) as T?
 
         } else {
             null

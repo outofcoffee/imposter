@@ -17,6 +17,7 @@ interface ExpressionService {
      * ```
      * ${expression1}...${expression2}...
      * ```
+     * If no expression is found, [expression] is returned.
      */
-    fun eval(expression: String, httpExchange: HttpExchange, default: String? = null): String?
+    fun eval(expression: String, httpExchange: HttpExchange): String
 }

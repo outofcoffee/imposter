@@ -61,8 +61,8 @@ class ConditionalNameValuePair(
     val operator: MatchOperator = MatchOperator.EqualTo
 ) {
     companion object {
-        fun parse(requestHeaders: Map<String, Any>): Map<String, ConditionalNameValuePair> {
-            return requestHeaders.entries.associate { (k, v) -> k to parsePair(k, v) }
+        fun parse(raw: Map<String, Any>): Map<String, ConditionalNameValuePair> {
+            return raw.entries.associate { (k, v) -> k to parsePair(k, v) }
         }
 
         private fun parsePair(key: String, value: Any): ConditionalNameValuePair {

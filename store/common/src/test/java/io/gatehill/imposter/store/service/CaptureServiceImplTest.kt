@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 class CaptureServiceImplTest {
     @Test
-    fun `capture header with expression`() {
+    fun `capture value using expression`() {
         val store = mock<Store>()
         val storeFactory = mock<StoreFactory> {
             on { getStoreByName(any(), any()) } doReturn store
@@ -32,7 +32,7 @@ class CaptureServiceImplTest {
         )
 
         val request = mock<HttpRequest> {
-            on { getHeader(eq("Correlation-ID")) } doReturn "foo"
+            on { getHeader(eq("Correlation-ID")) } doReturn "test-id"
         }
         val httpExchange = mock<HttpExchange> {
             on { request() } doReturn request
@@ -41,17 +41,48 @@ class CaptureServiceImplTest {
         service.captureItem(
             captureConfigKey = "correlationId",
             itemConfig = ItemCaptureConfig(
-                key = CaptureConfig(
-                    expression = "\${context.request.headers.Correlation-ID}"
-                ),
-                constValue = "bar",
-                store = "test",
+                _key = "foo",
+                expression = "\${context.request.headers.Correlation-ID}",
+                _store = "test",
             ),
             httpExchange = httpExchange,
             jsonPathContextHolder = AtomicReference<DocumentContext>(),
         )
 
-        verify(store).save(eq("foo"), eq("bar"))
+        verify(store).save(eq("foo"), eq("test-id"))
+    }
+
+    @Test
+    fun `generate key using expression`() {
+        val store = mock<Store>()
+        val storeFactory = mock<StoreFactory> {
+            on { getStoreByName(any(), any()) } doReturn store
+        }
+        val service = CaptureServiceImpl(
+            storeFactory = storeFactory,
+            lifecycleHooks = EngineLifecycleHooks(),
+            expressionService = ExpressionServiceImpl(),
+        )
+
+        val request = mock<HttpRequest>()
+        val httpExchange = mock<HttpExchange> {
+            on { request() } doReturn request
+        }
+
+        service.captureItem(
+            captureConfigKey = "correlationId",
+            itemConfig = ItemCaptureConfig(
+                _key = "key_\${datetime.now.iso8601_date}",
+                constValue = "bar",
+                _store = "test",
+            ),
+            httpExchange = httpExchange,
+            jsonPathContextHolder = AtomicReference<DocumentContext>(),
+        )
+
+        // check key name calculated correctly
+        val keyName = "key_${DateTimeUtil.DATE_FORMATTER.format(LocalDate.now())}"
+        verify(store).save(eq(keyName), eq("bar"))
     }
 
     @Test
@@ -74,11 +105,11 @@ class CaptureServiceImplTest {
         service.captureItem(
             captureConfigKey = "correlationId",
             itemConfig = ItemCaptureConfig(
-                key = CaptureConfig(
+                _key = CaptureConfig(
                     constValue = "foo"
                 ),
                 constValue = "bar",
-                store = "store_\${datetime.now.iso8601_date}",
+                _store = "store_\${datetime.now.iso8601_date}",
             ),
             httpExchange = httpExchange,
             jsonPathContextHolder = AtomicReference<DocumentContext>(),

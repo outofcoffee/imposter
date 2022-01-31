@@ -93,13 +93,13 @@ class ExpressionServiceImplTest {
             expression = "\${datetime.now.millis}",
             httpExchange = httpExchange,
         )
-        assertThat(millis?.toLong(), OrderingComparison.lessThanOrEqualTo(System.currentTimeMillis()))
+        assertThat(millis.toLong(), OrderingComparison.lessThanOrEqualTo(System.currentTimeMillis()))
 
         val nanos = service.eval(
             expression = "\${datetime.now.nanos}",
             httpExchange = httpExchange,
         )
-        assertThat(nanos?.toLong(), OrderingComparison.lessThanOrEqualTo(System.nanoTime()))
+        assertThat(nanos.toLong(), OrderingComparison.lessThanOrEqualTo(System.nanoTime()))
 
         val iso8601Date = service.eval(
             expression = "\${datetime.now.iso8601_date}",

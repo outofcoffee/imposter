@@ -40,11 +40,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.plugin.config.capture
+package io.gatehill.imposter.plugin.config.flex
 
 /**
  * @author Pete Cornish
  */
-interface CaptureConfigHolder {
-    val captureConfig: Map<String, ItemCaptureConfig>?
+interface TypeParser<R, T> {
+    /**
+     * @return an instance of [T] given [raw]
+     */
+    fun parse(raw: R): T
 }

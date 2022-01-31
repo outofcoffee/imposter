@@ -43,6 +43,7 @@
 package io.gatehill.imposter.plugin.config.capture
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import io.gatehill.imposter.plugin.config.flex.FlexibleTypeUtil.lazyParse
 
 /**
  * A capture configuration for values, that allows the key and store to be overridden.
@@ -57,11 +58,17 @@ class ItemCaptureConfig(
     expression: String? = null,
     constValue: String? = null,
 
+    /**
+     * Can be a [String] or a [CaptureConfig]. Use [key] instead.
+     */
     @field:JsonProperty("key")
-    val key: CaptureConfig? = null,
+    private val _key: Any? = null,
 
+    /**
+     * Can be a [String] or a [CaptureConfig]. Use [store] instead.
+     */
     @field:JsonProperty("store")
-    val store: String? = null,
+    private val _store: Any? = null,
 
     @field:JsonProperty("enabled")
     val enabled: Boolean = true,
@@ -72,4 +79,7 @@ class ItemCaptureConfig(
     jsonPath,
     expression,
     constValue,
-)
+) {
+    val key: CaptureConfig? by lazyParse(_key, CaptureConfig)
+    val store: CaptureConfig? by lazyParse(_store, CaptureConfig)
+}

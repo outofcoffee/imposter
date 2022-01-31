@@ -43,6 +43,7 @@
 package io.gatehill.imposter.plugin.config.capture
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import io.gatehill.imposter.plugin.config.flex.TypeParser
 
 /**
  * A capture configuration that supports path parameters, query parameters,
@@ -68,4 +69,12 @@ open class CaptureConfig(
 
     @field:JsonProperty("const")
     val constValue: String? = null,
-)
+) {
+    companion object : TypeParser<String?, CaptureConfig> {
+        override fun parse(raw: String?) = CaptureConfig(expression = raw)
+    }
+
+    override fun toString(): String {
+        return "CaptureConfig(pathParam=$pathParam, queryParam=$queryParam, requestHeader=$requestHeader, jsonPath=$jsonPath, expression=$expression, constValue=$constValue)"
+    }
+}

@@ -59,7 +59,7 @@ class ExpressionServiceImpl : ExpressionService {
     /**
      * {@inheritDoc}
      */
-    override fun eval(expression: String, httpExchange: HttpExchange, default: String?): String? {
+    override fun eval(expression: String, httpExchange: HttpExchange): String {
         val matcher = expressionPattern.matcher(expression)
         var matched = false
         val sb = StringBuffer()
@@ -69,8 +69,12 @@ class ExpressionServiceImpl : ExpressionService {
             val result = evalSingle(subExpression, httpExchange) ?: ""
             matcher.appendReplacement(sb, result)
         }
-        matcher.appendTail(sb)
-        return if (matched) sb.toString() else default
+        return if (matched) {
+            matcher.appendTail(sb)
+            sb.toString()
+        } else {
+            expression
+        }
     }
 
     /**

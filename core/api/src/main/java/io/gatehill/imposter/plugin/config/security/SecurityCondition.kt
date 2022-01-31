@@ -55,19 +55,18 @@ class SecurityCondition(
      * Raw configuration. Use [queryParams] instead.
      */
     @field:JsonProperty("queryParams")
-    private val rawQueryParams: Map<String, Any> = emptyMap(),
+    private val _queryParams: Map<String, Any>? = null,
 
     /**
      * Raw configuration. Use [requestHeaders] instead.
      */
     @field:JsonProperty("requestHeaders")
-    private val rawRequestHeaders: Map<String, Any> = emptyMap()
+    private val _requestHeaders: Map<String, Any>? = null,
 ) {
     val queryParams: Map<String, ConditionalNameValuePair> by lazy {
-        ConditionalNameValuePair.parse(rawQueryParams)
+        _queryParams?.let { ConditionalNameValuePair.parse(it) } ?: emptyMap()
     }
-
     val requestHeaders: Map<String, ConditionalNameValuePair> by lazy {
-        ConditionalNameValuePair.parse(rawRequestHeaders)
+        _requestHeaders?.let { ConditionalNameValuePair.parse(it) } ?: emptyMap()
     }
 }

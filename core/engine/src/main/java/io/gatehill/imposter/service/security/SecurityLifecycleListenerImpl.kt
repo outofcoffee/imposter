@@ -49,7 +49,6 @@ import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.plugin.config.security.SecurityConfig
 import io.gatehill.imposter.plugin.config.security.SecurityConfigHolder
 import io.gatehill.imposter.service.SecurityService
-import io.gatehill.imposter.service.security.SecurityLifecycleListenerImpl
 import org.apache.logging.log4j.LogManager
 import java.util.*
 import javax.inject.Inject

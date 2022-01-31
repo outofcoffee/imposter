@@ -40,11 +40,30 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.plugin.config.capture
+package io.gatehill.imposter.plugin.config.flex
+
+import com.fasterxml.jackson.databind.ObjectMapper
 
 /**
  * @author Pete Cornish
  */
-interface CaptureConfigHolder {
-    val captureConfig: Map<String, ItemCaptureConfig>?
+object FlexibleTypeUtil {
+    val converter = ObjectMapper()
+
+    /**
+     * Computes an instance of [T] from [R].
+     *
+     * @param R the raw value
+     * @param T the computed value
+     * @return a delegate that will parse [raw] to an instance of [T] when [Lazy.getValue] is called.
+     */
+    inline fun <reified R, reified T> lazyParse(raw: Any?, parser: TypeParser<R, T>): Lazy<T?> = lazy {
+        return@lazy when (raw) {
+            null -> null
+            is T -> raw
+            is R -> parser.parse(raw)
+            is Map<*, *> -> converter.convertValue(raw, T::class.java)
+            else -> throw ClassCastException("Config must be Map, ${R::class.qualifiedName} or ${T::class.qualifiedName} - value: $raw")
+        }
+    }
 }
