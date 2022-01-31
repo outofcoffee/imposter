@@ -260,7 +260,9 @@ class SoapPluginImpl @Inject constructor(
         val statusCodeFactory = DefaultStatusCodeFactory.instance
         val responseBehaviourFactory = DefaultResponseBehaviourFactory.instance
 
-        val context = emptyMap<String, Any>()
+        val context = mapOf(
+            "operation" to operation
+        )
 
         val request = httpExchange.request()
         val resourceConfig = httpExchange.get<ResponseConfigHolder>(ResourceUtil.RESPONSE_CONFIG_HOLDER_KEY)
