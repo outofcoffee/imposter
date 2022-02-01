@@ -57,6 +57,7 @@ import io.gatehill.imposter.plugin.soap.model.ParsedSoapMessage
 import io.gatehill.imposter.plugin.soap.parser.VersionAwareWsdlParser
 import io.gatehill.imposter.plugin.soap.parser.WsdlBinding
 import io.gatehill.imposter.plugin.soap.parser.WsdlOperation
+import io.gatehill.imposter.plugin.soap.service.SoapExampleService
 import io.gatehill.imposter.plugin.soap.util.SoapUtil
 import io.gatehill.imposter.script.ResponseBehaviour
 import io.gatehill.imposter.service.ResourceService
@@ -67,10 +68,8 @@ import io.gatehill.imposter.util.ResourceUtil
 import io.vertx.core.Vertx
 import org.apache.logging.log4j.LogManager
 import org.apache.xmlbeans.XmlObject
-import org.apache.xmlbeans.impl.xsd2inst.SchemaInstanceGenerator
 import java.io.File
 import javax.inject.Inject
-import javax.xml.namespace.QName
 import kotlin.collections.set
 
 /**
@@ -85,6 +84,7 @@ class SoapPluginImpl @Inject constructor(
     imposterConfig: ImposterConfig,
     private val resourceService: ResourceService,
     private val responseService: ResponseService,
+    private val soapExampleService: SoapExampleService,
 ) : ConfiguredPlugin<SoapPluginConfig>(
     vertx, imposterConfig
 ) {
@@ -105,13 +105,18 @@ class SoapPluginImpl @Inject constructor(
     private fun parseWsdls(router: HttpRouter) {
         configs.forEach { config: SoapPluginConfig ->
             val fullWsdlPath = File(config.parentDir, config.wsdlFile!!)
-            check(fullWsdlPath.exists())
+            check(fullWsdlPath.exists()) {
+                "WSDL file not found at path: $fullWsdlPath"
+            }
             val wsdlParser = VersionAwareWsdlParser(fullWsdlPath)
 
             wsdlParser.services.forEach { service ->
                 service.endpoints.forEach { endpoint ->
                     val path = endpoint.address.path
-                    handlePathOperations(router, config, wsdlParser.schemas, path, wsdlParser.getBinding(endpoint.bindingName)!!)
+                    val binding = wsdlParser.getBinding(endpoint.bindingName)
+                        ?: throw IllegalStateException("Binding: ${endpoint.bindingName} not found")
+
+                    handlePathOperations(router, config, wsdlParser.schemas, path, binding)
                 }
             }
         }
@@ -139,12 +144,9 @@ class SoapPluginImpl @Inject constructor(
         // TODO parse HTTP binding to check for other verbs
         router.route(ResourceMethod.POST, fullPath).handler(
             resourceService.handleRoute(imposterConfig, config, vertx) { httpExchange: HttpExchange ->
-                val soapEnv = httpExchange.body?.let { body ->
-                    return@let SoapUtil.parseSoapEnvelope(body)
-
-                } ?: run {
+                val soapEnv = httpExchange.body?.let { body -> SoapUtil.parseSoapEnvelope(body) } ?: run {
                     LOGGER.warn("No request body - unable to parse SOAP envelope")
-                    httpExchange.response().setStatusCode(404).end()
+                    httpExchange.response().setStatusCode(400).end()
                     return@handleRoute
                 }
 
@@ -157,8 +159,8 @@ class SoapPluginImpl @Inject constructor(
                     "Only document SOAP bindings are supported"
                 }
 
-                LOGGER.debug("BindingOperation: ${operation.name}")
-                handle(config, operation, schemas, httpExchange, soapEnv)
+                LOGGER.debug("Matched operation: ${operation.name} in binding ${binding.name}")
+                handle(config, binding, operation, schemas, httpExchange, soapEnv)
             }
         )
     }
@@ -173,15 +175,17 @@ class SoapPluginImpl @Inject constructor(
     ): WsdlOperation? {
         val soapAction = getSoapAction(httpExchange)
         soapAction ?: run {
-            LOGGER.warn("Unable to find a SOAPAction")
+            LOGGER.trace("Unable to find a SOAPAction")
             return null
         }
         LOGGER.trace("SOAPAction: $soapAction")
 
         val operation = binding.operations.firstOrNull { it.soapAction == soapAction }
         operation ?: run {
-            LOGGER.debug("Unable to find a matching binding operation for SOAPAction: $soapAction")
+            LOGGER.warn("Unable to find a matching binding operation for SOAPAction: $soapAction")
+            return null
         }
+
         return operation
     }
 
@@ -189,17 +193,23 @@ class SoapPluginImpl @Inject constructor(
         val request = httpExchange.request()
 
         // e.g. SOAPAction: example
-        return request.getHeader("SOAPAction") ?: run {
+        request.getHeader("SOAPAction")?.let { actionHeader ->
+            return actionHeader
+
+        } ?: run {
             // e.g. application/soap+xml;charset=UTF-8;action="example"
-            val contentTypeParts = request.getHeader("Content-Type")?.split(";")?.map { it.trim() }
+            val contentTypeParts = request.getHeader("Content-Type")
+                ?.split(";")
+                ?.map { it.trim() }
 
             contentTypeParts?.let { headerParts ->
-                if (headerParts.any { it == "application/soap+xml" }) {
-                    return@run headerParts.find { it.startsWith("action=") }
+                if (headerParts.any { it == SoapUtil.soapContentType }) {
+                    val actionPart = headerParts.find { it.startsWith("action=") }
+                    return actionPart?.removePrefix("action=")
                 }
-                null
             }
         }
+        return null
     }
 
     private fun determineOperationFromRequestBody(binding: WsdlBinding, soapEnv: ParsedSoapMessage): WsdlOperation? {
@@ -218,16 +228,18 @@ class SoapPluginImpl @Inject constructor(
         }
         if (LOGGER.isTraceEnabled) {
             LOGGER.trace(
-                "Matched {} operations in binding {} based on body root element: {}",
+                "Matched {} operations in binding {} based on body root element: {}: {}",
                 matchedOps.size,
                 binding.name,
-                matchedOps,
+                bodyRootElement.qualifiedName,
+                matchedOps.map { it.name },
             )
         } else {
             LOGGER.debug(
-                "Matched {} operations in binding {} based on body root element",
+                "Matched {} operations in binding {} based on body root element: {}",
                 matchedOps.size,
                 binding.name,
+                bodyRootElement.qualifiedName,
             )
         }
         return when (matchedOps.size) {
@@ -247,11 +259,12 @@ class SoapPluginImpl @Inject constructor(
      * Build a handler for the given operation.
      *
      * @param pluginConfig the plugin configuration
-     * @param operation    the specification operation
-     * @return a route handler
+     * @param binding    the WSDL binding
+     * @param operation    the WSDL operation
      */
     private fun handle(
         pluginConfig: SoapPluginConfig,
+        binding: WsdlBinding,
         operation: WsdlOperation,
         schemas: Array<XmlObject>,
         httpExchange: HttpExchange,
@@ -259,30 +272,27 @@ class SoapPluginImpl @Inject constructor(
     ) {
         val statusCodeFactory = DefaultStatusCodeFactory.instance
         val responseBehaviourFactory = DefaultResponseBehaviourFactory.instance
-
-        val context = mapOf(
-            "operation" to operation
-        )
-
         val request = httpExchange.request()
         val resourceConfig = httpExchange.get<ResponseConfigHolder>(ResourceUtil.RESPONSE_CONFIG_HOLDER_KEY)
 
         val defaultBehaviourHandler = { responseBehaviour: ResponseBehaviour ->
             // set status code regardless of response strategy
-            val response = httpExchange.response().setStatusCode(responseBehaviour.statusCode)
+            val response = httpExchange.response()
+                .setStatusCode(responseBehaviour.statusCode)
 
-            findOutputTypeDefName(operation)?.let { outputTypeDefName ->
+            operation.outputElementRef?.let {
+                LOGGER.trace("Using output schema type: ${operation.outputElementRef}")
+
                 if (!responseBehaviour.responseHeaders.containsKey(HttpUtil.CONTENT_TYPE)) {
-                    responseBehaviour.responseHeaders[HttpUtil.CONTENT_TYPE] = "application/soap+xml"
+                    responseBehaviour.responseHeaders[HttpUtil.CONTENT_TYPE] = SoapUtil.soapContentType
                 }
 
-                // build a response from the specification
-                val exampleSender =
-                    ResponseSender { httpExchange: HttpExchange, responseBehaviour: ResponseBehaviour ->
-                        serveExample(httpExchange, schemas, outputTypeDefName, soapEnv)
-                    }
+                // build a response from the XSD
+                val exampleSender = ResponseSender { httpExchange: HttpExchange, _: ResponseBehaviour ->
+                    soapExampleService.serveExample(httpExchange, schemas, operation.outputElementRef, soapEnv)
+                }
 
-                // attempt to serve an example from the specification, falling back if not present
+                // attempt to serve the example, falling back if not present
                 responseService.sendResponse(
                     pluginConfig,
                     resourceConfig,
@@ -293,14 +303,19 @@ class SoapPluginImpl @Inject constructor(
 
             } ?: run {
                 LOGGER.warn(
-                    "No output type definition found in specification for {} {} and status code {}",
+                    "No output type definition found in WSDL for {} {} and status code {}",
                     request.method(),
                     request.path(),
-                    responseBehaviour.statusCode
+                    responseBehaviour.statusCode,
                 )
                 response.end()
             }
         }
+
+        val context = mapOf(
+            "binding" to binding,
+            "operation" to operation,
+        )
 
         responseService.handle(
             pluginConfig,
@@ -309,62 +324,7 @@ class SoapPluginImpl @Inject constructor(
             context,
             statusCodeFactory,
             responseBehaviourFactory,
-            defaultBehaviourHandler
+            defaultBehaviourHandler,
         )
-    }
-
-    /**
-     * @return an API response
-     */
-    private fun findOutputTypeDefName(operation: WsdlOperation): QName? {
-        val outputTypeDef = operation.outputElementRef
-        LOGGER.debug("Using output schema type named: $outputTypeDef")
-        return outputTypeDef
-    }
-
-    private fun serveExample(
-        httpExchange: HttpExchange,
-        schemas: Array<XmlObject>,
-        outputTypeDefName: QName,
-        soapEnv: ParsedSoapMessage,
-    ): Boolean {
-        LOGGER.debug("Generating example for $outputTypeDefName")
-
-        val example = SchemaInstanceGenerator.xsd2inst(
-            schemas,
-            outputTypeDefName.localPart,
-            SchemaInstanceGenerator.Xsd2InstOptions()
-        )
-
-        transmitExample(httpExchange, example, soapEnv)
-        return true
-    }
-
-    private fun transmitExample(httpExchange: HttpExchange, example: String?, soapEnv: ParsedSoapMessage) {
-        example ?: run {
-            LOGGER.info("No example found - returning empty response")
-            httpExchange.response().end()
-            return
-        }
-
-        val responseBody = SoapUtil.wrapInEnv(example, soapEnv.soapEnvNamespace)
-        if (LOGGER.isTraceEnabled) {
-            LOGGER.trace(
-                "Serving mock example for URI {} with status code {}: {}",
-                httpExchange.request().absoluteURI(),
-                httpExchange.response().getStatusCode(),
-                responseBody
-            )
-        } else {
-            LOGGER.info(
-                "Serving mock example for URI {} with status code {} (response body {} bytes)",
-                httpExchange.request().absoluteURI(),
-                httpExchange.response().getStatusCode(),
-                responseBody.length
-            )
-        }
-        httpExchange.response()
-            .putHeader(HttpUtil.CONTENT_TYPE, "application/soap+xml")
-            .end(responseBody)
     }
 }

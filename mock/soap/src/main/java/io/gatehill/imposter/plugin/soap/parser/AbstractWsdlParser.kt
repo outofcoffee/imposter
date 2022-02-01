@@ -59,8 +59,7 @@ import java.io.File
 import javax.xml.namespace.QName
 
 /**
- *
- * @author pete
+ * @author Pete Cornish
  */
 abstract class AbstractWsdlParser(
     private val wsdlFile: File,
@@ -120,7 +119,8 @@ abstract class AbstractWsdlParser(
             }
     }
 
-    protected fun xPathSelectNodes(context: Any, expression: String) =
+    @Suppress("UNCHECKED_CAST")
+    protected fun selectNodes(context: Any, expression: String) =
         buildXPath(expression).selectNodes(context) as List<Element>
 
     protected fun selectSingleNode(context: Any, expression: String) =

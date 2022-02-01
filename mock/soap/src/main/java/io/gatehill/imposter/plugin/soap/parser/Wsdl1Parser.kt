@@ -54,7 +54,7 @@ import javax.xml.namespace.QName
 /**
  * WSDL 1.x parser.
  *
- * @author pete
+ * @author Pete Cornish
  */
 class Wsdl1Parser(
     wsdlFile: File,
@@ -65,7 +65,7 @@ class Wsdl1Parser(
 
     override val services: List<WsdlService>
         get() {
-            val services = xPathSelectNodes(document, "/wsdl:definitions/wsdl:service")
+            val services = selectNodes(document, "/wsdl:definitions/wsdl:service")
 
             return services.map { element ->
                 WsdlService(
@@ -79,7 +79,7 @@ class Wsdl1Parser(
         val binding = getBindingElement(bindingName)
             ?: return null
 
-        val operations = xPathSelectNodes(binding, "./wsdl:operation").map { op ->
+        val operations = selectNodes(binding, "./wsdl:operation").map { op ->
             getOperation(bindingName, op.getAttributeValue("name"), binding)!!
         }
 
@@ -112,7 +112,7 @@ class Wsdl1Parser(
      */
     override fun getInterface(interfaceName: String): WsdlInterface? {
         return getPortTypeNode(interfaceName)?.let { portTypeNode ->
-            val operationNames = xPathSelectNodes(portTypeNode, "./wsdl:operation").map { node ->
+            val operationNames = selectNodes(portTypeNode, "./wsdl:operation").map { node ->
                 node.getAttributeValue("name")
             }
 
@@ -124,7 +124,7 @@ class Wsdl1Parser(
     }
 
     private fun getPorts(serviceNode: Element): List<WsdlEndpoint> {
-        return xPathSelectNodes(serviceNode, "./wsdl:port").map { node ->
+        return selectNodes(serviceNode, "./wsdl:port").map { node ->
             val soapAddress = selectSingleNode(node, "./soap:address")!!
             WsdlEndpoint(
                 name = node.getAttributeValue("name"),

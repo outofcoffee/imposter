@@ -43,11 +43,14 @@
 package io.gatehill.imposter.plugin.soap
 
 import com.google.inject.AbstractModule
+import com.google.inject.Singleton
+import io.gatehill.imposter.plugin.soap.service.SoapExampleService
 
 /**
  * @author Pete Cornish
  */
 class SoapModule : AbstractModule() {
     override fun configure() {
+        bind(SoapExampleService::class.java).`in`(Singleton::class.java)
     }
 }

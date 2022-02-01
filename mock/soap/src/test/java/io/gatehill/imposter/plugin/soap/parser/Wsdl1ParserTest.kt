@@ -54,7 +54,7 @@ import javax.xml.namespace.QName
 /**
  * Tests for [Wsdl1Parser].
  *
- * @author pete
+ * @author Pete Cornish
  */
 class Wsdl1ParserTest {
     private lateinit var parser: Wsdl1Parser

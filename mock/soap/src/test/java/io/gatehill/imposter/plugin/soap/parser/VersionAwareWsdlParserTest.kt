@@ -50,7 +50,7 @@ import java.io.File
 /**
  * Tests for [VersionAwareWsdlParser].
  *
- * @author pete
+ * @author Pete Cornish
  */
 class VersionAwareWsdlParserTest {
     @Test

@@ -54,7 +54,7 @@ import javax.xml.namespace.QName
 /**
  * WDSL 2.0 parser.
  *
- * @author pete
+ * @author Pete Cornish
  */
 class Wsdl2Parser(
     wsdlFile: File,
@@ -65,7 +65,7 @@ class Wsdl2Parser(
 
     override val services: List<WsdlService>
         get() {
-            val services = xPathSelectNodes(document, "/wsdl:description/wsdl:service")
+            val services = selectNodes(document, "/wsdl:description/wsdl:service")
 
             return services.map { element ->
                 WsdlService(
@@ -83,7 +83,7 @@ class Wsdl2Parser(
         ) ?: return null
 
         val interfaceName = binding.getAttributeValue("interface")!!
-        val operations = xPathSelectNodes(binding, "./wsdl:operation").map { op ->
+        val operations = selectNodes(binding, "./wsdl:operation").map { op ->
             getOperation(interfaceName, op.getAttributeValue("ref"))!!
         }
 
@@ -96,7 +96,7 @@ class Wsdl2Parser(
 
     override fun getInterface(interfaceName: String): WsdlInterface? {
         return getInterfaceNode(interfaceName)?.let { interfaceNode ->
-            val operationNames = xPathSelectNodes(interfaceNode, "./wsdl:operation").map { node ->
+            val operationNames = selectNodes(interfaceNode, "./wsdl:operation").map { node ->
                 node.getAttributeValue("name")
             }
 
@@ -108,7 +108,7 @@ class Wsdl2Parser(
     }
 
     private fun getEndpoints(serviceNode: Element): List<WsdlEndpoint> {
-        return xPathSelectNodes(serviceNode, "./wsdl:endpoint").map { node ->
+        return selectNodes(serviceNode, "./wsdl:endpoint").map { node ->
             WsdlEndpoint(
                 name = node.getAttributeValue("name"),
                 bindingName = node.getAttributeValue("binding"),

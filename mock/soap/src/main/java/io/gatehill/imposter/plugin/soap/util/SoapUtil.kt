@@ -51,8 +51,15 @@ import org.jdom2.input.SAXBuilder
 import org.jdom2.xpath.XPath
 
 object SoapUtil {
-    private val soap12DraftEnvNamespace = Namespace.getNamespace("soap-env", "http://www.w3.org/2003/05/soap-envelope")
-    val soap12RecEnvNamespace = Namespace.getNamespace("soap-env", "http://www.w3.org/2001/12/soap-envelope")
+    const val soapContentType = "application/soap+xml"
+    private val soap12DraftEnvNamespace: Namespace = Namespace.getNamespace(
+        "soap-env",
+        "http://www.w3.org/2003/05/soap-envelope"
+    )
+    val soap12RecEnvNamespace: Namespace = Namespace.getNamespace(
+        "soap-env",
+        "http://www.w3.org/2001/12/soap-envelope"
+    )
 
     fun buildXPath(expression: String, xPathNamespaces: List<Namespace> = emptyList()): XPath =
         XPath.newInstance(expression).apply {
@@ -63,7 +70,7 @@ object SoapUtil {
         val doc = body.bytes.inputStream().use { stream ->
             SAXBuilder().build(stream)
         }
-        val envNs = when(doc.rootElement.namespace) {
+        val envNs = when (doc.rootElement.namespace) {
             soap12DraftEnvNamespace -> soap12DraftEnvNamespace
             soap12RecEnvNamespace -> soap12RecEnvNamespace
             else -> throw IllegalStateException("Root element is not a SOAP envelope - namespace is ${doc.rootElement.namespace}")

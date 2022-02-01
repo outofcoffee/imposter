@@ -76,7 +76,7 @@ abstract class AbstractEndToEndTest : BaseVerticleTest() {
     fun testRequestResponseUsingSoapActionHeader(testContext: TestContext) {
         val body = RestAssured.given()
             .log().ifValidationFails()
-            .accept("application/soap+xml")
+            .accept(SoapUtil.soapContentType)
             .header("SOAPAction", "getPetById")
             .`when`()
             .body(soapEnv)
@@ -109,7 +109,7 @@ abstract class AbstractEndToEndTest : BaseVerticleTest() {
     fun testRequestResponseUsingRequestBody(testContext: TestContext) {
         val body = RestAssured.given()
             .log().ifValidationFails()
-            .accept("application/soap+xml")
+            .accept(SoapUtil.soapContentType)
             .`when`()
             .body(soapEnv)
             .post("/soap/")

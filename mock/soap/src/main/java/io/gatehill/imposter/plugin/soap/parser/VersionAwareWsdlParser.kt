@@ -51,7 +51,7 @@ import java.io.File
  * Detects WSDL version from namespaces of root element, then
  * delegates to version-specific [WsdlParser] implementation.
  *
- * @author pete
+ * @author Pete Cornish
  */
 class VersionAwareWsdlParser(wsdlFile: File) : WsdlParser {
     private val delegate: WsdlParser
