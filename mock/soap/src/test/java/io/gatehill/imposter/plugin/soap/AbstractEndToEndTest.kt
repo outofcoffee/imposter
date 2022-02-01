@@ -93,7 +93,8 @@ abstract class AbstractEndToEndTest : BaseVerticleTest() {
     fun testRequestResponseUsingSoapActionInContentType(testContext: TestContext) {
         val body = RestAssured.given()
             .log().ifValidationFails()
-            .accept("application/soap+xml;charset=UTF-8;action=\"getPetById\"")
+            .accept(SoapUtil.soapContentType)
+            .contentType("application/soap+xml;charset=UTF-8;action=\"getPetById\"")
             .`when`()
             .body(soapEnv)
             .post("/soap/")
@@ -119,5 +120,19 @@ abstract class AbstractEndToEndTest : BaseVerticleTest() {
             .extract().asString()
 
         assertNotNull(body)
+    }
+
+    @Test
+    fun test404OnInvalidSoapAction(testContext: TestContext) {
+        RestAssured.given()
+            .log().ifValidationFails()
+            .accept(SoapUtil.soapContentType)
+            .header("SOAPAction", "invalid")
+            .`when`()
+            .body(soapEnv)
+            .post("/soap/")
+            .then()
+            .log().ifValidationFails()
+            .statusCode(HttpUtil.HTTP_NOT_FOUND)
     }
 }

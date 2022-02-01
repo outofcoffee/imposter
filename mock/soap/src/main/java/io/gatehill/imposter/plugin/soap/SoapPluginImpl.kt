@@ -61,6 +61,7 @@ import io.gatehill.imposter.plugin.soap.service.SoapExampleService
 import io.gatehill.imposter.plugin.soap.util.SoapUtil
 import io.gatehill.imposter.script.ResponseBehaviour
 import io.gatehill.imposter.service.ResourceService
+import io.gatehill.imposter.service.ResponseRoutingService
 import io.gatehill.imposter.service.ResponseService
 import io.gatehill.imposter.service.ResponseService.ResponseSender
 import io.gatehill.imposter.util.HttpUtil
@@ -84,6 +85,7 @@ class SoapPluginImpl @Inject constructor(
     imposterConfig: ImposterConfig,
     private val resourceService: ResourceService,
     private val responseService: ResponseService,
+    private val responseRoutingService: ResponseRoutingService,
     private val soapExampleService: SoapExampleService,
 ) : ConfiguredPlugin<SoapPluginConfig>(
     vertx, imposterConfig
@@ -165,28 +167,14 @@ class SoapPluginImpl @Inject constructor(
         )
     }
 
-    private fun determineOperation(binding: WsdlBinding, httpExchange: HttpExchange, soapEnv: ParsedSoapMessage): WsdlOperation? =
-        determineOperationFromSoapAction(binding, httpExchange)
-            ?: determineOperationFromRequestBody(binding, soapEnv)
-
-    private fun determineOperationFromSoapAction(
-        binding: WsdlBinding,
-        httpExchange: HttpExchange
-    ): WsdlOperation? {
+    private fun determineOperation(binding: WsdlBinding, httpExchange: HttpExchange, soapEnv: ParsedSoapMessage): WsdlOperation? {
         val soapAction = getSoapAction(httpExchange)
-        soapAction ?: run {
-            LOGGER.trace("Unable to find a SOAPAction")
-            return null
-        }
-        LOGGER.trace("SOAPAction: $soapAction")
-
-        val operation = binding.operations.firstOrNull { it.soapAction == soapAction }
-        operation ?: run {
-            LOGGER.warn("Unable to find a matching binding operation for SOAPAction: $soapAction")
-            return null
+        soapAction?.let {
+            LOGGER.trace("SOAPAction: $soapAction")
+            return binding.operations.firstOrNull { it.soapAction == soapAction }
         }
 
-        return operation
+        return determineOperationFromRequestBody(binding, soapEnv)
     }
 
     private fun getSoapAction(httpExchange: HttpExchange): String? {
@@ -194,7 +182,7 @@ class SoapPluginImpl @Inject constructor(
 
         // e.g. SOAPAction: example
         request.getHeader("SOAPAction")?.let { actionHeader ->
-            return actionHeader
+            return actionHeader.trim()
 
         } ?: run {
             // e.g. application/soap+xml;charset=UTF-8;action="example"
@@ -205,10 +193,12 @@ class SoapPluginImpl @Inject constructor(
             contentTypeParts?.let { headerParts ->
                 if (headerParts.any { it == SoapUtil.soapContentType }) {
                     val actionPart = headerParts.find { it.startsWith("action=") }
-                    return actionPart?.removePrefix("action=")
+                    return actionPart?.removePrefix("action=")?.removeSurrounding("\"")
                 }
             }
         }
+
+        LOGGER.trace("Unable to find a SOAPAction")
         return null
     }
 
@@ -317,7 +307,7 @@ class SoapPluginImpl @Inject constructor(
             "operation" to operation,
         )
 
-        responseService.handle(
+        responseRoutingService.route(
             pluginConfig,
             resourceConfig,
             httpExchange,
