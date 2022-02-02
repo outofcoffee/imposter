@@ -43,9 +43,10 @@
 
 package io.gatehill.imposter.store.inmem
 
-import com.google.common.collect.Maps
-import io.gatehill.imposter.store.model.Store
+import io.gatehill.imposter.service.DeferredOperationService
+import io.gatehill.imposter.store.core.AbstractStore
 import org.apache.logging.log4j.LogManager
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * An in-memory store implementation. Does not have any support for item expiration,
@@ -53,9 +54,13 @@ import org.apache.logging.log4j.LogManager
  *
  * @author Pete Cornish
  */
-class InMemoryStore(override val storeName: String) : Store {
+class InMemoryStore(
+    deferredOperationService: DeferredOperationService,
+    override val storeName: String,
+    override val isEphemeral: Boolean,
+) : AbstractStore(deferredOperationService) {
     private var modified = false
-    private val store: MutableMap<String, Any> by lazy { Maps.newConcurrentMap() }
+    private val store: MutableMap<String, Any> by lazy { ConcurrentHashMap() }
     override val typeDescription = "inmem"
 
     override fun save(key: String, value: Any?) {

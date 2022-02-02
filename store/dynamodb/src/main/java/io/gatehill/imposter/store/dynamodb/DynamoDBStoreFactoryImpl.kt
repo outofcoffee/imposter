@@ -47,12 +47,14 @@ import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.client.builder.AwsClientBuilder
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder
+import com.google.inject.Inject
 import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.RequireModules
+import io.gatehill.imposter.service.DeferredOperationService
+import io.gatehill.imposter.store.core.Store
 import io.gatehill.imposter.store.dynamodb.config.Settings
 import io.gatehill.imposter.store.factory.AbstractStoreFactory
-import io.gatehill.imposter.store.model.Store
 import org.apache.logging.log4j.LogManager
 
 /**
@@ -60,7 +62,9 @@ import org.apache.logging.log4j.LogManager
  */
 @PluginInfo("store-dynamodb")
 @RequireModules(DynamoDBStoreModule::class)
-class DynamoDBStoreFactoryImpl : AbstractStoreFactory(), Plugin {
+class DynamoDBStoreFactoryImpl @Inject constructor(
+    private val deferredOperationService: DeferredOperationService,
+) : AbstractStoreFactory(deferredOperationService), Plugin {
     private val ddb: AmazonDynamoDB
     private val logger = LogManager.getLogger(DynamoDBStore::class.java)
 
@@ -77,15 +81,15 @@ class DynamoDBStoreFactoryImpl : AbstractStoreFactory(), Plugin {
     }
 
     override fun buildNewStore(storeName: String): Store {
-        return DynamoDBStore(storeName, ddb, Settings.tableName)
+        return DynamoDBStore(deferredOperationService, storeName, ddb, Settings.tableName)
     }
 
-    override fun clearStore(storeName: String, isEphemeralStore: Boolean) {
-        if (!isEphemeralStore) {
+    override fun clearStore(storeName: String, ephemeral: Boolean) {
+        if (!ephemeral) {
             logger.info("Deleting all items from store: $storeName in table: ${Settings.tableName}")
-            val store = buildNewStore(storeName,)
+            val store = buildNewStore(storeName)
             store.loadAll().onEach { store.delete(it.key) }
         }
-        super.clearStore(storeName, isEphemeralStore)
+        super.clearStore(storeName, ephemeral)
     }
 }

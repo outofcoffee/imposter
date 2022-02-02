@@ -42,20 +42,25 @@
  */
 package io.gatehill.imposter.store.inmem
 
+import com.google.inject.Inject
 import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.RequireModules
+import io.gatehill.imposter.service.DeferredOperationService
+import io.gatehill.imposter.store.core.Store
 import io.gatehill.imposter.store.factory.AbstractStoreFactory
-import io.gatehill.imposter.store.model.Store
 
 /**
  * @author Pete Cornish
  */
 @PluginInfo(InMemoryStoreFactoryImpl.pluginName)
 @RequireModules(InMemoryStoreModule::class)
-class InMemoryStoreFactoryImpl : AbstractStoreFactory(), Plugin {
+class InMemoryStoreFactoryImpl @Inject constructor(
+    private val deferredOperationService: DeferredOperationService,
+) : AbstractStoreFactory(deferredOperationService), Plugin {
+
     override fun buildNewStore(storeName: String): Store {
-        return InMemoryStore(storeName)
+        return InMemoryStore(deferredOperationService, storeName, false)
     }
 
     companion object {

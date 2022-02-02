@@ -43,9 +43,9 @@
 package io.gatehill.imposter.scripting.common
 
 import com.google.inject.AbstractModule
+import io.gatehill.imposter.script.annotation.JavascriptImpl
 import io.gatehill.imposter.scripting.common.service.DelegatingJsScriptServiceImpl
 import io.gatehill.imposter.service.ScriptService
-import io.gatehill.imposter.util.annotation.JavascriptImpl
 
 class CommonScriptingModule : AbstractModule() {
     override fun configure() {

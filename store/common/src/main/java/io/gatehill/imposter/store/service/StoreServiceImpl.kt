@@ -51,7 +51,7 @@ import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.system.StoreConfig
 import io.gatehill.imposter.plugin.config.system.SystemConfigHolder
 import io.gatehill.imposter.script.ExecutionContext
-import io.gatehill.imposter.store.model.StoreFactory
+import io.gatehill.imposter.store.factory.StoreFactory
 import io.gatehill.imposter.store.model.StoreHolder
 import io.gatehill.imposter.store.util.StoreUtil
 import io.gatehill.imposter.util.MapUtil
@@ -139,7 +139,7 @@ class StoreServiceImpl @Inject constructor(
         // clean up request store if one exists
         httpExchange.get<String?>(ResourceUtil.RC_REQUEST_ID_KEY)?.let { uniqueRequestId: String ->
             storeFactory.clearStore(
-                StoreUtil.buildRequestStoreName(uniqueRequestId), isEphemeralStore = true
+                StoreUtil.buildRequestStoreName(uniqueRequestId), ephemeral = true
             )
         }
     }

@@ -40,61 +40,26 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.store.inmem
+package io.gatehill.imposter.store.core
 
-import io.gatehill.imposter.service.DeferredOperationService
-import io.vertx.core.Vertx
-import org.junit.Assert
-import org.junit.Before
-import org.junit.Test
+import io.gatehill.imposter.plugin.config.store.StorePersistencePoint
 
 /**
- * Tests for in-memory store implementation.
- *
  * @author Pete Cornish
  */
-class InMemoryStoreTest {
-    private lateinit var factory: InMemoryStoreFactoryImpl
+interface Store {
+    val storeName: String
+    val typeDescription: String
+    val isEphemeral: Boolean
 
-    @Before
-    fun setUp() {
-        factory = InMemoryStoreFactoryImpl(DeferredOperationService(Vertx.vertx()))
-    }
-
-    @Test
-    fun testBuildNewStore() {
-        val store = factory.buildNewStore("test")
-        Assert.assertEquals("inmem", store.typeDescription)
-    }
-
-    @Test
-    fun testSaveLoadItem() {
-        val store = factory.buildNewStore("sli")
-        Assert.assertEquals(0, store.count())
-        store.save("foo", "bar")
-        Assert.assertEquals("bar", store.load("foo"))
-        val allItems = store.loadAll()
-        Assert.assertEquals(1, allItems.size)
-        Assert.assertEquals("bar", allItems["foo"])
-        Assert.assertTrue("Item should exist", store.hasItemWithKey("foo"))
-        Assert.assertEquals(1, store.count())
-    }
-
-    @Test
-    fun testDeleteItem() {
-        val store = factory.buildNewStore("di")
-        Assert.assertFalse("Item should not exist", store.hasItemWithKey("baz"))
-        store.save("baz", "qux")
-        Assert.assertTrue("Item should exist", store.hasItemWithKey("baz"))
-        store.delete("baz")
-        Assert.assertFalse("Item should not exist", store.hasItemWithKey("baz"))
-    }
-
-    @Test
-    fun testClearStore() {
-        val store = factory.buildNewStore("ds")
-        store.save("baz", "qux")
-        factory.clearStore("ds", false)
-        Assert.assertEquals("Store should be empty", 0, factory.getStoreByName("ds", false).count())
-    }
+    fun save(
+        key: String,
+        value: Any?,
+        persistencePoint: StorePersistencePoint = StorePersistencePoint.IMMEDIATE,
+    )
+    fun <T> load(key: String): T?
+    fun delete(key: String)
+    fun loadAll(): Map<String, Any?>
+    fun hasItemWithKey(key: String): Boolean
+    fun count(): Int
 }

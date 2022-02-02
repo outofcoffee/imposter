@@ -43,12 +43,13 @@
 package io.gatehill.imposter.store.factory
 
 import io.gatehill.imposter.config.util.EnvVars.Companion.getEnv
+import io.gatehill.imposter.service.DeferredOperationService
+import io.gatehill.imposter.store.core.PrefixedKeyStore
+import io.gatehill.imposter.store.core.Store
 import io.gatehill.imposter.store.factory.AbstractStoreFactory.Companion.ENV_VAR_KEY_PREFIX
 import io.gatehill.imposter.store.inmem.InMemoryStore
-import io.gatehill.imposter.store.model.PrefixedKeyStore
-import io.gatehill.imposter.store.model.Store
-import io.gatehill.imposter.store.model.StoreFactory
 import org.apache.logging.log4j.LogManager
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Common store factory methods. Supports adding a prefix to keys by setting the [ENV_VAR_KEY_PREFIX]
@@ -58,19 +59,21 @@ import org.apache.logging.log4j.LogManager
  *
  * @author Pete Cornish
  */
-abstract class AbstractStoreFactory : StoreFactory {
-    protected val stores = mutableMapOf<String, Store>()
+abstract class AbstractStoreFactory (
+    private val deferredOperationService: DeferredOperationService,
+) : StoreFactory {
+    protected val stores: MutableMap<String, Store> = ConcurrentHashMap()
     private val keyPrefix: String?
 
     init {
         keyPrefix = getEnv(ENV_VAR_KEY_PREFIX)?.let { "$it." }
     }
 
-    override fun getStoreByName(storeName: String, isEphemeralStore: Boolean): Store {
+    override fun getStoreByName(storeName: String, ephemeral: Boolean): Store {
         val store: Store = stores.getOrPut(storeName) {
             LOGGER.trace("Initialising new store: {}", storeName)
-            return@getOrPut if (isEphemeralStore) {
-                InMemoryStore(storeName)
+            return@getOrPut if (ephemeral) {
+                InMemoryStore(deferredOperationService, storeName, true)
             } else {
                 val rawStore = buildNewStore(storeName)
                 keyPrefix?.let { PrefixedKeyStore(keyPrefix, rawStore) } ?: rawStore
@@ -80,12 +83,15 @@ abstract class AbstractStoreFactory : StoreFactory {
         return store
     }
 
-    override fun clearStore(storeName: String, isEphemeralStore: Boolean) {
+    override fun clearStore(storeName: String, ephemeral: Boolean) {
         stores.remove(storeName)?.let {
             LOGGER.trace("Cleared store: {}", storeName)
         }
     }
 
+    /**
+     * Build a store for the given name. The store must not be ephemeral.
+     */
     abstract fun buildNewStore(storeName: String): Store
 
     companion object {

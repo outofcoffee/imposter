@@ -40,61 +40,51 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.store.inmem
+package io.gatehill.imposter.store.core
 
-import io.gatehill.imposter.service.DeferredOperationService
-import io.vertx.core.Vertx
-import org.junit.Assert
-import org.junit.Before
-import org.junit.Test
+import io.gatehill.imposter.plugin.config.store.StorePersistencePoint
 
 /**
- * Tests for in-memory store implementation.
+ * A delegating [Store] wrapper that prepends a string to item keys
+ * before persistence and retrieval.
  *
  * @author Pete Cornish
  */
-class InMemoryStoreTest {
-    private lateinit var factory: InMemoryStoreFactoryImpl
+class PrefixedKeyStore(
+    private val keyPrefix: String,
+    private val delegate: Store,
+) : Store {
+    override val storeName: String
+        get() = delegate.storeName
 
-    @Before
-    fun setUp() {
-        factory = InMemoryStoreFactoryImpl(DeferredOperationService(Vertx.vertx()))
+    override val typeDescription: String
+        get() = delegate.typeDescription
+
+    override val isEphemeral: Boolean
+        get() = delegate.isEphemeral
+
+    private fun buildKey(key: String): String {
+        return keyPrefix + key
     }
 
-    @Test
-    fun testBuildNewStore() {
-        val store = factory.buildNewStore("test")
-        Assert.assertEquals("inmem", store.typeDescription)
+    override fun save(key: String, value: Any?, persistencePoint: StorePersistencePoint) {
+        delegate.save(buildKey(key), value, persistencePoint)
     }
 
-    @Test
-    fun testSaveLoadItem() {
-        val store = factory.buildNewStore("sli")
-        Assert.assertEquals(0, store.count())
-        store.save("foo", "bar")
-        Assert.assertEquals("bar", store.load("foo"))
-        val allItems = store.loadAll()
-        Assert.assertEquals(1, allItems.size)
-        Assert.assertEquals("bar", allItems["foo"])
-        Assert.assertTrue("Item should exist", store.hasItemWithKey("foo"))
-        Assert.assertEquals(1, store.count())
+    override fun <T> load(key: String): T? = delegate.load(buildKey(key))
+
+    override fun delete(key: String) {
+        delegate.delete(buildKey(key))
     }
 
-    @Test
-    fun testDeleteItem() {
-        val store = factory.buildNewStore("di")
-        Assert.assertFalse("Item should not exist", store.hasItemWithKey("baz"))
-        store.save("baz", "qux")
-        Assert.assertTrue("Item should exist", store.hasItemWithKey("baz"))
-        store.delete("baz")
-        Assert.assertFalse("Item should not exist", store.hasItemWithKey("baz"))
+    override fun loadAll(): Map<String, Any?> {
+        // strip out key prefix
+        return delegate.loadAll().entries.associate { (key, value) ->
+            key.substring(keyPrefix.length) to value
+        }
     }
 
-    @Test
-    fun testClearStore() {
-        val store = factory.buildNewStore("ds")
-        store.save("baz", "qux")
-        factory.clearStore("ds", false)
-        Assert.assertEquals("Store should be empty", 0, factory.getStoreByName("ds", false).count())
-    }
+    override fun hasItemWithKey(key: String) = delegate.hasItemWithKey(buildKey(key))
+
+    override fun count() = delegate.count()
 }

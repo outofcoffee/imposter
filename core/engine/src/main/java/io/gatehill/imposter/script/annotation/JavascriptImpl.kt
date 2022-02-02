@@ -40,43 +40,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.store.model
+package io.gatehill.imposter.script.annotation
+
+import com.google.inject.BindingAnnotation
 
 /**
- * A delegating [Store] wrapper that prepends a string to item keys
- * before persistence and retrieval.
- *
  * @author Pete Cornish
  */
-class PrefixedKeyStore(private val keyPrefix: String, private val delegate: Store) : Store {
-    override val storeName: String
-        get() = delegate.storeName
-
-    override val typeDescription: String
-        get() = delegate.typeDescription
-
-    private fun buildKey(key: String): String {
-        return keyPrefix + key
-    }
-
-    override fun save(key: String, value: Any?) {
-        delegate.save(buildKey(key), value)
-    }
-
-    override fun <T> load(key: String): T? = delegate.load(buildKey(key))
-
-    override fun delete(key: String) {
-        delegate.delete(buildKey(key))
-    }
-
-    override fun loadAll(): Map<String, Any?> {
-        // strip out key prefix
-        return delegate.loadAll().entries.associate { (key, value) ->
-            key.substring(keyPrefix.length) to value
-        }
-    }
-
-    override fun hasItemWithKey(key: String) = delegate.hasItemWithKey(buildKey(key))
-
-    override fun count() = delegate.count()
-}
+@BindingAnnotation
+@kotlin.annotation.Retention(AnnotationRetention.RUNTIME)
+@Target(AnnotationTarget.FIELD)
+annotation class JavascriptImpl 

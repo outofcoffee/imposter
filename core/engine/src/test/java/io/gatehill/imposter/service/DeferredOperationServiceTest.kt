@@ -40,61 +40,38 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.store.inmem
+package io.gatehill.imposter.service
 
-import io.gatehill.imposter.service.DeferredOperationService
 import io.vertx.core.Vertx
-import org.junit.Assert
-import org.junit.Before
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
+import org.apache.logging.log4j.LogManager
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/**
- * Tests for in-memory store implementation.
- *
- * @author Pete Cornish
- */
-class InMemoryStoreTest {
-    private lateinit var factory: InMemoryStoreFactoryImpl
-
-    @Before
-    fun setUp() {
-        factory = InMemoryStoreFactoryImpl(DeferredOperationService(Vertx.vertx()))
-    }
+class DeferredOperationServiceTest {
+    private val logger = LogManager.getLogger(DeferredOperationServiceTest::class.java)
+    private val service = DeferredOperationService(Vertx.vertx())
 
     @Test
-    fun testBuildNewStore() {
-        val store = factory.buildNewStore("test")
-        Assert.assertEquals("inmem", store.typeDescription)
-    }
+    fun defer() = runBlocking {
+        var storedValue = false
 
-    @Test
-    fun testSaveLoadItem() {
-        val store = factory.buildNewStore("sli")
-        Assert.assertEquals(0, store.count())
-        store.save("foo", "bar")
-        Assert.assertEquals("bar", store.load("foo"))
-        val allItems = store.loadAll()
-        Assert.assertEquals(1, allItems.size)
-        Assert.assertEquals("bar", allItems["foo"])
-        Assert.assertTrue("Item should exist", store.hasItemWithKey("foo"))
-        Assert.assertEquals(1, store.count())
-    }
+        service.defer("Test operation") {
+            storedValue = true
+        }
 
-    @Test
-    fun testDeleteItem() {
-        val store = factory.buildNewStore("di")
-        Assert.assertFalse("Item should not exist", store.hasItemWithKey("baz"))
-        store.save("baz", "qux")
-        Assert.assertTrue("Item should exist", store.hasItemWithKey("baz"))
-        store.delete("baz")
-        Assert.assertFalse("Item should not exist", store.hasItemWithKey("baz"))
-    }
+        async {
+            repeat(50) {
+                if (storedValue) {
+                    return@repeat
+                }
+                delay(100)
+            }
+        }.await()
+        logger.trace("Execution checker stopped")
 
-    @Test
-    fun testClearStore() {
-        val store = factory.buildNewStore("ds")
-        store.save("baz", "qux")
-        factory.clearStore("ds", false)
-        Assert.assertEquals("Store should be empty", 0, factory.getStoreByName("ds", false).count())
+        assertTrue("Operation should be executed", storedValue)
     }
 }

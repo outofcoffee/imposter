@@ -43,7 +43,8 @@
 package io.gatehill.imposter.store.redis
 
 import io.gatehill.imposter.config.util.EnvVars
-import io.gatehill.imposter.store.model.Store
+import io.gatehill.imposter.service.DeferredOperationService
+import io.gatehill.imposter.store.core.AbstractStore
 import io.gatehill.imposter.store.redis.RedisStore.Companion.ENV_VAR_EXPIRY
 import org.apache.logging.log4j.LogManager
 import org.redisson.api.RMapCache
@@ -56,8 +57,13 @@ import java.util.concurrent.TimeUnit
  *
  * @author Pete Cornish
  */
-class RedisStore(override val storeName: String, redisson: RedissonClient) : Store {
+class RedisStore(
+    deferredOperationService: DeferredOperationService,
+    override val storeName: String,
+    redisson: RedissonClient,
+) : AbstractStore(deferredOperationService) {
     override val typeDescription = "redis"
+    override val isEphemeral = false
     private val store: RMapCache<String, Any>
     private var expirationSecs = 0
 

@@ -40,51 +40,55 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.store.model
+package io.gatehill.imposter.service
 
-import io.gatehill.imposter.plugin.Plugin
-import io.gatehill.imposter.plugin.PluginManager
-import io.gatehill.imposter.store.util.StoreUtil
+import io.vertx.core.Vertx
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.runBlocking
 import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 import javax.inject.Inject
 
 /**
- * A delegating store factory that uses the environment variable named by [StoreUtil.envStoreDriver]
- * to determine the [StoreFactory] to use.
+ * [Channel]-based executor for deferring operations to a background worker thread.
  *
  * @author Pete Cornish
  */
-class DelegatingStoreFactoryImpl @Inject constructor(
-    private val pluginManager: PluginManager,
-) : StoreFactory {
-    private val logger = LogManager.getLogger(DelegatingStoreFactoryImpl::class.java)
+class DeferredOperationService @Inject constructor(
+    private val vertx: Vertx,
+) {
+    private val logger: Logger = LogManager.getLogger(DeferredOperationService::class.java)
+    private val deferredOperations: Channel<Pair<String, Runnable>> by lazy { startDeferredExecutor() }
 
-    private val impl: StoreFactory by lazy { loadStoreFactory() }
-
-    private fun loadStoreFactory(): StoreFactory {
-        val storeDriver = StoreUtil.activeDriver
-        val pluginClass = pluginManager.determinePluginClass(storeDriver)
-        logger.trace("Resolved store driver: {} to class: {}", storeDriver, pluginClass)
-
-        try {
-            val plugin = pluginManager.getPlugin<Plugin>(pluginClass)
-                ?: throw IllegalStateException("Unable to load store driver plugin: $pluginClass")
-
-            return plugin as StoreFactory
-
-        } catch (e: Exception) {
-            throw RuntimeException(
-                "Unable to load store driver: $storeDriver. Must be an installed plugin implementing ${StoreFactory::class.java.canonicalName}",
-                e
-            )
-        }
+    fun defer(description: String, deferred: Runnable) = runBlocking {
+        logger.trace("Enqueuing deferred operation: $description")
+        deferredOperations.send(description to deferred)
     }
 
-    override fun getStoreByName(storeName: String, isEphemeralStore: Boolean): Store {
-        return impl.getStoreByName(storeName, isEphemeralStore)
-    }
+    private fun startDeferredExecutor(): Channel<Pair<String, Runnable>> {
+        logger.debug("Starting deferred executor")
+        val channel = Channel<Pair<String, Runnable>>(512)
 
-    override fun clearStore(storeName: String, isEphemeralStore: Boolean) {
-        impl.clearStore(storeName, isEphemeralStore)
+        vertx.executeBlocking<Unit>({
+            runBlocking {
+                while (true) {
+                    val (description, deferred) = channel.receive()
+                    logger.trace("Dequeued deferred operation: $description")
+                    try {
+                        deferred.run()
+                    } catch (e: Exception) {
+                        logger.error("Deferred operation '$description' failed", e)
+                    }
+                }
+            }
+        }, {
+            if (it.failed()) {
+                logger.error("Terminated deferred executor", it.cause())
+            } else {
+                logger.debug("Terminated deferred executor normally")
+            }
+        })
+
+        return channel
     }
 }

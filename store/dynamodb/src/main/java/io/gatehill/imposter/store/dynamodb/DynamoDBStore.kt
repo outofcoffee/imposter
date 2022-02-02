@@ -48,8 +48,9 @@ import com.amazonaws.services.dynamodbv2.model.DeleteItemRequest
 import com.amazonaws.services.dynamodbv2.model.GetItemRequest
 import com.amazonaws.services.dynamodbv2.model.PutItemRequest
 import com.amazonaws.services.dynamodbv2.model.ScanRequest
+import io.gatehill.imposter.service.DeferredOperationService
+import io.gatehill.imposter.store.core.AbstractStore
 import io.gatehill.imposter.store.dynamodb.config.Settings
-import io.gatehill.imposter.store.model.Store
 import io.gatehill.imposter.util.MapUtil
 import org.apache.logging.log4j.LogManager
 import java.nio.ByteBuffer
@@ -64,11 +65,13 @@ import java.util.Objects.nonNull
  * @author Pete Cornish
  */
 class DynamoDBStore(
+    private val deferredOperationService: DeferredOperationService,
     override val storeName: String,
     private val ddb: AmazonDynamoDB,
-    private val tableName: String
-) : Store {
+    private val tableName: String,
+) : AbstractStore(deferredOperationService) {
     override val typeDescription = "dynamodb"
+    override val isEphemeral = false
     private val logger = LogManager.getLogger(DynamoDBStore::class.java)
 
     init {

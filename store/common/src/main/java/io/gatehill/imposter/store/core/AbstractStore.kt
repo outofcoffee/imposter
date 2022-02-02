@@ -40,14 +40,37 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.util.annotation
+package io.gatehill.imposter.store.core
 
-import com.google.inject.BindingAnnotation
+import io.gatehill.imposter.plugin.config.store.StorePersistencePoint
+import io.gatehill.imposter.service.DeferredOperationService
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 
 /**
  * @author Pete Cornish
  */
-@BindingAnnotation
-@kotlin.annotation.Retention(AnnotationRetention.RUNTIME)
-@Target(AnnotationTarget.FIELD)
-annotation class JavascriptImpl 
+abstract class AbstractStore(
+    private val deferredOperationService: DeferredOperationService,
+) : Store {
+    private val logger: Logger = LogManager.getLogger(AbstractStore::class.java)
+
+    override fun save(key: String, value: Any?, persistencePoint: StorePersistencePoint) {
+        if (persistencePoint == StorePersistencePoint.DEFER && isEphemeral) {
+            throw IllegalStateException("Cannot use deferred persistence for ephemeral store: $storeName of type: $typeDescription")
+        }
+        when (persistencePoint) {
+            StorePersistencePoint.IMMEDIATE -> save(key, value)
+            StorePersistencePoint.DEFER -> deferSave(key, value)
+        }
+    }
+
+    private fun deferSave(key: String, value: Any?) {
+        logger.debug("Deferring persistence of item: $key to store: $storeName")
+        deferredOperationService.defer("Write item: $key to store: $storeName") {
+            save(key, value)
+        }
+    }
+
+    abstract fun save(key: String, value: Any?)
+}

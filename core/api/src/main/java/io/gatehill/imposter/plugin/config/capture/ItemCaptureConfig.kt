@@ -44,6 +44,7 @@ package io.gatehill.imposter.plugin.config.capture
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.gatehill.imposter.plugin.config.flex.FlexibleTypeUtil.lazyParse
+import io.gatehill.imposter.plugin.config.store.StorePersistencePoint
 
 /**
  * A capture configuration for values, that allows the key and store to be overridden.
@@ -72,6 +73,9 @@ class ItemCaptureConfig(
 
     @field:JsonProperty("enabled")
     val enabled: Boolean = true,
+
+    @JsonProperty("persistence")
+    val persistencePoint: StorePersistencePoint = StorePersistencePoint.IMMEDIATE,
 ) : CaptureConfig(
     pathParam,
     queryParam,

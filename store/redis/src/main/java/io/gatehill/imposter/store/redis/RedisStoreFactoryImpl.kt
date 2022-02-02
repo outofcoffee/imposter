@@ -47,8 +47,9 @@ import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.RequireModules
+import io.gatehill.imposter.service.DeferredOperationService
+import io.gatehill.imposter.store.core.Store
 import io.gatehill.imposter.store.factory.AbstractStoreFactory
-import io.gatehill.imposter.store.model.Store
 import org.apache.logging.log4j.LogManager
 import org.redisson.Redisson
 import org.redisson.api.RedissonClient
@@ -62,8 +63,9 @@ import java.io.IOException
 @PluginInfo("store-redis")
 @RequireModules(RedisStoreModule::class)
 class RedisStoreFactoryImpl @Inject constructor(
+    private val deferredOperationService: DeferredOperationService,
     imposterConfig: ImposterConfig
-) : AbstractStoreFactory(), Plugin {
+) : AbstractStoreFactory(deferredOperationService), Plugin {
     private val redisson: RedissonClient
 
     init {
@@ -91,15 +93,15 @@ class RedisStoreFactoryImpl @Inject constructor(
     }
 
     override fun buildNewStore(storeName: String): Store {
-        return RedisStore(storeName, redisson)
+        return RedisStore(deferredOperationService, storeName, redisson)
     }
 
-    override fun clearStore(storeName: String, isEphemeralStore: Boolean) {
-        if (!isEphemeralStore) {
+    override fun clearStore(storeName: String, ephemeral: Boolean) {
+        if (!ephemeral) {
             LOGGER.info("Deleting all items from store: $storeName")
             redisson.getMapCache<String, Any>(storeName).clear()
         }
-        super.clearStore(storeName, isEphemeralStore)
+        super.clearStore(storeName, ephemeral)
     }
 
     companion object {

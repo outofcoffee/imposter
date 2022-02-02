@@ -6,8 +6,8 @@ import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
 import io.gatehill.imposter.plugin.config.capture.CaptureConfig
 import io.gatehill.imposter.plugin.config.capture.ItemCaptureConfig
-import io.gatehill.imposter.store.model.Store
-import io.gatehill.imposter.store.model.StoreFactory
+import io.gatehill.imposter.store.core.Store
+import io.gatehill.imposter.store.factory.StoreFactory
 import io.gatehill.imposter.util.DateTimeUtil
 import org.junit.Test
 import org.mockito.kotlin.any
@@ -49,7 +49,7 @@ class CaptureServiceImplTest {
             jsonPathContextHolder = AtomicReference<DocumentContext>(),
         )
 
-        verify(store).save(eq("foo"), eq("test-id"))
+        verify(store).save(eq("foo"), eq("test-id"), any())
     }
 
     @Test
@@ -82,7 +82,7 @@ class CaptureServiceImplTest {
 
         // check key name calculated correctly
         val keyName = "key_${DateTimeUtil.DATE_FORMATTER.format(LocalDate.now())}"
-        verify(store).save(eq(keyName), eq("bar"))
+        verify(store).save(eq(keyName), eq("bar"), any())
     }
 
     @Test
@@ -115,7 +115,7 @@ class CaptureServiceImplTest {
             jsonPathContextHolder = AtomicReference<DocumentContext>(),
         )
 
-        verify(store).save(eq("foo"), eq("bar"))
+        verify(store).save(eq("foo"), eq("bar"), any())
 
         // check store name calculated correctly
         val storeName = "store_${DateTimeUtil.DATE_FORMATTER.format(LocalDate.now())}"

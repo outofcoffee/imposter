@@ -51,8 +51,8 @@ import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
 import io.gatehill.imposter.lifecycle.EngineLifecycleListener
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.service.ResourceService
-import io.gatehill.imposter.store.model.Store
-import io.gatehill.imposter.store.model.StoreFactory
+import io.gatehill.imposter.store.core.Store
+import io.gatehill.imposter.store.factory.StoreFactory
 import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.MapUtil
 import io.vertx.core.Vertx
@@ -121,7 +121,7 @@ class StoreRestApiServiceImpl @Inject constructor(
     ): HttpExchangeHandler {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx) { httpExchange: HttpExchange ->
             val storeName = httpExchange.pathParam("storeName")!!
-            storeFactory.clearStore(storeName, isEphemeralStore = false)
+            storeFactory.clearStore(storeName, ephemeral = false)
             LOGGER.debug("Deleted store: {}", storeName)
 
             httpExchange.response()

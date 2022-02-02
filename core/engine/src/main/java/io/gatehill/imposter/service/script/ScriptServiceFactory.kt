@@ -44,9 +44,9 @@
 package io.gatehill.imposter.service.script
 
 import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.script.annotation.GroovyImpl
+import io.gatehill.imposter.script.annotation.JavascriptImpl
 import io.gatehill.imposter.service.ScriptService
-import io.gatehill.imposter.util.annotation.GroovyImpl
-import io.gatehill.imposter.util.annotation.JavascriptImpl
 import org.apache.logging.log4j.LogManager
 import java.util.*
 import javax.inject.Inject

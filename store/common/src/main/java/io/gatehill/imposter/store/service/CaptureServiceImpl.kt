@@ -51,8 +51,8 @@ import io.gatehill.imposter.plugin.config.capture.CaptureConfig
 import io.gatehill.imposter.plugin.config.capture.CaptureConfigHolder
 import io.gatehill.imposter.plugin.config.capture.ItemCaptureConfig
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
-import io.gatehill.imposter.store.model.Store
-import io.gatehill.imposter.store.model.StoreFactory
+import io.gatehill.imposter.store.core.Store
+import io.gatehill.imposter.store.factory.StoreFactory
 import io.gatehill.imposter.store.util.StoreUtil
 import io.gatehill.imposter.util.ResourceUtil
 import org.apache.logging.log4j.LogManager
@@ -103,7 +103,7 @@ class CaptureServiceImpl @Inject constructor(
         itemName?.let {
             val itemValue = captureItemValue(itemConfig, httpExchange, jsonPathContextHolder, captureConfigKey)
             val store = openCaptureStore(httpExchange, storeName)
-            store.save(itemName, itemValue)
+            store.save(itemName, itemValue, itemConfig.persistencePoint)
 
         } ?: run {
             LOGGER.warn(

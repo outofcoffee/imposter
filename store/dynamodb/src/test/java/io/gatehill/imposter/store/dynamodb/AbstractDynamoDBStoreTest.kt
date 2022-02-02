@@ -55,7 +55,9 @@ import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput
 import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.util.EnvVars
+import io.gatehill.imposter.service.DeferredOperationService
 import io.gatehill.imposter.store.dynamodb.config.Settings
+import io.vertx.core.Vertx
 import org.junit.Before
 import org.testcontainers.containers.localstack.LocalStackContainer
 import org.testcontainers.utility.DockerImageName
@@ -122,6 +124,6 @@ abstract class AbstractDynamoDBStoreTest {
 
         val imposterConfig = ImposterConfig()
         imposterConfig.configDirs = arrayOf(configDir.toString())
-        factory = DynamoDBStoreFactoryImpl()
+        factory = DynamoDBStoreFactoryImpl(DeferredOperationService(Vertx.vertx()))
     }
 }

@@ -40,18 +40,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.store.model
+package io.gatehill.imposter.store.factory
+
+import io.gatehill.imposter.store.core.Store
 
 /**
  * @author Pete Cornish
  */
-interface Store {
-    val storeName: String
-    val typeDescription: String
-    fun save(key: String, value: Any?)
-    fun <T> load(key: String): T?
-    fun delete(key: String)
-    fun loadAll(): Map<String, Any?>
-    fun hasItemWithKey(key: String): Boolean
-    fun count(): Int
+interface StoreFactory {
+    fun getStoreByName(storeName: String, ephemeral: Boolean): Store
+    fun clearStore(storeName: String, ephemeral: Boolean)
 }

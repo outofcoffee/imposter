@@ -40,14 +40,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.util.annotation
-
-import com.google.inject.BindingAnnotation
+package io.gatehill.imposter.plugin.config.store
 
 /**
+ * The point at which an item should be persisted to the store.
+ *
  * @author Pete Cornish
  */
-@BindingAnnotation
-@kotlin.annotation.Retention(AnnotationRetention.RUNTIME)
-@Target(AnnotationTarget.FIELD)
-annotation class GroovyImpl 
+enum class StorePersistencePoint {
+    IMMEDIATE,
+    DEFER
+}

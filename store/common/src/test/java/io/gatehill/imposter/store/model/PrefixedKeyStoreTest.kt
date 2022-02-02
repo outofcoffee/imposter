@@ -42,7 +42,10 @@
  */
 package io.gatehill.imposter.store.model
 
+import io.gatehill.imposter.service.DeferredOperationService
+import io.gatehill.imposter.store.core.PrefixedKeyStore
 import io.gatehill.imposter.store.inmem.InMemoryStore
+import io.vertx.core.Vertx
 import org.hamcrest.CoreMatchers
 import org.hamcrest.MatcherAssert
 import org.junit.Assert
@@ -61,7 +64,11 @@ class PrefixedKeyStoreTest {
     @Before
     @Throws(Exception::class)
     fun setUp() {
-        delegateStore = InMemoryStore("test")
+        delegateStore = InMemoryStore(
+            DeferredOperationService(Vertx.vertx()),
+            "test",
+            false
+        )
         store = PrefixedKeyStore("pref.", delegateStore!!)
     }
 

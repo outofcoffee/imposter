@@ -40,12 +40,52 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.store.model
+package io.gatehill.imposter.store.factory
+
+import io.gatehill.imposter.plugin.Plugin
+import io.gatehill.imposter.plugin.PluginManager
+import io.gatehill.imposter.store.core.Store
+import io.gatehill.imposter.store.util.StoreUtil
+import org.apache.logging.log4j.LogManager
+import javax.inject.Inject
 
 /**
+ * A delegating store factory that uses the environment variable named by [StoreUtil.envStoreDriver]
+ * to determine the [StoreFactory] to use.
+ *
  * @author Pete Cornish
  */
-interface StoreFactory {
-    fun getStoreByName(storeName: String, isEphemeralStore: Boolean): Store
-    fun clearStore(storeName: String, isEphemeralStore: Boolean)
+class DelegatingStoreFactoryImpl @Inject constructor(
+    private val pluginManager: PluginManager,
+) : StoreFactory {
+    private val logger = LogManager.getLogger(DelegatingStoreFactoryImpl::class.java)
+
+    private val impl: StoreFactory by lazy { loadStoreFactory() }
+
+    private fun loadStoreFactory(): StoreFactory {
+        val storeDriver = StoreUtil.activeDriver
+        val pluginClass = pluginManager.determinePluginClass(storeDriver)
+        logger.trace("Resolved store driver: {} to class: {}", storeDriver, pluginClass)
+
+        try {
+            val plugin = pluginManager.getPlugin<Plugin>(pluginClass)
+                ?: throw IllegalStateException("Unable to load store driver plugin: $pluginClass")
+
+            return plugin as StoreFactory
+
+        } catch (e: Exception) {
+            throw RuntimeException(
+                "Unable to load store driver: $storeDriver. Must be an installed plugin implementing ${StoreFactory::class.java.canonicalName}",
+                e
+            )
+        }
+    }
+
+    override fun getStoreByName(storeName: String, ephemeral: Boolean): Store {
+        return impl.getStoreByName(storeName, ephemeral)
+    }
+
+    override fun clearStore(storeName: String, ephemeral: Boolean) {
+        impl.clearStore(storeName, ephemeral)
+    }
 }

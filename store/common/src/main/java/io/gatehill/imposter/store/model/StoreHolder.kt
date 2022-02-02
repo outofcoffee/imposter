@@ -42,6 +42,8 @@
  */
 package io.gatehill.imposter.store.model
 
+import io.gatehill.imposter.store.core.Store
+import io.gatehill.imposter.store.factory.StoreFactory
 import io.gatehill.imposter.store.util.StoreUtil
 
 /**
