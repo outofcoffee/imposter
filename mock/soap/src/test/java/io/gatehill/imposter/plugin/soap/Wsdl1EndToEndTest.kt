@@ -48,7 +48,5 @@ package io.gatehill.imposter.plugin.soap
  * @author Pete Cornish
  */
 class Wsdl1EndToEndTest : AbstractEndToEndTest() {
-    override val testConfigDirs = listOf(
-        "/wsdl1"
-    )
+    override val testConfigDirs = listOf("/wsdl1")
 }

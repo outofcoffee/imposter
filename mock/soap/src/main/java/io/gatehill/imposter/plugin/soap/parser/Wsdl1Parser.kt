@@ -43,6 +43,11 @@
 
 package io.gatehill.imposter.plugin.soap.parser
 
+import io.gatehill.imposter.plugin.soap.model.WsdlBinding
+import io.gatehill.imposter.plugin.soap.model.WsdlEndpoint
+import io.gatehill.imposter.plugin.soap.model.WsdlInterface
+import io.gatehill.imposter.plugin.soap.model.WsdlOperation
+import io.gatehill.imposter.plugin.soap.model.WsdlService
 import io.gatehill.imposter.plugin.soap.util.SoapUtil
 import org.jdom2.Document
 import org.jdom2.Element
@@ -85,18 +90,6 @@ class Wsdl1Parser(
 
         return WsdlBinding(
             name = bindingName,
-
-            /**
-             * binding type=portType name
-             */
-
-            /**
-             * binding type=portType name
-             */
-
-            /**
-             * binding type=portType name
-             */
 
             /**
              * binding type=portType name

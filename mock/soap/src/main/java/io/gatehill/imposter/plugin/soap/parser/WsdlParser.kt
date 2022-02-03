@@ -43,6 +43,9 @@
 
 package io.gatehill.imposter.plugin.soap.parser
 
+import io.gatehill.imposter.plugin.soap.model.WsdlBinding
+import io.gatehill.imposter.plugin.soap.model.WsdlInterface
+import io.gatehill.imposter.plugin.soap.model.WsdlService
 import org.apache.xmlbeans.XmlObject
 
 interface WsdlParser {

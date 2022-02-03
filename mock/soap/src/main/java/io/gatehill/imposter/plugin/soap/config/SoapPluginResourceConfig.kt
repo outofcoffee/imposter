@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2022.
+ * Copyright (c) 2022.
  *
  * This file is part of Imposter.
  *
@@ -41,37 +41,15 @@
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.gatehill.imposter.plugin.soap.parser
+package io.gatehill.imposter.plugin.soap.config
 
-import java.net.URI
-import javax.xml.namespace.QName
+import com.fasterxml.jackson.annotation.JsonProperty
+import io.gatehill.imposter.plugin.config.resource.AbstractResourceConfig
 
-data class WsdlService(
-    val name: String,
-    val endpoints: List<WsdlEndpoint>,
-)
+class SoapPluginResourceConfig : AbstractResourceConfig() {
+    @JsonProperty("binding")
+    val binding: String? = null
 
-data class WsdlEndpoint(
-    val name: String,
-    val bindingName: String,
-    val address: URI,
-)
-
-data class WsdlBinding(
-    val name: String,
-    val interfaceRef: String,
-    val operations: List<WsdlOperation>,
-)
-
-data class WsdlInterface(
-    val name: String,
-    val operationNames: List<String>,
-)
-
-data class WsdlOperation(
-    val name: String,
-    val soapAction: String?,
-    val style: String?,
-    val inputElementRef: QName?,
-    val outputElementRef: QName?,
-)
+    @JsonProperty("operation")
+    val operation: String? = null
+}

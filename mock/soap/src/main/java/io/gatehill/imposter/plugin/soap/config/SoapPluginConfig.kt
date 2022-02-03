@@ -45,17 +45,16 @@ package io.gatehill.imposter.plugin.soap.config
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.gatehill.imposter.plugin.config.PluginConfigImpl
 import io.gatehill.imposter.plugin.config.ResourcesHolder
-import io.gatehill.imposter.plugin.config.resource.RestResourceConfig
 
 /**
  * @author Pete Cornish
  */
-class SoapPluginConfig : PluginConfigImpl(), ResourcesHolder<RestResourceConfig> {
+class SoapPluginConfig : PluginConfigImpl(), ResourcesHolder<SoapPluginResourceConfig> {
     @JsonProperty("wsdlFile")
     var wsdlFile: String? = null
 
     @JsonProperty("resources")
-    override val resources: List<RestResourceConfig>? = null
+    override val resources: List<SoapPluginResourceConfig>? = null
 
     @JsonProperty("defaultsFromRootResponse")
     override val isDefaultsFromRootResponse = false

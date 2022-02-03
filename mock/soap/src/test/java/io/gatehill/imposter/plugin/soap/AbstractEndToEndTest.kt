@@ -47,6 +47,8 @@ import io.gatehill.imposter.plugin.soap.util.SoapUtil
 import io.gatehill.imposter.server.BaseVerticleTest
 import io.gatehill.imposter.util.HttpUtil
 import io.vertx.ext.unit.TestContext
+import org.hamcrest.Matchers.allOf
+import org.hamcrest.Matchers.containsString
 import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Test
@@ -59,11 +61,13 @@ import org.junit.Test
 abstract class AbstractEndToEndTest : BaseVerticleTest() {
     override val pluginClass = SoapPluginImpl::class.java
 
-    private val soapEnv = SoapUtil.wrapInEnv("""
+    private val getPetByIdEnv = SoapUtil.wrapInEnv(
+        """
 <getPetByIdRequest xmlns="urn:com:example:petstore">
   <id>3</id>
 </getPetByIdRequest>
-""".trim(), SoapUtil.soap12RecEnvNamespace)
+""".trim(), SoapUtil.soap12RecEnvNamespace
+    )
 
     @Before
     @Throws(Exception::class)
@@ -79,11 +83,12 @@ abstract class AbstractEndToEndTest : BaseVerticleTest() {
             .accept(SoapUtil.soapContentType)
             .header("SOAPAction", "getPetById")
             .`when`()
-            .body(soapEnv)
+            .body(getPetByIdEnv)
             .post("/soap/")
             .then()
             .log().ifValidationFails()
             .statusCode(HttpUtil.HTTP_OK)
+            .body(containsString("getPetByIdResponse"))
             .extract().asString()
 
         assertNotNull(body)
@@ -96,11 +101,12 @@ abstract class AbstractEndToEndTest : BaseVerticleTest() {
             .accept(SoapUtil.soapContentType)
             .contentType("application/soap+xml;charset=UTF-8;action=\"getPetById\"")
             .`when`()
-            .body(soapEnv)
+            .body(getPetByIdEnv)
             .post("/soap/")
             .then()
             .log().ifValidationFails()
             .statusCode(HttpUtil.HTTP_OK)
+            .body(containsString("getPetByIdResponse"))
             .extract().asString()
 
         assertNotNull(body)
@@ -112,11 +118,12 @@ abstract class AbstractEndToEndTest : BaseVerticleTest() {
             .log().ifValidationFails()
             .accept(SoapUtil.soapContentType)
             .`when`()
-            .body(soapEnv)
+            .body(getPetByIdEnv)
             .post("/soap/")
             .then()
             .log().ifValidationFails()
             .statusCode(HttpUtil.HTTP_OK)
+            .body(containsString("getPetByIdResponse"))
             .extract().asString()
 
         assertNotNull(body)
@@ -129,10 +136,37 @@ abstract class AbstractEndToEndTest : BaseVerticleTest() {
             .accept(SoapUtil.soapContentType)
             .header("SOAPAction", "invalid")
             .`when`()
-            .body(soapEnv)
+            .body(getPetByIdEnv)
             .post("/soap/")
             .then()
             .log().ifValidationFails()
             .statusCode(HttpUtil.HTTP_NOT_FOUND)
+    }
+
+    @Test
+    fun testBindingMatch(testContext: TestContext) {
+        val getPetByNameEnv = SoapUtil.wrapInEnv(
+            """
+<getPetByNameRequest xmlns="urn:com:example:petstore">
+  <name>Fluffy</name>
+</getPetByNameRequest>
+""".trim(), SoapUtil.soap12RecEnvNamespace
+        )
+
+        RestAssured.given()
+            .log().ifValidationFails()
+            .accept(SoapUtil.soapContentType)
+            .`when`()
+            .body(getPetByNameEnv)
+            .post("/soap/")
+            .then()
+            .log().ifValidationFails()
+            .statusCode(HttpUtil.HTTP_OK)
+            .body(
+                allOf(
+                    containsString("getPetByNameResponse"),
+                    containsString("Fluffy"),
+                )
+            )
     }
 }

@@ -27,12 +27,22 @@
     <message name="getPetByIdResponse">
         <part element="tns:getPetByIdResponse" name="parameters"/>
     </message>
+    <message name="getPetByNameRequest">
+        <part element="tns:getPetByNameRequest" name="parameters"/>
+    </message>
+    <message name="getPetByNameResponse">
+        <part element="tns:getPetByNameResponse" name="parameters"/>
+    </message>
 
     <!-- Abstract port types -->
     <portType name="PetPortType">
         <operation name="getPetById">
             <input message="tns:getPetByIdRequest" name="getPetByIdRequest"/>
             <output message="tns:getPetByIdResponse" name="getPetByIdResponse"/>
+        </operation>
+        <operation name="getPetByName">
+            <input message="tns:getPetByNameRequest" name="getPetByNameRequest"/>
+            <output message="tns:getPetByNameResponse" name="getPetByNameResponse"/>
         </operation>
     </portType>
 
@@ -45,6 +55,11 @@
             <input name="getPetByIdRequest"/>
             <output name="getPetByIdResponse"/>
         </operation>
+        <operation name="getPetByName">
+            <soap:operation soapAction="getPetByName" style="document"/>
+            <input name="getPetByNameRequest"/>
+            <output name="getPetByNameResponse"/>
+        </operation>
     </binding>
 
     <!-- Concrete Binding with SOAP-->
@@ -55,6 +70,12 @@
             <soap:operation soapAction="getPetById" style="document"/>
             <input name="getPetByIdRequest"/>
             <output name="getPetByIdResponse"/>
+        </operation>
+
+        <operation name="getPetByName">
+            <soap:operation soapAction="getPetByName" style="document"/>
+            <input name="getPetByNameRequest"/>
+            <output name="getPetByNameResponse"/>
         </operation>
     </binding>
 

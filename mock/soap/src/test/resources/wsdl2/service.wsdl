@@ -26,10 +26,17 @@ http://www.w3.org/ns/wsdl/soap http://www.w3.org/2002/ws/desc/ns/soap.xsd">
     <!-- Abstract interfaces -->
     <interface name="PetInterface">
         <fault name="Error1" element="tns:fault"/>
+
         <operation name="getPetById" pattern="http://www.w3.org/ns/wsdl/in-out">
             <wsoap:operation soapAction="getPetById" style="document"/>
             <input messageLabel="In" element="tns:getPetByIdRequest"/>
             <output messageLabel="Out" element="tns:getPetByIdResponse"/>
+        </operation>
+
+        <operation name="getPetByName" pattern="http://www.w3.org/ns/wsdl/in-out">
+            <wsoap:operation soapAction="getPetByName" style="document"/>
+            <input messageLabel="In" element="tns:getPetByNameRequest"/>
+            <output messageLabel="Out" element="tns:getPetByNameResponse"/>
         </operation>
     </interface>
 
@@ -37,6 +44,7 @@ http://www.w3.org/ns/wsdl/soap http://www.w3.org/2002/ws/desc/ns/soap.xsd">
     <binding name="HttpBinding" interface="tns:PetInterface"
              type="http://www.w3.org/ns/wsdl/http">
         <operation ref="tns:getPetById" whttp:method="GET"/>
+        <operation ref="tns:getPetByName" whttp:method="GET"/>
     </binding>
 
     <!-- Concrete Binding with SOAP-->
@@ -45,6 +53,7 @@ http://www.w3.org/ns/wsdl/soap http://www.w3.org/2002/ws/desc/ns/soap.xsd">
              wsoap:protocol="http://www.w3.org/2003/05/soap/bindings/HTTP/"
              wsoap:mepDefault="http://www.w3.org/2003/05/soap/mep/request-response">
         <operation ref="tns:getPetById"/>
+        <operation ref="tns:getPetByName"/>
     </binding>
 
     <!-- Web Service offering endpoints for both bindings-->

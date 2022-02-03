@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2022-2022.
  *
  * This file is part of Imposter.
  *
@@ -40,13 +40,38 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.plugin.soap
 
-/**
- * Tests for [SoapPluginImpl] using WSDL v2.
- *
- * @author Pete Cornish
- */
-class Wsdl2EndToEndTest : AbstractEndToEndTest() {
-    override val testConfigDirs = listOf("/wsdl2")
-}
+package io.gatehill.imposter.plugin.soap.model
+
+import java.net.URI
+import javax.xml.namespace.QName
+
+data class WsdlService(
+    val name: String,
+    val endpoints: List<WsdlEndpoint>,
+)
+
+data class WsdlEndpoint(
+    val name: String,
+    val bindingName: String,
+    val address: URI,
+)
+
+data class WsdlBinding(
+    val name: String,
+    val interfaceRef: String,
+    val operations: List<WsdlOperation>,
+)
+
+data class WsdlInterface(
+    val name: String,
+    val operationNames: List<String>,
+)
+
+data class WsdlOperation(
+    val name: String,
+    val soapAction: String?,
+    val style: String?,
+    val inputElementRef: QName?,
+    val outputElementRef: QName?,
+)

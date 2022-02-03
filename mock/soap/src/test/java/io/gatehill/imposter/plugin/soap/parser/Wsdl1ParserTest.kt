@@ -70,11 +70,14 @@ class Wsdl1ParserTest {
     fun getServices() {
         assertEquals(1, parser.services.size)
 
-        val firstService = parser.services.first()
-        assertEquals("PetService", firstService.name)
-        assertEquals(2, firstService.endpoints.size)
+        val petService = parser.services.find { it.name == "PetService" }
+        assertNotNull("PetService should not be null", petService)
 
-        val soapEndpoint = firstService.endpoints.filter { it.name == "SoapEndpoint" }.first()
+        petService!!
+        assertEquals("PetService", petService.name)
+        assertEquals(2, petService.endpoints.size)
+
+        val soapEndpoint = petService.endpoints.filter { it.name == "SoapEndpoint" }.first()
         assertEquals("http://www.example.com/soap/", soapEndpoint.address.toASCIIString())
         assertEquals("tns:SoapBinding", soapEndpoint.bindingName)
     }
@@ -88,10 +91,11 @@ class Wsdl1ParserTest {
         assertEquals("SoapBinding", binding.name)
         assertEquals("tns:PetPortType", binding.interfaceRef)
 
-        assertEquals(1, binding.operations.size)
-        val operation = binding.operations.first()
+        assertEquals(2, binding.operations.size)
+        val operation = binding.operations.find { it.name == "getPetById" }
         assertNotNull("getPetById operation should not be null", operation)
 
+        operation!!
         assertEquals("getPetById", operation.name)
         assertEquals("getPetById", operation.soapAction)
         assertEquals("document", operation.style)
@@ -106,7 +110,7 @@ class Wsdl1ParserTest {
 
         iface!!
         assertEquals("PetPortType", iface.name)
-        assertEquals(1, iface.operationNames.size)
+        assertEquals(2, iface.operationNames.size)
         assertEquals("getPetById", iface.operationNames.first())
     }
 }

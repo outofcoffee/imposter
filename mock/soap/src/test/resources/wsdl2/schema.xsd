@@ -15,7 +15,17 @@
         </xs:all>
     </xs:complexType>
 
+    <xs:complexType name="getPetByNameRequest">
+        <xs:all>
+            <xs:element name="name" type="xs:string"/>
+        </xs:all>
+    </xs:complexType>
+
     <xs:element name="getPetByIdRequest" type="tns:getPetByIdRequest"/>
     <xs:element name="getPetByIdResponse" type="tns:petType"/>
+
+    <xs:element name="getPetByNameRequest" type="tns:getPetByNameRequest"/>
+    <xs:element name="getPetByNameResponse" type="tns:petType"/>
+
     <xs:element name="fault" type="xs:string"/>
 </xs:schema>

@@ -1,2 +1,9 @@
 plugin: soap
 wsdlFile: service.wsdl
+
+resources:
+  - path: /soap/
+    operation: getPetByName
+    response:
+      staticFile: getPetByNameResponse.xml
+
