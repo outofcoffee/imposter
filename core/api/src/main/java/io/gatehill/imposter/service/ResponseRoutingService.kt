@@ -49,7 +49,7 @@ import io.gatehill.imposter.http.ResponseBehaviourFactory
 import io.gatehill.imposter.http.StatusCodeFactory
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.PluginConfigImpl
-import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
+import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.script.ResponseBehaviour
 import java.util.function.Consumer
 
@@ -66,7 +66,7 @@ interface ResponseRoutingService {
      */
     fun route(
         pluginConfig: PluginConfig,
-        resourceConfig: ResponseConfigHolder?,
+        resourceConfig: BasicResourceConfig?,
         httpExchange: HttpExchange,
         additionalContext: Map<String, Any>?,
         statusCodeFactory: StatusCodeFactory,
@@ -92,7 +92,7 @@ interface ResponseRoutingService {
 
     fun <C : PluginConfigImpl> route(
         pluginConfig: C,
-        resourceConfig: ResponseConfigHolder?,
+        resourceConfig: BasicResourceConfig?,
         httpExchange: HttpExchange,
         defaultBehaviourHandler: Consumer<ResponseBehaviour>
     ) {

@@ -53,8 +53,8 @@ import io.gatehill.imposter.lifecycle.ScriptExecLifecycleHooks
 import io.gatehill.imposter.lifecycle.ScriptExecutionLifecycleListener
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.ResourcesHolder
+import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.resource.ResponseConfig
-import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.script.ExecutionContext
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
@@ -108,8 +108,8 @@ class ScriptedResponseServiceImpl @Inject constructor(
         val allScripts = mutableListOf<Pair<PluginConfig, ResponseConfig>>()
 
         // root resource
-        allPluginConfigs.filter { it is ResponseConfigHolder }.forEach { config ->
-            allScripts += config to (config as ResponseConfigHolder).responseConfig
+        allPluginConfigs.filter { it is BasicResourceConfig }.forEach { config ->
+            allScripts += config to (config as BasicResourceConfig).responseConfig
         }
         // child resources
         allPluginConfigs.filter { it is ResourcesHolder<*> }.forEach { config ->
@@ -132,7 +132,7 @@ class ScriptedResponseServiceImpl @Inject constructor(
     override fun determineResponseFromScript(
         httpExchange: HttpExchange,
         pluginConfig: PluginConfig,
-        resourceConfig: ResponseConfigHolder?,
+        resourceConfig: BasicResourceConfig?,
         additionalContext: Map<String, Any>?,
         additionalBindings: Map<String, Any>?
     ): ReadWriteResponseBehaviour {
@@ -156,7 +156,7 @@ class ScriptedResponseServiceImpl @Inject constructor(
     private fun determineResponseFromScriptInternal(
         httpExchange: HttpExchange,
         pluginConfig: PluginConfig,
-        resourceConfig: ResponseConfigHolder?,
+        resourceConfig: BasicResourceConfig?,
         additionalContext: Map<String, Any>?,
         additionalBindings: Map<String, Any>?
     ): ReadWriteResponseBehaviour {

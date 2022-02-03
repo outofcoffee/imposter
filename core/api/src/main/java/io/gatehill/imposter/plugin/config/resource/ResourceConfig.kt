@@ -46,5 +46,5 @@ package io.gatehill.imposter.plugin.config.resource
  * @author Pete Cornish
  */
 interface ResourceConfig {
-    val path: String?
+    var path: String?
 }

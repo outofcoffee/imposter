@@ -48,7 +48,7 @@ import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
 import io.gatehill.imposter.lifecycle.EngineLifecycleListener
 import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
+import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.system.StoreConfig
 import io.gatehill.imposter.plugin.config.system.SystemConfigHolder
 import io.gatehill.imposter.script.ExecutionContext
@@ -136,7 +136,7 @@ class StoreServiceImpl @Inject constructor(
         additionalBindings["stores"] = StoreHolder(storeFactory, requestId)
     }
 
-    override fun afterHttpExchangeHandled(httpExchange: HttpExchange, resourceConfig: ResponseConfigHolder) {
+    override fun afterHttpExchangeHandled(httpExchange: HttpExchange, resourceConfig: BasicResourceConfig) {
         // clean up request store if one exists
         httpExchange.get<String?>(ResourceUtil.RC_REQUEST_ID_KEY)?.let { uniqueRequestId: String ->
             storeFactory.clearStore(

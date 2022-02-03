@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2022.
  *
  * This file is part of Imposter.
  *
@@ -42,27 +42,10 @@
  */
 package io.gatehill.imposter.plugin.config.resource
 
-import com.fasterxml.jackson.annotation.JsonProperty
-import io.gatehill.imposter.plugin.config.capture.CaptureConfigHolder
-import io.gatehill.imposter.plugin.config.capture.ItemCaptureConfig
-import io.gatehill.imposter.plugin.config.security.SecurityConfig
-import io.gatehill.imposter.plugin.config.security.SecurityConfigHolder
-
 /**
- * Base configuration for plugins and sub-resources.
+ * Combines a [ResourceConfig] with a [ResponseConfigHolder] for
+ * basic resource configuration.
  *
  * @author Pete Cornish
  */
-abstract class AbstractResourceConfig : BasicResourceConfig, SecurityConfigHolder, CaptureConfigHolder {
-    @JsonProperty("path")
-    override var path: String? = null
-
-    @JsonProperty("security")
-    override val securityConfig: SecurityConfig? = null
-
-    @JsonProperty("capture")
-    override val captureConfig: Map<String, ItemCaptureConfig>? = null
-
-    @JsonProperty("response")
-    override val responseConfig = ResponseConfig()
-}
+interface BasicResourceConfig : ResourceConfig, ResponseConfigHolder

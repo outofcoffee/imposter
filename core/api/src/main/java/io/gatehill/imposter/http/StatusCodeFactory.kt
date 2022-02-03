@@ -42,11 +42,11 @@
  */
 package io.gatehill.imposter.http
 
-import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
+import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 
 /**
  * @author Pete Cornish
  */
 fun interface StatusCodeFactory {
-    fun calculateStatus(resourceConfig: ResponseConfigHolder): Int
+    fun calculateStatus(resourceConfig: BasicResourceConfig): Int
 }

@@ -42,13 +42,13 @@
  */
 package io.gatehill.imposter.config
 
-import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
+import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 
 /**
  * @author Pete Cornish
  */
 class ResolvedResourceConfig(
-    val config: ResponseConfigHolder,
+    val config: BasicResourceConfig,
     val pathParams: Map<String, String>,
     val queryParams: Map<String, String>,
     val requestHeaders: Map<String, String>

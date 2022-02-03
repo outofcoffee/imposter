@@ -57,13 +57,12 @@ import io.gatehill.imposter.lifecycle.SecurityLifecycleHooks
 import io.gatehill.imposter.lifecycle.SecurityLifecycleListener
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.ResourcesHolder
+import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.resource.MethodResourceConfig
 import io.gatehill.imposter.plugin.config.resource.PathParamsResourceConfig
 import io.gatehill.imposter.plugin.config.resource.QueryParamsResourceConfig
 import io.gatehill.imposter.plugin.config.resource.RequestHeadersResourceConfig
 import io.gatehill.imposter.plugin.config.resource.ResourceMethod
-import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
-import io.gatehill.imposter.plugin.config.resource.RestResourceConfig
 import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyResourceConfig
 import io.gatehill.imposter.server.RequestHandlingMode
 import io.gatehill.imposter.util.CollectionUtil.convertKeysToLowerCase
@@ -104,7 +103,7 @@ class ResourceServiceImpl @Inject constructor(
      * {@inheritDoc}
      */
     override fun resolveResourceConfigs(pluginConfig: PluginConfig): List<ResolvedResourceConfig> {
-        return (pluginConfig as? ResourcesHolder<*>)?.resources?.map { config: RestResourceConfig ->
+        return (pluginConfig as? ResourcesHolder<*>)?.resources?.map { config ->
             ResolvedResourceConfig(
                 config = config,
                 pathParams = (config as? PathParamsResourceConfig)?.pathParams ?: emptyMap(),
@@ -126,7 +125,7 @@ class ResourceServiceImpl @Inject constructor(
         queryParams: Map<String, String>,
         requestHeaders: Map<String, String>,
         bodySupplier: Supplier<String?>
-    ): ResponseConfigHolder? {
+    ): BasicResourceConfig? {
         var resourceConfigs = resources.filter { res ->
             isRequestMatch(
                 res,
@@ -244,19 +243,19 @@ class ResourceServiceImpl @Inject constructor(
      * Match the request body against the supplied configuration.
      *
      * @param bodySupplier         supplies the request body
-     * @param responseConfigHolder the match configuration
+     * @param resourceConfig the match configuration
      * @return `true` if the configuration is empty, or the request body matches the configuration, otherwise `false`
      */
-    private fun matchRequestBody(bodySupplier: Supplier<String?>, responseConfigHolder: ResponseConfigHolder): Boolean {
-        if (responseConfigHolder !is RequestBodyResourceConfig ||
-            Objects.isNull(responseConfigHolder.requestBody) ||
-            Strings.isNullOrEmpty(responseConfigHolder.requestBody!!.jsonPath)
+    private fun matchRequestBody(bodySupplier: Supplier<String?>, resourceConfig: BasicResourceConfig): Boolean {
+        if (resourceConfig !is RequestBodyResourceConfig ||
+            Objects.isNull(resourceConfig.requestBody) ||
+            Strings.isNullOrEmpty(resourceConfig.requestBody!!.jsonPath)
         ) {
             // none configured - implies any match
             return true
         }
 
-        val requestBodyConfig = responseConfigHolder.requestBody!!
+        val requestBodyConfig = resourceConfig.requestBody!!
         val body = bodySupplier.get()
         val bodyValue = if (Strings.isNullOrEmpty(body)) {
             null
@@ -401,10 +400,10 @@ class ResourceServiceImpl @Inject constructor(
             response.putHeader("Server", "imposter")
         }
 
-        val rootResourceConfig = (pluginConfig as ResponseConfigHolder?)!!
+        val rootResourceConfig = (pluginConfig as BasicResourceConfig?)!!
         val request = httpExchange.request()
 
-        val resourceConfig: ResponseConfigHolder = matchResourceConfig(
+        val resourceConfig: BasicResourceConfig = matchResourceConfig(
             resolvedResourceConfigs,
             request.method(),
             httpExchange.currentRoutePath,

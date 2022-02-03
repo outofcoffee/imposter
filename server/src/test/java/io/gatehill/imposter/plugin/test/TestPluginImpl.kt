@@ -45,7 +45,7 @@ package io.gatehill.imposter.plugin.test
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin
-import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
+import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.script.ResponseBehaviour
 import io.gatehill.imposter.service.ResourceService
 import io.gatehill.imposter.service.ResponseRoutingService
@@ -81,7 +81,7 @@ class TestPluginImpl @Inject constructor(
 
     private fun configureRoute(
         pluginConfig: TestPluginConfig,
-        resourceConfig: ResponseConfigHolder,
+        resourceConfig: BasicResourceConfig,
         router: HttpRouter,
         path: String
     ) {

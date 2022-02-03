@@ -46,7 +46,7 @@ import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
+import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.script.ExecutionContext
 
 /**
@@ -104,7 +104,7 @@ interface EngineLifecycleListener {
      * @param httpExchange the HTTP exchange
      * @param resourceConfig the active resource
      */
-    fun beforeBuildingResponse(httpExchange: HttpExchange, resourceConfig: ResponseConfigHolder?) {
+    fun beforeBuildingResponse(httpExchange: HttpExchange, resourceConfig: BasicResourceConfig?) {
         // no op
     }
 
@@ -115,7 +115,7 @@ interface EngineLifecycleListener {
      * @param httpExchange the HTTP exchange
      * @param resourceConfig the active resource
      */
-    fun afterHttpExchangeHandled(httpExchange: HttpExchange, resourceConfig: ResponseConfigHolder) {
+    fun afterHttpExchangeHandled(httpExchange: HttpExchange, resourceConfig: BasicResourceConfig) {
         // no op
     }
 }

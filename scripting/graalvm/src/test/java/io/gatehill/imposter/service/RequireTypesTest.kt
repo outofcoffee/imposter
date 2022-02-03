@@ -42,7 +42,7 @@
  */
 package io.gatehill.imposter.service
 
-import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
+import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.script.ResponseBehaviourType
 import io.gatehill.imposter.scripting.AbstractBaseScriptTest
 import io.gatehill.imposter.scripting.graalvm.service.GraalvmScriptServiceImpl
@@ -64,7 +64,7 @@ class RequireTypesTest : AbstractBaseScriptTest() {
     @Test
     fun testRequireTypes() {
         val pluginConfig = configureScript()
-        val resourceConfig = pluginConfig as ResponseConfigHolder
+        val resourceConfig = pluginConfig as BasicResourceConfig
 
         val runtimeContext = buildRuntimeContext(
             additionalBindings = emptyMap(),

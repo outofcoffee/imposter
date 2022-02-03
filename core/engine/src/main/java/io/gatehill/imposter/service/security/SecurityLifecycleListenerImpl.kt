@@ -45,12 +45,12 @@ package io.gatehill.imposter.service.security
 import io.gatehill.imposter.config.ResolvedResourceConfig
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.lifecycle.SecurityLifecycleListener
-import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
+import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.security.SecurityConfig
 import io.gatehill.imposter.plugin.config.security.SecurityConfigHolder
 import io.gatehill.imposter.service.SecurityService
 import org.apache.logging.log4j.LogManager
-import java.util.*
+import java.util.Objects
 import javax.inject.Inject
 
 /**
@@ -61,8 +61,8 @@ class SecurityLifecycleListenerImpl @Inject constructor(
 ) : SecurityLifecycleListener {
 
     override fun isRequestPermitted(
-        rootResourceConfig: ResponseConfigHolder,
-        resourceConfig: ResponseConfigHolder?,
+        rootResourceConfig: BasicResourceConfig,
+        resourceConfig: BasicResourceConfig?,
         resolvedResourceConfigs: List<ResolvedResourceConfig?>,
         httpExchange: HttpExchange
     ): Boolean {
@@ -92,8 +92,8 @@ class SecurityLifecycleListenerImpl @Inject constructor(
     }
 
     private fun getSecurityConfig(
-        rootResourceConfig: ResponseConfigHolder,
-        resourceConfig: ResponseConfigHolder?
+        rootResourceConfig: BasicResourceConfig,
+        resourceConfig: BasicResourceConfig?
     ): SecurityConfig? {
         var security = getSecurityConfig(resourceConfig)
         if (Objects.isNull(security)) {
@@ -103,7 +103,7 @@ class SecurityLifecycleListenerImpl @Inject constructor(
         return security
     }
 
-    private fun getSecurityConfig(resourceConfig: ResponseConfigHolder?): SecurityConfig? {
+    private fun getSecurityConfig(resourceConfig: BasicResourceConfig?): SecurityConfig? {
         return if (resourceConfig !is SecurityConfigHolder) {
             null
         } else (resourceConfig as SecurityConfigHolder).securityConfig

@@ -42,11 +42,11 @@
  */
 package io.gatehill.imposter.plugin.config
 
-import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
+import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 
 /**
  * @author Pete Cornish
  */
-interface ContentTypedConfig : ResponseConfigHolder {
+interface ContentTypedConfig : BasicResourceConfig {
     val contentType: String?
 }

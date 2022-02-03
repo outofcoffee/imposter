@@ -43,7 +43,7 @@
 package io.gatehill.imposter.service.script
 
 import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
+import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl
 import io.gatehill.imposter.script.RuntimeContext
@@ -57,7 +57,7 @@ class EmbeddedScriptServiceImpl : EmbeddedScriptService {
 
     override fun executeScript(
         pluginConfig: PluginConfig,
-        resourceConfig: ResponseConfigHolder,
+        resourceConfig: BasicResourceConfig,
         runtimeContext: RuntimeContext
     ): ReadWriteResponseBehaviour {
         check(listener != null) { "ScriptListener is not set" }

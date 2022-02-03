@@ -42,14 +42,14 @@
  */
 package io.gatehill.imposter.plugin.config
 
-import io.gatehill.imposter.plugin.config.resource.RestResourceConfig
+import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 
 /**
  * Represents a list of resource configurations.
  *
  * @author Pete Cornish
  */
-interface ResourcesHolder<T : RestResourceConfig> {
+interface ResourcesHolder<T : BasicResourceConfig> {
     val resources: List<T>?
     val isDefaultsFromRootResponse: Boolean?
 }

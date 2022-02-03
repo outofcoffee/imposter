@@ -50,8 +50,8 @@ import io.gatehill.imposter.http.StatusCodeFactory
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.RequireModules
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin
+import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.resource.ResourceMethod
-import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig
 import io.gatehill.imposter.plugin.openapi.http.OpenApiResponseBehaviourFactory
 import io.gatehill.imposter.plugin.openapi.service.ExampleService
@@ -265,7 +265,7 @@ class OpenApiPluginImpl @Inject constructor(
             context["operation"] = operation
 
             val request = httpExchange.request()
-            val resourceConfig = httpExchange.get<ResponseConfigHolder>(ResourceUtil.RESPONSE_CONFIG_HOLDER_KEY)
+            val resourceConfig = httpExchange.get<BasicResourceConfig>(ResourceUtil.RESPONSE_CONFIG_HOLDER_KEY)
 
             val defaultBehaviourHandler = { responseBehaviour: ResponseBehaviour ->
                 // set status code regardless of response strategy
@@ -347,7 +347,7 @@ class OpenApiPluginImpl @Inject constructor(
         }
     }
 
-    private fun buildStatusCodeCalculator(operation: Operation) = StatusCodeFactory { rc: ResponseConfigHolder ->
+    private fun buildStatusCodeCalculator(operation: Operation) = StatusCodeFactory { rc: BasicResourceConfig ->
         rc.responseConfig.statusCode
         // Fall back to the first non-default response for this operation.
         // Note: responses are keyed on their status code and "default" is a

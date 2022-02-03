@@ -47,7 +47,7 @@ import groovy.lang.Binding
 import groovy.lang.GroovyClassLoader
 import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
+import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.ScriptUtil
@@ -94,7 +94,7 @@ class GroovyScriptServiceImpl : ScriptService {
 
     override fun executeScript(
         pluginConfig: PluginConfig,
-        resourceConfig: ResponseConfigHolder,
+        resourceConfig: BasicResourceConfig,
         runtimeContext: RuntimeContext
     ): ReadWriteResponseBehaviour {
         val scriptFile = ScriptUtil.resolveScriptPath(pluginConfig, resourceConfig.responseConfig.scriptFile)

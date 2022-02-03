@@ -44,7 +44,7 @@ package io.gatehill.imposter.lifecycle
 
 import io.gatehill.imposter.config.ResolvedResourceConfig
 import io.gatehill.imposter.http.HttpExchange
-import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
+import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 
 /**
  * Hooks for engine lifecycle events.
@@ -62,8 +62,8 @@ interface SecurityLifecycleListener {
      * @return `true` if the request is permitted, otherwise `false`
      */
     fun isRequestPermitted(
-        rootResourceConfig: ResponseConfigHolder,
-        resourceConfig: ResponseConfigHolder?,
+        rootResourceConfig: BasicResourceConfig,
+        resourceConfig: BasicResourceConfig?,
         resolvedResourceConfigs: List<ResolvedResourceConfig?>,
         httpExchange: HttpExchange
     ): Boolean {

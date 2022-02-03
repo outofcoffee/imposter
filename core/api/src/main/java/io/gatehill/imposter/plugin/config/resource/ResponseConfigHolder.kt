@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2022.
  *
  * This file is part of Imposter.
  *
@@ -40,11 +40,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 package io.gatehill.imposter.plugin.config.resource
 
 /**
  * @author Pete Cornish
  */
-interface ResponseConfigHolder : ResourceConfig {
+interface ResponseConfigHolder {
     val responseConfig: ResponseConfig
 }

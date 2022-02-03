@@ -48,7 +48,7 @@ import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.RequireModules
 import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
+import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.ScriptUtil
@@ -82,7 +82,7 @@ class GraalvmScriptServiceImpl : ScriptService, Plugin {
 
     override fun executeScript(
         pluginConfig: PluginConfig,
-        resourceConfig: ResponseConfigHolder,
+        resourceConfig: BasicResourceConfig,
         runtimeContext: RuntimeContext
     ): ReadWriteResponseBehaviour {
         val scriptFile = ScriptUtil.resolveScriptPath(pluginConfig, resourceConfig.responseConfig.scriptFile)

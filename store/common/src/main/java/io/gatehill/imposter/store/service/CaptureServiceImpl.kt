@@ -50,14 +50,14 @@ import io.gatehill.imposter.lifecycle.EngineLifecycleListener
 import io.gatehill.imposter.plugin.config.capture.CaptureConfig
 import io.gatehill.imposter.plugin.config.capture.CaptureConfigHolder
 import io.gatehill.imposter.plugin.config.capture.ItemCaptureConfig
-import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
+import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.store.StorePersistencePoint
 import io.gatehill.imposter.store.core.Store
 import io.gatehill.imposter.store.factory.StoreFactory
 import io.gatehill.imposter.store.util.StoreUtil
 import io.gatehill.imposter.util.ResourceUtil
 import org.apache.logging.log4j.LogManager
-import java.util.*
+import java.util.Objects
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 
@@ -76,18 +76,18 @@ class CaptureServiceImpl @Inject constructor(
         lifecycleHooks.registerListener(this)
     }
 
-    override fun beforeBuildingResponse(httpExchange: HttpExchange, resourceConfig: ResponseConfigHolder?) {
+    override fun beforeBuildingResponse(httpExchange: HttpExchange, resourceConfig: BasicResourceConfig?) {
         // immediate captures
         captureItems(resourceConfig, httpExchange, StorePersistencePoint.IMMEDIATE)
     }
 
-    override fun afterHttpExchangeHandled(httpExchange: HttpExchange, resourceConfig: ResponseConfigHolder) {
+    override fun afterHttpExchangeHandled(httpExchange: HttpExchange, resourceConfig: BasicResourceConfig) {
         // deferred captures
         captureItems(resourceConfig, httpExchange, StorePersistencePoint.DEFER)
     }
 
     private fun captureItems(
-        resourceConfig: ResponseConfigHolder?,
+        resourceConfig: BasicResourceConfig?,
         httpExchange: HttpExchange,
         persistenceFilter: StorePersistencePoint
     ) {

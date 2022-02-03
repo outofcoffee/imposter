@@ -53,7 +53,7 @@ import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
 import io.gatehill.imposter.lifecycle.EngineLifecycleListener
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.ResourcesHolder
-import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
+import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.ResponseBehaviour
 import io.gatehill.imposter.script.ResponseBehaviourType
@@ -78,7 +78,7 @@ class ResponseRoutingServiceImpl @Inject constructor(
      */
     override fun route(
         pluginConfig: PluginConfig,
-        resourceConfig: ResponseConfigHolder?,
+        resourceConfig: BasicResourceConfig?,
         httpExchange: HttpExchange,
         additionalContext: Map<String, Any>?,
         statusCodeFactory: StatusCodeFactory,
@@ -116,7 +116,7 @@ class ResponseRoutingServiceImpl @Inject constructor(
     private fun buildResponseBehaviour(
         httpExchange: HttpExchange,
         pluginConfig: PluginConfig,
-        resourceConfig: ResponseConfigHolder?,
+        resourceConfig: BasicResourceConfig?,
         additionalContext: Map<String, Any>?,
         additionalBindings: Map<String, Any>?,
         statusCodeFactory: StatusCodeFactory,
@@ -152,11 +152,11 @@ class ResponseRoutingServiceImpl @Inject constructor(
         // explicitly check if the root resource should have its response config used as defaults for its child resources
         when {
             pluginConfig is ResourcesHolder<*> && pluginConfig.isDefaultsFromRootResponse == true -> {
-                if (pluginConfig is ResponseConfigHolder) {
+                if (pluginConfig is BasicResourceConfig) {
                     LOGGER.trace("Inheriting root response configuration as defaults")
                     responseBehaviourFactory.populate(
                         statusCode,
-                        (pluginConfig as ResponseConfigHolder).responseConfig,
+                        (pluginConfig as BasicResourceConfig).responseConfig,
                         responseBehaviour
                     )
                 }

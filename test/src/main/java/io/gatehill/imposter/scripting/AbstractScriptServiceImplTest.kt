@@ -43,7 +43,7 @@
 
 package io.gatehill.imposter.scripting
 
-import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
+import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.script.ResponseBehaviourType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -57,7 +57,7 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
     @Test
     fun testExecuteScript_Immediate() {
         val pluginConfig = configureScript()
-        val resourceConfig = pluginConfig as ResponseConfigHolder
+        val resourceConfig = pluginConfig as BasicResourceConfig
 
         val additionalBindings = mapOf(
             "hello" to "world"
@@ -76,7 +76,7 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
     @Test
     fun testExecuteScript_Default() {
         val pluginConfig = configureScript()
-        val resourceConfig = pluginConfig as ResponseConfigHolder
+        val resourceConfig = pluginConfig as BasicResourceConfig
 
         val additionalBindings = mapOf(
             "hello" to "should not match"
@@ -94,7 +94,7 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
     @Test
     fun testExecuteScript_ParsePathParams() {
         val pluginConfig = configureScript()
-        val resourceConfig = pluginConfig as ResponseConfigHolder
+        val resourceConfig = pluginConfig as BasicResourceConfig
 
         val additionalBindings = mapOf(
             "hello" to "world"
@@ -113,7 +113,7 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
     @Test
     fun testExecuteScript_ParseQueryParams() {
         val pluginConfig = configureScript()
-        val resourceConfig = pluginConfig as ResponseConfigHolder
+        val resourceConfig = pluginConfig as BasicResourceConfig
 
         val additionalBindings = mapOf(
             "hello" to "world"
@@ -132,7 +132,7 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
     @Test
     fun testExecuteScript_ParseRequestHeaders() {
         val pluginConfig = configureScript()
-        val resourceConfig = pluginConfig as ResponseConfigHolder
+        val resourceConfig = pluginConfig as BasicResourceConfig
 
         val additionalBindings = mapOf(
             "hello" to "world"
@@ -151,7 +151,7 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
     @Test
     fun testExecuteScript_ParseNormalisedRequestHeaders() {
         val pluginConfig = configureScript()
-        val resourceConfig = pluginConfig as ResponseConfigHolder
+        val resourceConfig = pluginConfig as BasicResourceConfig
 
         val additionalBindings = mapOf(
             "hello" to "world"
@@ -172,7 +172,7 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
     @Test
     fun testExecuteScript_ReadEnvironmentVariable() {
         val pluginConfig = configureScript()
-        val resourceConfig = pluginConfig as ResponseConfigHolder
+        val resourceConfig = pluginConfig as BasicResourceConfig
 
         val additionalBindings = mapOf(
             "hello" to "world"

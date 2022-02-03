@@ -44,7 +44,7 @@ package io.gatehill.imposter.service
 
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
+import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 
 /**
@@ -54,7 +54,7 @@ interface ScriptedResponseService {
     fun determineResponseFromScript(
         httpExchange: HttpExchange,
         pluginConfig: PluginConfig,
-        resourceConfig: ResponseConfigHolder?,
+        resourceConfig: BasicResourceConfig?,
         additionalContext: Map<String, Any>?,
         additionalBindings: Map<String, Any>?
     ): ReadWriteResponseBehaviour

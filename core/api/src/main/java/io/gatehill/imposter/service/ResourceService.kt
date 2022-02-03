@@ -47,8 +47,8 @@ import io.gatehill.imposter.config.ResolvedResourceConfig
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpExchangeHandler
 import io.gatehill.imposter.plugin.config.PluginConfig
+import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.resource.ResourceMethod
-import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.vertx.core.Vertx
 import java.util.function.Supplier
 
@@ -86,7 +86,7 @@ interface ResourceService {
         queryParams: Map<String, String>,
         requestHeaders: Map<String, String>,
         bodySupplier: Supplier<String?>
-    ): ResponseConfigHolder?
+    ): BasicResourceConfig?
 
     /**
      * Builds a handler that processes a request.
