@@ -29,7 +29,7 @@ Arguments:
 Example:
 
 ```
-$  ./scripts/dev-current.sh -m java -p openapi -c $PWD/docs/examples/openapi/simple
+$  ./scripts/dev-current.sh -m java -p openapi -c $PWD/examples/openapi/simple
 ```
 
 This starts Imposter in bare JVM mode (no Docker) with the OpenAPI plugin enabled, pointing to the examples directory.

@@ -309,4 +309,4 @@ Using JsonPath to capture the request body is computationally expensive, as it r
 
 ## Examples
 
-- [data-capture](https://github.com/outofcoffee/imposter/blob/main/docs/examples/rest/data-capture)
+- [data-capture](https://github.com/outofcoffee/imposter/blob/main/examples/rest/data-capture)

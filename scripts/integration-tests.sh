@@ -9,7 +9,7 @@ function start_engine() {
 
   docker run --rm -id \
     -p 8080:8080 \
-    -v "$ROOT_DIR/docs/examples/openapi/simple:/opt/imposter/config" \
+    -v "$ROOT_DIR/examples/openapi/simple:/opt/imposter/config" \
     --name imposter-test \
     "outofcoffee/imposter:$IMAGE_TAG"
 

@@ -42,18 +42,18 @@ A few things to call out:
 
 ### Start Imposter with the REST plugin
 
-Let's assume your configuration is in the directory: `docs/examples/rest/simple`.
+Let's assume your configuration is in the directory: `examples/rest/simple`.
 
 Docker example:
 
     docker run --rm -ti -p 8080:8080 \
-        -v $PWD/docs/examples/rest/simple:/opt/imposter/config \
+        -v $PWD/examples/rest/simple:/opt/imposter/config \
         outofcoffee/imposter-rest
 
 Standalone Java example:
 
     java -jar distro/rest/build/libs/imposter-rest.jar \
-        --configDir ./docs/examples/rest/simple
+        --configDir ./examples/rest/simple
 
 Send an HTTP request to the `/example` path defined in the configuration file to see the example response:
 
@@ -118,7 +118,7 @@ Let's return an array of data at each endpoint:
 Start the server:
 
     docker run --rm -ti -p 8080:8080 \
-        -v $PWD/docs/examples/rest/multiple:/opt/imposter/config \
+        -v $PWD/examples/rest/multiple:/opt/imposter/config \
         outofcoffee/imposter-rest
 
 Send an HTTP request to the `/cats/1` path defined in the configuration file to see the first item in the array:
@@ -137,7 +137,7 @@ Once you're finished, stop the server with CTRL+C.
 
 > For more working examples, see:
 >
-> * docs/examples/rest
+> * examples/rest
 > * mock/rest/src/test/resources/config
 
 ## Scripted responses (advanced)

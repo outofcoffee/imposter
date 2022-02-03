@@ -8,7 +8,7 @@ Imposter starts before your test runs, such as in your test set-up method (e.g. 
 
 ## Getting started
 
-> For a full working example project, see [docs/examples/junit-sample](https://github.com/outofcoffee/imposter/tree/main/docs/examples/junit-sample)
+> For a full working example project, see [examples/junit-sample](https://github.com/outofcoffee/imposter/tree/main/examples/junit-sample)
 
 First, note the latest [release version](https://github.com/outofcoffee/imposter/releases).
 
@@ -48,7 +48,7 @@ String mockEndpoint = imposter.getBaseUrl() + "/v1/pets";
 // simulated HTTP responses, in place of a real endpoint.
 ```
 
-> For a full working example project, see [docs/examples/junit-sample](https://github.com/outofcoffee/imposter/tree/main/docs/examples/junit-sample)
+> For a full working example project, see [examples/junit-sample](https://github.com/outofcoffee/imposter/tree/main/examples/junit-sample)
 
 ## Using a full configuration file
 
