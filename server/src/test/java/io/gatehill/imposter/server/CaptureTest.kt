@@ -46,6 +46,7 @@ import com.jayway.restassured.RestAssured
 import com.jayway.restassured.http.ContentType
 import io.gatehill.imposter.plugin.test.TestPluginImpl
 import io.gatehill.imposter.util.HttpUtil
+import io.gatehill.imposter.util.attempt
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
 import org.apache.commons.io.FileUtils
@@ -124,14 +125,14 @@ class CaptureTest : BaseVerticleTest() {
     @Test
     @Throws(Exception::class)
     fun testCaptureBodyItems() {
-        val user = FileUtils.readFileToString(
+        val users = FileUtils.readFileToString(
             File(CaptureTest::class.java.getResource("/capture/user.json").toURI()),
             StandardCharsets.UTF_8
         )
 
         // send data for capture
         RestAssured.given().`when`()
-            .body(user)
+            .body(users)
             .contentType(ContentType.JSON)
             .post("/users")
             .then()
@@ -198,5 +199,36 @@ class CaptureTest : BaseVerticleTest() {
                 Matchers.hasEntry("bob", "admin")
             )
         )
+    }
+
+    /**
+     * Capture a value using deferred persistence.
+     */
+    @Test
+    fun testCaptureDeferred() {
+        // should not exist yet
+        RestAssured.given().`when`()
+            .pathParam("storeId", "captureDeferred")
+            .get("/system/store/{storeId}/userId")
+            .then()
+            .statusCode(Matchers.equalTo(HttpUtil.HTTP_NOT_FOUND))
+
+        // send data for capture
+        RestAssured.given().`when`()
+            .pathParam("userId", "alice")
+            .put("/defer/{userId}")
+            .then()
+            .statusCode(Matchers.equalTo(HttpUtil.HTTP_ACCEPTED))
+
+        // allow for background processing to complete
+        attempt(attempts = 5) {
+            RestAssured.given().`when`()
+                .pathParam("storeId", "captureDeferred")
+                .get("/system/store/{storeId}/userIdX")
+                .then()
+                .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
+                .contentType(ContentType.TEXT)
+                .body(Matchers.equalTo("alice"))
+        }
     }
 }

@@ -20,7 +20,7 @@ dependencies {
 
     api "com.jayway.jsonpath:json-path:$version_json_path"
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$version_coroutines")
 
     // metrics
     api "io.vertx:vertx-micrometer-metrics:$version_vertx"

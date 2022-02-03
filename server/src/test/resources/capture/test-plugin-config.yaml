@@ -44,3 +44,14 @@ resources:
       const: admin
   response:
     statusCode: 200
+
+- method: PUT
+  path: /defer/:userId
+  capture:
+    # constant value, but dynamic key
+    userId:
+      expression: "${context.request.pathParams.userId}"
+      store: captureDeferred
+      persistence: DEFER
+  response:
+    statusCode: 202
