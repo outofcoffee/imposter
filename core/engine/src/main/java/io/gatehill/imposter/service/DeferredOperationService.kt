@@ -43,7 +43,11 @@
 package io.gatehill.imposter.service
 
 import io.vertx.core.Vertx
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -56,7 +60,8 @@ import javax.inject.Inject
  */
 class DeferredOperationService @Inject constructor(
     private val vertx: Vertx,
-) {
+) : CoroutineScope by CoroutineScope(Dispatchers.IO + SupervisorJob()) {
+
     private val logger: Logger = LogManager.getLogger(DeferredOperationService::class.java)
     private val deferredOperations: Channel<Pair<String, Runnable>> by lazy { startDeferredExecutor() }
 
@@ -66,29 +71,19 @@ class DeferredOperationService @Inject constructor(
     }
 
     private fun startDeferredExecutor(): Channel<Pair<String, Runnable>> {
-        logger.debug("Starting deferred executor")
         val channel = Channel<Pair<String, Runnable>>(512)
-
-        vertx.executeBlocking<Unit>({
-            runBlocking {
-                while (true) {
-                    val (description, deferred) = channel.receive()
-                    logger.trace("Dequeued deferred operation: $description")
-                    try {
-                        deferred.run()
-                    } catch (e: Exception) {
-                        logger.error("Deferred operation '$description' failed", e)
-                    }
+        logger.debug("Starting deferred executor")
+        launch {
+            while (true) {
+                val (description, deferred) = channel.receive()
+                logger.trace("Dequeued deferred operation: $description")
+                try {
+                    deferred.run()
+                } catch (e: Exception) {
+                    logger.error("Deferred operation '$description' failed", e)
                 }
             }
-        }, {
-            if (it.failed()) {
-                logger.error("Terminated deferred executor", it.cause())
-            } else {
-                logger.debug("Terminated deferred executor normally")
-            }
-        })
-
+        }
         return channel
     }
 }
