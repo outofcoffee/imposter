@@ -113,8 +113,9 @@ interface EngineLifecycleListener {
      * until required processing is complete, and that it is safe to perform cleanup activities.
      *
      * @param httpExchange the HTTP exchange
+     * @param resourceConfig the active resource
      */
-    fun afterHttpExchangeHandled(httpExchange: HttpExchange) {
+    fun afterHttpExchangeHandled(httpExchange: HttpExchange, resourceConfig: ResponseConfigHolder) {
         // no op
     }
 }

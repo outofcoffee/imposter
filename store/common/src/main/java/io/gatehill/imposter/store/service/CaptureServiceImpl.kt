@@ -51,6 +51,7 @@ import io.gatehill.imposter.plugin.config.capture.CaptureConfig
 import io.gatehill.imposter.plugin.config.capture.CaptureConfigHolder
 import io.gatehill.imposter.plugin.config.capture.ItemCaptureConfig
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
+import io.gatehill.imposter.plugin.config.store.StorePersistencePoint
 import io.gatehill.imposter.store.core.Store
 import io.gatehill.imposter.store.factory.StoreFactory
 import io.gatehill.imposter.store.util.StoreUtil
@@ -76,11 +77,25 @@ class CaptureServiceImpl @Inject constructor(
     }
 
     override fun beforeBuildingResponse(httpExchange: HttpExchange, resourceConfig: ResponseConfigHolder?) {
+        // immediate captures
+        captureItems(resourceConfig, httpExchange, StorePersistencePoint.IMMEDIATE)
+    }
+
+    override fun afterHttpExchangeHandled(httpExchange: HttpExchange, resourceConfig: ResponseConfigHolder) {
+        // deferred captures
+        captureItems(resourceConfig, httpExchange, StorePersistencePoint.DEFER)
+    }
+
+    private fun captureItems(
+        resourceConfig: ResponseConfigHolder?,
+        httpExchange: HttpExchange,
+        persistenceFilter: StorePersistencePoint
+    ) {
         if (resourceConfig is CaptureConfigHolder) {
             val captureConfig = (resourceConfig as CaptureConfigHolder).captureConfig
             captureConfig?.let {
                 val jsonPathContextHolder = AtomicReference<DocumentContext>()
-                captureConfig.filterValues { it.enabled }
+                captureConfig.filterValues { it.enabled && it.persistencePoint == persistenceFilter }
                     .forEach { (captureConfigKey: String, itemConfig: ItemCaptureConfig) ->
                         captureItem(captureConfigKey, itemConfig, httpExchange, jsonPathContextHolder)
                     }
@@ -99,7 +114,7 @@ class CaptureServiceImpl @Inject constructor(
         val itemName: String? =
             determineItemName(itemConfig, httpExchange, jsonPathContextHolder, storeName, captureConfigKey)
 
-        // itemname may not be set, if dynamic value was null
+        // item name may not be set, if dynamic value was null
         itemName?.let {
             val itemValue = captureItemValue(itemConfig, httpExchange, jsonPathContextHolder, captureConfigKey)
             val store = openCaptureStore(httpExchange, storeName)

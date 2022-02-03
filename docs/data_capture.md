@@ -61,54 +61,7 @@ The following configuration options are available for a capture:
 | `requestHeader`   | The name of the request header to capture.                                                                                | 
 | `jsonPath`        | The JsonPath expression to query the JSON body. Only works with JSON request bodies.                                      | 
 | `expression`      | A placeholder expression, e.g. `${context.request.queryParams.foo}` - see _Expressions_ section.                          | 
-| `const`           | A constant value, e.g. `example`.                                                                                         | 
-
-## Request scoped store
-
-There is a special request-scoped store, named `request`, which is accessible only to the current request. Its contents do not persist beyond the lifecycle of the request.
-
-The request scoped store is very useful when you need to capture an item for immediate use, such as in a response template, but you don't need to persist it for later use.
-
-Here is an example combining capture and response template:
-
-> Learn more about [response templates](templates.md).
-
-```yaml
-# part of your configuration file
-
-resources:
-  - path: "/users/:userName"
-    method: PUT
-    capture:
-      user:
-        pathParam: userName
-        store: request
-    response:
-      staticFile: example-template.json
-      template: true
-```
-
-Here is the corresponding template file:
-
-```
-{
-  "userName": "${request.user}"
-}
-```
-
-If you were to make the following request:
-
-```
-curl -X PUT http://localhost:8080/users/alice
-```
-
-...you would receive the following response:
-
-```json
-{
-  "userName": "alice"
-}
-```
+| `const`           | A constant value, e.g. `example`.                                                                                         |
 
 ## Capturing the request body
 
@@ -208,6 +161,53 @@ For a request such as the following:
 
 The captured item, named `personInTeam`, would have the value: `"person=jane,team=engineering"`
 
+## Request scoped store
+
+There is a special request-scoped store, named `request`, which is accessible only to the current request. Its contents do not persist beyond the lifecycle of the request.
+
+The request scoped store is very useful when you need to capture an item for immediate use, such as in a response template, but you don't need to persist it for later use.
+
+Here is an example combining capture and response template:
+
+> Learn more about [response templates](templates.md).
+
+```yaml
+# part of your configuration file
+
+resources:
+  - path: "/users/:userName"
+    method: PUT
+    capture:
+      user:
+        pathParam: userName
+        store: request
+    response:
+      staticFile: example-template.json
+      template: true
+```
+
+Here is the corresponding template file:
+
+```
+{
+  "userName": "${request.user}"
+}
+```
+
+If you were to make the following request:
+
+```
+curl -X PUT http://localhost:8080/users/alice
+```
+
+...you would receive the following response:
+
+```json
+{
+  "userName": "alice"
+}
+```
+
 ### Capturing an object
 
 In some scenarios you may wish to capture an object instead of a single value.
@@ -243,6 +243,31 @@ plugin: rest
 In the example above, an item corresponding to the `userId` parameter in the request is added to the 'adminUsers' store with the constant value `admin`.
 
 > Note: Values do not have to be constant - you can combine dynamic item names and captured data.
+
+## Deferred persistence
+
+If you do not need an item to be persisted to the store immediately, you can choose to _defer_ persistence. This will result in the persistence operation being triggered _after_ processing of the current request has completed and the response has been transmitted to the client.
+
+Deferring persistence has the advantage of improving request throughput, at the cost of capture occurring after the request has been completed.  This trade-off may be useful for particular use cases, such as when writing events to a store for later retrieval, where real-time access is not required.
+
+### Important considerations
+
+Deferred items will not be available in the current request (such as in response templates or scripts). Given that the actual persistence operation runs asynchronously, there is no guarantee that it will complete before a subsequent request. When using deferred persistence, you should consider carefully any dependent logic or configuration that expects the presence of an item in the store at a particular point in time.
+
+Note that deferred persistence cannot be used with the request scoped store, as this would not make sense, since the request store only applies to a single request.
+
+### Configuring deferred persistence
+
+To enable deferred persistence for a particular case, set the `persistence: DEFER` property in a capture block, for example:
+
+```yaml
+# ...other configuration
+capture:
+  example:
+    expression: "${context.request.queryParams.example}"
+    store: testStore
+    persistence: DEFER # default value is IMMEDIATE
+```
 
 ## Enable or disable capture configuration
 

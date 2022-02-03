@@ -48,6 +48,7 @@ import io.gatehill.imposter.plugin.config.ConfiguredPlugin
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.script.ResponseBehaviour
 import io.gatehill.imposter.service.ResourceService
+import io.gatehill.imposter.service.ResponseRoutingService
 import io.gatehill.imposter.service.ResponseService
 import io.vertx.core.Vertx
 import javax.inject.Inject
@@ -60,6 +61,7 @@ class TestPluginImpl @Inject constructor(
     imposterConfig: ImposterConfig,
     private val resourceService: ResourceService,
     private val responseService: ResponseService,
+    private val responseRoutingService: ResponseRoutingService,
 ) : ConfiguredPlugin<TestPluginConfig>(vertx, imposterConfig) {
 
     override val configClass: Class<TestPluginConfig>
@@ -92,7 +94,7 @@ class TestPluginImpl @Inject constructor(
                     responseBehaviour
                 )
             }
-            responseService.handle(
+            responseRoutingService.route(
                 pluginConfig,
                 resourceConfig,
                 httpExchange,

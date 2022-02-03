@@ -53,6 +53,7 @@ import io.gatehill.imposter.plugin.rest.config.ResourceConfigType
 import io.gatehill.imposter.plugin.rest.config.RestPluginConfig
 import io.gatehill.imposter.plugin.rest.config.RestPluginResourceConfig
 import io.gatehill.imposter.service.ResourceService
+import io.gatehill.imposter.service.ResponseRoutingService
 import io.gatehill.imposter.service.ResponseService
 import io.gatehill.imposter.util.FileUtil.findRow
 import io.gatehill.imposter.util.HttpUtil
@@ -73,6 +74,7 @@ class RestPluginImpl @Inject constructor(
     imposterConfig: ImposterConfig,
     private val resourceService: ResourceService,
     private val responseService: ResponseService,
+    private val responseRoutingService: ResponseRoutingService,
 ) : ConfiguredPlugin<RestPluginConfig>(
     vertx, imposterConfig
 ) {
@@ -124,7 +126,7 @@ class RestPluginImpl @Inject constructor(
         router.route(method, qualifiedPath).handler(
             resourceService.handleRoute(imposterConfig, pluginConfig, vertx) { httpExchange: HttpExchange ->
                 // script should fire first
-                responseService.handle(pluginConfig, resourceConfig, httpExchange) { responseBehaviour ->
+                responseRoutingService.route(pluginConfig, resourceConfig, httpExchange) { responseBehaviour ->
                     LOGGER.info(
                         "Handling {} object request for: {}",
                         method,
@@ -154,7 +156,7 @@ class RestPluginImpl @Inject constructor(
         router.route(method, qualifiedPath).handler(
             resourceService.handleRoute(imposterConfig, pluginConfig, vertx) { httpExchange: HttpExchange ->
                 // script should fire first
-                responseService.handle(pluginConfig, resourceConfig, httpExchange) { responseBehaviour ->
+                responseRoutingService.route(pluginConfig, resourceConfig, httpExchange) { responseBehaviour ->
                     LOGGER.info("Handling {} array request for: {}", method, httpExchange.request().absoluteURI())
 
                     // get the first param in the path

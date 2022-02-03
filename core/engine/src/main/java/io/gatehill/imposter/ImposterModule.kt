@@ -49,6 +49,8 @@ import io.gatehill.imposter.service.FileCacheService
 import io.gatehill.imposter.service.FileCacheServiceImpl
 import io.gatehill.imposter.service.ResourceService
 import io.gatehill.imposter.service.ResourceServiceImpl
+import io.gatehill.imposter.service.ResponseRoutingService
+import io.gatehill.imposter.service.ResponseRoutingServiceImpl
 import io.gatehill.imposter.service.ResponseService
 import io.gatehill.imposter.service.ResponseServiceImpl
 import io.gatehill.imposter.service.ScriptedResponseService
@@ -71,6 +73,7 @@ internal class ImposterModule(
         bind(ImposterConfig::class.java).toInstance(imposterConfig)
         bind(PluginManager::class.java).toInstance(pluginManager)
         bind(ResourceService::class.java).to(ResourceServiceImpl::class.java).`in`(Singleton::class.java)
+        bind(ResponseRoutingService::class.java).to(ResponseRoutingServiceImpl::class.java).`in`(Singleton::class.java)
         bind(ResponseService::class.java).to(ResponseServiceImpl::class.java).`in`(Singleton::class.java)
         bind(FileCacheService::class.java).to(FileCacheServiceImpl::class.java).`in`(Singleton::class.java)
         bind(ScriptServiceFactory::class.java).`in`(Singleton::class.java)

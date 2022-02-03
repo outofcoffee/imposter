@@ -60,6 +60,7 @@ import io.gatehill.imposter.plugin.openapi.service.SpecificationService
 import io.gatehill.imposter.script.ResponseBehaviour
 import io.gatehill.imposter.server.ServerFactory
 import io.gatehill.imposter.service.ResourceService
+import io.gatehill.imposter.service.ResponseRoutingService
 import io.gatehill.imposter.service.ResponseService
 import io.gatehill.imposter.service.ResponseService.ResponseSender
 import io.gatehill.imposter.util.HttpUtil
@@ -94,6 +95,7 @@ class OpenApiPluginImpl @Inject constructor(
     private val specificationService: SpecificationService,
     private val exampleService: ExampleService,
     private val responseService: ResponseService,
+    private val responseRoutingService: ResponseRoutingService,
     private val openApiResponseBehaviourFactory: OpenApiResponseBehaviourFactory,
     private val serverFactory: ServerFactory,
     private val specificationLoaderService: SpecificationLoaderService,
@@ -308,7 +310,7 @@ class OpenApiPluginImpl @Inject constructor(
                 }
             }
 
-            responseService.handle(
+            responseRoutingService.route(
                 pluginConfig,
                 resourceConfig,
                 httpExchange,

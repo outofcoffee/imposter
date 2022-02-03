@@ -76,9 +76,7 @@ import io.vertx.core.Promise
 import io.vertx.core.Vertx
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
-import java.util.Locale
-import java.util.Objects
-import java.util.UUID
+import java.util.*
 import java.util.function.Function
 import java.util.function.Supplier
 import java.util.regex.Pattern
@@ -395,7 +393,8 @@ class ResourceServiceImpl @Inject constructor(
 
         val rootResourceConfig = (pluginConfig as ResponseConfigHolder?)!!
         val request = httpExchange.request()
-        val resourceConfig = matchResourceConfig(
+
+        val resourceConfig: ResponseConfigHolder = matchResourceConfig(
             resolvedResourceConfigs,
             request.method(),
             httpExchange.currentRoutePath,
@@ -418,7 +417,7 @@ class ResourceServiceImpl @Inject constructor(
             } finally {
                 // always perform tidy up once handled, regardless of outcome
                 engineLifecycle.forEach { listener: EngineLifecycleListener ->
-                    listener.afterHttpExchangeHandled(httpExchange)
+                    listener.afterHttpExchangeHandled(httpExchange, resourceConfig)
                 }
             }
         } else {
