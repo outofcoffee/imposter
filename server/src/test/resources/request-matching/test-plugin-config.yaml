@@ -16,3 +16,8 @@ resources:
     userId: 99
   response:
     statusCode: 203
+
+# No method specified - match path only
+- path: /example
+  response:
+    statusCode: 202

@@ -78,7 +78,8 @@ class RequestMatchingTest : BaseVerticleTest() {
      */
     @Test
     fun testMatchPathParamVertxFormat() {
-        RestAssured.given().`when`()["/users/1"]
+        RestAssured.given().`when`()
+            .get("/users/1")
             .then()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_NO_CONTENT))
     }
@@ -88,8 +89,45 @@ class RequestMatchingTest : BaseVerticleTest() {
      */
     @Test
     fun testMatchPathParamOpenApiFormat() {
-        RestAssured.given().`when`()["/orders/99"]
+        RestAssured.given().`when`()
+            .get("/orders/99")
             .then()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_NOT_AUTHORITATIVE))
+    }
+
+    /**
+     * Match against a path with no HTTP method.
+     */
+    @Test
+    fun testMatchPathNoMethod() {
+        RestAssured.given().`when`()
+            .get("/example")
+            .then()
+            .statusCode(Matchers.equalTo(HttpUtil.HTTP_ACCEPTED))
+
+        RestAssured.given().`when`()
+            .post("/example")
+            .then()
+            .statusCode(Matchers.equalTo(HttpUtil.HTTP_ACCEPTED))
+
+        RestAssured.given().`when`()
+            .put("/example")
+            .then()
+            .statusCode(Matchers.equalTo(HttpUtil.HTTP_ACCEPTED))
+
+        RestAssured.given().`when`()
+            .patch("/example")
+            .then()
+            .statusCode(Matchers.equalTo(HttpUtil.HTTP_ACCEPTED))
+
+        RestAssured.given().`when`()
+            .delete("/example")
+            .then()
+            .statusCode(Matchers.equalTo(HttpUtil.HTTP_ACCEPTED))
+
+        RestAssured.given().`when`()
+            .head("/example")
+            .then()
+            .statusCode(Matchers.equalTo(HttpUtil.HTTP_ACCEPTED))
     }
 }

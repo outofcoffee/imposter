@@ -57,13 +57,14 @@ import io.gatehill.imposter.lifecycle.SecurityLifecycleHooks
 import io.gatehill.imposter.lifecycle.SecurityLifecycleListener
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.ResourcesHolder
+import io.gatehill.imposter.plugin.config.resource.MethodResourceConfig
 import io.gatehill.imposter.plugin.config.resource.PathParamsResourceConfig
 import io.gatehill.imposter.plugin.config.resource.QueryParamsResourceConfig
 import io.gatehill.imposter.plugin.config.resource.RequestHeadersResourceConfig
 import io.gatehill.imposter.plugin.config.resource.ResourceMethod
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.plugin.config.resource.RestResourceConfig
-import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyConfig
+import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyResourceConfig
 import io.gatehill.imposter.server.RequestHandlingMode
 import io.gatehill.imposter.util.CollectionUtil.convertKeysToLowerCase
 import io.gatehill.imposter.util.HttpUtil
@@ -76,7 +77,9 @@ import io.vertx.core.Promise
 import io.vertx.core.Vertx
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
-import java.util.*
+import java.util.Locale
+import java.util.Objects
+import java.util.UUID
 import java.util.function.Function
 import java.util.function.Supplier
 import java.util.regex.Pattern
@@ -197,16 +200,18 @@ class ResourceServiceImpl @Inject constructor(
         // path template can be null when a regex route is used
         val pathMatch = path == resourceConfig.path || (pathTemplate?.let { it == resourceConfig.path } == true)
 
-        resourceConfig.method ?: LOGGER.warn(
-            "Resource configuration for '{}' is missing HTTP method - will not correctly match response behaviour",
-            resourceConfig.path
-        )
+        val methodMatch = if (resourceConfig is MethodResourceConfig) {
+            resourceMethod == resourceConfig.method
+        } else {
+            // unspecified implies any match
+            true
+        }
 
-        return pathMatch && resourceMethod == resourceConfig.method &&
+        return pathMatch && methodMatch &&
             matchPairs(pathParams, resource.pathParams, true) &&
             matchPairs(queryParams, resource.queryParams, true) &&
             matchPairs(requestHeaders, resource.requestHeaders, false) &&
-            matchRequestBody(bodySupplier, resource.config.requestBody)
+            matchRequestBody(bodySupplier, resource.config)
     }
 
     /**
@@ -238,15 +243,20 @@ class ResourceServiceImpl @Inject constructor(
     /**
      * Match the request body against the supplied configuration.
      *
-     * @param bodySupplier      supplies the request body
-     * @param requestBodyConfig the match configuration
+     * @param bodySupplier         supplies the request body
+     * @param responseConfigHolder the match configuration
      * @return `true` if the configuration is empty, or the request body matches the configuration, otherwise `false`
      */
-    private fun matchRequestBody(bodySupplier: Supplier<String?>, requestBodyConfig: RequestBodyConfig?): Boolean {
-        // none configured - implies any match
-        if (Objects.isNull(requestBodyConfig) || Strings.isNullOrEmpty(requestBodyConfig!!.jsonPath)) {
+    private fun matchRequestBody(bodySupplier: Supplier<String?>, responseConfigHolder: ResponseConfigHolder): Boolean {
+        if (responseConfigHolder !is RequestBodyResourceConfig ||
+            Objects.isNull(responseConfigHolder.requestBody) ||
+            Strings.isNullOrEmpty(responseConfigHolder.requestBody!!.jsonPath)
+        ) {
+            // none configured - implies any match
             return true
         }
+
+        val requestBodyConfig = responseConfigHolder.requestBody!!
         val body = bodySupplier.get()
         val bodyValue = if (Strings.isNullOrEmpty(body)) {
             null
@@ -401,8 +411,9 @@ class ResourceServiceImpl @Inject constructor(
             request.path(),
             httpExchange.pathParams(),
             httpExchange.queryParams(),
-            request.headers()
-        ) { httpExchange.bodyAsString } ?: rootResourceConfig
+            request.headers(),
+            { httpExchange.bodyAsString }
+        )?: rootResourceConfig
 
         // allows plugins to customise behaviour
         httpExchange.put(ResourceUtil.RESPONSE_CONFIG_HOLDER_KEY, resourceConfig)

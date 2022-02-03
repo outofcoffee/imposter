@@ -49,8 +49,8 @@ package io.gatehill.imposter.plugin.config.resource
  */
 interface LegacyQueryParamsResourceConfig {
     /**
-     * Use [QueryParamsResourceConfig.getQueryParams] instead.
+     * Use [QueryParamsResourceConfig.queryParams] instead.
      */
-    @get:Deprecated("")
+    @get:Deprecated("Use queryParams instead")
     val params: Map<String, String>?
 }
