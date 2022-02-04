@@ -46,6 +46,7 @@ import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpExchangeHandler
 import io.gatehill.imposter.http.HttpRouter
+import io.gatehill.imposter.http.SingletonResourceMatcher
 import io.gatehill.imposter.http.StatusCodeFactory
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.RequireModules
@@ -126,6 +127,8 @@ class OpenApiPluginImpl @Inject constructor(
         imposterConfig.pluginArgs!![ARG_BASEPATH]
     }
 
+    private val resourceMatcher = SingletonResourceMatcher.instance
+
     override fun configureRoutes(router: HttpRouter) {
         if (configs.isEmpty()) {
             LOGGER.debug("No OpenAPI configuration files provided - skipping plugin setup")
@@ -137,12 +140,12 @@ class OpenApiPluginImpl @Inject constructor(
         // serve specification and UI
         LOGGER.debug("Adding specification UI at: {}{}", imposterConfig.serverUrl, SPECIFICATION_PATH)
         router.get(COMBINED_SPECIFICATION_PATH).handler(
-            resourceService.handleRoute(imposterConfig, configs, vertx) { httpExchange: HttpExchange ->
+            resourceService.handleRoute(imposterConfig, configs, vertx, resourceMatcher) { httpExchange: HttpExchange ->
                 handleCombinedSpec(httpExchange)
             }
         )
         router.getWithRegex("$SPECIFICATION_PATH$").handler(
-            resourceService.handleRoute(imposterConfig, configs, vertx) { httpExchange: HttpExchange ->
+            resourceService.handleRoute(imposterConfig, configs, vertx, resourceMatcher) { httpExchange: HttpExchange ->
                 httpExchange.response()
                     .putHeader("Location", "$SPECIFICATION_PATH/")
                     .setStatusCode(HttpUtil.HTTP_MOVED_PERM)
@@ -256,7 +259,7 @@ class OpenApiPluginImpl @Inject constructor(
     ): HttpExchangeHandler {
         // statically calculate as much as possible
         val statusCodeFactory = buildStatusCodeCalculator(operation)
-        return resourceService.handleRoute(imposterConfig, pluginConfig, vertx) { httpExchange: HttpExchange ->
+        return resourceService.handleRoute(imposterConfig, pluginConfig, vertx, resourceMatcher) { httpExchange: HttpExchange ->
             if (!specificationService.isValidRequest(pluginConfig, httpExchange, allSpecs, basePath)) {
                 return@handleRoute
             }
@@ -265,7 +268,7 @@ class OpenApiPluginImpl @Inject constructor(
             context["operation"] = operation
 
             val request = httpExchange.request()
-            val resourceConfig = httpExchange.get<BasicResourceConfig>(ResourceUtil.RESPONSE_CONFIG_HOLDER_KEY)
+            val resourceConfig = httpExchange.get<BasicResourceConfig>(ResourceUtil.RESOURCE_CONFIG_KEY)
 
             val defaultBehaviourHandler = { responseBehaviour: ResponseBehaviour ->
                 // set status code regardless of response strategy

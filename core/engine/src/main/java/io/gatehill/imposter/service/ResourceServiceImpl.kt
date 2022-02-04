@@ -42,15 +42,13 @@
  */
 package io.gatehill.imposter.service
 
-import com.google.common.base.Strings
 import com.google.common.collect.Lists
-import com.jayway.jsonpath.JsonPath
-import com.jayway.jsonpath.PathNotFoundException
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.ResolvedResourceConfig
 import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpExchangeHandler
+import io.gatehill.imposter.http.ResourceMatcher
 import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
 import io.gatehill.imposter.lifecycle.EngineLifecycleListener
 import io.gatehill.imposter.lifecycle.SecurityLifecycleHooks
@@ -58,29 +56,20 @@ import io.gatehill.imposter.lifecycle.SecurityLifecycleListener
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.ResourcesHolder
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
-import io.gatehill.imposter.plugin.config.resource.MethodResourceConfig
 import io.gatehill.imposter.plugin.config.resource.PathParamsResourceConfig
 import io.gatehill.imposter.plugin.config.resource.QueryParamsResourceConfig
 import io.gatehill.imposter.plugin.config.resource.RequestHeadersResourceConfig
-import io.gatehill.imposter.plugin.config.resource.ResourceMethod
-import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyResourceConfig
 import io.gatehill.imposter.server.RequestHandlingMode
-import io.gatehill.imposter.util.CollectionUtil.convertKeysToLowerCase
 import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.LogUtil.describeRequest
 import io.gatehill.imposter.util.ResourceUtil
-import io.gatehill.imposter.util.StringUtil.safeEquals
 import io.vertx.core.Handler
 import io.vertx.core.Promise
 import io.vertx.core.Vertx
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
-import java.util.Locale
-import java.util.Objects
 import java.util.UUID
-import java.util.function.Function
-import java.util.function.Supplier
 import java.util.regex.Pattern
 import javax.inject.Inject
 
@@ -116,170 +105,15 @@ class ResourceServiceImpl @Inject constructor(
     /**
      * {@inheritDoc}
      */
-    override fun matchResourceConfig(
-        resources: List<ResolvedResourceConfig>,
-        method: ResourceMethod,
-        pathTemplate: String?,
-        path: String?,
-        pathParams: Map<String, String>,
-        queryParams: Map<String, String>,
-        requestHeaders: Map<String, String>,
-        bodySupplier: Supplier<String?>
-    ): BasicResourceConfig? {
-        var resourceConfigs = resources.filter { res ->
-            isRequestMatch(
-                res,
-                method,
-                pathTemplate,
-                path,
-                pathParams,
-                queryParams,
-                requestHeaders,
-                bodySupplier
-            )
-        }
-
-        // find the most specific, by filtering those that match by those that specify parameters
-        resourceConfigs = filterByPairs(resourceConfigs, ResolvedResourceConfig::pathParams)
-        resourceConfigs = filterByPairs(resourceConfigs, ResolvedResourceConfig::queryParams)
-        resourceConfigs = filterByPairs(resourceConfigs, ResolvedResourceConfig::requestHeaders)
-
-        if (resourceConfigs.isEmpty()) {
-            return null
-        }
-        if (resourceConfigs.size == 1) {
-            LOGGER.debug("Matched response config for {} {}", method, path)
-        } else {
-            LOGGER.warn(
-                "More than one response config found for {} {} - this is probably a configuration error. Choosing first response configuration.",
-                method,
-                path
-            )
-        }
-        return resourceConfigs[0].config
-    }
-
-    private fun filterByPairs(
-        resourceConfigs: List<ResolvedResourceConfig>,
-        pairsSupplier: Function<ResolvedResourceConfig, Map<String, String>>
-    ): List<ResolvedResourceConfig> {
-        val configsWithPairs = resourceConfigs.filter { res -> pairsSupplier.apply(res).isNotEmpty() }
-
-        return configsWithPairs.ifEmpty {
-            // no resource configs specified params - don't filter
-            resourceConfigs
-        }
-    }
-
-    /**
-     * Determine if the resource configuration matches the current request.
-     *
-     * @param resource       the resource configuration
-     * @param resourceMethod the HTTP method of the current request
-     * @param pathTemplate   request path template
-     * @param path           the path of the current request
-     * @param pathParams     the path parameters of the current request
-     * @param queryParams    the query parameters of the current request
-     * @param requestHeaders the headers of the current request
-     * @param bodySupplier   supplies the request body
-     * @return `true` if the resource matches the request, otherwise `false`
-     */
-    private fun isRequestMatch(
-        resource: ResolvedResourceConfig,
-        resourceMethod: ResourceMethod,
-        pathTemplate: String?,
-        path: String?,
-        pathParams: Map<String, String>,
-        queryParams: Map<String, String>,
-        requestHeaders: Map<String, String>,
-        bodySupplier: Supplier<String?>
-    ): Boolean {
-        val resourceConfig = resource.config
-
-        // path template can be null when a regex route is used
-        val pathMatch = path == resourceConfig.path || (pathTemplate?.let { it == resourceConfig.path } == true)
-
-        val methodMatch = if (resourceConfig is MethodResourceConfig) {
-            resourceMethod == resourceConfig.method
-        } else {
-            // unspecified implies any match
-            true
-        }
-
-        return pathMatch && methodMatch &&
-            matchPairs(pathParams, resource.pathParams, true) &&
-            matchPairs(queryParams, resource.queryParams, true) &&
-            matchPairs(requestHeaders, resource.requestHeaders, false) &&
-            matchRequestBody(bodySupplier, resource.config)
-    }
-
-    /**
-     * If the resource contains parameter configuration, check they are all present.
-     * If the configuration contains no parameters, then this evaluates to true.
-     * Additional parameters not in the configuration are ignored.
-     *
-     * @param resourceMap           the configured parameters to match
-     * @param requestMap            the parameters from the request (e.g. query or path)
-     * @param caseSensitiveKeyMatch whether to match keys case-sensitively
-     * @return `true` if the configured parameters match the request, otherwise `false`
-     */
-    private fun matchPairs(
-        requestMap: Map<String, String>,
-        resourceMap: Map<String, String>,
-        caseSensitiveKeyMatch: Boolean
-    ): Boolean {
-        // none configured - implies any match
-        if (resourceMap.isEmpty()) {
-            return true
-        }
-        val comparisonMap = if (caseSensitiveKeyMatch) requestMap else convertKeysToLowerCase(requestMap)
-        return resourceMap.entries.any { (key, value) ->
-            val configKey: String = if (caseSensitiveKeyMatch) key else key.lowercase(Locale.getDefault())
-            safeEquals(comparisonMap[configKey], value)
-        }
-    }
-
-    /**
-     * Match the request body against the supplied configuration.
-     *
-     * @param bodySupplier         supplies the request body
-     * @param resourceConfig the match configuration
-     * @return `true` if the configuration is empty, or the request body matches the configuration, otherwise `false`
-     */
-    private fun matchRequestBody(bodySupplier: Supplier<String?>, resourceConfig: BasicResourceConfig): Boolean {
-        if (resourceConfig !is RequestBodyResourceConfig ||
-            Objects.isNull(resourceConfig.requestBody) ||
-            Strings.isNullOrEmpty(resourceConfig.requestBody!!.jsonPath)
-        ) {
-            // none configured - implies any match
-            return true
-        }
-
-        val requestBodyConfig = resourceConfig.requestBody!!
-        val body = bodySupplier.get()
-        val bodyValue = if (Strings.isNullOrEmpty(body)) {
-            null
-        } else {
-            try {
-                JsonPath.read<Any>(body, requestBodyConfig.jsonPath)
-            } catch (ignored: PathNotFoundException) {
-                null
-            }
-        }
-        return safeEquals(requestBodyConfig.value, bodyValue)
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     override fun handleRoute(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>,
         vertx: Vertx,
-        httpExchangeHandler: HttpExchangeHandler
+        resourceMatcher: ResourceMatcher,
+        httpExchangeHandler: HttpExchangeHandler,
     ): HttpExchangeHandler {
         val selectedConfig = securityService.findConfigPreferringSecurityPolicy(allPluginConfigs)
-        return handleRoute(imposterConfig, selectedConfig, vertx, httpExchangeHandler)
+        return handleRoute(imposterConfig, selectedConfig, vertx, resourceMatcher, httpExchangeHandler)
     }
 
     /**
@@ -289,13 +123,14 @@ class ResourceServiceImpl @Inject constructor(
         imposterConfig: ImposterConfig,
         pluginConfig: PluginConfig,
         vertx: Vertx,
-        httpExchangeHandler: HttpExchangeHandler
+        resourceMatcher: ResourceMatcher,
+        httpExchangeHandler: HttpExchangeHandler,
     ): HttpExchangeHandler {
         val resolvedResourceConfigs = resolveResourceConfigs(pluginConfig)
         return when (imposterConfig.requestHandlingMode) {
             RequestHandlingMode.SYNC -> { httpExchange: HttpExchange ->
                 try {
-                    handleResource(pluginConfig, httpExchangeHandler, httpExchange, resolvedResourceConfigs)
+                    handleResource(pluginConfig, httpExchangeHandler, httpExchange, resolvedResourceConfigs, resourceMatcher)
                 } catch (e: Exception) {
                     handleFailure(httpExchange, e)
                 }
@@ -303,7 +138,7 @@ class ResourceServiceImpl @Inject constructor(
             RequestHandlingMode.ASYNC -> { httpExchange: HttpExchange ->
                 val handler = Handler<Promise<Unit>> { promise ->
                     try {
-                        handleResource(pluginConfig, httpExchangeHandler, httpExchange, resolvedResourceConfigs)
+                        handleResource(pluginConfig, httpExchangeHandler, httpExchange, resolvedResourceConfigs, resourceMatcher)
                         promise.complete()
                     } catch (e: Exception) {
                         promise.fail(e)
@@ -329,10 +164,11 @@ class ResourceServiceImpl @Inject constructor(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>,
         vertx: Vertx,
-        httpExchangeHandler: HttpExchangeHandler
+        resourceMatcher: ResourceMatcher,
+        httpExchangeHandler: HttpExchangeHandler,
     ): HttpExchangeHandler {
         val selectedConfig = securityService.findConfigPreferringSecurityPolicy(allPluginConfigs)
-        return handleRoute(imposterConfig, selectedConfig, vertx) { event: HttpExchange ->
+        return handleRoute(imposterConfig, selectedConfig, vertx, resourceMatcher) { event: HttpExchange ->
             httpExchangeHandler(event)
         }
     }
@@ -385,7 +221,8 @@ class ResourceServiceImpl @Inject constructor(
         pluginConfig: PluginConfig,
         httpExchangeHandler: HttpExchangeHandler,
         httpExchange: HttpExchange,
-        resolvedResourceConfigs: List<ResolvedResourceConfig>
+        resolvedResourceConfigs: List<ResolvedResourceConfig>,
+        resourceMatcher: ResourceMatcher,
     ) {
         httpExchange.put(LogUtil.KEY_REQUEST_START, System.nanoTime())
 
@@ -401,21 +238,14 @@ class ResourceServiceImpl @Inject constructor(
         }
 
         val rootResourceConfig = (pluginConfig as BasicResourceConfig?)!!
-        val request = httpExchange.request()
 
-        val resourceConfig: BasicResourceConfig = matchResourceConfig(
+        val resourceConfig: BasicResourceConfig = resourceMatcher.matchResourceConfig(
             resolvedResourceConfigs,
-            request.method(),
-            httpExchange.currentRoutePath,
-            request.path(),
-            httpExchange.pathParams(),
-            httpExchange.queryParams(),
-            request.headers(),
-            { httpExchange.bodyAsString }
-        )?: rootResourceConfig
+            httpExchange,
+        ) ?: rootResourceConfig
 
         // allows plugins to customise behaviour
-        httpExchange.put(ResourceUtil.RESPONSE_CONFIG_HOLDER_KEY, resourceConfig)
+        httpExchange.put(ResourceUtil.RESOURCE_CONFIG_KEY, resourceConfig)
 
         if (securityLifecycle.allMatch { listener: SecurityLifecycleListener ->
                 listener.isRequestPermitted(rootResourceConfig, resourceConfig, resolvedResourceConfigs, httpExchange)

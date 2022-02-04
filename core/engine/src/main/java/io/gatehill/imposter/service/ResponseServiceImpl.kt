@@ -181,10 +181,7 @@ class ResponseServiceImpl @Inject constructor(
             val response = httpExchange.response()
             response.setStatusCode(responseBehaviour.statusCode)
             responseBehaviour.responseHeaders.forEach { (name: String?, value: String?) ->
-                response.putHeader(
-                    name,
-                    value
-                )
+                response.putHeader(name, value)
             }
             if (!Strings.isNullOrEmpty(responseBehaviour.responseFile)) {
                 serveResponseFile(pluginConfig, resourceConfig, httpExchange, responseBehaviour)
@@ -197,7 +194,7 @@ class ResponseServiceImpl @Inject constructor(
             httpExchange.fail(
                 ResponseException(
                     "Error sending mock response with status code ${responseBehaviour.statusCode} for " +
-                            describeRequest(httpExchange), e
+                        describeRequest(httpExchange), e
                 )
             )
         }

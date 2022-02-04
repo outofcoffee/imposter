@@ -44,6 +44,7 @@ package io.gatehill.imposter.plugin.test
 
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.http.HttpRouter
+import io.gatehill.imposter.http.SingletonResourceMatcher
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.script.ResponseBehaviour
@@ -64,8 +65,9 @@ class TestPluginImpl @Inject constructor(
     private val responseRoutingService: ResponseRoutingService,
 ) : ConfiguredPlugin<TestPluginConfig>(vertx, imposterConfig) {
 
-    override val configClass: Class<TestPluginConfig>
-        get() = TestPluginConfig::class.java
+    override val configClass = TestPluginConfig::class.java
+
+    private val resourceMatcher = SingletonResourceMatcher.instance
 
     override fun configureRoutes(router: HttpRouter) {
         configs.forEach { config: TestPluginConfig ->
@@ -85,7 +87,7 @@ class TestPluginImpl @Inject constructor(
         router: HttpRouter,
         path: String
     ) {
-        router.route(path).handler(resourceService.handleRoute(imposterConfig, pluginConfig, vertx) { httpExchange ->
+        router.route(path).handler(resourceService.handleRoute(imposterConfig, pluginConfig, vertx, resourceMatcher) { httpExchange ->
             val defaultBehaviourHandler = { responseBehaviour: ResponseBehaviour ->
                 responseService.sendResponse(
                     pluginConfig,

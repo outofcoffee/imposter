@@ -49,6 +49,7 @@ import com.google.inject.name.Names
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpRouter
+import io.gatehill.imposter.http.SingletonResourceMatcher
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.RequireModules
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin
@@ -96,6 +97,8 @@ class HBasePluginImpl @Inject constructor(
 
     private val injector = InjectorUtil.injector!!
 
+    private val resourceMatcher = SingletonResourceMatcher.instance
+
     override fun configurePlugin(configs: List<HBasePluginConfig>) {
         tables = configs.associateBy { it.tableName }
     }
@@ -126,7 +129,7 @@ class HBasePluginImpl @Inject constructor(
      */
     private fun addRowRetrievalRoute(pluginConfig: PluginConfig, router: HttpRouter, path: String) {
         router.get("$path/:tableName/:recordId/").handler(
-            resourceService.handleRoute(imposterConfig, pluginConfig, vertx) { httpExchange: HttpExchange ->
+            resourceService.handleRoute(imposterConfig, pluginConfig, vertx, resourceMatcher) { httpExchange: HttpExchange ->
                 val tableName = httpExchange.pathParam("tableName")!!
                 val recordId = httpExchange.pathParam("recordId")!!
 
@@ -181,7 +184,7 @@ class HBasePluginImpl @Inject constructor(
      */
     private fun addCreateScannerRoute(pluginConfig: PluginConfig, router: HttpRouter, path: String) {
         router.post("$path/:tableName/scanner").handler(
-            resourceService.handleRoute(imposterConfig, pluginConfig, vertx) { httpExchange: HttpExchange ->
+            resourceService.handleRoute(imposterConfig, pluginConfig, vertx, resourceMatcher) { httpExchange: HttpExchange ->
                 val tableName = httpExchange.pathParam("tableName")!!
 
                 // check that the table is registered
@@ -245,7 +248,7 @@ class HBasePluginImpl @Inject constructor(
      */
     private fun addReadScannerResultsRoute(pluginConfig: HBasePluginConfig, router: HttpRouter, path: String) {
         router.get("$path/:tableName/scanner/:scannerId").handler(
-            resourceService.handleRoute(imposterConfig, pluginConfig, vertx) { httpExchange: HttpExchange ->
+            resourceService.handleRoute(imposterConfig, pluginConfig, vertx, resourceMatcher) { httpExchange: HttpExchange ->
                 val tableName = httpExchange.pathParam("tableName")!!
                 val scannerId = httpExchange.pathParam("scannerId")!!
 

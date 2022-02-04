@@ -52,7 +52,7 @@ import java.util.regex.Pattern
  * @author Pete Cornish
  */
 object ResourceUtil {
-    const val RESPONSE_CONFIG_HOLDER_KEY = "io.gatehill.imposter.responseConfigHolder"
+    const val RESOURCE_CONFIG_KEY = "io.gatehill.imposter.resourceConfig"
     const val RC_REQUEST_ID_KEY = "request.id"
 
     private val PATH_PARAM_PLACEHOLDER = Pattern.compile("\\{([a-zA-Z0-9._\\-]+)}")

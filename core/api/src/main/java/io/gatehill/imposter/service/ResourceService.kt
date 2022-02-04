@@ -46,11 +46,9 @@ import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.ResolvedResourceConfig
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpExchangeHandler
+import io.gatehill.imposter.http.ResourceMatcher
 import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
-import io.gatehill.imposter.plugin.config.resource.ResourceMethod
 import io.vertx.core.Vertx
-import java.util.function.Supplier
 
 /**
  * @author Pete Cornish
@@ -63,30 +61,6 @@ interface ResourceService {
      * @return the resource configurations
      */
     fun resolveResourceConfigs(pluginConfig: PluginConfig): List<ResolvedResourceConfig>
-
-    /**
-     * Search for a resource configuration matching the current request.
-     *
-     * @param resources      the resources from the response configuration
-     * @param method         the HTTP method of the current request
-     * @param pathTemplate   request path template
-     * @param path           the path of the current request
-     * @param pathParams     the path parameters of the current request
-     * @param queryParams    the query parameters of the current request
-     * @param requestHeaders the headers of the current request
-     * @param bodySupplier   supplies the request body
-     * @return a matching resource configuration or else empty
-     */
-    fun matchResourceConfig(
-        resources: List<ResolvedResourceConfig>,
-        method: ResourceMethod,
-        pathTemplate: String?,
-        path: String?,
-        pathParams: Map<String, String>,
-        queryParams: Map<String, String>,
-        requestHeaders: Map<String, String>,
-        bodySupplier: Supplier<String?>
-    ): BasicResourceConfig?
 
     /**
      * Builds a handler that processes a request.
@@ -104,9 +78,10 @@ interface ResourceService {
      * });
      * ```
      *
-     * @param imposterConfig         the Imposter configuration
-     * @param allPluginConfigs       all plugin configurations
-     * @param vertx                  the current Vert.x instance
+     * @param imposterConfig      the Imposter configuration
+     * @param allPluginConfigs    all plugin configurations
+     * @param vertx               the current Vert.x instance
+     * @param resourceMatcher     the [ResourceMatcher] to use
      * @param httpExchangeHandler the consumer of the [HttpExchange]
      * @return the handler
      */
@@ -114,7 +89,8 @@ interface ResourceService {
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>,
         vertx: Vertx,
-        httpExchangeHandler: HttpExchangeHandler
+        resourceMatcher: ResourceMatcher,
+        httpExchangeHandler: HttpExchangeHandler,
     ): HttpExchangeHandler
 
     /**
@@ -133,9 +109,10 @@ interface ResourceService {
      * });
      * ```
      *
-     * @param imposterConfig         the Imposter configuration
-     * @param pluginConfig           the plugin configuration
-     * @param vertx                  the current Vert.x instance
+     * @param imposterConfig      the Imposter configuration
+     * @param pluginConfig        the plugin configuration
+     * @param vertx               the current Vert.x instance
+     * @param resourceMatcher     the [ResourceMatcher] to use
      * @param httpExchangeHandler the consumer of the [HttpExchange]
      * @return the handler
      */
@@ -143,7 +120,8 @@ interface ResourceService {
         imposterConfig: ImposterConfig,
         pluginConfig: PluginConfig,
         vertx: Vertx,
-        httpExchangeHandler: HttpExchangeHandler
+        resourceMatcher: ResourceMatcher,
+        httpExchangeHandler: HttpExchangeHandler,
     ): HttpExchangeHandler
 
     /**
@@ -160,9 +138,10 @@ interface ResourceService {
      * router.get("/example").handler(handleRoute(imposterConfig, allPluginConfigs, vertx, httpExchangeHandler);
      * ```
      *
-     * @param imposterConfig        the Imposter configuration
-     * @param allPluginConfigs      all plugin configurations
-     * @param vertx                 the current Vert.x instance
+     * @param imposterConfig      the Imposter configuration
+     * @param allPluginConfigs    all plugin configurations
+     * @param vertx               the current Vert.x instance
+     * @param resourceMatcher     the [ResourceMatcher] to use
      * @param httpExchangeHandler the handler of the [HttpExchange]
      * @return the handler
      */
@@ -170,7 +149,8 @@ interface ResourceService {
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>,
         vertx: Vertx,
-        httpExchangeHandler: HttpExchangeHandler
+        resourceMatcher: ResourceMatcher,
+        httpExchangeHandler: HttpExchangeHandler,
     ): HttpExchangeHandler
 
     /**

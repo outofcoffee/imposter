@@ -45,6 +45,7 @@ package io.gatehill.imposter.plugin.rest
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpRouter
+import io.gatehill.imposter.http.SingletonResourceMatcher
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin
 import io.gatehill.imposter.plugin.config.ContentTypedConfig
@@ -79,6 +80,8 @@ class RestPluginImpl @Inject constructor(
     vertx, imposterConfig
 ) {
     override val configClass = RestPluginConfig::class.java
+
+    private val resourceMatcher = SingletonResourceMatcher.instance
 
     override fun configureRoutes(router: HttpRouter) {
         configs.forEach { config: RestPluginConfig ->
@@ -124,7 +127,7 @@ class RestPluginImpl @Inject constructor(
         LOGGER.debug("Adding {} object handler: {}", method, qualifiedPath)
 
         router.route(method, qualifiedPath).handler(
-            resourceService.handleRoute(imposterConfig, pluginConfig, vertx) { httpExchange: HttpExchange ->
+            resourceService.handleRoute(imposterConfig, pluginConfig, vertx, resourceMatcher) { httpExchange: HttpExchange ->
                 // script should fire first
                 responseRoutingService.route(pluginConfig, resourceConfig, httpExchange) { responseBehaviour ->
                     LOGGER.info(
@@ -154,7 +157,7 @@ class RestPluginImpl @Inject constructor(
             "Resource '$resourcePath' does not contain a field ID parameter"
         }
         router.route(method, qualifiedPath).handler(
-            resourceService.handleRoute(imposterConfig, pluginConfig, vertx) { httpExchange: HttpExchange ->
+            resourceService.handleRoute(imposterConfig, pluginConfig, vertx, resourceMatcher) { httpExchange: HttpExchange ->
                 // script should fire first
                 responseRoutingService.route(pluginConfig, resourceConfig, httpExchange) { responseBehaviour ->
                     LOGGER.info("Handling {} array request for: {}", method, httpExchange.request().absoluteURI())

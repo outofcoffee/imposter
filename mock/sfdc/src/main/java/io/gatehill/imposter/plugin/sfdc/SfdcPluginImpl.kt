@@ -46,6 +46,7 @@ import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpExchangeHandler
 import io.gatehill.imposter.http.HttpRouter
+import io.gatehill.imposter.http.SingletonResourceMatcher
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin
 import io.gatehill.imposter.plugin.config.resource.ResourceMethod
@@ -61,7 +62,8 @@ import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.json.JsonObject
 import org.apache.logging.log4j.LogManager
-import java.util.*
+import java.util.StringTokenizer
+import java.util.UUID
 import javax.inject.Inject
 import kotlin.math.abs
 
@@ -82,10 +84,12 @@ class SfdcPluginImpl @Inject constructor(
 ) {
     override val configClass = SfdcPluginConfig::class.java
 
+    private val resourceMatcher = SingletonResourceMatcher.instance
+
     override fun configureRoutes(router: HttpRouter) {
         // oauth handler
         router.post("/services/oauth2/token").handler(
-            resourceService.handleRoute(imposterConfig, configs, vertx) { httpExchange: HttpExchange ->
+            resourceService.handleRoute(imposterConfig, configs, vertx, resourceMatcher) { httpExchange: HttpExchange ->
                 LOGGER.info("Handling oauth request: {}", httpExchange.bodyAsString)
                 val authResponse = JsonObject()
                 authResponse.put("access_token", "dummyAccessToken")
@@ -97,7 +101,7 @@ class SfdcPluginImpl @Inject constructor(
 
         // query handler
         router.get("/services/data/:apiVersion/query/").handler(
-            resourceService.handleRoute(imposterConfig, configs, vertx) { httpExchange: HttpExchange ->
+            resourceService.handleRoute(imposterConfig, configs, vertx, resourceMatcher) { httpExchange: HttpExchange ->
                 val apiVersion = httpExchange.pathParam("apiVersion")!!
 
                 // e.g. 'SELECT Name, Id from Account LIMIT 100'
@@ -133,7 +137,7 @@ class SfdcPluginImpl @Inject constructor(
 
         // get SObject handler
         configs.forEach { config: SfdcPluginConfig ->
-            val handler = resourceService.handleRoute(imposterConfig, config, vertx) { httpExchange: HttpExchange ->
+            val handler = resourceService.handleRoute(imposterConfig, config, vertx, resourceMatcher) { httpExchange: HttpExchange ->
                 // script should fire first
                 responseRoutingService.route(config, httpExchange) { responseBehaviour ->
                     val apiVersion = httpExchange.pathParam("apiVersion")!!
@@ -165,7 +169,7 @@ class SfdcPluginImpl @Inject constructor(
 
         // create SObject handler
         router.post("/services/data/:apiVersion/sobjects/:sObjectName").handler(
-            resourceService.handleRoute(imposterConfig, configs, vertx) { httpExchange: HttpExchange ->
+            resourceService.handleRoute(imposterConfig, configs, vertx, resourceMatcher) { httpExchange: HttpExchange ->
                 val sObjectName = httpExchange.pathParam("sObjectName")
                 val sObject = httpExchange.bodyAsJson
                 LOGGER.info("Received create request for {}: {}", sObjectName, sObject)
@@ -192,7 +196,7 @@ class SfdcPluginImpl @Inject constructor(
      * @return
      */
     private fun handleUpdateRequest(): HttpExchangeHandler {
-        return resourceService.handleRoute(imposterConfig, configs, vertx) { httpExchange: HttpExchange ->
+        return resourceService.handleRoute(imposterConfig, configs, vertx, resourceMatcher) { httpExchange: HttpExchange ->
             val sObjectName = httpExchange.pathParam("sObjectName")
             val sObjectId = httpExchange.pathParam("sObjectId")
             val sObject = httpExchange.bodyAsJson

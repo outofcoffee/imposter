@@ -45,6 +45,7 @@ package io.gatehill.imposter.server
 import com.google.inject.Module
 import io.gatehill.imposter.Imposter
 import io.gatehill.imposter.http.HttpRouter
+import io.gatehill.imposter.http.SingletonResourceMatcher
 import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
 import io.gatehill.imposter.lifecycle.EngineLifecycleListener
 import io.gatehill.imposter.plugin.Plugin
@@ -152,6 +153,7 @@ class ImposterVerticle : AbstractVerticle() {
                     imposterConfig,
                     allConfigs,
                     vertx,
+                    SingletonResourceMatcher.instance,
                     serverFactory.createMetricsHandler()
                 )
             )
@@ -159,7 +161,7 @@ class ImposterVerticle : AbstractVerticle() {
 
         // status check to indicate when server is up
         router.get("/system/status").handler(
-            resourceService.handleRoute(imposterConfig, allConfigs, vertx) { httpExchange ->
+            resourceService.handleRoute(imposterConfig, allConfigs, vertx, SingletonResourceMatcher.instance) { httpExchange ->
                 httpExchange.response()
                     .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_JSON)
                     .end(buildStatusResponse())
