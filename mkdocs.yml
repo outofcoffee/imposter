@@ -18,10 +18,11 @@ nav:
   - Security: 'security.md'
 
   - Mock types:
-    - OpenAPI (and Swagger) plugin: 'openapi_plugin.md'
-    - REST plugin: 'rest_plugin.md'
-    - HBase plugin: 'hbase_plugin.md'
-    - SFDC (Salesforce) plugin: 'sfdc_plugin.md'
+    - OpenAPI (and Swagger): 'openapi_plugin.md'
+    - REST: 'rest_plugin.md'
+    - SOAP (and WSDL): 'soap_plugin.md'
+    - HBase: 'hbase_plugin.md'
+    - SFDC (Salesforce): 'sfdc_plugin.md'
 
   - Data capture, storage and templates:
     - Data capture: 'data_capture.md'

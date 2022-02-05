@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<description xmlns="http://www.w3.org/ns/wsdl"
+             xmlns:tns="urn:com:example:petstore"
+             xmlns:wsoap="http://www.w3.org/ns/wsdl/soap"
+             targetNamespace="urn:com:example:petstore" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://www.w3.org/ns/wsdl/soap http://www.w3.org/2002/ws/desc/ns/soap.xsd">
+
+    <documentation>
+        This is a sample WSDL 2.0 document describing the pet service.
+    </documentation>
+
+    <types>
+        <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                   xmlns="urn:com:example:petstore"
+                   targetNamespace="urn:com:example:petstore">
+
+            <xs:import namespace="urn:com:example:petstore"
+                       schemaLocation="schema.xsd"/>
+        </xs:schema>
+    </types>
+
+    <interface name="PetInterface">
+        <fault name="Error1" element="tns:fault"/>
+
+        <operation name="getPetById" pattern="http://www.w3.org/ns/wsdl/in-out">
+            <wsoap:operation soapAction="getPetById" style="document"/>
+            <input messageLabel="In" element="tns:getPetByIdRequest"/>
+            <output messageLabel="Out" element="tns:getPetByIdResponse"/>
+        </operation>
+    </interface>
+
+    <binding name="SoapBinding" interface="tns:PetInterface"
+             type="http://www.w3.org/ns/wsdl/soap"
+             wsoap:protocol="http://www.w3.org/2003/05/soap/bindings/HTTP/"
+             wsoap:mepDefault="http://www.w3.org/2003/05/soap/mep/request-response">
+        <operation ref="tns:getPetById"/>
+    </binding>
+
+    <service name="PetService" interface="tns:PetInterface">
+        <endpoint name="SoapEndpoint"
+                  binding="tns:SoapBinding"
+                  address="http://www.example.com/pets/"/>
+    </service>
+</description>

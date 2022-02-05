@@ -3,36 +3,29 @@
 * Plugin name: `openapi`
 * Plugin class: `io.gatehill.imposter.plugin.openapi.OpenApiPluginImpl`
 
-The plugin provides support for [OpenAPI](https://github.com/OAI/OpenAPI-Specification) (and Swagger) specifications.
+This plugin provides support for [OpenAPI](https://github.com/OAI/OpenAPI-Specification) (and Swagger) specifications.
 
 ## Features
 
 * Creates mock endpoints from OpenAPI/Swagger v2 and OpenAPI v3 API specifications.
 * Serves response examples embedded in the specification.
 * Optionally validates your HTTP requests to ensure they match the OpenAPI specification.
-* Also supports static response files and script-driven responses, using status code, response files etc.
+* Supports custom responses, headers, status codes etc. based on path, querystring, request headers, request body and more.
+* Also supports script-driven responses for maximum control, in either JavaScript or Groovy.
 * Provides an interactive API sandbox at `/_spec`
-
-## Configuration
-
-Read the [Configuration](configuration.md) section to understand how to configure Imposter.
-
-### Additional context objects
-
-| Object      | Type                          | Description                            |
-|-------------|-------------------------------|----------------------------------------|
-| `operation` | `io.swagger.models.Operation` | The OpenAPI operation for the request. |
 
 ## Using the plugin
 
-A great way to use this plugin is to take advantage of the built in `examples` feature of OpenAPI/Swagger files. These provide a standard way to document sample responses for each API response. This plugin will match the example to serve using a combination of:
+A great way to use this plugin is to take advantage of the built in `examples` feature of OpenAPI/Swagger files. These provide a standard way to document sample responses for each API response.
+
+This plugin will match the example to serve using a combination of:
 
 * matching URI/path
-* matching method
+* matching HTTP method
 * matching content type in `Accept` HTTP request header to the `produces` property of the response
 * matching status code to the response
 
-Imposter will return the first response found that matches the path and method. You can override the behaviour by setting the status code for a given combination of path and method (see below).
+Imposter will return the first response found that matches the path and method. You can, of course, override the behaviour by setting the status code for a given combination of path and method (see below).
 
 Typically, you will use the configuration file `<something>-config.yaml` to override the status code, and thus the content of the response, however, you can use the in-built script engine to gain further control of the response data, headers etc. (see below). 
 
@@ -271,9 +264,9 @@ As with the standard [scripting functionality](./scripting.md), you can also spe
       statusCode: 200
 ```
 
-## Conditional responses based on query parameters
+## Conditional responses
 
-You can control response behaviour based on the value of query parameters
+You can control response behaviour based on the value of query parameters, path parameters, headers or body content.
 
 ```yaml
 # override-examples-config.yaml
@@ -297,10 +290,14 @@ resources:
       statusCode: 200
 ```
 
+First example:
 ```shell
 $ curl -v -X POST http://localhost:8080/pets
 HTTP/1.1 400 Bad Request
+```
 
+Second example:
+```shell
 $ curl -v -X POST http://localhost:8080/pets?foo=bar
 HTTP/1.1 200 OK
 ```
@@ -336,6 +333,14 @@ For more advanced scenarios, you can also control Imposter's responses using Jav
 > See the [Scripting](scripting.md) section for more information.
 
 For a simple script, see [examples/openapi/scripted-named-example](https://github.com/outofcoffee/imposter/blob/main/examples/openapi/scripted-named-example) for a working example.
+
+### Additional context objects
+
+This plugin adds objects to the script `context`:
+
+| Object      | Type                                 | Description                            |
+|-------------|--------------------------------------|----------------------------------------|
+| `operation` | `io.swagger.v3.oas.models.Operation` | The OpenAPI operation for the request. |
 
 ### Example
 
@@ -415,12 +420,12 @@ paths:
 
 ### Configuration reference
 
-In addition to the standard [configuration](./configuration.md) options, the following additional properties are supported.
+In addition to the standard [configuration](./configuration.md) file options, the following additional properties are supported.
 
 | Configuration name       | Purpose                                                                                                                                                                | Default value |
 |--------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------|
-| `path`                   | (Optional) A string to prepend to each operation's path.                                                                                                               | Empty         |
 | `isPickFirstIfNoneMatch` | (Optional) If no exact match is found for an example in a operation, based on matching name to accepted content types, choose the first item found from specification. | `false`       |
+| `path`                   | (Optional) A string to prepend to each operation's path.                                                                                                               | Empty         |
 | `specFile`               | (Required) path to OpenAPI specification file (see below).                                                                                                             | Empty         |
 | `stripServerPath`        | (Optional) Whether to remove the path component from the OpenAPI `servers` entries from the mock resource paths.                                                       | `false`       |
 | `validation`             | (Optional) Controls request validation - see [Validation](./openapi_validation.md).                                                                                    | Empty         |

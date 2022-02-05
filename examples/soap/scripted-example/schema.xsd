@@ -1,0 +1,22 @@
+<xs:schema elementFormDefault="unqualified" targetNamespace="urn:com:example:petstore" version="1.0"
+           xmlns:tns="urn:com:example:petstore"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <xs:complexType name="petType">
+        <xs:all>
+            <xs:element name="id" type="xs:int"/>
+            <xs:element name="name" type="xs:string"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="getPetByIdRequest">
+        <xs:all>
+            <xs:element name="id" type="xs:int"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:element name="getPetByIdRequest" type="tns:getPetByIdRequest"/>
+    <xs:element name="getPetByIdResponse" type="tns:petType"/>
+
+    <xs:element name="fault" type="xs:string"/>
+</xs:schema>

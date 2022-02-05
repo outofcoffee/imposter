@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<env:Envelope xmlns:env="http://www.w3.org/2001/12/soap-envelope">
+    <env:Header/>
+    <env:Body>
+        <getPetByIdResponse xmlns="urn:com:example:petstore">
+            <id>3</id>
+            <name>Fluffy</name>
+        </getPetByIdResponse>
+    </env:Body>
+</env:Envelope>

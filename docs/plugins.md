@@ -12,6 +12,7 @@ The following sections describe the available and built-in plugins.
 | Mock            | `openapi`               | OpenAPI (and Swagger) mocks.           | [OpenAPI (and Swagger) plugin](openapi_plugin.md)                                  |
 | Mock            | `rest`                  | REST mocks.                            | [REST plugin](rest_plugin.md)                                                      |
 | Mock            | `sfdc`                  | SFDC (Salesforce) mocks.               | [SFDC (Salesforce) plugin](sfdc_plugin.md)                                         |
+| Mock            | `soap`                  | SOAP (and WSDL) mocks.                 | [SOAP plugin](soap_plugin.md)                                                      |
 | Scripting       | `js-graal`              | Graal.js scripting.                    | Graal.js JavaScript scripting support.                                             |
 | Scripting       | `js-nashorn-standalone` | Nashorn standalone scripting.          | Nashorn JavaScript scripting support for Java 11+.                                 |
 | Store           | `redis`                 | DynamoDB store implementation.         | [DynamoDB store](https://github.com/outofcoffee/imposter/tree/main/store/dynamodb) |

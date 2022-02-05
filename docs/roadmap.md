@@ -10,7 +10,7 @@ This section lists future ideas for features and improvements. Feel free to subm
 * Scheduled HTTP(S) invocations
 * Scheduled script executions
 * Request and response validation against a JSON Schema file (instead of just OpenAPI spec)
-* WSDL plugin
+* SOAP plugin - validate request/response body against XSD.
 
 ## Improvements
 

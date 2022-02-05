@@ -6,7 +6,7 @@ description: Imposter Mock Engine
 
 ## Welcome
 
-Imposter is a mock server for REST APIs, OpenAPI (and Swagger) specifications, Salesforce and HBase APIs.
+Imposter is a mock server for REST APIs, OpenAPI (and Swagger) specifications, SOAP web services (and WSDL files), Salesforce and HBase APIs.
 
 - Run **standalone** mock servers in Docker, Kubernetes, AWS Lambda or on the JVM.
 - **Embed** mocks within your tests (JVM or Node.js) to remove external dependencies.
@@ -50,6 +50,7 @@ Imposter provides specialised mocks for the following scenarios:
 
 - **[OpenAPI](openapi_plugin.md)** - Support for OpenAPI (and Swagger) API specifications.
 - **[REST](rest_plugin.md)** - Mocks RESTful or plain HTTP APIs.
+- **[SOAP](soap_plugin.md)** - Support for SOAP web services (and WSDL files).
 - **[HBase](hbase_plugin.md)** - Basic HBase mock implementation.
 - **[SFDC (Salesforce)](sfdc_plugin.md)** - Basic Salesforce mock implementation.
 

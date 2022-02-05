@@ -10,11 +10,11 @@ To begin, check out our [Getting started](getting_started.md) guide. See the [Us
 
 ## Highlights
 
-* run standalone mocks in place of real systems
-* turn an OpenAPI/Swagger file into a mock API for dev or QA (use it before the real API is built)
-* decouple your integration tests from the cloud/back-end systems and take control of your dependencies
-* validate your API requests against an OpenAPI specification
-* capture data and retrieve later, or use in templates to for conditional responses
+- run standalone mocks in place of real systems
+- turn an OpenAPI/Swagger file or WSDL file into a mock API for dev or QA (use it before the real API is built)
+- decouple your integration tests from the cloud/back-end systems and take control of your dependencies
+- validate your API requests against an OpenAPI specification
+- capture data and retrieve later, or use in templates to for conditional responses
 
 Send dynamic responses:
 

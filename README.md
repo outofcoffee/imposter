@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/outofcoffee/imposter/actions/workflows/ci.yaml/badge.svg)](https://github.com/outofcoffee/imposter/actions/workflows/ci.yaml)
 
-> Mock server for REST APIs, OpenAPI (and Swagger) specifications, Salesforce and HBase APIs.
+> Mock server for REST APIs, OpenAPI (and Swagger) specifications, SOAP web services (and WSDL files), Salesforce and HBase APIs.
 >
 > - Run **standalone** mock servers in Docker, Kubernetes, AWS Lambda or on the JVM.
 > - **Embed** mocks within your tests (JVM or Node.js) to remove external dependencies.
@@ -15,11 +15,11 @@
 
 ## Features
 
-* run standalone mocks in place of real systems
-* turn an OpenAPI/Swagger file into a mock API for dev or QA (use it before the real API is built)
-* decouple your integration tests from the cloud/back-end systems and take control of your dependencies
-* validate your API requests against an OpenAPI specification
-* capture data and retrieve later, or use in templates to for conditional responses
+- run standalone mocks in place of real systems
+- turn an OpenAPI/Swagger file or WSDL file into a mock API for dev or QA (use it before the real API is built)
+- decouple your integration tests from the cloud/back-end systems and take control of your dependencies
+- validate your API requests against an OpenAPI specification
+- capture data and retrieve later, or use in templates to for conditional responses
 
 Send dynamic responses:
 
@@ -37,8 +37,8 @@ The quickest way to get up and running is to use the free cloud-hosted service a
 
 ## Tutorials
 
-* [Mocking APIs with Swagger and Imposter](https://medium.com/@outofcoffee/mocking-apis-with-swagger-and-imposter-3694bd1733c0)
-* [Mocking REST APIs with Imposter](https://medium.com/@outofcoffee/mocking-apis-with-imposter-53bd908632e5)
+- [Mocking APIs with Swagger and Imposter](https://medium.com/@outofcoffee/mocking-apis-with-swagger-and-imposter-3694bd1733c0)
+- [Mocking REST APIs with Imposter](https://medium.com/@outofcoffee/mocking-apis-with-imposter-53bd908632e5)
 
 *****
 
@@ -46,10 +46,11 @@ The quickest way to get up and running is to use the free cloud-hosted service a
 
 Imposter provides specialised mocks for the following scenarios:
 
-* **[OpenAPI](docs/openapi_plugin.md)** - Support for OpenAPI (and Swagger) API specifications.
-* **[REST](docs/rest_plugin.md)** - Mocks RESTful or plain HTTP APIs.
-* **[HBase](docs/hbase_plugin.md)** - Basic HBase mock implementation.
-* **[SFDC (Salesforce)](docs/sfdc_plugin.md)** - Basic Salesforce mock implementation.
+- **[OpenAPI](docs/openapi_plugin.md)** - Support for OpenAPI (and Swagger) API specifications.
+- **[REST](docs/rest_plugin.md)** - Mocks RESTful or plain HTTP APIs.
+- **[SOAP](docs/soap_plugin.md)** - Support for SOAP web services (and WSDL files).
+- **[HBase](docs/hbase_plugin.md)** - Basic HBase mock implementation.
+- **[SFDC (Salesforce)](docs/sfdc_plugin.md)** - Basic Salesforce mock implementation.
 
 These use a plugin system, so you can also create your own plugins, using any JVM language.
 
@@ -101,8 +102,8 @@ For recent changes see the [Changelog](CHANGELOG.md), or view the [Roadmap](docs
 
 ## Contributing
 
-* Pull requests are welcome.
-* PRs should target the `develop` branch.
+- Pull requests are welcome.
+- PRs should target the `develop` branch.
 
 ## Author
 
