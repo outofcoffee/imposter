@@ -52,4 +52,7 @@ class SoapPluginResourceConfig : AbstractResourceConfig() {
 
     @JsonProperty("operation")
     val operation: String? = null
+
+    @JsonProperty("soapAction")
+    val soapAction: String? = null
 }

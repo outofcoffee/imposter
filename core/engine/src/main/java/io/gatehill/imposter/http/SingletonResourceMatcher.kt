@@ -55,7 +55,6 @@ import org.apache.logging.log4j.LogManager
 import java.util.Locale
 import java.util.Objects
 import java.util.function.Function
-import java.util.function.Supplier
 
 /**
  * Matches resources using elements of the HTTP request.
@@ -131,7 +130,7 @@ open class SingletonResourceMatcher : ResourceMatcher {
             matchPairs(httpExchange.pathParams(), resource.pathParams, true) &&
             matchPairs(httpExchange.queryParams(), resource.queryParams, true) &&
             matchPairs(request.headers(), resource.requestHeaders, false) &&
-            matchRequestBody({ httpExchange.bodyAsString }, resource.config)
+            matchRequestBody(httpExchange, resource.config)
     }
 
     private fun filterByPairs(
@@ -175,11 +174,11 @@ open class SingletonResourceMatcher : ResourceMatcher {
     /**
      * Match the request body against the supplied configuration.
      *
-     * @param bodySupplier         supplies the request body
+     * @param httpExchange   thc current exchange
      * @param resourceConfig the match configuration
      * @return `true` if the configuration is empty, or the request body matches the configuration, otherwise `false`
      */
-    protected fun matchRequestBody(bodySupplier: Supplier<String?>, resourceConfig: BasicResourceConfig): Boolean {
+    protected fun matchRequestBody(httpExchange: HttpExchange, resourceConfig: BasicResourceConfig): Boolean {
         if (resourceConfig !is RequestBodyResourceConfig ||
             Objects.isNull(resourceConfig.requestBody) ||
             Strings.isNullOrEmpty(resourceConfig.requestBody!!.jsonPath)
@@ -189,7 +188,7 @@ open class SingletonResourceMatcher : ResourceMatcher {
         }
 
         val requestBodyConfig = resourceConfig.requestBody!!
-        val body = bodySupplier.get()
+        val body = httpExchange.bodyAsString
         val bodyValue = if (Strings.isNullOrEmpty(body)) {
             null
         } else {

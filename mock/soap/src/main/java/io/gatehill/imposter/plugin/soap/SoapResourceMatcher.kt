@@ -88,34 +88,37 @@ class SoapResourceMatcher(
         val pathMatch = request.path() == resourceConfig.path || (pathTemplate?.let { it == resourceConfig.path } == true)
 
         val bindingMatch = resourceConfig.binding?.let { it == binding.name } ?: true
-        val operationMatch = resourceConfig.operation?.let { isOperationMatch(httpExchange, it) } ?: true
 
-        return pathMatch && bindingMatch && operationMatch &&
-            matchRequestBody({ httpExchange.bodyAsString }, resource.config)
+        val soapAction = getSoapAction(httpExchange)
+        val soapActionMatch = resourceConfig.soapAction?.let { it == soapAction } ?: true
+
+        val operationMatch = resourceConfig.operation?.let { isOperationMatch(httpExchange, it, soapAction) } ?: true
+
+        return pathMatch && bindingMatch && operationMatch && soapActionMatch &&
+            matchRequestBody(httpExchange, resource.config)
     }
 
-    private fun isOperationMatch(httpExchange: HttpExchange, configOpName: String) = httpExchange.body?.let { body ->
+    private fun isOperationMatch(httpExchange: HttpExchange, configOpName: String, soapAction: String?) = httpExchange.body?.let { body ->
         val soapEnv = SoapUtil.parseSoapEnvelope(body)
-        val operation = determineOperation(httpExchange, soapEnv)
+        val operation = determineOperation(soapAction, soapEnv)
         configOpName == operation?.name
     } ?: false
 
-    fun determineOperation(httpExchange: HttpExchange, soapEnv: ParsedSoapMessage): WsdlOperation? {
-        val soapAction = getSoapAction(httpExchange)
+    fun determineOperation(soapAction: String?, soapEnv: ParsedSoapMessage): WsdlOperation? {
         soapAction?.let {
-            LOGGER.trace("SOAPAction: $soapAction")
             return binding.operations.firstOrNull { it.soapAction == soapAction }
         }
-
         return determineOperationFromRequestBody(soapEnv)
     }
 
-    private fun getSoapAction(httpExchange: HttpExchange): String? {
+    fun getSoapAction(httpExchange: HttpExchange): String? {
         val request = httpExchange.request()
 
         // e.g. SOAPAction: example
         request.getHeader("SOAPAction")?.let { actionHeader ->
-            return actionHeader.trim()
+            val soapAction = actionHeader.trim()
+            LOGGER.trace("SOAPAction header: $soapAction")
+            return soapAction
 
         } ?: run {
             // e.g. application/soap+xml;charset=UTF-8;action="example"
@@ -126,7 +129,9 @@ class SoapResourceMatcher(
             contentTypeParts?.let { headerParts ->
                 if (headerParts.any { it == SoapUtil.soapContentType }) {
                     val actionPart = headerParts.find { it.startsWith("action=") }
-                    return actionPart?.removePrefix("action=")?.removeSurrounding("\"")
+                    val soapAction = actionPart?.removePrefix("action=")?.removeSurrounding("\"")
+                    LOGGER.trace("SOAPAction from content type header: $soapAction")
+                    return soapAction
                 }
             }
         }

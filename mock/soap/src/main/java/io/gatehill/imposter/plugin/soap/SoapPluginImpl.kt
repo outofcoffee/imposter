@@ -120,7 +120,7 @@ class SoapPluginImpl @Inject constructor(
                         ?: throw IllegalStateException("Binding: ${endpoint.bindingName} not found")
 
                     if (binding.type == BindingType.SOAP) {
-                        handlePathOperations(router, config, wsdlParser.schemas, path, binding)
+                        handleBindingOperations(router, config, wsdlParser.schemas, path, binding)
                     } else {
                         // TODO handle HTTP binding
                         LOGGER.debug("Ignoring non-SOAP binding: ${binding.name}")
@@ -135,11 +135,11 @@ class SoapPluginImpl @Inject constructor(
      *
      * @param router     the Vert.x router
      * @param config     the plugin configuration
-     * @param schemas
-     * @param path
-     * @param binding
+     * @param schemas    the XSDs for this operation
+     * @param path       the path of this service
+     * @param binding    the binding
      */
-    private fun handlePathOperations(
+    private fun handleBindingOperations(
         router: HttpRouter,
         config: SoapPluginConfig,
         schemas: Array<XmlObject>,
@@ -160,7 +160,8 @@ class SoapPluginImpl @Inject constructor(
                     return@handleRoute
                 }
 
-                val operation = soapResourceMatcher.determineOperation(httpExchange, soapEnv) ?: run {
+                val soapAction = soapResourceMatcher.getSoapAction(httpExchange)
+                val operation = soapResourceMatcher.determineOperation(soapAction, soapEnv) ?: run {
                     httpExchange.response().setStatusCode(404).end()
                     LOGGER.warn("Unable to find a matching binding operation using SOAPAction or SOAP request body")
                     return@handleRoute
@@ -170,17 +171,21 @@ class SoapPluginImpl @Inject constructor(
                 }
 
                 LOGGER.debug("Matched operation: ${operation.name} in binding ${binding.name}")
-                handle(config, binding, operation, schemas, httpExchange, soapEnv)
+                handle(config, binding, operation, schemas, httpExchange, soapEnv, soapAction)
             }
         )
     }
 
     /**
-     * Build a handler for the given operation.
+     * Handle a request for the given operation.
      *
      * @param pluginConfig the plugin configuration
-     * @param binding    the WSDL binding
+     * @param binding      the WSDL binding
      * @param operation    the WSDL operation
+     * @param schemas      the XSDs for this operation
+     * @param httpExchange the current exchange
+     * @param soapEnv      the SOAP envelope
+     * @param soapAction   the SOAPAction, if present
      */
     private fun handle(
         pluginConfig: SoapPluginConfig,
@@ -189,6 +194,7 @@ class SoapPluginImpl @Inject constructor(
         schemas: Array<XmlObject>,
         httpExchange: HttpExchange,
         soapEnv: ParsedSoapMessage,
+        soapAction: String?
     ) {
         val statusCodeFactory = DefaultStatusCodeFactory.instance
         val responseBehaviourFactory = DefaultResponseBehaviourFactory.instance
@@ -232,10 +238,11 @@ class SoapPluginImpl @Inject constructor(
             }
         }
 
-        val context = mapOf(
+        val context = mutableMapOf(
             "binding" to binding,
             "operation" to operation,
         )
+        soapAction?.let { context["soapAction"] = it }
 
         responseRoutingService.route(
             pluginConfig,
