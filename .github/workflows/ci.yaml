@@ -113,6 +113,7 @@ jobs:
               './distro/awslambda/build/libs/imposter-awslambda.jar',
               './mock/hbase/build/libs/imposter-plugin-mock-hbase.jar',
               './mock/sfdc/build/libs/imposter-plugin-mock-sfdc.jar',
+              './mock/soap/build/libs/imposter-plugin-mock-soap.jar',
               './store/dynamodb/build/libs/imposter-plugin-store-dynamodb.jar',
               './store/redis/build/libs/imposter-plugin-store-redis.jar',
             ])
