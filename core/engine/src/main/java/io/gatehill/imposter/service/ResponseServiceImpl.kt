@@ -226,6 +226,8 @@ class ResponseServiceImpl @Inject constructor(
         val responseFile = responseBehaviour.responseFile ?: throw IllegalStateException("Response file not set")
         val normalisedPath = normalisePath(pluginConfig, responseFile)
 
+        // TODO check if file exists, and return 404 if not
+
         if (responseBehaviour.isTemplate) {
             val responseData = responseFileCache[normalisedPath, {
                 FileUtils.readFileToString(normalisedPath.toFile(), StandardCharsets.UTF_8)
