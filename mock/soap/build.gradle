@@ -10,10 +10,12 @@ compileJava {
 dependencies {
     implementation project(':core:imposter-engine')
 
-    implementation 'org.apache.xmlbeans:xmlbeans:5.0.3'
+    pluginImplementation ('org.apache.xmlbeans:xmlbeans:5.0.3') {
+        exclude module: 'log4j-api'
+    }
 
-    implementation 'org.jdom:jdom2:2.0.6.1'
-    implementation 'jaxen:jaxen:1.2.0'
+    pluginImplementation 'org.jdom:jdom2:2.0.6.1'
+    pluginImplementation 'jaxen:jaxen:1.2.0'
 
     // test
     testImplementation project(':imposter-test')
