@@ -43,6 +43,7 @@
 
 package io.gatehill.imposter.plugin.soap.parser
 
+import io.gatehill.imposter.plugin.soap.model.BindingType
 import io.gatehill.imposter.plugin.soap.model.WsdlBinding
 import io.gatehill.imposter.plugin.soap.model.WsdlEndpoint
 import io.gatehill.imposter.plugin.soap.model.WsdlInterface
@@ -91,13 +92,22 @@ class Wsdl1Parser(
         return WsdlBinding(
             name = bindingName,
 
-            /**
-             * binding type=portType name
-             */
+            type = parseBindingType(binding),
+
+            // binding type=portType name
             interfaceRef = binding.getAttributeValue("type")!!,
 
             operations = operations,
         )
+    }
+
+    private fun parseBindingType(binding: Element): BindingType {
+        val soapBinding = selectSingleNode(binding, "./soap:binding")
+        return when (soapBinding?.getAttributeValue("transport")) {
+            "http://schemas.xmlsoap.org/soap/http" -> BindingType.HTTP
+            "http://schemas.xmlsoap.org/soap/soap" -> BindingType.SOAP
+            else -> BindingType.UNKNOWN
+        }
     }
 
     /**

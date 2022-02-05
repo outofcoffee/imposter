@@ -53,6 +53,7 @@ import io.gatehill.imposter.plugin.config.ConfiguredPlugin
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.resource.ResourceMethod
 import io.gatehill.imposter.plugin.soap.config.SoapPluginConfig
+import io.gatehill.imposter.plugin.soap.model.BindingType
 import io.gatehill.imposter.plugin.soap.model.ParsedSoapMessage
 import io.gatehill.imposter.plugin.soap.model.WsdlBinding
 import io.gatehill.imposter.plugin.soap.model.WsdlOperation
@@ -118,11 +119,12 @@ class SoapPluginImpl @Inject constructor(
                     val binding = wsdlParser.getBinding(endpoint.bindingName)
                         ?: throw IllegalStateException("Binding: ${endpoint.bindingName} not found")
 
-                    // TODO filter by SOAP binding types
-                    // <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/soap"/>
-                    // <binding type="http://www.w3.org/ns/wsdl/soap" ...
-
-                    handlePathOperations(router, config, wsdlParser.schemas, path, binding)
+                    if (binding.type == BindingType.SOAP) {
+                        handlePathOperations(router, config, wsdlParser.schemas, path, binding)
+                    } else {
+                        // TODO handle HTTP binding
+                        LOGGER.debug("Ignoring non-SOAP binding: ${binding.name}")
+                    }
                 }
             }
         }

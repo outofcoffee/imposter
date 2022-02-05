@@ -43,6 +43,7 @@
 
 package io.gatehill.imposter.plugin.soap.parser
 
+import io.gatehill.imposter.plugin.soap.model.BindingType
 import org.jdom2.input.SAXBuilder
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -89,6 +90,7 @@ class Wsdl2ParserTest {
 
         binding!!
         assertEquals("SoapBinding", binding.name)
+        assertEquals(BindingType.SOAP, binding.type)
         assertEquals("tns:PetInterface", binding.interfaceRef)
 
         assertEquals(2, binding.operations.size)

@@ -59,9 +59,16 @@ data class WsdlEndpoint(
 
 data class WsdlBinding(
     val name: String,
+    val type: BindingType,
     val interfaceRef: String,
     val operations: List<WsdlOperation>,
 )
+
+enum class BindingType {
+    UNKNOWN,
+    SOAP,
+    HTTP,
+}
 
 data class WsdlInterface(
     val name: String,

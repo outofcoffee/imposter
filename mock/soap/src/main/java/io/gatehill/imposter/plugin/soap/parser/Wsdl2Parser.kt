@@ -43,6 +43,7 @@
 
 package io.gatehill.imposter.plugin.soap.parser
 
+import io.gatehill.imposter.plugin.soap.model.BindingType
 import io.gatehill.imposter.plugin.soap.model.WsdlBinding
 import io.gatehill.imposter.plugin.soap.model.WsdlEndpoint
 import io.gatehill.imposter.plugin.soap.model.WsdlInterface
@@ -94,9 +95,16 @@ class Wsdl2Parser(
 
         return WsdlBinding(
             name = bindingName,
+            type = parseBindingType(binding),
             interfaceRef = interfaceName,
             operations = operations,
         )
+    }
+
+    private fun parseBindingType(binding: Element) = when (binding.getAttributeValue("type")) {
+        "http://www.w3.org/ns/wsdl/http" -> BindingType.HTTP
+        "http://www.w3.org/ns/wsdl/soap" -> BindingType.SOAP
+        else -> BindingType.UNKNOWN
     }
 
     override fun getInterface(interfaceName: String): WsdlInterface? {
