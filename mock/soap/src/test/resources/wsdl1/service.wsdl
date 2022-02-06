@@ -20,7 +20,7 @@
                        schemaLocation="schema.xsd"/>
         </xs:schema>
     </types>
-    
+
     <message name="getPetByIdRequest">
         <part element="tns:getPetByIdRequest" name="parameters"/>
     </message>
@@ -52,13 +52,21 @@
 
         <operation name="getPetById">
             <soap:operation soapAction="getPetById" style="document"/>
-            <input name="getPetByIdRequest"/>
-            <output name="getPetByIdResponse"/>
+            <input name="getPetByIdRequest">
+                <soap:body use="literal"/>
+            </input>
+            <output name="getPetByIdResponse">
+                <soap:body use="literal"/>
+            </output>
         </operation>
         <operation name="getPetByName">
             <soap:operation soapAction="getPetByName" style="document"/>
-            <input name="getPetByNameRequest"/>
-            <output name="getPetByNameResponse"/>
+            <input name="getPetByNameRequest">
+                <soap:body use="literal"/>
+            </input>
+            <output name="getPetByNameResponse">
+                <soap:body use="literal"/>
+            </output>
         </operation>
     </binding>
 
@@ -68,14 +76,22 @@
 
         <operation name="getPetById">
             <soap:operation soapAction="getPetById" style="document"/>
-            <input name="getPetByIdRequest"/>
-            <output name="getPetByIdResponse"/>
+            <input name="getPetByIdRequest">
+                <soap:body use="literal"/>
+            </input>
+            <output name="getPetByIdResponse">
+                <soap:body use="literal"/>
+            </output>
         </operation>
 
         <operation name="getPetByName">
             <soap:operation soapAction="getPetByName" style="document"/>
-            <input name="getPetByNameRequest"/>
-            <output name="getPetByNameResponse"/>
+            <input name="getPetByNameRequest">
+                <soap:body use="literal"/>
+            </input>
+            <output name="getPetByNameResponse">
+                <soap:body use="literal"/>
+            </output>
         </operation>
     </binding>
 
