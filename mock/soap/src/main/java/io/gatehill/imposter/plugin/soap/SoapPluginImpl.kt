@@ -113,6 +113,8 @@ class SoapPluginImpl @Inject constructor(
             }
             val wsdlParser = VersionAwareWsdlParser(fullWsdlPath)
 
+            // TODO optionally support ?wsdl query to return the WSDL
+
             wsdlParser.services.forEach { service ->
                 service.endpoints.forEach { endpoint ->
                     val path = endpoint.address.path
