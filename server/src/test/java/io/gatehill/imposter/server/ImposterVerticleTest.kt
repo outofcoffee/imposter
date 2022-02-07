@@ -121,4 +121,13 @@ class ImposterVerticleTest : BaseVerticleTest() {
             .then()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_NOT_FOUND))
     }
+
+    @Test
+    @Throws(Exception::class)
+    fun testResponseFileNotFound() {
+        RestAssured.given().`when`()
+            .get("/static-file-example")
+            .then()
+            .statusCode(Matchers.equalTo(HttpUtil.HTTP_NOT_FOUND))
+    }
 }

@@ -46,7 +46,6 @@ import io.gatehill.imposter.http.ExchangePhase
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.util.DateTimeUtil
 import org.apache.logging.log4j.LogManager
-import java.nio.charset.Charset
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
@@ -138,7 +137,7 @@ class ExpressionServiceImpl : ExpressionService {
                         }
                         when (parts[2]) {
                             "body" -> checkExpression(expression, 3, parts) {
-                                httpExchange.response().bodyBuffer.toString(Charset.defaultCharset())
+                                httpExchange.response().bodyBuffer?.toString(Charsets.UTF_8)
                             }
                             "headers" -> checkExpression(expression, 4, parts) {
                                 httpExchange.response().headers()[parts[3]]

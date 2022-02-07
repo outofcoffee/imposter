@@ -121,6 +121,8 @@ interface HttpResponse {
     fun headers(): MultiMap
     fun end()
     fun end(body: Buffer)
-    fun end(body: String?)
-    val bodyBuffer: Buffer
+    fun end(body: String?) {
+        body?.let { end(Buffer.buffer(body)) } ?: end()
+    }
+    val bodyBuffer: Buffer?
 }

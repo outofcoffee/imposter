@@ -72,6 +72,8 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.ThreadLocalRandom
 import javax.inject.Inject
+import kotlin.io.path.exists
+import kotlin.io.path.readBytes
 
 /**
  * @author Pete Cornish
@@ -87,7 +89,7 @@ class ResponseServiceImpl @Inject constructor(
      */
     private val responseFileCache = CacheBuilder.newBuilder()
         .maximumSize(getEnv(ENV_RESPONSE_FILE_CACHE_ENTRIES)?.toLong() ?: DEFAULT_RESPONSE_FILE_CACHE_ENTRIES)
-        .build<Path, String>()
+        .build<Path, Buffer>()
 
     init {
         MetricsUtil.doIfMetricsEnabled(
@@ -194,7 +196,7 @@ class ResponseServiceImpl @Inject constructor(
             httpExchange.fail(
                 ResponseException(
                     "Error sending mock response with status code ${responseBehaviour.statusCode} for " +
-                        describeRequest(httpExchange), e
+                            describeRequest(httpExchange), e
                 )
             )
         }
@@ -226,16 +228,23 @@ class ResponseServiceImpl @Inject constructor(
         val responseFile = responseBehaviour.responseFile ?: throw IllegalStateException("Response file not set")
         val normalisedPath = normalisePath(pluginConfig, responseFile)
 
-        // TODO check if file exists, and return 404 if not
+        val responseData = responseFileCache.getIfPresent(normalisedPath) ?: run {
+            if (normalisedPath.exists()) {
+                Buffer.buffer(normalisedPath.readBytes()).also {
+                    responseFileCache.put(normalisedPath, it)
+                }
+            } else {
+                LOGGER.warn("Response file does not exist: $normalisedPath - returning 404 status code")
+                httpExchange.response().setStatusCode(HttpUtil.HTTP_NOT_FOUND).end()
+                return
+            }
+        }
 
-        val responseData = responseFileCache[normalisedPath, {
-            FileUtils.readFileToString(normalisedPath.toFile(), StandardCharsets.UTF_8)
-        }]
         writeResponseData(
             resourceConfig = resourceConfig,
             httpExchange = httpExchange,
             filenameHintForContentType = normalisedPath.fileName.toString(),
-            rawResponseData = responseData,
+            origResponseData = responseData,
             template = responseBehaviour.isTemplate,
             trustedData = false
         )
@@ -265,7 +274,7 @@ class ResponseServiceImpl @Inject constructor(
             resourceConfig = resourceConfig,
             httpExchange = httpExchange,
             filenameHintForContentType = null,
-            rawResponseData = responseBehaviour.responseData,
+            origResponseData = Buffer.buffer(responseBehaviour.responseData),
             template = responseBehaviour.isTemplate,
             trustedData = false
         )
@@ -275,20 +284,20 @@ class ResponseServiceImpl @Inject constructor(
      * Write the response data, optionally resolving placeholders if templating is enabled.
      *
      * @param httpExchange the HTTP exchange
-     * @param rawResponseData   the data
+     * @param origResponseData   the data
      */
     private fun writeResponseData(
         resourceConfig: ResourceConfig?,
         httpExchange: HttpExchange,
         filenameHintForContentType: String?,
-        rawResponseData: String?,
+        origResponseData: Buffer,
         template: Boolean,
         trustedData: Boolean
     ) {
-        var responseData = rawResponseData
         val response = httpExchange.response()
         setContentTypeIfAbsent(resourceConfig, response, filenameHintForContentType)
 
+        var responseData = origResponseData
         if (template) {
             // listeners may transform response data
             if (!engineLifecycle.isEmpty) {
@@ -297,7 +306,7 @@ class ResponseServiceImpl @Inject constructor(
                 }
             }
         }
-        response.end(Buffer.buffer(responseData))
+        response.end(responseData)
     }
 
     private fun setContentTypeIfAbsent(

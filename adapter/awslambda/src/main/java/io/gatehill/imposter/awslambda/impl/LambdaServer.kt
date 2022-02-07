@@ -53,7 +53,6 @@ import io.gatehill.imposter.util.HttpUtil
 import io.vertx.core.AsyncResult
 import io.vertx.core.Handler
 import org.apache.logging.log4j.LogManager
-import java.nio.charset.Charset
 import java.util.Collections.synchronizedMap
 
 /**
@@ -114,9 +113,9 @@ class LambdaServer(router: HttpRouter) : HttpServer {
             .withStatusCode(response.getStatusCode())
             .withHeaders(response.headers)
 
-        if (response.bodyBuffer.length() > 0) {
+        if (response.bodyLength > 0) {
             responseEvent
-                .withBody(response.bodyBuffer.toString(Charset.defaultCharset()))
+                .withBody(response.bodyBuffer?.toString(Charsets.UTF_8))
                 .withIsBase64Encoded(false)
         }
 

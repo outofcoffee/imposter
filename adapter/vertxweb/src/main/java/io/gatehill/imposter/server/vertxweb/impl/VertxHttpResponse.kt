@@ -51,7 +51,7 @@ import io.vertx.core.http.HttpServerResponse
  * @author Pete Cornish
  */
 class VertxHttpResponse(private val vertxResponse: HttpServerResponse) : HttpResponse {
-    override val bodyBuffer: Buffer = Buffer.buffer()
+    override var bodyBuffer: Buffer? = null
 
     override fun setStatusCode(statusCode: Int): HttpResponse {
         vertxResponse.statusCode = statusCode
@@ -76,14 +76,7 @@ class VertxHttpResponse(private val vertxResponse: HttpServerResponse) : HttpRes
     }
 
     override fun end(body: Buffer) {
-        bodyBuffer.appendBuffer(body)
+        bodyBuffer = body
         vertxResponse.end(body)
-    }
-
-    override fun end(body: String?) {
-        body?.let {
-            bodyBuffer.appendString(body)
-            vertxResponse.end(body)
-        } ?: end()
     }
 }

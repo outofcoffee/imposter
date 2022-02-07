@@ -49,6 +49,7 @@ import io.gatehill.imposter.lifecycle.EngineLifecycleListener
 import io.gatehill.imposter.store.factory.StoreFactory
 import io.gatehill.imposter.store.util.StoreUtil
 import io.gatehill.imposter.util.ResourceUtil
+import io.vertx.core.buffer.Buffer
 import org.apache.commons.text.StringSubstitutor
 import org.apache.commons.text.lookup.StringLookupFactory
 import org.apache.logging.log4j.LogManager
@@ -130,17 +131,25 @@ class TemplateServiceImpl @Inject constructor(
         return jsonPath?.let { StoreService.JSONPATH_PARSE_CONTEXT.parse(itemValue).read(jsonPath) } ?: itemValue
     }
 
-    override fun beforeTransmittingTemplate(httpExchange: HttpExchange, responseTemplate: String?, trustedData: Boolean): String? {
-        return responseTemplate?.let {
-            // shim for request scoped store
-            val uniqueRequestId = httpExchange.get<String>(ResourceUtil.RC_REQUEST_ID_KEY)!!
-            val responseData = requestStorePrefixPattern
-                .matcher(responseTemplate)
-                .replaceAll("\\$\\{" + StoreUtil.buildRequestStoreName(uniqueRequestId) + ".")
-
-            val substitutor = determineSubstituter(trustedData)
-            substitutor.replace(responseData)
+    override fun beforeTransmittingTemplate(
+        httpExchange: HttpExchange,
+        responseData: Buffer,
+        trustedData: Boolean,
+    ): Buffer {
+        if (responseData.length() == 0) {
+            return responseData
         }
+
+        // shim for request scoped store
+        val uniqueRequestId = httpExchange.get<String>(ResourceUtil.RC_REQUEST_ID_KEY)!!
+        val input = requestStorePrefixPattern
+            .matcher(responseData.toString(Charsets.UTF_8))
+            .replaceAll("\\$\\{" + StoreUtil.buildRequestStoreName(uniqueRequestId) + ".")
+
+        val substitutor = determineSubstituter(trustedData)
+        val transformed = substitutor.replace(input)
+
+        return Buffer.buffer(transformed)
     }
 
     /**

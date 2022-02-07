@@ -4,5 +4,15 @@
   "response": {
     "staticFile": "test-plugin-data.json"
   },
-  "customProperty": "testValue"
+  "customProperty": "testValue",
+  "resources": [
+    {
+      "path": "/static-file-example",
+      "method": "GET",
+      "response": {
+        "staticFile": "non-existent-file.txt",
+        "statusCode": 200
+      }
+    }
+  ]
 }

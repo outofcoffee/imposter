@@ -186,7 +186,7 @@ class LambdaHttpRequest(val event: APIGatewayProxyRequestEvent) : HttpRequest {
  */
 class LambdaHttpResponse : HttpResponse {
     private var statusCode: Int = 200
-    override val bodyBuffer: Buffer = Buffer.buffer()
+    override var bodyBuffer: Buffer? = null
     val headers = mutableMapOf<String, String>()
 
     override fun setStatusCode(statusCode: Int): HttpResponse {
@@ -212,20 +212,12 @@ class LambdaHttpResponse : HttpResponse {
     }
 
     override fun end(body: Buffer) {
-        bodyBuffer.appendBuffer(body)
-        checkContentLength()
-    }
-
-    override fun end(body: String?) {
-        body?.let {
-            bodyBuffer.appendString(body)
-            checkContentLength()
+        bodyBuffer = body
+        if (!headers.containsKey("Content-Length") && bodyLength > 0) {
+            headers["Content-Length"] = bodyLength.toString()
         }
     }
 
-    private fun checkContentLength() {
-        if (!headers.containsKey("Content-Length")) {
-            headers["Content-Length"] = bodyBuffer.length().toString()
-        }
-    }
+    val bodyLength
+        get() = bodyBuffer?.length() ?: 0
 }

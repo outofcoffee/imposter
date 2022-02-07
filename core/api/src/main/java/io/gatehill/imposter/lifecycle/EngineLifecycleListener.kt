@@ -48,6 +48,7 @@ import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.script.ExecutionContext
+import io.vertx.core.buffer.Buffer
 
 /**
  * Hooks for engine lifecycle events.
@@ -89,13 +90,13 @@ interface EngineLifecycleListener {
      * Invoked before sending response content when templating is enabled for the active resource.
      *
      * @param httpExchange the HTTP exchange
-     * @param responseTemplate the response content
+     * @param responseData the response content
      * @param trustedData whether the response content is trusted/untainted
      * @return the transformed response content
      */
-    fun beforeTransmittingTemplate(httpExchange: HttpExchange, responseTemplate: String?, trustedData: Boolean): String? {
+    fun beforeTransmittingTemplate(httpExchange: HttpExchange, responseData: Buffer, trustedData: Boolean): Buffer {
         // no op
-        return responseTemplate
+        return responseData
     }
 
     /**
