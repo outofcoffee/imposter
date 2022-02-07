@@ -43,8 +43,8 @@
 package io.gatehill.imposter.plugin.config.capture
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import io.gatehill.imposter.http.ExchangePhase
 import io.gatehill.imposter.plugin.config.flex.FlexibleTypeUtil.lazyParse
-import io.gatehill.imposter.plugin.config.store.PersistencePhase
 
 /**
  * A capture configuration for values, that allows the key and store to be overridden.
@@ -75,7 +75,7 @@ class ItemCaptureConfig(
     val enabled: Boolean = true,
 
     @JsonProperty("phase")
-    val phase: PersistencePhase = PersistencePhase.REQUEST_RECEIVED,
+    val phase: ExchangePhase = ExchangePhase.REQUEST_RECEIVED,
 ) : CaptureConfig(
     pathParam,
     queryParam,

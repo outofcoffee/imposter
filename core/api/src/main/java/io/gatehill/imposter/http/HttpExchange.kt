@@ -42,6 +42,7 @@
  */
 package io.gatehill.imposter.http
 
+import com.fasterxml.jackson.annotation.JsonAlias
 import io.gatehill.imposter.plugin.config.resource.ResourceMethod
 import io.vertx.core.MultiMap
 import io.vertx.core.buffer.Buffer
@@ -51,6 +52,7 @@ import io.vertx.core.json.JsonObject
  * @author Pete Cornish
  */
 interface HttpExchange {
+    var phase: ExchangePhase
     fun request(): HttpRequest
     fun response(): HttpResponse
     fun pathParams(): Map<String, String>
@@ -77,6 +79,25 @@ interface HttpExchange {
 
     fun <T> get(key: String): T?
     fun put(key: String, value: Any)
+
+    fun <T: Any> getOrPut(key: String, defaultSupplier: () -> T): T {
+        return get(key) ?: run {
+            val value = defaultSupplier()
+            put(key, value)
+            return@run value
+        }
+    }
+}
+
+/**
+ * @author Pete Cornish
+ */
+enum class ExchangePhase {
+    @JsonAlias("request-received")
+    REQUEST_RECEIVED,
+
+    @JsonAlias("response-sent")
+    RESPONSE_SENT,
 }
 
 /**
@@ -98,8 +119,8 @@ interface HttpResponse {
     fun getStatusCode(): Int
     fun putHeader(headerKey: String, headerValue: String): HttpResponse
     fun headers(): MultiMap
-    fun sendFile(filePath: String): HttpResponse
     fun end()
     fun end(body: Buffer)
     fun end(body: String?)
+    val bodyBuffer: Buffer
 }

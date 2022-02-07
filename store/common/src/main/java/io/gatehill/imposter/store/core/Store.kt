@@ -42,7 +42,7 @@
  */
 package io.gatehill.imposter.store.core
 
-import io.gatehill.imposter.plugin.config.store.PersistencePhase
+import io.gatehill.imposter.http.ExchangePhase
 
 /**
  * @author Pete Cornish
@@ -55,7 +55,7 @@ interface Store {
     fun save(
         key: String,
         value: Any?,
-        phase: PersistencePhase = PersistencePhase.REQUEST_RECEIVED,
+        phase: ExchangePhase = ExchangePhase.REQUEST_RECEIVED,
     )
     fun <T> load(key: String): T?
     fun delete(key: String)

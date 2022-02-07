@@ -45,6 +45,7 @@ package io.gatehill.imposter.awslambda.impl
 
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent
 import com.google.common.base.Strings
+import io.gatehill.imposter.http.ExchangePhase
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.http.HttpResponse
@@ -54,8 +55,6 @@ import io.gatehill.imposter.util.HttpUtil
 import io.vertx.core.MultiMap
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.json.JsonObject
-import java.io.File
-import java.nio.charset.Charset
 
 /**
  * @author Pete Cornish
@@ -65,6 +64,7 @@ class LambdaHttpExchange(
     private val response: LambdaHttpResponse,
     private val currentRoute: HttpRoute?
 ) : HttpExchange {
+    override var phase = ExchangePhase.REQUEST_RECEIVED
     private val attributes = mutableMapOf<String, Any>()
     private var failureCause: Throwable? = null
 
@@ -155,6 +155,7 @@ class LambdaHttpExchange(
  */
 class LambdaHttpRequest(val event: APIGatewayProxyRequestEvent) : HttpRequest {
     private val baseUrl: String
+
     init {
         baseUrl = "http://" + (getHeader("Host") ?: "0.0.0.0")
     }
@@ -185,7 +186,7 @@ class LambdaHttpRequest(val event: APIGatewayProxyRequestEvent) : HttpRequest {
  */
 class LambdaHttpResponse : HttpResponse {
     private var statusCode: Int = 200
-    var body: String? = null
+    override val bodyBuffer: Buffer = Buffer.buffer()
     val headers = mutableMapOf<String, String>()
 
     override fun setStatusCode(statusCode: Int): HttpResponse {
@@ -206,29 +207,25 @@ class LambdaHttpResponse : HttpResponse {
         return MultiMap.caseInsensitiveMultiMap().addAll(this.headers)
     }
 
-    override fun sendFile(filePath: String): HttpResponse {
-        try {
-            end(File(filePath).readText())
-        } catch (e: Exception) {
-            throw RuntimeException("Error sending file: $filePath", e)
-        }
-        return this
-    }
-
     override fun end() {
         /* no op */
     }
 
     override fun end(body: Buffer) {
-        end(body.toString(Charset.defaultCharset()))
+        bodyBuffer.appendBuffer(body)
+        checkContentLength()
     }
 
     override fun end(body: String?) {
-        this.body = body
         body?.let {
-            if (!headers.containsKey("Content-Length")) {
-                headers["Content-Length"] = body.length.toString()
-            }
+            bodyBuffer.appendString(body)
+            checkContentLength()
+        }
+    }
+
+    private fun checkContentLength() {
+        if (!headers.containsKey("Content-Length")) {
+            headers["Content-Length"] = bodyBuffer.length().toString()
         }
     }
 }

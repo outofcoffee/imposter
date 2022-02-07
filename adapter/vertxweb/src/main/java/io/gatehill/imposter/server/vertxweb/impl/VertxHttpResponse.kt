@@ -51,6 +51,8 @@ import io.vertx.core.http.HttpServerResponse
  * @author Pete Cornish
  */
 class VertxHttpResponse(private val vertxResponse: HttpServerResponse) : HttpResponse {
+    override val bodyBuffer: Buffer = Buffer.buffer()
+
     override fun setStatusCode(statusCode: Int): HttpResponse {
         vertxResponse.statusCode = statusCode
         return this
@@ -69,20 +71,19 @@ class VertxHttpResponse(private val vertxResponse: HttpServerResponse) : HttpRes
         return vertxResponse.headers()
     }
 
-    override fun sendFile(filePath: String): HttpResponse {
-        vertxResponse.sendFile(filePath)
-        return this
-    }
-
     override fun end() {
         vertxResponse.end()
     }
 
-    override fun end(body: String?) {
-        body?.let { vertxResponse.end(body) } ?: end()
+    override fun end(body: Buffer) {
+        bodyBuffer.appendBuffer(body)
+        vertxResponse.end(body)
     }
 
-    override fun end(body: Buffer) {
-        vertxResponse.end(body)
+    override fun end(body: String?) {
+        body?.let {
+            bodyBuffer.appendString(body)
+            vertxResponse.end(body)
+        } ?: end()
     }
 }

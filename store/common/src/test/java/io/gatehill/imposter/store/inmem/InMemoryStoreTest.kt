@@ -43,7 +43,6 @@
 package io.gatehill.imposter.store.inmem
 
 import io.gatehill.imposter.service.DeferredOperationService
-import io.vertx.core.Vertx
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -58,7 +57,7 @@ class InMemoryStoreTest {
 
     @Before
     fun setUp() {
-        factory = InMemoryStoreFactoryImpl(DeferredOperationService(Vertx.vertx()))
+        factory = InMemoryStoreFactoryImpl(DeferredOperationService())
     }
 
     @Test

@@ -44,6 +44,7 @@ package io.gatehill.imposter.store.service
 
 import com.google.common.base.Strings
 import com.jayway.jsonpath.DocumentContext
+import io.gatehill.imposter.http.ExchangePhase
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
 import io.gatehill.imposter.lifecycle.EngineLifecycleListener
@@ -51,7 +52,6 @@ import io.gatehill.imposter.plugin.config.capture.CaptureConfig
 import io.gatehill.imposter.plugin.config.capture.CaptureConfigHolder
 import io.gatehill.imposter.plugin.config.capture.ItemCaptureConfig
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
-import io.gatehill.imposter.plugin.config.store.PersistencePhase
 import io.gatehill.imposter.store.core.Store
 import io.gatehill.imposter.store.factory.StoreFactory
 import io.gatehill.imposter.store.util.StoreUtil
@@ -78,23 +78,23 @@ class CaptureServiceImpl @Inject constructor(
 
     override fun beforeBuildingResponse(httpExchange: HttpExchange, resourceConfig: BasicResourceConfig?) {
         // immediate captures
-        captureItems(resourceConfig, httpExchange, PersistencePhase.REQUEST_RECEIVED)
+        captureItems(resourceConfig, httpExchange, ExchangePhase.REQUEST_RECEIVED)
     }
 
     override fun afterHttpExchangeHandled(httpExchange: HttpExchange, resourceConfig: BasicResourceConfig) {
         // deferred captures
-        captureItems(resourceConfig, httpExchange, PersistencePhase.RESPONSE_SENT)
+        captureItems(resourceConfig, httpExchange, ExchangePhase.RESPONSE_SENT)
     }
 
     private fun captureItems(
         resourceConfig: BasicResourceConfig?,
         httpExchange: HttpExchange,
-        phaseFilter: PersistencePhase
+        phaseFilter: ExchangePhase
     ) {
         if (resourceConfig is CaptureConfigHolder) {
             val captureConfig = (resourceConfig as CaptureConfigHolder).captureConfig
             captureConfig?.let {
-                val jsonPathContextHolder = AtomicReference<DocumentContext>()
+                val jsonPathContextHolder = httpExchange.getOrPut("jsonPathContextHolder", { AtomicReference<DocumentContext>() })
                 captureConfig.filterValues { it.enabled && it.phase == phaseFilter }
                     .forEach { (captureConfigKey: String, itemConfig: ItemCaptureConfig) ->
                         captureItem(captureConfigKey, itemConfig, httpExchange, jsonPathContextHolder)

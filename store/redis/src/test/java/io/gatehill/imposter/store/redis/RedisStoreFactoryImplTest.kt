@@ -46,7 +46,6 @@ import com.google.common.base.Charsets
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.service.DeferredOperationService
 import io.gatehill.imposter.util.TestEnvironmentUtil
-import io.vertx.core.Vertx
 import org.apache.commons.io.FileUtils
 import org.junit.AfterClass
 import org.junit.Assert
@@ -124,7 +123,7 @@ singleServerConfig:
     @Before
     fun before() {
         factory = RedisStoreFactoryImpl(
-            DeferredOperationService(Vertx.vertx()),
+            DeferredOperationService(),
             imposterConfig!!
         )
     }

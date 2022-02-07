@@ -46,6 +46,7 @@ import com.google.common.collect.Lists
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.ResolvedResourceConfig
 import io.gatehill.imposter.config.util.EnvVars
+import io.gatehill.imposter.http.ExchangePhase
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpExchangeHandler
 import io.gatehill.imposter.http.ResourceMatcher
@@ -69,7 +70,7 @@ import io.vertx.core.Promise
 import io.vertx.core.Vertx
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
-import java.util.UUID
+import java.util.*
 import java.util.regex.Pattern
 import javax.inject.Inject
 
@@ -254,8 +255,11 @@ class ResourceServiceImpl @Inject constructor(
             try {
                 httpExchangeHandler(httpExchange)
                 LogUtil.logCompletion(httpExchange)
+
             } finally {
-                // always perform tidy up once handled, regardless of outcome
+                // always set phase and perform tidy up once handled, regardless of outcome
+                httpExchange.phase = ExchangePhase.RESPONSE_SENT
+
                 engineLifecycle.forEach { listener: EngineLifecycleListener ->
                     listener.afterHttpExchangeHandled(httpExchange, resourceConfig)
                 }

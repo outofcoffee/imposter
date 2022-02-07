@@ -42,6 +42,7 @@
  */
 package io.gatehill.imposter.server.vertxweb.impl
 
+import io.gatehill.imposter.http.ExchangePhase
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.http.HttpResponse
@@ -58,6 +59,7 @@ class VertxHttpExchange(
     val routingContext: RoutingContext,
     override val currentRoutePath: String?
 ) : HttpExchange {
+    override var phase = ExchangePhase.REQUEST_RECEIVED
 
     override fun request(): HttpRequest {
         return VertxHttpRequest(routingContext.request())

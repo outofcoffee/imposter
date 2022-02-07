@@ -228,21 +228,17 @@ class ResponseServiceImpl @Inject constructor(
 
         // TODO check if file exists, and return 404 if not
 
-        if (responseBehaviour.isTemplate) {
-            val responseData = responseFileCache[normalisedPath, {
-                FileUtils.readFileToString(normalisedPath.toFile(), StandardCharsets.UTF_8)
-            }]
-            writeResponseData(
-                resourceConfig = resourceConfig,
-                httpExchange = httpExchange,
-                filenameHintForContentType = normalisedPath.fileName.toString(),
-                rawResponseData = responseData,
-                template = responseBehaviour.isTemplate,
-                trustedData = false
-            )
-        } else {
-            response.sendFile(normalisedPath.toString())
-        }
+        val responseData = responseFileCache[normalisedPath, {
+            FileUtils.readFileToString(normalisedPath.toFile(), StandardCharsets.UTF_8)
+        }]
+        writeResponseData(
+            resourceConfig = resourceConfig,
+            httpExchange = httpExchange,
+            filenameHintForContentType = normalisedPath.fileName.toString(),
+            rawResponseData = responseData,
+            template = responseBehaviour.isTemplate,
+            trustedData = false
+        )
     }
 
     /**
