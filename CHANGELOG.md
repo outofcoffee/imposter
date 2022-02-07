@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.8.1] - 2022-02-07
+### Fixed
+- fix: uses dedicated XSD parser for WSDL schemas.
+
 ## [2.8.0] - 2022-02-07
 ### Added
 - feat: adds SOAP mocks plugin. This is available as a plugin and in the 'all' distro. See the user documentation for plugin reference and examples.
