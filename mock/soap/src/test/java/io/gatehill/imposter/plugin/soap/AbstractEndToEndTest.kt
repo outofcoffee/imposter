@@ -49,6 +49,7 @@ import io.gatehill.imposter.util.HttpUtil
 import io.vertx.ext.unit.TestContext
 import org.hamcrest.Matchers.allOf
 import org.hamcrest.Matchers.containsString
+import org.jdom2.Namespace
 import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Test
@@ -61,12 +62,16 @@ import org.junit.Test
 abstract class AbstractEndToEndTest : BaseVerticleTest() {
     override val pluginClass = SoapPluginImpl::class.java
 
-    private val getPetByIdEnv = SoapUtil.wrapInEnv(
+    protected abstract val soapNamespace: Namespace
+    protected abstract val soapContentType: String
+
+    private val getPetByIdEnv
+        get() = SoapUtil.wrapInEnv(
         """
 <getPetByIdRequest xmlns="urn:com:example:petstore">
   <id>3</id>
 </getPetByIdRequest>
-""".trim(), SoapUtil.soap12RecEnvNamespace
+""".trim(), soapNamespace
     )
 
     @Before
@@ -80,7 +85,8 @@ abstract class AbstractEndToEndTest : BaseVerticleTest() {
     fun testRequestResponseUsingSoapActionHeader(testContext: TestContext) {
         val body = RestAssured.given()
             .log().ifValidationFails()
-            .accept(SoapUtil.soapContentType)
+            .accept(soapContentType)
+            .contentType(soapContentType)
             .header("SOAPAction", "getPetById")
             .`when`()
             .body(getPetByIdEnv)
@@ -98,8 +104,8 @@ abstract class AbstractEndToEndTest : BaseVerticleTest() {
     fun testRequestResponseUsingSoapActionInContentType(testContext: TestContext) {
         val body = RestAssured.given()
             .log().ifValidationFails()
-            .accept(SoapUtil.soapContentType)
-            .contentType("application/soap+xml;charset=UTF-8;action=\"getPetById\"")
+            .accept(soapContentType)
+            .contentType("$soapContentType;charset=UTF-8;action=\"getPetById\"")
             .`when`()
             .body(getPetByIdEnv)
             .post("/soap/")
@@ -116,7 +122,8 @@ abstract class AbstractEndToEndTest : BaseVerticleTest() {
     fun testRequestResponseUsingRequestBody(testContext: TestContext) {
         val body = RestAssured.given()
             .log().ifValidationFails()
-            .accept(SoapUtil.soapContentType)
+            .accept(soapContentType)
+            .contentType(soapContentType)
             .`when`()
             .body(getPetByIdEnv)
             .post("/soap/")
@@ -133,7 +140,8 @@ abstract class AbstractEndToEndTest : BaseVerticleTest() {
     fun test404OnInvalidSoapAction(testContext: TestContext) {
         RestAssured.given()
             .log().ifValidationFails()
-            .accept(SoapUtil.soapContentType)
+            .accept(soapContentType)
+            .contentType(soapContentType)
             .header("SOAPAction", "invalid")
             .`when`()
             .body(getPetByIdEnv)
@@ -155,7 +163,8 @@ abstract class AbstractEndToEndTest : BaseVerticleTest() {
 
         RestAssured.given()
             .log().ifValidationFails()
-            .accept(SoapUtil.soapContentType)
+            .accept(soapContentType)
+            .contentType(soapContentType)
             .`when`()
             .body(getPetByNameEnv)
             .post("/soap/")

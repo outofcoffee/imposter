@@ -46,6 +46,7 @@ package io.gatehill.imposter.plugin.soap.parser
 import io.gatehill.imposter.plugin.soap.model.WsdlBinding
 import io.gatehill.imposter.plugin.soap.model.WsdlInterface
 import io.gatehill.imposter.plugin.soap.model.WsdlService
+import org.apache.logging.log4j.LogManager
 import org.apache.xmlbeans.XmlObject
 import org.jdom2.input.SAXBuilder
 import java.io.File
@@ -57,6 +58,7 @@ import java.io.File
  * @author Pete Cornish
  */
 class VersionAwareWsdlParser(wsdlFile: File) : WsdlParser {
+    private val logger = LogManager.getLogger(VersionAwareWsdlParser::class.java)
     private val delegate: WsdlParser
 
     init {
@@ -73,6 +75,7 @@ class VersionAwareWsdlParser(wsdlFile: File) : WsdlParser {
             }
             else -> throw IllegalStateException("More than one WSDL namespace found on root element: $wsdlNamespaces")
         }
+        logger.debug("Using WSDL parser: $version for: $wsdlFile")
     }
 
     override val version: WsdlParser.WsdlVersion

@@ -46,7 +46,6 @@ package io.gatehill.imposter.plugin.soap.service
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.plugin.soap.model.ParsedSoapMessage
 import io.gatehill.imposter.plugin.soap.util.SoapUtil
-import io.gatehill.imposter.util.HttpUtil
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.apache.xmlbeans.XmlObject
@@ -101,8 +100,6 @@ class SoapExampleService {
                 responseBody.length
             )
         }
-        httpExchange.response()
-            .putHeader(HttpUtil.CONTENT_TYPE, SoapUtil.soapContentType)
-            .end(responseBody)
+        httpExchange.response().end(responseBody)
     }
 }

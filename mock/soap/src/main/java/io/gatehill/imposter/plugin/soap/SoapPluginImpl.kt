@@ -58,6 +58,7 @@ import io.gatehill.imposter.plugin.soap.model.ParsedSoapMessage
 import io.gatehill.imposter.plugin.soap.model.WsdlBinding
 import io.gatehill.imposter.plugin.soap.model.WsdlOperation
 import io.gatehill.imposter.plugin.soap.parser.VersionAwareWsdlParser
+import io.gatehill.imposter.plugin.soap.parser.WsdlParser
 import io.gatehill.imposter.plugin.soap.service.SoapExampleService
 import io.gatehill.imposter.plugin.soap.util.SoapUtil
 import io.gatehill.imposter.script.ResponseBehaviour
@@ -69,7 +70,6 @@ import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.ResourceUtil
 import io.vertx.core.Vertx
 import org.apache.logging.log4j.LogManager
-import org.apache.xmlbeans.XmlObject
 import java.io.File
 import javax.inject.Inject
 import kotlin.collections.set
@@ -122,7 +122,7 @@ class SoapPluginImpl @Inject constructor(
                         ?: throw IllegalStateException("Binding: ${endpoint.bindingName} not found")
 
                     if (binding.type == BindingType.SOAP) {
-                        handleBindingOperations(router, config, wsdlParser.schemas, path, binding)
+                        handleBindingOperations(router, config, wsdlParser, path, binding)
                     } else {
                         // TODO handle HTTP binding
                         LOGGER.debug("Ignoring non-SOAP binding: ${binding.name}")
@@ -137,14 +137,14 @@ class SoapPluginImpl @Inject constructor(
      *
      * @param router     the Vert.x router
      * @param config     the plugin configuration
-     * @param schemas    the XSDs for this operation
+     * @param parser     the WSDL parser
      * @param path       the path of this service
      * @param binding    the binding
      */
     private fun handleBindingOperations(
         router: HttpRouter,
         config: SoapPluginConfig,
-        schemas: Array<XmlObject>,
+        parser: WsdlParser,
         path: String,
         binding: WsdlBinding,
     ) {
@@ -173,7 +173,7 @@ class SoapPluginImpl @Inject constructor(
                 }
 
                 LOGGER.debug("Matched operation: ${operation.name} in binding ${binding.name}")
-                handle(config, binding, operation, schemas, httpExchange, soapEnv, soapAction)
+                handle(config, parser, binding, operation, httpExchange, soapEnv, soapAction)
             }
         )
     }
@@ -182,21 +182,21 @@ class SoapPluginImpl @Inject constructor(
      * Handle a request for the given operation.
      *
      * @param pluginConfig the plugin configuration
+     * @param parser       the WSDL parser
      * @param binding      the WSDL binding
      * @param operation    the WSDL operation
-     * @param schemas      the XSDs for this operation
      * @param httpExchange the current exchange
      * @param soapEnv      the SOAP envelope
      * @param soapAction   the SOAPAction, if present
      */
     private fun handle(
         pluginConfig: SoapPluginConfig,
+        parser: WsdlParser,
         binding: WsdlBinding,
         operation: WsdlOperation,
-        schemas: Array<XmlObject>,
         httpExchange: HttpExchange,
         soapEnv: ParsedSoapMessage,
-        soapAction: String?
+        soapAction: String?,
     ) {
         val statusCodeFactory = DefaultStatusCodeFactory.instance
         val responseBehaviourFactory = DefaultResponseBehaviourFactory.instance
@@ -212,12 +212,15 @@ class SoapPluginImpl @Inject constructor(
                 LOGGER.trace("Using output schema type: ${operation.outputElementRef}")
 
                 if (!responseBehaviour.responseHeaders.containsKey(HttpUtil.CONTENT_TYPE)) {
-                    responseBehaviour.responseHeaders[HttpUtil.CONTENT_TYPE] = SoapUtil.soapContentType
+                    responseBehaviour.responseHeaders[HttpUtil.CONTENT_TYPE] = when (parser.version) {
+                        WsdlParser.WsdlVersion.Version_1 -> SoapUtil.soap11ContentType
+                        WsdlParser.WsdlVersion.Version_2 -> SoapUtil.soap12ContentType
+                    }
                 }
 
                 // build a response from the XSD
                 val exampleSender = ResponseSender { httpExchange: HttpExchange, _: ResponseBehaviour ->
-                    soapExampleService.serveExample(httpExchange, schemas, operation.outputElementRef, soapEnv)
+                    soapExampleService.serveExample(httpExchange, parser.schemas, operation.outputElementRef, soapEnv)
                 }
 
                 // attempt to serve the example, falling back if not present

@@ -45,6 +45,7 @@ package io.gatehill.imposter.plugin.soap
 
 import io.gatehill.imposter.config.ResolvedResourceConfig
 import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.http.SingletonResourceMatcher
 import io.gatehill.imposter.plugin.soap.config.SoapPluginResourceConfig
 import io.gatehill.imposter.plugin.soap.model.ParsedSoapMessage
@@ -114,29 +115,38 @@ class SoapResourceMatcher(
     fun getSoapAction(httpExchange: HttpExchange): String? {
         val request = httpExchange.request()
 
-        // e.g. SOAPAction: example
+        val soapAction: String? = getSoapActionHeader(request)
+            ?: getSoapActionFromContentType(request)
+
+        soapAction ?: LOGGER.trace("No SOAPAction found")
+        return soapAction
+    }
+
+    private fun getSoapActionHeader(request: HttpRequest) :String? {
         request.getHeader("SOAPAction")?.let { actionHeader ->
-            val soapAction = actionHeader.trim()
+            // e.g. SOAPAction: example
+            val soapAction = actionHeader.trim().removeSurrounding("\"").takeIf { it.isNotBlank() }
             LOGGER.trace("SOAPAction header: $soapAction")
             return soapAction
+        }
+        return null
+    }
 
-        } ?: run {
-            // e.g. application/soap+xml;charset=UTF-8;action="example"
-            val contentTypeParts = request.getHeader("Content-Type")
-                ?.split(";")
-                ?.map { it.trim() }
+    private fun getSoapActionFromContentType(request: HttpRequest): String? {
+        // e.g. application/soap+xml;charset=UTF-8;action="example"
+        // for SOAP 1.2
+        val contentTypeParts = request.getHeader("Content-Type")
+            ?.split(";")
+            ?.map { it.trim() }
 
-            contentTypeParts?.let { headerParts ->
-                if (headerParts.any { it == SoapUtil.soapContentType }) {
-                    val actionPart = headerParts.find { it.startsWith("action=") }
-                    val soapAction = actionPart?.removePrefix("action=")?.removeSurrounding("\"")
-                    LOGGER.trace("SOAPAction from content type header: $soapAction")
-                    return soapAction
-                }
+        contentTypeParts?.let { headerParts ->
+            if (headerParts.any { it == SoapUtil.soap12ContentType }) {
+                val actionPart = headerParts.find { it.startsWith("action=") }
+                val soapAction = actionPart?.removePrefix("action=")?.removeSurrounding("\"")
+                LOGGER.trace("SOAPAction from content type header: $soapAction")
+                return soapAction
             }
         }
-
-        LOGGER.trace("No SOAPAction found")
         return null
     }
 
