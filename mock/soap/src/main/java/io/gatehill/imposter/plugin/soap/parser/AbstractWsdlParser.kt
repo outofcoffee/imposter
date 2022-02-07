@@ -48,8 +48,8 @@ import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.apache.xmlbeans.SchemaTypeSystem
 import org.apache.xmlbeans.XmlBeans
-import org.apache.xmlbeans.XmlObject
 import org.apache.xmlbeans.XmlOptions
+import org.apache.xmlbeans.impl.xb.xsdschema.SchemaDocument
 import org.jdom2.Document
 import org.jdom2.Element
 import org.jdom2.Namespace
@@ -67,30 +67,30 @@ abstract class AbstractWsdlParser(
 ) : WsdlParser {
     protected val logger: Logger = LogManager.getLogger(this::class.java)
 
-    override val schemas: Array<XmlObject> by lazy { discoverSchemas() }
+    override val schemas: Array<SchemaDocument> by lazy { discoverSchemas() }
 
     protected val xsd: SchemaTypeSystem by lazy { buildXsdFromSchemas() }
 
-    private fun discoverSchemas(): Array<XmlObject> {
-        val schemas = mutableListOf<XmlObject>()
+    private fun discoverSchemas(): Array<SchemaDocument> {
+        val schemas = mutableListOf<SchemaDocument>()
 
         findEmbeddedTypesSchema()?.let { schemas += it }
 
         // TODO consider only those referenced by 'xs:import'
         val xsds = wsdlFile.parentFile.listFiles { _, name -> name.endsWith(".xsd") }?.toList() ?: emptyList()
         schemas += xsds.map { schemaFile ->
-            XmlObject.Factory.parse(schemaFile, XmlOptions().setLoadLineNumbers().setLoadMessageDigest())
+            SchemaDocument.Factory.parse(schemaFile, XmlOptions().setLoadLineNumbers().setLoadMessageDigest())
         }
 
         logger.debug("Discovered ${schemas.size} schema(s) for WSDL: $wsdlFile")
         return schemas.toTypedArray()
     }
 
-    private fun findEmbeddedTypesSchema(): XmlObject? {
+    private fun findEmbeddedTypesSchema(): SchemaDocument? {
         return findEmbeddedTypesSchemaNode()?.let {
             val schemaXml = XMLOutputter().outputString(it)
             logger.trace("Embedded types schema: {}", schemaXml)
-            return XmlObject.Factory.parse(schemaXml)
+            return SchemaDocument.Factory.parse(schemaXml)
         } ?: run {
             logger.warn("No embedded types schema found")
             return null

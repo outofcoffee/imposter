@@ -67,7 +67,7 @@ class Wsdl2Parser(
     document: Document
 ) : AbstractWsdlParser(wsdlFile, document) {
 
-    override val version = WsdlParser.WsdlVersion.Version_2
+    override val version = WsdlParser.WsdlVersion.V2
 
     override val services: List<WsdlService>
         get() {

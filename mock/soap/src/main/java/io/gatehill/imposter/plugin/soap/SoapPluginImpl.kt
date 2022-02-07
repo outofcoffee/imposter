@@ -213,8 +213,8 @@ class SoapPluginImpl @Inject constructor(
 
                 if (!responseBehaviour.responseHeaders.containsKey(HttpUtil.CONTENT_TYPE)) {
                     responseBehaviour.responseHeaders[HttpUtil.CONTENT_TYPE] = when (parser.version) {
-                        WsdlParser.WsdlVersion.Version_1 -> SoapUtil.soap11ContentType
-                        WsdlParser.WsdlVersion.Version_2 -> SoapUtil.soap12ContentType
+                        WsdlParser.WsdlVersion.V1 -> SoapUtil.soap11ContentType
+                        WsdlParser.WsdlVersion.V2 -> SoapUtil.soap12ContentType
                     }
                 }
 

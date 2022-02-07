@@ -48,7 +48,7 @@ import io.gatehill.imposter.plugin.soap.model.ParsedSoapMessage
 import io.gatehill.imposter.plugin.soap.util.SoapUtil
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
-import org.apache.xmlbeans.XmlObject
+import org.apache.xmlbeans.impl.xb.xsdschema.SchemaDocument
 import org.apache.xmlbeans.impl.xsd2inst.SchemaInstanceGenerator
 import javax.xml.namespace.QName
 
@@ -61,7 +61,7 @@ class SoapExampleService {
 
     fun serveExample(
         httpExchange: HttpExchange,
-        schemas: Array<XmlObject>,
+        schemas: Array<SchemaDocument>,
         outputTypeDefName: QName,
         soapEnv: ParsedSoapMessage,
     ): Boolean {

@@ -46,17 +46,17 @@ package io.gatehill.imposter.plugin.soap.parser
 import io.gatehill.imposter.plugin.soap.model.WsdlBinding
 import io.gatehill.imposter.plugin.soap.model.WsdlInterface
 import io.gatehill.imposter.plugin.soap.model.WsdlService
-import org.apache.xmlbeans.XmlObject
+import org.apache.xmlbeans.impl.xb.xsdschema.SchemaDocument
 
 interface WsdlParser {
     val version: WsdlVersion
-    val schemas: Array<XmlObject>
+    val schemas: Array<SchemaDocument>
     val services: List<WsdlService>
     fun getBinding(bindingName: String): WsdlBinding?
     fun getInterface(interfaceName: String): WsdlInterface?
 
     enum class WsdlVersion {
-        Version_1,
-        Version_2,
+        V1,
+        V2,
     }
 }

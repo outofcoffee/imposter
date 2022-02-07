@@ -47,7 +47,7 @@ import io.gatehill.imposter.plugin.soap.model.WsdlBinding
 import io.gatehill.imposter.plugin.soap.model.WsdlInterface
 import io.gatehill.imposter.plugin.soap.model.WsdlService
 import org.apache.logging.log4j.LogManager
-import org.apache.xmlbeans.XmlObject
+import org.apache.xmlbeans.impl.xb.xsdschema.SchemaDocument
 import org.jdom2.input.SAXBuilder
 import java.io.File
 
@@ -81,7 +81,7 @@ class VersionAwareWsdlParser(wsdlFile: File) : WsdlParser {
     override val version: WsdlParser.WsdlVersion
         get() = delegate.version
 
-    override val schemas: Array<XmlObject>
+    override val schemas: Array<SchemaDocument>
         get() = delegate.schemas
 
     override val services: List<WsdlService>

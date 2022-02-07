@@ -58,7 +58,7 @@ class VersionAwareWsdlParserTest {
         val wsdlFile = File(VersionAwareWsdlParserTest::class.java.getResource("/wsdl1/service.wsdl")!!.toURI())
         val parser = VersionAwareWsdlParser(wsdlFile)
 
-        assertEquals(WsdlParser.WsdlVersion.Version_1, parser.version)
+        assertEquals(WsdlParser.WsdlVersion.V1, parser.version)
     }
 
     @Test
@@ -66,6 +66,6 @@ class VersionAwareWsdlParserTest {
         val wsdlFile = File(VersionAwareWsdlParserTest::class.java.getResource("/wsdl2/service.wsdl")!!.toURI())
         val parser = VersionAwareWsdlParser(wsdlFile)
 
-        assertEquals(WsdlParser.WsdlVersion.Version_2, parser.version)
+        assertEquals(WsdlParser.WsdlVersion.V2, parser.version)
     }
 }
