@@ -1,0 +1,9 @@
+apply plugin: 'java-library'
+
+compileJava {
+    sourceCompatibility = 1.8
+}
+
+dependencies {
+    compile 'com.sun.xml.ws:jaxws-rt:2.3.5'
+}

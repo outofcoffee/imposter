@@ -21,6 +21,7 @@ include ':server'
 project(':server').name = 'imposter-server'
 
 // test
+include ':test:sample-soap-client'
 include ':test:test-utils'
 
 // adapters

@@ -23,6 +23,9 @@ dependencies {
 
     // java 11 compatibility
     testImplementation ('javax.xml.bind:jaxb-api:2.3.0')
+
+    // sample client
+    testImplementation project(':test:sample-soap-client')
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
