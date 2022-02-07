@@ -3,9 +3,18 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [2.8.0] - 2022-02-07
 ### Added
-- ...
+- feat: adds SOAP mocks plugin. This is available as a plugin and in the 'all' distro. See the user documentation for plugin reference and examples.
+- feat: allows resource matching without specifying an HTTP method.
+- feat: allows capture of store items to be deferred to after request processing has completed.
+- feat: adds support for capture of response headers and body.
+- docs: improves expression description and examples.
+
+### Changed
+- feat: response file cache now applies to all files, not just templates.
+- docs: moves examples to top level directory.
+- chore: bumps sample serverless dependency to 2.72.2.
 
 ## [2.7.3] - 2022-01-31
 ### Added
