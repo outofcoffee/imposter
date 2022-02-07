@@ -103,21 +103,26 @@ For example:
 
     ${context.request.headers.Correlation-ID}
 
-Or composite expressions such as:
+Composite expressions are also supported:
 
     example_${context.request.headers.Correlation-ID}_${context.request.headers.User-Agent}
 
+> Note the mix of placeholders, like `${context.request.headers.Correlation-ID}`, and plain text in this example.
+
 The following expressions are supported:
 
-| Expression                              | Example expression                   | Example value                |
-|-----------------------------------------|--------------------------------------|------------------------------|
-| `context.request.headers.HEADERNAME`    | `context.request.headers.User-Agent` | `"Mozilla"`                  |
-| `context.request.pathParams.PARAMNAME`  | `context.request.pathParams.account` | `"example"`                  |
-| `context.request.queryParams.PARAMNAME` | `context.request.queryParams.page`   | `"1"`                        |
-| `datetime.now.iso8601_date`             | `datetime.now.iso8601_date`          | `"2022-01-20"`               |
-| `datetime.now.iso8601_datetime`         | `datetime.now.iso8601_datetime`      | `"2022-01-20T14:23:25.737Z"` |
-| `datetime.now.millis`                   | `datetime.now.millis`                | `"1642688570140"`            |
-| `datetime.now.nanos`                    | `datetime.now.nanos`                 | `"30225267785430"`           |
+| Expression format                       | Example                                    | Example value                |
+|-----------------------------------------|--------------------------------------------|------------------------------|
+| `context.request.body`                  | `${context.request.body}`                  | `{ "example request" }`      |
+| `context.request.headers.HEADERNAME`    | `${context.request.headers.User-Agent}`    | `"Mozilla"`                  |
+| `context.request.pathParams.PARAMNAME`  | `${context.request.pathParams.account}`    | `"example"`                  |
+| `context.request.queryParams.PARAMNAME` | `${context.request.queryParams.page}`      | `"1"`                        |
+| `context.response.body`                 | `${context.response.body}`                 | `{ "example response" }`     |
+| `context.response.headers.HEADERNAME`   | `${context.response.headers.Content-Type}` | `"application/json"`         |
+| `datetime.now.iso8601_date`             | `${datetime.now.iso8601_date}`             | `"2022-01-20"`               |
+| `datetime.now.iso8601_datetime`         | `${datetime.now.iso8601_datetime}`         | `"2022-01-20T14:23:25.737Z"` |
+| `datetime.now.millis`                   | `${datetime.now.millis}`                   | `"1642688570140"`            |
+| `datetime.now.nanos`                    | `${datetime.now.nanos}`                    | `"30225267785430"`           |
 
 Example:
 
@@ -138,6 +143,25 @@ For a request such as the following:
     GET /people/engineering/jane
 
 The captured item, named `personInTeam`, would have the value: `"person=jane,team=engineering"`
+
+#### Response expressions
+
+Response expressions, such as `${context.response.body}`, must use _Deferred capture_ (see Deferred capture section).
+
+Example:
+
+```yaml
+# part of your configuration file
+
+resources:
+  - path: "/example"
+    method: GET
+    capture:
+      responseBody:
+        expression: "${context.response.body}"
+        store: testStore
+        phase: RESPONSE_SENT # this is required for response capture
+```
 
 ### Capturing an object
 
@@ -197,21 +221,21 @@ In the example above, an item corresponding to the `userId` parameter in the req
 
 > Note: Values do not have to be constant - you can combine dynamic item names and captured data.
 
-## Deferred persistence
+## Deferred capture
 
-If you do not need an item to be persisted to the store immediately, you can choose to _defer_ persistence. This will result in the persistence operation being triggered _after_ processing of the current request has completed and the response has been transmitted to the client.
+If you do not need an item to be persisted to the store immediately, you can choose to _defer_ capture. This will result in the capture and persistence operation being triggered _after_ processing of the current request has completed and the response has been transmitted to the client.
 
-Deferring persistence has the advantage of improving request throughput, at the cost of capture occurring after the request has been completed.  This trade-off may be useful for particular use cases, such as when writing events to a store for later retrieval, where real-time access is not required.
+Deferring capture has the advantage of improving request throughput, at the cost of persistence occurring after the request has been completed.  This trade-off may be useful for particular use cases, such as when writing events to a store for later retrieval, where real-time access is not required.
 
 ### Important considerations
 
-Deferred items will not be available in the current request (such as in response templates or scripts). Given that the actual persistence operation runs asynchronously, there is no guarantee that it will complete before a subsequent request. When using deferred persistence, you should consider carefully any dependent logic or configuration that expects the presence of an item in the store at a particular point in time.
+Deferred items will not be available in the current request (such as in response templates or scripts). Given that the actual persistence operation runs asynchronously, there is no guarantee that it will complete before a subsequent request. When using deferred capture, you should consider carefully any dependent logic or configuration that expects the presence of an item in the store at a particular point in time.
 
-Note that deferred persistence cannot be used with the request scoped store, as this would not make sense, since the request store only applies to a single request.
+Note that deferred capture cannot be used with the request scoped store, since the request store only applies to a single request.
 
-### Configuring deferred persistence
+### Configuring deferred capture
 
-To enable deferred persistence for a particular case, set the `phase: RESPONSE_SENT` property in a capture block, for example:
+To enable deferred capture for a particular case, set the `phase: RESPONSE_SENT` property in a capture block, for example:
 
 ```yaml
 # ...other configuration

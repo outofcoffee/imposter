@@ -1,13 +1,17 @@
 package io.gatehill.imposter.store.service
 
 import com.jayway.jsonpath.internal.path.PathCompiler.fail
+import io.gatehill.imposter.http.ExchangePhase
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpRequest
+import io.gatehill.imposter.http.HttpResponse
 import io.gatehill.imposter.util.DateTimeUtil
-import org.hamcrest.CoreMatchers
+import io.vertx.core.MultiMap
+import io.vertx.core.buffer.Buffer
 import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.number.OrderingComparison
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.doReturn
@@ -23,7 +27,7 @@ class ExpressionServiceImplTest {
     }
 
     @Test
-    fun `eval header with expression`() {
+    fun `eval request header`() {
         val request = mock<HttpRequest> {
             on { getHeader(eq("Correlation-ID")) } doReturn "foo"
         }
@@ -36,11 +40,11 @@ class ExpressionServiceImplTest {
             httpExchange = httpExchange,
         )
 
-        assertThat(result, CoreMatchers.equalTo("foo"))
+        assertThat(result, equalTo("foo"))
     }
 
     @Test
-    fun `eval path param with expression`() {
+    fun `eval request path param`() {
         val httpExchange = mock<HttpExchange> {
             on { pathParam("userId") } doReturn "Example-User-ID"
         }
@@ -50,11 +54,11 @@ class ExpressionServiceImplTest {
             httpExchange = httpExchange,
         )
 
-        assertThat(result, CoreMatchers.equalTo("Example-User-ID"))
+        assertThat(result, equalTo("Example-User-ID"))
     }
 
     @Test
-    fun `eval query param with expression`() {
+    fun `eval request query param`() {
         val httpExchange = mock<HttpExchange> {
             on { queryParam("page") } doReturn "1"
         }
@@ -64,7 +68,87 @@ class ExpressionServiceImplTest {
             httpExchange = httpExchange,
         )
 
-        assertThat(result, CoreMatchers.equalTo("1"))
+        assertThat(result, equalTo("1"))
+    }
+
+    @Test
+    fun `eval request body`() {
+        val httpExchange = mock<HttpExchange> {
+            on { bodyAsString } doReturn "Request body"
+        }
+
+        val result = service.eval(
+            expression = "\${context.request.body}",
+            httpExchange = httpExchange,
+        )
+
+        assertThat(result, equalTo("Request body"))
+    }
+
+    @Test
+    fun `eval response body`() {
+        val response = mock<HttpResponse> {
+            on { bodyBuffer } doReturn Buffer.buffer("Response body")
+        }
+        val httpExchange = mock<HttpExchange> {
+            on { phase } doReturn ExchangePhase.RESPONSE_SENT
+            on { response() } doReturn response
+        }
+
+        val result = service.eval(
+            expression = "\${context.response.body}",
+            httpExchange = httpExchange,
+        )
+
+        assertThat(result, equalTo("Response body"))
+    }
+
+    @Test
+    fun `eval response header`() {
+        val response = mock<HttpResponse> {
+            on { headers() } doReturn MultiMap.caseInsensitiveMultiMap().apply {
+                add("X-Example", "foo")
+            }
+        }
+        val httpExchange = mock<HttpExchange> {
+            on { phase } doReturn ExchangePhase.RESPONSE_SENT
+            on { response() } doReturn response
+        }
+
+        val result = service.eval(
+            expression = "\${context.response.headers.X-Example}",
+            httpExchange = httpExchange,
+        )
+
+        assertThat(result, equalTo("foo"))
+    }
+
+    @Test
+    fun `fail to eval response in wrong phase`() {
+        val httpExchange = mock<HttpExchange> {
+            on { phase } doReturn ExchangePhase.REQUEST_RECEIVED
+        }
+
+        checkExceptionThrownForPhase(httpExchange, "\${context.response.body}")
+        checkExceptionThrownForPhase(httpExchange, "\${context.response.headers.foo}")
+    }
+
+    private fun checkExceptionThrownForPhase(httpExchange: HttpExchange, expression: String) {
+        var cause: Throwable? = null
+        try {
+            service.eval(
+                expression = expression,
+                httpExchange = httpExchange,
+            )
+            fail("IllegalStateException should have been thrown")
+
+        } catch (e: Exception) {
+            cause = e.cause
+            while (cause?.cause != null) {
+                cause = cause.cause
+            }
+        }
+        assertEquals("IllegalStateException should be root cause", IllegalStateException::class.java, cause?.javaClass)
     }
 
     @Test
@@ -82,7 +166,7 @@ class ExpressionServiceImplTest {
             httpExchange = httpExchange,
         )
 
-        assertThat(result, CoreMatchers.equalTo("foo_mozilla"))
+        assertThat(result, equalTo("foo_mozilla"))
     }
 
     @Test
@@ -123,7 +207,7 @@ class ExpressionServiceImplTest {
     }
 
     @Test
-    fun `eval invalid`() {
+    fun `eval invalid expression`() {
         val httpExchange = mock<HttpExchange>()
 
         val result = service.eval(

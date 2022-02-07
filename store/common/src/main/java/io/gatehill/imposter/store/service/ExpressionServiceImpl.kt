@@ -42,9 +42,11 @@
  */
 package io.gatehill.imposter.store.service
 
+import io.gatehill.imposter.http.ExchangePhase
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.util.DateTimeUtil
 import org.apache.logging.log4j.LogManager
+import java.nio.charset.Charset
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
@@ -108,19 +110,43 @@ class ExpressionServiceImpl : ExpressionService {
                 ignoreCase = false,
                 limit = 4,
             )
-            if (parts.size < 4) {
-                LOGGER.warn("Could not parse context expression: $expression")
-                return null
-            }
-            val parsed = when (parts[0]) {
+            val parsed: String? = when (parts[0]) {
                 "context" -> when (parts[1]) {
-                    "request" -> when (parts[2]) {
-                        "headers" -> httpExchange.request().getHeader(parts[3])
-                        "queryParams" -> httpExchange.queryParam(parts[3])
-                        "pathParams" -> httpExchange.pathParam(parts[3])
-                        else -> {
-                            LOGGER.warn("Could not parse context expression: $expression")
-                            null
+                    "request" -> {
+                        when (parts[2]) {
+                            "body" -> checkExpression(expression, 3, parts) {
+                                httpExchange.bodyAsString
+                            }
+                            "headers" -> checkExpression(expression, 4, parts) {
+                                httpExchange.request().getHeader(parts[3])
+                            }
+                            "pathParams" -> checkExpression(expression, 4, parts) {
+                                httpExchange.pathParam(parts[3])
+                            }
+                            "queryParams" -> checkExpression(expression, 4, parts) {
+                                httpExchange.queryParam(parts[3])
+                            }
+                            else -> {
+                                LOGGER.warn("Could not parse request context expression: $expression")
+                                null
+                            }
+                        }
+                    }
+                    "response" -> {
+                        check(httpExchange.phase == ExchangePhase.RESPONSE_SENT) {
+                            "Cannot capture response outside of ${ExchangePhase.RESPONSE_SENT} phase"
+                        }
+                        when (parts[2]) {
+                            "body" -> checkExpression(expression, 3, parts) {
+                                httpExchange.response().bodyBuffer.toString(Charset.defaultCharset())
+                            }
+                            "headers" -> checkExpression(expression, 4, parts) {
+                                httpExchange.response().headers()[parts[3]]
+                            }
+                            else -> {
+                                LOGGER.warn("Could not parse response context expression: $expression")
+                                null
+                            }
                         }
                     }
                     else -> {
@@ -138,6 +164,19 @@ class ExpressionServiceImpl : ExpressionService {
         } catch (e: Exception) {
             throw RuntimeException("Error evaluating context expression: $expression", e)
         }
+    }
+
+    private fun checkExpression(
+        expression: String,
+        minParts: Int,
+        parts: List<String>,
+        valueSupplier: () -> String?
+    ): String? {
+        if (parts.size < minParts) {
+            LOGGER.warn("Could not parse context expression: $expression - expected $minParts parts, but was ${parts.size}")
+            return null
+        }
+        return valueSupplier()
     }
 
     /**
