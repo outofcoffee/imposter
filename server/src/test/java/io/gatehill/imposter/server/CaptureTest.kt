@@ -224,7 +224,7 @@ class CaptureTest : BaseVerticleTest() {
         attempt(attempts = 5) {
             RestAssured.given().`when`()
                 .pathParam("storeId", "captureDeferred")
-                .get("/system/store/{storeId}/userIdX")
+                .get("/system/store/{storeId}/userId")
                 .then()
                 .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
                 .contentType(ContentType.TEXT)

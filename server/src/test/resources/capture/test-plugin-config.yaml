@@ -52,6 +52,6 @@ resources:
     userId:
       expression: "${context.request.pathParams.userId}"
       store: captureDeferred
-      persistence: DEFER
+      phase: RESPONSE_SENT
   response:
     statusCode: 202

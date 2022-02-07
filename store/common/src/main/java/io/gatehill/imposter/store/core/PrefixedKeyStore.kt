@@ -42,7 +42,7 @@
  */
 package io.gatehill.imposter.store.core
 
-import io.gatehill.imposter.plugin.config.store.StorePersistencePoint
+import io.gatehill.imposter.plugin.config.store.PersistencePhase
 
 /**
  * A delegating [Store] wrapper that prepends a string to item keys
@@ -67,8 +67,8 @@ class PrefixedKeyStore(
         return keyPrefix + key
     }
 
-    override fun save(key: String, value: Any?, persistencePoint: StorePersistencePoint) {
-        delegate.save(buildKey(key), value, persistencePoint)
+    override fun save(key: String, value: Any?, phase: PersistencePhase) {
+        delegate.save(buildKey(key), value, phase)
     }
 
     override fun <T> load(key: String): T? = delegate.load(buildKey(key))

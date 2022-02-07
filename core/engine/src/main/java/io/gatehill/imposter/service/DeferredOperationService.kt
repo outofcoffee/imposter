@@ -42,7 +42,6 @@
  */
 package io.gatehill.imposter.service
 
-import io.vertx.core.Vertx
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -51,17 +50,13 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
-import javax.inject.Inject
 
 /**
  * [Channel]-based executor for deferring operations to a background worker thread.
  *
  * @author Pete Cornish
  */
-class DeferredOperationService @Inject constructor(
-    private val vertx: Vertx,
-) : CoroutineScope by CoroutineScope(Dispatchers.IO + SupervisorJob()) {
-
+class DeferredOperationService : CoroutineScope by CoroutineScope(Dispatchers.IO + SupervisorJob()) {
     private val logger: Logger = LogManager.getLogger(DeferredOperationService::class.java)
     private val deferredOperations: Channel<Pair<String, Runnable>> by lazy { startDeferredExecutor() }
 

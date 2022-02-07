@@ -42,7 +42,7 @@
  */
 package io.gatehill.imposter.store.core
 
-import io.gatehill.imposter.plugin.config.store.StorePersistencePoint
+import io.gatehill.imposter.plugin.config.store.PersistencePhase
 
 /**
  * @author Pete Cornish
@@ -55,7 +55,7 @@ interface Store {
     fun save(
         key: String,
         value: Any?,
-        persistencePoint: StorePersistencePoint = StorePersistencePoint.IMMEDIATE,
+        phase: PersistencePhase = PersistencePhase.REQUEST_RECEIVED,
     )
     fun <T> load(key: String): T?
     fun delete(key: String)

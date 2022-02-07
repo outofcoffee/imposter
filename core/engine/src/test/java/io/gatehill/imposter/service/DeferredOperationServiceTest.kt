@@ -42,7 +42,6 @@
  */
 package io.gatehill.imposter.service
 
-import io.vertx.core.Vertx
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -52,7 +51,7 @@ import org.junit.Test
 
 class DeferredOperationServiceTest {
     private val logger = LogManager.getLogger(DeferredOperationServiceTest::class.java)
-    private val service = DeferredOperationService(Vertx.vertx())
+    private val service = DeferredOperationService()
 
     @Test
     fun defer() = runBlocking {

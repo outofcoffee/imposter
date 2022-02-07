@@ -42,7 +42,7 @@
  */
 package io.gatehill.imposter.store.core
 
-import io.gatehill.imposter.plugin.config.store.StorePersistencePoint
+import io.gatehill.imposter.plugin.config.store.PersistencePhase
 import io.gatehill.imposter.service.DeferredOperationService
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -55,13 +55,13 @@ abstract class AbstractStore(
 ) : Store {
     private val logger: Logger = LogManager.getLogger(AbstractStore::class.java)
 
-    override fun save(key: String, value: Any?, persistencePoint: StorePersistencePoint) {
-        if (persistencePoint == StorePersistencePoint.DEFER && isEphemeral) {
+    override fun save(key: String, value: Any?, phase: PersistencePhase) {
+        if (phase == PersistencePhase.RESPONSE_SENT && isEphemeral) {
             throw IllegalStateException("Cannot use deferred persistence for ephemeral store: $storeName of type: $typeDescription")
         }
-        when (persistencePoint) {
-            StorePersistencePoint.IMMEDIATE -> save(key, value)
-            StorePersistencePoint.DEFER -> deferSave(key, value)
+        when (phase) {
+            PersistencePhase.REQUEST_RECEIVED -> save(key, value)
+            PersistencePhase.RESPONSE_SENT -> deferSave(key, value)
         }
     }
 

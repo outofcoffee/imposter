@@ -63,7 +63,7 @@ The following configuration options are available for a capture:
 | `expression`      | A placeholder expression, e.g. `${context.request.queryParams.foo}` - see _Expressions_ section.                          | 
 | `const`           | A constant value, e.g. `example`.                                                                                         |
 
-## Capturing the request body
+### Capturing the request body
 
 You can capture part or all of the request body using a JsonPath expression.
 
@@ -94,28 +94,6 @@ resources:
 ```
 
 In this example, the `name` property of the body would be stored in the 'firstName' item in the store named 'testStore'.
-
-### Constant values
-
-In some scenarios, you may wish to capture a constant value.
-
-Example:
-
-```yaml
-plugin: rest
-
-- method: GET
-  path: /test
-  capture:
-    # constant value
-    receivedRequest:
-      store: example
-      const: received
-  response:
-    statusCode: 200
-```
-
-In the example above, the value `received` is stored in the 'example' store, with the name 'receivedRequest', when the given endpoint is hit.
 
 ### Expressions
 
@@ -160,6 +138,89 @@ For a request such as the following:
     GET /people/engineering/jane
 
 The captured item, named `personInTeam`, would have the value: `"person=jane,team=engineering"`
+
+### Capturing an object
+
+In some scenarios you may wish to capture an object instead of a single value.
+
+For example, to capture the address from the example above, use the JsonPath expression `$.address` - this will result in the entire address object being captured.
+
+You can retrieve this object in a script, by accessing the [store](./stores.md) named 'testStore', or you could use it in a JsonPath placeholder within a [template](./templates.md).
+
+### Constant values
+
+In some scenarios, you may wish to capture a constant value.
+
+Example:
+
+```yaml
+plugin: rest
+
+- method: GET
+  path: /test
+  capture:
+    # constant value
+    receivedRequest:
+      store: example
+      const: received
+  response:
+    statusCode: 200
+```
+
+In the example above, the value `received` is stored in the 'example' store, with the name 'receivedRequest', when the given endpoint is hit.
+
+### Dynamic item names
+
+You do not have to specify a constant value for the item name - you can use a property of the request, such as a query or path parameter, header or body element as the item name.
+
+Dynamic item names are useful when you want to capture collections of items, each with their own name derived from the request.
+
+Example:
+
+```yaml
+plugin: rest
+
+- method: PUT
+  path: /users/admins/:userId
+  capture:
+    # constant value, but dynamic key
+    adminUser:
+      key:
+        pathParam: userId
+      store: adminUsers
+      const: admin
+  response:
+    statusCode: 200
+```
+
+In the example above, an item corresponding to the `userId` parameter in the request is added to the 'adminUsers' store with the constant value `admin`.
+
+> Note: Values do not have to be constant - you can combine dynamic item names and captured data.
+
+## Deferred persistence
+
+If you do not need an item to be persisted to the store immediately, you can choose to _defer_ persistence. This will result in the persistence operation being triggered _after_ processing of the current request has completed and the response has been transmitted to the client.
+
+Deferring persistence has the advantage of improving request throughput, at the cost of capture occurring after the request has been completed.  This trade-off may be useful for particular use cases, such as when writing events to a store for later retrieval, where real-time access is not required.
+
+### Important considerations
+
+Deferred items will not be available in the current request (such as in response templates or scripts). Given that the actual persistence operation runs asynchronously, there is no guarantee that it will complete before a subsequent request. When using deferred persistence, you should consider carefully any dependent logic or configuration that expects the presence of an item in the store at a particular point in time.
+
+Note that deferred persistence cannot be used with the request scoped store, as this would not make sense, since the request store only applies to a single request.
+
+### Configuring deferred persistence
+
+To enable deferred persistence for a particular case, set the `phase: RESPONSE_SENT` property in a capture block, for example:
+
+```yaml
+# ...other configuration
+capture:
+  example:
+    expression: "${context.request.queryParams.example}"
+    store: testStore
+    phase: RESPONSE_SENT # default value is REQUEST_RECEIVED
+```
 
 ## Request scoped store
 
@@ -206,67 +267,6 @@ curl -X PUT http://localhost:8080/users/alice
 {
   "userName": "alice"
 }
-```
-
-### Capturing an object
-
-In some scenarios you may wish to capture an object instead of a single value.
-
-For example, to capture the address from the example above, use the JsonPath expression `$.address` - this will result in the entire address object being captured.
-
-You can retrieve this object in a script, by accessing the [store](./stores.md) named 'testStore', or you could use it in a JsonPath placeholder within a [template](./templates.md).
-
-### Dynamic item names
-
-You do not have to specify a constant value for the item name - you can use a property of the request, such as a query or path parameter, header or body element as the item name.
-
-Dynamic item names are useful when you want to capture collections of items, each with their own name derived from the request.
-
-Example:
-
-```yaml
-plugin: rest
-
-- method: PUT
-  path: /users/admins/:userId
-  capture:
-    # constant value, but dynamic key
-    adminUser:
-      key:
-        pathParam: userId
-      store: adminUsers
-      const: admin
-  response:
-    statusCode: 200
-```
-
-In the example above, an item corresponding to the `userId` parameter in the request is added to the 'adminUsers' store with the constant value `admin`.
-
-> Note: Values do not have to be constant - you can combine dynamic item names and captured data.
-
-## Deferred persistence
-
-If you do not need an item to be persisted to the store immediately, you can choose to _defer_ persistence. This will result in the persistence operation being triggered _after_ processing of the current request has completed and the response has been transmitted to the client.
-
-Deferring persistence has the advantage of improving request throughput, at the cost of capture occurring after the request has been completed.  This trade-off may be useful for particular use cases, such as when writing events to a store for later retrieval, where real-time access is not required.
-
-### Important considerations
-
-Deferred items will not be available in the current request (such as in response templates or scripts). Given that the actual persistence operation runs asynchronously, there is no guarantee that it will complete before a subsequent request. When using deferred persistence, you should consider carefully any dependent logic or configuration that expects the presence of an item in the store at a particular point in time.
-
-Note that deferred persistence cannot be used with the request scoped store, as this would not make sense, since the request store only applies to a single request.
-
-### Configuring deferred persistence
-
-To enable deferred persistence for a particular case, set the `persistence: DEFER` property in a capture block, for example:
-
-```yaml
-# ...other configuration
-capture:
-  example:
-    expression: "${context.request.queryParams.example}"
-    store: testStore
-    persistence: DEFER # default value is IMMEDIATE
 ```
 
 ## Enable or disable capture configuration

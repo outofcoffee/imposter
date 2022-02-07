@@ -42,12 +42,17 @@
  */
 package io.gatehill.imposter.plugin.config.store
 
+import com.fasterxml.jackson.annotation.JsonAlias
+
 /**
- * The point at which an item should be persisted to the store.
+ * The phase at which an item should be persisted to the store.
  *
  * @author Pete Cornish
  */
-enum class StorePersistencePoint {
-    IMMEDIATE,
-    DEFER
+enum class PersistencePhase {
+    @JsonAlias("request-received")
+    REQUEST_RECEIVED,
+
+    @JsonAlias("response-sent")
+    RESPONSE_SENT,
 }

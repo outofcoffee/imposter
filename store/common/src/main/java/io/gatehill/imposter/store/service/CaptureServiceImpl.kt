@@ -51,13 +51,13 @@ import io.gatehill.imposter.plugin.config.capture.CaptureConfig
 import io.gatehill.imposter.plugin.config.capture.CaptureConfigHolder
 import io.gatehill.imposter.plugin.config.capture.ItemCaptureConfig
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
-import io.gatehill.imposter.plugin.config.store.StorePersistencePoint
+import io.gatehill.imposter.plugin.config.store.PersistencePhase
 import io.gatehill.imposter.store.core.Store
 import io.gatehill.imposter.store.factory.StoreFactory
 import io.gatehill.imposter.store.util.StoreUtil
 import io.gatehill.imposter.util.ResourceUtil
 import org.apache.logging.log4j.LogManager
-import java.util.Objects
+import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 
@@ -78,24 +78,24 @@ class CaptureServiceImpl @Inject constructor(
 
     override fun beforeBuildingResponse(httpExchange: HttpExchange, resourceConfig: BasicResourceConfig?) {
         // immediate captures
-        captureItems(resourceConfig, httpExchange, StorePersistencePoint.IMMEDIATE)
+        captureItems(resourceConfig, httpExchange, PersistencePhase.REQUEST_RECEIVED)
     }
 
     override fun afterHttpExchangeHandled(httpExchange: HttpExchange, resourceConfig: BasicResourceConfig) {
         // deferred captures
-        captureItems(resourceConfig, httpExchange, StorePersistencePoint.DEFER)
+        captureItems(resourceConfig, httpExchange, PersistencePhase.RESPONSE_SENT)
     }
 
     private fun captureItems(
         resourceConfig: BasicResourceConfig?,
         httpExchange: HttpExchange,
-        persistenceFilter: StorePersistencePoint
+        phaseFilter: PersistencePhase
     ) {
         if (resourceConfig is CaptureConfigHolder) {
             val captureConfig = (resourceConfig as CaptureConfigHolder).captureConfig
             captureConfig?.let {
                 val jsonPathContextHolder = AtomicReference<DocumentContext>()
-                captureConfig.filterValues { it.enabled && it.persistencePoint == persistenceFilter }
+                captureConfig.filterValues { it.enabled && it.phase == phaseFilter }
                     .forEach { (captureConfigKey: String, itemConfig: ItemCaptureConfig) ->
                         captureItem(captureConfigKey, itemConfig, httpExchange, jsonPathContextHolder)
                     }
@@ -118,7 +118,7 @@ class CaptureServiceImpl @Inject constructor(
         itemName?.let {
             val itemValue = captureItemValue(itemConfig, httpExchange, jsonPathContextHolder, captureConfigKey)
             val store = openCaptureStore(httpExchange, storeName)
-            store.save(itemName, itemValue, itemConfig.persistencePoint)
+            store.save(itemName, itemValue, itemConfig.phase)
 
         } ?: run {
             LOGGER.warn(
