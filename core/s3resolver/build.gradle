@@ -19,7 +19,7 @@ dependencies {
     implementation 'com.amazonaws:aws-java-sdk-s3'
 
     // test
-    testImplementation project(':imposter-test')
+    testImplementation project(':test:test-utils')
     testImplementation "com.jayway.restassured:rest-assured:$version_restAssured"
     testImplementation "org.testcontainers:testcontainers:$version_testcontainers"
     testImplementation "com.adobe.testing:s3mock-testcontainers:2.2.1"

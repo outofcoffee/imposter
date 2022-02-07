@@ -10,7 +10,7 @@ dependencies {
     implementation project(':core:imposter-engine')
 
     // test
-    testImplementation project(':imposter-test')
+    testImplementation project(':test:test-utils')
     testImplementation "com.jayway.restassured:rest-assured:$version_restAssured"
 
     // java 11 compatibility

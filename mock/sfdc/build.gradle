@@ -11,7 +11,7 @@ dependencies {
     implementation project(':core:imposter-engine')
 
     // test
-    testImplementation project(':imposter-test')
+    testImplementation project(':test:test-utils')
     testImplementation 'com.frejo:force-rest-api:0.0.29'
 }
 

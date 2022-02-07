@@ -28,7 +28,7 @@ dependencies {
     implementation project (':store:store-dynamodb')
 
     // test
-    testImplementation project(':imposter-test')
+    testImplementation project(':test:test-utils')
     testImplementation 'com.amazonaws:aws-lambda-java-tests:1.1.1'
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:$version_junit_jupiter"

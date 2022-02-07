@@ -20,8 +20,8 @@ project(':core:s3resolver').name = 's3resolver'
 include ':server'
 project(':server').name = 'imposter-server'
 
-include ':test'
-project(':test').name = 'imposter-test'
+// test
+include ':test:test-utils'
 
 // adapters
 include ':adapter:awslambda'
