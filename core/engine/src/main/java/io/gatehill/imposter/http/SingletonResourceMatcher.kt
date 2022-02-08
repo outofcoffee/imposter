@@ -42,19 +42,21 @@
  */
 package io.gatehill.imposter.http
 
-import com.google.common.base.Strings
+import com.google.common.base.Strings.isNullOrEmpty
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.PathNotFoundException
 import io.gatehill.imposter.config.ResolvedResourceConfig
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.resource.MethodResourceConfig
+import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyConfig
 import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyResourceConfig
 import io.gatehill.imposter.util.CollectionUtil.convertKeysToLowerCase
+import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.StringUtil.safeEquals
 import org.apache.logging.log4j.LogManager
 import java.util.Locale
-import java.util.Objects
 import java.util.function.Function
+
 
 /**
  * Matches resources using elements of the HTTP request.
@@ -70,19 +72,21 @@ open class SingletonResourceMatcher : ResourceMatcher {
         httpExchange: HttpExchange,
     ): BasicResourceConfig? {
         val resourceConfigs = filterResourceConfigs(resources, httpExchange)
-        if (resourceConfigs.isEmpty()) {
-            return null
-        }
 
         val request = httpExchange.request()
-        if (resourceConfigs.size == 1) {
-            LOGGER.debug("Matched response config for {} {}", request.method(), request.path())
-        } else {
-            LOGGER.warn(
-                "More than one response config found for {} {} - this is probably a configuration error. Choosing first response configuration.",
-                request.method(),
-                request.path()
-            )
+        when (resourceConfigs.size) {
+            0 -> {
+                LOGGER.trace("No matching resource config for {} {}", request.method(), request.path())
+                return null
+            }
+            1 -> LOGGER.debug("Matched resource config for {} {}", request.method(), request.path())
+            else -> {
+                LOGGER.warn(
+                    "More than one resource config found for {} {} - this is probably a configuration error. Choosing first resource configuration.",
+                    request.method(),
+                    request.path()
+                )
+            }
         }
         return resourceConfigs[0].config
     }
@@ -119,7 +123,7 @@ open class SingletonResourceMatcher : ResourceMatcher {
         val pathTemplate = httpExchange.currentRoutePath
         val pathMatch = request.path() == resourceConfig.path || (pathTemplate?.let { it == resourceConfig.path } == true)
 
-        val methodMatch = if (resourceConfig is MethodResourceConfig) {
+        val methodMatch = if (resourceConfig is MethodResourceConfig && null != resourceConfig.method) {
             request.method() == resourceConfig.method
         } else {
             // unspecified implies any match
@@ -179,22 +183,34 @@ open class SingletonResourceMatcher : ResourceMatcher {
      * @return `true` if the configuration is empty, or the request body matches the configuration, otherwise `false`
      */
     protected fun matchRequestBody(httpExchange: HttpExchange, resourceConfig: BasicResourceConfig): Boolean {
-        if (resourceConfig !is RequestBodyResourceConfig ||
-            Objects.isNull(resourceConfig.requestBody) ||
-            Strings.isNullOrEmpty(resourceConfig.requestBody!!.jsonPath)
-        ) {
+        if (resourceConfig !is RequestBodyResourceConfig) {
             // none configured - implies any match
             return true
         }
 
-        val requestBodyConfig = resourceConfig.requestBody!!
+        if (!isNullOrEmpty(resourceConfig.requestBody?.jsonPath)) {
+            return matchRequestBodyJsonPath(resourceConfig.requestBody!!, httpExchange)
+        } else {
+            // none configured - implies any match
+            return true
+        }
+    }
+
+    private fun matchRequestBodyJsonPath(
+        requestBodyConfig: RequestBodyConfig,
+        httpExchange: HttpExchange
+    ): Boolean {
         val body = httpExchange.bodyAsString
-        val bodyValue = if (Strings.isNullOrEmpty(body)) {
+        val bodyValue = if (isNullOrEmpty(body)) {
             null
         } else {
             try {
-                JsonPath.read<Any>(body, requestBodyConfig.jsonPath)
+                JsonPath.read<Any>(body, requestBodyConfig.jsonPath)?.toString()
             } catch (ignored: PathNotFoundException) {
+                // this is just a negative result
+                null
+            } catch (e: Exception) {
+                LOGGER.warn("Error evaluating JsonPath expression '${requestBodyConfig.jsonPath}' against request body for ${LogUtil.describeRequest(httpExchange)}", e)
                 null
             }
         }

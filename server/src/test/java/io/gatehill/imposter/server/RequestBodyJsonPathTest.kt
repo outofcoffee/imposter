@@ -43,8 +43,8 @@
 package io.gatehill.imposter.server
 
 import com.jayway.restassured.RestAssured
+import com.jayway.restassured.http.ContentType
 import io.gatehill.imposter.plugin.test.TestPluginImpl
-import io.gatehill.imposter.util.HttpUtil
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
 import org.hamcrest.Matchers
@@ -79,9 +79,11 @@ class RequestBodyJsonPathTest : BaseVerticleTest() {
     @Test
     fun testMatchStringInRequestBody() {
         RestAssured.given().`when`()
-            .body("{ \"foo\": \"bar\" }")["/example1"]
+            .contentType(ContentType.JSON)
+            .body("""{ "foo": "bar" }""")
+            .get("/example")
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_NO_CONTENT))
+            .statusCode(Matchers.equalTo(204))
     }
 
     /**
@@ -90,9 +92,11 @@ class RequestBodyJsonPathTest : BaseVerticleTest() {
     @Test
     fun testMatchIntegerInRequestBody() {
         RestAssured.given().`when`()
-            .body("{ \"baz\": 99 }")["/example2"]
+            .contentType(ContentType.JSON)
+            .body("""{ "baz": 99 }""")
+            .get("/example")
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_MOVED_TEMP))
+            .statusCode(Matchers.equalTo(302))
     }
 
     /**
@@ -101,8 +105,10 @@ class RequestBodyJsonPathTest : BaseVerticleTest() {
     @Test
     fun testMatchNullRequestBody() {
         RestAssured.given().`when`()
-            .body("{ \"foo\": \"bar\" }")["/example3"]
+            .contentType(ContentType.JSON)
+            .body("""{ "foo": "bar" }""")
+            .get("/example-nonmatch")
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_CONFLICT))
+            .statusCode(Matchers.equalTo(409))
     }
 }

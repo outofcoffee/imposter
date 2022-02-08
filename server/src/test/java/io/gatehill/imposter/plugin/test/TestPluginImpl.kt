@@ -51,6 +51,7 @@ import io.gatehill.imposter.script.ResponseBehaviour
 import io.gatehill.imposter.service.ResourceService
 import io.gatehill.imposter.service.ResponseRoutingService
 import io.gatehill.imposter.service.ResponseService
+import io.gatehill.imposter.util.ResourceUtil
 import io.vertx.core.Vertx
 import javax.inject.Inject
 
@@ -70,24 +71,31 @@ class TestPluginImpl @Inject constructor(
     private val resourceMatcher = SingletonResourceMatcher.instance
 
     override fun configureRoutes(router: HttpRouter) {
+        val uniquePaths = mutableMapOf<String, TestPluginConfig>()
+
         configs.forEach { config: TestPluginConfig ->
             // root resource
-            config.path?.let { path: String -> configureRoute(config, config, router, path) }
+            config.path?.let { uniquePaths[it] = config }
 
             // subresources
             config.resources?.forEach { resource: TestPluginResourceConfig ->
-                configureRoute(config, resource, router, resource.path!!)
+                uniquePaths[resource.path!!] = config
             }
+        }
+
+        uniquePaths.forEach { (path, config) ->
+            configureRoute(config, router, path)
         }
     }
 
     private fun configureRoute(
         pluginConfig: TestPluginConfig,
-        resourceConfig: BasicResourceConfig,
         router: HttpRouter,
         path: String
     ) {
         router.route(path).handler(resourceService.handleRoute(imposterConfig, pluginConfig, vertx, resourceMatcher) { httpExchange ->
+            val resourceConfig = httpExchange.get<BasicResourceConfig>(ResourceUtil.RESOURCE_CONFIG_KEY)!!
+
             val defaultBehaviourHandler = { responseBehaviour: ResponseBehaviour ->
                 responseService.sendResponse(
                     pluginConfig,

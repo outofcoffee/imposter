@@ -13,7 +13,7 @@ resources:
 - method: GET
   path: /orders/{orderId}
   pathParams:
-    userId: 99
+    orderId: 99
   response:
     statusCode: 203
 

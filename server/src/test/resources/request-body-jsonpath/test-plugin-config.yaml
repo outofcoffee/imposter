@@ -2,7 +2,7 @@ plugin: "io.gatehill.imposter.plugin.test.TestPluginImpl"
 
 resources:
 - method: GET
-  path: /example1
+  path: /example
   requestBody:
     jsonPath: $.foo
     value: bar
@@ -10,7 +10,7 @@ resources:
     statusCode: 204
 
 - method: GET
-  path: /example2
+  path: /example
   requestBody:
     jsonPath: $.baz
     value: 99
@@ -18,7 +18,7 @@ resources:
     statusCode: 302
 
 - method: GET
-  path: /example3
+  path: /example-nonmatch
   requestBody:
     jsonPath: $.notmatching
     # tilde is YAML for null
