@@ -120,27 +120,36 @@ Using the example above, you can interact with the APIs in the SOAP web service 
 
 Send a SOAP request to the `/pets/` path defined in the configuration file to see the example response:
 
-    $ curl -X POST "http://localhost:8080/pets/" -H 'Content-Type: application/soap+xml' \
-        -d '<?xml version="1.0" encoding="UTF-8"?>
-            <env:Envelope xmlns:env="http://www.w3.org/2001/12/soap-envelope">
-                <env:Header/>
-                <env:Body>
-                    <getPetByIdRequest xmlns="urn:com:example:petstore">
-                        <id>3</id>
-                    </getPetByIdRequest>
-                </env:Body>
-            </env:Envelope>'
-    ...
-    <?xml version="1.0" encoding="UTF-8"?>
-    <env:Envelope xmlns:env="http://www.w3.org/2001/12/soap-envelope">
-        <env:Header/>
-        <env:Body>
-            <getPetByNameResponse xmlns="urn:com:example:petstore">
-                <id>3</id>
-                <name>string</name>
-            </getPetByNameResponse>
-        </env:Body>
-    </env:Envelope>
+```shell
+$ curl -X POST "http://localhost:8080/pets/" \
+    -H 'Content-Type: application/soap+xml' \
+    -d '<?xml version="1.0" encoding="UTF-8"?>
+        <env:Envelope xmlns:env="http://www.w3.org/2001/12/soap-envelope">
+            <env:Header/>
+            <env:Body>
+                <getPetByIdRequest xmlns="urn:com:example:petstore">
+                    <id>3</id>
+                </getPetByIdRequest>
+            </env:Body>
+        </env:Envelope>'
+```
+> Tip: don't forget the trailing quote at the end of the string!
+
+Response:
+```shell
+<?xml version="1.0" encoding="UTF-8"?>
+<env:Envelope xmlns:env="http://www.w3.org/2001/12/soap-envelope">
+    <env:Header/>
+    <env:Body>
+        <getPetByIdResponse xmlns="urn:com:example:petstore">
+            <id>3</id>
+            <name>string</name>
+        </getPetByIdResponse>
+    </env:Body>
+</env:Envelope>
+```
+
+It works! Your mock is returning an example SOAP response at the path `/pets/`, all from Imposter understanding the WSDL file.
 
 Once you're finished, stop the server with CTRL+C.
 
@@ -172,9 +181,12 @@ resources:
       statusCode: 400
 ```
 
-First example:
+### First example
+Here we expect the content of the file: `getPetByIdResponse.xml`.
+
 ```shell
-$ curl -v -X POST http://localhost:8080/pets/ -H 'Content-Type: application/soap+xml' \
+$ curl -v -X POST http://localhost:8080/pets/ \
+    -H 'Content-Type: application/soap+xml' \
     -d '<?xml version="1.0" encoding="UTF-8"?>
         <env:Envelope xmlns:env="http://www.w3.org/2001/12/soap-envelope">
             <env:Header/>
@@ -184,22 +196,27 @@ $ curl -v -X POST http://localhost:8080/pets/ -H 'Content-Type: application/soap
                 </getPetByIdRequest>
             </env:Body>
         </env:Envelope>'
-...
+```
+
+Response:
+```shell
 HTTP/1.1 200 OK
 ...
 <?xml version="1.0" encoding="UTF-8"?>
 <env:Envelope xmlns:env="http://www.w3.org/2001/12/soap-envelope">
     <env:Header/>
     <env:Body>
-        <getPetByNameResponse xmlns="urn:com:example:petstore">
+        <getPetByIdResponse xmlns="urn:com:example:petstore">
             <id>3</id>
             <name>Custom pet name</name>
-        </getPetByNameResponse>
+        </getPetByIdResponse>
     </env:Body>
 </env:Envelope>
 ```
 
-Second example:
+### Second example
+Here we expect an HTTP 400 status code, given the matching SOAPAction.
+
 ```shell
 $ curl -v -X POST http://localhost:8080/pets/ -H 'SOAPAction: invalid-pet-action'
 HTTP/1.1 400 Bad Request
@@ -253,10 +270,10 @@ respond().withData('''<?xml version="1.0" encoding="UTF-8"?>
 <env:Envelope xmlns:env="http://www.w3.org/2001/12/soap-envelope">
     <env:Header/>
     <env:Body>
-        <getPetByNameResponse xmlns="urn:com:example:petstore">
+        <getPetByIdResponse xmlns="urn:com:example:petstore">
             <id>3</id>
             <name>Custom pet name</name>
-        </getPetByNameResponse>
+        </getPetByIdResponse>
     </env:Body>
 </env:Envelope>
 ''')

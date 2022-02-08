@@ -127,20 +127,22 @@ Using the example above, you can interact with the APIs with examples in the Swa
 
 Send an HTTP request to the `/pets` path defined in the configuration file to see the example response:
 
-    $ curl -v "http://localhost:8080/pets"
-    ...
-    HTTP/1.1 200 OK
-    ...
-    [
-      {
-        "id": 101,
-        "name": "Cat"
-      },
-      {
-        "id": 102,
-        "name": "Dog"
-      }
-    ]
+```shell
+$ curl -v "http://localhost:8080/pets"
+...
+HTTP/1.1 200 OK
+...
+[
+  {
+    "id": 101,
+    "name": "Cat"
+  },
+  {
+    "id": 102,
+    "name": "Dog"
+  }
+]
+```
 
 For specific information about the endpoints, see the interactive sandbox at [http://localhost:8080/_spec](http://localhost:8080/_spec).
 
@@ -275,12 +277,6 @@ plugin: "openapi"
 specFile: "spec-with-multiple-status-codes.yaml"
 
 resources:
-  # default to HTTP 400 response
-  - path: "/pets"
-    method: "get"
-    response:
-      statusCode: 400
-
   # return HTTP 200 if request includes query parameter 'foo=bar'
   - path: "/pets"
     method: "get"
@@ -288,18 +284,28 @@ resources:
       foo: bar
     response:
       statusCode: 200
+
+  # default to HTTP 400 response
+  - path: "/pets"
+    method: "get"
+    response:
+      statusCode: 400
 ```
 
-First example:
-```shell
-$ curl -v -X POST http://localhost:8080/pets
-HTTP/1.1 400 Bad Request
-```
+### First example
+Here we expect an HTTP 200 status code, given the matching query string.
 
-Second example:
 ```shell
 $ curl -v -X POST http://localhost:8080/pets?foo=bar
 HTTP/1.1 200 OK
+```
+
+### Second example
+Here we expect an HTTP 400 status code.
+
+```shell
+$ curl -v -X POST http://localhost:8080/pets
+HTTP/1.1 400 Bad Request
 ```
 
 ## Object response examples
