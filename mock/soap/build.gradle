@@ -14,9 +14,6 @@ dependencies {
         exclude module: 'log4j-api'
     }
 
-    pluginImplementation 'org.jdom:jdom2:2.0.6.1'
-    pluginImplementation 'jaxen:jaxen:1.2.0'
-
     // test
     testImplementation project(':test:test-utils')
     testImplementation "com.jayway.restassured:rest-assured:$version_restAssured"

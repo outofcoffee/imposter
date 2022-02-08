@@ -4,6 +4,8 @@ apply plugin: 'maven-publish'
 
 ext {
     version_classgraph = '4.8.54'
+    version_jaxen = '1.2.0'
+    version_jdom2 = '2.0.6.1'
     version_json_path = '2.6.0'
 }
 
@@ -19,8 +21,10 @@ dependencies {
     implementation "org.apache.logging.log4j:log4j-core:$version_log4j"
 
     api "com.jayway.jsonpath:json-path:$version_json_path"
+    api "org.jdom:jdom2:$version_jdom2"
+    api "jaxen:jaxen:$version_jaxen"
 
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$version_coroutines")
+    api "org.jetbrains.kotlinx:kotlinx-coroutines-core:$version_coroutines"
 
     // metrics
     api "io.vertx:vertx-micrometer-metrics:$version_vertx"

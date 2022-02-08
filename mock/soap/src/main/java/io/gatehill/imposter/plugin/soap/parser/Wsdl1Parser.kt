@@ -49,7 +49,7 @@ import io.gatehill.imposter.plugin.soap.model.WsdlEndpoint
 import io.gatehill.imposter.plugin.soap.model.WsdlInterface
 import io.gatehill.imposter.plugin.soap.model.WsdlOperation
 import io.gatehill.imposter.plugin.soap.model.WsdlService
-import io.gatehill.imposter.plugin.soap.util.SoapUtil
+import io.gatehill.imposter.util.XPathUtil
 import org.jdom2.Document
 import org.jdom2.Element
 import org.jdom2.Namespace
@@ -203,8 +203,7 @@ class Wsdl1Parser(
 
     override fun findEmbeddedTypesSchemaNode(): Element? {
         val xsNamespaces = xPathNamespaces + Namespace.getNamespace("xs", "http://www.w3.org/2001/XMLSchema")
-        return SoapUtil.buildXPath("/wsdl:definitions/wsdl:types/xs:schema", xsNamespaces)
-            .selectSingleNode(document) as Element?
+        return XPathUtil.selectSingleNode(document, "/wsdl:definitions/wsdl:types/xs:schema", xsNamespaces)
     }
 
     companion object {

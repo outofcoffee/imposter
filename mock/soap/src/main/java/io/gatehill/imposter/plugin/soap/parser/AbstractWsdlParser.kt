@@ -43,7 +43,7 @@
 
 package io.gatehill.imposter.plugin.soap.parser
 
-import io.gatehill.imposter.plugin.soap.util.SoapUtil
+import io.gatehill.imposter.util.XPathUtil
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.apache.xmlbeans.SchemaTypeSystem
@@ -54,7 +54,6 @@ import org.jdom2.Document
 import org.jdom2.Element
 import org.jdom2.Namespace
 import org.jdom2.output.XMLOutputter
-import org.jdom2.xpath.XPath
 import java.io.File
 import javax.xml.namespace.QName
 
@@ -120,15 +119,13 @@ abstract class AbstractWsdlParser(
     }
 
     @Suppress("UNCHECKED_CAST")
-    protected fun selectNodes(context: Any, expression: String) =
-        buildXPath(expression).selectNodes(context) as List<Element>
+    protected fun selectNodes(context: Any, expression: String): List<Element> =
+        XPathUtil.selectNodes(context, expression, xPathNamespaces)
 
-    protected fun selectSingleNode(context: Any, expression: String) =
-        buildXPath(expression).selectSingleNode(context) as Element?
+    protected fun selectSingleNode(context: Any, expression: String): Element? =
+        XPathUtil.selectSingleNode(context, expression, xPathNamespaces)
 
     protected abstract val xPathNamespaces: List<Namespace>
-
-    private fun buildXPath(expression: String): XPath = SoapUtil.buildXPath(expression, xPathNamespaces)
 
     /**
      * Attempt to resolve the element with the given, optionally qualified, name
