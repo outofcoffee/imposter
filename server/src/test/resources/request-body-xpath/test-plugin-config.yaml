@@ -1,0 +1,36 @@
+plugin: "io.gatehill.imposter.plugin.test.TestPluginImpl"
+
+resources:
+- method: GET
+  path: /example
+  requestBody:
+    xPath: "/env:Envelope/env:Body/pets:animal/pets:name"
+    xmlNamespaces:
+      env: "http://schemas.xmlsoap.org/soap/envelope/"
+      pets: "urn:com:example:petstore"
+    value: "Fluffy"
+  response:
+    statusCode: 204
+
+- method: GET
+  path: /example
+  requestBody:
+    xPath: "/env:Envelope/env:Body/pets:animal/pets:id"
+    xmlNamespaces:
+      env: "http://schemas.xmlsoap.org/soap/envelope/"
+      pets: "urn:com:example:petstore"
+    value: 3
+  response:
+    statusCode: 302
+
+- method: GET
+  path: /example-nonmatch
+  requestBody:
+    xPath: "/env:Envelope/env:Body/pets:animal/pets:nothing"
+    xmlNamespaces:
+      env: "http://schemas.xmlsoap.org/soap/envelope/"
+      pets: "urn:com:example:petstore"
+    # tilde is YAML for null
+    value: ~
+  response:
+    statusCode: 409

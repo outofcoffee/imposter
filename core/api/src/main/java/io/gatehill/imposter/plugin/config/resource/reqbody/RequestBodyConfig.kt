@@ -42,10 +42,21 @@
  */
 package io.gatehill.imposter.plugin.config.resource.reqbody
 
+import com.fasterxml.jackson.annotation.JsonProperty
+
 /**
  * @author Pete Cornish
  */
 class RequestBodyConfig {
+    @JsonProperty("jsonPath")
     val jsonPath: String? = null
+
+    @JsonProperty("xPath")
+    val xPath: String? = null
+
+    @JsonProperty("xmlNamespaces")
+    val xmlNamespaces: Map<String, String>? = null
+
+    @JsonProperty("value")
     val value: String? = null
 }
