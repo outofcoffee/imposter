@@ -1,6 +1,5 @@
 package io.gatehill.imposter.store.service
 
-import com.jayway.jsonpath.DocumentContext
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
@@ -16,7 +15,6 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import java.time.LocalDate
-import java.util.concurrent.atomic.AtomicReference
 
 class CaptureServiceImplTest {
     @Test
@@ -46,7 +44,6 @@ class CaptureServiceImplTest {
                 _store = "test",
             ),
             httpExchange = httpExchange,
-            jsonPathContextHolder = AtomicReference<DocumentContext>(),
         )
 
         verify(store).save(eq("foo"), eq("test-id"), any())
@@ -77,7 +74,6 @@ class CaptureServiceImplTest {
                 _store = "test",
             ),
             httpExchange = httpExchange,
-            jsonPathContextHolder = AtomicReference<DocumentContext>(),
         )
 
         // check key name calculated correctly
@@ -112,7 +108,6 @@ class CaptureServiceImplTest {
                 _store = "store_\${datetime.now.iso8601_date}",
             ),
             httpExchange = httpExchange,
-            jsonPathContextHolder = AtomicReference<DocumentContext>(),
         )
 
         verify(store).save(eq("foo"), eq("bar"), any())

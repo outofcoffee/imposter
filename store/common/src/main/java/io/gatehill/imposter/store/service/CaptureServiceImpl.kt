@@ -43,7 +43,6 @@
 package io.gatehill.imposter.store.service
 
 import com.google.common.base.Strings
-import com.jayway.jsonpath.DocumentContext
 import io.gatehill.imposter.http.ExchangePhase
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
@@ -55,10 +54,10 @@ import io.gatehill.imposter.plugin.config.resource.ResourceConfig
 import io.gatehill.imposter.store.core.Store
 import io.gatehill.imposter.store.factory.StoreFactory
 import io.gatehill.imposter.store.util.StoreUtil
+import io.gatehill.imposter.util.BodyQueryUtil
 import io.gatehill.imposter.util.ResourceUtil
 import org.apache.logging.log4j.LogManager
 import java.util.*
-import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 
 /**
@@ -94,10 +93,9 @@ class CaptureServiceImpl @Inject constructor(
         if (resourceConfig is CaptureConfigHolder) {
             val captureConfig = (resourceConfig as CaptureConfigHolder).captureConfig
             captureConfig?.let {
-                val jsonPathContextHolder = httpExchange.getOrPut("jsonPathContextHolder", { AtomicReference<DocumentContext>() })
                 captureConfig.filterValues { it.enabled && it.phase == phaseFilter }
                     .forEach { (captureConfigKey: String, itemConfig: ItemCaptureConfig) ->
-                        captureItem(captureConfigKey, itemConfig, httpExchange, jsonPathContextHolder)
+                        captureItem(captureConfigKey, itemConfig, httpExchange)
                     }
             }
         }
@@ -106,17 +104,16 @@ class CaptureServiceImpl @Inject constructor(
     fun captureItem(
         captureConfigKey: String,
         itemConfig: ItemCaptureConfig,
-        httpExchange: HttpExchange,
-        jsonPathContextHolder: AtomicReference<DocumentContext>
+        httpExchange: HttpExchange
     ) {
-        val storeName = determineStoreName(itemConfig, httpExchange, jsonPathContextHolder)
+        val storeName = determineStoreName(itemConfig, httpExchange)
 
         val itemName: String? =
-            determineItemName(itemConfig, httpExchange, jsonPathContextHolder, storeName, captureConfigKey)
+            determineItemName(itemConfig, httpExchange, storeName, captureConfigKey)
 
         // item name may not be set, if dynamic value was null
         itemName?.let {
-            val itemValue = captureItemValue(itemConfig, httpExchange, jsonPathContextHolder, captureConfigKey)
+            val itemValue = captureItemValue(itemConfig, httpExchange, captureConfigKey)
             val store = openCaptureStore(httpExchange, storeName)
             store.save(itemName, itemValue, itemConfig.phase)
 
@@ -131,12 +128,11 @@ class CaptureServiceImpl @Inject constructor(
 
     private fun determineStoreName(
         itemConfig: ItemCaptureConfig,
-        httpExchange: HttpExchange,
-        jsonPathContextHolder: AtomicReference<DocumentContext>
+        httpExchange: HttpExchange
     ): String {
         try {
-            return (itemConfig.store?.let { capture<String>(httpExchange, it, jsonPathContextHolder) }
-                    ?: StoreService.DEFAULT_CAPTURE_STORE_NAME)
+            return (itemConfig.store?.let { capture<String>(httpExchange, it) }
+                ?: StoreService.DEFAULT_CAPTURE_STORE_NAME)
 
         } catch (e: Exception) {
             throw RuntimeException("Error capturing store name: $itemConfig", e)
@@ -150,7 +146,6 @@ class CaptureServiceImpl @Inject constructor(
     private fun determineItemName(
         itemConfig: ItemCaptureConfig,
         httpExchange: HttpExchange,
-        jsonPathContextHolder: AtomicReference<DocumentContext>,
         storeName: String,
         captureConfigKey: String
     ): String? {
@@ -160,7 +155,7 @@ class CaptureServiceImpl @Inject constructor(
 
         } else {
             try {
-                capture<String?>(httpExchange, itemConfig.key, jsonPathContextHolder)?.let { itemName ->
+                capture<String?>(httpExchange, itemConfig.key)?.let { itemName ->
                     LOGGER.debug(
                         "Capturing item: $captureConfigKey into store: $storeName with name: $itemName"
                     )
@@ -182,11 +177,10 @@ class CaptureServiceImpl @Inject constructor(
     private fun captureItemValue(
         itemConfig: ItemCaptureConfig,
         httpExchange: HttpExchange,
-        jsonPathContextHolder: AtomicReference<DocumentContext>,
         captureConfigKey: String
     ): Any? {
         try {
-            return capture(httpExchange, itemConfig, jsonPathContextHolder)
+            return capture(httpExchange, itemConfig)
         } catch (e: Exception) {
             throw RuntimeException("Error capturing item value: $captureConfigKey", e)
         }
@@ -210,30 +204,38 @@ class CaptureServiceImpl @Inject constructor(
     private fun <T> capture(
         httpExchange: HttpExchange,
         captureConfig: CaptureConfig?,
-        jsonPathContextHolder: AtomicReference<DocumentContext>,
     ): T? {
-        return if (!Strings.isNullOrEmpty(captureConfig?.constValue)) {
-            captureConfig!!.constValue as T?
+        if (null == captureConfig) {
+            return null
+        }
 
-        } else if (!Strings.isNullOrEmpty(captureConfig?.pathParam)) {
-            httpExchange.pathParam(captureConfig!!.pathParam!!) as T?
+        return if (!Strings.isNullOrEmpty(captureConfig.constValue)) {
+            captureConfig.constValue as T?
 
-        } else if (!Strings.isNullOrEmpty(captureConfig?.queryParam)) {
-            httpExchange.queryParam(captureConfig!!.queryParam!!) as T?
+        } else if (!Strings.isNullOrEmpty(captureConfig.pathParam)) {
+            httpExchange.pathParam(captureConfig.pathParam!!) as T?
 
-        } else if (!Strings.isNullOrEmpty(captureConfig?.requestHeader)) {
-            httpExchange.request().getHeader(captureConfig!!.requestHeader!!) as T?
+        } else if (!Strings.isNullOrEmpty(captureConfig.queryParam)) {
+            httpExchange.queryParam(captureConfig.queryParam!!) as T?
 
-        } else if (!Strings.isNullOrEmpty(captureConfig?.jsonPath)) {
-            var jsonPathContext = jsonPathContextHolder.get()
-            if (Objects.isNull(jsonPathContext)) {
-                jsonPathContext = StoreService.JSONPATH_PARSE_CONTEXT.parse(httpExchange.bodyAsString)
-                jsonPathContextHolder.set(jsonPathContext)
-            }
-            jsonPathContext.read<T>(captureConfig!!.jsonPath!!)
+        } else if (!Strings.isNullOrEmpty(captureConfig.requestHeader)) {
+            httpExchange.request().getHeader(captureConfig.requestHeader!!) as T?
 
-        } else if (!Strings.isNullOrEmpty(captureConfig?.expression)) {
-            expressionService.eval(captureConfig!!.expression!!, httpExchange) as T?
+        } else if (!Strings.isNullOrEmpty(captureConfig.requestBody.jsonPath)) {
+            BodyQueryUtil.queryRequestBodyJsonPath(
+                captureConfig.requestBody.jsonPath!!,
+                httpExchange
+            ) as T?
+
+        } else if (!Strings.isNullOrEmpty(captureConfig.requestBody.xPath)) {
+            BodyQueryUtil.queryRequestBodyXPath(
+                captureConfig.requestBody.xPath!!,
+                captureConfig.requestBody.xmlNamespaces,
+                httpExchange
+            ) as T?
+
+        } else if (!Strings.isNullOrEmpty(captureConfig.expression)) {
+            expressionService.eval(captureConfig.expression!!, httpExchange) as T?
 
         } else {
             null

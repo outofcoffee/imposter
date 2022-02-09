@@ -55,7 +55,7 @@ class ItemCaptureConfig(
     pathParam: String? = null,
     queryParam: String? = null,
     requestHeader: String? = null,
-    jsonPath: String? = null,
+    requestBody: BodyCaptureConfig? = null,
     expression: String? = null,
     constValue: String? = null,
 
@@ -80,7 +80,7 @@ class ItemCaptureConfig(
     pathParam,
     queryParam,
     requestHeader,
-    jsonPath,
+    requestBody,
     expression,
     constValue,
 ) {

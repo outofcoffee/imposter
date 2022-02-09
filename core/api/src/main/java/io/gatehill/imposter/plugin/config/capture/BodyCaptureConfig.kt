@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022.
+ * Copyright (c) 2016-2021.
  *
  * This file is part of Imposter.
  *
@@ -40,40 +40,25 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.plugin.config.capture
 
-package io.gatehill.imposter.util
+import com.fasterxml.jackson.annotation.JsonProperty
 
-import org.jdom2.Element
-import org.jdom2.Namespace
-import org.jdom2.filter.Filters
-import org.jdom2.xpath.XPathExpression
-import org.jdom2.xpath.XPathFactory
+class BodyCaptureConfig {
+    @JsonProperty("jsonPath")
+    var jsonPath: String? = null
 
-/**
- * Convenience wrapper for XPath queries.
- *
- * @author Pete Cornish
- */
-object XPathUtil {
-    fun buildXPath(expression: String, xPathNamespaces: Map<String, String> = emptyMap()): XPathExpression<*> {
-        return buildXPath(
-            expression,
-            xPathNamespaces.map { (key, value) -> Namespace.getNamespace(key, value) }
-        )
-    }
+    @JsonProperty("xPath")
+    val xPath: String? = null
 
-    fun buildXPath(expression: String, xPathNamespaces: List<Namespace> = emptyList()): XPathExpression<*> {
-        return XPathFactory.instance().compile(expression, Filters.element(), emptyMap(), xPathNamespaces)
-    }
+    @JsonProperty("xmlNamespaces")
+    val xmlNamespaces: Map<String, String>? = null
 
-    fun selectSingleNode(context: Any, expression: String, xPathNamespaces: List<Namespace>): Element? {
-        val xPath = buildXPath(expression, xPathNamespaces)
-        return xPath.evaluateFirst(context) as Element?
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    fun selectNodes(context: Any, expression: String, xPathNamespaces: List<Namespace>): List<Element> {
-        val xPath = buildXPath(expression, xPathNamespaces)
-        return xPath.evaluate(context) as List<Element>
+    companion object {
+        fun parse(requestBody: BodyCaptureConfig?, jsonPath: String?): BodyCaptureConfig {
+            return requestBody ?: BodyCaptureConfig().apply {
+                this.jsonPath = jsonPath
+            }
+        }
     }
 }

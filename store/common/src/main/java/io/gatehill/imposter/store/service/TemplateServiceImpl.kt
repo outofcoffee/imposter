@@ -48,6 +48,7 @@ import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
 import io.gatehill.imposter.lifecycle.EngineLifecycleListener
 import io.gatehill.imposter.store.factory.StoreFactory
 import io.gatehill.imposter.store.util.StoreUtil
+import io.gatehill.imposter.util.BodyQueryUtil
 import io.gatehill.imposter.util.ResourceUtil
 import io.vertx.core.buffer.Buffer
 import org.apache.commons.text.StringSubstitutor
@@ -128,7 +129,7 @@ class TemplateServiceImpl @Inject constructor(
         val store = storeFactory.getStoreByName(storeName, false)
         val itemValue = store.load<Any>(itemKey)
 
-        return jsonPath?.let { StoreService.JSONPATH_PARSE_CONTEXT.parse(itemValue).read(jsonPath) } ?: itemValue
+        return jsonPath?.let { BodyQueryUtil.JSONPATH_PARSE_CONTEXT.parse(itemValue).read(jsonPath) } ?: itemValue
     }
 
     override fun beforeTransmittingTemplate(

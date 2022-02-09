@@ -43,19 +43,13 @@
 package io.gatehill.imposter.http
 
 import com.google.common.base.Strings.isNullOrEmpty
-import com.jayway.jsonpath.JsonPath
-import com.jayway.jsonpath.PathNotFoundException
 import io.gatehill.imposter.config.ResolvedResourceConfig
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyConfig
 import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyResourceConfig
-import io.gatehill.imposter.util.LogUtil
+import io.gatehill.imposter.util.BodyQueryUtil
 import io.gatehill.imposter.util.StringUtil.safeEquals
-import io.gatehill.imposter.util.XPathUtil
 import org.apache.logging.log4j.LogManager
-import org.jdom2.Namespace
-import org.jdom2.input.SAXBuilder
-import java.io.StringReader
 
 
 /**
@@ -137,44 +131,23 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
         requestBodyConfig: RequestBodyConfig,
         httpExchange: HttpExchange
     ): Boolean {
-        val body = httpExchange.bodyAsString
-        val bodyValue = if (isNullOrEmpty(body)) {
-            null
-        } else {
-            try {
-                JsonPath.read<Any>(body, requestBodyConfig.jsonPath)?.toString()
-            } catch (ignored: PathNotFoundException) {
-                // this is just a negative result
-                null
-            } catch (e: Exception) {
-                LOGGER.warn("Error evaluating JsonPath expression '${requestBodyConfig.jsonPath}' against request body for ${LogUtil.describeRequest(httpExchange)}", e)
-                null
-            }
-        }
-        return safeEquals(requestBodyConfig.value, bodyValue)
+        val bodyValue = BodyQueryUtil.queryRequestBodyJsonPath(
+            requestBodyConfig.jsonPath!!,
+            httpExchange
+        )
+        // resource matching always uses strings
+        return safeEquals(requestBodyConfig.value, bodyValue?.toString())
     }
 
     private fun matchRequestBodyXPath(
         requestBodyConfig: RequestBodyConfig,
         httpExchange: HttpExchange
     ): Boolean {
-        val body = httpExchange.bodyAsString
-        val bodyValue = if (isNullOrEmpty(body)) {
-            null
-        } else {
-            try {
-                val namespaces = requestBodyConfig.xmlNamespaces
-                    ?.map { (prefix, uri) -> Namespace.getNamespace(prefix, uri) }
-                    ?: emptyList()
-
-                val document = SAXBuilder().build(StringReader(body!!))
-                XPathUtil.selectSingleNode(document, requestBodyConfig.xPath!!, namespaces)?.value
-
-            } catch (e: Exception) {
-                LOGGER.warn("Error evaluating XPath expression '${requestBodyConfig.xPath}' against request body for ${LogUtil.describeRequest(httpExchange)}", e)
-                null
-            }
-        }
+        val bodyValue = BodyQueryUtil.queryRequestBodyXPath(
+            requestBodyConfig.xPath!!,
+            requestBodyConfig.xmlNamespaces,
+            httpExchange
+        )
         return safeEquals(requestBodyConfig.value, bodyValue)
     }
 

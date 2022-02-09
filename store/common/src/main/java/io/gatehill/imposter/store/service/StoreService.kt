@@ -42,9 +42,6 @@
  */
 package io.gatehill.imposter.store.service
 
-import com.jayway.jsonpath.Configuration
-import com.jayway.jsonpath.JsonPath
-import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider
 import io.gatehill.imposter.store.util.StoreUtil
 
 /**
@@ -56,11 +53,5 @@ interface StoreService {
          * Default to request scope unless specified.
          */
         internal const val DEFAULT_CAPTURE_STORE_NAME: String = StoreUtil.REQUEST_SCOPED_STORE_NAME
-
-        internal val JSONPATH_PARSE_CONTEXT = JsonPath.using(
-            Configuration.builder()
-                .mappingProvider(JacksonMappingProvider())
-                .build()
-        )
     }
 }

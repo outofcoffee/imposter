@@ -44,7 +44,7 @@
 package io.gatehill.imposter.plugin.soap.util
 
 import io.gatehill.imposter.plugin.soap.model.ParsedSoapMessage
-import io.gatehill.imposter.util.XPathUtil
+import io.gatehill.imposter.util.BodyQueryUtil
 import io.vertx.core.buffer.Buffer
 import org.jdom2.Namespace
 import org.jdom2.input.SAXBuilder
@@ -76,7 +76,7 @@ object SoapUtil {
             soap12RecEnvNamespace -> soap12RecEnvNamespace
             else -> throw IllegalStateException("Root element is not a SOAP envelope - namespace is ${doc.rootElement.namespace}")
         }
-        val soapBody = XPathUtil.selectSingleNode(doc, "/soap-env:Envelope/soap-env:Body", listOf(envNs))
+        val soapBody = BodyQueryUtil.selectSingleNode(doc, "/soap-env:Envelope/soap-env:Body", listOf(envNs))
         return ParsedSoapMessage(soapBody, envNs)
     }
 

@@ -43,7 +43,7 @@
 
 package io.gatehill.imposter.plugin.soap.parser
 
-import io.gatehill.imposter.util.XPathUtil
+import io.gatehill.imposter.util.BodyQueryUtil
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.apache.xmlbeans.SchemaTypeSystem
@@ -120,10 +120,10 @@ abstract class AbstractWsdlParser(
 
     @Suppress("UNCHECKED_CAST")
     protected fun selectNodes(context: Any, expression: String): List<Element> =
-        XPathUtil.selectNodes(context, expression, xPathNamespaces)
+        BodyQueryUtil.selectNodes(context, expression, xPathNamespaces)
 
     protected fun selectSingleNode(context: Any, expression: String): Element? =
-        XPathUtil.selectSingleNode(context, expression, xPathNamespaces)
+        BodyQueryUtil.selectSingleNode(context, expression, xPathNamespaces)
 
     protected abstract val xPathNamespaces: List<Namespace>
 
