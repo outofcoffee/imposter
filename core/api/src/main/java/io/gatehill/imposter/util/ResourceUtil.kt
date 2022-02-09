@@ -43,8 +43,8 @@
 package io.gatehill.imposter.util
 
 import com.google.common.base.Strings
-import io.gatehill.imposter.plugin.config.ContentTypedConfig
 import io.gatehill.imposter.plugin.config.resource.MethodResourceConfig
+import io.gatehill.imposter.plugin.config.resource.ResourceConfig
 import io.gatehill.imposter.plugin.config.resource.ResourceMethod
 import java.util.regex.Pattern
 
@@ -70,7 +70,7 @@ object ResourceUtil {
      * /example/:foo
      * ```
      *
-     * @param path the OpenAPI path
+     * @param openapiPath the OpenAPI path
      * @return the converted path
      */
     fun convertPathFromOpenApi(openapiPath: String?): String? {
@@ -91,9 +91,9 @@ object ResourceUtil {
     /**
      * Extracts the resource method.
      */
-    fun extractResourceMethod(resourceConfig: ContentTypedConfig?): ResourceMethod {
+    fun extractResourceMethod(resourceConfig: ResourceConfig): ResourceMethod? {
         return if (resourceConfig is MethodResourceConfig) {
-            return (resourceConfig as MethodResourceConfig).method ?: ResourceMethod.GET
+            return (resourceConfig as MethodResourceConfig).method
         } else {
             ResourceMethod.GET
         }

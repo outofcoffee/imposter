@@ -44,9 +44,9 @@
 package io.gatehill.imposter.plugin.soap
 
 import io.gatehill.imposter.config.ResolvedResourceConfig
+import io.gatehill.imposter.http.AbstractResourceMatcher
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpRequest
-import io.gatehill.imposter.http.SingletonResourceMatcher
 import io.gatehill.imposter.plugin.soap.config.SoapPluginResourceConfig
 import io.gatehill.imposter.plugin.soap.model.ParsedSoapMessage
 import io.gatehill.imposter.plugin.soap.model.WsdlBinding
@@ -61,23 +61,12 @@ import org.apache.logging.log4j.LogManager
  */
 class SoapResourceMatcher(
     private val binding: WsdlBinding,
-) : SingletonResourceMatcher() {
-
-    override fun filterResourceConfigs(
-        resources: List<ResolvedResourceConfig>,
-        httpExchange: HttpExchange,
-    ): List<ResolvedResourceConfig> {
-        return resources.filter { res -> isRequestMatch(res, httpExchange) }
-    }
+) : AbstractResourceMatcher() {
 
     /**
-     * Determine if the resource configuration matches the current request.
-     *
-     * @param resource     the resource configuration
-     * @param httpExchange the current exchange
-     * @return `true` if the resource matches the request, otherwise `false`
+     * {@inheritDoc}
      */
-    private fun isRequestMatch(
+    override fun isRequestMatch(
         resource: ResolvedResourceConfig,
         httpExchange: HttpExchange,
     ): Boolean {

@@ -42,22 +42,10 @@
  */
 package io.gatehill.imposter.http
 
-import com.google.common.base.Strings.isNullOrEmpty
-import com.jayway.jsonpath.JsonPath
-import com.jayway.jsonpath.PathNotFoundException
 import io.gatehill.imposter.config.ResolvedResourceConfig
-import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.resource.MethodResourceConfig
-import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyConfig
-import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyResourceConfig
 import io.gatehill.imposter.util.CollectionUtil.convertKeysToLowerCase
-import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.StringUtil.safeEquals
-import io.gatehill.imposter.util.XPathUtil
-import org.apache.logging.log4j.LogManager
-import org.jdom2.Namespace
-import org.jdom2.input.SAXBuilder
-import java.io.StringReader
 import java.util.Locale
 import java.util.function.Function
 
@@ -67,39 +55,12 @@ import java.util.function.Function
  *
  * @author Pete Cornish
  */
-open class SingletonResourceMatcher : ResourceMatcher {
-    /**
-     * {@inheritDoc}
-     */
-    override fun matchResourceConfig(
-        resources: List<ResolvedResourceConfig>,
-        httpExchange: HttpExchange,
-    ): BasicResourceConfig? {
-        val resourceConfigs = filterResourceConfigs(resources, httpExchange)
-
-        val request = httpExchange.request()
-        when (resourceConfigs.size) {
-            0 -> {
-                LOGGER.trace("No matching resource config for {} {}", request.method(), request.path())
-                return null
-            }
-            1 -> LOGGER.debug("Matched resource config for {} {}", request.method(), request.path())
-            else -> {
-                LOGGER.warn(
-                    "More than one resource config found for {} {} - this is probably a configuration error. Choosing first resource configuration.",
-                    request.method(),
-                    request.path()
-                )
-            }
-        }
-        return resourceConfigs[0].config
-    }
-
-    protected open fun filterResourceConfigs(
+class SingletonResourceMatcher : AbstractResourceMatcher() {
+    override fun filterResourceConfigs(
         resources: List<ResolvedResourceConfig>,
         httpExchange: HttpExchange,
     ): List<ResolvedResourceConfig> {
-        var resourceConfigs = resources.filter { res -> isRequestMatch(res, httpExchange) }
+        var resourceConfigs = super.filterResourceConfigs(resources, httpExchange)
 
         // find the most specific, by filtering those that match by those that specify parameters
         resourceConfigs = filterByPairs(resourceConfigs, ResolvedResourceConfig::pathParams)
@@ -110,13 +71,9 @@ open class SingletonResourceMatcher : ResourceMatcher {
     }
 
     /**
-     * Determine if the resource configuration matches the current request.
-     *
-     * @param resource     the resource configuration
-     * @param httpExchange the current exchange
-     * @return `true` if the resource matches the request, otherwise `false`
+     * {@inheritDoc}
      */
-    private fun isRequestMatch(
+    override fun isRequestMatch(
         resource: ResolvedResourceConfig,
         httpExchange: HttpExchange,
     ): Boolean {
@@ -179,76 +136,7 @@ open class SingletonResourceMatcher : ResourceMatcher {
         }
     }
 
-    /**
-     * Match the request body against the supplied configuration.
-     *
-     * @param httpExchange   thc current exchange
-     * @param resourceConfig the match configuration
-     * @return `true` if the configuration is empty, or the request body matches the configuration, otherwise `false`
-     */
-    protected fun matchRequestBody(httpExchange: HttpExchange, resourceConfig: BasicResourceConfig): Boolean {
-        if (resourceConfig !is RequestBodyResourceConfig) {
-            // none configured - implies any match
-            return true
-        }
-
-        if (!isNullOrEmpty(resourceConfig.requestBody?.jsonPath)) {
-            return matchRequestBodyJsonPath(resourceConfig.requestBody!!, httpExchange)
-        } else if (!isNullOrEmpty(resourceConfig.requestBody?.xPath)) {
-            return matchRequestBodyXPath(resourceConfig.requestBody!!, httpExchange)
-        } else {
-            // none configured - implies any match
-            return true
-        }
-    }
-
-    private fun matchRequestBodyJsonPath(
-        requestBodyConfig: RequestBodyConfig,
-        httpExchange: HttpExchange
-    ): Boolean {
-        val body = httpExchange.bodyAsString
-        val bodyValue = if (isNullOrEmpty(body)) {
-            null
-        } else {
-            try {
-                JsonPath.read<Any>(body, requestBodyConfig.jsonPath)?.toString()
-            } catch (ignored: PathNotFoundException) {
-                // this is just a negative result
-                null
-            } catch (e: Exception) {
-                LOGGER.warn("Error evaluating JsonPath expression '${requestBodyConfig.jsonPath}' against request body for ${LogUtil.describeRequest(httpExchange)}", e)
-                null
-            }
-        }
-        return safeEquals(requestBodyConfig.value, bodyValue)
-    }
-
-    private fun matchRequestBodyXPath(
-        requestBodyConfig: RequestBodyConfig,
-        httpExchange: HttpExchange
-    ): Boolean {
-        val body = httpExchange.bodyAsString
-        val bodyValue = if (isNullOrEmpty(body)) {
-            null
-        } else {
-            try {
-                val namespaces = requestBodyConfig.xmlNamespaces
-                    ?.map { (prefix, uri) -> Namespace.getNamespace(prefix, uri) }
-                    ?: emptyList()
-
-                val document = SAXBuilder().build(StringReader(body!!))
-                XPathUtil.selectSingleNode(document, requestBodyConfig.xPath!!, namespaces)?.value
-
-            } catch (e: Exception) {
-                LOGGER.warn("Error evaluating XPath expression '${requestBodyConfig.xPath}' against request body for ${LogUtil.describeRequest(httpExchange)}", e)
-                null
-            }
-        }
-        return safeEquals(requestBodyConfig.value, bodyValue)
-    }
-
     companion object {
-        private val LOGGER = LogManager.getLogger(SingletonResourceMatcher::class.java)
         val instance = SingletonResourceMatcher()
     }
 }

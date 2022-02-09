@@ -44,6 +44,7 @@ package io.gatehill.imposter.plugin.config
 
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.util.ConfigUtil
+import io.gatehill.imposter.http.UniqueRoute
 import io.gatehill.imposter.plugin.RoutablePlugin
 import io.vertx.core.Vertx
 import java.io.File
@@ -81,5 +82,32 @@ abstract class ConfiguredPlugin<T : PluginConfigImpl> @Inject constructor(
      */
     protected open fun configurePlugin(configs: List<T>) {
         /* no op */
+    }
+
+    /**
+     * Iterates over [configs] to find unique route combinations of path and HTTP method.
+     * For each combination found, only the _first_ resource configuration
+     * (that is, a plugin configuration or subresource configuration) is returned.
+     */
+    protected fun findUniqueRoutes(): Map<UniqueRoute, T> {
+        val unique = mutableMapOf<UniqueRoute, T>()
+        configs.forEach { config ->
+            // root resource
+            config.path?.let {
+                val uniqueRoute = UniqueRoute.fromResourceConfig(config)
+                unique[uniqueRoute] = config
+            }
+
+            // subresources
+            if (config is ResourcesHolder<*>) {
+                config.resources?.forEach { resource ->
+                    val uniqueRoute = UniqueRoute.fromResourceConfig(resource)
+                    if (!unique.containsKey(uniqueRoute)) {
+                        unique[uniqueRoute] = config
+                    }
+                }
+            }
+        }
+        return unique
     }
 }

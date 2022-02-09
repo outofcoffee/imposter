@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2022-2022.
  *
  * This file is part of Imposter.
  *
@@ -40,16 +40,23 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.config
 
-import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
+package io.gatehill.imposter.http
+
+import io.gatehill.imposter.plugin.config.resource.ResourceConfig
+import io.gatehill.imposter.plugin.config.resource.ResourceMethod
+import io.gatehill.imposter.util.ResourceUtil
 
 /**
- * @author Pete Cornish
+ * Represents a unique, routable, combination of HTTP method and path.
  */
-class ResolvedResourceConfig(
-    val config: BasicResourceConfig,
-    val pathParams: Map<String, String>,
-    val queryParams: Map<String, String>,
-    val requestHeaders: Map<String, String>
-)
+data class UniqueRoute(
+    val path: String,
+    val method: ResourceMethod? = null,
+) {
+    companion object {
+        fun fromResourceConfig(resourceConfig: ResourceConfig): UniqueRoute {
+            return UniqueRoute(resourceConfig.path ?: "", ResourceUtil.extractResourceMethod(resourceConfig))
+        }
+    }
+}

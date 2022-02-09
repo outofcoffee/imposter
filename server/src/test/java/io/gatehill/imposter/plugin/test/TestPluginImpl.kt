@@ -45,9 +45,9 @@ package io.gatehill.imposter.plugin.test
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.http.SingletonResourceMatcher
+import io.gatehill.imposter.http.UniqueRoute
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
-import io.gatehill.imposter.script.ResponseBehaviour
 import io.gatehill.imposter.service.ResourceService
 import io.gatehill.imposter.service.ResponseRoutingService
 import io.gatehill.imposter.service.ResponseService
@@ -71,32 +71,18 @@ class TestPluginImpl @Inject constructor(
     private val resourceMatcher = SingletonResourceMatcher.instance
 
     override fun configureRoutes(router: HttpRouter) {
-        val uniquePaths = mutableMapOf<String, TestPluginConfig>()
-
-        configs.forEach { config: TestPluginConfig ->
-            // root resource
-            config.path?.let { uniquePaths[it] = config }
-
-            // subresources
-            config.resources?.forEach { resource: TestPluginResourceConfig ->
-                uniquePaths[resource.path!!] = config
-            }
-        }
-
-        uniquePaths.forEach { (path, config) ->
-            configureRoute(config, router, path)
-        }
+        findUniqueRoutes().forEach { (path, config) -> configureRoute(config, router, path) }
     }
 
     private fun configureRoute(
         pluginConfig: TestPluginConfig,
         router: HttpRouter,
-        path: String
+        uniqueRoute: UniqueRoute,
     ) {
-        router.route(path).handler(resourceService.handleRoute(imposterConfig, pluginConfig, vertx, resourceMatcher) { httpExchange ->
+        val handler = resourceService.handleRoute(imposterConfig, pluginConfig, vertx, resourceMatcher) { httpExchange ->
             val resourceConfig = httpExchange.get<BasicResourceConfig>(ResourceUtil.RESOURCE_CONFIG_KEY)!!
 
-            val defaultBehaviourHandler = { responseBehaviour: ResponseBehaviour ->
+            responseRoutingService.route(pluginConfig, resourceConfig, httpExchange) { responseBehaviour ->
                 responseService.sendResponse(
                     pluginConfig,
                     resourceConfig,
@@ -104,12 +90,13 @@ class TestPluginImpl @Inject constructor(
                     responseBehaviour
                 )
             }
-            responseRoutingService.route(
-                pluginConfig,
-                resourceConfig,
-                httpExchange,
-                defaultBehaviourHandler
-            )
-        })
+        }
+
+        val route = uniqueRoute.method?.let { method ->
+            router.route(method, uniqueRoute.path)
+        } ?: run {
+            router.route(uniqueRoute.path)
+        }
+        route.handler(handler)
     }
 }

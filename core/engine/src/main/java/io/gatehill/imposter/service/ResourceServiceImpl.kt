@@ -68,7 +68,7 @@ import io.vertx.core.Promise
 import io.vertx.core.Vertx
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
-import java.util.*
+import java.util.UUID
 import java.util.regex.Pattern
 import javax.inject.Inject
 
@@ -237,10 +237,8 @@ class ResourceServiceImpl @Inject constructor(
 
         val rootResourceConfig = (pluginConfig as BasicResourceConfig?)!!
 
-        val resourceConfig: BasicResourceConfig = resourceMatcher.matchResourceConfig(
-            resolvedResourceConfigs,
-            httpExchange,
-        ) ?: rootResourceConfig
+        val resourceConfig = resourceMatcher.matchResourceConfig(resolvedResourceConfigs, httpExchange)
+            ?: rootResourceConfig
 
         // allows plugins to customise behaviour
         httpExchange.put(ResourceUtil.RESOURCE_CONFIG_KEY, resourceConfig)

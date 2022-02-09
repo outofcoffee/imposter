@@ -50,6 +50,7 @@ import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin
 import io.gatehill.imposter.plugin.config.ContentTypedConfig
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig
+import io.gatehill.imposter.plugin.config.resource.ResourceMethod
 import io.gatehill.imposter.plugin.rest.config.ResourceConfigType
 import io.gatehill.imposter.plugin.rest.config.RestPluginConfig
 import io.gatehill.imposter.plugin.rest.config.RestPluginResourceConfig
@@ -123,7 +124,7 @@ class RestPluginImpl @Inject constructor(
         resourceConfig: ContentTypedConfig
     ) {
         val qualifiedPath = buildQualifiedPath(rootPath, resourceConfig)
-        val method = extractResourceMethod(resourceConfig)
+        val method = extractResourceMethod(resourceConfig) ?: ResourceMethod.GET
         LOGGER.debug("Adding {} object handler: {}", method, qualifiedPath)
 
         router.route(method, qualifiedPath).handler(
@@ -147,7 +148,7 @@ class RestPluginImpl @Inject constructor(
         resourceConfig: RestPluginResourceConfig
     ) {
         val qualifiedPath = buildQualifiedPath(pluginConfig.path, resourceConfig)
-        val method = extractResourceMethod(resourceConfig)
+        val method = extractResourceMethod(resourceConfig) ?: ResourceMethod.GET
         LOGGER.debug("Adding {} array handler: {}", method, qualifiedPath)
 
         // validate path includes parameter
