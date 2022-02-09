@@ -71,7 +71,7 @@ class TestPluginImpl @Inject constructor(
     private val resourceMatcher = SingletonResourceMatcher.instance
 
     override fun configureRoutes(router: HttpRouter) {
-        findUniqueRoutes().forEach { (path, config) -> configureRoute(config, router, path) }
+        findUniqueRoutes().forEach { (route, config) -> configureRoute(config, router, route) }
     }
 
     private fun configureRoute(

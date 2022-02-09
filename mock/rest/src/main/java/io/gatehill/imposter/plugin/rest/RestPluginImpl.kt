@@ -46,20 +46,21 @@ import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.http.SingletonResourceMatcher
+import io.gatehill.imposter.http.UniqueRoute
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin
 import io.gatehill.imposter.plugin.config.ContentTypedConfig
-import io.gatehill.imposter.plugin.config.resource.ResourceConfig
 import io.gatehill.imposter.plugin.config.resource.ResourceMethod
 import io.gatehill.imposter.plugin.rest.config.ResourceConfigType
 import io.gatehill.imposter.plugin.rest.config.RestPluginConfig
 import io.gatehill.imposter.plugin.rest.config.RestPluginResourceConfig
+import io.gatehill.imposter.script.ResponseBehaviour
 import io.gatehill.imposter.service.ResourceService
 import io.gatehill.imposter.service.ResponseRoutingService
 import io.gatehill.imposter.service.ResponseService
 import io.gatehill.imposter.util.FileUtil.findRow
 import io.gatehill.imposter.util.HttpUtil
-import io.gatehill.imposter.util.ResourceUtil.extractResourceMethod
+import io.gatehill.imposter.util.ResourceUtil
 import io.vertx.core.Vertx
 import org.apache.logging.log4j.LogManager
 import java.util.regex.Pattern
@@ -86,111 +87,98 @@ class RestPluginImpl @Inject constructor(
 
     override fun configureRoutes(router: HttpRouter) {
         configs.forEach { config: RestPluginConfig ->
-            // add root handler
-            // TODO consider changing this to config.path if non-null
-            addObjectHandler(router, "", config, config)
-
-            // add child resource handlers
-            config.resources?.forEach { resource: RestPluginResourceConfig ->
-                addResourceHandler(router, config, resource)
-            }
+            // the REST plugin treats an undefined root path as equivalent to
+            // a resource with a path set to "/"
+            config.path = config.path ?: "/"
+        }
+        findUniqueRoutes().forEach { (route, config) ->
+            addResourceHandler(router, config, route)
         }
     }
 
     private fun addResourceHandler(
         router: HttpRouter,
-        rootConfig: RestPluginConfig,
-        resourceConfig: RestPluginResourceConfig
-    ) {
-        val resourceType = resourceConfig.type ?: ResourceConfigType.OBJECT
-        when (resourceType) {
-            ResourceConfigType.OBJECT -> addObjectHandler(router, rootConfig, resourceConfig)
-            ResourceConfigType.ARRAY -> addArrayHandler(router, rootConfig, resourceConfig)
-        }
-    }
-
-    private fun addObjectHandler(
-        router: HttpRouter,
         pluginConfig: RestPluginConfig,
-        resourceConfig: ContentTypedConfig
+        uniqueRoute: UniqueRoute,
     ) {
-        addObjectHandler(router, pluginConfig.path, pluginConfig, resourceConfig)
-    }
+        val normalisedPath = normalisePath(uniqueRoute)
+        val method = uniqueRoute.method ?: ResourceMethod.GET
+        LOGGER.debug("Adding handler: {} -> {}", method, normalisedPath)
 
-    private fun addObjectHandler(
-        router: HttpRouter,
-        rootPath: String?,
-        pluginConfig: RestPluginConfig,
-        resourceConfig: ContentTypedConfig
-    ) {
-        val qualifiedPath = buildQualifiedPath(rootPath, resourceConfig)
-        val method = extractResourceMethod(resourceConfig) ?: ResourceMethod.GET
-        LOGGER.debug("Adding {} object handler: {}", method, qualifiedPath)
-
-        router.route(method, qualifiedPath).handler(
+        router.route(method, normalisedPath).handler(
             resourceService.handleRoute(imposterConfig, pluginConfig, vertx, resourceMatcher) { httpExchange: HttpExchange ->
-                // script should fire first
+                val resourceConfig = httpExchange.get<ContentTypedConfig>(ResourceUtil.RESOURCE_CONFIG_KEY)!!
+
                 responseRoutingService.route(pluginConfig, resourceConfig, httpExchange) { responseBehaviour ->
-                    LOGGER.info(
-                        "Handling {} object request for: {}",
-                        method,
-                        httpExchange.request().absoluteURI()
-                    )
-                    responseService.sendResponse(pluginConfig, resourceConfig, httpExchange, responseBehaviour)
+                    val resourceType = (resourceConfig as? RestPluginResourceConfig)?.type
+                        ?: ResourceConfigType.OBJECT
+
+                    when (resourceType) {
+                        ResourceConfigType.OBJECT -> handleObject(pluginConfig, resourceConfig, httpExchange, responseBehaviour)
+                        ResourceConfigType.ARRAY -> handleArray(pluginConfig, resourceConfig, httpExchange, responseBehaviour)
+                    }
                 }
             }
         )
     }
 
-    private fun addArrayHandler(
-        router: HttpRouter,
-        pluginConfig: RestPluginConfig,
-        resourceConfig: RestPluginResourceConfig
-    ) {
-        val qualifiedPath = buildQualifiedPath(pluginConfig.path, resourceConfig)
-        val method = extractResourceMethod(resourceConfig) ?: ResourceMethod.GET
-        LOGGER.debug("Adding {} array handler: {}", method, qualifiedPath)
+    private fun normalisePath(uniqueRoute: UniqueRoute): String {
+        return if (uniqueRoute.path.startsWith("/")) uniqueRoute.path else "/${uniqueRoute.path}"
+    }
 
+    private fun handleObject(
+        pluginConfig: RestPluginConfig,
+        resourceConfig: ContentTypedConfig,
+        httpExchange: HttpExchange,
+        responseBehaviour: ResponseBehaviour,
+    ) {
+        LOGGER.info(
+            "Handling {} object request for: {}",
+            httpExchange.request().method(),
+            httpExchange.request().absoluteURI()
+        )
+        responseService.sendResponse(pluginConfig, resourceConfig, httpExchange, responseBehaviour)
+    }
+
+    private fun handleArray(
+        pluginConfig: RestPluginConfig,
+        resourceConfig: ContentTypedConfig,
+        httpExchange: HttpExchange,
+        responseBehaviour: ResponseBehaviour,
+    ) {
         // validate path includes parameter
         val resourcePath = resourceConfig.path ?: ""
         val matcher = PARAM_MATCHER.matcher(resourcePath)
         require(matcher.matches()) {
             "Resource '$resourcePath' does not contain a field ID parameter"
         }
-        router.route(method, qualifiedPath).handler(
-            resourceService.handleRoute(imposterConfig, pluginConfig, vertx, resourceMatcher) { httpExchange: HttpExchange ->
-                // script should fire first
-                responseRoutingService.route(pluginConfig, resourceConfig, httpExchange) { responseBehaviour ->
-                    LOGGER.info("Handling {} array request for: {}", method, httpExchange.request().absoluteURI())
+        LOGGER.info(
+            "Handling {} array request for: {}",
+            httpExchange.request().method(),
+            httpExchange.request().absoluteURI()
+        )
 
-                    // get the first param in the path
-                    val idFieldName = matcher.group(1)
-                    val idField = httpExchange.pathParam(idFieldName)
+        // get the first param in the path
+        val idFieldName = matcher.group(1)
+        val idField = httpExchange.pathParam(idFieldName)
 
-                    // find row
-                    val result = findRow(
-                        idFieldName, idField,
-                        responseService.loadResponseAsJsonArray(pluginConfig, responseBehaviour)
-                    )
-                    val response = httpExchange.response()
+        // find row
+        val result = findRow(
+            idFieldName, idField,
+            responseService.loadResponseAsJsonArray(pluginConfig, responseBehaviour)
+        )
+        val response = httpExchange.response()
 
-                    result?.let {
-                        LOGGER.info("Returning single row for {}:{}", idFieldName, idField)
-                        response.setStatusCode(HttpUtil.HTTP_OK)
-                            .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_JSON)
-                            .end(result.encodePrettily())
-                    } ?: run {
-                        // no such record
-                        LOGGER.error("No row found for {}:{}", idFieldName, idField)
-                        response.setStatusCode(HttpUtil.HTTP_NOT_FOUND).end()
-                    }
-                }
-            })
-    }
-
-    private fun buildQualifiedPath(rootPath: String?, resourceConfig: ResourceConfig): String {
-        val qualifiedPath = (rootPath ?: "") + (resourceConfig.path ?: "")
-        return if (qualifiedPath.startsWith("/")) qualifiedPath else "/$qualifiedPath"
+        result?.let {
+            LOGGER.info("Returning single row for {}:{}", idFieldName, idField)
+            response.setStatusCode(HttpUtil.HTTP_OK)
+                .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_JSON)
+                .end(result.encodePrettily())
+        } ?: run {
+            // no such record
+            LOGGER.error("No row found for {}:{}", idFieldName, idField)
+            response.setStatusCode(HttpUtil.HTTP_NOT_FOUND).end()
+        }
     }
 
     companion object {

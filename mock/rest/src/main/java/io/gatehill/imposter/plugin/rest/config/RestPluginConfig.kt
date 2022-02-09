@@ -43,7 +43,8 @@
 package io.gatehill.imposter.plugin.rest.config
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import io.gatehill.imposter.plugin.config.ContentTypedPluginConfigImpl
+import io.gatehill.imposter.plugin.config.ContentTypedConfig
+import io.gatehill.imposter.plugin.config.PluginConfigImpl
 import io.gatehill.imposter.plugin.config.ResourcesHolder
 import io.gatehill.imposter.plugin.config.resource.MethodResourceConfig
 import io.gatehill.imposter.plugin.config.resource.ResourceMethod
@@ -51,8 +52,11 @@ import io.gatehill.imposter.plugin.config.resource.ResourceMethod
 /**
  * @author Pete Cornish
  */
-class RestPluginConfig : ContentTypedPluginConfigImpl(), MethodResourceConfig,
-    ResourcesHolder<RestPluginResourceConfig> {
+class RestPluginConfig : PluginConfigImpl(), MethodResourceConfig,
+    ResourcesHolder<RestPluginResourceConfig>, ContentTypedConfig {
+
+    override var contentType: String? = null
+        protected set
 
     @JsonProperty("resources")
     override val resources: List<RestPluginResourceConfig>? = null

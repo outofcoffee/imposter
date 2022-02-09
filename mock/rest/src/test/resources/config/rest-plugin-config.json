@@ -1,17 +1,19 @@
 {
   "plugin": "rest",
-  "path": "/example",
+  "contentType": "application/json",
   "resources": [
     {
-      "path": "/:id",
+      "path": "/example/:id",
       "type": "ARRAY",
       "response": {
         "staticFile": "rest-plugin-list-data.json"
       }
+    },
+    {
+      "path": "/example",
+      "response": {
+        "staticFile": "rest-plugin-data1.json"
+      }
     }
-  ],
-  "response": {
-    "staticFile": "rest-plugin-data1.json"
-  },
-  "contentType": "application/json"
+  ]
 }

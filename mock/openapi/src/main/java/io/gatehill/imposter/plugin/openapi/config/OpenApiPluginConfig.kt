@@ -43,13 +43,13 @@
 package io.gatehill.imposter.plugin.openapi.config
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import io.gatehill.imposter.plugin.config.ContentTypedPluginConfigImpl
+import io.gatehill.imposter.plugin.config.PluginConfigImpl
 import io.gatehill.imposter.plugin.config.ResourcesHolder
 
 /**
  * @author Pete Cornish
  */
-class OpenApiPluginConfig : ContentTypedPluginConfigImpl(), ResourcesHolder<OpenApiResourceConfig> {
+class OpenApiPluginConfig : PluginConfigImpl(), ResourcesHolder<OpenApiResourceConfig> {
     @JsonProperty("specFile")
     var specFile: String? = null
 
