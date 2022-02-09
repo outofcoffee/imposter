@@ -79,7 +79,7 @@ class TestPluginImpl @Inject constructor(
         router: HttpRouter,
         uniqueRoute: UniqueRoute,
     ) {
-        val handler = resourceService.handleRoute(imposterConfig, pluginConfig, vertx, resourceMatcher) { httpExchange ->
+        val handler = resourceService.handleRoute(imposterConfig, pluginConfig, resourceMatcher) { httpExchange ->
             val resourceConfig = httpExchange.get<BasicResourceConfig>(ResourceUtil.RESOURCE_CONFIG_KEY)!!
 
             responseRoutingService.route(pluginConfig, resourceConfig, httpExchange) { responseBehaviour ->

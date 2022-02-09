@@ -140,12 +140,12 @@ class OpenApiPluginImpl @Inject constructor(
         // serve specification and UI
         LOGGER.debug("Adding specification UI at: {}{}", imposterConfig.serverUrl, SPECIFICATION_PATH)
         router.get(COMBINED_SPECIFICATION_PATH).handler(
-            resourceService.handleRoute(imposterConfig, configs, vertx, resourceMatcher) { httpExchange: HttpExchange ->
+            resourceService.handleRoute(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
                 handleCombinedSpec(httpExchange)
             }
         )
         router.getWithRegex("$SPECIFICATION_PATH$").handler(
-            resourceService.handleRoute(imposterConfig, configs, vertx, resourceMatcher) { httpExchange: HttpExchange ->
+            resourceService.handleRoute(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
                 httpExchange.response()
                     .putHeader("Location", "$SPECIFICATION_PATH/")
                     .setStatusCode(HttpUtil.HTTP_MOVED_PERM)
@@ -259,7 +259,7 @@ class OpenApiPluginImpl @Inject constructor(
     ): HttpExchangeHandler {
         // statically calculate as much as possible
         val statusCodeFactory = buildStatusCodeCalculator(operation)
-        return resourceService.handleRoute(imposterConfig, pluginConfig, vertx, resourceMatcher) { httpExchange: HttpExchange ->
+        return resourceService.handleRoute(imposterConfig, pluginConfig, resourceMatcher) { httpExchange: HttpExchange ->
             if (!specificationService.isValidRequest(pluginConfig, httpExchange, allSpecs, basePath)) {
                 return@handleRoute
             }

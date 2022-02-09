@@ -155,7 +155,7 @@ class SoapPluginImpl @Inject constructor(
 
         // TODO parse HTTP binding to check for other verbs
         router.route(ResourceMethod.POST, fullPath).handler(
-            resourceService.handleRoute(imposterConfig, config, vertx, soapResourceMatcher) { httpExchange: HttpExchange ->
+            resourceService.handleRoute(imposterConfig, config, soapResourceMatcher) { httpExchange: HttpExchange ->
                 val soapEnv = httpExchange.body?.let { body -> SoapUtil.parseSoapEnvelope(body) } ?: run {
                     LOGGER.warn("No request body - unable to parse SOAP envelope")
                     httpExchange.response().setStatusCode(400).end()

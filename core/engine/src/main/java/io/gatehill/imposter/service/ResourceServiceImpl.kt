@@ -77,7 +77,8 @@ import javax.inject.Inject
  */
 class ResourceServiceImpl @Inject constructor(
     private val securityService: SecurityService,
-    private val securityLifecycle: SecurityLifecycleHooks
+    private val securityLifecycle: SecurityLifecycleHooks,
+    private val vertx: Vertx,
 ) : ResourceService {
 
     private val shouldAddEngineResponseHeaders: Boolean
@@ -106,12 +107,11 @@ class ResourceServiceImpl @Inject constructor(
     override fun handleRoute(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>,
-        vertx: Vertx,
         resourceMatcher: ResourceMatcher,
         httpExchangeHandler: HttpExchangeHandler,
     ): HttpExchangeHandler {
         val selectedConfig = securityService.findConfigPreferringSecurityPolicy(allPluginConfigs)
-        return handleRoute(imposterConfig, selectedConfig, vertx, resourceMatcher, httpExchangeHandler)
+        return handleRoute(imposterConfig, selectedConfig, resourceMatcher, httpExchangeHandler)
     }
 
     /**
@@ -120,7 +120,6 @@ class ResourceServiceImpl @Inject constructor(
     override fun handleRoute(
         imposterConfig: ImposterConfig,
         pluginConfig: PluginConfig,
-        vertx: Vertx,
         resourceMatcher: ResourceMatcher,
         httpExchangeHandler: HttpExchangeHandler,
     ): HttpExchangeHandler {
@@ -161,12 +160,11 @@ class ResourceServiceImpl @Inject constructor(
     override fun passthroughRoute(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>,
-        vertx: Vertx,
         resourceMatcher: ResourceMatcher,
         httpExchangeHandler: HttpExchangeHandler,
     ): HttpExchangeHandler {
         val selectedConfig = securityService.findConfigPreferringSecurityPolicy(allPluginConfigs)
-        return handleRoute(imposterConfig, selectedConfig, vertx, resourceMatcher) { event: HttpExchange ->
+        return handleRoute(imposterConfig, selectedConfig, resourceMatcher) { event: HttpExchange ->
             httpExchangeHandler(event)
         }
     }

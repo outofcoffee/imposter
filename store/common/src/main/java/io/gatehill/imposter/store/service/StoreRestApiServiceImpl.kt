@@ -96,7 +96,7 @@ class StoreRestApiServiceImpl @Inject constructor(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>
     ): HttpExchangeHandler {
-        return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx, resourceMatcher) { httpExchange: HttpExchange ->
+        return resourceService.handleRoute(imposterConfig, allPluginConfigs, resourceMatcher) { httpExchange: HttpExchange ->
             val storeName = httpExchange.pathParam("storeName")!!
             val store = openStore(storeName)
             if (Objects.isNull(store)) {
@@ -122,7 +122,7 @@ class StoreRestApiServiceImpl @Inject constructor(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>
     ): HttpExchangeHandler {
-        return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx, resourceMatcher) { httpExchange: HttpExchange ->
+        return resourceService.handleRoute(imposterConfig, allPluginConfigs, resourceMatcher) { httpExchange: HttpExchange ->
             val storeName = httpExchange.pathParam("storeName")!!
             storeFactory.clearStore(storeName, ephemeral = false)
             LOGGER.debug("Deleted store: {}", storeName)
@@ -137,7 +137,7 @@ class StoreRestApiServiceImpl @Inject constructor(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>
     ): HttpExchangeHandler {
-        return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx, resourceMatcher) { httpExchange: HttpExchange ->
+        return resourceService.handleRoute(imposterConfig, allPluginConfigs, resourceMatcher) { httpExchange: HttpExchange ->
             val storeName = httpExchange.pathParam("storeName")!!
             val store = openStore(storeName)
             if (Objects.isNull(store)) {
@@ -169,7 +169,7 @@ class StoreRestApiServiceImpl @Inject constructor(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>
     ): HttpExchangeHandler {
-        return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx, resourceMatcher) { httpExchange: HttpExchange ->
+        return resourceService.handleRoute(imposterConfig, allPluginConfigs, resourceMatcher) { httpExchange: HttpExchange ->
             val storeName = httpExchange.pathParam("storeName")!!
             val store = openStore(storeName)
             if (Objects.isNull(store)) {
@@ -197,7 +197,7 @@ class StoreRestApiServiceImpl @Inject constructor(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>
     ): HttpExchangeHandler {
-        return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx, resourceMatcher) { httpExchange: HttpExchange ->
+        return resourceService.handleRoute(imposterConfig, allPluginConfigs, resourceMatcher) { httpExchange: HttpExchange ->
             val storeName = httpExchange.pathParam("storeName")!!
             val store = openStore(storeName)
             if (Objects.isNull(store)) {
@@ -219,7 +219,7 @@ class StoreRestApiServiceImpl @Inject constructor(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>
     ): HttpExchangeHandler {
-        return resourceService.handleRoute(imposterConfig, allPluginConfigs, vertx, resourceMatcher) { httpExchange: HttpExchange ->
+        return resourceService.handleRoute(imposterConfig, allPluginConfigs, resourceMatcher) { httpExchange: HttpExchange ->
             val storeName = httpExchange.pathParam("storeName")!!
             val store = openStore(storeName)
             if (Objects.isNull(store)) {

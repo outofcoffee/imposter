@@ -48,7 +48,6 @@ import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpExchangeHandler
 import io.gatehill.imposter.http.ResourceMatcher
 import io.gatehill.imposter.plugin.config.PluginConfig
-import io.vertx.core.Vertx
 
 /**
  * @author Pete Cornish
@@ -80,7 +79,6 @@ interface ResourceService {
      *
      * @param imposterConfig      the Imposter configuration
      * @param allPluginConfigs    all plugin configurations
-     * @param vertx               the current Vert.x instance
      * @param resourceMatcher     the [ResourceMatcher] to use
      * @param httpExchangeHandler the consumer of the [HttpExchange]
      * @return the handler
@@ -88,7 +86,6 @@ interface ResourceService {
     fun handleRoute(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>,
-        vertx: Vertx,
         resourceMatcher: ResourceMatcher,
         httpExchangeHandler: HttpExchangeHandler,
     ): HttpExchangeHandler
@@ -111,7 +108,6 @@ interface ResourceService {
      *
      * @param imposterConfig      the Imposter configuration
      * @param pluginConfig        the plugin configuration
-     * @param vertx               the current Vert.x instance
      * @param resourceMatcher     the [ResourceMatcher] to use
      * @param httpExchangeHandler the consumer of the [HttpExchange]
      * @return the handler
@@ -119,7 +115,6 @@ interface ResourceService {
     fun handleRoute(
         imposterConfig: ImposterConfig,
         pluginConfig: PluginConfig,
-        vertx: Vertx,
         resourceMatcher: ResourceMatcher,
         httpExchangeHandler: HttpExchangeHandler,
     ): HttpExchangeHandler
@@ -140,7 +135,6 @@ interface ResourceService {
      *
      * @param imposterConfig      the Imposter configuration
      * @param allPluginConfigs    all plugin configurations
-     * @param vertx               the current Vert.x instance
      * @param resourceMatcher     the [ResourceMatcher] to use
      * @param httpExchangeHandler the handler of the [HttpExchange]
      * @return the handler
@@ -148,7 +142,6 @@ interface ResourceService {
     fun passthroughRoute(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>,
-        vertx: Vertx,
         resourceMatcher: ResourceMatcher,
         httpExchangeHandler: HttpExchangeHandler,
     ): HttpExchangeHandler

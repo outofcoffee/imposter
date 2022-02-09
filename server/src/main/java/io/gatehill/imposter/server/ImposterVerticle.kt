@@ -152,7 +152,6 @@ class ImposterVerticle : AbstractVerticle() {
                 resourceService.passthroughRoute(
                     imposterConfig,
                     allConfigs,
-                    vertx,
                     SingletonResourceMatcher.instance,
                     serverFactory.createMetricsHandler()
                 )
@@ -161,7 +160,7 @@ class ImposterVerticle : AbstractVerticle() {
 
         // status check to indicate when server is up
         router.get("/system/status").handler(
-            resourceService.handleRoute(imposterConfig, allConfigs, vertx, SingletonResourceMatcher.instance) { httpExchange ->
+            resourceService.handleRoute(imposterConfig, allConfigs, SingletonResourceMatcher.instance) { httpExchange ->
                 httpExchange.response()
                     .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_JSON)
                     .end(buildStatusResponse())
