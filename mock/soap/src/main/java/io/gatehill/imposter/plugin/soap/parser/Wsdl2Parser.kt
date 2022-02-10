@@ -94,7 +94,7 @@ class Wsdl2Parser(
         }
 
         return WsdlBinding(
-            name = bindingName,
+            name = binding.getAttributeValue("name"),
             type = parseBindingType(binding),
             interfaceRef = interfaceName,
             operations = operations,

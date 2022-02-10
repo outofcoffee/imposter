@@ -62,7 +62,7 @@ import org.junit.Test
 abstract class AbstractEndToEndTest : BaseVerticleTest() {
     override val pluginClass = SoapPluginImpl::class.java
 
-    protected abstract val soapNamespace: Namespace
+    protected abstract val soapEnvNamespace: Namespace
     protected abstract val soapContentType: String
 
     private val getPetByIdEnv
@@ -71,7 +71,7 @@ abstract class AbstractEndToEndTest : BaseVerticleTest() {
 <getPetByIdRequest xmlns="urn:com:example:petstore">
   <id>3</id>
 </getPetByIdRequest>
-""".trim(), soapNamespace
+""".trim(), soapEnvNamespace
     )
 
     @Before
@@ -152,13 +152,13 @@ abstract class AbstractEndToEndTest : BaseVerticleTest() {
     }
 
     @Test
-    fun testBindingMatch(testContext: TestContext) {
+    fun testBindingAndOperationMatch(testContext: TestContext) {
         val getPetByNameEnv = SoapUtil.wrapInEnv(
             """
 <getPetByNameRequest xmlns="urn:com:example:petstore">
   <name>Fluffy</name>
 </getPetByNameRequest>
-""".trim(), SoapUtil.soap12RecEnvNamespace
+""".trim(), soapEnvNamespace
         )
 
         RestAssured.given()
@@ -177,5 +177,20 @@ abstract class AbstractEndToEndTest : BaseVerticleTest() {
                     containsString("Fluffy"),
                 )
             )
+    }
+
+    @Test
+    fun testInvalidSoapAction(testContext: TestContext) {
+        RestAssured.given()
+            .log().ifValidationFails()
+            .accept(soapContentType)
+            .contentType(soapContentType)
+            .header("SOAPAction", "invalid-pet-action")
+            .`when`()
+            .body(getPetByIdEnv)
+            .post("/soap/")
+            .then()
+            .log().ifValidationFails()
+            .statusCode(HttpUtil.HTTP_NOT_FOUND)
     }
 }

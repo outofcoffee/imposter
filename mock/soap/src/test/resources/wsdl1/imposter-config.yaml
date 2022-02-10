@@ -2,8 +2,7 @@ plugin: soap
 wsdlFile: service.wsdl
 
 resources:
-  - path: /soap/
+  - binding: SoapBinding
     operation: getPetByName
     response:
       staticFile: getPetByNameResponse.xml
-

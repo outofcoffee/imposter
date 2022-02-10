@@ -51,6 +51,6 @@ import io.gatehill.imposter.plugin.soap.util.SoapUtil
  */
 class Wsdl2EndToEndTest : AbstractEndToEndTest() {
     override val testConfigDirs = listOf("/wsdl2")
-    override val soapNamespace = SoapUtil.soap12RecEnvNamespace
+    override val soapEnvNamespace = SoapUtil.soap12RecEnvNamespace
     override val soapContentType = SoapUtil.soap12ContentType
 }

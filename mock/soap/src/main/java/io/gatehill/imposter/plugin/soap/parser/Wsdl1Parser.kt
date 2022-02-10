@@ -90,7 +90,7 @@ class Wsdl1Parser(
         }
 
         return WsdlBinding(
-            name = bindingName,
+            name = binding.getAttributeValue("name"),
 
             type = parseBindingType(binding),
 

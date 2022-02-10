@@ -3,13 +3,11 @@ wsdlFile: petstore.wsdl
 
 resources:
   # return custom response body for a given operation
-  - path: "/pets/"
-    operation: getPetById
+  - operation: getPetById
     response:
       staticFile: getPetByIdResponse.xml
 
   # return HTTP 400 response if SOAPAction matches a specific value
-  - path: "/pets/"
-    soapAction: "invalid-pet-action"
+  - soapAction: "invalid-pet-action"
     response:
       statusCode: 400
