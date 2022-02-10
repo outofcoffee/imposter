@@ -42,6 +42,7 @@
  */
 package io.gatehill.imposter.util
 
+import com.google.inject.Module
 import io.gatehill.imposter.config.util.EnvVars
 import org.apache.logging.log4j.LogManager
 
@@ -65,6 +66,10 @@ object FeatureUtil {
      * Holds the enabled status of the features, keyed by name.
      */
     private var FEATURES: Map<String, Boolean>? = null
+
+    init {
+        refresh()
+    }
 
     fun refresh() {
         val overrides: Map<String, Boolean> = listOverrides()
@@ -135,7 +140,22 @@ object FeatureUtil {
         refresh()
     }
 
-    init {
-        refresh()
+    /**
+     * @return a list of [Module] instances based on the enabled features
+     */
+    fun getModulesForEnabledFeatures(featureModules: Map<String, Class<out Module>>): List<Module> {
+        return featureModules.entries.filter { (key) ->
+            isFeatureEnabled(key)
+        }.map { (_, value) ->
+            uncheckedInstantiate(value)
+        }
+    }
+
+    private fun <T> uncheckedInstantiate(clazz: Class<T>): T {
+        return try {
+            clazz.getDeclaredConstructor().newInstance()
+        } catch (e: Exception) {
+            throw RuntimeException("Unable to instantiate: ${clazz.canonicalName}", e)
+        }
     }
 }

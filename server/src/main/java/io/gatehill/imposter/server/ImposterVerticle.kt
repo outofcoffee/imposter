@@ -43,59 +43,33 @@
 package io.gatehill.imposter.server
 
 import com.google.inject.Module
+import io.gatehill.imposter.EngineBuilder
 import io.gatehill.imposter.Imposter
-import io.gatehill.imposter.http.HttpRouter
-import io.gatehill.imposter.http.SingletonResourceMatcher
-import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
-import io.gatehill.imposter.lifecycle.EngineLifecycleListener
-import io.gatehill.imposter.plugin.Plugin
-import io.gatehill.imposter.plugin.PluginDiscoveryStrategy
-import io.gatehill.imposter.plugin.PluginManager
-import io.gatehill.imposter.plugin.RoutablePlugin
-import io.gatehill.imposter.plugin.config.ConfigurablePlugin
-import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.scripting.common.CommonScriptingModule
 import io.gatehill.imposter.scripting.groovy.GroovyScriptingModule
-import io.gatehill.imposter.server.util.FeatureModuleUtil
-import io.gatehill.imposter.service.ResourceService
-import io.gatehill.imposter.util.AsyncUtil.resolvePromiseOnCompletion
-import io.gatehill.imposter.util.ClassLoaderUtil
-import io.gatehill.imposter.util.FeatureUtil.isFeatureEnabled
-import io.gatehill.imposter.util.HttpUtil
-import io.gatehill.imposter.util.HttpUtil.buildStatusResponse
-import io.gatehill.imposter.util.InjectorUtil.injector
-import io.gatehill.imposter.util.MetricsUtil
+import io.gatehill.imposter.store.StoreModule
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Promise
-import org.apache.logging.log4j.LogManager
-import javax.inject.Inject
 
 /**
  * @author Pete Cornish
  */
 class ImposterVerticle : AbstractVerticle() {
-    @Inject
-    private lateinit var pluginManager: PluginManager
-
-    @Inject
-    private lateinit var serverFactory: ServerFactory
-
-    @Inject
-    private lateinit var engineLifecycle: EngineLifecycleHooks
-
-    @Inject
-    private lateinit var resourceService: ResourceService
-
-    private val imposterConfig = ConfigHolder.config
-    private var httpServer: HttpServer? = null
+    private var imposter: Imposter? = null
 
     override fun start(startPromise: Promise<Void>) {
-        LOGGER.trace("Initialising mock engine")
         vertx.executeBlocking<Unit>({ promise ->
             try {
-                startEngine()
-                injector!!.injectMembers(this@ImposterVerticle)
-                httpServer = serverFactory.provide(imposterConfig, promise, vertx, configureRoutes())
+                val engine = EngineBuilder.newEngine(
+                    vertx = vertx,
+                    imposterConfig = ConfigHolder.config,
+                    featureModules = featureModules,
+                    GroovyScriptingModule(),
+                    CommonScriptingModule()
+                )
+                imposter = engine
+                engine.start(promise)
+
             } catch (e: Exception) {
                 promise.fail(e)
             }
@@ -103,81 +77,21 @@ class ImposterVerticle : AbstractVerticle() {
             if (result.failed()) {
                 startPromise.fail(result.cause())
             } else {
-                LOGGER.info("Mock engine up and running on {}", imposterConfig.serverUrl)
                 startPromise.complete()
             }
         }
     }
 
-    private fun startEngine() {
-        val pluginDiscoveryStrategyClass =
-            ClassLoaderUtil.loadClass<PluginDiscoveryStrategy>(imposterConfig.pluginDiscoveryStrategy!!)
-
-        val pluginDiscoveryStrategy = pluginDiscoveryStrategyClass.getDeclaredConstructor().newInstance()
-
-        val bootstrapModules = mutableListOf<Module>(
-            BootstrapModule(vertx, imposterConfig, imposterConfig.serverFactory!!, pluginDiscoveryStrategy),
-            GroovyScriptingModule(),
-            CommonScriptingModule(),
-        )
-        bootstrapModules.addAll(FeatureModuleUtil.discoverFeatureModules())
-
-        val imposter = Imposter(imposterConfig, bootstrapModules.toTypedArray(), pluginDiscoveryStrategy)
-        imposter.start()
-    }
-
     override fun stop(stopPromise: Promise<Void>) {
-        LOGGER.info("Stopping mock server on {}:{}", imposterConfig.host, imposterConfig.listenPort)
-        httpServer?.let { server: HttpServer -> server.close(resolvePromiseOnCompletion(stopPromise)) }
-    }
-
-    private fun configureRoutes(): HttpRouter {
-        val router = HttpRouter.router(vertx)
-
-        router.errorHandler(HttpUtil.HTTP_NOT_FOUND, resourceService.buildNotFoundExceptionHandler())
-        router.errorHandler(HttpUtil.HTTP_INTERNAL_ERROR, resourceService.buildUnhandledExceptionHandler())
-        router.route().handler(serverFactory.createBodyHttpHandler())
-
-        val allConfigs: List<PluginConfig> = pluginManager.getPlugins()
-            .filter { p: Plugin -> p is ConfigurablePlugin<*> }
-            .flatMap { p: Plugin -> (p as ConfigurablePlugin<*>).configs }
-
-        check(allConfigs.isNotEmpty()) {
-            "No plugin configurations were found. Configuration directories [${imposterConfig.configDirs.joinToString()}] must contain one or more valid Imposter configuration files compatible with installed plugins."
-        }
-
-        if (isFeatureEnabled(MetricsUtil.FEATURE_NAME_METRICS)) {
-            LOGGER.trace("Metrics enabled")
-            router.route("/system/metrics").handler(
-                resourceService.passthroughRoute(
-                    imposterConfig,
-                    allConfigs,
-                    SingletonResourceMatcher.instance,
-                    serverFactory.createMetricsHandler()
-                )
-            )
-        }
-
-        // status check to indicate when server is up
-        router.get("/system/status").handler(
-            resourceService.handleRoute(imposterConfig, allConfigs, SingletonResourceMatcher.instance) { httpExchange ->
-                httpExchange.response()
-                    .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_JSON)
-                    .end(buildStatusResponse())
-            })
-
-        pluginManager.getPlugins().filterIsInstance<RoutablePlugin>().forEach { plugin ->
-            plugin.configureRoutes(router)
-        }
-
-        // fire post route config hooks
-        engineLifecycle.forEach { listener: EngineLifecycleListener ->
-            listener.afterRoutesConfigured(imposterConfig, allConfigs, router)
-        }
-        return router
+        imposter?.stop(stopPromise)
     }
 
     companion object {
-        private val LOGGER = LogManager.getLogger(ImposterVerticle::class.java)
+        /**
+         * Conditionally loaded, if feature enabled.
+         */
+        private val featureModules: Map<String, Class<out Module>> = mapOf(
+            "stores" to StoreModule::class.java
+        )
     }
 }

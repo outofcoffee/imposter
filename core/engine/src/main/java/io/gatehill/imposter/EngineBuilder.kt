@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2022-2022.
  *
  * This file is part of Imposter.
  *
@@ -40,43 +40,54 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.server
 
-import com.google.inject.AbstractModule
-import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
-import io.gatehill.imposter.lifecycle.ScriptExecLifecycleHooks
-import io.gatehill.imposter.lifecycle.SecurityLifecycleHooks
+package io.gatehill.imposter
+
+import com.google.inject.Module
 import io.gatehill.imposter.plugin.PluginDiscoveryStrategy
 import io.gatehill.imposter.util.ClassLoaderUtil
+import io.gatehill.imposter.util.FeatureUtil
 import io.vertx.core.Vertx
-import javax.inject.Singleton
+import org.apache.logging.log4j.LogManager
 
 /**
+ * Constructs engine instances.
+ *
  * @author Pete Cornish
  */
-class BootstrapModule(
-    private val vertx: Vertx,
-    private val imposterConfig: ImposterConfig?,
-    private val serverFactory: String,
-    private val pluginDiscoveryStrategy: PluginDiscoveryStrategy,
-) : AbstractModule() {
+object EngineBuilder {
+    private val LOGGER = LogManager.getLogger(EngineBuilder::class.java)
 
-    @Suppress("UNCHECKED_CAST")
-    override fun configure() {
-        bind(Vertx::class.java).toInstance(vertx)
-        bind(ImposterConfig::class.java).toInstance(imposterConfig)
-        bind(PluginDiscoveryStrategy::class.java).toInstance(pluginDiscoveryStrategy)
+    /**
+     * Construct a new engine instance, ready to start.
+     *
+     * @param vertx             the Vert.x instance to use
+     * @param featureModules    conditionally loaded modules, if the corresponding feature is enabled
+     * @param additionalModules any [Module]s to bootstrap the engine
+     */
+    fun newEngine(
+        vertx: Vertx,
+        imposterConfig: ImposterConfig,
+        featureModules: Map<String, Class<out Module>> = emptyMap(),
+        vararg additionalModules: Module
+    ): Imposter {
+        LOGGER.trace("Initialising mock engine")
 
+        val pluginDiscoveryStrategy = getPluginDiscoveryStrategy(imposterConfig)
+        val bootstrapModules = FeatureUtil.getModulesForEnabledFeatures(featureModules) + additionalModules
+
+        return Imposter(vertx, imposterConfig, pluginDiscoveryStrategy, bootstrapModules)
+    }
+
+    private fun getPluginDiscoveryStrategy(imposterConfig: ImposterConfig): PluginDiscoveryStrategy {
         try {
-            val serverFactoryClass = ClassLoaderUtil.loadClass<ServerFactory>(serverFactory)
-            bind(ServerFactory::class.java).to(serverFactoryClass).`in`(Singleton::class.java)
-        } catch (e: ClassNotFoundException) {
-            throw RuntimeException("Could not load server factory: $serverFactory", e)
-        }
+            val pluginDiscoveryStrategyClass =
+                ClassLoaderUtil.loadClass<PluginDiscoveryStrategy>(imposterConfig.pluginDiscoveryStrategy!!)
 
-        bind(EngineLifecycleHooks::class.java).`in`(Singleton::class.java)
-        bind(SecurityLifecycleHooks::class.java).`in`(Singleton::class.java)
-        bind(ScriptExecLifecycleHooks::class.java).`in`(Singleton::class.java)
+            return pluginDiscoveryStrategyClass.getDeclaredConstructor().newInstance()
+
+        } catch (e: Exception) {
+            throw RuntimeException("Error getting plugin discovery strategy '${imposterConfig.pluginDiscoveryStrategy}'", e)
+        }
     }
 }

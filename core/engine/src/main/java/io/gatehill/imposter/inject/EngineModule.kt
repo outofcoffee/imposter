@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2022.
  *
  * This file is part of Imposter.
  *
@@ -40,11 +40,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter
+package io.gatehill.imposter.inject
 
 import com.google.inject.AbstractModule
 import com.google.inject.Singleton
-import io.gatehill.imposter.plugin.PluginManager
 import io.gatehill.imposter.service.FileCacheService
 import io.gatehill.imposter.service.FileCacheServiceImpl
 import io.gatehill.imposter.service.ResourceService
@@ -64,14 +63,8 @@ import io.gatehill.imposter.service.security.SecurityServiceImpl
 /**
  * @author Pete Cornish
  */
-internal class ImposterModule(
-    private val imposterConfig: ImposterConfig,
-    private val pluginManager: PluginManager
-) : AbstractModule() {
-
+internal class EngineModule : AbstractModule() {
     override fun configure() {
-        bind(ImposterConfig::class.java).toInstance(imposterConfig)
-        bind(PluginManager::class.java).toInstance(pluginManager)
         bind(ResourceService::class.java).to(ResourceServiceImpl::class.java).`in`(Singleton::class.java)
         bind(ResponseRoutingService::class.java).to(ResponseRoutingServiceImpl::class.java).`in`(Singleton::class.java)
         bind(ResponseService::class.java).to(ResponseServiceImpl::class.java).`in`(Singleton::class.java)

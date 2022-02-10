@@ -46,51 +46,86 @@ import com.google.inject.Module
 import io.gatehill.imposter.config.util.ConfigUtil
 import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.config.util.MetaUtil
+import io.gatehill.imposter.http.HttpRouter
+import io.gatehill.imposter.http.SingletonResourceMatcher
+import io.gatehill.imposter.inject.BootstrapModule
+import io.gatehill.imposter.inject.EngineModule
+import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
+import io.gatehill.imposter.lifecycle.EngineLifecycleListener
 import io.gatehill.imposter.plugin.PluginDiscoveryStrategy
 import io.gatehill.imposter.plugin.PluginManager
 import io.gatehill.imposter.plugin.PluginManagerImpl
+import io.gatehill.imposter.plugin.RoutablePlugin
+import io.gatehill.imposter.plugin.config.ConfigurablePlugin
+import io.gatehill.imposter.plugin.config.PluginConfig
+import io.gatehill.imposter.server.HttpServer
+import io.gatehill.imposter.server.ServerFactory
+import io.gatehill.imposter.service.ResourceService
+import io.gatehill.imposter.util.AsyncUtil
+import io.gatehill.imposter.util.FeatureUtil
 import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.InjectorUtil
+import io.gatehill.imposter.util.MetricsUtil
+import io.vertx.core.Promise
+import io.vertx.core.Vertx
 import org.apache.logging.log4j.LogManager
 import java.io.File
-import java.net.URI
 import java.nio.file.Paths
+import javax.inject.Inject
 import kotlin.io.path.exists
 
 /**
  * @author Pete Cornish
  */
-class Imposter constructor(
+class Imposter(
+    private val vertx: Vertx,
     private val imposterConfig: ImposterConfig,
-    private val bootstrapModules: Array<Module>,
-    pluginDiscoveryStrategy: PluginDiscoveryStrategy,
+    private val pluginDiscoveryStrategy: PluginDiscoveryStrategy,
+    private val additionalModules: List<Module>,
 ) {
     private val pluginManager: PluginManager = PluginManagerImpl(pluginDiscoveryStrategy)
 
-    fun start() {
+    @Inject
+    private lateinit var serverFactory: ServerFactory
+
+    @Inject
+    private lateinit var engineLifecycle: EngineLifecycleHooks
+
+    @Inject
+    private lateinit var resourceService: ResourceService
+
+    private var httpServer: HttpServer? = null
+
+    fun start(promise: Promise<Unit>) {
         LOGGER.info("Starting mock engine ${MetaUtil.readVersion()}")
 
-        val plugins = mutableListOf("js-detector", "store-detector")
-        imposterConfig.plugins?.let { plugins.addAll(it) }
+        val plugins = defaultPlugins.toMutableList()
+        imposterConfig.plugins?.let(plugins::addAll)
 
         val pluginConfigs = processConfiguration()
         val dependencies = pluginManager.preparePluginsFromConfig(imposterConfig, plugins, pluginConfigs)
 
         val allModules = mutableListOf<Module>().apply {
-            addAll(bootstrapModules)
-            add(ImposterModule(imposterConfig, pluginManager))
+            add(BootstrapModule(vertx, imposterConfig, pluginDiscoveryStrategy, pluginManager))
+            add(EngineModule())
             addAll(dependencies.flatMap { it.requiredModules })
+            addAll(additionalModules)
         }
 
-        // inject dependencies
         val injector = InjectorUtil.create(*allModules.toTypedArray())
         injector.injectMembers(this)
+
         pluginManager.registerPlugins(injector)
         pluginManager.configurePlugins(pluginConfigs)
+
+        val router = configureRoutes()
+        httpServer = serverFactory.provide(imposterConfig, promise, vertx, router)
+
+        LOGGER.info("Mock engine up and running on {}", imposterConfig.serverUrl)
     }
 
     private fun processConfiguration(): Map<String, List<File>> {
-        imposterConfig.serverUrl = buildServerUrl().toString()
+        imposterConfig.serverUrl = HttpUtil.buildServerUrl(imposterConfig).toString()
 
         val configFiles = ConfigUtil.discoverConfigFiles(imposterConfig.configDirs)
 
@@ -105,23 +140,57 @@ class Imposter constructor(
         return ConfigUtil.loadPluginConfigs(imposterConfig, pluginManager, configFiles)
     }
 
-    private fun buildServerUrl(): URI {
-        // might be set explicitly
-        if (imposterConfig.serverUrl != null) {
-            return URI.create(imposterConfig.serverUrl!!)
+    private fun configureRoutes(): HttpRouter {
+        val router = HttpRouter.router(vertx)
+
+        router.errorHandler(HttpUtil.HTTP_NOT_FOUND, resourceService.buildNotFoundExceptionHandler())
+        router.errorHandler(HttpUtil.HTTP_INTERNAL_ERROR, resourceService.buildUnhandledExceptionHandler())
+        router.route().handler(serverFactory.createBodyHttpHandler())
+
+        val plugins = pluginManager.getPlugins()
+
+        val allConfigs: List<PluginConfig> = plugins.filterIsInstance<ConfigurablePlugin<*>>().flatMap { it.configs }
+        check(allConfigs.isNotEmpty()) {
+            "No plugin configurations were found. Configuration directories [${imposterConfig.configDirs.joinToString()}] must contain one or more valid Imposter configuration files compatible with installed plugins."
         }
 
-        // build based on configuration
-        val scheme = (if (imposterConfig.isTlsEnabled) "https" else "http") + "://"
-        val host = if (HttpUtil.BIND_ALL_HOSTS == imposterConfig.host) "localhost" else imposterConfig.host!!
-        val port: String = if (shouldHidePort()) "" else ":" + imposterConfig.listenPort
-        return URI.create(scheme + host + port)
+        if (FeatureUtil.isFeatureEnabled(MetricsUtil.FEATURE_NAME_METRICS)) {
+            LOGGER.trace("Metrics enabled")
+            router.route("/system/metrics").handler(
+                resourceService.passthroughRoute(
+                    imposterConfig,
+                    allConfigs,
+                    SingletonResourceMatcher.instance,
+                    serverFactory.createMetricsHandler()
+                )
+            )
+        }
+
+        // status check to indicate when server is up
+        router.get("/system/status").handler(
+            resourceService.handleRoute(imposterConfig, allConfigs, SingletonResourceMatcher.instance) { httpExchange ->
+                httpExchange.response()
+                    .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_JSON)
+                    .end(HttpUtil.buildStatusResponse())
+            })
+
+        plugins.filterIsInstance<RoutablePlugin>().forEach { it.configureRoutes(router) }
+
+        // fire post route config hooks
+        engineLifecycle.forEach { listener: EngineLifecycleListener ->
+            listener.afterRoutesConfigured(imposterConfig, allConfigs, router)
+        }
+
+        return router
     }
 
-    private fun shouldHidePort() = (imposterConfig.isTlsEnabled && 443 == imposterConfig.listenPort) ||
-            (!imposterConfig.isTlsEnabled && 80 == imposterConfig.listenPort)
+    fun stop(promise: Promise<Void>) {
+        LOGGER.info("Stopping mock server on {}:{}", imposterConfig.host, imposterConfig.listenPort)
+        httpServer?.close(AsyncUtil.resolvePromiseOnCompletion(promise)) ?: promise.complete()
+    }
 
     companion object {
         private val LOGGER = LogManager.getLogger(Imposter::class.java)
+        private val defaultPlugins = listOf("js-detector", "store-detector")
     }
 }

@@ -42,9 +42,11 @@
  */
 package io.gatehill.imposter.util
 
+import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.util.MetaUtil
 import io.gatehill.imposter.http.HttpExchange
-import java.util.*
+import java.net.URI
+import java.util.Locale
 import java.util.regex.Pattern
 
 /**
@@ -270,11 +272,26 @@ object HttpUtil {
             .map { weightedAcceptEntry -> weightedAcceptEntry.contentType }
     }
 
-    @JvmStatic
     fun buildStatusResponse() = """{
 "status":"ok",
 "version":"${MetaUtil.readVersion()}"
 }"""
+
+    fun buildServerUrl(imposterConfig: ImposterConfig): URI {
+        // might be set explicitly
+        if (imposterConfig.serverUrl != null) {
+            return URI.create(imposterConfig.serverUrl!!)
+        }
+
+        // build based on configuration
+        val scheme = (if (imposterConfig.isTlsEnabled) "https" else "http") + "://"
+        val host = if (BIND_ALL_HOSTS == imposterConfig.host) "localhost" else imposterConfig.host!!
+        val port: String = if (shouldHidePort(imposterConfig)) "" else ":" + imposterConfig.listenPort
+        return URI.create(scheme + host + port)
+    }
+
+    private fun shouldHidePort(imposterConfig: ImposterConfig) = (imposterConfig.isTlsEnabled && 443 == imposterConfig.listenPort) ||
+        (!imposterConfig.isTlsEnabled && 80 == imposterConfig.listenPort)
 
     private class WeightedAcceptEntry(
         val weight: Float,
