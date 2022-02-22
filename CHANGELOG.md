@@ -3,9 +3,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [2.8.2] - 2022-02-22
 ### Added
-- ...
+- feat: adds DynamoDB and Redis store drivers to 'all' distribution.
+
+### Fixed
+- fix: improves handling of nonexistent response files.
+- fix: supports session token in DynamoDB store driver.
 
 ## [2.8.1] - 2022-02-07
 ### Fixed
