@@ -88,7 +88,7 @@ abstract class AbstractDynamoDBStoreTest {
             )
 
             ddb = AmazonDynamoDBClientBuilder.standard().withEndpointConfiguration(
-                AwsClientBuilder.EndpointConfiguration(Settings.dynamoDbApiEndpoint, Settings.dynamoDbSigningRegion)
+                AwsClientBuilder.EndpointConfiguration(Settings.dynamoDbApiEndpoint, Settings.dynamoDbRegion)
             ).withCredentials(
                 AWSStaticCredentialsProvider(BasicAWSCredentials("dummy", "dummy"))
             ).build()

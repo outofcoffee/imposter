@@ -43,7 +43,6 @@
 package io.gatehill.imposter.store.dynamodb
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider
-import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.client.builder.AwsClientBuilder
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder
@@ -71,11 +70,13 @@ class DynamoDBStoreFactoryImpl @Inject constructor(
     init {
         val builder = AmazonDynamoDBClientBuilder.standard()
         Settings.dynamoDbApiEndpoint?.let {
-            val endpointConfig = AwsClientBuilder.EndpointConfiguration(Settings.dynamoDbApiEndpoint, Settings.dynamoDbSigningRegion)
+            val endpointConfig = AwsClientBuilder.EndpointConfiguration(Settings.dynamoDbApiEndpoint, Settings.dynamoDbRegion)
             builder.withEndpointConfiguration(endpointConfig)
+        } ?: run {
+            builder.withRegion(Settings.dynamoDbRegion)
         }
-        Settings.awsAccessKeys?.let {
-            builder.withCredentials(AWSStaticCredentialsProvider(BasicAWSCredentials(it.accessKey, it.secretKey)))
+        Settings.awsCredentials?.let {
+            builder.withCredentials(AWSStaticCredentialsProvider(it))
         }
         ddb = builder.build()
     }

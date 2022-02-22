@@ -65,7 +65,7 @@ import java.util.Objects.nonNull
  * @author Pete Cornish
  */
 class DynamoDBStore(
-    private val deferredOperationService: DeferredOperationService,
+    deferredOperationService: DeferredOperationService,
     override val storeName: String,
     private val ddb: AmazonDynamoDB,
     private val tableName: String,
