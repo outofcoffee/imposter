@@ -62,6 +62,7 @@ abstract class AbstractStore(
         when (phase) {
             ExchangePhase.REQUEST_RECEIVED -> save(key, value)
             ExchangePhase.RESPONSE_SENT -> deferSave(key, value)
+            else -> throw IllegalStateException("Unsupported exchange phase for store persistence: $phase")
         }
     }
 

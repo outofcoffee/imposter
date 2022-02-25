@@ -51,7 +51,7 @@ import io.gatehill.imposter.lifecycle.EngineLifecycleListener
 import io.gatehill.imposter.plugin.config.capture.CaptureConfig
 import io.gatehill.imposter.plugin.config.capture.CaptureConfigHolder
 import io.gatehill.imposter.plugin.config.capture.ItemCaptureConfig
-import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
+import io.gatehill.imposter.plugin.config.resource.ResourceConfig
 import io.gatehill.imposter.store.core.Store
 import io.gatehill.imposter.store.factory.StoreFactory
 import io.gatehill.imposter.store.util.StoreUtil
@@ -76,18 +76,18 @@ class CaptureServiceImpl @Inject constructor(
         lifecycleHooks.registerListener(this)
     }
 
-    override fun beforeBuildingResponse(httpExchange: HttpExchange, resourceConfig: BasicResourceConfig?) {
+    override fun beforeBuildingResponse(httpExchange: HttpExchange, resourceConfig: ResourceConfig?) {
         // immediate captures
         captureItems(resourceConfig, httpExchange, ExchangePhase.REQUEST_RECEIVED)
     }
 
-    override fun afterHttpExchangeHandled(httpExchange: HttpExchange, resourceConfig: BasicResourceConfig) {
+    override fun afterResponseSent(httpExchange: HttpExchange, resourceConfig: ResourceConfig?) {
         // deferred captures
         captureItems(resourceConfig, httpExchange, ExchangePhase.RESPONSE_SENT)
     }
 
     private fun captureItems(
-        resourceConfig: BasicResourceConfig?,
+        resourceConfig: ResourceConfig?,
         httpExchange: HttpExchange,
         phaseFilter: ExchangePhase
     ) {

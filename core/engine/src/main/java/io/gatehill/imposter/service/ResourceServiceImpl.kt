@@ -50,8 +50,6 @@ import io.gatehill.imposter.http.ExchangePhase
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpExchangeHandler
 import io.gatehill.imposter.http.ResourceMatcher
-import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
-import io.gatehill.imposter.lifecycle.EngineLifecycleListener
 import io.gatehill.imposter.lifecycle.SecurityLifecycleHooks
 import io.gatehill.imposter.lifecycle.SecurityLifecycleListener
 import io.gatehill.imposter.plugin.config.PluginConfig
@@ -79,7 +77,6 @@ import javax.inject.Inject
  */
 class ResourceServiceImpl @Inject constructor(
     private val securityService: SecurityService,
-    private val engineLifecycle: EngineLifecycleHooks,
     private val securityLifecycle: SecurityLifecycleHooks
 ) : ResourceService {
 
@@ -248,25 +245,25 @@ class ResourceServiceImpl @Inject constructor(
         // allows plugins to customise behaviour
         httpExchange.put(ResourceUtil.RESOURCE_CONFIG_KEY, resourceConfig)
 
-        if (securityLifecycle.allMatch { listener: SecurityLifecycleListener ->
-                listener.isRequestPermitted(rootResourceConfig, resourceConfig, resolvedResourceConfigs, httpExchange)
-            }) {
-            // request is permitted to continue
+        if (isRequestPermitted(rootResourceConfig, resourceConfig, resolvedResourceConfigs, httpExchange)) {
             try {
                 httpExchangeHandler(httpExchange)
                 LogUtil.logCompletion(httpExchange)
-
             } finally {
-                // always set phase and perform tidy up once handled, regardless of outcome
-                httpExchange.phase = ExchangePhase.RESPONSE_SENT
-
-                engineLifecycle.forEach { listener: EngineLifecycleListener ->
-                    listener.afterHttpExchangeHandled(httpExchange, resourceConfig)
-                }
+                httpExchange.phase = ExchangePhase.REQUEST_DISPATCHED
             }
         } else {
             LOGGER.trace("Request {} was not permitted to continue", describeRequest(httpExchange, requestId))
         }
+    }
+
+    private fun isRequestPermitted(
+        rootResourceConfig: BasicResourceConfig,
+        resourceConfig: BasicResourceConfig,
+        resolvedResourceConfigs: List<ResolvedResourceConfig>,
+        httpExchange: HttpExchange
+    ) = securityLifecycle.allMatch { listener: SecurityLifecycleListener ->
+        listener.isRequestPermitted(rootResourceConfig, resourceConfig, resolvedResourceConfigs, httpExchange)
     }
 
     private fun handleFailure(httpExchange: HttpExchange, e: Throwable) {

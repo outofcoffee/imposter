@@ -96,6 +96,18 @@ enum class ExchangePhase {
     @JsonAlias("request-received")
     REQUEST_RECEIVED,
 
+    /**
+     * After the HTTP exchange has been dispatched, but the response may not yet have
+     * been sent. Note: response may not have been transmitted if delay set.
+     */
+    @JsonAlias("request-dispatched")
+    REQUEST_DISPATCHED,
+
+    /**
+     * After the HTTP response has been sent. This is after delayed responses, but assumes
+     * that any fallback handlers have blocked until the response has been completely passed
+     * to the underlying adapter, and therefore it is safe to perform cleanup activities.
+     */
     @JsonAlias("response-sent")
     RESPONSE_SENT,
 }

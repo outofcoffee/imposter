@@ -46,6 +46,7 @@ import com.google.common.base.Strings
 import com.google.common.cache.CacheBuilder
 import io.gatehill.imposter.config.util.EnvVars.Companion.getEnv
 import io.gatehill.imposter.exception.ResponseException
+import io.gatehill.imposter.http.ExchangePhase
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.http.HttpResponse
@@ -136,9 +137,9 @@ class ResponseServiceImpl @Inject constructor(
         responseBehaviour: ResponseBehaviour,
         vararg fallbackSenders: ResponseSender
     ) {
-        simulatePerformance(
-            responseBehaviour, httpExchange.request()
-        ) { sendResponseInternal(pluginConfig, resourceConfig, httpExchange, responseBehaviour, fallbackSenders) }
+        simulatePerformance(responseBehaviour, httpExchange.request()) {
+            sendResponseInternal(pluginConfig, resourceConfig, httpExchange, responseBehaviour, fallbackSenders)
+        }
     }
 
     private fun simulatePerformance(
@@ -199,6 +200,13 @@ class ResponseServiceImpl @Inject constructor(
                             describeRequest(httpExchange), e
                 )
             )
+        } finally {
+            // always set phase and perform tidy up once handled, regardless of outcome
+            httpExchange.phase = ExchangePhase.RESPONSE_SENT
+
+            engineLifecycle.forEach { listener: EngineLifecycleListener ->
+                listener.afterResponseSent(httpExchange, resourceConfig)
+            }
         }
     }
 

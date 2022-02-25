@@ -46,7 +46,7 @@ import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
+import io.gatehill.imposter.plugin.config.resource.ResourceConfig
 import io.gatehill.imposter.script.ExecutionContext
 import io.vertx.core.buffer.Buffer
 
@@ -105,18 +105,19 @@ interface EngineLifecycleListener {
      * @param httpExchange the HTTP exchange
      * @param resourceConfig the active resource
      */
-    fun beforeBuildingResponse(httpExchange: HttpExchange, resourceConfig: BasicResourceConfig?) {
+    fun beforeBuildingResponse(httpExchange: HttpExchange, resourceConfig: ResourceConfig?) {
         // no op
     }
 
     /**
-     * Invoked after the HTTP exchange handler has returned. This assumes that the handler has blocked
-     * until required processing is complete, and that it is safe to perform cleanup activities.
+     * Invoked after the HTTP response has been sent. This will run even after delayed responses.
+     * This assumes that any fallback handlers have blocked until the response has been completely
+     * passed to the underlying adapter, and therefore it is safe to perform cleanup activities.
      *
      * @param httpExchange the HTTP exchange
      * @param resourceConfig the active resource
      */
-    fun afterHttpExchangeHandled(httpExchange: HttpExchange, resourceConfig: BasicResourceConfig) {
+    fun afterResponseSent(httpExchange: HttpExchange, resourceConfig: ResourceConfig?) {
         // no op
     }
 }
