@@ -52,16 +52,17 @@ resources:
 
 The following configuration options are available for a capture:
 
-| Element           | Purpose                                                                                                                   |
-|-------------------|---------------------------------------------------------------------------------------------------------------------------|
-| capture block key | The name of the item to capture, e.g. `user`.                                                                             | 
-| `store`           | The name of the store in which to put the item.                                                                           | 
-| `pathParam`       | The name of the path parameter to capture. Must reference the resource path, e.g. `userId` for a path of `/users/:userId` | 
-| `queryParam`      | The name of the query parameter to capture.                                                                               | 
-| `requestHeader`   | The name of the request header to capture.                                                                                | 
-| `jsonPath`        | The JsonPath expression to query the JSON body. Only works with JSON request bodies.                                      | 
-| `expression`      | A placeholder expression, e.g. `${context.request.queryParams.foo}` - see _Expressions_ section.                          | 
-| `const`           | A constant value, e.g. `example`.                                                                                         |
+| Element           | Purpose                                                                                                                                                       |
+|-------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| capture block key | The name of the item to capture, e.g. `user`.                                                                                                                 | 
+| `store`           | The name of the store in which to put the item.                                                                                                               | 
+| `pathParam`       | The name of the path parameter to capture. Must reference the resource path, e.g. `userId` for a path of `/users/:userId`                                     | 
+| `queryParam`      | The name of the query parameter to capture.                                                                                                                   | 
+| `requestHeader`   | The name of the request header to capture.                                                                                                                    | 
+| `jsonPath`        | The JsonPath expression to query the JSON body. Only works with JSON request bodies.                                                                          | 
+| `expression`      | A placeholder expression, e.g. `${context.request.queryParams.foo}` - see _Expressions_ section.                                                              | 
+| `const`           | A constant value, e.g. `example`.                                                                                                                             |
+| `phase`           | The point in the request processing lifecycle that capture and persistence will occur. By default this is `REQUEST_RECEIVED`. See _Deferred capture_ section. |                                                                                         |
 
 ### Capturing the request body
 
@@ -207,44 +208,17 @@ plugin: rest
 - method: PUT
   path: /users/admins/:userId
   capture:
-    # constant value, but dynamic key
     adminUser:
+      expression: "${datetime.now.iso8601_datetime}"
+      # constant value, use a dynamic key
       key:
         pathParam: userId
       store: adminUsers
-      const: admin
   response:
     statusCode: 200
 ```
 
-In the example above, an item corresponding to the `userId` parameter in the request is added to the 'adminUsers' store with the constant value `admin`.
-
-> Note: Values do not have to be constant - you can combine dynamic item names and captured data.
-
-## Deferred capture
-
-If you do not need an item to be persisted to the store immediately, you can choose to _defer_ capture. This will result in the capture and persistence operation being triggered _after_ processing of the current request has completed and the response has been transmitted to the client.
-
-Deferring capture has the advantage of improving request throughput, at the cost of persistence occurring after the request has been completed.  This trade-off may be useful for particular use cases, such as when writing events to a store for later retrieval, where real-time access is not required.
-
-### Important considerations
-
-Deferred items will not be available in the current request (such as in response templates or scripts). Given that the actual persistence operation runs asynchronously, there is no guarantee that it will complete before a subsequent request. When using deferred capture, you should consider carefully any dependent logic or configuration that expects the presence of an item in the store at a particular point in time.
-
-Note that deferred capture cannot be used with the request scoped store, since the request store only applies to a single request.
-
-### Configuring deferred capture
-
-To enable deferred capture for a particular case, set the `phase: RESPONSE_SENT` property in a capture block, for example:
-
-```yaml
-# ...other configuration
-capture:
-  example:
-    expression: "${context.request.queryParams.example}"
-    store: testStore
-    phase: RESPONSE_SENT # default value is REQUEST_RECEIVED
-```
+In the example above, an item corresponding to the `userId` parameter in the request is added to the 'adminUsers' store with the value of the current date/time.
 
 ## Request scoped store
 
@@ -293,6 +267,31 @@ curl -X PUT http://localhost:8080/users/alice
 }
 ```
 
+## Deferred capture
+
+If you do not need an item to be persisted to the store immediately, you can choose to _defer_ capture. This will result in the capture and persistence operation being triggered _after_ processing of the current request has completed and the response has been transmitted to the client.
+
+Deferring capture has the advantage of improving request throughput, at the cost of persistence occurring after the request has been completed. This trade-off may be useful for particular use cases, such as when writing events to a store for later retrieval, where real-time access is not required.
+
+### Important considerations
+
+Deferred items will not be available in the current request (such as in response templates or scripts). Given that the actual persistence operation runs asynchronously, there is no guarantee that it will complete before a subsequent request. When using deferred capture, you should consider carefully any dependent logic or configuration that expects the presence of an item in the store at a particular point in time.
+
+Note that deferred capture cannot be used with the request scoped store, since the request store only applies to a single request.
+
+### Configuring deferred capture
+
+To enable deferred capture for a particular case, set the `phase: RESPONSE_SENT` property in a capture block, for example:
+
+```yaml
+# ...other configuration
+capture:
+  example:
+    expression: "${context.request.queryParams.example}"
+    store: testStore
+    phase: RESPONSE_SENT # default value is REQUEST_RECEIVED
+```
+
 ## Enable or disable capture configuration
 
 You can selectively enable or disable a capture configuration using the `enabled` key.
@@ -328,6 +327,8 @@ capture:
 ## Capture performance
 
 Data capture incurs overhead on response times, depending on the speed of the store implementation used. If using the in-memory store, the performance impact is lower than using an external store. For store providers backed by external datastores, requests will incur a synchronous write to the store when capturing data.
+
+You might consider using deferred capture, which has the advantage of improving request throughput, at the cost of persistence occurring after the request has been completed.
 
 Using JsonPath to capture the request body is computationally expensive, as it requires parsing and querying of the request body item rather than just copying a reference.
 

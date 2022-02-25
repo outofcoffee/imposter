@@ -14,6 +14,10 @@ This section lists future ideas for features and improvements. Feel free to subm
 
 ## Improvements
 
+### Capture
+
+- Replace `const` and `expression` with `value` key in capture block.
+
 ### HBase
 
 * Add content type header to HBase response
