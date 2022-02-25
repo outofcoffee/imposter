@@ -231,4 +231,34 @@ class CaptureTest : BaseVerticleTest() {
                 .body(Matchers.equalTo("alice"))
         }
     }
+
+    /**
+     * Capture the response body.
+     */
+    @Test
+    fun testCaptureResponseBody() {
+        // should not exist yet
+        RestAssured.given().`when`()
+            .pathParam("storeId", "captureResponseBody")
+            .get("/system/store/{storeId}/userId")
+            .then()
+            .statusCode(Matchers.equalTo(HttpUtil.HTTP_NOT_FOUND))
+
+        // send data for capture
+        RestAssured.given().`when`()
+            .get("/response-capture")
+            .then()
+            .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
+
+        // allow for background processing to complete
+        attempt(attempts = 5) {
+            RestAssured.given().`when`()
+                .pathParam("storeId", "captureResponseBody")
+                .get("/system/store/{storeId}/responseBody")
+                .then()
+                .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
+                .contentType(ContentType.TEXT)
+                .body(Matchers.equalTo("Example response"))
+        }
+    }
 }

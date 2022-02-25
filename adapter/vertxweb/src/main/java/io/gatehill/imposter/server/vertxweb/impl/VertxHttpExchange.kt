@@ -60,13 +60,16 @@ class VertxHttpExchange(
     override val currentRoutePath: String?
 ) : HttpExchange {
     override var phase = ExchangePhase.REQUEST_RECEIVED
+    private val _request by lazy { VertxHttpRequest(routingContext.request()) }
+    private val _response by lazy { VertxHttpResponse(routingContext.response()) }
+    private val _queryParams by lazy { CollectionUtil.asMap(routingContext.queryParams()) }
 
     override fun request(): HttpRequest {
-        return VertxHttpRequest(routingContext.request())
+        return _request
     }
 
     override fun response(): HttpResponse {
-        return VertxHttpResponse(routingContext.response())
+        return _response
     }
 
     override fun isAcceptHeaderEmpty(): Boolean {
@@ -89,7 +92,7 @@ class VertxHttpExchange(
     }
 
     override fun queryParams(): Map<String, String> {
-        return CollectionUtil.asMap(routingContext.queryParams())
+        return _queryParams
     }
 
     override fun pathParam(paramName: String): String? {

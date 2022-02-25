@@ -48,10 +48,20 @@ resources:
 - method: PUT
   path: /defer/:userId
   capture:
-    # constant value, but dynamic key
     userId:
       expression: "${context.request.pathParams.userId}"
       store: captureDeferred
       phase: RESPONSE_SENT
   response:
     statusCode: 202
+
+- method: GET
+  path: /response-capture
+  capture:
+    responseBody:
+      expression: "${context.response.body}"
+      store: captureResponseBody
+      phase: RESPONSE_SENT
+  response:
+    staticData: "Example response"
+    statusCode: 200

@@ -52,6 +52,8 @@ import io.vertx.core.http.HttpServerRequest
  * @author Pete Cornish
  */
 class VertxHttpRequest(private val vertxRequest: HttpServerRequest) : HttpRequest {
+    private val _headers by lazy { CollectionUtil.asMap(vertxRequest.headers()) }
+
     override fun path(): String {
         return vertxRequest.path() ?: ""
     }
@@ -65,7 +67,7 @@ class VertxHttpRequest(private val vertxRequest: HttpServerRequest) : HttpReques
     }
 
     override fun headers(): Map<String, String> {
-        return CollectionUtil.asMap(vertxRequest.headers())
+        return _headers
     }
 
     override fun getHeader(headerKey: String): String? {
