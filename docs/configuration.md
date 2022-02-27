@@ -179,7 +179,7 @@ Configure different response behaviours based on the following request attribute
 | `requestHeaders` | openapi, rest | Map of String:String                | `{ "User-Agent": "curl" }`                     |
 | `requestBody`    | openapi, rest | Request body matching configuration | See [advanced matching](./request_matching.md) |
 
-Here is an example showing all fields:
+Here is an example showing a range of fields:
 
 ```yaml
 plugin: openapi
@@ -212,6 +212,10 @@ resources:
       statusCode: 409
       staticData: "Username already exists."
 ```
+
+### Matching the request body
+
+You can also match resources based on the request body (both JSON and XML are supported). See [advanced matching](./request_matching.md) for details.
 
 ## Capturing data
 

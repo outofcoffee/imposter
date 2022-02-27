@@ -7,7 +7,7 @@ It is possible to capture the following elements into a store:
 - path parameter
 - query parameter
 - request header
-- part or all of the request body (using JsonPath expression)
+- part or all of the request body (using JsonPath or XPath expression)
 
 ## Capture example
 
@@ -15,12 +15,12 @@ Use the `capture` block of a resource, as follows:
 
 ```yaml
 resources:
-  - path: "/users/:userName"
-    method: PUT
-    capture:
-      user:
-        pathParam: userName
-        store: testStore
+- path: "/users/:userName"
+  method: PUT
+  capture:
+    user:
+      pathParam: userName
+      store: testStore
 ```
 
 In this example, the value of the path parameter 'userName' is added to the store named 'testStore' as an item named 'user'.
@@ -37,15 +37,15 @@ Note that the name of the item is the object key - in the above example it is `u
 
 ```yaml
 resources:
-  - path: "/users/:userName"
-    method: PUT
-    capture:
-      user:
-        pathParam: userName
-        store: testStore
-      agent:
-        requestHeader: User-Agent
-        store: testStore
+- path: "/users/:userName"
+  method: PUT
+  capture:
+    user:
+      pathParam: userName
+      store: testStore
+    agent:
+      requestHeader: User-Agent
+      store: testStore
 ```
 
 ## Capture configuration
@@ -196,13 +196,13 @@ Example:
 # part of your configuration file
 
 resources:
-  - path: "/example"
-    method: GET
-    capture:
-      responseBody:
-        expression: "${context.response.body}"
-        store: testStore
-        phase: RESPONSE_SENT # this is required for response capture
+- path: "/example"
+  method: GET
+  capture:
+    responseBody:
+      expression: "${context.response.body}"
+      store: testStore
+      phase: RESPONSE_SENT # this is required for response capture
 ```
 
 ### Capturing an object
@@ -222,6 +222,7 @@ Example:
 ```yaml
 plugin: rest
 
+resources:
 - method: GET
   path: /test
   capture:
@@ -246,6 +247,7 @@ Example:
 ```yaml
 plugin: rest
 
+resources:
 - method: PUT
   path: /users/admins/:userId
   capture:
