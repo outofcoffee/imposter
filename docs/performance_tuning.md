@@ -21,7 +21,7 @@ Features that can be switched off include:
 
 ### Resource matching performance
 
-[Resource matching](./configuration.md) is typically the fastest method of providing conditional responses. This is the case for request properties such as headers, query parameters, path parameters, path and HTTP method. In the case of using [JsonPath to query the request body](./request_matching.md) to conditionally match resources, however, the body must be parsed, which is computationally expensive and will result in lower performance. 
+[Resource matching](./configuration.md) is typically the fastest method of providing conditional responses. This is the case for request properties such as headers, query parameters, path parameters, path and HTTP method. In the case of using [JsonPath or XPath to query the request body](./request_matching.md) to conditionally match resources, however, the body must be parsed, which is computationally expensive and will result in lower performance. 
 
 ### Response Templating performance
 

@@ -5,10 +5,10 @@ resources:
   path: /example
   requestBody:
     xPath: "/env:Envelope/env:Body/pets:animal/pets:name"
+    value: "Fluffy"
     xmlNamespaces:
       env: "http://schemas.xmlsoap.org/soap/envelope/"
       pets: "urn:com:example:petstore"
-    value: "Fluffy"
   response:
     statusCode: 204
 
@@ -16,10 +16,10 @@ resources:
   path: /example
   requestBody:
     xPath: "/env:Envelope/env:Body/pets:animal/pets:id"
+    value: 3
     xmlNamespaces:
       env: "http://schemas.xmlsoap.org/soap/envelope/"
       pets: "urn:com:example:petstore"
-    value: 3
   response:
     statusCode: 302
 
@@ -27,10 +27,10 @@ resources:
   path: /example-nonmatch
   requestBody:
     xPath: "/env:Envelope/env:Body/pets:animal/pets:nothing"
+    # tilde is YAML for null
+    value: ~
     xmlNamespaces:
       env: "http://schemas.xmlsoap.org/soap/envelope/"
       pets: "urn:com:example:petstore"
-    # tilde is YAML for null
-    value: ~
   response:
     statusCode: 409

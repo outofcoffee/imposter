@@ -54,19 +54,23 @@ The following configuration options are available for a capture:
 
 | Element           | Purpose                                                                                                                                                       |
 |-------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| capture block key | The name of the item to capture, e.g. `user`.                                                                                                                 | 
-| `store`           | The name of the store in which to put the item.                                                                                                               | 
-| `pathParam`       | The name of the path parameter to capture. Must reference the resource path, e.g. `userId` for a path of `/users/:userId`                                     | 
-| `queryParam`      | The name of the query parameter to capture.                                                                                                                   | 
-| `requestHeader`   | The name of the request header to capture.                                                                                                                    | 
-| `jsonPath`        | The JsonPath expression to query the JSON body. Only works with JSON request bodies.                                                                          | 
-| `expression`      | A placeholder expression, e.g. `${context.request.queryParams.foo}` - see _Expressions_ section.                                                              | 
+| capture block key | The name of the item to capture, e.g. `user`.                                                                                                                 |
+| `store`           | The name of the store in which to put the item.                                                                                                               |
+| `pathParam`       | The name of the path parameter to capture. Must reference the resource path, e.g. `userId` for a path of `/users/:userId`                                     |
+| `queryParam`      | The name of the query parameter to capture.                                                                                                                   |
+| `requestHeader`   | The name of the request header to capture.                                                                                                                    |
+| `expression`      | A placeholder expression, e.g. `${context.request.queryParams.foo}` - see _Expressions_ section.                                                              |
 | `const`           | A constant value, e.g. `example`.                                                                                                                             |
 | `phase`           | The point in the request processing lifecycle that capture and persistence will occur. By default this is `REQUEST_RECEIVED`. See _Deferred capture_ section. |                                                                                         |
+| `jsonPath`        | The JsonPath expression to query the JSON body. Only works with JSON request bodies.                                                                          |
+| `xPath`           | The XPath expression to query the XML body. Only works with XML request bodies.                                                                               |
+| `xmlNamespaces`   | Map of prefixes to XML namespaces used by the XPath expression.                                                                                               |
 
 ### Capturing the request body
 
-You can capture part or all of the request body using a JsonPath expression.
+You can capture part or all of the request body using a JsonPath or XPath expression.
+
+#### JsonPath example
 
 For example, if the request body was:
 
@@ -86,15 +90,52 @@ For example, if the request body was:
 # part of your configuration file
 
 resources:
-  - path: "/users"
-    method: POST
-    capture:
-      firstName:
-        jsonPath: $.name
-        store: testStore
+- path: "/users"
+  method: POST
+  capture:
+    firstName:
+      jsonPath: $.name
+      store: testStore
 ```
 
 In this example, the `name` property of the body would be stored in the 'firstName' item in the store named 'testStore'.
+
+#### XPath example
+
+For example, if the request body was:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/">
+  <env:Header/>
+  <env:Body>
+    <pets:animal xmlns:pets="urn:com:example:petstore">
+      <pets:name>Fluffy</pets:name>
+    </pets:animal>
+  </env:Body>
+</env:Envelope>
+```
+
+...you could capture the value of the `pets:name` element as follows:
+
+```yaml
+# part of your configuration file
+
+resources:
+- path: "/users"
+  method: POST
+  capture:
+    petName:
+      xPath: "/env:Envelope/env:Body/pets:animal/pets:name"
+      store: testStore
+      xmlNamespaces:
+        env: "http://schemas.xmlsoap.org/soap/envelope/"
+        pets: "urn:com:example:petstore"
+```
+
+In this example, the value of the `pets:name` element in the body would be stored in the 'petName' item in the store named 'testStore'.
+
+> Note: although this example uses a SOAP envelope, any valid XML body can be captured.
 
 ### Expressions
 
