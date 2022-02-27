@@ -3,9 +3,19 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [2.9.0] - 2022-02-27
 ### Added
-- ...
+- feat: allows pathless SOAP operation matches.
+- feat: adds support for XPath request body capture.
+- feat: adds XPath resource matching.
+- feat: adds support for multiple resource configurations with the same path/method in REST plugin.
+
+### Changed
+- refactor: moves initialisation logic from verticle to builder and engine.
+- refactor: optimises JsonPath and XPath queries.
+
+### Fixed
+- fix: improves resource matching with multiple rules for the same path.
 
 ## [2.8.3] - 2022-02-25
 ### Fixed
