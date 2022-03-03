@@ -21,7 +21,7 @@ There are many ways to run Imposter. This section describes how to use the Docke
 ## Docker Image Features
 
 - Start mocks
-- Supports all [plugins](./features_plugins.md)
+- Supports all [plugins](./plugins.md)
 
 ## Run
 
@@ -56,7 +56,7 @@ Run using Docker:
         -v /path/to/config:/opt/imposter/config \
         outofcoffee/imposter-rest [args]
 
-...ensuring that you choose the right image for the [plugin](./features_plugins.md) you wish to use.
+...ensuring that you choose the right image for the [plugin](./plugins.md) you wish to use.
 
 ## Example
 

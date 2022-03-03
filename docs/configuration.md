@@ -29,7 +29,7 @@ Or, in JSON format:
 }
 ```
 
-**Note:** You must specify the plugin to use in the configuration file. See the list of [plugins](./features_plugins.md) for possible values.
+**Note:** You must specify the plugin to use in the configuration file. See the list of [plugins](./plugins.md) for possible values.
 
 ### Returning data
 

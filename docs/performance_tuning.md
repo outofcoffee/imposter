@@ -10,14 +10,14 @@ Some Imposter features have a greater impact than others on the performance of t
 
 ### Turning off features
 
-Switching off [features](./features_plugins.md) helps further reduce the memory and CPU requirements of the mock engine.
+Switching off [features](./features.md) helps further reduce the memory and CPU requirements of the mock engine.
 
 Features that can be switched off include:
 
 - stores
 - metrics collection
 
-> See [features](./features_plugins.md) and [usage](./usage.md) documentation.
+> See [features](./features.md) and [usage](./usage.md) documentation.
 
 ### Resource matching performance
 

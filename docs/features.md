@@ -1,23 +1,20 @@
 # Features
 
-Imposter is a reliable, scriptable and extensible mock server for REST APIs, OpenAPI (and Swagger) specifications, Salesforce and HBase APIs.
+Imposter allows certain features to be enabled or disabled. Fewer features generally lowers resource requirements.
 
-Run standalone mock servers, or embed mocks within your tests (supports JVM and Node.js). Dynamic responses can be scripted using JavaScript, Groovy or Java.
+> Also see the [Plugins](./plugins.md) documentation for a list of available and built-in plugins.
 
-## Getting started
+## List of features
 
-To begin, check out our [Getting started](getting_started.md) guide. See the [User documentation](./index.md) for more.
+| Feature name    | Purpose                              | Details                                | Enabled by default |
+|-----------------|--------------------------------------|----------------------------------------|--------------------|
+| `metrics`       | Collects and exposes telemetry.      | [Metrics](./metrics_logs_telemetry.md) | `true`             |
+| `stores`        | Persistent or semi-persistent state. | [Stores](./stores.md)                  | `true`             |
 
-## Highlights
+These can be controlled by setting the environment variable `IMPOSTER_FEATURES`:
 
-- run standalone mocks in place of real systems
-- turn an OpenAPI/Swagger file or WSDL file into a mock API for dev or QA (use it before the real API is built)
-- decouple your integration tests from the cloud/back-end systems and take control of your dependencies
-- validate your API requests against an OpenAPI specification
-- capture data and retrieve later, or use in templates to for conditional responses
+    IMPOSTER_FEATURES="stores=false,metrics=true"
 
-Send dynamic responses:
+...or Java system property `imposter.features`:
 
-- Provide mock responses using static files or customise behaviour based on characteristics of the request.
-- Power users can control mock responses with JavaScript or Java/Groovy script engines.
-- Advanced users can write their own plugins in a JVM language of their choice.
+    -Dimposter.features="stores=false,metrics=true"

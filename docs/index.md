@@ -15,7 +15,7 @@ Imposter is a mock server for REST APIs, OpenAPI (and Swagger) specifications, S
 
 ## Getting started
 
-To begin, check out the [Getting started](getting_started.md) guide. See the _User documentation_ section below, or learn more about [features](./features.md).
+To begin, check out the [Getting started](getting_started.md) guide. See the _User documentation_ section below, or read a [product summary](./summary.md).
 
 ## User documentation
 
@@ -37,7 +37,8 @@ To begin, check out the [Getting started](getting_started.md) guide. See the _Us
 - [Performance simulation](performance_simulation.md)
 - [Metrics, logs and telemetry](metrics_logs_telemetry.md)
 - [Performance tuning](./performance_tuning.md)
-- [Plugins and features](./features_plugins.md)
+- [Plugins](./plugins.md)
+- [Features](./features.md)
 
 ### Other
 
@@ -54,7 +55,7 @@ Imposter provides specialised mocks for the following scenarios:
 - **[HBase](hbase_plugin.md)** - Basic HBase mock implementation.
 - **[SFDC (Salesforce)](sfdc_plugin.md)** - Basic Salesforce mock implementation.
 
-> Learn more about [plugins and features](features_plugins.md).
+> Learn more about [plugins](plugins.md).
 
 ## Developers
 

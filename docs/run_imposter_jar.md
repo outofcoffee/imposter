@@ -21,7 +21,7 @@ There are many ways to run Imposter. This section describes how to use a JAR fil
 ## JAR File Features
 
 - Start mocks
-- Supports all [plugins](./features_plugins.md)
+- Supports all [plugins](./plugins.md)
 
 > Note: if you want to embed Imposter in your JUnit tests, see [JVM bindings](./embed_jvm.md) instead.
 
@@ -38,7 +38,7 @@ Run the JAR as follows:
         --configDir <config dir> \
         [args]
 
-...ensuring that you choose the right [plugin](./features_plugins.md) you wish to use, for example:
+...ensuring that you choose the right [plugin](./plugins.md) you wish to use, for example:
 
     java -jar distro/all/build/libs/imposter-all.jar \
         --plugin rest \

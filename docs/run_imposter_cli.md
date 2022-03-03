@@ -22,7 +22,8 @@ There are many ways to run Imposter. This section describes using the command li
 
 - Start mocks (`imposter up`)
 - Generate mock configuration from OpenAPI files (`imposter scaffold`)
-- Supports all [plugins](./features_plugins.md)
+- Supports all [plugins](./plugins.md)
+- Supports JVM and Docker engine types
 
 ## Installation
 
