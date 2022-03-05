@@ -48,7 +48,6 @@ import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
 import io.gatehill.imposter.lifecycle.EngineLifecycleListener
 import io.gatehill.imposter.store.factory.StoreFactory
 import io.gatehill.imposter.store.util.StoreUtil
-import io.gatehill.imposter.util.BodyQueryUtil
 import io.gatehill.imposter.util.ResourceUtil
 import io.vertx.core.buffer.Buffer
 import org.apache.commons.text.StringSubstitutor
@@ -64,6 +63,7 @@ import javax.inject.Inject
  */
 class TemplateServiceImpl @Inject constructor(
     private val storeFactory: StoreFactory,
+    private val expressionService: ExpressionService,
     lifecycleHooks: EngineLifecycleHooks,
 ) : EngineLifecycleListener {
 
@@ -100,8 +100,11 @@ class TemplateServiceImpl @Inject constructor(
                 val dotIndex = key.indexOf(".")
                 if (dotIndex > 0) {
                     val storeName = key.substring(0, dotIndex)
-                    val itemKey = key.substring(dotIndex + 1)
-                    return@functionStringLookup loadItemFromStore(storeName, itemKey)
+                    val rawItemKey = key.substring(dotIndex + 1)
+                    return@functionStringLookup expressionService.loadAndQuery(rawItemKey) { itemKey ->
+                        val store = storeFactory.getStoreByName(storeName, false)
+                        store.load<Any>(itemKey)
+                    }
                 }
                 LOGGER.warn("Unknown store for template placeholder: $key")
                 return@functionStringLookup ""
@@ -111,25 +114,6 @@ class TemplateServiceImpl @Inject constructor(
             }
         }
         return StringSubstitutor(variableResolver)
-    }
-
-    private fun loadItemFromStore(storeName: String, rawItemKey: String): Any? {
-        // check for jsonpath expression
-        var itemKey = rawItemKey
-        val colonIndex = itemKey.indexOf(":")
-
-        val jsonPath: String?
-        if (colonIndex > 0) {
-            jsonPath = itemKey.substring(colonIndex + 1)
-            itemKey = itemKey.substring(0, colonIndex)
-        } else {
-            jsonPath = null
-        }
-
-        val store = storeFactory.getStoreByName(storeName, false)
-        val itemValue = store.load<Any>(itemKey)
-
-        return jsonPath?.let { BodyQueryUtil.JSONPATH_PARSE_CONTEXT.parse(itemValue).read(jsonPath) } ?: itemValue
     }
 
     override fun beforeTransmittingTemplate(

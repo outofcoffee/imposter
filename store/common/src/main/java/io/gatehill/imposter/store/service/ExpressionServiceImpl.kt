@@ -44,6 +44,7 @@ package io.gatehill.imposter.store.service
 
 import io.gatehill.imposter.http.ExchangePhase
 import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.util.BodyQueryUtil
 import io.gatehill.imposter.util.DateTimeUtil
 import org.apache.logging.log4j.LogManager
 import java.time.LocalDateTime
@@ -79,13 +80,22 @@ class ExpressionServiceImpl : ExpressionService {
     }
 
     /**
-     * Evaluates a single expression in the form:
-     * ```
-     * expression
-     * ```
+     * Evaluates a single expression in the form `expression`
+     * or `expression:$.jp`, where `$.jp` is a valid JsonPath expression.
+     *
      * Note: [expression] does not have the template syntax surrounding it.
      */
-    private fun evalSingle(expression: String, httpExchange: HttpExchange): String? {
+    private fun evalSingle(
+        expression: String,
+        httpExchange: HttpExchange,
+    ): String? = loadAndQuery(expression) { itemKey ->
+        evalSingleInternal(itemKey, httpExchange)
+    }
+
+    /**
+     * @see evalSingle
+     */
+    private fun evalSingleInternal(expression: String, httpExchange: HttpExchange): String? {
         return if (expression.startsWith("context.")) {
             evalContext(expression, httpExchange)
         } else if (expression.startsWith("datetime.")) {
@@ -169,7 +179,7 @@ class ExpressionServiceImpl : ExpressionService {
         expression: String,
         minParts: Int,
         parts: List<String>,
-        valueSupplier: () -> String?
+        valueSupplier: () -> String?,
     ): String? {
         if (parts.size < minParts) {
             LOGGER.warn("Could not parse context expression: $expression - expected $minParts parts, but was ${parts.size}")
@@ -226,6 +236,40 @@ class ExpressionServiceImpl : ExpressionService {
         } catch (e: Exception) {
             throw RuntimeException("Error evaluating datetime expression: $expression", e)
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    override fun <T : Any> loadAndQuery(rawItemKey: String, valueResolver: (key: String) -> T?): T? {
+        val itemKey: String
+        val jsonPath: String?
+
+        // check for jsonpath expression
+        val colonIndex = rawItemKey.indexOf(":")
+        if (colonIndex > 0) {
+            jsonPath = rawItemKey.substring(colonIndex + 1)
+            itemKey = rawItemKey.substring(0, colonIndex)
+        } else {
+            itemKey = rawItemKey
+            jsonPath = null
+        }
+
+        val itemValue = valueResolver(itemKey)
+        return itemValue?.let {
+            jsonPath?.let { queryWithJsonPath(itemValue, jsonPath) } ?: itemValue
+        }
+    }
+
+    private fun <T : Any> queryWithJsonPath(rawValue: T, jsonPath: String?): T? {
+        val context = when (rawValue) {
+            // raw JSON will be parsed by the context
+            is String -> BodyQueryUtil.JSONPATH_PARSE_CONTEXT.parse(rawValue as String)
+
+            // assumes already deserialised
+            else -> BodyQueryUtil.JSONPATH_PARSE_CONTEXT.parse(rawValue)
+        }
+        return context.read(jsonPath)
     }
 
     companion object {

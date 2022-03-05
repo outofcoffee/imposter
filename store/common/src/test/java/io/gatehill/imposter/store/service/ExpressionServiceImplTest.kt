@@ -86,6 +86,20 @@ class ExpressionServiceImplTest {
     }
 
     @Test
+    fun `eval request body with JsonPath`() {
+        val httpExchange = mock<HttpExchange> {
+            on { bodyAsString } doReturn """{ "name": "Ada" }"""
+        }
+
+        val result = service.eval(
+            expression = "\${context.request.body:$.name}",
+            httpExchange = httpExchange,
+        )
+
+        assertThat(result, equalTo("Ada"))
+    }
+
+    @Test
     fun `eval response body`() {
         val response = mock<HttpResponse> {
             on { bodyBuffer } doReturn Buffer.buffer("Response body")
