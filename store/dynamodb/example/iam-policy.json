@@ -9,6 +9,7 @@
         "dynamodb:PutItem",
         "dynamodb:DeleteItem",
         "dynamodb:GetItem",
+        "dynamodb:Query",
         "dynamodb:Scan"
       ],
       "Resource": "arn:aws:dynamodb:us-east-1:000000000000:table/Imposter"

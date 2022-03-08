@@ -47,6 +47,7 @@ import com.amazonaws.services.dynamodbv2.model.AttributeValue
 import com.amazonaws.services.dynamodbv2.model.DeleteItemRequest
 import com.amazonaws.services.dynamodbv2.model.GetItemRequest
 import com.amazonaws.services.dynamodbv2.model.PutItemRequest
+import com.amazonaws.services.dynamodbv2.model.QueryRequest
 import com.amazonaws.services.dynamodbv2.model.ScanRequest
 import io.gatehill.imposter.service.DeferredOperationService
 import io.gatehill.imposter.store.core.AbstractStore
@@ -150,9 +151,31 @@ class DynamoDBStore(
     }
 
     override fun loadAll(): Map<String, Any?> {
-        val queryResult = scanStore()
         logger.trace("Loading all items in store: {}", storeName)
+        val queryResult = scanStore()
         return queryResult.items.associate { destructure<Any>(it) }
+    }
+
+    override fun loadByKeyPrefix(keyPrefix: String): Map<String, Any?> {
+        logger.trace("Loading items in store: $storeName with key prefix: $keyPrefix")
+
+        val query = QueryRequest().withTableName(tableName)
+            .withKeyConditionExpression("StoreName = :storeName AND begins_with(#k, :keyPrefix)")
+            .withExpressionAttributeNames(
+                mapOf(
+                    "#k" to "Key"
+                )
+            )
+            .withExpressionAttributeValues(
+                mapOf(
+                    ":storeName" to AttributeValue().withS(storeName),
+                    ":keyPrefix" to AttributeValue().withS(keyPrefix),
+                )
+            )
+
+        val items = ddb.query(query).items
+        logger.trace("{} items found in store: $storeName with key prefix: $keyPrefix", items.size)
+        return items.associate { destructure(it) }
     }
 
     private fun scanStore() = ddb.scan(

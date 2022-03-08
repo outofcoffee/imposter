@@ -87,6 +87,17 @@ class InMemoryStore(
         return if (!modified) emptyMap() else store
     }
 
+    override fun loadByKeyPrefix(keyPrefix: String): Map<String, Any?> {
+        LOGGER.trace("Loading items in store: $storeName with key prefix: $keyPrefix")
+        if (!modified) {
+            return emptyMap()
+        } else {
+            val items = store.filterKeys { it.startsWith(keyPrefix) }
+            LOGGER.trace("{} items found in store: $storeName with key prefix: $keyPrefix", items.size)
+            return items
+        }
+    }
+
     override fun hasItemWithKey(key: String): Boolean {
         LOGGER.trace("Checking for item with key: {} in store: {}", key, storeName)
         return if (!modified) false else store.containsKey(key)

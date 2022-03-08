@@ -7,35 +7,12 @@ compileJava {
 }
 
 dependencies {
-    api project(':core:imposter-engine')
-
-    // scripting
-    implementation project (':scripting:scripting-groovy')
-
-    if (JavaVersion.current() >= JavaVersion.VERSION_11) {
-        implementation project(':scripting:scripting-nashorn-standalone')
-    } else {
-        implementation project(':scripting:scripting-nashorn-embedded')
-    }
-
-    // needed for plugin delegation
-    implementation project(':scripting:scripting-common')
-    api project(':store:store-common')
-    api project(':store:store-inmem')
-
-    // logging
-    implementation "org.apache.logging.log4j:log4j-core:$version_log4j"
-    implementation "org.apache.logging.log4j:log4j-jcl:$version_log4j"
-    implementation "org.apache.logging.log4j:log4j-slf4j-impl:$version_log4j"
-    implementation "org.apache.logging.log4j:log4j-1.2-api:$version_log4j"
-    implementation "org.apache.logging.log4j:log4j-jul:$version_log4j"
+    implementation project(':store:store-common')
 
     // test
     testImplementation project(':test:test-utils')
-    testImplementation "com.jayway.restassured:rest-assured:$version_restAssured"
-
-    // java 11 compatibility
-    testImplementation ('javax.xml.bind:jaxb-api:2.3.0')
+    testImplementation "org.apache.logging.log4j:log4j-core:$version_log4j"
+    testImplementation "org.apache.logging.log4j:log4j-slf4j-impl:$version_log4j"
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
@@ -83,3 +60,4 @@ compileTestKotlin {
         freeCompilerArgs = ["-Xjvm-default=all"]
     }
 }
+

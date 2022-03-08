@@ -271,6 +271,31 @@ class StoreTest : BaseVerticleTest() {
     }
 
     /**
+     * Save and load from the store using a key prefix.
+     */
+    @Test
+    fun testSetAndGetByKeyPrefix() {
+        // save via system
+        RestAssured.given().`when`()
+            .pathParam("storeId", "kp")
+            .pathParam("key", "foo")
+            .contentType(HttpUtil.CONTENT_TYPE_PLAIN_TEXT)
+            .body("bar")
+            .put("/system/store/{storeId}/{key}")
+            .then()
+            .statusCode(equalTo(HttpUtil.HTTP_CREATED))
+
+        // load all
+        RestAssured.given().`when`()
+            .pathParam("storeId", "kp")
+            .queryParam("keyPrefix", "f")
+            .get("/system/store/{storeId}")
+            .then()
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .body("$", hasEntry("foo", "bar"))
+    }
+
+    /**
      * Clear the contents of a store.
      */
     @Test

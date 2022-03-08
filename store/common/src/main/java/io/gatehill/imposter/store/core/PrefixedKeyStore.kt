@@ -73,6 +73,8 @@ class PrefixedKeyStore(
 
     override fun <T> load(key: String): T? = delegate.load(buildKey(key))
 
+    override fun loadByKeyPrefix(keyPrefix: String): Map<String, Any?> = delegate.loadByKeyPrefix(keyPrefix)
+
     override fun delete(key: String) {
         delegate.delete(buildKey(key))
     }

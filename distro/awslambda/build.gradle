@@ -9,6 +9,7 @@ compileJava {
 
 dependencies {
     implementation project (':adapter:adapter-awslambda')
+    implementation project(':store:store-inmem')
 }
 
 shadowJar {

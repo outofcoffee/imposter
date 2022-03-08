@@ -40,7 +40,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.store.dynamodb
+package io.gatehill.imposter.store.dynamodb.support
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider
 import com.amazonaws.auth.BasicAWSCredentials
@@ -53,76 +53,59 @@ import com.amazonaws.services.dynamodbv2.model.KeySchemaElement
 import com.amazonaws.services.dynamodbv2.model.KeyType
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput
 import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType
-import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.util.EnvVars
-import io.gatehill.imposter.service.DeferredOperationService
 import io.gatehill.imposter.store.dynamodb.config.Settings
-import org.junit.Before
 import org.testcontainers.containers.localstack.LocalStackContainer
 import org.testcontainers.utility.DockerImageName
-import java.nio.file.Files
 
 /**
  * Tests for DynamoDB store implementation.
  *
  * @author Pete Cornish
  */
-abstract class AbstractDynamoDBStoreTest {
-    protected lateinit var factory: DynamoDBStoreFactoryImpl
+class DynamoDBStoreTestHelper {
+    lateinit var ddb: AmazonDynamoDB
 
-    companion object {
-        lateinit var ddb: AmazonDynamoDB
+    fun startDynamoDb(additionalEnv: Map<String, String> = emptyMap()): LocalStackContainer {
+        val dynamo = LocalStackContainer(DockerImageName.parse("localstack/localstack:0.11.2"))
+            .withServices(LocalStackContainer.Service.DYNAMODB)
+            .apply { start() }
 
-        fun startDynamoDb(additionalEnv: Map<String, String> = emptyMap()): LocalStackContainer {
-            val dynamo = LocalStackContainer(DockerImageName.parse("localstack/localstack:0.11.2"))
-                .withServices(LocalStackContainer.Service.DYNAMODB)
-                .apply { start() }
+        val dynamoDbEndpoint = dynamo!!.getEndpointOverride(LocalStackContainer.Service.DYNAMODB).toString()
+        EnvVars.populate(
+            mapOf(
+                "IMPOSTER_DYNAMODB_ENDPOINT" to dynamoDbEndpoint,
+                "AWS_ACCESS_KEY_ID" to "dummy",
+                "AWS_SECRET_ACCESS_KEY" to "dummy",
+            ) + additionalEnv
+        )
 
-            val dynamoDbEndpoint = dynamo!!.getEndpointOverride(LocalStackContainer.Service.DYNAMODB).toString()
-            EnvVars.populate(
-                mapOf(
-                    "IMPOSTER_DYNAMODB_ENDPOINT" to dynamoDbEndpoint,
-                    "AWS_ACCESS_KEY_ID" to "dummy",
-                    "AWS_SECRET_ACCESS_KEY" to "dummy",
-                ) + additionalEnv
-            )
+        ddb = AmazonDynamoDBClientBuilder.standard().withEndpointConfiguration(
+            AwsClientBuilder.EndpointConfiguration(Settings.dynamoDbApiEndpoint, Settings.dynamoDbRegion)
+        ).withCredentials(
+            AWSStaticCredentialsProvider(BasicAWSCredentials("dummy", "dummy"))
+        ).build()
 
-            ddb = AmazonDynamoDBClientBuilder.standard().withEndpointConfiguration(
-                AwsClientBuilder.EndpointConfiguration(Settings.dynamoDbApiEndpoint, Settings.dynamoDbRegion)
-            ).withCredentials(
-                AWSStaticCredentialsProvider(BasicAWSCredentials("dummy", "dummy"))
-            ).build()
-
-            return dynamo
-        }
-
-        fun createTable(tableName: String) {
-            val keySchema = listOf(
-                KeySchemaElement("StoreName", KeyType.HASH),
-                KeySchemaElement("Key", KeyType.RANGE),
-            )
-            val attributeDefs = listOf(
-                AttributeDefinition("StoreName", ScalarAttributeType.S),
-                AttributeDefinition("Key", ScalarAttributeType.S),
-            )
-            val request = CreateTableRequest(tableName, keySchema)
-                .withAttributeDefinitions(attributeDefs)
-                .withProvisionedThroughput(
-                    ProvisionedThroughput()
-                        .withReadCapacityUnits(5L)
-                        .withWriteCapacityUnits(6L)
-                )
-
-            ddb.createTable(request)
-        }
+        return dynamo
     }
 
-    @Before
-    fun before() {
-        val configDir = Files.createTempDirectory("imposter")
+    fun createTable(tableName: String) {
+        val keySchema = listOf(
+            KeySchemaElement("StoreName", KeyType.HASH),
+            KeySchemaElement("Key", KeyType.RANGE),
+        )
+        val attributeDefs = listOf(
+            AttributeDefinition("StoreName", ScalarAttributeType.S),
+            AttributeDefinition("Key", ScalarAttributeType.S),
+        )
+        val request = CreateTableRequest(tableName, keySchema)
+            .withAttributeDefinitions(attributeDefs)
+            .withProvisionedThroughput(
+                ProvisionedThroughput()
+                    .withReadCapacityUnits(5L)
+                    .withWriteCapacityUnits(6L)
+            )
 
-        val imposterConfig = ImposterConfig()
-        imposterConfig.configDirs = arrayOf(configDir.toString())
-        factory = DynamoDBStoreFactoryImpl(DeferredOperationService())
+        ddb.createTable(request)
     }
 }

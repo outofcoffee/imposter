@@ -53,11 +53,14 @@ if (JavaVersion.current() >= JavaVersion.VERSION_11) {
 include ':store:common'
 project(':store:common').name = 'store-common'
 
-include ':store:redis'
-project(':store:redis').name = 'store-redis'
-
 include ':store:dynamodb'
 project(':store:dynamodb').name = 'store-dynamodb'
+
+include ':store:inmem'
+project(':store:inmem').name = 'store-inmem'
+
+include ':store:redis'
+project(':store:redis').name = 'store-redis'
 
 // mocks
 include ':mock:rest'

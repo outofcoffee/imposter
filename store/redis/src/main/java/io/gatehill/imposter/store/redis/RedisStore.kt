@@ -81,7 +81,12 @@ class RedisStore(
 
     override fun save(key: String, value: Any?) {
         LOGGER.trace("Saving item with key: {} to store: {}", key, storeName)
-        store.put(key, value, expirationSecs.toLong(), TimeUnit.SECONDS)
+        if (null == value) {
+            // can't save a null map value - remove existing if present
+            store.remove(key)
+        } else {
+            store.put(key, value, expirationSecs.toLong(), TimeUnit.SECONDS)
+        }
     }
 
     override fun <T> load(key: String): T? {
@@ -98,6 +103,14 @@ class RedisStore(
     override fun loadAll(): Map<String, Any?> {
         LOGGER.trace("Loading all items in store: {}", storeName)
         return store
+    }
+
+    override fun loadByKeyPrefix(keyPrefix: String): Map<String, Any?> {
+        LOGGER.trace("Loading items in store: $storeName with key prefix: $keyPrefix")
+        val matchingKeys = store.keySet("*$keyPrefix*")
+        val items = store.getAll(matchingKeys)
+        LOGGER.trace("{} items found in store: $storeName with key prefix: $keyPrefix", items.size)
+        return items
     }
 
     override fun hasItemWithKey(key: String): Boolean {

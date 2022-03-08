@@ -44,22 +44,31 @@ package io.gatehill.imposter.store.dynamodb
 
 import com.amazonaws.services.dynamodbv2.model.AttributeValue
 import com.amazonaws.services.dynamodbv2.model.GetItemRequest
+import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.service.DeferredOperationService
+import io.gatehill.imposter.store.dynamodb.support.DynamoDBStoreTestHelper
+import io.gatehill.imposter.store.factory.AbstractStoreFactory
 import io.gatehill.imposter.util.TestEnvironmentUtil
 import org.junit.AfterClass
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import org.testcontainers.containers.localstack.LocalStackContainer
+import java.nio.file.Files
 
 /**
  * Tests for DynamoDB TTL logic.
  *
  * @author Pete Cornish
  */
-class DynamoDBStoreTtlTest : AbstractDynamoDBStoreTest() {
+class DynamoDBStoreTtlTest {
+    private lateinit var factory: AbstractStoreFactory
+
     companion object {
         private const val ttlSeconds = 300
+        private val helper = DynamoDBStoreTestHelper()
         private var dynamo: LocalStackContainer? = null
 
         @BeforeClass
@@ -68,13 +77,13 @@ class DynamoDBStoreTtlTest : AbstractDynamoDBStoreTest() {
             // These tests need Docker
             TestEnvironmentUtil.assumeDockerAccessible()
 
-            dynamo = startDynamoDb(
+            dynamo = helper.startDynamoDb(
                 mapOf(
                     "IMPOSTER_DYNAMODB_TABLE" to "TtlTest",
                     "IMPOSTER_DYNAMODB_TTL" to ttlSeconds.toString(),
                 )
             )
-            createTable("TtlTest")
+            helper.createTable("TtlTest")
         }
 
         @AfterClass
@@ -89,6 +98,15 @@ class DynamoDBStoreTtlTest : AbstractDynamoDBStoreTest() {
         }
     }
 
+    @Before
+    fun before() {
+        val configDir = Files.createTempDirectory("imposter")
+
+        val imposterConfig = ImposterConfig()
+        imposterConfig.configDirs = arrayOf(configDir.toString())
+        factory = DynamoDBStoreFactoryImpl(DeferredOperationService())
+    }
+
     @Test
     fun testSaveWithTtl() {
         val store = factory.buildNewStore("ttltest")
@@ -96,7 +114,7 @@ class DynamoDBStoreTtlTest : AbstractDynamoDBStoreTest() {
         val persistenceTime = System.currentTimeMillis() / 1000
         store.save("foo", "bar")
 
-        val item = ddb.getItem(
+        val item = helper.ddb.getItem(
             GetItemRequest().withTableName("TtlTest").withKey(
                 mapOf(
                     "StoreName" to AttributeValue().withS("ttltest"),

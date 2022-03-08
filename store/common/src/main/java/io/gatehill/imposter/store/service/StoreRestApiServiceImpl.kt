@@ -56,9 +56,8 @@ import io.gatehill.imposter.store.core.Store
 import io.gatehill.imposter.store.factory.StoreFactory
 import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.MapUtil
-import io.vertx.core.Vertx
 import org.apache.logging.log4j.LogManager
-import java.util.Objects
+import java.util.*
 import javax.inject.Inject
 
 /**
@@ -67,7 +66,6 @@ import javax.inject.Inject
  * @author Pete Cornish
  */
 class StoreRestApiServiceImpl @Inject constructor(
-    private val vertx: Vertx,
     private val resourceService: ResourceService,
     private val storeFactory: StoreFactory,
     lifecycleHooks: EngineLifecycleHooks,
@@ -104,8 +102,14 @@ class StoreRestApiServiceImpl @Inject constructor(
             }
 
             if (httpExchange.isAcceptHeaderEmpty() || httpExchange.acceptsMimeType(HttpUtil.CONTENT_TYPE_JSON)) {
-                LOGGER.debug("Listing store: {}", storeName)
-                serialiseBodyAsJson(httpExchange, store.loadAll())
+                val items = httpExchange.queryParam("keyPrefix")?.let { keyPrefix ->
+                    LOGGER.debug("Listing items in store: {} with key prefix: {}", storeName, keyPrefix)
+                    store.loadByKeyPrefix(keyPrefix)
+                } ?: run {
+                    LOGGER.debug("Listing all items in store: {}", storeName)
+                    store.loadAll()
+                }
+                serialiseBodyAsJson(httpExchange, items)
 
             } else {
                 // client doesn't accept JSON

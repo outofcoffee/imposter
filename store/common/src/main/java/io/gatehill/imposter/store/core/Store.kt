@@ -60,6 +60,7 @@ interface Store {
     fun <T> load(key: String): T?
     fun delete(key: String)
     fun loadAll(): Map<String, Any?>
+    fun loadByKeyPrefix(keyPrefix: String): Map<String, Any?>
     fun hasItemWithKey(key: String): Boolean
     fun count(): Int
 }

@@ -80,6 +80,15 @@ $ curl http://localhost:8080/system/store/test
 }
 ```
 
+> Note, you can filter the items returned by their key's prefix, such as:
+>
+> ```shell
+> $ curl http://localhost:8080/system/store/test?keyPrefix=fo
+> {
+>   "foo": "ada"
+> }
+> ```
+
 You can delete items in a store:
 
 ```shell

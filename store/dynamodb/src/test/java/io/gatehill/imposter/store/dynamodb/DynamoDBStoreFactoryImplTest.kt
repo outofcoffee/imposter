@@ -43,8 +43,11 @@
 package io.gatehill.imposter.store.dynamodb
 
 import io.gatehill.imposter.config.util.EnvVars
+import io.gatehill.imposter.service.DeferredOperationService
+import io.gatehill.imposter.store.AbstractStoreFactoryTest
 import io.gatehill.imposter.store.dynamodb.config.Settings
-import io.gatehill.imposter.store.dynamodb.support.Example
+import io.gatehill.imposter.store.dynamodb.support.DynamoDBStoreTestHelper
+import io.gatehill.imposter.store.support.Example
 import io.gatehill.imposter.util.TestEnvironmentUtil
 import org.junit.AfterClass
 import org.junit.Assert
@@ -57,8 +60,11 @@ import org.testcontainers.containers.localstack.LocalStackContainer
  *
  * @author Pete Cornish
  */
-class DynamoDBStoreFactoryImplTest : AbstractDynamoDBStoreTest() {
+class DynamoDBStoreFactoryImplTest : AbstractStoreFactoryTest() {
+    override val typeDescription = "dynamodb"
+
     companion object {
+        private val helper = DynamoDBStoreTestHelper()
         private var dynamo: LocalStackContainer? = null
 
         @BeforeClass
@@ -67,11 +73,13 @@ class DynamoDBStoreFactoryImplTest : AbstractDynamoDBStoreTest() {
             // These tests need Docker
             TestEnvironmentUtil.assumeDockerAccessible()
 
-            dynamo = startDynamoDb(mapOf(
-                "IMPOSTER_DYNAMODB_TABLE" to "Imposter",
-                "IMPOSTER_DYNAMODB_TTL" to "-1",
-            ))
-            createTable("Imposter")
+            dynamo = helper.startDynamoDb(
+                mapOf(
+                    "IMPOSTER_DYNAMODB_TABLE" to "Imposter",
+                    "IMPOSTER_DYNAMODB_TTL" to "-1",
+                )
+            )
+            helper.createTable("Imposter")
         }
 
         @AfterClass
@@ -86,49 +94,17 @@ class DynamoDBStoreFactoryImplTest : AbstractDynamoDBStoreTest() {
         }
     }
 
+    override fun buildFactory() = DynamoDBStoreFactoryImpl(DeferredOperationService())
+
+    /**
+     * @see testSaveLoadComplexItemMap
+     */
     @Test
-    fun testBuildNewStore() {
-        val store = factory.buildNewStore("test")
-        Assert.assertEquals("dynamodb", store.typeDescription)
-    }
-
-    @Test
-    fun testSaveLoadSimpleItems() {
-        val store = factory.buildNewStore("sli")
-        Assert.assertEquals(0, store.count())
-        store.save("foo", "bar")
-        store.save("baz", 123L)
-        store.save("qux", true)
-        store.save("corge", null)
-
-        Assert.assertEquals("bar", store.load("foo"))
-        Assert.assertEquals(123L, store.load("baz"))
-        Assert.assertEquals(true, store.load("qux"))
-        Assert.assertNull(store.load("corge"))
-
-        val allItems = store.loadAll()
-        Assert.assertEquals(4, allItems.size)
-        Assert.assertEquals("bar", allItems["foo"])
-        Assert.assertTrue("Item should exist", store.hasItemWithKey("foo"))
-        Assert.assertEquals(4, store.count())
-    }
-
-    @Test
-    fun testSaveLoadMap() {
-        val store = factory.buildNewStore("map")
-        Assert.assertEquals(0, store.count())
-        store.save("grault", mapOf("foo" to "bar"))
-
-        val loadedMap = store.load<Map<String, *>>("grault")
-        Assert.assertNotNull(loadedMap)
-        Assert.assertTrue("Returned value should be a Map", loadedMap is Map)
-        Assert.assertEquals("bar", loadedMap!!["foo"])
-    }
-
-    @Test
-    fun testSaveLoadComplexItemBinary() {
-        EnvVars.populate(EnvVars.getEnv().toMutableMap().apply {
-            put("IMPOSTER_DYNAMODB_OBJECT_SERIALISATION", Settings.ObjectSerialisation.BINARY.name) }
+    override fun testSaveLoadComplexItemBinary() {
+        EnvVars.populate(
+            EnvVars.getEnv().toMutableMap().apply {
+                put("IMPOSTER_DYNAMODB_OBJECT_SERIALISATION", Settings.ObjectSerialisation.BINARY.name)
+            }
         )
 
         val store = factory.buildNewStore("complex-binary")
@@ -142,10 +118,15 @@ class DynamoDBStoreFactoryImplTest : AbstractDynamoDBStoreTest() {
         Assert.assertEquals("test", loadedMap!!["name"])
     }
 
+    /**
+     * @see testSaveLoadComplexItemBinary
+     */
     @Test
     fun testSaveLoadComplexItemMap() {
-        EnvVars.populate(EnvVars.getEnv().toMutableMap().apply {
-            put("IMPOSTER_DYNAMODB_OBJECT_SERIALISATION", Settings.ObjectSerialisation.MAP.name) }
+        EnvVars.populate(
+            EnvVars.getEnv().toMutableMap().apply {
+                put("IMPOSTER_DYNAMODB_OBJECT_SERIALISATION", Settings.ObjectSerialisation.MAP.name)
+            }
         )
 
         val store = factory.buildNewStore("complex-map")
@@ -157,23 +138,5 @@ class DynamoDBStoreFactoryImplTest : AbstractDynamoDBStoreTest() {
         Assert.assertNotNull(loadedMap)
         Assert.assertTrue("Returned value should be a Map", loadedMap is Map)
         Assert.assertEquals("test", loadedMap!!["name"])
-    }
-
-    @Test
-    fun testDeleteItem() {
-        val store = factory.buildNewStore("di")
-        Assert.assertFalse("Item should not exist", store.hasItemWithKey("baz"))
-        store.save("baz", "qux")
-        Assert.assertTrue("Item should exist", store.hasItemWithKey("baz"))
-        store.delete("baz")
-        Assert.assertFalse("Item should not exist", store.hasItemWithKey("baz"))
-    }
-
-    @Test
-    fun testClearStore() {
-        val store = factory.buildNewStore("ds")
-        store.save("baz", "qux")
-        factory.clearStore("ds", false)
-        Assert.assertEquals("Store should be empty", 0, factory.getStoreByName("ds", false).count())
     }
 }
