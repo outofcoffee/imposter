@@ -17,8 +17,6 @@ dependencies {
     testImplementation project(':test:test-utils')
     testImplementation "org.testcontainers:testcontainers:$version_testcontainers"
     testImplementation group: 'org.testcontainers', name: 'localstack', version: '1.16.2'
-    testImplementation "org.apache.logging.log4j:log4j-core:$version_log4j"
-    testImplementation "org.apache.logging.log4j:log4j-slf4j-impl:$version_log4j"
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

@@ -1,0 +1,55 @@
+plugins {
+    id 'java-library'
+    id 'kotlin'
+    id 'com.github.johnrengelman.shadow'
+}
+
+ext {
+    version_kgraphql = '0.17.14'
+}
+
+compileJava {
+    sourceCompatibility = 1.8
+}
+
+dependencies {
+    implementation project(':core:imposter-api')
+    implementation project(':store:store-common')
+
+    pluginImplementation("com.apurebase:kgraphql:$version_kgraphql")
+
+    // test
+    testImplementation "junit:junit:$version_junit"
+    testImplementation "org.mockito:mockito-core:$version_mockito"
+    testImplementation "org.mockito.kotlin:mockito-kotlin:4.0.0"
+    testImplementation project(':store:store-inmem')
+}
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+
+        // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
+        freeCompilerArgs = ["-Xjvm-default=all"]
+    }
+}
+
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+
+        // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
+        freeCompilerArgs = ["-Xjvm-default=all"]
+    }
+}
+
+shadowJar {
+    archiveBaseName.set("imposter-plugin-${project.name}")
+    archiveVersion.set('')
+    archiveClassifier.set('')
+    configurations = [project.configurations.pluginImplementation]
+}
+
+task dist {
+    dependsOn shadowJar
+}

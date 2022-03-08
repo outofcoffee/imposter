@@ -14,6 +14,10 @@ dependencies {
     api "junit:junit:$version_junit"
     api "io.vertx:vertx-unit:$version_vertx"
 
+    // logging
+    api "org.apache.logging.log4j:log4j-core:$version_log4j"
+    api "org.apache.logging.log4j:log4j-slf4j-impl:$version_log4j"
+
     // mocking
     implementation "org.mockito:mockito-core:$version_mockito"
 

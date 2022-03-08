@@ -15,8 +15,9 @@ The following sections describe the available and built-in plugins.
 | Mock            | `soap`                  | SOAP (and WSDL) mocks.                 | [SOAP plugin](soap_plugin.md)                                                      |
 | Scripting       | `js-graal`              | Graal.js scripting.                    | Graal.js JavaScript scripting support.                                             |
 | Scripting       | `js-nashorn-standalone` | Nashorn standalone scripting.          | Nashorn JavaScript scripting support for Java 11+.                                 |
-| Store           | `dynamodb`              | DynamoDB store implementation.         | [DynamoDB store](https://github.com/outofcoffee/imposter/tree/main/store/dynamodb) |
-| Store           | `redis`                 | Redis store implementation.            | [Redis store](https://github.com/outofcoffee/imposter/tree/main/store/redis)       |
+| Store           | `store-dynamodb`        | DynamoDB store implementation.         | [DynamoDB store](https://github.com/outofcoffee/imposter/tree/main/store/dynamodb) |
+| Store           | `store-redis`           | Redis store implementation.            | [Redis store](https://github.com/outofcoffee/imposter/tree/main/store/redis)       |
+| Store           | `store-graphql`         | GraphQL store queries.                 | Adds `/system/store/graphql` endpoint.                                             |
 | Configuration   | `config-detector`       | Detects plugins from `META-INF`.       | Built-in.                                                                          |
 | Configuration   | `meta-detector`         | Detects plugins from `*-config` files. | Built-in.                                                                          |
 
