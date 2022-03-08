@@ -11,6 +11,7 @@ This section lists future ideas for features and improvements. Feel free to subm
 * Scheduled script executions
 * Request and response validation against a JSON Schema file (instead of just OpenAPI spec)
 * SOAP plugin - validate request/response body against XSD.
+* Autogenerate OpenAPI spec/UI for REST plugin.
 
 ## Improvements
 
