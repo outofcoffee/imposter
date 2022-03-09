@@ -57,8 +57,16 @@ interface PluginManager {
     ): List<PluginDependencies>
 
     fun determinePluginClass(plugin: String): String
-    fun registerPlugins(injector: Injector)
-    fun configurePlugins(pluginConfigs: Map<String, List<File>>)
+
+    /**
+     * Instantiate all plugins and register them with the plugin manager, then
+     * send config to plugins.
+     *
+     * @param injector the injector from which the plugins can be instantiated
+     * @param pluginConfigs configurations keyed by plugin
+     */
+    fun startPlugins(injector: Injector, pluginConfigs: Map<String, List<File>>)
+
     fun <P : Plugin?> getPlugin(pluginClassName: String): P?
     fun getPlugins(): Collection<Plugin>
 }

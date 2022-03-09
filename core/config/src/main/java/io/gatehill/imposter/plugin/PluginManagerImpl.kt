@@ -78,13 +78,17 @@ class PluginManagerImpl(
         return discoveryStrategy.determinePluginClass(plugin)
     }
 
-    override fun getPlugins(): Collection<Plugin> {
-        return Collections.unmodifiableCollection(plugins.values)
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    override fun <P : Plugin?> getPlugin(pluginClassName: String): P? {
-        return plugins[pluginClassName] as P?
+    /**
+     * Instantiate all plugins and register them with the plugin manager, then
+     * send config to plugins.
+     *
+     * @param injector the injector from which the plugins can be instantiated
+     * @param pluginConfigs configurations keyed by plugin
+     */
+    override fun startPlugins(injector: Injector, pluginConfigs: Map<String, List<File>>) {
+        LOGGER.trace("Starting plugins with {} configs", pluginConfigs.size)
+        createPlugins(injector)
+        configurePlugins(pluginConfigs)
     }
 
     /**
@@ -92,7 +96,7 @@ class PluginManagerImpl(
      *
      * @param injector the injector from which the plugins can be instantiated
      */
-    override fun registerPlugins(injector: Injector) {
+    private fun createPlugins(injector: Injector) {
         discoveryStrategy.getPluginClasses().forEach { pluginClass: Class<out Plugin> ->
             try {
                 val instance = injector.getInstance(pluginClass)
@@ -119,7 +123,7 @@ class PluginManagerImpl(
      *
      * @param pluginConfigs configurations keyed by plugin
      */
-    override fun configurePlugins(pluginConfigs: Map<String, List<File>>) {
+    private fun configurePlugins(pluginConfigs: Map<String, List<File>>) {
         getPlugins()
             .filter { plugin: Plugin -> plugin is ConfigurablePlugin<*> }
             .map { plugin: Plugin -> plugin as ConfigurablePlugin<*> }
@@ -132,6 +136,15 @@ class PluginManagerImpl(
                     throw RuntimeException("Error configuring plugin: $pluginName", e)
                 }
             }
+    }
+
+    override fun getPlugins(): Collection<Plugin> {
+        return Collections.unmodifiableCollection(plugins.values)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    override fun <P : Plugin?> getPlugin(pluginClassName: String): P? {
+        return plugins[pluginClassName] as P?
     }
 
     companion object {

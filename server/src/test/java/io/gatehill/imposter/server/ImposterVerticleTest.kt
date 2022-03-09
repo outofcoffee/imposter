@@ -105,7 +105,6 @@ class ImposterVerticleTest : BaseVerticleTest() {
     }
 
     @Test
-    @Throws(Exception::class)
     fun testRequestSuccess() {
         RestAssured.given().`when`()
             .get("/example")
@@ -114,7 +113,6 @@ class ImposterVerticleTest : BaseVerticleTest() {
     }
 
     @Test
-    @Throws(Exception::class)
     fun testRequestNotFound() {
         RestAssured.given().`when`()
             .get("/does_not_match")
@@ -123,7 +121,6 @@ class ImposterVerticleTest : BaseVerticleTest() {
     }
 
     @Test
-    @Throws(Exception::class)
     fun testResponseFileNotFound() {
         RestAssured.given().`when`()
             .get("/static-file-example")

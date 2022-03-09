@@ -87,7 +87,7 @@ object ConfigUtil {
     }
 
     private fun registerResolvers(): Set<ConfigResolver> {
-        val configResolvers = (MetaUtil.readMetaProperties().getProperty("config-resolvers")
+        val configResolvers = (MetaUtil.readMetaDefaultProperties().getProperty("config-resolvers")
             ?.split(",")
             ?: emptyList())
 

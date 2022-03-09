@@ -59,8 +59,6 @@ import java.io.File
 @PluginInfo("meta-detector")
 class MetaInfPluginDetectorImpl : Plugin, PluginProvider {
     override fun providePlugins(imposterConfig: ImposterConfig, pluginConfigs: Map<String, List<File>>): List<String> {
-        return MetaUtil.readMetaProperties().getProperty("plugins")
-            ?.split(",")
-            ?: emptyList()
+        return MetaUtil.readAllMetaEnabledPlugins()
     }
 }

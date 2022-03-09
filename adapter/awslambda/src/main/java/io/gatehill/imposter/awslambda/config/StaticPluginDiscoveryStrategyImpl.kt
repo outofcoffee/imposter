@@ -98,7 +98,7 @@ class StaticPluginDiscoveryStrategyImpl : PluginDiscoveryStrategy {
      */
     override fun preparePluginsFromConfig(
         imposterConfig: ImposterConfig,
-        plugins: List<String>,
+        initialPlugins: List<String>,
         pluginConfigs: Map<String, List<File>>
     ): List<PluginDependencies> {
         return listOf(

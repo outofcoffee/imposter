@@ -51,13 +51,13 @@ interface PluginDiscoveryStrategy {
      * Registers plugin providers and discovers dependencies from configuration.
      *
      * @param imposterConfig the Imposter engine configuration
-     * @param plugins        configured plugins
+     * @param initialPlugins the initially configured plugins, some of which may be plugin providers
      * @param pluginConfigs  plugin configurations
      * @return list of dependencies
      */
     fun preparePluginsFromConfig(
         imposterConfig: ImposterConfig,
-        plugins: List<String>,
+        initialPlugins: List<String>,
         pluginConfigs: Map<String, List<File>>
     ): List<PluginDependencies>
 

@@ -115,8 +115,7 @@ class Imposter(
         val injector = InjectorUtil.create(*allModules.toTypedArray())
         injector.injectMembers(this)
 
-        pluginManager.registerPlugins(injector)
-        pluginManager.configurePlugins(pluginConfigs)
+        pluginManager.startPlugins(injector, pluginConfigs)
 
         val router = configureRoutes()
         httpServer = serverFactory.provide(imposterConfig, promise, vertx, router)

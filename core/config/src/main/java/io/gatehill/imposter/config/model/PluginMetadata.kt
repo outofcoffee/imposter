@@ -40,14 +40,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.plugin
+package io.gatehill.imposter.config.model
 
-/**
- * @author Pete Cornish
- */
-object PluginMetadata {
-    @JvmStatic
-    fun getPluginName(clazz: Class<*>): String {
-        return clazz.getAnnotation(PluginInfo::class.java)?.value ?: clazz.canonicalName
+data class PluginMetadata(
+    val name: String,
+    val `class`: String,
+    val load: PluginLoadStrategy
+) {
+    enum class PluginLoadStrategy {
+        LAZY,
+        EAGER
     }
 }
