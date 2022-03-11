@@ -95,6 +95,8 @@ class EnvVars(private val env: Map<String, String>) {
             INSTANCE = EnvVars(entries)
         }
 
+        fun populate(vararg pairs: Pair<String, String>) = populate(pairs.toMap())
+
         @JvmStatic
         fun getEnv(): Map<String, String> {
             return INSTANCE.env

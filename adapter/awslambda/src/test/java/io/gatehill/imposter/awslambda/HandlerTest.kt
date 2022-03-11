@@ -81,9 +81,9 @@ class HandlerTest {
         uploadFileToS3("/config", "pet-api.yaml")
         uploadFileToS3("/config", "subdir/response.json")
 
-        EnvVars.populate(mapOf(
+        EnvVars.populate(
             "IMPOSTER_S3_CONFIG_URL" to "s3://test/",
-        ))
+        )
 
         handler = Handler()
         context = mock(Context::class.java)

@@ -56,14 +56,14 @@ import java.nio.file.Paths
 class EnvVarsTest {
     @Test
     fun testGetEnvSingle() {
-        EnvVars.populate(mapOf("foo" to "bar"))
+        EnvVars.populate("foo" to "bar")
 
         assertThat(EnvVars.getEnv("foo"), CoreMatchers.equalTo("bar"))
     }
 
     @Test
     fun testGetEnvAll() {
-        EnvVars.populate(mapOf("foo" to "bar"))
+        EnvVars.populate("foo" to "bar")
 
         val entries = EnvVars.getEnv()
         assertThat(entries.entries, Matchers.hasSize(1))
