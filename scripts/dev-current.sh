@@ -7,9 +7,10 @@ DEFAULT_DISTRO_NAME="core"
 IMPOSTER_LOG_LEVEL="DEBUG"
 RUN_TESTS="true"
 DEBUG_MODE="true"
+SUSPEND_DEBUGGER="n"
 MEASURE_PERF="false"
 
-while getopts ":m:d:c:l:p:t:z:" opt; do
+while getopts "m:d:c:l:p:st:z:" opt; do
   case ${opt} in
     m )
       LAUNCH_MODE=$OPTARG
@@ -25,6 +26,9 @@ while getopts ":m:d:c:l:p:t:z:" opt; do
       ;;
     p )
       MEASURE_PERF=$OPTARG
+      ;;
+    s )
+      SUSPEND_DEBUGGER="y"
       ;;
     t )
       RUN_TESTS=$OPTARG
@@ -43,13 +47,13 @@ done
 shift $((OPTIND -1))
 
 function usage() {
-  echo -e "Usage:\n  $( basename $0 ) -m <docker|java> -c config-dir [-d distro-name] [-l log-level] [-t run-tests] [-z debug-mode]"
+  echo -e "Usage:\n  $( basename $0 ) -m <docker|java> -c config-dir [-d distro-name] [-l log-level] [-t run-tests] [-s suspend-debugger] [-z debug-mode]"
   exit 1
 }
 
 JAVA_TOOL_OPTIONS=
 if [[ "$DEBUG_MODE" == "true" ]]; then
-  JAVA_TOOL_OPTIONS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000"
+  JAVA_TOOL_OPTIONS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=${SUSPEND_DEBUGGER},address=8000"
 fi
 
 if [[ -z ${LAUNCH_MODE} || -z "${CONFIG_DIR}" ]]; then
