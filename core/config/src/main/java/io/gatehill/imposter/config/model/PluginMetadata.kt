@@ -42,13 +42,31 @@
  */
 package io.gatehill.imposter.config.model
 
+import java.util.Properties
+
 data class PluginMetadata(
     val name: String,
     val `class`: String,
     val load: PluginLoadStrategy
 ) {
+    companion object {
+        fun parse(props: Properties): PluginMetadata {
+            return PluginMetadata(
+                props["name"] as String,
+                props["class"] as String,
+                PluginLoadStrategy.parse(props["load"] as String?),
+            )
+        }
+    }
+
     enum class PluginLoadStrategy {
         LAZY,
-        EAGER
+        EAGER;
+
+        companion object {
+            fun parse(input: String?): PluginLoadStrategy {
+                return input?.let { valueOf(input.uppercase()) } ?: LAZY
+            }
+        }
     }
 }

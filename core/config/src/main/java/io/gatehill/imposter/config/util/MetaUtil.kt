@@ -45,7 +45,8 @@ package io.gatehill.imposter.config.util
 import io.gatehill.imposter.config.model.PluginMetadata
 import org.apache.logging.log4j.LogManager
 import java.io.IOException
-import java.util.*
+import java.util.Objects
+import java.util.Properties
 import java.util.jar.Manifest
 
 /**
@@ -99,21 +100,20 @@ object MetaUtil {
      * found on the classpath.
      */
     fun readMetaDefaultProperties(): Properties {
-        if (Objects.isNull(defaultProperties)) {
-            defaultProperties = Properties()
+        return defaultProperties ?: Properties().apply {
             try {
                 for (metaFile in classLoader.getResources(METADATA_DEFAULT_PROPERTIES)) {
                     metaFile.openStream().use { properties ->
                         if (!Objects.isNull(properties)) {
-                            defaultProperties!!.load(properties)
+                            load(properties)
                         }
                     }
                 }
             } catch (e: IOException) {
                 LOGGER.warn("Error reading metadata properties from {} - continuing", METADATA_DEFAULT_PROPERTIES, e)
             }
+            defaultProperties = this
         }
-        return defaultProperties!!
     }
 
     /**
@@ -121,22 +121,14 @@ object MetaUtil {
      * [METADATA_PLUGIN_PROPERTIES] found on the classpath.
      */
     private fun readPluginMetaFiles(): Map<String, PluginMetadata> {
-        val enabledPlugins = mutableMapOf<String, PluginMetadata>()
+        val metaPlugins = mutableMapOf<String, PluginMetadata>()
         try {
             for (metaFile in classLoader.getResources(METADATA_PLUGIN_PROPERTIES)) {
                 metaFile.openStream().use { properties ->
-                    if (!Objects.isNull(properties)) {
+                    properties?.let {
                         val plugin = Properties().apply { load(properties) }
-
-                        val pluginName = plugin["name"] as String
-                        val loadStrategy = (plugin["load"] as String?)?.let { PluginMetadata.PluginLoadStrategy.valueOf(it.uppercase()) }
-                            ?: PluginMetadata.PluginLoadStrategy.LAZY
-
-                        enabledPlugins[pluginName] = PluginMetadata(
-                            pluginName,
-                            plugin["class"] as String,
-                            loadStrategy,
-                        )
+                        val meta = PluginMetadata.parse(plugin)
+                        metaPlugins[meta.name] = meta
                     }
                 }
             }
@@ -144,7 +136,8 @@ object MetaUtil {
             LOGGER.warn("Error reading plugin metadata from {} - continuing", METADATA_DEFAULT_PROPERTIES, e)
         }
 
-        return enabledPlugins
+        LOGGER.trace("Read {} plugins from metadata: {}", metaPlugins.size, metaPlugins)
+        return metaPlugins
     }
 
     private val classLoader: ClassLoader
