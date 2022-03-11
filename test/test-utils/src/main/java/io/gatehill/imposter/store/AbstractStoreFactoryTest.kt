@@ -77,8 +77,10 @@ abstract class AbstractStoreFactoryTest {
     }
 
     @Test
-    fun testSaveLoadSimpleItems() {
+    open fun testSaveLoadSimpleItems() {
+        factory.clearStore("sli", false)
         val store = factory.buildNewStore("sli")
+
         Assert.assertEquals(0, store.count())
         store.save("foo", "bar")
         store.save("baz", 123L)

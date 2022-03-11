@@ -102,9 +102,7 @@ class DynamoDBStoreFactoryImplTest : AbstractStoreFactoryTest() {
     @Test
     override fun testSaveLoadComplexItemBinary() {
         EnvVars.populate(
-            EnvVars.getEnv().toMutableMap().apply {
-                put("IMPOSTER_DYNAMODB_OBJECT_SERIALISATION", Settings.ObjectSerialisation.BINARY.name)
-            }
+            EnvVars.getEnv() + mapOf("IMPOSTER_DYNAMODB_OBJECT_SERIALISATION" to Settings.ObjectSerialisation.BINARY.name)
         )
 
         val store = factory.buildNewStore("complex-binary")
@@ -124,9 +122,7 @@ class DynamoDBStoreFactoryImplTest : AbstractStoreFactoryTest() {
     @Test
     fun testSaveLoadComplexItemMap() {
         EnvVars.populate(
-            EnvVars.getEnv().toMutableMap().apply {
-                put("IMPOSTER_DYNAMODB_OBJECT_SERIALISATION", Settings.ObjectSerialisation.MAP.name)
-            }
+            EnvVars.getEnv() + mapOf("IMPOSTER_DYNAMODB_OBJECT_SERIALISATION" to Settings.ObjectSerialisation.MAP.name)
         )
 
         val store = factory.buildNewStore("complex-map")
@@ -138,5 +134,31 @@ class DynamoDBStoreFactoryImplTest : AbstractStoreFactoryTest() {
         Assert.assertNotNull(loadedMap)
         Assert.assertTrue("Returned value should be a Map", loadedMap is Map)
         Assert.assertEquals("test", loadedMap!!["name"])
+    }
+
+    /**
+     * Item listing should use scan operation.
+     */
+    @Test
+    override fun testSaveLoadSimpleItems() {
+        EnvVars.populate(
+            EnvVars.getEnv() + mapOf(
+                "IMPOSTER_DYNAMODB_SCAN_TO_LIST_ALL" to "true"
+            )
+        )
+        super.testSaveLoadSimpleItems()
+    }
+
+    /**
+     * Item listing should use query operation.
+     */
+    @Test
+    fun testSaveLoadSimpleItemsWithQuery() {
+        EnvVars.populate(
+            EnvVars.getEnv() + mapOf(
+                "IMPOSTER_DYNAMODB_SCAN_TO_LIST_ALL" to "false"
+            )
+        )
+        super.testSaveLoadSimpleItems()
     }
 }

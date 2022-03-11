@@ -24,12 +24,13 @@ This section lists future ideas for features and improvements. Feel free to subm
 * Add content type header to HBase response
 * Reuse HBase model classes for JSON serialisation
 
-## Deprecated
+## Breaking changes
 
-The following features are deprecated and will be removed in a future major version.
+The following items are breaking changes, such as removal of deprecated functionality. They will be removed or changed in a backwards incompatible way in a future major version.
 
-- Legacy `context.params` map - use `context.request.queryParams` instead
-- Legacy `context.request.params` map - use `context.request.queryParams` instead
-- Legacy `context.uri` map - use `context.request.uri` instead
-- Request header keys will be lowercased (changing the default of `IMPOSTER_NORMALISE_HEADER_KEYS` from `false` to `true`)
-- Enabling request and response validation by default
+- Removal of legacy `context.params` map - use `context.request.queryParams` instead
+- Removal of legacy `context.request.params` map - use `context.request.queryParams` instead
+- Removal of legacy `context.uri` map - use `context.request.uri` instead
+- Request header keys will be lowercased (set `IMPOSTER_NORMALISE_HEADER_KEYS=true`)
+- Request and response validation will be enabled by default
+- Use of Query instead of Scan operation in DynamoDB store plugin (set `IMPOSTER_DYNAMODB_SCAN_TO_LIST_ALL=false`)

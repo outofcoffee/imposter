@@ -48,10 +48,11 @@ import com.amazonaws.services.dynamodbv2.model.DeleteItemRequest
 import com.amazonaws.services.dynamodbv2.model.GetItemRequest
 import com.amazonaws.services.dynamodbv2.model.PutItemRequest
 import com.amazonaws.services.dynamodbv2.model.QueryRequest
-import com.amazonaws.services.dynamodbv2.model.ScanRequest
+import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.service.DeferredOperationService
 import io.gatehill.imposter.store.core.AbstractStore
 import io.gatehill.imposter.store.dynamodb.config.Settings
+import io.gatehill.imposter.store.dynamodb.model.ResultWrapper
 import io.gatehill.imposter.util.MapUtil
 import org.apache.logging.log4j.LogManager
 import java.nio.ByteBuffer
@@ -74,6 +75,10 @@ class DynamoDBStore(
     override val typeDescription = "dynamodb"
     override val isEphemeral = false
     private val logger = LogManager.getLogger(DynamoDBStore::class.java)
+
+    private val scanToListAll: Boolean by lazy {
+        EnvVars.getEnv("IMPOSTER_DYNAMODB_SCAN_TO_LIST_ALL")?.toBoolean() ?: true
+    }
 
     init {
         logger.debug("Initialised DynamoDB store: $storeName using table: $tableName")
@@ -152,8 +157,7 @@ class DynamoDBStore(
 
     override fun loadAll(): Map<String, Any?> {
         logger.trace("Loading all items in store: {}", storeName)
-        val queryResult = scanStore()
-        return queryResult.items.associate { destructure<Any>(it) }
+        return listAllInStore().items.associate { destructure<Any>(it) }
     }
 
     override fun loadByKeyPrefix(keyPrefix: String): Map<String, Any?> {
@@ -178,22 +182,23 @@ class DynamoDBStore(
         return items.associate { destructure(it) }
     }
 
-    private fun scanStore() = ddb.scan(
-        ScanRequest()
-            .withTableName(tableName)
-            .withFilterExpression("StoreName = :storeName")
-            .withExpressionAttributeValues(mapOf(":storeName" to AttributeValue().withS(storeName)))
-    )
-
     override fun hasItemWithKey(key: String): Boolean {
         logger.trace("Checking for item with key: {} in store: {}", key, storeName)
         return load<Any>(key) != null
     }
 
     override fun count(): Int {
-        val count = scanStore().count
+        val count = listAllInStore().count
         logger.trace("Returning item count {} from store: {}", count, storeName)
         return count
+    }
+
+    private fun listAllInStore() = if (scanToListAll) {
+        logger.trace("Using scan to list items in store: {}", storeName)
+        ResultWrapper.usingScan(ddb, tableName, storeName)
+    } else {
+        logger.trace("Using query to list items in store: {}", storeName)
+        ResultWrapper.usingQuery(ddb, tableName, storeName)
     }
 
     private fun <T> destructure(attributeItem: Map<String, AttributeValue>): Pair<String, T?> {
