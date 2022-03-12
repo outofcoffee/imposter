@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.10.0] - 2022-03-12
+### Added
+- feat: allows store queries by key prefix.
+- feat: allows use of query operation in place of scan in DynamoDB store driver.
+- feat: adds support for JSON parsing in Groovy scripts.
+
+### Changed
+- refactor: simplifies plugin discovery and provider logic.
+
 ## [2.9.1] - 2022-03-07
 ### Added
 - feat: allows JsonPath queries in expressions.
