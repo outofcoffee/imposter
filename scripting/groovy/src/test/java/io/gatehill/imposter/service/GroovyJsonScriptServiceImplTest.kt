@@ -42,18 +42,33 @@
  */
 package io.gatehill.imposter.service
 
-import io.gatehill.imposter.scripting.AbstractScriptServiceImplTest
+import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
+import io.gatehill.imposter.scripting.AbstractBaseScriptTest
 import io.gatehill.imposter.scripting.groovy.service.GroovyScriptServiceImpl
+import org.junit.Assert
+import org.junit.Test
 import javax.inject.Inject
 
 /**
  * @author Pete Cornish
  */
-class GroovyScriptServiceImplTest : AbstractScriptServiceImplTest() {
+class GroovyJsonScriptServiceImplTest : AbstractBaseScriptTest() {
     @Inject
     private var service: GroovyScriptServiceImpl? = null
 
     override fun getService() = service!!
 
-    override fun getScriptName() = "test.groovy"
+    override fun getScriptName() = "json-parse.groovy"
+
+    @Test
+    fun `parse JSON`() {
+        val pluginConfig = configureScript()
+        val resourceConfig = pluginConfig as BasicResourceConfig
+
+        val runtimeContext = buildRuntimeContext(emptyMap(), body = """{ "hello": "world" }""")
+        val actual = getService().executeScript(pluginConfig, resourceConfig, runtimeContext)
+
+        Assert.assertNotNull(actual)
+        Assert.assertEquals("world", actual.responseData)
+    }
 }

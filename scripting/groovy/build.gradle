@@ -14,6 +14,7 @@ dependencies {
     implementation project(':core:imposter-engine')
 
     implementation "org.codehaus.groovy:groovy:$version_groovy"
+    implementation "org.codehaus.groovy:groovy-json:$version_groovy"
 
     // test
     testImplementation project(':test:test-utils')
