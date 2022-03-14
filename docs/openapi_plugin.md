@@ -332,6 +332,41 @@ responses:
 
 Imposter currently supports JSON and YAML serialised content types in the response if they are specified in this way. If you want to return a different format, return a literal string, such as those above.
 
+## Setting a path prefix
+
+It is possible to set a prefix for the paths within an OpenAPI specification. This is helpful to avoid clashes when including more than one specification containing identical paths. To set the prefix, use the `path` property at the top of the configuration file.
+
+For example, to add the prefix `/example` before each path within the OpenAPI specification `spec.yaml`, set the `path` in your configuration file:
+
+```yaml
+# imposter-config.yaml
+---
+plugin: openapi
+specFile: spec.yaml
+
+# set a prefix for all paths in the spec above
+path: /example
+```
+
+Given an OpenAPI specification such as:
+
+```yaml
+# spec.yaml
+---
+openapi: "3.0.0"
+# ... info etc. omitted for brevity
+
+paths:
+  /pets/{petId}:
+    # ...operation details
+```
+
+...then the path `/pets/{petId}` would be accessible at the path:
+
+```
+/example/pets/{petId}
+```
+
 ## Scripted responses (advanced)
 
 For more advanced scenarios, you can also control Imposter's responses using JavaScript or Groovy scripts.
