@@ -62,7 +62,6 @@ import io.gatehill.imposter.server.HttpServer
 import io.gatehill.imposter.server.ServerFactory
 import io.gatehill.imposter.service.ResourceService
 import io.gatehill.imposter.util.AsyncUtil
-import io.gatehill.imposter.util.FeatureUtil
 import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.InjectorUtil
 import io.gatehill.imposter.util.MetricsUtil
@@ -153,7 +152,7 @@ class Imposter(
             "No plugin configurations were found. Configuration directories [${imposterConfig.configDirs.joinToString()}] must contain one or more valid Imposter configuration files compatible with installed plugins."
         }
 
-        if (FeatureUtil.isFeatureEnabled(MetricsUtil.FEATURE_NAME_METRICS)) {
+        MetricsUtil.doIfMetricsEnabled("add metrics endpoint") {
             LOGGER.trace("Metrics enabled")
             router.route("/system/metrics").handler(
                 resourceService.passthroughRoute(

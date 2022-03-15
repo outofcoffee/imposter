@@ -43,7 +43,7 @@
 package io.gatehill.imposter.cmd
 
 import io.gatehill.imposter.server.ImposterVerticle
-import io.gatehill.imposter.util.FeatureUtil.isFeatureEnabled
+import io.gatehill.imposter.util.FeatureUtil.doIfFeatureEnabled
 import io.gatehill.imposter.util.MetricsUtil
 import io.gatehill.imposter.util.MetricsUtil.configureMetrics
 import io.vertx.core.Launcher
@@ -57,9 +57,7 @@ class LifecycleAwareLauncher : Launcher() {
         super.dispatch(arrayOf("run", ImposterVerticle::class.java.canonicalName, *args))
     }
 
-    override fun beforeStartingVertx(options: VertxOptions) {
-        if (isFeatureEnabled(MetricsUtil.FEATURE_NAME_METRICS)) {
-            configureMetrics(options)
-        }
+    override fun beforeStartingVertx(options: VertxOptions) = doIfFeatureEnabled(MetricsUtil.FEATURE_NAME_METRICS) {
+        configureMetrics(options)
     }
 }
