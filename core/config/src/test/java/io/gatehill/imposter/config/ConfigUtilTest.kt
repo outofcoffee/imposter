@@ -101,7 +101,7 @@ class ConfigUtilTest {
     @Test
     fun testLoadRecursive_Enabled() {
         val configDir = File(ConfigUtilTest::class.java.getResource("/recursive").toURI())
-        val configFiles = ConfigUtil.listConfigFiles(configDir, true)
+        val configFiles = ConfigUtil.listConfigFiles(configDir, true, emptyList())
 
         assertEquals(3, configFiles.size)
         assertTrue(
@@ -119,12 +119,32 @@ class ConfigUtilTest {
     }
 
     /**
+     * A subset of the config files within the directory will be returned, subject to the
+     * exclusion list passed.
+     */
+    @Test
+    fun testLoadRecursive_WithExclusions() {
+        val configDir = File(ConfigUtilTest::class.java.getResource("/recursive").toURI())
+        val configFiles = ConfigUtil.listConfigFiles(configDir, true, listOf("subdir2"))
+
+        assertEquals(2, configFiles.size)
+        assertTrue(
+            "discovered files should include top level dir config",
+            configFiles.map { it.toString() }.any { it.endsWith("/recursive/test-config.yaml") }
+        )
+        assertTrue(
+            "discovered files should include subdir1 config",
+            configFiles.map { it.toString() }.any { it.endsWith("/recursive/subdir1/test-config.yaml") }
+        )
+    }
+
+    /**
      * Only the top level config file within the config dir and its subdirectories should be returned.
      */
     @Test
     fun testLoadRecursive_Disabled() {
         val configDir = File(ConfigUtilTest::class.java.getResource("/recursive").toURI())
-        val configFiles = ConfigUtil.listConfigFiles(configDir, false)
+        val configFiles = ConfigUtil.listConfigFiles(configDir, false, emptyList())
 
         assertEquals(1, configFiles.size)
         assertTrue(

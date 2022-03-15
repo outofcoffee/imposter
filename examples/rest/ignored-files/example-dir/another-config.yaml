@@ -1,0 +1,7 @@
+plugin: rest
+
+resources:
+  - path: /test2
+    method: GET
+    response:
+      statusCode: 500

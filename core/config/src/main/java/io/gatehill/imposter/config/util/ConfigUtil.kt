@@ -67,6 +67,7 @@ object ConfigUtil {
     private val LOGGER = LogManager.getLogger(ConfigUtil::class.java)
     const val CURRENT_PACKAGE = "io.gatehill.imposter"
     private const val CONFIG_FILE_SUFFIX = "-config"
+    private const val IGNORE_FILE_NAME = ".imposterignore"
 
     private val CONFIG_FILE_MAPPERS: Map<String, ObjectMapper> = mapOf(
         ".json" to MapUtil.JSON_MAPPER,
@@ -78,6 +79,15 @@ object ConfigUtil {
         get() = EnvVars.getEnv("IMPOSTER_CONFIG_SCAN_RECURSIVE")?.toBoolean() == true
 
     private var placeholderSubstitutor: StringSubstitutor? = null
+
+    private val defaultIgnoreList: List<String> by lazy {
+        ConfigUtil::class.java.getResourceAsStream("/$IGNORE_FILE_NAME")?.use {
+            parseExclusionsFile(it.reader().readLines())
+        } ?: run {
+            LOGGER.warn("Failed to find default Imposter ignore file '$IGNORE_FILE_NAME' on classpath")
+            emptyList()
+        }
+    }
 
     val resolvers: Set<ConfigResolver>
 
@@ -117,17 +127,35 @@ object ConfigUtil {
      */
     fun discoverConfigFiles(rawConfigDirs: Array<String>, scanRecursive: Boolean = scanRecursiveConfig): List<File> {
         val configDirs = resolveToLocal(rawConfigDirs)
+        val exclusions = buildExclusions(configDirs)
 
         val configFiles = mutableListOf<File>()
         for (configDir in configDirs) {
             try {
-                configFiles += listConfigFiles(configDir, scanRecursive)
+                configFiles += listConfigFiles(configDir, scanRecursive, exclusions)
             } catch (e: Exception) {
                 throw RuntimeException(e)
             }
         }
         return configFiles
     }
+
+    private fun buildExclusions(configDirs: List<File>): List<String> {
+        val exclusions = configDirs.flatMap { configDir ->
+            val ignoreFile = File(configDir, IGNORE_FILE_NAME)
+            if (ignoreFile.exists()) {
+                parseExclusionsFile(ignoreFile.readLines())
+            } else {
+                emptyList()
+            }
+        }.takeUnless { it.isEmpty() } ?: defaultIgnoreList
+
+        LOGGER.trace("Excluded from config file search: {}", exclusions)
+        return exclusions
+    }
+
+    private fun parseExclusionsFile(rawEntries: List<String>) =
+        rawEntries.filter { it.isNotBlank() && !it.startsWith("#") }
 
     fun loadPluginConfigs(
         imposterConfig: ImposterConfig,
@@ -163,15 +191,15 @@ object ConfigUtil {
         return allPluginConfigs
     }
 
-    fun listConfigFiles(configDir: File, scanRecursive: Boolean): List<File> {
+    fun listConfigFiles(configDir: File, scanRecursive: Boolean, exclusions: List<String>): List<File> {
         val configFiles = mutableListOf<File>()
 
-        configDir.listFiles()?.forEach { file ->
+        configDir.listFiles()?.filterNot { exclusions.contains(it.name) }?.forEach { file ->
             if (isConfigFile(file.name)) {
                 configFiles += file
             } else {
                 if (scanRecursive && file.isDirectory) {
-                    configFiles += listConfigFiles(file, scanRecursive)
+                    configFiles += listConfigFiles(file, scanRecursive, exclusions)
                 }
             }
         }
