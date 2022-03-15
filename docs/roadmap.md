@@ -28,6 +28,7 @@ This section lists future ideas for features and improvements. Feel free to subm
 
 The following items are breaking changes, such as removal of deprecated functionality. They will be removed or changed in a backwards incompatible way in a future major version.
 
+- Drop Java 8 support.
 - Removal of legacy `context.params` map - use `context.request.queryParams` instead
 - Removal of legacy `context.request.params` map - use `context.request.queryParams` instead
 - Removal of legacy `context.uri` map - use `context.request.uri` instead
