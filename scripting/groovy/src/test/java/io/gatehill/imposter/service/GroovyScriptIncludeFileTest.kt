@@ -52,23 +52,23 @@ import javax.inject.Inject
 /**
  * @author Pete Cornish
  */
-class GroovyJsonScriptServiceImplTest : AbstractBaseScriptTest() {
+class GroovyScriptIncludeFileTest : AbstractBaseScriptTest() {
     @Inject
     private var service: GroovyScriptServiceImpl? = null
 
     override fun getService() = service!!
 
-    override fun getScriptName() = "json-parse.groovy"
+    override fun getScriptName() = "entrypoint.groovy"
 
     @Test
-    fun `parse JSON`() {
+    fun `include additional script`() {
         val pluginConfig = configureScript()
         val resourceConfig = pluginConfig as BasicResourceConfig
 
-        val runtimeContext = buildRuntimeContext(emptyMap(), body = """{ "hello": "world" }""")
+        val runtimeContext = buildRuntimeContext(emptyMap())
         val actual = getService().executeScript(pluginConfig, resourceConfig, runtimeContext)
 
         Assert.assertNotNull(actual)
-        Assert.assertEquals("world", actual.responseData)
+        Assert.assertEquals(201, actual.statusCode)
     }
 }

@@ -52,6 +52,7 @@ import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.ScriptUtil
 import io.gatehill.imposter.scripting.groovy.impl.GroovyResponseBehaviourImpl
+import io.gatehill.imposter.scripting.groovy.util.ScriptLoader
 import io.gatehill.imposter.service.ScriptService
 import io.gatehill.imposter.util.MetricsUtil
 import io.micrometer.core.instrument.Gauge
@@ -104,7 +105,7 @@ class GroovyScriptServiceImpl : ScriptService {
             val scriptClass = getCompiledScript(scriptFile)
             val script = scriptClass.getDeclaredConstructor().newInstance()
             script.apply {
-                binding = convertBindings(runtimeContext)
+                binding = convertBindings(runtimeContext, scriptFile)
                 run()
             }
         } catch (e: Exception) {
@@ -130,8 +131,11 @@ class GroovyScriptServiceImpl : ScriptService {
         }
     }
 
-    private fun convertBindings(runtimeContext: RuntimeContext) = Binding().apply {
+    private fun convertBindings(runtimeContext: RuntimeContext, scriptFile: Path) = Binding().apply {
         runtimeContext.asMap().forEach { (name: String, value: Any?) -> setVariable(name, value) }
+
+        // resolved path to the script
+        setVariable(ScriptLoader.contextKeyScriptPath, scriptFile)
     }
 
     companion object {

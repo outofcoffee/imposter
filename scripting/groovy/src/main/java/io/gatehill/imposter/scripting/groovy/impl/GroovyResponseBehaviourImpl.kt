@@ -48,6 +48,8 @@ import io.gatehill.imposter.script.PerformanceSimulationConfig
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl
 import io.gatehill.imposter.script.ResponseBehaviourType
+import io.gatehill.imposter.scripting.groovy.util.ScriptLoader
+import java.nio.file.Path
 
 /**
  * @author Pete Cornish
@@ -159,5 +161,10 @@ abstract class GroovyResponseBehaviourImpl : Script(), ReadWriteResponseBehaviou
     override fun withDelayRange(minDelayMs: Int, maxDelayMs: Int): MutableResponseBehaviour {
         delegate.withDelayRange(minDelayMs, maxDelayMs)
         return this
+    }
+
+    fun loadDynamic(relativePath: String): Any {
+        val thisScriptPath = super.getProperty(ScriptLoader.contextKeyScriptPath) as Path
+        return ScriptLoader.loadDynamic(thisScriptPath, relativePath)
     }
 }
