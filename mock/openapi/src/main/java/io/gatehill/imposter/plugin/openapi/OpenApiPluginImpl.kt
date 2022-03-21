@@ -55,6 +55,7 @@ import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.resource.ResourceMethod
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig
 import io.gatehill.imposter.plugin.openapi.http.OpenApiResponseBehaviourFactory
+import io.gatehill.imposter.plugin.openapi.model.ParsedSpec
 import io.gatehill.imposter.plugin.openapi.service.ExampleService
 import io.gatehill.imposter.plugin.openapi.service.SpecificationLoaderService
 import io.gatehill.imposter.plugin.openapi.service.SpecificationService
@@ -104,7 +105,7 @@ class OpenApiPluginImpl @Inject constructor(
     vertx, imposterConfig
 ) {
     override val configClass = OpenApiPluginConfig::class.java
-    private lateinit var allSpecs: List<OpenAPI>
+    private lateinit var allSpecs: List<ParsedSpec>
 
     companion object {
         private val LOGGER = LogManager.getLogger(OpenApiPluginImpl::class.java)
@@ -156,15 +157,23 @@ class OpenApiPluginImpl @Inject constructor(
     }
 
     private fun parseSpecs(router: HttpRouter) {
-        val parsedSpecs = mutableListOf<OpenAPI>()
+        val parsedSpecs = mutableListOf<ParsedSpec>()
 
         // specification mock endpoints
         configs.forEach { config: OpenApiPluginConfig ->
             val spec = specificationLoaderService.parseSpecification(config)
+
+            // the prefix is built from a concatenation of:
+            // 1. the server 'basePath'
+            // 2. the plugin configuration root path
+            // 3. the path of the first 'server' entry in the spec
+            val pathPrefix = (basePath ?: "") + (config.path ?: "") +
+                    if (config.stripServerPath) "" else specificationService.determinePathFromSpec(spec)
+
             spec.paths.forEach { path: String, pathConfig: PathItem ->
-                handlePathOperations(router, config, spec, path, pathConfig)
+                handlePathOperations(router, config, spec, pathPrefix, path, pathConfig)
             }
-            parsedSpecs += spec
+            parsedSpecs += ParsedSpec(spec, pathPrefix)
         }
 
         allSpecs = parsedSpecs
@@ -176,6 +185,7 @@ class OpenApiPluginImpl @Inject constructor(
      * @param router     the Vert.x router
      * @param config     the plugin configuration
      * @param spec       the OpenAPI specification
+     * @param pathPrefix
      * @param path       the mock path
      * @param pathConfig the path configuration
      */
@@ -183,11 +193,12 @@ class OpenApiPluginImpl @Inject constructor(
         router: HttpRouter,
         config: OpenApiPluginConfig,
         spec: OpenAPI,
+        pathPrefix: String,
         path: String,
         pathConfig: PathItem
     ) {
         pathConfig.readOperationsMap().forEach { (httpMethod: PathItem.HttpMethod, operation: Operation) ->
-            val fullPath = buildFullPath(config, spec, path)
+            val fullPath = buildFullPath(pathPrefix, path)
             LOGGER.debug("Adding mock endpoint: {} -> {}", httpMethod, fullPath)
 
             // convert an io.swagger.models.HttpMethod to an io.vertx.core.http.HttpMethod
@@ -199,19 +210,11 @@ class OpenApiPluginImpl @Inject constructor(
     /**
      * Construct the full path from the base path and the operation path.
      *
-     * @param config            the plugin configuration
-     * @param spec              the OpenAPI specification
+     * @param pathPrefix
      * @param specOperationPath the operation path from the OpenAPI specification
      * @return the full path
      */
-    private fun buildFullPath(config: OpenApiPluginConfig, spec: OpenAPI, specOperationPath: String): String {
-        // the prefix is built from a concatenation of:
-        // 1. the server 'basePath'
-        // 2. the plugin configuration path
-        // 3. the path of the first 'server' entry in the spec
-        val pathPrefix = (basePath ?: "") + (config.path ?: "") +
-                if (config.stripServerPath) "" else specificationService.determinePathFromSpec(spec)
-
+    private fun buildFullPath(pathPrefix: String, specOperationPath: String): String {
         val operationPath = convertPathFromOpenApi(specOperationPath)
 
         return if (pathPrefix.endsWith("/")) {

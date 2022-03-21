@@ -40,59 +40,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.plugin.openapi.service
+package io.gatehill.imposter.plugin.openapi.model
 
-import io.gatehill.imposter.http.HttpExchange
-import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig
-import io.gatehill.imposter.plugin.openapi.model.ParsedSpec
-import io.swagger.models.Scheme
 import io.swagger.v3.oas.models.OpenAPI
-import java.util.concurrent.ExecutionException
 
-/**
- * @author Pete Cornish
- */
-interface SpecificationService {
-    fun combineSpecs(
-        specs: List<ParsedSpec>,
-        basePath: String?,
-        deriveBasePathFromServerEntries: Boolean
-    ): OpenAPI? {
-        return combineSpecs(specs, basePath, null, null)
-    }
-
-    /**
-     * Returns the combined specification from cache, generating it first on cache miss.
-     */
-    @Throws(ExecutionException::class)
-    fun getCombinedSpec(allSpecs: List<ParsedSpec>, basePath: String?): OpenAPI
-
-    /**
-     * As [getCombinedSpec] but serialised to JSON.
-     */
-    @Throws(ExecutionException::class)
-    fun getCombinedSpecSerialised(allSpecs: List<ParsedSpec>, basePath: String?): String
-
-    fun combineSpecs(
-        specs: List<ParsedSpec>,
-        basePath: String?,
-        scheme: Scheme?,
-        title: String?,
-    ): OpenAPI?
-
-    fun isValidRequest(
-        pluginConfig: OpenApiPluginConfig,
-        httpExchange: HttpExchange,
-        allSpecs: List<ParsedSpec>,
-        basePath: String?,
-    ): Boolean
-
-    /**
-     * Attempt to determine the base path from the first `server` entry in the spec,
-     * if one is present.
-     *
-     * @param spec   the OpenAPI specification
-     * @return the path
-     */
-    fun determinePathFromSpec(spec: OpenAPI): String
-}
+data class ParsedSpec(
+    val spec: OpenAPI,
+    val basePath: String,
+)

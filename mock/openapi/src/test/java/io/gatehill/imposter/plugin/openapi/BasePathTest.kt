@@ -47,7 +47,12 @@ import com.jayway.restassured.http.ContentType
 import io.gatehill.imposter.server.BaseVerticleTest
 import io.gatehill.imposter.util.HttpUtil
 import io.vertx.ext.unit.TestContext
-import org.hamcrest.Matchers
+import org.hamcrest.Matchers.allOf
+import org.hamcrest.Matchers.equalTo
+import org.hamcrest.Matchers.hasEntry
+import org.hamcrest.Matchers.hasItem
+import org.hamcrest.Matchers.hasSize
+import org.hamcrest.Matchers.notNullValue
 import org.junit.Before
 import org.junit.Test
 
@@ -64,6 +69,7 @@ class BasePathTest : BaseVerticleTest() {
     override fun setUp(testContext: TestContext) {
         super.setUp(testContext)
         RestAssured.baseURI = "http://$host:$listenPort"
+        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails()
     }
 
     override val testConfigDirs = listOf(
@@ -74,28 +80,35 @@ class BasePathTest : BaseVerticleTest() {
     fun `different base paths for different specs`() {
         // the server path ('/petstore') in the spec should be stripped
         RestAssured.given()
-            .log().ifValidationFails()
             .accept(ContentType.JSON)
             .`when`()["/animals/pets/1"]
             .then()
-            .log().ifValidationFails()
             .statusCode(HttpUtil.HTTP_OK)
-            .body("id", Matchers.equalTo(1))
-            .body("name", Matchers.equalTo("Cat"))
+            .body("id", equalTo(1))
+            .body("name", equalTo("Cat"))
 
         RestAssured.given()
-            .log().ifValidationFails()
             .accept(ContentType.JSON)
             .`when`()["/shop/supplies"]
             .then()
-            .log().ifValidationFails()
             .statusCode(HttpUtil.HTTP_OK)
-            .body("$", Matchers.hasSize<Any>(2))
+            .body("$", hasSize<Any>(2))
             .body(
-                "$", Matchers.allOf(
-                    Matchers.hasItem(Matchers.hasEntry("name", "Brush")),
-                    Matchers.hasItem(Matchers.hasEntry("name", "Food bowl")),
+                "$", allOf(
+                    hasItem(hasEntry("name", "Brush")),
+                    hasItem(hasEntry("name", "Food bowl")),
                 )
             )
+    }
+
+    @Test
+    fun `paths rewritten in spec`() {
+        RestAssured.given()
+            .accept(ContentType.JSON)
+            .`when`()["/_spec/combined.json"]
+            .then()
+            .statusCode(HttpUtil.HTTP_OK)
+            .body("paths.'/animals/pets/{petId}'", notNullValue())
+            .body("paths.'/shop/supplies'", notNullValue())
     }
 }

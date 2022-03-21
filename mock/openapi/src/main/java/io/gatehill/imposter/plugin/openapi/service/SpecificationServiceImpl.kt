@@ -53,12 +53,14 @@ import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginValidationConfig.ValidationIssueBehaviour
+import io.gatehill.imposter.plugin.openapi.model.ParsedSpec
 import io.gatehill.imposter.plugin.openapi.util.ValidationReportUtil
 import io.swagger.models.Scheme
 import io.swagger.v3.core.util.Json
 import io.swagger.v3.oas.models.Components
 import io.swagger.v3.oas.models.ExternalDocumentation
 import io.swagger.v3.oas.models.OpenAPI
+import io.swagger.v3.oas.models.PathItem
 import io.swagger.v3.oas.models.Paths
 import io.swagger.v3.oas.models.info.Info
 import io.swagger.v3.oas.models.security.SecurityRequirement
@@ -81,7 +83,7 @@ class SpecificationServiceImpl @Inject constructor(
     private val reportFormatter = SimpleValidationReportFormat.getInstance()
 
     @Throws(ExecutionException::class)
-    override fun getCombinedSpec(allSpecs: List<OpenAPI>, basePath: String?): OpenAPI {
+    override fun getCombinedSpec(allSpecs: List<ParsedSpec>, basePath: String?): OpenAPI {
         return cache.get("combinedSpecObject") {
             try {
                 val scheme = Scheme.forValue(imposterConfig.pluginArgs!![ARG_SCHEME])
@@ -94,7 +96,7 @@ class SpecificationServiceImpl @Inject constructor(
     }
 
     @Throws(ExecutionException::class)
-    override fun getCombinedSpecSerialised(allSpecs: List<OpenAPI>, basePath: String?): String {
+    override fun getCombinedSpecSerialised(allSpecs: List<ParsedSpec>, basePath: String?): String {
         return cache.get("combinedSpecSerialised") {
             try {
                 // Use the v3 swagger-core serialiser (io.swagger.v3.core.util.Json) to serialise the spec,
@@ -111,7 +113,7 @@ class SpecificationServiceImpl @Inject constructor(
     }
 
     override fun combineSpecs(
-        specs: List<OpenAPI>,
+        specs: List<ParsedSpec>,
         basePath: String?,
         scheme: Scheme?,
         title: String?
@@ -139,7 +141,7 @@ class SpecificationServiceImpl @Inject constructor(
         val allComponents = mutableListOf<Components>()
         val description = StringBuilder().append("This specification includes the following APIs:")
 
-        specs.forEach { spec: OpenAPI ->
+        specs.forEach { (spec, pathPrefix) ->
             spec.info?.let { specInfo: Info ->
                 description
                     .append("\n* **")
@@ -152,7 +154,9 @@ class SpecificationServiceImpl @Inject constructor(
             spec.tags?.let(tags::addAll)
             spec.externalDocs?.let(allExternalDocs::add)
             spec.components?.let(allComponents::add)
-            spec.paths?.let(paths::putAll)
+            spec.paths?.let { origPaths ->
+                paths.putAll(rewritePaths(pathPrefix, origPaths))
+            }
         }
 
         // info
@@ -189,10 +193,18 @@ class SpecificationServiceImpl @Inject constructor(
         return combined
     }
 
+    private fun rewritePaths(pathPrefix: String, origPaths: Paths): Map<out String, PathItem> {
+        if (pathPrefix.isNotBlank()) {
+            return origPaths.mapKeys { URI("http", "", pathPrefix + it.key, "").normalize().path }
+        } else {
+            return origPaths
+        }
+    }
+
     override fun isValidRequest(
         pluginConfig: OpenApiPluginConfig,
         httpExchange: HttpExchange,
-        allSpecs: List<OpenAPI>,
+        allSpecs: List<ParsedSpec>,
         basePath: String?,
     ): Boolean {
         if (Objects.isNull(pluginConfig.validation)) {
@@ -247,7 +259,7 @@ class SpecificationServiceImpl @Inject constructor(
      * Returns the specification validator from cache, creating it first on cache miss.
      */
     @Throws(ExecutionException::class)
-    private fun getValidator(pluginConfig: OpenApiPluginConfig, allSpecs: List<OpenAPI>, basePath: String?): OpenApiInteractionValidator {
+    private fun getValidator(pluginConfig: OpenApiPluginConfig, allSpecs: List<ParsedSpec>, basePath: String?): OpenApiInteractionValidator {
         return cache.get("specValidator") {
             val combined = getCombinedSpec(allSpecs, basePath)
             val builder = OpenApiInteractionValidator.createFor(combined)
@@ -360,10 +372,8 @@ class SpecificationServiceImpl @Inject constructor(
     }
 
     /**
-     * Construct the base path from which the example response will be served.
-     *
-     * This attempts to derive the path from the first `server` entry in the spec, if one is present
-     * and `ImposterConfig.isUseServerPathAsBaseUrl == true`.
+     * Attempt to determine the base path from the first `server` entry in the spec,
+     * if one is present.
      *
      * @param spec   the OpenAPI specification
      * @return the base path
@@ -376,9 +386,7 @@ class SpecificationServiceImpl @Inject constructor(
     }
 
     /**
-     * Construct the base path from which the example response will be served.
-     *
-     * This attempts to derive the path from the `server`, if `ImposterConfig.isUseServerPathAsBaseUrl == true`.
+     * Attempt to determine the base path from the provided server.
      *
      * @param server   the Server configuration
      * @return the base path
