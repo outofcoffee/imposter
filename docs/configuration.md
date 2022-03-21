@@ -272,6 +272,21 @@ To also load configuration files within subdirectories, set the following enviro
 
     IMPOSTER_CONFIG_SCAN_RECURSIVE="true"
 
+> **Warning:** when using recursive scan for configuration, directories with many files or subdirectories (such as `node_modules`) can significantly slow down Imposter startup time. Typically you would not store your Imposter configuration files within a directory such as `node_modules`, so it is safe to ignore such paths when scanning for configuration files. The mechanism for this is a file named `.imposterignore`
+> 
+> When this file is placed in the root of a configuration directory, you can customise which files/directories to ignore by exact match. For example:
+> ```
+> # By default, ignore the following files and directories
+> # when searching for config files
+> 
+> .git
+> .idea
+> .svn
+> node_modules
+> ```
+> 
+> If no `.imposterignore` file is present in any configuration directory, a default ignore file is used containing sensible defaults.
+
 ## Scripted responses (advanced)
 
 For more advanced scenarios, you can also control Imposter's responses using JavaScript or Groovy scripts.
