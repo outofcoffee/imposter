@@ -100,7 +100,7 @@ Let's assume your configuration is in the directory: `examples/soap/simple`. Her
 
 CLI example:
 
-    imposter plugin install mock-soap
+    imposter plugin install -d mock-soap
     imposter up -p 8080 ./examples/soap/simple
 
 Docker example:

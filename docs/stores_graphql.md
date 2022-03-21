@@ -17,7 +17,7 @@ Imposter provides GraphQL support using a plugin.
 
 To use this plugin, install it with the [Imposter CLI](./run_imposter_cli.md):
 
-    imposter plugin install store-graphql
+    imposter plugin install -d store-graphql
 
 This will install the plugin version matching the current engine version used by the CLI. The next time you run `imposter up`, the plugin will be available.
 
@@ -28,7 +28,6 @@ To use this plugin, download the plugin `imposter-plugin-store-graphql.jar` JAR 
 Enable it with the following environment variables:
 
     IMPOSTER_PLUGIN_DIR="/path/to/dir/containing/plugin"
-    IMPOSTER_STORE_DRIVER="store-graphql"
 
 ## Execute a GraphQL query
 

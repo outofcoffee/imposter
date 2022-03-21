@@ -16,7 +16,7 @@
 
 To use this plugin, install it with the [Imposter CLI](./run_imposter_cli.md):
 
-    imposter plugin install mock-hbase
+    imposter plugin install -d mock-hbase
 
 This will install the plugin version matching the current engine version used by the CLI. The next time you run `imposter up`, the plugin will be available.
 

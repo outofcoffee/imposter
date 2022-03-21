@@ -8,7 +8,7 @@ Redis store implementation.
 
 To use this plugin, install it with the [Imposter CLI](../../docs/run_imposter_cli.md):
 
-    imposter plugin install store-redis
+    imposter plugin install -d store-redis
 
 This will install the plugin version matching the current engine version used by the CLI. The next time you run `imposter up`, the plugin will be available.
 

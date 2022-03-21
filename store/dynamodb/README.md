@@ -8,7 +8,7 @@ DynamoDB store implementation.
 
 To use this plugin, install it with the [Imposter CLI](../../docs/run_imposter_cli.md):
 
-    imposter plugin install store-dynamodb
+    imposter plugin install -d store-dynamodb
 
 This will install the plugin version matching the current engine version used by the CLI. The next time you run `imposter up`, the plugin will be available.
 

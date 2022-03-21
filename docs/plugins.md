@@ -33,13 +33,13 @@ When you set this environment variable, plugin JAR files placed in this director
 
 If you are using the [Imposter CLI](./run_imposter_cli.md), you can install a plugin with:
 
-    imposter plugin install <plugin name>
+    imposter plugin install -d <plugin name>
 
 The CLI automatically manages the plugin directory, so you do not have to set the `IMPOSTER_PLUGIN_DIR` environment variable.
 
 For example:
 
-    imposter plugin install stores-dynamodb
+    imposter plugin install -d stores-dynamodb
 
 This will install the plugin version matching the current engine version used by the CLI. The next time you run `imposter up`, the plugin will be available.
 
