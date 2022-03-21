@@ -46,40 +46,50 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.MapperFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.databind.cfg.MapperBuilder
+import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.gatehill.imposter.config.util.EnvVars
-import java.util.*
 
 /**
  * @author Pete Cornish
  */
 object MapUtil {
     @JvmField
-    val JSON_MAPPER = ObjectMapper()
+    val JSON_MAPPER: ObjectMapper
 
     @JvmField
-    val YAML_MAPPER = YAMLMapper()
+    val YAML_MAPPER: YAMLMapper
 
     /**
      * Don't apply standard configuration to this mapper.
      */
-    val STATS_MAPPER = ObjectMapper().also {
+    val STATS_MAPPER: ObjectMapper = JsonMapper.builder().apply {
         if (EnvVars.getEnv("IMPOSTER_LOG_SUMMARY_PRETTY")?.toBoolean() == true) {
-            it.enable(SerializationFeature.INDENT_OUTPUT)
+            enable(SerializationFeature.INDENT_OUTPUT)
         }
+    }.build()
+
+    init {
+        JSON_MAPPER = configureMapper<ObjectMapper>(
+            JsonMapper.builder().enable(SerializationFeature.INDENT_OUTPUT)
+        ).apply {
+            setSerializationInclusion(JsonInclude.Include.NON_NULL)
+        }
+
+        YAML_MAPPER = configureMapper(YAMLMapper.builder())
     }
 
-    private val DESERIALISERS = arrayOf(
-        JSON_MAPPER,
-        YAML_MAPPER
-    )
+    @Suppress("UNCHECKED_CAST")
+    private fun <M : ObjectMapper> configureMapper(builder: MapperBuilder<*, *>): M {
+        val mapper = builder.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS).build()
 
-    private fun configureMapper(mapper: ObjectMapper) {
         addJavaTimeSupport(mapper)
-        mapper.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
         mapper.registerKotlinModule()
+
+        return mapper as M
     }
 
     /**
@@ -87,14 +97,7 @@ object MapUtil {
      *
      * @param mapper the [@ObjectMapper] to modify
      */
-    @JvmStatic
     fun addJavaTimeSupport(mapper: ObjectMapper) {
         mapper.registerModule(JavaTimeModule())
-    }
-
-    init {
-        JSON_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL)
-        JSON_MAPPER.enable(SerializationFeature.INDENT_OUTPUT)
-        Arrays.stream(DESERIALISERS).forEach(this::configureMapper)
     }
 }
