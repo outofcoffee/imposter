@@ -25,6 +25,7 @@ dependencies {
     api "jaxen:jaxen:$version_jaxen"
 
     api "org.jetbrains.kotlinx:kotlinx-coroutines-core:$version_coroutines"
+    api "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$version_coroutines"
 
     // metrics
     api "io.vertx:vertx-micrometer-metrics:$version_vertx"

@@ -50,9 +50,7 @@ import io.gatehill.imposter.server.ServerFactory
 import io.gatehill.imposter.server.vertxweb.impl.VertxHttpExchange
 import io.gatehill.imposter.server.vertxweb.impl.VertxHttpServer
 import io.gatehill.imposter.server.vertxweb.util.VertxResourceUtil.convertMethodToVertx
-import io.gatehill.imposter.util.AsyncUtil
 import io.gatehill.imposter.util.FileUtil
-import io.vertx.core.Promise
 import io.vertx.core.Vertx
 import io.vertx.core.http.HttpServerOptions
 import io.vertx.core.net.JksOptions
@@ -64,6 +62,7 @@ import org.apache.logging.log4j.LogManager
 import java.net.URISyntaxException
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.concurrent.CompletableFuture
 
 /**
  * @author Pete Cornish
@@ -71,47 +70,62 @@ import java.nio.file.Paths
 class VertxWebServerFactoryImpl : ServerFactory {
     override fun provide(
         imposterConfig: ImposterConfig,
-        startPromise: Promise<*>,
         vertx: Vertx,
         router: HttpRouter
-    ): HttpServer {
+    ): CompletableFuture<HttpServer> {
         LOGGER.trace("Starting mock server on {}:{}", imposterConfig.host, imposterConfig.listenPort)
         val serverOptions = HttpServerOptions()
 
         // configure keystore and enable HTTPS
         if (imposterConfig.isTlsEnabled) {
             LOGGER.trace("TLS is enabled")
-
-            // locate keystore
-            val keystorePath: Path = if (imposterConfig.keystorePath!!.startsWith(FileUtil.CLASSPATH_PREFIX)) {
-                try {
-                    val kp = imposterConfig.keystorePath!!.substring(FileUtil.CLASSPATH_PREFIX.length)
-                    Paths.get(VertxWebServerFactoryImpl::class.java.getResource(kp).toURI())
-                } catch (e: URISyntaxException) {
-                    throw RuntimeException("Error locating keystore", e)
-                }
-            } else {
-                Paths.get(imposterConfig.keystorePath!!)
-            }
-
-            val jksOptions = JksOptions()
-            jksOptions.path = keystorePath.toString()
-            jksOptions.password = imposterConfig.keystorePassword
-            serverOptions.keyStoreOptions = jksOptions
-            serverOptions.isSsl = true
-
+            configureTls(imposterConfig, serverOptions)
         } else {
             LOGGER.trace("TLS is disabled")
         }
 
-        LOGGER.trace("Listening on {}", imposterConfig.serverUrl)
-
         val vertxRouter = convertRouterToVertx(router)
-        val vertxServer = vertx.createHttpServer(serverOptions)
-            .requestHandler(vertxRouter)
-            .listen(imposterConfig.listenPort, imposterConfig.host, AsyncUtil.resolvePromiseOnCompletion(startPromise))
+        val vertxServer = vertx.createHttpServer(serverOptions).requestHandler(vertxRouter)
 
-        return VertxHttpServer(vertxServer)
+        LOGGER.trace("Listening on {}", imposterConfig.serverUrl)
+        val serverFuture = CompletableFuture<HttpServer>()
+        vertxServer.listen(imposterConfig.listenPort, imposterConfig.host) { listenResult ->
+            if (listenResult.succeeded()) {
+                serverFuture.complete(VertxHttpServer(vertxServer))
+            } else {
+                serverFuture.completeExceptionally(
+                    RuntimeException(
+                        "Failed to listen on ${imposterConfig.host}:${imposterConfig.listenPort}",
+                        listenResult.cause()
+                    )
+                )
+            }
+        }
+
+        return serverFuture
+    }
+
+    private fun configureTls(
+        imposterConfig: ImposterConfig,
+        serverOptions: HttpServerOptions
+    ) {
+        // locate keystore
+        val keystorePath: Path = if (imposterConfig.keystorePath!!.startsWith(FileUtil.CLASSPATH_PREFIX)) {
+            try {
+                val kp = imposterConfig.keystorePath!!.substring(FileUtil.CLASSPATH_PREFIX.length)
+                Paths.get(VertxWebServerFactoryImpl::class.java.getResource(kp).toURI())
+            } catch (e: URISyntaxException) {
+                throw RuntimeException("Error locating keystore", e)
+            }
+        } else {
+            Paths.get(imposterConfig.keystorePath!!)
+        }
+
+        val jksOptions = JksOptions()
+        jksOptions.path = keystorePath.toString()
+        jksOptions.password = imposterConfig.keystorePassword
+        serverOptions.keyStoreOptions = jksOptions
+        serverOptions.isSsl = true
     }
 
     private fun convertRouterToVertx(router: HttpRouter) = Router.router(router.vertx).also { vertxRouter ->
@@ -121,7 +135,8 @@ class VertxWebServerFactoryImpl : ServerFactory {
                     ?: vertxRouter.routeWithRegex(regex)
 
             } ?: httpRoute.path?.let { path ->
-                httpRoute.method?.let { method -> vertxRouter.route(convertMethodToVertx(method), path) } ?: vertxRouter.route(path)
+                httpRoute.method?.let { method -> vertxRouter.route(convertMethodToVertx(method), path) }
+                    ?: vertxRouter.route(path)
 
             } ?: vertxRouter.route()
 

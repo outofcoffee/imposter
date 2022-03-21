@@ -45,26 +45,22 @@ package io.gatehill.imposter.server
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.http.HttpExchangeHandler
 import io.gatehill.imposter.http.HttpRouter
-import io.vertx.core.Promise
 import io.vertx.core.Vertx
+import java.util.concurrent.CompletableFuture
 
 /**
  * @author Pete Cornish
  */
 interface ServerFactory {
     /**
-     * Provides an [HttpServer].
-     *
-     * The method **must** complete the `startPromise` in order
-     * for startup to complete successfully.
+     * Provide an [HttpServer].
      *
      * @param imposterConfig the Imposter engine configuration
-     * @param startPromise   the promise on which the outcome should be signaled
      * @param vertx          the current Vert.x instance
      * @param router         the router
-     * @return a server
+     * @return a future that provides the server
      */
-    fun provide(imposterConfig: ImposterConfig, startPromise: Promise<*>, vertx: Vertx, router: HttpRouter): HttpServer
+    fun provide(imposterConfig: ImposterConfig, vertx: Vertx, router: HttpRouter): CompletableFuture<HttpServer>
 
     fun createBodyHttpHandler(): HttpExchangeHandler
 

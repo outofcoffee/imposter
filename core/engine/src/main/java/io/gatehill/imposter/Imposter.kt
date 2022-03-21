@@ -65,11 +65,16 @@ import io.gatehill.imposter.util.AsyncUtil
 import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.InjectorUtil
 import io.gatehill.imposter.util.MetricsUtil
+import io.gatehill.imposter.util.supervisedDefaultCoroutineScope
 import io.vertx.core.Promise
 import io.vertx.core.Vertx
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.future.await
+import kotlinx.coroutines.future.future
 import org.apache.logging.log4j.LogManager
 import java.io.File
 import java.nio.file.Paths
+import java.util.concurrent.CompletableFuture
 import javax.inject.Inject
 import kotlin.io.path.exists
 
@@ -81,7 +86,8 @@ class Imposter(
     private val imposterConfig: ImposterConfig,
     private val pluginDiscoveryStrategy: PluginDiscoveryStrategy,
     private val additionalModules: List<Module>,
-) {
+) : CoroutineScope by supervisedDefaultCoroutineScope {
+
     private val pluginManager: PluginManager = PluginManagerImpl(pluginDiscoveryStrategy)
 
     @Inject
@@ -95,7 +101,7 @@ class Imposter(
 
     private var httpServer: HttpServer? = null
 
-    fun start(promise: Promise<Unit>) {
+    fun start(): CompletableFuture<Unit> = future {
         LOGGER.info("Starting mock engine ${MetaUtil.readVersion()}")
 
         val plugins = defaultPlugins.toMutableList()
@@ -112,12 +118,12 @@ class Imposter(
         }
 
         val injector = InjectorUtil.create(*allModules.toTypedArray())
-        injector.injectMembers(this)
+        injector.injectMembers(this@Imposter)
 
         pluginManager.startPlugins(injector, pluginConfigs)
 
         val router = configureRoutes()
-        httpServer = serverFactory.provide(imposterConfig, promise, vertx, router)
+        httpServer = serverFactory.provide(imposterConfig, vertx, router).await()
 
         LOGGER.info("Mock engine up and running on {}", imposterConfig.serverUrl)
     }

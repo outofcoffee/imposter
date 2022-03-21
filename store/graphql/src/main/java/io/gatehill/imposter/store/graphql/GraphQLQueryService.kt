@@ -14,9 +14,8 @@ import io.gatehill.imposter.store.graphql.model.GraphQLRequest
 import io.gatehill.imposter.store.graphql.model.StoreItem
 import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.MapUtil
+import io.gatehill.imposter.util.supervisedDefaultCoroutineScope
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -25,7 +24,7 @@ import javax.inject.Inject
 class GraphQLQueryService @Inject constructor(
     private val storeFactory: StoreFactory,
     engineLifecycleHooks: EngineLifecycleHooks,
-) : EngineLifecycleListener, CoroutineScope by CoroutineScope(Dispatchers.Default + SupervisorJob()) {
+) : EngineLifecycleListener, CoroutineScope by supervisedDefaultCoroutineScope {
 
     private val logger: Logger = LogManager.getLogger(GraphQLQueryService::class.java)
     private val schema: Schema

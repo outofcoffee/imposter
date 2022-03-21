@@ -48,17 +48,21 @@ import io.gatehill.imposter.Imposter
 import io.gatehill.imposter.scripting.common.CommonScriptingModule
 import io.gatehill.imposter.scripting.groovy.GroovyScriptingModule
 import io.gatehill.imposter.store.StoreModule
+import io.gatehill.imposter.util.supervisedDefaultCoroutineScope
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Promise
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.future.await
+import kotlinx.coroutines.launch
 
 /**
  * @author Pete Cornish
  */
-class ImposterVerticle : AbstractVerticle() {
+class ImposterVerticle : AbstractVerticle(), CoroutineScope by supervisedDefaultCoroutineScope {
     private var imposter: Imposter? = null
 
     override fun start(startPromise: Promise<Void>) {
-        vertx.executeBlocking<Unit>({ promise ->
+        launch {
             try {
                 val engine = EngineBuilder.newEngine(
                     vertx = vertx,
@@ -68,16 +72,11 @@ class ImposterVerticle : AbstractVerticle() {
                     CommonScriptingModule()
                 )
                 imposter = engine
-                engine.start(promise)
+                engine.start().await()
+                startPromise.complete()
 
             } catch (e: Exception) {
-                promise.fail(e)
-            }
-        }) { result ->
-            if (result.failed()) {
-                startPromise.fail(result.cause())
-            } else {
-                startPromise.complete()
+                startPromise.fail(e)
             }
         }
     }

@@ -42,9 +42,8 @@
  */
 package io.gatehill.imposter.service
 
+import io.gatehill.imposter.util.supervisedIOCoroutineScope
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -56,7 +55,7 @@ import org.apache.logging.log4j.Logger
  *
  * @author Pete Cornish
  */
-class DeferredOperationService : CoroutineScope by CoroutineScope(Dispatchers.IO + SupervisorJob()) {
+class DeferredOperationService : CoroutineScope by supervisedIOCoroutineScope {
     private val logger: Logger = LogManager.getLogger(DeferredOperationService::class.java)
     private val deferredOperations: Channel<Pair<String, Runnable>> by lazy { startDeferredExecutor() }
 
