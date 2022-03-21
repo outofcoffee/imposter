@@ -3,9 +3,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [2.11.0] - 2022-03-21
 ### Added
-- ...
+- feat: improves dynamic Groovy script loading.
+- feat: adds graphql query support for stores.
+- feat: adds support for '.imposterignore' file when scanning for config files.
+- docs: adds future JVM version change to roadmap.
+- docs: adds details about using path to set a prefix in the OpenAPI mock.
 
 ## [2.10.0] - 2022-03-12
 ### Added
