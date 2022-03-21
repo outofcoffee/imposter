@@ -17,7 +17,7 @@ The following sections describe the available and built-in plugins.
 | Scripting       | `js-nashorn-standalone` | Nashorn standalone scripting.          | Nashorn JavaScript scripting support for Java 11+.                                 |
 | Store           | `store-dynamodb`        | DynamoDB store implementation.         | [DynamoDB store](https://github.com/outofcoffee/imposter/tree/main/store/dynamodb) |
 | Store           | `store-redis`           | Redis store implementation.            | [Redis store](https://github.com/outofcoffee/imposter/tree/main/store/redis)       |
-| Store           | `store-graphql`         | GraphQL store queries.                 | Adds `/system/store/graphql` endpoint.                                             |
+| Store           | `store-graphql`         | GraphQL store queries.                 | [GraphQL](stores_graphql.md)                                                       |
 | Configuration   | `config-detector`       | Detects plugins from `META-INF`.       | Built-in.                                                                          |
 | Configuration   | `meta-detector`         | Detects plugins from `*-config` files. | Built-in.                                                                          |
 

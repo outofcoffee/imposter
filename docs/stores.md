@@ -7,6 +7,7 @@ Imposter allows you to store data for use later. Benefits:
 - set up or seed test data before a mock is used
 - [capture](./data_capture.md) data (headers, body etc.) for use by a script
 - return stored data in a [response template](./templates.md)
+- support for [GraphQL](./stores_graphql.md) queries
 
 ## Summary
 
@@ -51,7 +52,7 @@ if (exampleStore.hasItemWithKey('example')) {
 }
 ```
 
-## The Stores API
+## The Stores REST API
 
 You can also retrieve or save data to a store through the `/system/store` API. This can be useful for tests to verify what was sent to a mock:
 
@@ -185,6 +186,10 @@ You must provide an object with key/value pairs, such as that shown above, or in
 
 Different store implementations exist:
 
-* In memory store (default)
-* [DynamoDB store](https://github.com/outofcoffee/imposter/tree/main/store/dynamodb)
-* [Redis store](https://github.com/outofcoffee/imposter/tree/main/store/redis)
+- In memory store (default)
+- [DynamoDB store](https://github.com/outofcoffee/imposter/tree/main/store/dynamodb)
+- [Redis store](https://github.com/outofcoffee/imposter/tree/main/store/redis)
+
+## GraphQL support
+
+As well as the stores REST API described in this document, you can access and manipulate data [using GraphQL](./stores_graphql.md).
