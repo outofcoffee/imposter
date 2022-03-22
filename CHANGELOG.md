@@ -3,9 +3,16 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
-### Added
-- ...
+## [2.11.1] - 2022-03-22
+### Fixed
+- fix: rewrites spec paths with base path in OpenAPI plugin.
+- refactor: replaces Vert.x executeBlocking with coroutines at boot. This should reduce the logging noise on slow startup.
+
+### Changed
+- chore: bumps CLI to 0.12.3.
+- chore: bumps Jackson to 2.13.2.
+- docs: switches CLI plugin install guidance to use 'save default' option.
+- docs: improves formatting of .imposterignore example.
 
 ## [2.11.0] - 2022-03-21
 ### Added
