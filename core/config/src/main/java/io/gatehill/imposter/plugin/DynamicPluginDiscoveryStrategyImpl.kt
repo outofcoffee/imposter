@@ -172,7 +172,8 @@ class DynamicPluginDiscoveryStrategyImpl : PluginDiscoveryStrategy {
                 }
             }
         }
-        return classpathPlugins[plugin] ?: plugin
+        val normalisedPluginId = plugin.removeSurrounding("\"")
+        return classpathPlugins[normalisedPluginId] ?: normalisedPluginId
     }
 
     override fun getPluginClasses(): Collection<Class<out Plugin>> {
