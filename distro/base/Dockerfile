@@ -1,4 +1,4 @@
-FROM adoptopenjdk/openjdk8:x86_64-alpine-jre8u312-b07
+FROM eclipse-temurin:8u322-b06-jre-alpine
 
 LABEL MAINTAINER="Pete Cornish <outofcoffee@gmail.com>"
 
