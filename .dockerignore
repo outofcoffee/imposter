@@ -1,9 +1,15 @@
+.git
 .github
 .gradle
 core
 docs
+embedded
 gradle
-plugin
+mock
+scripting
 scripts
 server
+store
 test
+tools
+**/node_modules
