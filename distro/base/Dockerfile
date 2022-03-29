@@ -1,9 +1,9 @@
-FROM eclipse-temurin:8u322-b06-jre-alpine
+FROM eclipse-temurin:8u322-b06-jre-focal
 
 LABEL MAINTAINER="Pete Cornish <outofcoffee@gmail.com>"
 
-RUN addgroup -S imposter -g 2048 && \
-    adduser -S imposter -u 2048 -G imposter
+RUN addgroup imposter --gid 2048 && \
+    adduser imposter --uid 2048 --gid 2048
 
 # add CLI
 ARG IMPOSTER_CLI_VERSION="0.12.6"
@@ -26,7 +26,7 @@ ONBUILD ARG DISTRO_NAME
 ONBUILD ENV DISTRO_NAME="${DISTRO_NAME}"
 ONBUILD ADD ./distro/${DISTRO_NAME}/build/install/imposter/lib/* /opt/imposter/lib/
 ONBUILD RUN chown -R imposter:imposter /opt/imposter && \
-            rm /bin/busybox
+            rm -rf /bin/*
 
 ONBUILD USER imposter
 

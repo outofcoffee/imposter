@@ -11,6 +11,7 @@ jobs:
     env:
       AWS_REGION: "eu-west-1"
       TESTCONTAINERS_RYUK_DISABLED: "true"
+      CONTAINER_BUILDER: "buildx"
     steps:
       - uses: actions/checkout@v2
       - name: Setup Java
@@ -20,82 +21,83 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
       - name: Disable gradle daemon
         run: |
           mkdir -p ~/.gradle
           echo "org.gradle.daemon=false" >> ~/.gradle/gradle.properties
 
+      - name: Determine effective branch
+        id: effective
+        run: |
+          case "$( git branch --show-current )" in
+          develop)
+            EFFECTIVE_BRANCH_NAME="develop"
+            ;;
+          *)
+            EFFECTIVE_BRANCH_NAME="main"
+            ;;
+          esac
+          echo "::set-output name=branch::${EFFECTIVE_BRANCH_NAME}"
+
       - name: Test
         run: ./gradlew test --info --stacktrace
 
       - name: Build distributions
-        if: ${{ startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop' }}
+        if: ${{ startsWith(github.ref, 'refs/tags/') || steps.effective.outputs.branch == 'develop' }}
         run: |
           chmod +x ./scripts/*.sh
           ./gradlew dist --info --stacktrace
 
       - name: Build Docker images
-        if: ${{ (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop') && matrix.java == '8' }}
+        if: ${{ (startsWith(github.ref, 'refs/tags/') || steps.effective.outputs.branch == 'develop') && matrix.java == '8' }}
         run: |
-          if [[ "develop" == "$( git branch --show-current )" ]]; then
-            EFFECTIVE_BRANCH_NAME="develop"
-          else
-            EFFECTIVE_BRANCH_NAME="main"
-          fi
-          IMAGE_TAG_NAME="$( ./scripts/branch-to-tag-name.sh ${EFFECTIVE_BRANCH_NAME} )"
+          IMAGE_TAG_NAME="$( ./scripts/branch-to-tag-name.sh ${{ steps.effective.outputs.branch }} )"
 
-          case ${EFFECTIVE_BRANCH_NAME} in
-            develop)
-              if [[ ! -z ${IMAGE_TAG_NAME} ]]; then
-                ./scripts/docker-build.sh -p false "${IMAGE_TAG_NAME}"
-              fi
+          case ${{ steps.effective.outputs.branch }} in
+          develop)
+            if [[ ! -z ${IMAGE_TAG_NAME} ]]; then
+              ./scripts/docker-build.sh -p false "${IMAGE_TAG_NAME}"
+            fi
             ;;
 
-            main)
-              CURRENT_VERSION="$( git describe --tags --exact-match )"
-              if [[ "${CURRENT_VERSION:0:1}" == "v" ]]; then
-                CURRENT_VERSION="$( echo ${CURRENT_VERSION} | cut -c 2- )"
-              fi
-              ./scripts/docker-build.sh -p false "${CURRENT_VERSION}"
-              ./scripts/docker-build.sh -p false "latest"
+          main)
+            CURRENT_VERSION="$( git describe --tags --exact-match )"
+            if [[ "${CURRENT_VERSION:0:1}" == "v" ]]; then
+              CURRENT_VERSION="$( echo ${CURRENT_VERSION} | cut -c 2- )"
+            fi
+            ./scripts/docker-build.sh -p false "${CURRENT_VERSION}"
+            ./scripts/docker-build.sh -p false "latest"
             ;;
           esac
 
       - name: Integration test
-        if: ${{ (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop') && matrix.java == '8' }}
+        if: ${{ (startsWith(github.ref, 'refs/tags/') || steps.effective.outputs.branch == 'develop') && matrix.java == '8' }}
         run: |
-          if [[ "develop" == "$( git branch --show-current )" ]]; then
-            EFFECTIVE_BRANCH_NAME="develop"
-          else
-            EFFECTIVE_BRANCH_NAME="main"
-          fi
-          IMAGE_TAG_NAME="$( ./scripts/branch-to-tag-name.sh $EFFECTIVE_BRANCH_NAME )"
+          IMAGE_TAG_NAME="$( ./scripts/branch-to-tag-name.sh ${{ steps.effective.outputs.branch }} )"
           ./scripts/integration-tests.sh "${IMAGE_TAG_NAME}"
 
       - name: Push Docker images
-        if: ${{ (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop') && matrix.java == '8' }}
+        if: ${{ (startsWith(github.ref, 'refs/tags/') || steps.effective.outputs.branch == 'develop') && matrix.java == '8' }}
         run: |
-          if [[ "develop" == "$( git branch --show-current )" ]]; then
-            EFFECTIVE_BRANCH_NAME="develop"
-          else
-            EFFECTIVE_BRANCH_NAME="main"
-          fi
-          IMAGE_TAG_NAME="$( ./scripts/branch-to-tag-name.sh ${EFFECTIVE_BRANCH_NAME} )"
+          IMAGE_TAG_NAME="$( ./scripts/branch-to-tag-name.sh ${{ steps.effective.outputs.branch }} )"
 
-          case ${EFFECTIVE_BRANCH_NAME} in
-            develop)
-              if [[ ! -z ${IMAGE_TAG_NAME} ]]; then
-                ./scripts/docker-build.sh -p true "${IMAGE_TAG_NAME}"
-              fi
+          case ${{ steps.effective.outputs.branch }} in
+          develop)
+            if [[ ! -z ${IMAGE_TAG_NAME} ]]; then
+              ./scripts/docker-build.sh -p true "${IMAGE_TAG_NAME}"
+            fi
             ;;
 
-            main)
-              CURRENT_VERSION="$( git describe --tags --exact-match )"
-              if [[ "${CURRENT_VERSION:0:1}" == "v" ]]; then
-                  CURRENT_VERSION="$( echo ${CURRENT_VERSION} | cut -c 2- )"
-              fi
-              ./scripts/docker-build.sh -p true "${CURRENT_VERSION}"
-              ./scripts/docker-build.sh -p true "latest"
+          main)
+            CURRENT_VERSION="$( git describe --tags --exact-match )"
+            if [[ "${CURRENT_VERSION:0:1}" == "v" ]]; then
+                CURRENT_VERSION="$( echo ${CURRENT_VERSION} | cut -c 2- )"
+            fi
+            ./scripts/docker-build.sh -p true "${CURRENT_VERSION}"
+            ./scripts/docker-build.sh -p true "latest"
             ;;
           esac
         env:
