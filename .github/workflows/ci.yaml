@@ -33,17 +33,8 @@ jobs:
           mkdir -p ~/.gradle
           echo "org.gradle.daemon=false" >> ~/.gradle/gradle.properties
 
-      - name: Test
-        run: ./gradlew test --info --stacktrace
-
-      - name: Build distributions
-        if: ${{ startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop' }}
-        run: |
-          chmod +x ./scripts/*.sh
-          ./gradlew dist --info --stacktrace
-
-      - name: Build Docker images
-        if: ${{ (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/spike/multi-arch') && matrix.java == '8' }}
+      - name: Determine effective branch
+        id: effective
         run: |
           case "$( git branch --show-current )" in
             develop)
@@ -56,10 +47,23 @@ jobs:
               EFFECTIVE_BRANCH_NAME="main"
               ;;
           esac
-          
-          IMAGE_TAG_NAME="$( ./scripts/branch-to-tag-name.sh ${EFFECTIVE_BRANCH_NAME} )"
+          echo "::set-output name=branch::${EFFECTIVE_BRANCH_NAME}"
 
-          case ${EFFECTIVE_BRANCH_NAME} in
+      - name: Test
+        run: ./gradlew test --info --stacktrace
+
+      - name: Build distributions
+        if: ${{ startsWith(github.ref, 'refs/tags/') || steps.effective.outputs.branch == 'develop' }}
+        run: |
+          chmod +x ./scripts/*.sh
+          ./gradlew dist --info --stacktrace
+
+      - name: Build Docker images
+        if: ${{ (startsWith(github.ref, 'refs/tags/') || steps.effective.outputs.branch == 'develop') && matrix.java == '8' }}
+        run: |
+          IMAGE_TAG_NAME="$( ./scripts/branch-to-tag-name.sh ${{ steps.effective.outputs.branch }} )"
+
+          case ${{ steps.effective.outputs.branch }} in
             develop)
               if [[ ! -z ${IMAGE_TAG_NAME} ]]; then
                 ./scripts/docker-build.sh -p false "${IMAGE_TAG_NAME}"
@@ -77,41 +81,17 @@ jobs:
           esac
 
       - name: Integration test
-        if: ${{ (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/spike/multi-arch') && matrix.java == '8' }}
+        if: ${{ (startsWith(github.ref, 'refs/tags/') || steps.effective.outputs.branch == 'develop') && matrix.java == '8' }}
         run: |
-          case "$( git branch --show-current )" in
-            develop)
-              EFFECTIVE_BRANCH_NAME="develop"
-              ;;
-            spike/multi-arch)
-              EFFECTIVE_BRANCH_NAME="develop"
-              ;;
-            *)
-              EFFECTIVE_BRANCH_NAME="main"
-              ;;
-          esac
-          
-          IMAGE_TAG_NAME="$( ./scripts/branch-to-tag-name.sh $EFFECTIVE_BRANCH_NAME )"
+          IMAGE_TAG_NAME="$( ./scripts/branch-to-tag-name.sh ${{ steps.effective.outputs.branch }} )"
           ./scripts/integration-tests.sh "${IMAGE_TAG_NAME}"
 
       - name: Push Docker images
-        if: ${{ (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/spike/multi-arch') && matrix.java == '8' }}
+        if: ${{ (startsWith(github.ref, 'refs/tags/') || steps.effective.outputs.branch == 'develop') && matrix.java == '8' }}
         run: |
-          case "$( git branch --show-current )" in
-            develop)
-              EFFECTIVE_BRANCH_NAME="develop"
-              ;;
-            spike/multi-arch)
-              EFFECTIVE_BRANCH_NAME="develop"
-              ;;
-            *)
-              EFFECTIVE_BRANCH_NAME="main"
-              ;;
-          esac
-          
-          IMAGE_TAG_NAME="$( ./scripts/branch-to-tag-name.sh ${EFFECTIVE_BRANCH_NAME} )"
+          IMAGE_TAG_NAME="$( ./scripts/branch-to-tag-name.sh ${{ steps.effective.outputs.branch }} )"
 
-          case ${EFFECTIVE_BRANCH_NAME} in
+          case ${{ steps.effective.outputs.branch }} in
             develop)
               if [[ ! -z ${IMAGE_TAG_NAME} ]]; then
                 ./scripts/docker-build.sh -p true "${IMAGE_TAG_NAME}"
