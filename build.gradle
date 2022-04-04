@@ -32,7 +32,7 @@ ext {
 
     version_args4j = '2.33'
     version_aws_sdk = '1.11.1000'
-    version_commons_io = '2.9.0'
+    version_commons_io = '2.11.0'
     version_commons_text = '1.9'
     version_coroutines = '1.6.0'
     version_hamcrest = '1.3'
