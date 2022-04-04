@@ -11,6 +11,7 @@ dependencies {
     api "com.google.inject:guice:$version_guice"
     api "io.vertx:vertx-core:$version_vertx"
     api "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    api "com.fasterxml.jackson.core:jackson-databind:$version_jackson_databind"
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
