@@ -14,3 +14,10 @@ updates:
       interval: "daily"
     target-branch: "develop"
     open-pull-requests-limit: 4
+
+  - package-ecosystem: maven
+    directory: "/examples/junit-sample"
+    schedule:
+      interval: "daily"
+    target-branch: "develop"
+    open-pull-requests-limit: 4
