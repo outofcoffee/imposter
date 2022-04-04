@@ -11,7 +11,7 @@ dependencies {
     implementation project(':core:imposter-engine')
     implementation project(':scripting:scripting-common')
 
-    pluginImplementation "org.graalvm.js:js:21.2.0"
+    pluginImplementation "org.graalvm.js:js:22.0.0.2"
     pluginImplementation "org.graalvm.truffle:truffle-api:21.2.0"
     pluginImplementation "org.graalvm.js:js-scriptengine:21.2.0"
 
