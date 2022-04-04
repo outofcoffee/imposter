@@ -13,7 +13,7 @@ dependencies {
 
     pluginImplementation "org.graalvm.js:js:21.2.0"
     pluginImplementation "org.graalvm.truffle:truffle-api:21.2.0"
-    pluginImplementation "org.graalvm.js:js-scriptengine:21.2.0"
+    pluginImplementation "org.graalvm.js:js-scriptengine:22.0.0.2"
 
     // test
     testImplementation project(':test:test-utils')
