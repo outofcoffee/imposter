@@ -30,7 +30,7 @@ jobs:
           echo "org.gradle.daemon=false" >> ~/.gradle/gradle.properties
 
       - name: Determine effective branch
-        id: effective
+        id: git-meta
         run: |
           case "$( git branch --show-current )" in
           develop)
@@ -46,17 +46,17 @@ jobs:
         run: ./gradlew test --info --stacktrace
 
       - name: Build distributions
-        if: ${{ startsWith(github.ref, 'refs/tags/') || steps.effective.outputs.branch == 'develop' }}
+        if: ${{ startsWith(github.ref, 'refs/tags/') || steps.git-meta.outputs.branch == 'develop' }}
         run: |
           chmod +x ./scripts/*.sh
           ./gradlew dist --info --stacktrace
 
       - name: Build Docker images
-        if: ${{ (startsWith(github.ref, 'refs/tags/') || steps.effective.outputs.branch == 'develop') && matrix.java == '8' }}
+        if: ${{ (startsWith(github.ref, 'refs/tags/') || steps.git-meta.outputs.branch == 'develop') && matrix.java == '8' }}
         run: |
-          IMAGE_TAG_NAME="$( ./scripts/branch-to-tag-name.sh ${{ steps.effective.outputs.branch }} )"
+          IMAGE_TAG_NAME="$( ./scripts/branch-to-tag-name.sh ${{ steps.git-meta.outputs.branch }} )"
 
-          case ${{ steps.effective.outputs.branch }} in
+          case ${{ steps.git-meta.outputs.branch }} in
           develop)
             if [[ ! -z ${IMAGE_TAG_NAME} ]]; then
               ./scripts/docker-build.sh -p false "${IMAGE_TAG_NAME}"
@@ -74,17 +74,17 @@ jobs:
           esac
 
       - name: Integration test
-        if: ${{ (startsWith(github.ref, 'refs/tags/') || steps.effective.outputs.branch == 'develop') && matrix.java == '8' }}
+        if: ${{ (startsWith(github.ref, 'refs/tags/') || steps.git-meta.outputs.branch == 'develop') && matrix.java == '8' }}
         run: |
-          IMAGE_TAG_NAME="$( ./scripts/branch-to-tag-name.sh ${{ steps.effective.outputs.branch }} )"
+          IMAGE_TAG_NAME="$( ./scripts/branch-to-tag-name.sh ${{ steps.git-meta.outputs.branch }} )"
           ./scripts/integration-tests.sh "${IMAGE_TAG_NAME}"
 
       - name: Push Docker images
-        if: ${{ (startsWith(github.ref, 'refs/tags/') || steps.effective.outputs.branch == 'develop') && matrix.java == '8' }}
+        if: ${{ (startsWith(github.ref, 'refs/tags/') || steps.git-meta.outputs.branch == 'develop') && matrix.java == '8' }}
         run: |
-          IMAGE_TAG_NAME="$( ./scripts/branch-to-tag-name.sh ${{ steps.effective.outputs.branch }} )"
+          IMAGE_TAG_NAME="$( ./scripts/branch-to-tag-name.sh ${{ steps.git-meta.outputs.branch }} )"
 
-          case ${{ steps.effective.outputs.branch }} in
+          case ${{ steps.git-meta.outputs.branch }} in
           develop)
             if [[ ! -z ${IMAGE_TAG_NAME} ]]; then
               ./scripts/docker-build.sh -p true "${IMAGE_TAG_NAME}"
@@ -131,9 +131,16 @@ jobs:
               './scripting/nashorn-standalone/build/libs/imposter-plugin-js-nashorn-standalone.jar',
             ])
 
-      - name: Publish Maven artifacts
+      - name: Publish Java 8 Maven artifacts
         if: ${{ (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop') && matrix.java == '8' }}
         run: ./gradlew publish --info --stacktrace
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Publish Java 11 Maven artifacts
+        if: ${{ (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop') && matrix.java == '11' }}
+        run: ./gradlew :scripting:scripting-nashorn-standalone:publish --info --stacktrace
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
