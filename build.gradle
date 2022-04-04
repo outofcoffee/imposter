@@ -10,20 +10,18 @@ buildscript {
 }
 
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.5.31' apply false
+    id 'org.jetbrains.kotlin.jvm' version '1.6.20' apply false
 }
 
 ext {
-    kotlin_version = '1.5.31'
+    kotlin_version = '1.6.20'
 
     try {
         awsCredentials = new ProfileCredentialsProvider().credentials
     } catch(ignored) {
         awsCredentials = null
     }
-}
 
-ext {
     mavenSnapshotRepository = 's3://gatehillsoftware-maven/snapshots'
     mavenReleaseRepository = 's3://gatehillsoftware-maven/releases'
 
