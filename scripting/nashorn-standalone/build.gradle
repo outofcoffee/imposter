@@ -3,6 +3,10 @@ apply plugin: 'kotlin'
 apply plugin: 'maven-publish'
 apply plugin: 'com.github.johnrengelman.shadow'
 
+ext {
+    version_nashorn_core = '15.3'
+}
+
 compileJava {
     sourceCompatibility = 11
     targetCompatibility = 11
@@ -12,14 +16,14 @@ dependencies {
     implementation project(':core:imposter-engine')
     implementation project(':scripting:scripting-common')
 
-    pluginImplementation 'org.openjdk.nashorn:nashorn-core:15.3'
+    pluginImplementation "org.openjdk.nashorn:nashorn-core:$version_nashorn_core"
 
     // test
     testImplementation project(':test:test-utils')
-    testImplementation "com.jayway.restassured:rest-assured:$version_restAssured"
+    testImplementation "com.jayway.restassured:rest-assured:$version_restassured"
 
     // java 11 compatibility
-    testImplementation ('javax.xml.bind:jaxb-api:2.3.0')
+    testImplementation ("javax.xml.bind:jaxb-api:$version_jaxb_api")
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

@@ -39,11 +39,12 @@ ext {
     version_guice = '4.2.3'
     version_jackson = '2.13.2'
     version_jackson_databind = '2.13.2.2'
+    version_jaxb_api = '2.3.0'
     version_junit = '4.13.2'
     version_log4j = '2.17.2'
     version_micrometer = '1.6.7'
     version_mockito = '3.10.0'
-    version_restAssured = '2.9.0'
+    version_restassured = '2.9.0'
     version_testcontainers = '1.15.3'
     version_vertx = '3.9.13'
 }
