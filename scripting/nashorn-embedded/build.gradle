@@ -12,10 +12,10 @@ dependencies {
 
     // test
     testImplementation project(':test:test-utils')
-    testImplementation "com.jayway.restassured:rest-assured:$version_restAssured"
+    testImplementation "com.jayway.restassured:rest-assured:$version_restassured"
 
     // java 11 compatibility
-    testImplementation ('javax.xml.bind:jaxb-api:2.3.0')
+    testImplementation ("javax.xml.bind:jaxb-api:$version_jaxb_api")
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

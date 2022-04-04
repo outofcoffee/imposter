@@ -3,6 +3,10 @@ apply plugin: 'kotlin'
 apply plugin: 'maven-publish'
 apply plugin: 'com.github.johnrengelman.shadow'
 
+ext {
+    version_graal = '21.2.0'
+}
+
 compileJava {
     sourceCompatibility = 1.8
 }
@@ -11,16 +15,16 @@ dependencies {
     implementation project(':core:imposter-engine')
     implementation project(':scripting:scripting-common')
 
-    pluginImplementation "org.graalvm.js:js:21.2.0"
-    pluginImplementation "org.graalvm.truffle:truffle-api:21.2.0"
-    pluginImplementation "org.graalvm.js:js-scriptengine:21.2.0"
+    pluginImplementation "org.graalvm.js:js:$version_graal"
+    pluginImplementation "org.graalvm.truffle:truffle-api:$version_graal"
+    pluginImplementation "org.graalvm.js:js-scriptengine:$version_graal"
 
     // test
     testImplementation project(':test:test-utils')
-    testImplementation "com.jayway.restassured:rest-assured:$version_restAssured"
+    testImplementation "com.jayway.restassured:rest-assured:$version_restassured"
 
     // java 11 compatibility
-    testImplementation ('javax.xml.bind:jaxb-api:2.3.0')
+    testImplementation ("javax.xml.bind:jaxb-api:$version_jaxb_api")
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
