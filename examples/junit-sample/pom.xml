@@ -101,6 +101,12 @@
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>2.22.1</version>
+          <configuration>
+            <environmentVariables>
+              <!-- Important: set this environment variable if using Java 8, 9 or 10 -->
+              <!-- <IMPOSTER_JS_PLUGIN>js-nashorn-embedded</IMPOSTER_JS_PLUGIN> -->
+            </environmentVariables>
+          </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-jar-plugin</artifactId>
