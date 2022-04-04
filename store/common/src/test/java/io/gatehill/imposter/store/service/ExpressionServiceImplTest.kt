@@ -6,8 +6,8 @@ import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.http.HttpResponse
 import io.gatehill.imposter.util.DateTimeUtil
-import io.vertx.core.MultiMap
 import io.vertx.core.buffer.Buffer
+import io.vertx.core.http.impl.headers.HeadersMultiMap
 import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.number.OrderingComparison
@@ -19,7 +19,7 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 
 class ExpressionServiceImplTest {
-    private lateinit var service: ExpressionServiceImpl;
+    private lateinit var service: ExpressionServiceImpl
 
     @Before
     fun setUp() {
@@ -120,7 +120,7 @@ class ExpressionServiceImplTest {
     @Test
     fun `eval response header`() {
         val response = mock<HttpResponse> {
-            on { headers() } doReturn MultiMap.caseInsensitiveMultiMap().apply {
+            on { headers() } doReturn HeadersMultiMap.headers().apply {
                 add("X-Example", "foo")
             }
         }
