@@ -106,7 +106,7 @@ jobs:
 
       - name: Release Java 8 assets
         if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.java == '8' }}
-        uses: actions/github-script@v5
+        uses: actions/github-script@v6
         with:
           script: |
             const script = require('./.github/github-release.js')
@@ -123,7 +123,7 @@ jobs:
 
       - name: Release Java 11 assets
         if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.java == '11' }}
-        uses: actions/github-script@v5
+        uses: actions/github-script@v6
         with:
           script: |
             const script = require('./.github/github-release.js')
