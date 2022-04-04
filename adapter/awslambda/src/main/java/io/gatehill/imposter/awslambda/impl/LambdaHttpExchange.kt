@@ -54,6 +54,7 @@ import io.gatehill.imposter.plugin.config.resource.ResourceMethod
 import io.gatehill.imposter.util.HttpUtil
 import io.vertx.core.MultiMap
 import io.vertx.core.buffer.Buffer
+import io.vertx.core.http.impl.headers.HeadersMultiMap
 import io.vertx.core.json.JsonObject
 
 /**
@@ -204,7 +205,7 @@ class LambdaHttpResponse : HttpResponse {
     }
 
     override fun headers(): MultiMap {
-        return MultiMap.caseInsensitiveMultiMap().addAll(this.headers)
+        return HeadersMultiMap.headers().addAll(this.headers)
     }
 
     override fun end() {
