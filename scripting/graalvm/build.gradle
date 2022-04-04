@@ -4,7 +4,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'com.github.johnrengelman.shadow'
 
 ext {
-    version_graal = '21.2.0'
+    version_graal = '21.3.1'
 }
 
 compileJava {
