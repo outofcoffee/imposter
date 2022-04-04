@@ -51,7 +51,6 @@ import org.apache.commons.io.FileUtils
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.testcontainers.containers.GenericContainer
-import org.testcontainers.containers.GenericKontainer
 import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.utility.DockerImageName
 import java.io.File
@@ -100,7 +99,7 @@ class RedisStoreFactoryImplTest : AbstractStoreFactoryTest() {
         }
 
         private fun startRedis() {
-            redis = GenericKontainer(DockerImageName.parse("redis:5-alpine"))
+            redis = GenericContainer(DockerImageName.parse("redis:5-alpine"))
                 .withExposedPorts(6379)
                 .waitingFor(Wait.forListeningPort())
                 .apply { start() }
