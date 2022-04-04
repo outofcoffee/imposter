@@ -3,9 +3,19 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [2.12.0] - 2022-04-04
 ### Added
-- ...
+- build: builds both arm64 and amd64 Docker images.
+- fix: strips surrounding quotes from when determining plugin class.
+
+### Changed
+- chore: bumps JRE to 8u322.
+- chore: bumps log4j2 to 2.17.2.
+- chore: bumps vert.x to 3.9.13.
+- chore: bumps CLI to 0.12.6.
+- chore: bumps jackson-databind to 2.13.2.2.
+- chore: bumps JUnit to 2.13.1.
+- docs: bumps Imposter version in JUnit sample.
 
 ## [2.11.1] - 2022-03-22
 ### Fixed
