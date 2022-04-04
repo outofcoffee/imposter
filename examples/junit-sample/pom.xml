@@ -17,7 +17,7 @@
     <maven.compiler.target>1.8</maven.compiler.target>
 
     <!-- choose latest release from https://github.com/outofcoffee/imposter/releases -->
-    <imposter.version>2.11.1</imposter.version>
+    <imposter.version>2.12.0</imposter.version>
   </properties>
 
   <repositories>
