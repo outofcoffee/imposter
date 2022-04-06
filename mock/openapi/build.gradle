@@ -3,7 +3,7 @@ apply plugin: 'kotlin'
 apply plugin: 'maven-publish'
 
 ext {
-    version_swagger_parser = '2.0.25'
+    version_swagger_parser = '2.0.32'
     version_swagger_request_validator = '2.18.0'
 }
 
