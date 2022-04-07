@@ -3,7 +3,7 @@ apply plugin: 'kotlin'
 
 ext {
     version_junit_jupiter = '5.8.1'
-    version_lambda_logger = '1.5.0'
+    version_lambda_logger = '1.5.1'
 }
 
 compileJava {
