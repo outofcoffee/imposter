@@ -70,7 +70,7 @@ class JAXWSTest : BaseVerticleTest() {
     }
 
     @Test
-    fun testRequestResponseUsingSoapClient(testContext: TestContext) {
+    fun testRequestResponseUsingSoapClient() {
         val wsdlUrl = JAXWSTest::class.java.getResource("/wsdl1/service.wsdl")
         val soapEndpoint = PetService(wsdlUrl).soapEndpoint
 

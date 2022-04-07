@@ -82,7 +82,7 @@ abstract class AbstractEndToEndTest : BaseVerticleTest() {
     }
 
     @Test
-    fun testRequestResponseUsingSoapActionHeader(testContext: TestContext) {
+    fun testRequestResponseUsingSoapActionHeader() {
         val body = RestAssured.given()
             .log().ifValidationFails()
             .accept(soapContentType)
@@ -101,7 +101,7 @@ abstract class AbstractEndToEndTest : BaseVerticleTest() {
     }
 
     @Test
-    fun testRequestResponseUsingSoapActionInContentType(testContext: TestContext) {
+    fun testRequestResponseUsingSoapActionInContentType() {
         val body = RestAssured.given()
             .log().ifValidationFails()
             .accept(soapContentType)
@@ -119,7 +119,7 @@ abstract class AbstractEndToEndTest : BaseVerticleTest() {
     }
 
     @Test
-    fun testRequestResponseUsingRequestBody(testContext: TestContext) {
+    fun testRequestResponseUsingRequestBody() {
         val body = RestAssured.given()
             .log().ifValidationFails()
             .accept(soapContentType)
@@ -137,7 +137,7 @@ abstract class AbstractEndToEndTest : BaseVerticleTest() {
     }
 
     @Test
-    fun test404OnInvalidSoapAction(testContext: TestContext) {
+    fun test404OnInvalidSoapAction() {
         RestAssured.given()
             .log().ifValidationFails()
             .accept(soapContentType)
@@ -152,7 +152,7 @@ abstract class AbstractEndToEndTest : BaseVerticleTest() {
     }
 
     @Test
-    fun testBindingAndOperationMatch(testContext: TestContext) {
+    fun testBindingAndOperationMatch() {
         val getPetByNameEnv = SoapUtil.wrapInEnv(
             """
 <getPetByNameRequest xmlns="urn:com:example:petstore">
@@ -180,7 +180,7 @@ abstract class AbstractEndToEndTest : BaseVerticleTest() {
     }
 
     @Test
-    fun testInvalidSoapAction(testContext: TestContext) {
+    fun testInvalidSoapAction() {
         RestAssured.given()
             .log().ifValidationFails()
             .accept(soapContentType)
