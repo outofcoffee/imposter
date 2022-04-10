@@ -16,7 +16,7 @@ dependencies {
     // test
     testImplementation project(':test:test-utils')
     testImplementation "org.testcontainers:testcontainers:$version_testcontainers"
-    testImplementation group: 'org.testcontainers', name: 'localstack', version: '1.16.2'
+    testImplementation group: 'org.testcontainers', name: 'localstack', version: '1.16.3'
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
