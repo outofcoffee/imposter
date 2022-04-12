@@ -9,7 +9,7 @@ compileJava {
 
 dependencies {
     implementation project(':store:store-common')
-    pluginImplementation 'org.redisson:redisson:3.16.0'
+    pluginImplementation 'org.redisson:redisson:3.17.0'
 
     // test
     testImplementation project(':test:test-utils')
