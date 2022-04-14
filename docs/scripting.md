@@ -238,23 +238,6 @@ respond().withExampleName('example1')
 
 This selects the example from the OpenAPI `examples` section for the API response.
 
-*****
-**Tip for Groovy users**
+## Further reading
 
-Groovy users can also use this special block syntax, for improved readability:
-
-```groovy
-respond {
-    // behaviours go here
-}
-```
-
-For example:
-
-```groovy
-respond {
-    withStatusCode 201
-    and()
-    usingDefaultBehaviour()
-}
-```
+* [Tips and tricks for Groovy users](./groovy_tips.md)

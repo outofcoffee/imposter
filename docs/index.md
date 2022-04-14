@@ -29,6 +29,7 @@ To begin, check out the [Getting started](getting_started.md) guide. See the _Us
 - [Data capture](data_capture.md)
 - [Response templates](templates.md)
 - [Stores](stores.md)
+- [GraphQL](stores_graphql.md)
 
 ### Advanced
 
@@ -39,6 +40,7 @@ To begin, check out the [Getting started](getting_started.md) guide. See the _Us
 - [Performance tuning](./performance_tuning.md)
 - [Plugins](./plugins.md)
 - [Features](./features.md)
+- [Groovy scripting tips](groovy_tips.md)
 
 ### Other
 

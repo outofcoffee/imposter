@@ -28,6 +28,7 @@ nav:
     - Data capture: 'data_capture.md'
     - Response templates: 'templates.md'
     - Stores: 'stores.md'
+    - GraphQL: 'stores_graphql.md'
 
   - Advanced:
     - Usage (arguments and environment variables): 'usage.md'
@@ -39,6 +40,7 @@ nav:
     - TLS/SSL: './tls_ssl.md'
     - Plugins: './plugins.md'
     - Features: './features.md'
+    - Groovy scripting tips: 'groovy_tips.md'
 
   - Other:
     - Tips and tricks: 'tips_tricks.md'
