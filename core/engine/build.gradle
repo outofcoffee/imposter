@@ -6,7 +6,7 @@ ext {
     version_classgraph = '4.8.54'
     version_jaxen = '1.2.0'
     version_jdom2 = '2.0.6.1'
-    version_json_path = '2.6.0'
+    version_json_path = '2.7.0'
 }
 
 compileJava {
