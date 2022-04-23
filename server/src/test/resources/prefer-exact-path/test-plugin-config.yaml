@@ -1,0 +1,14 @@
+plugin: "io.gatehill.imposter.plugin.test.TestPluginImpl"
+
+resources:
+# Path with placeholder
+- method: GET
+  path: /users/:userId
+  response:
+    staticData: "alice"
+
+# Path with exact match; should take precedence
+- method: GET
+  path: /users/names
+  response:
+    staticData: "names"

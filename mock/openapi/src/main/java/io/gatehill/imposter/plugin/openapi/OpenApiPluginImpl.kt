@@ -263,6 +263,8 @@ class OpenApiPluginImpl @Inject constructor(
         // statically calculate as much as possible
         val statusCodeFactory = buildStatusCodeCalculator(operation)
         return resourceService.handleRoute(imposterConfig, pluginConfig, resourceMatcher) { httpExchange: HttpExchange ->
+            LOGGER.trace("Operation ${operation.operationId} matched for request: ${describeRequestShort(httpExchange)}")
+
             if (!specificationService.isValidRequest(pluginConfig, httpExchange, allSpecs, basePath)) {
                 return@handleRoute
             }
