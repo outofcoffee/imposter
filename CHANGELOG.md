@@ -3,9 +3,29 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
-### Added
-- ...
+## [2.13.0] - 2022-04-24
+## Added
+- ci: publishes nashorn standalone maven artifacts.
+- docs: adds test logging configuration to JUnit sample.
+- docs: adds example environment variable config for JUnit sample on Java 8.
+
+### Changed
+- build: upgrades to Kotlin 1.6.
+- build: upgrades to Vert.x 4. (#89)
+- build(deps): bump aws-lambda-java-events from 3.9.0 to 3.11.0 (#96)
+- build(deps): bump aws-lambda-java-log4j2 from 1.5.0 to 1.5.1 (#102) (#112)
+- build(deps): bump aws-java-sdk-core from 1.11.656 to 1.12.201 (#119)
+- build(deps): bump commons-io from 2.9.0 to 2.11.0 (#111)
+- build(deps): bump guice from 4.2.3 to 5.1.0 (#99)
+- build(deps): bump jaxb-api from 2.3.0 to 2.3.1 (#95)
+- build(deps): bump redisson from 3.16.0 to 3.17.0 (#108)
+- build(deps): bump swagger-parser from 2.0.25 to 2.0.32 (#98)
+- build(deps): bump swagger-request-validator-core from 2.27.1 to 2.27.2 (#120)
+- build(deps): bump version_coroutines from 1.6.0 to 1.6.1 (#105)
+- chore: bumps Graal to 21.3.1.
+
+### Fixed
+- fix: prefer routes with exact matches over those with path placeholders.
 
 ## [2.12.0] - 2022-04-04
 ### Added
