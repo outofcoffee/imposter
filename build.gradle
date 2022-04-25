@@ -29,7 +29,7 @@ ext {
     awsSecretKey = awsCredentials?.AWSSecretKey ?: System.getenv('AWS_SECRET_ACCESS_KEY') ?: project.findProperty('AWS_SECRET_ACCESS_KEY')
 
     version_args4j = '2.33'
-    version_aws_sdk = '1.12.191'
+    version_aws_sdk = '1.12.205'
     version_commons_io = '2.11.0'
     version_commons_text = '1.9'
     version_coroutines = '1.6.1'
@@ -40,7 +40,7 @@ ext {
     version_jaxb_api = '2.3.1'
     version_junit = '4.13.2'
     version_log4j = '2.17.2'
-    version_micrometer = '1.6.7'
+    version_micrometer = '1.8.5'
     version_mockito = '3.10.0'
     version_restassured = '2.9.0'
     version_testcontainers = '1.15.3'
