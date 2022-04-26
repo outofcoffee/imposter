@@ -133,19 +133,35 @@ class Imposter(
     }
 
     private fun processConfiguration(): Map<String, List<File>> {
-        imposterConfig.serverUrl = HttpUtil.buildServerUrl(imposterConfig).toString()
-
         val configFiles = ConfigUtil.discoverConfigFiles(imposterConfig.configDirs)
 
         if (EnvVars.discoverEnvFiles) {
-            EnvVars.reset(configFiles.map { Paths.get(it.parent, ".env") }.filter { it.exists() })
+            val envFiles = configFiles.map { Paths.get(it.parent, ".env") }.filter { it.exists() }
+            if (envFiles.isNotEmpty()) {
+                EnvVars.reset(envFiles)
+            }
         }
 
+        finaliseEngineConfig()
+
+        return ConfigUtil.loadPluginConfigs(imposterConfig, pluginManager, configFiles)
+    }
+
+    private fun finaliseEngineConfig() {
+        imposterConfig.serverUrl = HttpUtil.buildServerUrl(imposterConfig).toString()
+
+        EnvVars.getEnv("IMPOSTER_PLUGIN_ARGS")?.let {
+            imposterConfig.pluginArgs = it.split(",").map(String::trim).associate { pluginArg ->
+                val parts = pluginArg.split("=")
+                parts[0] to parts[1].removeSurrounding("\"")
+            }
+        }
         EnvVars.getEnv("IMPOSTER_EMBEDDED_SCRIPT_ENGINE")?.let {
             imposterConfig.useEmbeddedScriptEngine = it.toBoolean()
         }
-
-        return ConfigUtil.loadPluginConfigs(imposterConfig, pluginManager, configFiles)
+        if (LOGGER.isTraceEnabled) {
+            LOGGER.trace("Engine config: $imposterConfig")
+        }
     }
 
     private fun configureRoutes(): HttpRouter {

@@ -191,18 +191,19 @@ class ImposterLauncher(args: Array<String>) {
             exitProcess(0)
         }
 
-        val imposterConfig = ConfigHolder.config
-        imposterConfig.serverFactory = serverFactory
-        imposterConfig.pluginDiscoveryStrategy = DynamicPluginDiscoveryStrategyImpl::class.qualifiedName
-        imposterConfig.listenPort = port
-        imposterConfig.host = host
-        imposterConfig.serverUrl = serverUrl
-        imposterConfig.isTlsEnabled = tlsEnabled
-        imposterConfig.keystorePath = keystorePath
-        imposterConfig.keystorePassword = keystorePassword
-        imposterConfig.configDirs = configDirs
-        imposterConfig.plugins = plugins
-        imposterConfig.pluginArgs = splitArgs
+        ConfigHolder.config.let { imposterConfig ->
+            imposterConfig.serverFactory = serverFactory
+            imposterConfig.pluginDiscoveryStrategy = DynamicPluginDiscoveryStrategyImpl::class.qualifiedName
+            imposterConfig.listenPort = port
+            imposterConfig.host = host
+            imposterConfig.serverUrl = serverUrl
+            imposterConfig.isTlsEnabled = tlsEnabled
+            imposterConfig.keystorePath = keystorePath
+            imposterConfig.keystorePassword = keystorePassword
+            imposterConfig.configDirs = configDirs
+            imposterConfig.plugins = plugins
+            imposterConfig.pluginArgs = splitArgs
+        }
 
         LifecycleAwareLauncher().dispatch(originalArgs)
     }

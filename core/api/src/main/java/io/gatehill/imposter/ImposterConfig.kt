@@ -63,4 +63,8 @@ class ImposterConfig {
     var pluginDiscoveryStrategy: String? = null
     var requestHandlingMode = RequestHandlingMode.ASYNC
     var useEmbeddedScriptEngine: Boolean = false
+
+    override fun toString(): String {
+        return "ImposterConfig(host=$host, listenPort=$listenPort, configDirs=${configDirs.contentToString()}, serverUrl=$serverUrl, isTlsEnabled=$isTlsEnabled, keystorePath=$keystorePath, keystorePassword=$keystorePassword, plugins=${plugins?.contentToString()}, pluginArgs=$pluginArgs, serverFactory=$serverFactory, pluginDiscoveryStrategy=$pluginDiscoveryStrategy, requestHandlingMode=$requestHandlingMode, useEmbeddedScriptEngine=$useEmbeddedScriptEngine)"
+    }
 }
