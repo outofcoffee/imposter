@@ -89,13 +89,11 @@ class Imposter(
     private val additionalModules: List<Module>,
 ) : CoroutineScope by supervisedDefaultCoroutineScope {
 
+    private val engineLifecycle = EngineLifecycleHooks()
     private val pluginManager: PluginManager = PluginManagerImpl(pluginDiscoveryStrategy)
 
     @Inject
     private lateinit var serverFactory: ServerFactory
-
-    @Inject
-    private lateinit var engineLifecycle: EngineLifecycleHooks
 
     @Inject
     private lateinit var resourceService: ResourceService
@@ -106,30 +104,36 @@ class Imposter(
         get() = EnvVars.getEnv("IMPOSTER_PREFER_EXACT_MATCH_ROUTES")?.toBoolean() != false
 
     fun start(): CompletableFuture<Unit> = future {
-        LOGGER.info("Starting mock engine ${MetaUtil.readVersion()}")
+        try {
+            LOGGER.info("Starting mock engine ${MetaUtil.readVersion()}")
 
-        val plugins = defaultPlugins.toMutableList()
-        imposterConfig.plugins?.let(plugins::addAll)
+            val plugins = defaultPlugins.toMutableList()
+            imposterConfig.plugins?.let(plugins::addAll)
 
-        val pluginConfigs = processConfiguration()
-        val dependencies = pluginManager.preparePluginsFromConfig(imposterConfig, plugins, pluginConfigs)
+            val pluginConfigs = processConfiguration()
+            val dependencies = pluginManager.preparePluginsFromConfig(imposterConfig, plugins, pluginConfigs)
 
-        val allModules = mutableListOf<Module>().apply {
-            add(BootstrapModule(vertx, imposterConfig, pluginDiscoveryStrategy, pluginManager))
-            add(EngineModule())
-            addAll(dependencies.flatMap { it.requiredModules })
-            addAll(additionalModules)
+            val allModules = mutableListOf<Module>().apply {
+                add(BootstrapModule(vertx, imposterConfig, engineLifecycle, pluginDiscoveryStrategy, pluginManager))
+                add(EngineModule())
+                addAll(dependencies.flatMap { it.requiredModules })
+                addAll(additionalModules)
+            }
+
+            val injector = InjectorUtil.create(*allModules.toTypedArray())
+            injector.injectMembers(this@Imposter)
+
+            pluginManager.startPlugins(injector, pluginConfigs)
+
+            val router = configureRoutes()
+            httpServer = serverFactory.provide(imposterConfig, vertx, router).await()
+
+            LOGGER.info("Mock engine up and running on {}", imposterConfig.serverUrl)
+
+        } catch (e: Exception) {
+            engineLifecycle.forEach { listener -> listener.onStartupError(e) }
+            throw e
         }
-
-        val injector = InjectorUtil.create(*allModules.toTypedArray())
-        injector.injectMembers(this@Imposter)
-
-        pluginManager.startPlugins(injector, pluginConfigs)
-
-        val router = configureRoutes()
-        httpServer = serverFactory.provide(imposterConfig, vertx, router).await()
-
-        LOGGER.info("Mock engine up and running on {}", imposterConfig.serverUrl)
     }
 
     private fun processConfiguration(): Map<String, List<File>> {

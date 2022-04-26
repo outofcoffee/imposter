@@ -71,6 +71,13 @@ interface EngineLifecycleListener {
     }
 
     /**
+     * Invoked if an unhandled exception is thrown when starting the engine.
+     */
+    fun onStartupError(cause: Exception) {
+        // no op
+    }
+
+    /**
      * Invoked before sending response content when templating is enabled for the active resource.
      *
      * @param httpExchange the HTTP exchange

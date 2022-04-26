@@ -60,6 +60,7 @@ import javax.inject.Singleton
 class BootstrapModule(
     private val vertx: Vertx,
     private val imposterConfig: ImposterConfig,
+    private val engineLifecycle: EngineLifecycleHooks,
     private val pluginDiscoveryStrategy: PluginDiscoveryStrategy,
     private val pluginManager: PluginManager,
 ) : AbstractModule() {
@@ -79,7 +80,7 @@ class BootstrapModule(
             throw RuntimeException("Could not load server factory: $serverFactory", e)
         }
 
-        bind(EngineLifecycleHooks::class.java).`in`(Singleton::class.java)
+        bind(EngineLifecycleHooks::class.java).toInstance(engineLifecycle)
         bind(SecurityLifecycleHooks::class.java).`in`(Singleton::class.java)
         bind(ScriptLifecycleHooks::class.java).`in`(Singleton::class.java)
     }
