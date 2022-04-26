@@ -48,7 +48,6 @@ import com.amazonaws.services.lambda.runtime.RequestHandler
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent
 import io.gatehill.imposter.awslambda.config.Settings
-import io.gatehill.imposter.awslambda.config.StaticPluginDiscoveryStrategyImpl
 import io.gatehill.imposter.awslambda.impl.LambdaServer
 import io.gatehill.imposter.awslambda.impl.LambdaServerFactory
 import io.gatehill.imposter.awslambda.util.ImposterBuilderKt
@@ -79,7 +78,7 @@ class Handler : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyRespo
             .withPluginClass(RestPluginImpl::class.java)
             .withConfigurationDir(Settings.configDir ?: Settings.s3ConfigUrl)
             .withEngineOptions { options ->
-                options.pluginDiscoveryStrategy = StaticPluginDiscoveryStrategyImpl::class.qualifiedName
+                options.pluginDiscoveryStrategy = Settings.pluginDiscoveryStrategy
                 options.serverFactory = LambdaServerFactory::class.qualifiedName
                 options.requestHandlingMode = RequestHandlingMode.SYNC
             }.startBlocking()
