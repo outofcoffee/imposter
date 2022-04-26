@@ -57,7 +57,7 @@ import io.gatehill.imposter.store.factory.StoreFactory
 import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.MapUtil
 import org.apache.logging.log4j.LogManager
-import java.util.*
+import java.util.Objects
 import javax.inject.Inject
 
 /**
@@ -68,13 +68,13 @@ import javax.inject.Inject
 class StoreRestApiServiceImpl @Inject constructor(
     private val resourceService: ResourceService,
     private val storeFactory: StoreFactory,
-    lifecycleHooks: EngineLifecycleHooks,
+    engineLifecycle: EngineLifecycleHooks,
 ) : EngineLifecycleListener {
 
     private val resourceMatcher = SingletonResourceMatcher.instance
 
     init {
-        lifecycleHooks.registerListener(this)
+        engineLifecycle.registerListener(this)
     }
 
     override fun afterRoutesConfigured(

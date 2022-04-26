@@ -47,7 +47,6 @@ import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig
-import io.gatehill.imposter.script.ExecutionContext
 import io.vertx.core.buffer.Buffer
 
 /**
@@ -66,22 +65,7 @@ interface EngineLifecycleListener {
     fun afterRoutesConfigured(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>,
-        router: HttpRouter
-    ) {
-        // no op
-    }
-
-    /**
-     * Invoked before building the script runtime context.
-     *
-     * @param httpExchange the HTTP exchange
-     * @param additionalBindings the additional bindings that will be passed to the script
-     * @param executionContext   the script execution context
-     */
-    fun beforeBuildingRuntimeContext(
-        httpExchange: HttpExchange,
-        additionalBindings: MutableMap<String, Any>,
-        executionContext: ExecutionContext
+        router: HttpRouter,
     ) {
         // no op
     }

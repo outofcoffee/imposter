@@ -47,7 +47,7 @@ import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 
 /**
- * Hooks for engine lifecycle events.
+ * Hooks for security lifecycle events.
  *
  * @author Pete Cornish
  */

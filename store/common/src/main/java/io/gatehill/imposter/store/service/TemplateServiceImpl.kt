@@ -64,7 +64,7 @@ import javax.inject.Inject
 class TemplateServiceImpl @Inject constructor(
     private val storeFactory: StoreFactory,
     private val expressionService: ExpressionService,
-    lifecycleHooks: EngineLifecycleHooks,
+    engineLifecycle: EngineLifecycleHooks,
 ) : EngineLifecycleListener {
 
     /**
@@ -87,7 +87,7 @@ class TemplateServiceImpl @Inject constructor(
             LOGGER.trace("Recursive templating of untrusted data is disabled")
         }
 
-        lifecycleHooks.registerListener(this)
+        engineLifecycle.registerListener(this)
     }
 
     /**

@@ -42,24 +42,7 @@
  */
 package io.gatehill.imposter.lifecycle
 
-import io.gatehill.imposter.script.ReadWriteResponseBehaviour
-
 /**
- * Hooks for engine lifecycle events.
- *
  * @author Pete Cornish
  */
-interface ScriptExecutionLifecycleListener {
-    /**
-     * Invoked following successful execution of the script.
-     *
-     * @param additionalBindings the additional bindings that were passed to the script
-     * @param responseBehaviour  the result of the script execution
-     */
-    fun afterSuccessfulScriptExecution(
-        additionalBindings: Map<String, Any>,
-        responseBehaviour: ReadWriteResponseBehaviour
-    ) {
-        // no op
-    }
-}
+class ScriptLifecycleHooks : LifecycleHooks<ScriptLifecycleListener>()

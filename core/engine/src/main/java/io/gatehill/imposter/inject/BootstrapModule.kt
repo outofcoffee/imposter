@@ -45,7 +45,7 @@ package io.gatehill.imposter.inject
 import com.google.inject.AbstractModule
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
-import io.gatehill.imposter.lifecycle.ScriptExecLifecycleHooks
+import io.gatehill.imposter.lifecycle.ScriptLifecycleHooks
 import io.gatehill.imposter.lifecycle.SecurityLifecycleHooks
 import io.gatehill.imposter.plugin.PluginDiscoveryStrategy
 import io.gatehill.imposter.plugin.PluginManager
@@ -81,6 +81,6 @@ class BootstrapModule(
 
         bind(EngineLifecycleHooks::class.java).`in`(Singleton::class.java)
         bind(SecurityLifecycleHooks::class.java).`in`(Singleton::class.java)
-        bind(ScriptExecLifecycleHooks::class.java).`in`(Singleton::class.java)
+        bind(ScriptLifecycleHooks::class.java).`in`(Singleton::class.java)
     }
 }

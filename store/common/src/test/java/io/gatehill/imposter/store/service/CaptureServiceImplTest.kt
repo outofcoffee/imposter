@@ -25,7 +25,7 @@ class CaptureServiceImplTest {
         }
         val service = CaptureServiceImpl(
             storeFactory = storeFactory,
-            lifecycleHooks = EngineLifecycleHooks(),
+            engineLifecycle = EngineLifecycleHooks(),
             expressionService = ExpressionServiceImpl(),
         )
 
@@ -57,7 +57,7 @@ class CaptureServiceImplTest {
         }
         val service = CaptureServiceImpl(
             storeFactory = storeFactory,
-            lifecycleHooks = EngineLifecycleHooks(),
+            engineLifecycle = EngineLifecycleHooks(),
             expressionService = ExpressionServiceImpl(),
         )
 
@@ -89,7 +89,7 @@ class CaptureServiceImplTest {
         }
         val service = CaptureServiceImpl(
             storeFactory = storeFactory,
-            lifecycleHooks = EngineLifecycleHooks(),
+            engineLifecycle = EngineLifecycleHooks(),
             expressionService = ExpressionServiceImpl(),
         )
 

@@ -47,6 +47,8 @@ import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
 import io.gatehill.imposter.lifecycle.EngineLifecycleListener
+import io.gatehill.imposter.lifecycle.ScriptLifecycleHooks
+import io.gatehill.imposter.lifecycle.ScriptLifecycleListener
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig
 import io.gatehill.imposter.plugin.config.system.StoreConfig
@@ -67,12 +69,14 @@ import javax.inject.Inject
  */
 class StoreServiceImpl @Inject constructor(
     private val storeFactory: StoreFactory,
-    lifecycleHooks: EngineLifecycleHooks,
-) : StoreService, EngineLifecycleListener {
+    engineLifecycle: EngineLifecycleHooks,
+    scriptLifecycle: ScriptLifecycleHooks,
+) : StoreService, EngineLifecycleListener, ScriptLifecycleListener {
 
     init {
         LOGGER.trace("Stores enabled")
-        lifecycleHooks.registerListener(this)
+        engineLifecycle.registerListener(this)
+        scriptLifecycle.registerListener(this)
     }
 
     override fun afterRoutesConfigured(

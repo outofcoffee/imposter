@@ -42,7 +42,41 @@
  */
 package io.gatehill.imposter.lifecycle
 
+import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.script.ExecutionContext
+import io.gatehill.imposter.script.ReadWriteResponseBehaviour
+
 /**
+ * Hooks for script lifecycle events.
+ *
  * @author Pete Cornish
  */
-class ScriptExecLifecycleHooks : LifecycleHooks<ScriptExecutionLifecycleListener>()
+interface ScriptLifecycleListener {
+    /**
+     * Invoked before building the script runtime context.
+     *
+     * @param httpExchange the HTTP exchange
+     * @param additionalBindings the additional bindings that will be passed to the script
+     * @param executionContext   the script execution context
+     */
+    fun beforeBuildingRuntimeContext(
+        httpExchange: HttpExchange,
+        additionalBindings: MutableMap<String, Any>,
+        executionContext: ExecutionContext
+    ) {
+        // no op
+    }
+
+    /**
+     * Invoked following successful execution of the script.
+     *
+     * @param additionalBindings the additional bindings that were passed to the script
+     * @param responseBehaviour  the result of the script execution
+     */
+    fun afterSuccessfulScriptExecution(
+        additionalBindings: Map<String, Any>,
+        responseBehaviour: ReadWriteResponseBehaviour
+    ) {
+        // no op
+    }
+}

@@ -23,14 +23,14 @@ import javax.inject.Inject
 
 class GraphQLQueryService @Inject constructor(
     private val storeFactory: StoreFactory,
-    engineLifecycleHooks: EngineLifecycleHooks,
+    engineLifecycle: EngineLifecycleHooks,
 ) : EngineLifecycleListener, CoroutineScope by supervisedDefaultCoroutineScope {
 
     private val logger: Logger = LogManager.getLogger(GraphQLQueryService::class.java)
     private val schema: Schema
 
     init {
-        engineLifecycleHooks.registerListener(this)
+        engineLifecycle.registerListener(this)
         schema = buildSchema()
     }
 

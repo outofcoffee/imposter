@@ -49,8 +49,7 @@ import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
 import io.gatehill.imposter.lifecycle.EngineLifecycleListener
-import io.gatehill.imposter.lifecycle.ScriptExecLifecycleHooks
-import io.gatehill.imposter.lifecycle.ScriptExecutionLifecycleListener
+import io.gatehill.imposter.lifecycle.ScriptLifecycleHooks
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.ResourcesHolder
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
@@ -73,8 +72,8 @@ import javax.inject.Inject
  * @author Pete Cornish
  */
 class ScriptedResponseServiceImpl @Inject constructor(
-    private val engineLifecycle: EngineLifecycleHooks,
-    private val scriptExecLifecycle: ScriptExecLifecycleHooks,
+    engineLifecycle: EngineLifecycleHooks,
+    private val scriptLifecycle: ScriptLifecycleHooks,
     private val scriptServiceFactory: ScriptServiceFactory,
 ) : ScriptedResponseService, EngineLifecycleListener {
 
@@ -199,7 +198,7 @@ class ScriptedResponseServiceImpl @Inject constructor(
             )
 
             // fire post execution hooks
-            scriptExecLifecycle.forEach { listener: ScriptExecutionLifecycleListener ->
+            scriptLifecycle.forEach { listener ->
                 listener.afterSuccessfulScriptExecution(finalAdditionalBindings, responseBehaviour)
             }
 
@@ -249,9 +248,9 @@ class ScriptedResponseServiceImpl @Inject constructor(
         var finalAdditionalBindings = additionalBindings
 
         // fire pre-context build hooks
-        if (!engineLifecycle.isEmpty) {
+        if (!scriptLifecycle.isEmpty) {
             val listenerAdditionalBindings: MutableMap<String, Any> = mutableMapOf()
-            engineLifecycle.forEach { listener: EngineLifecycleListener ->
+            scriptLifecycle.forEach { listener ->
                 listener.beforeBuildingRuntimeContext(
                     httpExchange, listenerAdditionalBindings, executionContext
                 )

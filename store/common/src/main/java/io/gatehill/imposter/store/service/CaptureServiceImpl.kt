@@ -57,7 +57,7 @@ import io.gatehill.imposter.store.util.StoreUtil
 import io.gatehill.imposter.util.BodyQueryUtil
 import io.gatehill.imposter.util.ResourceUtil
 import org.apache.logging.log4j.LogManager
-import java.util.*
+import java.util.Objects
 import javax.inject.Inject
 
 /**
@@ -68,11 +68,11 @@ import javax.inject.Inject
 class CaptureServiceImpl @Inject constructor(
     private val storeFactory: StoreFactory,
     private val expressionService: ExpressionService,
-    lifecycleHooks: EngineLifecycleHooks,
+    engineLifecycle: EngineLifecycleHooks,
 ) : EngineLifecycleListener {
 
     init {
-        lifecycleHooks.registerListener(this)
+        engineLifecycle.registerListener(this)
     }
 
     override fun beforeBuildingResponse(httpExchange: HttpExchange, resourceConfig: ResourceConfig?) {
