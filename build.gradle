@@ -47,9 +47,12 @@ ext {
     version_vertx = '4.2.6'
 }
 
+allprojects {
+    version project.property('projectVersion')
+}
+
 subprojects {
     group 'io.gatehill.imposter'
-    version '2.13.1-SNAPSHOT'
 
     buildscript {
         ext {
