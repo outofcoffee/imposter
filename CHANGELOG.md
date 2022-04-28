@@ -3,9 +3,21 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [2.13.1] - 2022-04-28
 ## Added
-- ...
+- feat: allows plugin arguments to be set using environment variables.
+
+### Changed
+- feat: adds engine lifecycle hook for startup errors.
+- feat: allows Lambda plugin discovery strategy to be set.
+- refactor: moves runtime context hook to script lifecycle.
+- build(deps): bump EnricoMi/publish-unit-test-result-action (#125)
+- build(deps): bump aws-java-sdk-core from 1.12.201 to 1.12.205 (#124)
+- build(deps): bump aws-java-sdk-bom from 1.12.191 to 1.12.205 (#126)
+- build(deps-dev): bump imposter.version in /examples/junit-sample (#127)
+
+### Fixed
+- fix: sets version in Docker image for CLI consumption.
 
 ## [2.13.0] - 2022-04-24
 ## Added
