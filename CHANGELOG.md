@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+## Added
+- ...
+
 ## [2.13.1] - 2022-04-28
 ## Added
 - feat: allows plugin arguments to be set using environment variables.
