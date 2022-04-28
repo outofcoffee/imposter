@@ -6,8 +6,12 @@ RUN addgroup imposter --gid 2048 && \
     adduser imposter --uid 2048 --gid 2048
 
 # add CLI
-ARG IMPOSTER_CLI_VERSION="0.12.6"
-ENV IMPOSTER_ENGINE=unpacked IMPOSTER_JVM_DISTRODIR=/opt/imposter
+ARG IMPOSTER_VERSION
+ENV IMPOSTER_VERSION="${IMPOSTER_VERSION}" \
+    IMPOSTER_ENGINE=unpacked \
+    IMPOSTER_JVM_DISTRODIR=/opt/imposter
+
+ARG IMPOSTER_CLI_VERSION="0.12.7"
 ADD https://github.com/gatehill/imposter-cli/releases/download/v${IMPOSTER_CLI_VERSION}/imposter_${IMPOSTER_CLI_VERSION}_Linux_x86_64.tar.gz /tmp/imposter-cli/imposter.tar.gz
 
 RUN cd /tmp/imposter-cli && \

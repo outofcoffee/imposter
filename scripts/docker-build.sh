@@ -60,7 +60,7 @@ function build_image() {
   if [[ "${IMAGE_DIR}" != "base" ]]; then
     BUILD_ARGS="--build-arg BASE_IMAGE_TAG=${IMAGE_TAG} --build-arg DISTRO_NAME=${IMAGE_DIR}"
   else
-    BUILD_ARGS=""
+    BUILD_ARGS="--build-arg IMPOSTER_VERSION=$( ${SCRIPT_DIR}/get-version.sh )"
   fi
 
   if [[ "${CONTAINER_BUILDER}" == "buildx" ]]; then
