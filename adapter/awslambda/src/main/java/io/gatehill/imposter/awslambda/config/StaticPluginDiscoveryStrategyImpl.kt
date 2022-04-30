@@ -51,8 +51,8 @@ import io.gatehill.imposter.plugin.PluginDiscoveryStrategy
 import io.gatehill.imposter.plugin.openapi.OpenApiModule
 import io.gatehill.imposter.plugin.openapi.OpenApiPluginImpl
 import io.gatehill.imposter.plugin.rest.RestPluginImpl
-import io.gatehill.imposter.scripting.nashorn.NashornEmbeddedScriptingModule
-import io.gatehill.imposter.scripting.nashorn.service.NashornEmbeddedScriptServiceImpl
+import io.gatehill.imposter.scripting.nashorn.NashornStandaloneScriptingModule
+import io.gatehill.imposter.scripting.nashorn.service.NashornStandaloneScriptServiceImpl
 import io.gatehill.imposter.store.dynamodb.DynamoDBStoreFactoryImpl
 import io.gatehill.imposter.store.dynamodb.DynamoDBStoreModule
 import io.gatehill.imposter.store.inmem.InMemoryStoreFactoryImpl
@@ -75,7 +75,7 @@ class StaticPluginDiscoveryStrategyImpl : PluginDiscoveryStrategy {
     private val pluginClasses = mapOf(
         "openapi" to OpenApiPluginImpl::class.java,
         "rest" to RestPluginImpl::class.java,
-        "js-nashorn-embedded" to NashornEmbeddedScriptServiceImpl::class.java,
+        "js-nashorn-standalone" to NashornStandaloneScriptServiceImpl::class.java,
         "store-inmem" to InMemoryStoreFactoryImpl::class.java,
         "store-dynamodb" to DynamoDBStoreFactoryImpl::class.java,
     )
@@ -106,7 +106,7 @@ class StaticPluginDiscoveryStrategyImpl : PluginDiscoveryStrategy {
                 listOf(
                     LambdaModule(),
                     OpenApiModule(),
-                    NashornEmbeddedScriptingModule(),
+                    NashornStandaloneScriptingModule(),
                     DynamoDBStoreModule(),
                     InMemoryStoreModule(),
                 )

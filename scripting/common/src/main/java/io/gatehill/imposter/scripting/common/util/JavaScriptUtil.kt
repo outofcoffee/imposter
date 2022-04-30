@@ -47,7 +47,6 @@ import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.impl.RunnableResponseBehaviourImpl
 import io.gatehill.imposter.scripting.common.shim.ConsoleShim
-import io.gatehill.imposter.util.getJvmVersion
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.nio.file.Path
@@ -93,9 +92,7 @@ object JavaScriptUtil {
      * @return the plugin name of the active JavaScript implementation
      */
     val activePlugin: String
-        get() = EnvVars.getEnv(envJsPlugin) ?: run {
-            if (getJvmVersion() >= 11) "js-nashorn-standalone" else "js-nashorn-embedded"
-        }
+        get() = EnvVars.getEnv(envJsPlugin) ?: "js-nashorn-standalone"
 
     fun transformRuntimeMap(runtimeContext: RuntimeContext, addConsoleShim: Boolean): Map<String, *> {
         val runtimeObjects = runtimeContext.asMap().toMutableMap()

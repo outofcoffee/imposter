@@ -4,7 +4,7 @@ apply plugin: 'java'
 apply plugin: 'com.github.johnrengelman.shadow'
 
 compileJava {
-    sourceCompatibility = 1.8
+    sourceCompatibility = JavaVersion.VERSION_11
 }
 
 dependencies {
