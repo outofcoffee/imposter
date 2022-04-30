@@ -59,13 +59,12 @@ import io.gatehill.imposter.service.ScriptService
 import io.gatehill.imposter.util.MetricsUtil.doIfMetricsEnabled
 import io.gatehill.imposter.util.getJvmVersion
 import io.micrometer.core.instrument.Gauge
+import org.apache.logging.log4j.LogManager
 import org.openjdk.nashorn.api.scripting.NashornScriptEngine
 import org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory
-import org.apache.logging.log4j.LogManager
 import java.nio.file.Path
 import javax.script.CompiledScript
 import javax.script.ScriptException
-import javax.script.ScriptEngineManager
 import javax.script.SimpleBindings
 
 /**
@@ -90,7 +89,7 @@ class NashornStandaloneScriptServiceImpl : ScriptService, Plugin {
 
     init {
         if (getJvmVersion() < 11) {
-            throw UnsupportedOperationException("Standalone Nashorn JavaScript plugin is only supported on Java 11+. Use js-nashorn-embedded plugin instead.")
+            throw UnsupportedOperationException("Standalone Nashorn JavaScript plugin is only supported on Java 11+.")
         }
 
         scriptEngine = NashornScriptEngineFactory().scriptEngine as NashornScriptEngine

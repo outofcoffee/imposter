@@ -130,7 +130,7 @@ s3://example-imposter-bucket/imposter-awslambda.jar
 
 #### Step 2: Create your Lambda function
 
-Open the [AWS Lambda Console](https://eu-west-1.console.aws.amazon.com/lambda/home). Create a new function using the Java 8 runtime, using the file you uploaded to S3 as the code source.
+Open the [AWS Lambda Console](https://eu-west-1.console.aws.amazon.com/lambda/home). Create a new function using the Java 11 runtime, using the file you uploaded to S3 as the code source.
 
 *Important:* Set the handler to `io.gatehill.imposter.awslambda.Handler`
 
