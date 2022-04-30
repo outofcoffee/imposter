@@ -3,7 +3,7 @@ apply plugin: 'kotlin'
 apply plugin: 'maven-publish'
 
 compileJava {
-    sourceCompatibility = 1.8
+    sourceCompatibility = JavaVersion.VERSION_11
 }
 
 dependencies {
@@ -43,7 +43,7 @@ publishing {
 
 compileKotlin {
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = JavaVersion.VERSION_11
 
         // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
         freeCompilerArgs = ["-Xjvm-default=all"]
@@ -52,7 +52,7 @@ compileKotlin {
 
 compileTestKotlin {
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = JavaVersion.VERSION_11
 
         // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
         freeCompilerArgs = ["-Xjvm-default=all"]

@@ -7,7 +7,7 @@ ext {
 }
 
 compileJava {
-    sourceCompatibility = 1.8
+    sourceCompatibility = JavaVersion.VERSION_11
 }
 
 dependencies {
@@ -24,7 +24,7 @@ dependencies {
     implementation "com.amazonaws:aws-lambda-java-log4j2:$version_lambda_logger"
 
     // opinionated implementations
-    implementation project (':scripting:scripting-nashorn-embedded')
+    implementation project (':scripting:scripting-nashorn-standalone')
     implementation project (':store:store-dynamodb')
 
     // test
@@ -53,7 +53,7 @@ artifacts {
 
 compileKotlin {
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = JavaVersion.VERSION_11
 
         // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
         freeCompilerArgs = ["-Xjvm-default=all"]
@@ -62,7 +62,7 @@ compileKotlin {
 
 compileTestKotlin {
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = JavaVersion.VERSION_11
 
         // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
         freeCompilerArgs = ["-Xjvm-default=all"]

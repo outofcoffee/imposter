@@ -2,7 +2,7 @@ apply plugin: 'java-library'
 apply plugin: 'maven-publish'
 
 compileJava {
-    sourceCompatibility = 1.8
+    sourceCompatibility = JavaVersion.VERSION_11
 }
 
 dependencies {

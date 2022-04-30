@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '11' ]
     permissions:
       checks: write
       contents: write
@@ -59,7 +59,7 @@ jobs:
           ./gradlew dist --info --stacktrace
 
       - name: Build Docker images
-        if: ${{ (startsWith(github.ref, 'refs/tags/') || steps.git-meta.outputs.branch == 'develop') && matrix.java == '8' }}
+        if: ${{ (startsWith(github.ref, 'refs/tags/') || steps.git-meta.outputs.branch == 'develop') && matrix.java == '11' }}
         run: |
           IMAGE_TAG_NAME="$( ./scripts/branch-to-tag-name.sh ${{ steps.git-meta.outputs.branch }} )"
 
@@ -81,13 +81,13 @@ jobs:
           esac
 
       - name: Integration test
-        if: ${{ (startsWith(github.ref, 'refs/tags/') || steps.git-meta.outputs.branch == 'develop') && matrix.java == '8' }}
+        if: ${{ (startsWith(github.ref, 'refs/tags/') || steps.git-meta.outputs.branch == 'develop') && matrix.java == '11' }}
         run: |
           IMAGE_TAG_NAME="$( ./scripts/branch-to-tag-name.sh ${{ steps.git-meta.outputs.branch }} )"
           ./scripts/integration-tests.sh "${IMAGE_TAG_NAME}"
 
       - name: Push Docker images
-        if: ${{ (startsWith(github.ref, 'refs/tags/') || steps.git-meta.outputs.branch == 'develop') && matrix.java == '8' }}
+        if: ${{ (startsWith(github.ref, 'refs/tags/') || steps.git-meta.outputs.branch == 'develop') && matrix.java == '11' }}
         run: |
           IMAGE_TAG_NAME="$( ./scripts/branch-to-tag-name.sh ${{ steps.git-meta.outputs.branch }} )"
 
@@ -111,8 +111,8 @@ jobs:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Release Java 8 assets
-        if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.java == '8' }}
+      - name: Release Java assets
+        if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.java == '11' }}
         uses: actions/github-script@v6
         with:
           script: |
@@ -123,31 +123,15 @@ jobs:
               './mock/hbase/build/libs/imposter-plugin-mock-hbase.jar',
               './mock/sfdc/build/libs/imposter-plugin-mock-sfdc.jar',
               './mock/soap/build/libs/imposter-plugin-mock-soap.jar',
+              './scripting/nashorn-standalone/build/libs/imposter-plugin-js-nashorn-standalone.jar',
               './store/dynamodb/build/libs/imposter-plugin-store-dynamodb.jar',
               './store/redis/build/libs/imposter-plugin-store-redis.jar',
               './store/graphql/build/libs/imposter-plugin-store-graphql.jar',
             ])
 
-      - name: Release Java 11 assets
-        if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.java == '11' }}
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const script = require('./.github/github-release.js')
-            await script({github, context}, [
-              './scripting/nashorn-standalone/build/libs/imposter-plugin-js-nashorn-standalone.jar',
-            ])
-
-      - name: Publish Java 8 Maven artifacts
-        if: ${{ (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop') && matrix.java == '8' }}
-        run: ./gradlew publish --info --stacktrace
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-      - name: Publish Java 11 Maven artifacts
+      - name: Publish Java Maven artifacts
         if: ${{ (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop') && matrix.java == '11' }}
-        run: ./gradlew :scripting:scripting-nashorn-standalone:publish --info --stacktrace
+        run: ./gradlew publish --info --stacktrace
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
