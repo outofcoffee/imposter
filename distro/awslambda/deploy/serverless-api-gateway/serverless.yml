@@ -1,0 +1,31 @@
+service: aws-imposter-example
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: java11
+
+  # permit the function to fetch the config from an S3 bucket named 'imposter-lambda-example'
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action: "s3:GetObject"
+      Resource: "arn:aws:s3:::imposter-lambda-example/*"
+    - Effect: "Allow"
+      Action: "s3:ListBucket"
+      Resource: "arn:aws:s3:::imposter-lambda-example"
+
+package:
+  individually: true
+
+functions:
+  imposter:
+    handler: "io.gatehill.imposter.awslambda.Handler"
+    timeout: 30
+    package:
+      artifact: "../../build/libs/imposter-awslambda.jar"
+    environment:
+      IMPOSTER_S3_CONFIG_URL: "s3://imposter-lambda-example/config/"
+    events:
+      - http:
+          method: any
+          path: /{proxy+}

@@ -1,0 +1,18 @@
+{
+  "name": "aws-imposter-example",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "cd ../.. && ../../gradlew dist",
+    "deploy": "npm run build && serverless deploy",
+    "info": "serverless info",
+    "undeploy": "serverless remove"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {},
+  "devDependencies": {
+    "serverless": "^3.16.0"
+  }
+}
