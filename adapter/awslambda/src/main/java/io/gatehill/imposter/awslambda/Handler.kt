@@ -56,6 +56,7 @@ import io.gatehill.imposter.plugin.openapi.OpenApiPluginImpl
 import io.gatehill.imposter.plugin.rest.RestPluginImpl
 import io.gatehill.imposter.server.RequestHandlingMode
 import io.gatehill.imposter.util.InjectorUtil
+import io.gatehill.imposter.util.LogUtil
 import org.apache.logging.log4j.LogManager
 
 /**
@@ -72,6 +73,9 @@ class Handler : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyRespo
         // lambda functions are only allowed write access to /tmp
         System.setProperty("vertx.cacheDirBase", "/tmp/.vertx")
         System.setProperty("java.io.tmpdir", "/tmp")
+
+        LogUtil.configureLoggingFromEnvironment()
+        LogUtil.configureVertxLogging()
 
         engine = ImposterBuilderKt()
             .withPluginClass(OpenApiPluginImpl::class.java)
