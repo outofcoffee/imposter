@@ -29,7 +29,7 @@ There are many ways to run Imposter. This section describes how to use a JAR fil
 
 ### Prerequisites
 
-You must have a JVM installed. Java 8, 11 and 15 have been confirmed as compatible. Others may also be, but are not currently tested.
+You must have a JVM installed. Java 11 and 15 have been confirmed as compatible. Others may also be, but are not currently tested.
 
 Run the JAR as follows:
 

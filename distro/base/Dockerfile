@@ -1,4 +1,4 @@
-FROM eclipse-temurin:8u322-b06-jre-focal
+FROM eclipse-temurin:11.0.15_10-jre-focal
 
 LABEL MAINTAINER="Pete Cornish <outofcoffee@gmail.com>"
 
