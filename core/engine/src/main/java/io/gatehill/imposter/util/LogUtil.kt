@@ -45,6 +45,7 @@ package io.gatehill.imposter.util
 import io.gatehill.imposter.config.util.ConfigUtil
 import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.http.HttpExchange
+import io.vertx.core.logging.Log4j2LogDelegateFactory
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -68,6 +69,7 @@ object LogUtil {
         ConfigUtil.CURRENT_PACKAGE,
         LOGGER_SCRIPT_PACKAGE
     )
+    private const val VERTX_LOGGER_FACTORY = "vertx.logger-delegate-factory-class-name"
     private const val ENV_VAR_LOG_LEVEL = "IMPOSTER_LOG_LEVEL"
     private val DEFAULT_LOG_LEVEL = Level.DEBUG
 
@@ -94,6 +96,11 @@ object LogUtil {
         EnvVars.getEnv("IMPOSTER_LOG_RESPONSE_HEADERS")
             ?.split(",")?.map(String::lowercase)?.toTypedArray()
             ?: emptyArray()
+    }
+
+    fun configureVertxLogging() {
+        // delegate all Vert.x logging to Log4J2
+        System.setProperty(VERTX_LOGGER_FACTORY, Log4j2LogDelegateFactory::class.java.canonicalName)
     }
 
     /**

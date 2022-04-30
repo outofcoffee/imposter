@@ -54,7 +54,6 @@ import io.gatehill.imposter.util.HttpUtil.BIND_ALL_HOSTS
 import io.gatehill.imposter.util.HttpUtil.DEFAULT_HTTPS_LISTEN_PORT
 import io.gatehill.imposter.util.HttpUtil.DEFAULT_HTTP_LISTEN_PORT
 import io.gatehill.imposter.util.LogUtil
-import io.vertx.core.logging.SLF4JLogDelegateFactory
 import org.apache.logging.log4j.LogManager
 import org.kohsuke.args4j.CmdLineException
 import org.kohsuke.args4j.CmdLineParser
@@ -116,16 +115,11 @@ class ImposterLauncher(args: Array<String>) {
 
     companion object {
         private val LOGGER = LogManager.getLogger(ImposterLauncher::class.java)
-        private const val VERTX_LOGGER_FACTORY = "vertx.logger-delegate-factory-class-name"
-
-        init {
-            // delegate all Vert.x logging to SLF4J
-            System.setProperty(VERTX_LOGGER_FACTORY, SLF4JLogDelegateFactory::class.java.canonicalName)
-        }
 
         @JvmStatic
         fun main(args: Array<String>) {
             LogUtil.configureLoggingFromEnvironment()
+            LogUtil.configureVertxLogging()
             ImposterLauncher(args)
         }
     }

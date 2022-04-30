@@ -32,5 +32,6 @@
         <Logger name="io.micrometer" level="warn"/>
         <Logger name="org.redisson" level="warn"/>
         <Logger name="io.vertx.core.impl.launcher.commands" level="warn"/>
+        <Logger name="io.vertx.core.logging.LoggerFactory" level="info"/>
     </Loggers>
 </Configuration>
