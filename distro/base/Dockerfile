@@ -34,8 +34,7 @@ ONBUILD RUN chown -R imposter:imposter /opt/imposter && \
 
 ONBUILD USER imposter
 
-ENV IMPOSTER_PLUGIN_DIR=/opt/imposter/plugins \
-    JAVA_TOOL_OPTIONS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
+ENV IMPOSTER_PLUGIN_DIR=/opt/imposter/plugins
 
 EXPOSE 8080 8443
 ENTRYPOINT ["java", "-classpath", "/opt/imposter/lib/*", "io.gatehill.imposter.cmd.ImposterLauncher"]
