@@ -61,9 +61,9 @@ import io.vertx.core.json.JsonObject
  * @author Pete Cornish
  */
 class LambdaHttpExchange(
-    private val request: LambdaHttpRequest,
-    private val response: LambdaHttpResponse,
-    private val currentRoute: HttpRoute?
+    private val request: HttpRequest,
+    private val response: HttpResponse,
+    private val currentRoute: HttpRoute?,
 ) : HttpExchange {
     override var phase = ExchangePhase.REQUEST_RECEIVED
     private val attributes = mutableMapOf<String, Any>()
@@ -73,36 +73,28 @@ class LambdaHttpExchange(
         HttpUtil.readAcceptedContentTypes(this@LambdaHttpExchange)
     }
 
-    override fun request(): LambdaHttpRequest {
+    override fun request(): HttpRequest {
         return request
     }
 
-    override fun response(): LambdaHttpResponse {
+    override fun response(): HttpResponse {
         return response
     }
 
     override val currentRoutePath: String?
         get() = currentRoute?.path
 
-    private val pathParameters by lazy {
-        currentRoute?.extractPathParams(request.path()) ?: emptyMap()
-    }
+    @Suppress("OVERRIDE_DEPRECATION")
+    override fun pathParams() = request.pathParams()
 
-    override fun pathParams(): Map<String, String> {
-        return pathParameters
-    }
+    @Suppress("OVERRIDE_DEPRECATION")
+    override fun queryParams() = request.queryParams()
 
-    override fun queryParams(): Map<String, String> {
-        return request.event.queryStringParameters ?: emptyMap()
-    }
+    @Suppress("OVERRIDE_DEPRECATION")
+    override fun pathParam(paramName: String) = request.pathParam(paramName)
 
-    override fun pathParam(paramName: String): String? {
-        return pathParameters[paramName]
-    }
-
-    override fun queryParam(queryParam: String): String? {
-        return request.event.queryStringParameters?.get(queryParam)
-    }
+    @Suppress("OVERRIDE_DEPRECATION")
+    override fun queryParam(queryParam: String) = request.queryParam(queryParam)
 
     override fun isAcceptHeaderEmpty(): Boolean {
         return Strings.isNullOrEmpty(request.getHeader("Accept"))
@@ -113,16 +105,17 @@ class LambdaHttpExchange(
         return acceptedMimeTypes.contains(mimeType)
     }
 
-    override val body: Buffer? by lazy {
-        request.event.body?.let { Buffer.buffer(it) }
-    }
+    @Suppress("OVERRIDE_DEPRECATION")
+    override val body: Buffer?
+        get() = request.body
 
+    @Suppress("OVERRIDE_DEPRECATION")
     override val bodyAsString: String?
-        get() = request.event.body
+        get() = request.bodyAsString
 
-    override val bodyAsJson: JsonObject? by lazy {
-        request.event.body?.let { JsonObject(it) }
-    }
+    @Suppress("OVERRIDE_DEPRECATION")
+    override val bodyAsJson: JsonObject?
+        get() = request.bodyAsJson
 
     override fun fail(cause: Throwable?) {
         fail(500, cause)
@@ -154,8 +147,15 @@ class LambdaHttpExchange(
 /**
  * @author Pete Cornish
  */
-class LambdaHttpRequest(val event: APIGatewayProxyRequestEvent) : HttpRequest {
+class LambdaHttpRequest(
+    private val event: APIGatewayProxyRequestEvent,
+    private val currentRoute: HttpRoute?,
+) : HttpRequest {
     private val baseUrl: String
+
+    private val pathParameters by lazy {
+        currentRoute?.extractPathParams(path()) ?: emptyMap()
+    }
 
     init {
         baseUrl = "http://" + (getHeader("Host") ?: "0.0.0.0")
@@ -179,6 +179,33 @@ class LambdaHttpRequest(val event: APIGatewayProxyRequestEvent) : HttpRequest {
 
     override fun getHeader(headerKey: String): String? {
         return event.headers?.get(headerKey)
+    }
+
+    override fun pathParams(): Map<String, String> {
+        return pathParameters
+    }
+
+    override fun queryParams(): Map<String, String> {
+        return event.queryStringParameters ?: emptyMap()
+    }
+
+    override fun pathParam(paramName: String): String? {
+        return pathParameters[paramName]
+    }
+
+    override fun queryParam(queryParam: String): String? {
+        return event.queryStringParameters?.get(queryParam)
+    }
+
+    override val body: Buffer? by lazy {
+        event.body?.let { Buffer.buffer(it) }
+    }
+
+    override val bodyAsString: String?
+        get() = event.body
+
+    override val bodyAsJson: JsonObject? by lazy {
+        event.body?.let { JsonObject(it) }
     }
 }
 
