@@ -55,9 +55,17 @@ interface HttpExchange {
     var phase: ExchangePhase
     fun request(): HttpRequest
     fun response(): HttpResponse
+
+    @Deprecated("Use request.pathParams", replaceWith = ReplaceWith("request().pathParams()"))
     fun pathParams(): Map<String, String>
+
+    @Deprecated("Use request.queryParams", replaceWith = ReplaceWith("request().queryParams()"))
     fun queryParams(): Map<String, String>
+
+    @Deprecated("Use request.pathParam", replaceWith = ReplaceWith("request().pathParam()"))
     fun pathParam(paramName: String): String?
+
+    @Deprecated("Use request.queryParam", replaceWith = ReplaceWith("request().queryParam()"))
     fun queryParam(queryParam: String): String?
 
     fun isAcceptHeaderEmpty(): Boolean
@@ -68,8 +76,13 @@ interface HttpExchange {
      */
     val currentRoutePath: String?
 
+    @Deprecated("Use request.body", replaceWith = ReplaceWith("request().body"))
     val body: Buffer?
+
+    @Deprecated("Use request.bodyAsString", replaceWith = ReplaceWith("request().bodyAsString"))
     val bodyAsString: String?
+
+    @Deprecated("Use request.bodyAsJson", replaceWith = ReplaceWith("request().bodyAsJson"))
     val bodyAsJson: JsonObject?
 
     fun fail(cause: Throwable?)
@@ -80,7 +93,7 @@ interface HttpExchange {
     fun <T> get(key: String): T?
     fun put(key: String, value: Any)
 
-    fun <T: Any> getOrPut(key: String, defaultSupplier: () -> T): T {
+    fun <T : Any> getOrPut(key: String, defaultSupplier: () -> T): T {
         return get(key) ?: run {
             val value = defaultSupplier()
             put(key, value)
@@ -121,6 +134,14 @@ interface HttpRequest {
     fun absoluteURI(): String
     fun headers(): Map<String, String>
     fun getHeader(headerKey: String): String?
+    fun pathParams(): Map<String, String>
+    fun queryParams(): Map<String, String>
+    fun pathParam(paramName: String): String?
+    fun queryParam(queryParam: String): String?
+
+    val body: Buffer?
+    val bodyAsString: String?
+    val bodyAsJson: JsonObject?
 }
 
 /**
@@ -136,5 +157,6 @@ interface HttpResponse {
     fun end(body: String?) {
         body?.let { end(Buffer.buffer(body)) } ?: end()
     }
+
     val bodyBuffer: Buffer?
 }

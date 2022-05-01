@@ -46,12 +46,18 @@ import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.plugin.config.resource.ResourceMethod
 import io.gatehill.imposter.server.vertxweb.util.VertxResourceUtil
 import io.gatehill.imposter.util.CollectionUtil
-import io.vertx.core.http.HttpServerRequest
+import io.vertx.core.buffer.Buffer
+import io.vertx.core.json.JsonObject
+import io.vertx.ext.web.RoutingContext
 
 /**
  * @author Pete Cornish
  */
-class VertxHttpRequest(private val vertxRequest: HttpServerRequest) : HttpRequest {
+class VertxHttpRequest(
+    private val routingContext: RoutingContext,
+) : HttpRequest {
+    private val vertxRequest = routingContext.request()
+    private val _queryParams by lazy { CollectionUtil.asMap(routingContext.queryParams()) }
     private val _headers by lazy { CollectionUtil.asMap(vertxRequest.headers()) }
 
     override fun path(): String {
@@ -73,4 +79,26 @@ class VertxHttpRequest(private val vertxRequest: HttpServerRequest) : HttpReques
     override fun getHeader(headerKey: String): String? {
         return vertxRequest.getHeader(headerKey)
     }
+
+    override fun pathParams(): Map<String, String> {
+        return routingContext.pathParams()
+    }
+
+    override fun queryParams(): Map<String, String> {
+        return _queryParams
+    }
+
+    override fun pathParam(paramName: String): String? {
+        return routingContext.pathParam(paramName)
+    }
+
+    override fun queryParam(queryParam: String): String? {
+        return routingContext.queryParam(queryParam)?.firstOrNull()
+    }
+
+    override val body: Buffer? by lazy { routingContext.body }
+
+    override val bodyAsString: String? by lazy { routingContext.bodyAsString }
+
+    override val bodyAsJson: JsonObject? by lazy { routingContext.bodyAsJson }
 }
