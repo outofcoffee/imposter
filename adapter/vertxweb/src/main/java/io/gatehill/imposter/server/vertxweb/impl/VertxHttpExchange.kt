@@ -46,7 +46,6 @@ import io.gatehill.imposter.http.ExchangePhase
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.http.HttpResponse
-import io.gatehill.imposter.util.CollectionUtil
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.RoutingContext
@@ -57,12 +56,11 @@ import io.vertx.ext.web.impl.ParsableMIMEValue
  */
 class VertxHttpExchange(
     val routingContext: RoutingContext,
-    override val currentRoutePath: String?
+    override val currentRoutePath: String?,
 ) : HttpExchange {
     override var phase = ExchangePhase.REQUEST_RECEIVED
-    private val _request by lazy { VertxHttpRequest(routingContext.request()) }
+    private val _request by lazy { VertxHttpRequest(routingContext) }
     private val _response by lazy { VertxHttpResponse(routingContext.response()) }
-    private val _queryParams by lazy { CollectionUtil.asMap(routingContext.queryParams()) }
 
     override fun request(): HttpRequest {
         return _request
@@ -71,6 +69,18 @@ class VertxHttpExchange(
     override fun response(): HttpResponse {
         return _response
     }
+
+    @Suppress("OVERRIDE_DEPRECATION")
+    override fun pathParams() = _request.pathParams()
+
+    @Suppress("OVERRIDE_DEPRECATION")
+    override fun queryParams() = _request.queryParams()
+
+    @Suppress("OVERRIDE_DEPRECATION")
+    override fun pathParam(paramName: String) = _request.pathParam(paramName)
+
+    @Suppress("OVERRIDE_DEPRECATION")
+    override fun queryParam(queryParam: String) = _request.queryParam(queryParam)
 
     override fun isAcceptHeaderEmpty(): Boolean {
         return routingContext.parsedHeaders().accept().isEmpty()
@@ -81,27 +91,17 @@ class VertxHttpExchange(
         return routingContext.parsedHeaders().accept().any { it.isMatchedBy(mimeValue) }
     }
 
-    override val body: Buffer? by lazy { routingContext.body }
+    @Suppress("OVERRIDE_DEPRECATION")
+    override val body: Buffer?
+        get() = _request.body
 
-    override val bodyAsString: String? by lazy { routingContext.bodyAsString }
+    @Suppress("OVERRIDE_DEPRECATION")
+    override val bodyAsString: String?
+        get() = _request.bodyAsString
 
-    override val bodyAsJson: JsonObject? by lazy { routingContext.bodyAsJson }
-
-    override fun pathParams(): Map<String, String> {
-        return routingContext.pathParams()
-    }
-
-    override fun queryParams(): Map<String, String> {
-        return _queryParams
-    }
-
-    override fun pathParam(paramName: String): String? {
-        return routingContext.pathParam(paramName)
-    }
-
-    override fun queryParam(queryParam: String): String? {
-        return routingContext.queryParam(queryParam)?.firstOrNull()
-    }
+    @Suppress("OVERRIDE_DEPRECATION")
+    override val bodyAsJson: JsonObject?
+        get() = _request.bodyAsJson
 
     override fun fail(cause: Throwable?) {
         routingContext.fail(cause)
