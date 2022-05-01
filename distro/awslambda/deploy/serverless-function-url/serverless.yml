@@ -19,7 +19,7 @@ package:
 
 functions:
   imposter:
-    handler: "io.gatehill.imposter.awslambda.Handler"
+    handler: "io.gatehill.imposter.awslambda.HandlerV2"
     timeout: 30
     url: true
     package:

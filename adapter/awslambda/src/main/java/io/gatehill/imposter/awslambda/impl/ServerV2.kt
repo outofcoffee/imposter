@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021.
+ * Copyright (c) 2022.
  *
  * This file is part of Imposter.
  *
@@ -41,25 +41,43 @@
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.gatehill.imposter.awslambda.config
+package io.gatehill.imposter.awslambda.impl
 
-import io.gatehill.imposter.config.util.EnvVars
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse
+import io.gatehill.imposter.awslambda.impl.model.LambdaHttpRequestV2
+import io.gatehill.imposter.awslambda.impl.model.LambdaHttpResponse
+import io.gatehill.imposter.http.HttpRoute
+import io.gatehill.imposter.http.HttpRouter
 
 /**
- * @author Pete Cornish
+ * Server for API Gateway v2 and/or Function URL events.
+ *
+ * @author pete
  */
-object Settings {
-    val configDir: String? by lazy {
-        EnvVars.getEnv("IMPOSTER_CONFIG_DIR")
+class ServerV2(
+    router: HttpRouter,
+) : LambdaServer<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse>(router) {
+
+    init {
+        logger.debug("Configured for API Gateway v2 and/or Function URL events")
     }
 
-    val pluginDiscoveryStrategy: String by lazy {
-        EnvVars.getEnv("IMPOSTER_PLUGIN_DISCOVERY_STRATEGY")
-            ?: StaticPluginDiscoveryStrategyImpl::class.qualifiedName!!
-    }
+    override fun getRequestMethod(event: APIGatewayV2HTTPEvent): String = event.requestContext.http.method
 
-    val s3ConfigUrl: String by lazy {
-        EnvVars.getEnv("IMPOSTER_S3_CONFIG_URL")
-            ?: throw IllegalStateException("Missing S3 configuration URL")
+    override fun getRequestPath(event: APIGatewayV2HTTPEvent): String = event.requestContext.http.path
+
+    override fun buildRequest(event: APIGatewayV2HTTPEvent, route: HttpRoute?) = LambdaHttpRequestV2(event, route)
+
+    override fun buildResponse(response: LambdaHttpResponse) = APIGatewayV2HTTPResponse().apply {
+        // read status again in case modified by error handler
+        statusCode = response.getStatusCode()
+
+        headers = response.headers
+
+        if (response.bodyLength > 0) {
+            body = response.bodyBuffer?.toString(Charsets.UTF_8)
+            isBase64Encoded = false
+        }
     }
 }

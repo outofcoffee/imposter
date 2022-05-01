@@ -1,0 +1,15 @@
+{
+  "headers": {},
+  "queryStringParameters": {},
+  "pathParameters": {
+    "petId": "1"
+  },
+  "body": null,
+  "isBase64Encoded": false,
+  "requestContext": {
+    "http": {
+      "path": "/pets/1",
+      "method":  "GET"
+    }
+  }
+}

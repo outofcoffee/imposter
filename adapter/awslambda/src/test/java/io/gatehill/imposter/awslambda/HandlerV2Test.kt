@@ -1,5 +1,5 @@
-package io.gatehill.imposter.awslambda/*
- * Copyright (c) 2016-2021.
+/*
+ * Copyright (c) 2016-2022.
  *
  * This file is part of Imposter.
  *
@@ -41,8 +41,10 @@ package io.gatehill.imposter.awslambda/*
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+package io.gatehill.imposter.awslambda
+
 import com.amazonaws.services.lambda.runtime.Context
-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent
 import com.amazonaws.services.lambda.runtime.tests.annotations.Event
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -51,21 +53,21 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.mockito.Mockito.mock
 
 /**
- * Test event handling for V1 events.
+ * Test event handling for V2 events.
  */
-class HandlerTest : AbstractHandlerTest() {
-    private var handler: Handler? = null
+class HandlerV2Test : AbstractHandlerTest() {
+    private var handler: HandlerV2? = null
     private var context: Context? = null
 
     @BeforeEach
     fun setUp() {
-        handler = Handler()
+        handler = HandlerV2()
         context = mock(Context::class.java)
     }
 
     @ParameterizedTest
-    @Event(value = "requests_v1/request_spec_example.json", type = APIGatewayProxyRequestEvent::class)
-    fun `get example from spec`(event: APIGatewayProxyRequestEvent) {
+    @Event(value = "requests_v2/request_spec_example.json", type = APIGatewayV2HTTPEvent::class)
+    fun `get example from spec`(event: APIGatewayV2HTTPEvent) {
         val responseEvent = handler!!.handleRequest(event, context!!)
 
         assertNotNull(responseEvent, "Response event should be returned")
@@ -76,8 +78,8 @@ class HandlerTest : AbstractHandlerTest() {
     }
 
     @ParameterizedTest
-    @Event(value = "requests_v1/request_static_file.json", type = APIGatewayProxyRequestEvent::class)
-    fun `get static file`(event: APIGatewayProxyRequestEvent) {
+    @Event(value = "requests_v2/request_static_file.json", type = APIGatewayV2HTTPEvent::class)
+    fun `get static file`(event: APIGatewayV2HTTPEvent) {
         val responseEvent = handler!!.handleRequest(event, context!!)
 
         assertNotNull(responseEvent, "Response event should be returned")
@@ -88,8 +90,8 @@ class HandlerTest : AbstractHandlerTest() {
     }
 
     @ParameterizedTest
-    @Event(value = "requests_v1/request_no_route.json", type = APIGatewayProxyRequestEvent::class)
-    fun `no matching route`(event: APIGatewayProxyRequestEvent) {
+    @Event(value = "requests_v2/request_no_route.json", type = APIGatewayV2HTTPEvent::class)
+    fun `no matching route`(event: APIGatewayV2HTTPEvent) {
         val responseEvent = handler!!.handleRequest(event, context!!)
 
         assertNotNull(responseEvent, "Response event should be returned")
