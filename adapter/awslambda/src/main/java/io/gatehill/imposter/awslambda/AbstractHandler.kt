@@ -43,40 +43,53 @@
 
 package io.gatehill.imposter.awslambda
 
-import com.amazonaws.services.lambda.runtime.Context
-import com.amazonaws.services.lambda.runtime.RequestHandler
-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent
-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent
+import io.gatehill.imposter.awslambda.config.Settings
+import io.gatehill.imposter.awslambda.impl.LambdaServer
 import io.gatehill.imposter.awslambda.impl.LambdaServerFactory
+import io.gatehill.imposter.awslambda.util.ImposterBuilderKt
+import io.gatehill.imposter.plugin.openapi.OpenApiPluginImpl
+import io.gatehill.imposter.plugin.rest.RestPluginImpl
+import io.gatehill.imposter.server.RequestHandlingMode
+import io.gatehill.imposter.util.InjectorUtil
+import io.gatehill.imposter.util.LogUtil
+import org.apache.logging.log4j.LogManager
 
 /**
- * AWS Lambda handler accepting event type for API Gateway V1 REST APIs.
+ * AWS Lambda handler.
  *
  * @author Pete Cornish
  */
-class Handler : AbstractHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent>(
-    LambdaServerFactory.EventType.ApiGatewayV1
-), RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+abstract class AbstractHandler<Request, Response>(
+    eventType: LambdaServerFactory.EventType
+) {
+    protected val logger = LogManager.getLogger(AbstractHandler::class.java)
+    protected val server: LambdaServer<Request, Response>
 
-    override fun handleRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent {
-        val response = try {
-            if (logger.isTraceEnabled) {
-                logger.trace("Received request: $input")
-            } else {
-                logger.info("Received request: ${input.httpMethod} ${input.path}")
-            }
-            server.dispatch(input)
+    init {
+        // lambda functions are only allowed write access to /tmp
+        System.setProperty("vertx.cacheDirBase", "/tmp/.vertx")
+        System.setProperty("java.io.tmpdir", "/tmp")
 
-        } catch (e: Exception) {
-            logger.error(e)
-            APIGatewayProxyResponseEvent().withStatusCode(500)
-        }
+        LogUtil.configureLoggingFromEnvironment()
+        LogUtil.configureVertxLogging()
 
-        if (logger.isTraceEnabled) {
-            logger.trace("Sending response: $response")
-        } else {
-            logger.info("Sending response: [statusCode=${response.statusCode},body=<${response.body?.let { "${it.length} bytes" } ?: "null"}>]")
-        }
-        return response
+        LambdaServerFactory.eventType = eventType
+
+        ImposterBuilderKt()
+            .withPluginClass(OpenApiPluginImpl::class.java)
+            .withPluginClass(RestPluginImpl::class.java)
+            .withConfigurationDir(Settings.configDir ?: Settings.s3ConfigUrl)
+            .withEngineOptions { options ->
+                options.pluginDiscoveryStrategy = Settings.pluginDiscoveryStrategy
+                options.serverFactory = LambdaServerFactory::class.qualifiedName
+                options.requestHandlingMode = RequestHandlingMode.SYNC
+            }.startBlocking()
+
+        val serverFactory = InjectorUtil.injector!!.getInstance(LambdaServerFactory::class.java)
+
+        @Suppress("UNCHECKED_CAST")
+        server = serverFactory.activeServer as LambdaServer<Request, Response>
+
+        logger.info("Imposter handler ready")
     }
 }

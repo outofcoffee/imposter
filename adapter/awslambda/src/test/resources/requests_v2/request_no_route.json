@@ -1,0 +1,13 @@
+{
+  "headers": {},
+  "queryStringParameters": {},
+  "pathParameters": {},
+  "body": null,
+  "isBase64Encoded": false,
+  "requestContext": {
+    "http": {
+      "path": "/does_not_match",
+      "method":  "GET"
+    }
+  }
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2021.
+ * Copyright (c) 2022.
  *
  * This file is part of Imposter.
  *
@@ -41,42 +41,76 @@
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.gatehill.imposter.awslambda
+package io.gatehill.imposter.awslambda.impl.model
 
-import com.amazonaws.services.lambda.runtime.Context
-import com.amazonaws.services.lambda.runtime.RequestHandler
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent
-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent
-import io.gatehill.imposter.awslambda.impl.LambdaServerFactory
+import io.gatehill.imposter.http.HttpRequest
+import io.gatehill.imposter.http.HttpRoute
+import io.gatehill.imposter.plugin.config.resource.ResourceMethod
+import io.vertx.core.buffer.Buffer
+import io.vertx.core.json.JsonObject
 
 /**
- * AWS Lambda handler accepting event type for API Gateway V1 REST APIs.
- *
  * @author Pete Cornish
  */
-class Handler : AbstractHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent>(
-    LambdaServerFactory.EventType.ApiGatewayV1
-), RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+class LambdaHttpRequestV1(
+    private val event: APIGatewayProxyRequestEvent,
+    private val currentRoute: HttpRoute?,
+) : HttpRequest {
+    private val baseUrl: String
 
-    override fun handleRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent {
-        val response = try {
-            if (logger.isTraceEnabled) {
-                logger.trace("Received request: $input")
-            } else {
-                logger.info("Received request: ${input.httpMethod} ${input.path}")
-            }
-            server.dispatch(input)
+    private val pathParameters by lazy {
+        currentRoute?.extractPathParams(path()) ?: emptyMap()
+    }
 
-        } catch (e: Exception) {
-            logger.error(e)
-            APIGatewayProxyResponseEvent().withStatusCode(500)
-        }
+    init {
+        baseUrl = "http://" + (getHeader("Host") ?: "0.0.0.0")
+    }
 
-        if (logger.isTraceEnabled) {
-            logger.trace("Sending response: $response")
-        } else {
-            logger.info("Sending response: [statusCode=${response.statusCode},body=<${response.body?.let { "${it.length} bytes" } ?: "null"}>]")
-        }
-        return response
+    override fun path(): String {
+        return event.path ?: ""
+    }
+
+    override fun method(): ResourceMethod {
+        return ResourceMethod.valueOf(event.httpMethod!!)
+    }
+
+    override fun absoluteURI(): String {
+        return "$baseUrl${path()}"
+    }
+
+    override fun headers(): Map<String, String> {
+        return event.headers ?: emptyMap()
+    }
+
+    override fun getHeader(headerKey: String): String? {
+        return event.headers?.get(headerKey)
+    }
+
+    override fun pathParams(): Map<String, String> {
+        return pathParameters
+    }
+
+    override fun queryParams(): Map<String, String> {
+        return event.queryStringParameters ?: emptyMap()
+    }
+
+    override fun pathParam(paramName: String): String? {
+        return pathParameters[paramName]
+    }
+
+    override fun queryParam(queryParam: String): String? {
+        return event.queryStringParameters?.get(queryParam)
+    }
+
+    override val body: Buffer? by lazy {
+        event.body?.let { Buffer.buffer(it) }
+    }
+
+    override val bodyAsString: String?
+        get() = event.body
+
+    override val bodyAsJson: JsonObject? by lazy {
+        event.body?.let { JsonObject(it) }
     }
 }

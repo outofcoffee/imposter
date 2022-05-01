@@ -55,11 +55,14 @@ import java.util.concurrent.CompletableFuture
  * @author Pete Cornish
  */
 class LambdaServerFactory : ServerFactory {
-    lateinit var activeServer: LambdaServer
+    lateinit var activeServer: LambdaServer<*, *>
         private set
 
     override fun provide(imposterConfig: ImposterConfig, vertx: Vertx, router: HttpRouter): CompletableFuture<HttpServer> {
-        activeServer = LambdaServer(router)
+        activeServer = when (eventType) {
+            EventType.ApiGatewayV1 -> ServerV1(router)
+            EventType.ApiGatewayV2 -> ServerV2(router)
+        }
         return CompletableFuture.completedFuture(activeServer)
     }
 
@@ -68,4 +71,13 @@ class LambdaServerFactory : ServerFactory {
     override fun createStaticHttpHandler(root: String): HttpExchangeHandler = {}
 
     override fun createMetricsHandler(): HttpExchangeHandler = {}
+
+    companion object {
+        lateinit var eventType: EventType
+    }
+
+    enum class EventType {
+        ApiGatewayV1,
+        ApiGatewayV2,
+    }
 }
