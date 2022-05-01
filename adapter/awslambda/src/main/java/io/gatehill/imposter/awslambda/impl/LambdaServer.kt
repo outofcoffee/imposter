@@ -43,9 +43,10 @@
 
 package io.gatehill.imposter.awslambda.impl
 
-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent
-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent
+import io.gatehill.imposter.awslambda.impl.model.LambdaHttpExchange
+import io.gatehill.imposter.awslambda.impl.model.LambdaHttpResponse
 import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.http.HttpRoute
 import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.server.HttpServer
@@ -53,13 +54,16 @@ import io.gatehill.imposter.util.HttpUtil
 import io.vertx.core.AsyncResult
 import io.vertx.core.Handler
 import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 import java.util.Collections.synchronizedMap
 
 /**
  * @author Pete Cornish
  */
-class LambdaServer(router: HttpRouter) : HttpServer {
-    private val logger = LogManager.getLogger(LambdaServer::class.java)
+abstract class LambdaServer<Request, Response>(
+    router: HttpRouter,
+) : HttpServer {
+    protected val logger: Logger = LogManager.getLogger(LambdaServer::class.java)
     private val routes: Array<HttpRoute>
     private val errorHandlers: Map<Int, (HttpExchange) -> Unit>
 
@@ -68,13 +72,13 @@ class LambdaServer(router: HttpRouter) : HttpServer {
         errorHandlers = synchronizedMap(router.errorHandlers)
     }
 
-    fun dispatch(event: APIGatewayProxyRequestEvent): APIGatewayProxyResponseEvent {
-        val request = LambdaHttpRequest(event)
+    fun dispatch(event: Request): Response {
         val response = LambdaHttpResponse()
         var failureCause: Throwable? = null
         try {
-            matchRoutes(request, event, response).forEach { route ->
+            matchRoutes(getRequestPath(event), getRequestMethod(event), event, response).forEach { route ->
                 val handler = route.handler ?: throw IllegalStateException("No route handler set for: $route")
+                val request = buildRequest(event, route)
                 val exchange = LambdaHttpExchange(request, response, route)
                 try {
                     handler(exchange)
@@ -94,42 +98,40 @@ class LambdaServer(router: HttpRouter) : HttpServer {
         when (val statusCode = response.getStatusCode()) {
             in 400..499 -> {
                 errorHandlers[statusCode]?.let { errorHandler ->
-                    val exchange = LambdaHttpExchange(request, response, null)
-                    exchange.fail(statusCode)
-                    errorHandler(exchange)
+                    failExchange(event, response, statusCode, null, errorHandler)
                 } ?: logger.warn("Unhandled client error for: ${describeRequestShort(event)} [status code: $statusCode]")
             }
             in 500..599 -> {
                 errorHandlers[statusCode]?.let { errorHandler ->
-                    val exchange = LambdaHttpExchange(request, response, null)
-                    exchange.fail(statusCode, failureCause)
-                    errorHandler(exchange)
+                    failExchange(event, response, statusCode, failureCause, errorHandler)
                 } ?: logger.error("Unhandled server error for: ${describeRequestShort(event)} [status code: $statusCode]", failureCause)
             }
         }
 
-        // read status again in case modified by error handler
-        val responseEvent = APIGatewayProxyResponseEvent()
-            .withStatusCode(response.getStatusCode())
-            .withHeaders(response.headers)
+        return buildResponse(response)
+    }
 
-        if (response.bodyLength > 0) {
-            responseEvent
-                .withBody(response.bodyBuffer?.toString(Charsets.UTF_8))
-                .withIsBase64Encoded(false)
-        }
-
-        return responseEvent
+    private fun failExchange(
+        event: Request,
+        response: LambdaHttpResponse,
+        statusCode: Int,
+        failureCause: Throwable?,
+        errorHandler: (HttpExchange) -> Unit,
+    ) {
+        val request = buildRequest(event, null)
+        val exchange = LambdaHttpExchange(request, response, null)
+        exchange.fail(statusCode, failureCause)
+        errorHandler(exchange)
     }
 
     private fun matchRoutes(
-        request: LambdaHttpRequest,
-        event: APIGatewayProxyRequestEvent,
-        response: LambdaHttpResponse
+        requestPath: String,
+        requestMethod: String,
+        event: Request,
+        response: LambdaHttpResponse,
     ): List<HttpRoute> {
         val matchedRoutes = routes.filter { route ->
-            route.matches(request.path()) &&
-                    (null == route.method || request.method() == route.method)
+            route.matches(requestPath) && (null == route.method || requestMethod == route.method.toString())
         }
         if (matchedRoutes.isEmpty() || matchedRoutes.all { it.isCatchAll() }) {
             logger.trace("No explicit routes matched for: ${describeRequestShort(event)}")
@@ -145,15 +147,16 @@ class LambdaServer(router: HttpRouter) : HttpServer {
         return matchedRoutes
     }
 
-    /**
-     * @param event the request event
-     * @return a short description of the request
-     */
-    private fun describeRequestShort(event: APIGatewayProxyRequestEvent): String {
-        return event.httpMethod + " " + event.path
-    }
-
     override fun close(onCompletion: Handler<AsyncResult<Void>>) {
         /* no op */
     }
+
+    private fun describeRequestShort(event: Request): String {
+        return getRequestMethod(event) + " " + getRequestPath(event)
+    }
+
+    protected abstract fun getRequestMethod(event: Request): String
+    protected abstract fun getRequestPath(event: Request): String
+    protected abstract fun buildRequest(event: Request, route: HttpRoute?): HttpRequest
+    protected abstract fun buildResponse(response: LambdaHttpResponse): Response
 }

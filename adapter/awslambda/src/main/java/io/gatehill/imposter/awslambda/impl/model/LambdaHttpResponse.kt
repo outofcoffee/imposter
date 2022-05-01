@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021.
+ * Copyright (c) 2022.
  *
  * This file is part of Imposter.
  *
@@ -41,25 +41,50 @@
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.gatehill.imposter.awslambda.config
+package io.gatehill.imposter.awslambda.impl.model
 
-import io.gatehill.imposter.config.util.EnvVars
+import io.gatehill.imposter.http.HttpResponse
+import io.vertx.core.MultiMap
+import io.vertx.core.buffer.Buffer
+import io.vertx.core.http.impl.headers.HeadersMultiMap
 
 /**
  * @author Pete Cornish
  */
-object Settings {
-    val configDir: String? by lazy {
-        EnvVars.getEnv("IMPOSTER_CONFIG_DIR")
+class LambdaHttpResponse : HttpResponse {
+    private var statusCode: Int = 200
+    override var bodyBuffer: Buffer? = null
+    val headers = mutableMapOf<String, String>()
+
+    override fun setStatusCode(statusCode: Int): HttpResponse {
+        this.statusCode = statusCode
+        return this
     }
 
-    val pluginDiscoveryStrategy: String by lazy {
-        EnvVars.getEnv("IMPOSTER_PLUGIN_DISCOVERY_STRATEGY")
-            ?: StaticPluginDiscoveryStrategyImpl::class.qualifiedName!!
+    override fun getStatusCode(): Int {
+        return this.statusCode
     }
 
-    val s3ConfigUrl: String by lazy {
-        EnvVars.getEnv("IMPOSTER_S3_CONFIG_URL")
-            ?: throw IllegalStateException("Missing S3 configuration URL")
+    override fun putHeader(headerKey: String, headerValue: String): HttpResponse {
+        headers[headerKey] = headerValue
+        return this
     }
+
+    override fun headers(): MultiMap {
+        return HeadersMultiMap.headers().addAll(this.headers)
+    }
+
+    override fun end() {
+        /* no op */
+    }
+
+    override fun end(body: Buffer) {
+        bodyBuffer = body
+        if (!headers.containsKey("Content-Length") && bodyLength > 0) {
+            headers["Content-Length"] = bodyLength.toString()
+        }
+    }
+
+    val bodyLength
+        get() = bodyBuffer?.length() ?: 0
 }

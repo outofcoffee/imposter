@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021.
+ * Copyright (c) 2021-2022.
  *
  * This file is part of Imposter.
  *
@@ -41,25 +41,42 @@
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.gatehill.imposter.awslambda.config
+package io.gatehill.imposter.awslambda
 
-import io.gatehill.imposter.config.util.EnvVars
+import com.amazonaws.services.lambda.runtime.Context
+import com.amazonaws.services.lambda.runtime.RequestHandler
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse
+import io.gatehill.imposter.awslambda.impl.LambdaServerFactory
 
 /**
+ * AWS Lambda handler accepting event type for Function URL or API Gateway V2 HTTP APIs.
+ *
  * @author Pete Cornish
  */
-object Settings {
-    val configDir: String? by lazy {
-        EnvVars.getEnv("IMPOSTER_CONFIG_DIR")
-    }
+class HandlerV2 : AbstractHandler<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse>(
+    LambdaServerFactory.EventType.ApiGatewayV2
+), RequestHandler<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse> {
 
-    val pluginDiscoveryStrategy: String by lazy {
-        EnvVars.getEnv("IMPOSTER_PLUGIN_DISCOVERY_STRATEGY")
-            ?: StaticPluginDiscoveryStrategyImpl::class.qualifiedName!!
-    }
+    override fun handleRequest(input: APIGatewayV2HTTPEvent, context: Context): APIGatewayV2HTTPResponse {
+        val response: APIGatewayV2HTTPResponse = try {
+            if (logger.isTraceEnabled) {
+                logger.trace("Received request: $input")
+            } else {
+                logger.info("Received request: ${input.requestContext?.http?.method} ${input.requestContext?.http?.path}")
+            }
+            server.dispatch(input)
 
-    val s3ConfigUrl: String by lazy {
-        EnvVars.getEnv("IMPOSTER_S3_CONFIG_URL")
-            ?: throw IllegalStateException("Missing S3 configuration URL")
+        } catch (e: Exception) {
+            logger.error(e)
+            APIGatewayV2HTTPResponse().apply { statusCode = 500 }
+        }
+
+        if (logger.isTraceEnabled) {
+            logger.trace("Sending response: $response")
+        } else {
+            logger.info("Sending response: [statusCode=${response.statusCode},body=<${response.body?.let { "${it.length} bytes" } ?: "null"}>]")
+        }
+        return response
     }
 }

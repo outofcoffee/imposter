@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2021.
+ * Copyright (c) 2021-2022.
  *
  * This file is part of Imposter.
  *
@@ -41,20 +41,16 @@
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.gatehill.imposter.awslambda.impl
+package io.gatehill.imposter.awslambda.impl.model
 
-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent
 import com.google.common.base.Strings
 import io.gatehill.imposter.http.ExchangePhase
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.http.HttpResponse
 import io.gatehill.imposter.http.HttpRoute
-import io.gatehill.imposter.plugin.config.resource.ResourceMethod
 import io.gatehill.imposter.util.HttpUtil
-import io.vertx.core.MultiMap
 import io.vertx.core.buffer.Buffer
-import io.vertx.core.http.impl.headers.HeadersMultiMap
 import io.vertx.core.json.JsonObject
 
 /**
@@ -142,110 +138,4 @@ class LambdaHttpExchange(
     override fun put(key: String, value: Any) {
         attributes[key] = value
     }
-}
-
-/**
- * @author Pete Cornish
- */
-class LambdaHttpRequest(
-    private val event: APIGatewayProxyRequestEvent,
-    private val currentRoute: HttpRoute?,
-) : HttpRequest {
-    private val baseUrl: String
-
-    private val pathParameters by lazy {
-        currentRoute?.extractPathParams(path()) ?: emptyMap()
-    }
-
-    init {
-        baseUrl = "http://" + (getHeader("Host") ?: "0.0.0.0")
-    }
-
-    override fun path(): String {
-        return event.path ?: ""
-    }
-
-    override fun method(): ResourceMethod {
-        return ResourceMethod.valueOf(event.httpMethod!!)
-    }
-
-    override fun absoluteURI(): String {
-        return "$baseUrl${path()}"
-    }
-
-    override fun headers(): Map<String, String> {
-        return event.headers ?: emptyMap()
-    }
-
-    override fun getHeader(headerKey: String): String? {
-        return event.headers?.get(headerKey)
-    }
-
-    override fun pathParams(): Map<String, String> {
-        return pathParameters
-    }
-
-    override fun queryParams(): Map<String, String> {
-        return event.queryStringParameters ?: emptyMap()
-    }
-
-    override fun pathParam(paramName: String): String? {
-        return pathParameters[paramName]
-    }
-
-    override fun queryParam(queryParam: String): String? {
-        return event.queryStringParameters?.get(queryParam)
-    }
-
-    override val body: Buffer? by lazy {
-        event.body?.let { Buffer.buffer(it) }
-    }
-
-    override val bodyAsString: String?
-        get() = event.body
-
-    override val bodyAsJson: JsonObject? by lazy {
-        event.body?.let { JsonObject(it) }
-    }
-}
-
-/**
- * @author Pete Cornish
- */
-class LambdaHttpResponse : HttpResponse {
-    private var statusCode: Int = 200
-    override var bodyBuffer: Buffer? = null
-    val headers = mutableMapOf<String, String>()
-
-    override fun setStatusCode(statusCode: Int): HttpResponse {
-        this.statusCode = statusCode
-        return this
-    }
-
-    override fun getStatusCode(): Int {
-        return this.statusCode
-    }
-
-    override fun putHeader(headerKey: String, headerValue: String): HttpResponse {
-        headers[headerKey] = headerValue
-        return this
-    }
-
-    override fun headers(): MultiMap {
-        return HeadersMultiMap.headers().addAll(this.headers)
-    }
-
-    override fun end() {
-        /* no op */
-    }
-
-    override fun end(body: Buffer) {
-        bodyBuffer = body
-        if (!headers.containsKey("Content-Length") && bodyLength > 0) {
-            headers["Content-Length"] = bodyLength.toString()
-        }
-    }
-
-    val bodyLength
-        get() = bodyBuffer?.length() ?: 0
 }
