@@ -93,7 +93,8 @@ class ScriptedResponseTest : BaseVerticleTest() {
             .log().ifValidationFails()
             .accept(ContentType.TEXT)
             .`when`()
-            .header("Authorization", "AUTH_HEADER")["/simple/apis"]
+            .header("Authorization", "AUTH_HEADER")
+            .get("/simple/apis")
             .then()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_NO_CONTENT))
     }
@@ -103,7 +104,8 @@ class ScriptedResponseTest : BaseVerticleTest() {
         RestAssured.given()
             .log().ifValidationFails()
             .accept(ContentType.TEXT)
-            .`when`()["/simple/apis?param1=foo"]
+            .`when`()
+            .get("/simple/apis?param1=foo")
             .then()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_ACCEPTED))
     }
