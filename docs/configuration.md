@@ -61,7 +61,7 @@ Using the configuration above, if we were to send an HTTP request to the `/examp
 
 The plugin has returned the contents of the `staticFile` in the HTTP response.
 
-Your response files can also be templated - that is, contain placeholders for substituted at runtime. See [templates](./templates.md) for more information.
+Your response files can also be templated - that is, contain placeholders substituted at runtime. See [templates](./templates.md) for more information.
 
 ### Response configuration options
 
@@ -85,10 +85,10 @@ response:
 
 A few things to call out:
 
-* This endpoint will only be accessible via the `POST` HTTP method
-* We've indicated that status code 201 should be returned
-* We've set the content type of the response to JSON
-* A custom header will be returned
+- This endpoint will only be accessible via the `POST` HTTP method
+- We've indicated that status code 201 should be returned
+- We've set the content type of the response to JSON
+- A custom header will be returned
 
 #### Multiple resources example
 
@@ -164,11 +164,13 @@ If unset by configuration or a script, the default values for response configura
 
 ## Conditional responses
 
-You can make Imposter respond with different values based on certain properties of the request in your configuration file, or using the script engine.
+You can make Imposter respond with different values based on certain properties of the request.
+
+Conditional responses can be set in your configuration file, or using the script engine.
 
 > For information about the script engine, see the [Scripting](./scripting.md) documentation.
 
-Configure different response behaviours based on the following request attributes:
+Using the configuration file approach, it is possible to configure different response behaviours based on the following request attributes:
 
 | Field            | Plugin(s)     | Type                                | Example                                        |
 |------------------|---------------|-------------------------------------|------------------------------------------------|
@@ -219,7 +221,9 @@ You can also match resources based on the request body (both JSON and XML are su
 
 ## Capturing data
 
-Imposter allows you to capture elements of the request. You can use these elements in a [response template](./templates.md), a [script](./scripting.md) or add them to a [store](./stores.md) for later use. See [data capture](./data_capture.md) for more information.
+Imposter allows you to capture elements of the request. You can use these elements in a [response template](./templates.md), a [script](./scripting.md) or add them to a [store](./stores.md) for later use.
+
+See [data capture](./data_capture.md) for more information.
 
 ## Environment variables
 
