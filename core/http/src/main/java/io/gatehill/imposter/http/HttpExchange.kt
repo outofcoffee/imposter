@@ -42,9 +42,6 @@
  */
 package io.gatehill.imposter.http
 
-import com.fasterxml.jackson.annotation.JsonAlias
-import io.gatehill.imposter.plugin.config.resource.ResourceMethod
-import io.vertx.core.MultiMap
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.json.JsonObject
 
@@ -100,63 +97,4 @@ interface HttpExchange {
             return@run value
         }
     }
-}
-
-/**
- * @author Pete Cornish
- */
-enum class ExchangePhase {
-    @JsonAlias("request-received")
-    REQUEST_RECEIVED,
-
-    /**
-     * After the HTTP exchange has been dispatched, but the response may not yet have
-     * been sent. Note: response may not have been transmitted if delay set.
-     */
-    @JsonAlias("request-dispatched")
-    REQUEST_DISPATCHED,
-
-    /**
-     * After the HTTP response has been sent. This is after delayed responses, but assumes
-     * that any fallback handlers have blocked until the response has been completely passed
-     * to the underlying adapter, and therefore it is safe to perform cleanup activities.
-     */
-    @JsonAlias("response-sent")
-    RESPONSE_SENT,
-}
-
-/**
- * @author Pete Cornish
- */
-interface HttpRequest {
-    fun path(): String
-    fun method(): ResourceMethod
-    fun absoluteURI(): String
-    fun headers(): Map<String, String>
-    fun getHeader(headerKey: String): String?
-    fun pathParams(): Map<String, String>
-    fun queryParams(): Map<String, String>
-    fun pathParam(paramName: String): String?
-    fun queryParam(queryParam: String): String?
-
-    val body: Buffer?
-    val bodyAsString: String?
-    val bodyAsJson: JsonObject?
-}
-
-/**
- * @author Pete Cornish
- */
-interface HttpResponse {
-    fun setStatusCode(statusCode: Int): HttpResponse
-    fun getStatusCode(): Int
-    fun putHeader(headerKey: String, headerValue: String): HttpResponse
-    fun headers(): MultiMap
-    fun end()
-    fun end(body: Buffer)
-    fun end(body: String?) {
-        body?.let { end(Buffer.buffer(body)) } ?: end()
-    }
-
-    val bodyBuffer: Buffer?
 }

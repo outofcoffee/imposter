@@ -43,9 +43,9 @@
 package io.gatehill.imposter.util
 
 import com.google.common.base.Strings
+import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.plugin.config.resource.MethodResourceConfig
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig
-import io.gatehill.imposter.plugin.config.resource.ResourceMethod
 import java.util.regex.Pattern
 
 /**
@@ -91,11 +91,11 @@ object ResourceUtil {
     /**
      * Extracts the resource method.
      */
-    fun extractResourceMethod(resourceConfig: ResourceConfig): ResourceMethod? {
+    fun extractResourceMethod(resourceConfig: ResourceConfig): HttpMethod? {
         return if (resourceConfig is MethodResourceConfig) {
             return (resourceConfig as MethodResourceConfig).method
         } else {
-            ResourceMethod.GET
+            HttpMethod.GET
         }
     }
 }

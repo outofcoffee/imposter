@@ -12,6 +12,8 @@ project(':core:config').name = 'config'
 include ':core:engine'
 project(':core:engine').name = 'imposter-engine'
 
+include ':core:http'
+
 include ':core:plugin-detector'
 
 include ':core:s3resolver'

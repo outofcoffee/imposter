@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2022.
  *
  * This file is part of Imposter.
  *
@@ -40,87 +40,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 package io.gatehill.imposter.http
 
-import io.gatehill.imposter.plugin.config.resource.ResourceMethod
-import io.vertx.core.Vertx
 import java.util.regex.Pattern
-
-/**
- * @author Pete Cornish
- */
-class HttpRouter(val vertx: Vertx) {
-    val routes = mutableListOf<HttpRoute>()
-    val errorHandlers = mutableMapOf<Int, HttpExchangeHandler>()
-
-    fun route(): HttpRoute {
-        return HttpRoute().also(routes::add)
-    }
-
-    fun route(path: String): HttpRoute {
-        return HttpRoute(path = path).also(routes::add)
-    }
-
-    fun route(method: ResourceMethod, path: String): HttpRoute {
-        return HttpRoute(path = path, method = method).also(routes::add)
-    }
-
-    fun routeWithRegex(method: ResourceMethod, regex: String): HttpRoute {
-        return HttpRoute(regex = regex, method = method).also(routes::add)
-    }
-
-    fun get(path: String): HttpRoute {
-        return route(ResourceMethod.GET, path)
-    }
-
-    fun post(path: String): HttpRoute {
-        return route(ResourceMethod.POST, path)
-    }
-
-    fun put(path: String): HttpRoute {
-        return route(ResourceMethod.PUT, path)
-    }
-
-    fun patch(path: String): HttpRoute {
-        return route(ResourceMethod.PATCH, path)
-    }
-
-    fun delete(path: String): HttpRoute {
-        return route(ResourceMethod.DELETE, path)
-    }
-
-    fun options(path: String): HttpRoute {
-        return route(ResourceMethod.OPTIONS, path)
-    }
-
-    fun head(path: String): HttpRoute {
-        return route(ResourceMethod.HEAD, path)
-    }
-
-    fun connect(path: String): HttpRoute {
-        return route(ResourceMethod.CONNECT, path)
-    }
-
-    fun trace(path: String): HttpRoute {
-        return route(ResourceMethod.TRACE, path)
-    }
-
-    fun getWithRegex(regex: String): HttpRoute {
-        return routeWithRegex(ResourceMethod.GET, regex)
-    }
-
-    fun errorHandler(statusCode: Int, handler: HttpExchangeHandler) {
-        errorHandlers[statusCode] = handler
-    }
-
-    companion object {
-        fun router(vertx: Vertx): HttpRouter {
-            return HttpRouter(vertx)
-        }
-    }
-}
-
-typealias HttpExchangeHandler = (HttpExchange) -> Unit
 
 /**
  * @author Pete Cornish
@@ -128,7 +51,7 @@ typealias HttpExchangeHandler = (HttpExchange) -> Unit
 data class HttpRoute(
     val path: String? = null,
     val regex: String? = null,
-    val method: ResourceMethod? = null
+    val method: HttpMethod? = null
 ) {
     var handler: HttpExchangeHandler? = null
 

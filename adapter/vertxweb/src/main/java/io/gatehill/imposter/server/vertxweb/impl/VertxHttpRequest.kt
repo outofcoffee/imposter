@@ -42,8 +42,8 @@
  */
 package io.gatehill.imposter.server.vertxweb.impl
 
+import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.http.HttpRequest
-import io.gatehill.imposter.plugin.config.resource.ResourceMethod
 import io.gatehill.imposter.server.vertxweb.util.VertxResourceUtil
 import io.gatehill.imposter.util.CollectionUtil
 import io.vertx.core.buffer.Buffer
@@ -64,7 +64,7 @@ class VertxHttpRequest(
         return vertxRequest.path() ?: ""
     }
 
-    override fun method(): ResourceMethod {
+    override fun method(): HttpMethod {
         return VertxResourceUtil.convertMethodFromVertx(vertxRequest.method())
     }
 
