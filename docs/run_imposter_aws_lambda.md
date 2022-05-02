@@ -33,7 +33,7 @@ The key concepts are:
 - you upload the Imposter JAR file and your configuration files to an S3 bucket
 - you create a Lambda function using the JAR file as the code source
 - you set the environment variables of the function to refer to the configuration path in S3
-- you access the Lambda function via Amazon API Gateway, using the proxy integration
+- you access the Lambda function via a Lambda Function URL or Amazon API Gateway
 
 ### Prerequisites
 
@@ -59,11 +59,15 @@ s3://example-imposter-bucket/config/response.json
 
 ### Option A: Using Serverless framework
 
+This method uses the [Serverless framework](https://www.serverless.com/framework) to create a Lambda function, and enables you to call it using the Lambda Function URL.
+
 #### Step 1: Install Serverless framework
 
-Install the [Serverless framework](https://www.serverless.com/framework/docs/getting-started):
+Install the Serverless framework:
 
     npm install -g serverless
+
+> See the [Serverless framework getting started](https://www.serverless.com/framework/docs/getting-started) documentation.
 
 #### Step 2: Download the JAR file
 
@@ -71,31 +75,37 @@ Download the `imposter-awslambda.jar` file from the [Releases page](https://gith
 
 #### Step 3: Configure the function 
 
-Use the following configuration file:
+Create the following configuration file, named `serverless.yml`:
 
 ```yaml
 service: aws-imposter-example
-frameworkVersion: '2'
+frameworkVersion: '3'
 
 provider:
   name: aws
-  runtime: java8
+  runtime: java11
+
+  # permit the function to fetch the config from an S3 bucket named 'imposter-lambda-example'
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action: "s3:GetObject"
+      Resource: "arn:aws:s3:::imposter-lambda-example/*"
+    - Effect: "Allow"
+      Action: "s3:ListBucket"
+      Resource: "arn:aws:s3:::imposter-lambda-example"
 
 package:
   individually: true
 
 functions:
   imposter:
-    handler: io.gatehill.imposter.awslambda.Handler
+    handler: "io.gatehill.imposter.awslambda.HandlerV2"
     timeout: 30
+    url: true
     package:
-      artifact: ./imposter-awslambda.jar
+      artifact: "./imposter-awslambda.jar"
     environment:
-      IMPOSTER_S3_CONFIG_URL: "s3://example-imposter-bucket/config/"
-    events:
-      - http:
-          method: any
-          path: /{proxy+}
+      IMPOSTER_S3_CONFIG_URL: "s3://imposter-lambda-example/config/"
 ```
 
 > Note: `IMPOSTER_S3_CONFIG_URL` is not the path to the YAML _file_ - it is the directory ('prefix') under which the file exists in the bucket.
@@ -112,9 +122,11 @@ Deploy your Lambda function with the Serverless CLI:
 
 Invoke the Imposter function:
 
-    curl https://<API Gateway URL>/system/status
+    curl https://<Lambda Function URL>/system/status
 
 ### Option B: Using the AWS Web Console
+
+This method uses the AWS Web Console to create a Lambda function, and enables you to call it using the Lambda Function URL.
 
 #### Step 1: Upload Imposter to an S3 bucket
 
@@ -130,15 +142,30 @@ s3://example-imposter-bucket/imposter-awslambda.jar
 
 #### Step 2: Create your Lambda function
 
-Open the [AWS Lambda Console](https://eu-west-1.console.aws.amazon.com/lambda/home). Create a new function using the Java 11 runtime, using the file you uploaded to S3 as the code source.
+Open the [AWS Lambda Console](https://eu-west-1.console.aws.amazon.com/lambda/home). Create a new function using the file you uploaded to S3 as the code source.
 
-*Important:* Set the handler to `io.gatehill.imposter.awslambda.Handler`
+*Important:* Set the following:
 
-Set the environment variable to point to the path holding the configuration files:
+- runtime: `Java 11`
+- architecture: `x86_64`
+
+![Create Lambda function](./images/lambda_create.png)
+
+#### Step 3 Set handler
+
+Under **Runtime settings** set the handler to: `io.gatehill.imposter.awslambda.HandlerV2`
+
+![Lambda handler](./images/lambda_handler.png)
+
+#### Step 3 Set environment variables
+
+Under **Configuration**, add the following environment variable:
 
 ```
 IMPOSTER_S3_CONFIG_URL="s3://example-imposter-bucket/config/"
 ```
+
+Set the environment variable to point to the path holding the configuration files:
 
 > Note: this is not the path to the YAML _file_ - it is the directory ('prefix') under which the file exists in the bucket.
 
@@ -146,15 +173,23 @@ IMPOSTER_S3_CONFIG_URL="s3://example-imposter-bucket/config/"
 
 See [deploy/example/bucket-policy.json](https://raw.githubusercontent.com/outofcoffee/imposter/main/distro/awslambda/deploy/example/bucket-policy.json) for an example IAM role.
 
-#### Step 3: Expose your function via API Gateway
+![Lambda environment variables](./images/lambda_config_env.png)
 
-Open the [AWS API Gateway console](https://console.aws.amazon.com/apigateway/home). Create a new API with an integration using the Lambda created above.
+#### Step 4 Enable function URL
 
-#### Step 4: Call the function
+Under **Configuration**, enable the 'Function URL' option - this will create an HTTPS endpoint for you to access Imposter.
+
+![Lambda function URL](./images/lambda_url.png)
+
+Once you have created it, you should see the Function URL:
+
+![Lambda web console](./images/lambda.png)
+
+#### Step 5 Call the function
 
 Invoke the Imposter function:
 
-    curl https://<API Gateway URL>/system/status
+    curl https://<Lambda Function URL>/system/status
 
 ---
 
