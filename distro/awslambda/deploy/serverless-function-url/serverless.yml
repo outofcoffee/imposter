@@ -26,4 +26,3 @@ functions:
       artifact: "../../build/libs/imposter-awslambda.jar"
     environment:
       IMPOSTER_S3_CONFIG_URL: "s3://imposter-lambda-example/config/"
-      IMPOSTER_LOG_LEVEL: "TRACE"
