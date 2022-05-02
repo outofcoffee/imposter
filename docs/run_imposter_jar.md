@@ -31,6 +31,8 @@ There are many ways to run Imposter. This section describes how to use a JAR fil
 
 You must have a JVM installed. Java 11 and 15 have been confirmed as compatible. Others may also be, but are not currently tested.
 
+> Note: As of version 3, Imposter no longer supports Java 8. If Java 8 support is required, Imposter 2.x is still available, but may no longer be maintained.
+
 Run the JAR as follows:
 
     java -jar distro/all/build/libs/imposter-all.jar \
