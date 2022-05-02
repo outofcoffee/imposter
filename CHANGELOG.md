@@ -3,9 +3,18 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [3.0.0] - 2022-05-03
 ## Added
-- ...
+- feat: adds handler for API Gateway V2 and Function URL events.
+- docs: adds serverless example and instructions for using Lambda Function URL.
+
+## Changed
+- BREAKING CHANGE: drops support for Java 8. Imposter no longer supports Java 8, due to the complexity of maintaining multiple codepaths depending on target JVMs. If Java 8 support is required, Imposter 2.x is still available, but may no longer be maintained.
+- BREAKING CHANGE: removes deprecated script context properties. As signalled in version 2.x, deprecated script context properties have been removed. Removal of legacy `context.params` map - use `context.request.queryParams` instead. Removal of legacy `context.request.params` map - use `context.request.queryParams` instead. Removal of legacy `context.uri` map - use `context.request.uri` instead.
+- BREAKING CHANGE: makes request header keys lowercase by default. Effectively sets IMPOSTER_NORMALISE_HEADER_KEYS=true.
+- BREAKING CHANGE: uses Query instead of Scan operation in DynamoDB store. Removes IMPOSTER_DYNAMODB_SCAN_TO_LIST_ALL and always uses Query operation to list items.
+- feat: removes UseCGroupMemoryLimitForHeap from container environment. Container aware memory allocation is enabled by default on Java 11.
+- refactor: moves HTTP core into separate module.
 
 ## [2.13.1] - 2022-04-28
 ## Added
