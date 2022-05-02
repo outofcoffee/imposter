@@ -253,7 +253,6 @@ resources:
   capture:
     adminUser:
       expression: "${datetime.now.iso8601_datetime}"
-      # constant value, use a dynamic key
       key:
         pathParam: userId
       store: adminUsers
