@@ -45,6 +45,7 @@ package io.gatehill.imposter.plugin.openapi
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpExchangeHandler
+import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.http.SingletonResourceMatcher
 import io.gatehill.imposter.http.StatusCodeFactory
@@ -52,7 +53,6 @@ import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.RequireModules
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
-import io.gatehill.imposter.plugin.config.resource.ResourceMethod
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig
 import io.gatehill.imposter.plugin.openapi.http.OpenApiResponseBehaviourFactory
 import io.gatehill.imposter.plugin.openapi.model.ParsedSpec
@@ -202,7 +202,7 @@ class OpenApiPluginImpl @Inject constructor(
             LOGGER.debug("Adding mock endpoint: {} -> {}", httpMethod, fullPath)
 
             // convert an io.swagger.models.HttpMethod to an io.vertx.core.http.HttpMethod
-            val method = ResourceMethod.valueOf(httpMethod.name)
+            val method = HttpMethod.valueOf(httpMethod.name)
             router.route(method, fullPath).handler(buildHandler(config, operation, spec))
         }
     }

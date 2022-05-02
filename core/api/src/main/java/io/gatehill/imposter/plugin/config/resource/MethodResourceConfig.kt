@@ -42,9 +42,11 @@
  */
 package io.gatehill.imposter.plugin.config.resource
 
+import io.gatehill.imposter.http.HttpMethod
+
 /**
  * @author Pete Cornish
  */
 interface MethodResourceConfig {
-    val method: ResourceMethod?
+    val method: HttpMethod?
 }

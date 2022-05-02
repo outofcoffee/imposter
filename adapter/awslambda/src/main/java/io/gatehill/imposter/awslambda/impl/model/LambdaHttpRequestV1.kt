@@ -44,9 +44,9 @@
 package io.gatehill.imposter.awslambda.impl.model
 
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent
+import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.http.HttpRoute
-import io.gatehill.imposter.plugin.config.resource.ResourceMethod
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.json.JsonObject
 
@@ -71,8 +71,8 @@ class LambdaHttpRequestV1(
         return event.path ?: ""
     }
 
-    override fun method(): ResourceMethod {
-        return ResourceMethod.valueOf(event.httpMethod!!)
+    override fun method(): HttpMethod {
+        return HttpMethod.valueOf(event.httpMethod!!)
     }
 
     override fun absoluteURI(): String {

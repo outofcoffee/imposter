@@ -44,13 +44,13 @@ package io.gatehill.imposter.plugin.rest
 
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.http.SingletonResourceMatcher
 import io.gatehill.imposter.http.UniqueRoute
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin
 import io.gatehill.imposter.plugin.config.ContentTypedConfig
-import io.gatehill.imposter.plugin.config.resource.ResourceMethod
 import io.gatehill.imposter.plugin.rest.config.ResourceConfigType
 import io.gatehill.imposter.plugin.rest.config.RestPluginConfig
 import io.gatehill.imposter.plugin.rest.config.RestPluginResourceConfig
@@ -102,7 +102,7 @@ class RestPluginImpl @Inject constructor(
         uniqueRoute: UniqueRoute,
     ) {
         val normalisedPath = normalisePath(uniqueRoute)
-        val method = uniqueRoute.method ?: ResourceMethod.GET
+        val method = uniqueRoute.method ?: HttpMethod.GET
         LOGGER.debug("Adding handler: {} -> {}", method, normalisedPath)
 
         router.route(method, normalisedPath).handler(

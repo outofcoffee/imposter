@@ -46,12 +46,12 @@ import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.http.DefaultResponseBehaviourFactory
 import io.gatehill.imposter.http.DefaultStatusCodeFactory
 import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.RequireModules
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
-import io.gatehill.imposter.plugin.config.resource.ResourceMethod
 import io.gatehill.imposter.plugin.soap.config.SoapPluginConfig
 import io.gatehill.imposter.plugin.soap.model.BindingType
 import io.gatehill.imposter.plugin.soap.model.ParsedSoapMessage
@@ -154,7 +154,7 @@ class SoapPluginImpl @Inject constructor(
         val soapResourceMatcher = SoapResourceMatcher(binding)
 
         // TODO parse HTTP binding to check for other verbs
-        router.route(ResourceMethod.POST, fullPath).handler(
+        router.route(HttpMethod.POST, fullPath).handler(
             resourceService.handleRoute(imposterConfig, config, soapResourceMatcher) { httpExchange: HttpExchange ->
                 val soapEnv = httpExchange.body?.let { body -> SoapUtil.parseSoapEnvelope(body) } ?: run {
                     LOGGER.warn("No request body - unable to parse SOAP envelope")

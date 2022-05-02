@@ -45,11 +45,11 @@ package io.gatehill.imposter.plugin.sfdc
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpExchangeHandler
+import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.http.SingletonResourceMatcher
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin
-import io.gatehill.imposter.plugin.config.resource.ResourceMethod
 import io.gatehill.imposter.plugin.sfdc.config.SfdcPluginConfig
 import io.gatehill.imposter.service.ResourceService
 import io.gatehill.imposter.service.ResponseRoutingService
@@ -202,7 +202,7 @@ class SfdcPluginImpl @Inject constructor(
             val sObject = httpExchange.bodyAsJson
 
             // SFDC work-around for HTTP clients that don't support PATCH
-            if (ResourceMethod.PATCH != httpExchange.request().method()
+            if (HttpMethod.PATCH != httpExchange.request().method()
                 && "PATCH" != httpExchange.queryParam("_HttpMethod")
             ) {
                 httpExchange.fail(HttpUtil.HTTP_BAD_METHOD)

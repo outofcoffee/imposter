@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2022.
+ * Copyright (c) 2022.
  *
  * This file is part of Imposter.
  *
@@ -43,19 +43,22 @@
 
 package io.gatehill.imposter.http
 
-import io.gatehill.imposter.plugin.config.resource.ResourceConfig
-import io.gatehill.imposter.util.ResourceUtil
+import io.vertx.core.MultiMap
+import io.vertx.core.buffer.Buffer
 
 /**
- * Represents a unique, routable, combination of HTTP method and path.
+ * @author Pete Cornish
  */
-data class UniqueRoute(
-    val path: String,
-    val method: HttpMethod? = null,
-) {
-    companion object {
-        fun fromResourceConfig(resourceConfig: ResourceConfig): UniqueRoute {
-            return UniqueRoute(resourceConfig.path ?: "", ResourceUtil.extractResourceMethod(resourceConfig))
-        }
+interface HttpResponse {
+    fun setStatusCode(statusCode: Int): HttpResponse
+    fun getStatusCode(): Int
+    fun putHeader(headerKey: String, headerValue: String): HttpResponse
+    fun headers(): MultiMap
+    fun end()
+    fun end(body: Buffer)
+    fun end(body: String?) {
+        body?.let { end(Buffer.buffer(body)) } ?: end()
     }
+
+    val bodyBuffer: Buffer?
 }

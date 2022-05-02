@@ -44,6 +44,7 @@ package io.gatehill.imposter.plugin.config.resource
 
 import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonProperty
+import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyConfig
 import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyResourceConfig
 
@@ -55,7 +56,7 @@ open class RestResourceConfig : AbstractResourceConfig(), MethodResourceConfig, 
     RequestBodyResourceConfig {
 
     @JsonProperty("method")
-    override val method: ResourceMethod? = null
+    override val method: HttpMethod? = null
 
     @JsonProperty("pathParams")
     override val pathParams: Map<String, String>? = null

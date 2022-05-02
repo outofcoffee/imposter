@@ -53,6 +53,7 @@ import io.gatehill.imposter.server.RequestHandlingMode
 import io.gatehill.imposter.util.InjectorUtil
 import io.gatehill.imposter.util.LogUtil
 import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 
 /**
  * AWS Lambda handler.
@@ -62,7 +63,7 @@ import org.apache.logging.log4j.LogManager
 abstract class AbstractHandler<Request, Response>(
     eventType: LambdaServerFactory.EventType
 ) {
-    protected val logger = LogManager.getLogger(AbstractHandler::class.java)
+    protected val logger: Logger = LogManager.getLogger(AbstractHandler::class.java)
     protected val server: LambdaServer<Request, Response>
 
     init {
