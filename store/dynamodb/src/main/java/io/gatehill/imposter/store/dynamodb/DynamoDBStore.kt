@@ -48,7 +48,6 @@ import com.amazonaws.services.dynamodbv2.model.DeleteItemRequest
 import com.amazonaws.services.dynamodbv2.model.GetItemRequest
 import com.amazonaws.services.dynamodbv2.model.PutItemRequest
 import com.amazonaws.services.dynamodbv2.model.QueryRequest
-import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.service.DeferredOperationService
 import io.gatehill.imposter.store.core.AbstractStore
 import io.gatehill.imposter.store.dynamodb.config.Settings
@@ -75,10 +74,6 @@ class DynamoDBStore(
     override val typeDescription = "dynamodb"
     override val isEphemeral = false
     private val logger = LogManager.getLogger(DynamoDBStore::class.java)
-
-    private val scanToListAll: Boolean by lazy {
-        EnvVars.getEnv("IMPOSTER_DYNAMODB_SCAN_TO_LIST_ALL")?.toBoolean() ?: true
-    }
 
     init {
         logger.debug("Initialised DynamoDB store: $storeName using table: $tableName")
@@ -193,12 +188,9 @@ class DynamoDBStore(
         return count
     }
 
-    private fun listAllInStore() = if (scanToListAll) {
-        logger.trace("Using scan to list items in store: {}", storeName)
-        ResultWrapper.usingScan(ddb, tableName, storeName)
-    } else {
-        logger.trace("Using query to list items in store: {}", storeName)
-        ResultWrapper.usingQuery(ddb, tableName, storeName)
+    private fun listAllInStore(): ResultWrapper {
+        logger.trace("Listing items in store: {}", storeName)
+        return ResultWrapper.usingQuery(ddb, tableName, storeName)
     }
 
     private fun <T> destructure(attributeItem: Map<String, AttributeValue>): Pair<String, T?> {
