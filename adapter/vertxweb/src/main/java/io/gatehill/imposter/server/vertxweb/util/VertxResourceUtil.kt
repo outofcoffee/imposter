@@ -44,33 +44,32 @@ package io.gatehill.imposter.server.vertxweb.util
 
 import com.google.common.collect.BiMap
 import com.google.common.collect.HashBiMap
-import io.gatehill.imposter.plugin.config.resource.ResourceMethod
-import io.vertx.core.http.HttpMethod
+import io.gatehill.imposter.http.HttpMethod
 
 /**
  * @author Pete Cornish
  */
 object VertxResourceUtil {
-    private val METHODS: BiMap<ResourceMethod, HttpMethod?> = HashBiMap.create()
+    private val METHODS: BiMap<HttpMethod, io.vertx.core.http.HttpMethod?> = HashBiMap.create()
 
     /**
-     * Converts [ResourceMethod]s to [HttpMethod]s.
+     * Converts [io.gatehill.imposter.http.HttpMethod]s to [io.vertx.core.http.HttpMethod]s.
      */
-    fun convertMethodToVertx(method: ResourceMethod): HttpMethod =
+    fun convertMethodToVertx(method: HttpMethod): io.vertx.core.http.HttpMethod =
         METHODS[method] ?: throw UnsupportedOperationException("Unknown method: $method")
 
-    fun convertMethodFromVertx(method: HttpMethod): ResourceMethod =
+    fun convertMethodFromVertx(method: io.vertx.core.http.HttpMethod): HttpMethod =
         METHODS.inverse()[method] ?: throw UnsupportedOperationException("Unknown method: $method")
 
     init {
-        METHODS[ResourceMethod.GET] = HttpMethod.GET
-        METHODS[ResourceMethod.HEAD] = HttpMethod.HEAD
-        METHODS[ResourceMethod.POST] = HttpMethod.POST
-        METHODS[ResourceMethod.PUT] = HttpMethod.PUT
-        METHODS[ResourceMethod.PATCH] = HttpMethod.PATCH
-        METHODS[ResourceMethod.DELETE] = HttpMethod.DELETE
-        METHODS[ResourceMethod.CONNECT] = HttpMethod.CONNECT
-        METHODS[ResourceMethod.OPTIONS] = HttpMethod.OPTIONS
-        METHODS[ResourceMethod.TRACE] = HttpMethod.TRACE
+        METHODS[HttpMethod.GET] = io.vertx.core.http.HttpMethod.GET
+        METHODS[HttpMethod.HEAD] = io.vertx.core.http.HttpMethod.HEAD
+        METHODS[HttpMethod.POST] = io.vertx.core.http.HttpMethod.POST
+        METHODS[HttpMethod.PUT] = io.vertx.core.http.HttpMethod.PUT
+        METHODS[HttpMethod.PATCH] = io.vertx.core.http.HttpMethod.PATCH
+        METHODS[HttpMethod.DELETE] = io.vertx.core.http.HttpMethod.DELETE
+        METHODS[HttpMethod.CONNECT] = io.vertx.core.http.HttpMethod.CONNECT
+        METHODS[HttpMethod.OPTIONS] = io.vertx.core.http.HttpMethod.OPTIONS
+        METHODS[HttpMethod.TRACE] = io.vertx.core.http.HttpMethod.TRACE
     }
 }

@@ -7,12 +7,9 @@ compileJava {
 }
 
 dependencies {
-    api project(':core:http')
-    api "org.apache.logging.log4j:log4j-api:$version_log4j"
-    api "com.google.inject:guice:$version_guice"
-    api "io.vertx:vertx-core:$version_vertx"
-    api "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    api "com.fasterxml.jackson.core:jackson-databind:$version_jackson_databind"
+    implementation "io.vertx:vertx-core:$version_vertx"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation "com.fasterxml.jackson.core:jackson-databind:$version_jackson_databind"
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

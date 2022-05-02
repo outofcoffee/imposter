@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2022.
  *
  * This file is part of Imposter.
  *
@@ -40,11 +40,27 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.plugin.config.resource
+
+package io.gatehill.imposter.http
+
+import io.vertx.core.buffer.Buffer
+import io.vertx.core.json.JsonObject
 
 /**
  * @author Pete Cornish
  */
-enum class ResourceMethod {
-    GET, HEAD, POST, PUT, DELETE, CONNECT, OPTIONS, TRACE, PATCH
+interface HttpRequest {
+    fun path(): String
+    fun method(): HttpMethod
+    fun absoluteURI(): String
+    fun headers(): Map<String, String>
+    fun getHeader(headerKey: String): String?
+    fun pathParams(): Map<String, String>
+    fun queryParams(): Map<String, String>
+    fun pathParam(paramName: String): String?
+    fun queryParam(queryParam: String): String?
+
+    val body: Buffer?
+    val bodyAsString: String?
+    val bodyAsJson: JsonObject?
 }

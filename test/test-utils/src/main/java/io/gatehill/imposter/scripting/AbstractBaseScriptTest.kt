@@ -45,10 +45,10 @@ package io.gatehill.imposter.scripting
 
 import com.google.inject.Guice
 import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.PluginConfigImpl
-import io.gatehill.imposter.plugin.config.resource.ResourceMethod
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.ScriptUtil
 import io.gatehill.imposter.service.ScriptService
@@ -112,7 +112,7 @@ abstract class AbstractBaseScriptTest {
         val logger = LogManager.getLogger("script-engine-test")
 
         val mockRequest = mock(HttpRequest::class.java)
-        When(mockRequest.method()).thenReturn(ResourceMethod.GET)
+        When(mockRequest.method()).thenReturn(HttpMethod.GET)
         When(mockRequest.path()).thenReturn("/example")
         When(mockRequest.absoluteURI()).thenReturn("http://localhost:8080/example")
         When(mockRequest.headers()).thenReturn(headers)

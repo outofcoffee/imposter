@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2022.
+ * Copyright (c) 2022.
  *
  * This file is part of Imposter.
  *
@@ -43,19 +43,27 @@
 
 package io.gatehill.imposter.http
 
-import io.gatehill.imposter.plugin.config.resource.ResourceConfig
-import io.gatehill.imposter.util.ResourceUtil
+import com.fasterxml.jackson.annotation.JsonAlias
 
 /**
- * Represents a unique, routable, combination of HTTP method and path.
+ * @author Pete Cornish
  */
-data class UniqueRoute(
-    val path: String,
-    val method: HttpMethod? = null,
-) {
-    companion object {
-        fun fromResourceConfig(resourceConfig: ResourceConfig): UniqueRoute {
-            return UniqueRoute(resourceConfig.path ?: "", ResourceUtil.extractResourceMethod(resourceConfig))
-        }
-    }
+enum class ExchangePhase {
+    @JsonAlias("request-received")
+    REQUEST_RECEIVED,
+
+    /**
+     * After the HTTP exchange has been dispatched, but the response may not yet have
+     * been sent. Note: response may not have been transmitted if delay set.
+     */
+    @JsonAlias("request-dispatched")
+    REQUEST_DISPATCHED,
+
+    /**
+     * After the HTTP response has been sent. This is after delayed responses, but assumes
+     * that any fallback handlers have blocked until the response has been completely passed
+     * to the underlying adapter, and therefore it is safe to perform cleanup activities.
+     */
+    @JsonAlias("response-sent")
+    RESPONSE_SENT,
 }
