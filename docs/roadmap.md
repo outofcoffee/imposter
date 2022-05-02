@@ -28,6 +28,5 @@ This section lists future ideas for features and improvements. Feel free to subm
 
 The following items are breaking changes, such as removal of deprecated functionality. They will be removed or changed in a backwards incompatible way in a future major version.
 
-- Request header keys will be lowercased (set `IMPOSTER_NORMALISE_HEADER_KEYS=true`)
 - Request and response validation will be enabled by default
 - Use of Query instead of Scan operation in DynamoDB store plugin (set `IMPOSTER_DYNAMODB_SCAN_TO_LIST_ALL=false`)

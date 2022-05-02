@@ -62,7 +62,7 @@ object ScriptUtil {
     val shouldPrecompile = EnvVars.getEnv("IMPOSTER_SCRIPT_PRECOMPILE")?.toBoolean() != false
 
     private val forceHeaderKeyNormalisation =
-        EnvVars.getEnv("IMPOSTER_NORMALISE_HEADER_KEYS")?.toBoolean() == true
+        EnvVars.getEnv("IMPOSTER_NORMALISE_HEADER_KEYS")?.toBoolean() != false
 
     /**
      * Build the {@code context}, containing lazily-evaluated values.
@@ -78,7 +78,7 @@ object ScriptUtil {
         val headersSupplier: () -> Map<String, String> = {
             val entries = vertxRequest.headers()
             if (forceHeaderKeyNormalisation) {
-                CollectionUtil.convertKeysToLowerCase(entries)
+                LowercaseKeysMap(entries)
             } else {
                 entries
             }
