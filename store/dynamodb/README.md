@@ -29,7 +29,6 @@ The following variables can be set:
 |-----------------------------------------|---------------------------------------------------------------------------------------------------------------------------|----------------------------|
 | IMPOSTER_DYNAMODB_OBJECT_SERIALISATION  | How to serialise objects; allowed values are `BINARY` or `MAP`.                                                           | `BINARY`                   |
 | IMPOSTER_DYNAMODB_REGION                | The region for the DynamoDB client.                                                                                       | Inferred from environment. |
-| IMPOSTER_DYNAMODB_SCAN_TO_LIST_ALL      | Whether to use a _Scan_ operation to list all items in a store. If `false`, a (more efficient) _Query_ operation is used. | `true`                 |
 | IMPOSTER_DYNAMODB_TABLE                 | DynamoDB table name.                                                                                                      | `"Imposter"`               |
 | IMPOSTER_DYNAMODB_TTL                   | The number of seconds to use for item TTL.                                                                                | No TTL set.                |
 | IMPOSTER_DYNAMODB_TTL_ATTRIBUTE         | The name of TTL attribute in the table.                                                                                   | `ttl`                      |

@@ -2,15 +2,14 @@
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Sid": "VisualEditor0",
+      "Sid": "ImposterStoreRW",
       "Effect": "Allow",
       "Action": [
         "dynamodb:BatchWriteItem",
         "dynamodb:PutItem",
         "dynamodb:DeleteItem",
         "dynamodb:GetItem",
-        "dynamodb:Query",
-        "dynamodb:Scan"
+        "dynamodb:Query"
       ],
       "Resource": "arn:aws:dynamodb:us-east-1:000000000000:table/Imposter"
     }
