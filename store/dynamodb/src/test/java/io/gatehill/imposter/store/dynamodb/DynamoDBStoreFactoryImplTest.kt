@@ -135,30 +135,4 @@ class DynamoDBStoreFactoryImplTest : AbstractStoreFactoryTest() {
         Assert.assertTrue("Returned value should be a Map", loadedMap is Map)
         Assert.assertEquals("test", loadedMap!!["name"])
     }
-
-    /**
-     * Item listing should use scan operation.
-     */
-    @Test
-    override fun testSaveLoadSimpleItems() {
-        EnvVars.populate(
-            EnvVars.getEnv() + mapOf(
-                "IMPOSTER_DYNAMODB_SCAN_TO_LIST_ALL" to "true"
-            )
-        )
-        super.testSaveLoadSimpleItems()
-    }
-
-    /**
-     * Item listing should use query operation.
-     */
-    @Test
-    fun testSaveLoadSimpleItemsWithQuery() {
-        EnvVars.populate(
-            EnvVars.getEnv() + mapOf(
-                "IMPOSTER_DYNAMODB_SCAN_TO_LIST_ALL" to "false"
-            )
-        )
-        super.testSaveLoadSimpleItems()
-    }
 }
