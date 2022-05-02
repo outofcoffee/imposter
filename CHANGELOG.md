@@ -3,9 +3,45 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [3.0.0] - 2022-06-11
 ## Added
-- ...
+- feat: adds handler for API Gateway V2 and Function URL events.
+- docs: adds serverless example and instructions for using Lambda Function URL.
+- docs(docker): improves Docker documentation example.
+- feat(openapi): allows spec and UI to be disabled.
+- feat(openapi,rest): adds friendly 'not found' response for clients accepting HTML.
+- feat: allows META-INF scan to be enabled in Lambda.
+- feat: improves request logging.
+- test: sets region in DynamoDB test.
+- test: bumps S3Mock version to gain aarch64 support.
+
+## Changed
+- BREAKING CHANGE: drops support for Java 8. Imposter no longer supports Java 8, due to the complexity of maintaining multiple codepaths depending on target JVMs. If Java 8 support is required, Imposter 2.x is still available, but may no longer be maintained.
+- BREAKING CHANGE: removes deprecated script context properties. As signalled in version 2.x, deprecated script context properties have been removed. Removal of legacy `context.params` map - use `context.request.queryParams` instead. Removal of legacy `context.request.params` map - use `context.request.queryParams` instead. Removal of legacy `context.uri` map - use `context.request.uri` instead.
+- BREAKING CHANGE: makes request header keys lowercase by default. Effectively sets IMPOSTER_NORMALISE_HEADER_KEYS=true.
+- BREAKING CHANGE: uses Query instead of Scan operation in DynamoDB store. Removes IMPOSTER_DYNAMODB_SCAN_TO_LIST_ALL and always uses Query operation to list items.
+- BREAKING CHANGE: switches AWS Lambda distro to ZIP file.
+- feat: removes UseCGroupMemoryLimitForHeap from container environment. Container aware memory allocation is enabled by default on Java 11.
+- refactor: moves HTTP core into separate module.
+- refactor: removes unneeded classgraph dep from core config.
+- refactor(awslambda): moves inmem dependency up into Lambda adapter.
+- refactor(awslambda): moves some logging dependencies to runtime scope.
+- refactor: moves dynamic plugin discovery to separate module.
+- refactor: improves S3 config resolver module name.
+- refactor: moves config resolver properties to separate files.
+- refactor: removes use of internal deprecated request accessors.
+- build(deps): bump version_graal from 21.2.0 to 22.0.0.2 (#86)
+- chore: bumps Groovy to 3.0.10.
+- ci: always build dev docker image and run integration tests.
+- ci: always publish test results, even on prior step failure.
+
+## Fixed
+- fix(awslambda): handle base64 encoded request body.
+- fix(openapi): removes server base path from serving prefix.
+- fix(openapi): allows adding server entry with path only.
+- fix(openapi): separates serving prefix from specification path prefix.
+- fix: resource matching should require all config entries to be present in request.
+- fix: uses plugin classloader for meta-detector plugin classpath scan.
 
 ## [2.14.3] - 2022-05-23
 ## Fixed
