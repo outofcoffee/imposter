@@ -43,8 +43,6 @@
 package io.gatehill.imposter.script
 
 import io.gatehill.imposter.util.CollectionUtil
-import org.apache.logging.log4j.LogManager
-import org.apache.logging.log4j.Logger
 import java.util.function.Supplier
 
 /**
@@ -64,21 +62,16 @@ class ExecutionContext(
         get() = get("request") as Request
 
     override fun get(key: String): Any? {
-        // legacy support
-        if (key == "params" && !containsKey("params")) {
-            LOGGER.warn(
-                "DEPRECATION NOTICE: 'context.params' is deprecated and will be removed " +
-                        "in a future version. Use 'context.request.queryParams' or 'context.request.pathParams' instead."
-            )
-            put("params", (request.pathParams + request.queryParams))
-
-        } else if (key == "uri" && !containsKey("uri")) {
-            LOGGER.warn(
-                "DEPRECATION NOTICE: 'context.uri' is deprecated and will be removed " +
-                        "in a future version. Use 'context.request.uri' instead."
+        // legacy properties
+        if (key == "params") {
+            throw UnsupportedOperationException(
+                "Error: the deprecated 'context.params' property was removed. Use 'context.request.queryParams' or 'context.request.pathParams' instead."
             )
 
-            put("uri", request.uri)
+        } else if (key == "uri") {
+            throw UnsupportedOperationException(
+                "Error: the deprecated 'context.uri' property was removed. Use 'context.request.uri' instead."
+            )
         }
 
         return super.get(key)
@@ -129,17 +122,13 @@ class ExecutionContext(
             get() = CollectionUtil.convertKeysToLowerCase(headers)
 
         /**
-         * @return the request query parameters
+         * Legacy property removed.
          */
         @get:Deprecated("Use queryParams instead.", ReplaceWith("queryParams"))
         val params: Map<String, String>
-            get() {
-                LOGGER.warn(
-                    "DEPRECATION NOTICE: 'context.request.params' is deprecated and will be removed " +
-                            "in a future version. Use 'context.request.queryParams' or 'context.request.pathParams' instead."
-                )
-                return (pathParams + queryParams)
-            }
+            get() = throw UnsupportedOperationException(
+                "Error: the deprecated 'context.request.params' property was removed. Use 'context.request.queryParams' or 'context.request.pathParams' instead."
+            )
 
         override fun toString(): String {
             return "Request{" +
@@ -152,9 +141,5 @@ class ExecutionContext(
                     ", body=<" + (body?.let { "${it.length} bytes" } ?: "null") + '>' +
                     '}'
         }
-    }
-
-    companion object {
-        private val LOGGER: Logger = LogManager.getLogger(ExecutionContext)
     }
 }

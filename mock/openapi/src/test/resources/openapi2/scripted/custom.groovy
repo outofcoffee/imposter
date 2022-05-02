@@ -1,35 +1,12 @@
 // Example of returning a specific status code, to control which
 // specification example is returned in the response.
 
+logger.info("Request: ${context.request}")
+
 // checks for a particular parameter
-logger.info("Query params: ${context.request.queryParams}")
 if (context.request.queryParams.param1 == 'foo') {
     respond {
         withStatusCode 202
-        skipDefaultBehaviour()
-    }
-}
-
-// check for deprecated params map 1
-if (context.params.param1 == 'bar') {
-    respond {
-        withStatusCode 202
-        skipDefaultBehaviour()
-    }
-}
-
-// check for deprecated params map 2
-if (context.request.params.param1 == 'qux') {
-    respond {
-        withStatusCode 203
-        skipDefaultBehaviour()
-    }
-}
-
-// check for deprecated uri property
-if (context.uri == 'baz') {
-    respond {
-        withStatusCode 400
         skipDefaultBehaviour()
     }
 }
