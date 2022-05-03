@@ -130,8 +130,9 @@ class HBasePluginImpl @Inject constructor(
     private fun addRowRetrievalRoute(pluginConfig: PluginConfig, router: HttpRouter, path: String) {
         router.get("$path/:tableName/:recordId/").handler(
             resourceService.handleRoute(imposterConfig, pluginConfig, resourceMatcher) { httpExchange: HttpExchange ->
-                val tableName = httpExchange.pathParam("tableName")!!
-                val recordId = httpExchange.pathParam("recordId")!!
+                val request = httpExchange.request()
+                val tableName = request.pathParam("tableName")!!
+                val recordId = request.pathParam("recordId")!!
 
                 val recordInfo = RecordInfo(recordId)
                 val config: HBasePluginConfig
@@ -185,7 +186,7 @@ class HBasePluginImpl @Inject constructor(
     private fun addCreateScannerRoute(pluginConfig: PluginConfig, router: HttpRouter, path: String) {
         router.post("$path/:tableName/scanner").handler(
             resourceService.handleRoute(imposterConfig, pluginConfig, resourceMatcher) { httpExchange: HttpExchange ->
-                val tableName = httpExchange.pathParam("tableName")!!
+                val tableName = httpExchange.request().pathParam("tableName")!!
 
                 // check that the table is registered
                 if (!tableConfigs.containsKey(tableName)) {
@@ -249,11 +250,12 @@ class HBasePluginImpl @Inject constructor(
     private fun addReadScannerResultsRoute(pluginConfig: HBasePluginConfig, router: HttpRouter, path: String) {
         router.get("$path/:tableName/scanner/:scannerId").handler(
             resourceService.handleRoute(imposterConfig, pluginConfig, resourceMatcher) { httpExchange: HttpExchange ->
-                val tableName = httpExchange.pathParam("tableName")!!
-                val scannerId = httpExchange.pathParam("scannerId")!!
+                val request = httpExchange.request()
+                val tableName = request.pathParam("tableName")!!
+                val scannerId = request.pathParam("scannerId")!!
 
                 // query param e.g. ?n=1
-                val rows = Integer.valueOf(httpExchange.queryParam("n"))
+                val rows = Integer.valueOf(request.queryParam("n"))
 
                 // check that the table is registered
                 if (!tableConfigs.containsKey(tableName)) {

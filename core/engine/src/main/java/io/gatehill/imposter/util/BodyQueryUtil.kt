@@ -103,7 +103,7 @@ object BodyQueryUtil {
         jsonPath: String,
         httpExchange: HttpExchange
     ): Any? {
-        val body = httpExchange.bodyAsString
+        val body = httpExchange.request().bodyAsString
         return if (Strings.isNullOrEmpty(body)) {
             null
         } else {
@@ -124,7 +124,7 @@ object BodyQueryUtil {
      * Gets the JSON document context for JsonPath queries against the request body.
      * The context is cached in the [HttpExchange].
      */
-    fun getRequestJsonContext(httpExchange: HttpExchange, body: String? = httpExchange.bodyAsString): DocumentContext {
+    fun getRequestJsonContext(httpExchange: HttpExchange, body: String? = httpExchange.request().bodyAsString): DocumentContext {
         val jsonContextHolder =
             httpExchange.getOrPut("request.json.context", { AtomicReference<DocumentContext>() })
 
@@ -141,7 +141,7 @@ object BodyQueryUtil {
         xmlNamespaces: Map<String, String>?,
         httpExchange: HttpExchange
     ): Any? {
-        val body = httpExchange.bodyAsString
+        val body = httpExchange.request().bodyAsString
         return if (Strings.isNullOrEmpty(body)) {
             null
         } else {

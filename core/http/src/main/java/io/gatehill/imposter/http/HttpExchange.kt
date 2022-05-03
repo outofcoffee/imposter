@@ -42,9 +42,6 @@
  */
 package io.gatehill.imposter.http
 
-import io.vertx.core.buffer.Buffer
-import io.vertx.core.json.JsonObject
-
 /**
  * @author Pete Cornish
  */
@@ -52,19 +49,6 @@ interface HttpExchange {
     var phase: ExchangePhase
     fun request(): HttpRequest
     fun response(): HttpResponse
-
-    @Deprecated("Use request.pathParams", replaceWith = ReplaceWith("request().pathParams()"))
-    fun pathParams(): Map<String, String>
-
-    @Deprecated("Use request.queryParams", replaceWith = ReplaceWith("request().queryParams()"))
-    fun queryParams(): Map<String, String>
-
-    @Deprecated("Use request.pathParam", replaceWith = ReplaceWith("request().pathParam()"))
-    fun pathParam(paramName: String): String?
-
-    @Deprecated("Use request.queryParam", replaceWith = ReplaceWith("request().queryParam()"))
-    fun queryParam(queryParam: String): String?
-
     fun isAcceptHeaderEmpty(): Boolean
     fun acceptsMimeType(mimeType: String): Boolean
 
@@ -72,15 +56,6 @@ interface HttpExchange {
      * Note: not all routes have a path.
      */
     val currentRoutePath: String?
-
-    @Deprecated("Use request.body", replaceWith = ReplaceWith("request().body"))
-    val body: Buffer?
-
-    @Deprecated("Use request.bodyAsString", replaceWith = ReplaceWith("request().bodyAsString"))
-    val bodyAsString: String?
-
-    @Deprecated("Use request.bodyAsJson", replaceWith = ReplaceWith("request().bodyAsJson"))
-    val bodyAsJson: JsonObject?
 
     fun fail(cause: Throwable?)
     fun fail(statusCode: Int)
