@@ -46,7 +46,6 @@ package io.gatehill.imposter.script
 import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.util.CollectionUtil
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -73,10 +72,10 @@ object ScriptUtil {
      */
     @JvmStatic
     fun buildContext(httpExchange: HttpExchange, additionalContext: Map<String, Any>?): ExecutionContext {
-        val vertxRequest = httpExchange.request()
+        val internalRequest = httpExchange.request()
 
         val headersSupplier: () -> Map<String, String> = {
-            val entries = vertxRequest.headers()
+            val entries = internalRequest.headers()
             if (forceHeaderKeyNormalisation) {
                 LowercaseKeysMap(entries)
             } else {
@@ -84,19 +83,21 @@ object ScriptUtil {
             }
         }
 
-        val pathParamsSupplier: () -> Map<String, String> = { httpExchange.pathParams() }
-
-        val queryParamsSupplier: () -> Map<String, String> = {
-            httpExchange.queryParams()
+        val pathParamsSupplier: () -> Map<String, String> = {
+            internalRequest.pathParams()
         }
-
-        val bodySupplier: () -> String? = { httpExchange.bodyAsString }
+        val queryParamsSupplier: () -> Map<String, String> = {
+            internalRequest.queryParams()
+        }
+        val bodySupplier: () -> String? = {
+            internalRequest.bodyAsString
+        }
 
         // request information
         val request = ExecutionContext.Request(headersSupplier, pathParamsSupplier, queryParamsSupplier, bodySupplier)
-        request.path = vertxRequest.path()
-        request.method = vertxRequest.method().name
-        request.uri = vertxRequest.absoluteURI()
+        request.path = internalRequest.path()
+        request.method = internalRequest.method().name
+        request.uri = internalRequest.absoluteURI()
 
         // root context
         val executionContext = ExecutionContext(request)

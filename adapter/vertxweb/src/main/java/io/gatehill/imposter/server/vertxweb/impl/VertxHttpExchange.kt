@@ -46,8 +46,6 @@ import io.gatehill.imposter.http.ExchangePhase
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.http.HttpResponse
-import io.vertx.core.buffer.Buffer
-import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.RoutingContext
 import io.vertx.ext.web.impl.ParsableMIMEValue
 
@@ -70,18 +68,6 @@ class VertxHttpExchange(
         return _response
     }
 
-    @Suppress("OVERRIDE_DEPRECATION")
-    override fun pathParams() = _request.pathParams()
-
-    @Suppress("OVERRIDE_DEPRECATION")
-    override fun queryParams() = _request.queryParams()
-
-    @Suppress("OVERRIDE_DEPRECATION")
-    override fun pathParam(paramName: String) = _request.pathParam(paramName)
-
-    @Suppress("OVERRIDE_DEPRECATION")
-    override fun queryParam(queryParam: String) = _request.queryParam(queryParam)
-
     override fun isAcceptHeaderEmpty(): Boolean {
         return routingContext.parsedHeaders().accept().isEmpty()
     }
@@ -90,18 +76,6 @@ class VertxHttpExchange(
         val mimeValue = ParsableMIMEValue(mimeType)
         return routingContext.parsedHeaders().accept().any { it.isMatchedBy(mimeValue) }
     }
-
-    @Suppress("OVERRIDE_DEPRECATION")
-    override val body: Buffer?
-        get() = _request.body
-
-    @Suppress("OVERRIDE_DEPRECATION")
-    override val bodyAsString: String?
-        get() = _request.bodyAsString
-
-    @Suppress("OVERRIDE_DEPRECATION")
-    override val bodyAsJson: JsonObject?
-        get() = _request.bodyAsJson
 
     override fun fail(cause: Throwable?) {
         routingContext.fail(cause)

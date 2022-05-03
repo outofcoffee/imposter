@@ -103,7 +103,7 @@ class ProtobufSerialisationServiceImpl @Inject constructor(
     @Throws(IOException::class)
     private fun getScannerModel(httpExchange: HttpExchange): ScannerModel {
         val scannerModel = ScannerModel()
-        val rawMessage = httpExchange.body!!.bytes
+        val rawMessage = httpExchange.request().body!!.bytes
 
         // deserialise from protobuf
         scannerModel.getObjectFromMessage(rawMessage)

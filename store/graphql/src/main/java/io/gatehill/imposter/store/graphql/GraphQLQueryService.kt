@@ -83,7 +83,8 @@ class GraphQLQueryService @Inject constructor(
 
         // see https://graphql.org/learn/serving-over-http/
         router.get(requestPath).handler { httpExchange ->
-            val query = httpExchange.queryParam("query")
+            val request = httpExchange.request()
+            val query = request.queryParam("query")
             if (query.isNullOrBlank()) {
                 httpExchange.response()
                     .setStatusCode(400)
@@ -92,12 +93,13 @@ class GraphQLQueryService @Inject constructor(
                 return@handler
             }
 
-            val variables = httpExchange.queryParam("variables")
+            val variables = request.queryParam("variables")
             execute(query, variables, httpExchange)
         }
 
         router.post(requestPath).handler { httpExchange ->
-            val contentLength = httpExchange.request().getHeader("Content-Length")
+            val httpRequest = httpExchange.request()
+            val contentLength = httpRequest.getHeader("Content-Length")
             if ((contentLength?.toInt() ?: 0) <= 0) {
                 httpExchange.response()
                     .setStatusCode(400)
@@ -106,7 +108,7 @@ class GraphQLQueryService @Inject constructor(
                 return@handler
             }
 
-            val request = MapUtil.JSON_MAPPER.readValue(httpExchange.body!!.bytes, GraphQLRequest::class.java)
+            val request = MapUtil.JSON_MAPPER.readValue(httpRequest.body!!.bytes, GraphQLRequest::class.java)
             if (logger.isTraceEnabled) {
                 logger.trace("Processing GraphQL query: ${request.query} with variables: ${request.variables}")
             }

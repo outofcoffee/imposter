@@ -130,7 +130,8 @@ object LogUtil {
      * @return a short description of the request
      */
     fun describeRequestShort(httpExchange: HttpExchange): String {
-        return httpExchange.request().method().toString() + " " + httpExchange.request().absoluteURI()
+        val request = httpExchange.request()
+        return request.method().toString() + " " + request.absoluteURI()
     }
 
     /**

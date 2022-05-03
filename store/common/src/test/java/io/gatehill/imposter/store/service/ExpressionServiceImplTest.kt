@@ -45,8 +45,11 @@ class ExpressionServiceImplTest {
 
     @Test
     fun `eval request path param`() {
-        val httpExchange = mock<HttpExchange> {
+        val httpRequest = mock<HttpRequest> {
             on { pathParam("userId") } doReturn "Example-User-ID"
+        }
+        val httpExchange = mock<HttpExchange> {
+            on { request() } doReturn httpRequest
         }
 
         val result = service.eval(
@@ -59,8 +62,11 @@ class ExpressionServiceImplTest {
 
     @Test
     fun `eval request query param`() {
-        val httpExchange = mock<HttpExchange> {
+        val httpRequest = mock<HttpRequest> {
             on { queryParam("page") } doReturn "1"
+        }
+        val httpExchange = mock<HttpExchange> {
+            on { request() } doReturn httpRequest
         }
 
         val result = service.eval(
@@ -73,8 +79,11 @@ class ExpressionServiceImplTest {
 
     @Test
     fun `eval request body`() {
-        val httpExchange = mock<HttpExchange> {
+        val httpRequest = mock<HttpRequest> {
             on { bodyAsString } doReturn "Request body"
+        }
+        val httpExchange = mock<HttpExchange> {
+            on { request() } doReturn httpRequest
         }
 
         val result = service.eval(
@@ -87,8 +96,11 @@ class ExpressionServiceImplTest {
 
     @Test
     fun `eval request body with JsonPath`() {
-        val httpExchange = mock<HttpExchange> {
+        val httpRequest = mock<HttpRequest> {
             on { bodyAsString } doReturn """{ "name": "Ada" }"""
+        }
+        val httpExchange = mock<HttpExchange> {
+            on { request() } doReturn httpRequest
         }
 
         val result = service.eval(
