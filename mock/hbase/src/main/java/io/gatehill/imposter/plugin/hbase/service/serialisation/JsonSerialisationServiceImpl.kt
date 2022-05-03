@@ -69,7 +69,7 @@ class JsonSerialisationServiceImpl @Inject constructor(
 
     override fun decodeScanner(httpExchange: HttpExchange): MockScanner {
         return try {
-            MapUtil.JSON_MAPPER.readValue(httpExchange.body!!.bytes, MockScanner::class.java)
+            MapUtil.JSON_MAPPER.readValue(httpExchange.request().body!!.bytes, MockScanner::class.java)
         } catch (e: IOException) {
             throw RuntimeException(e)
         }

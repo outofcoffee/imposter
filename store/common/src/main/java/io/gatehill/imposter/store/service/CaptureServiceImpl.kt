@@ -213,10 +213,10 @@ class CaptureServiceImpl @Inject constructor(
             captureConfig.constValue as T?
 
         } else if (!Strings.isNullOrEmpty(captureConfig.pathParam)) {
-            httpExchange.pathParam(captureConfig.pathParam!!) as T?
+            httpExchange.request().pathParam(captureConfig.pathParam!!) as T?
 
         } else if (!Strings.isNullOrEmpty(captureConfig.queryParam)) {
-            httpExchange.queryParam(captureConfig.queryParam!!) as T?
+            httpExchange.request().queryParam(captureConfig.queryParam!!) as T?
 
         } else if (!Strings.isNullOrEmpty(captureConfig.requestHeader)) {
             httpExchange.request().getHeader(captureConfig.requestHeader!!) as T?

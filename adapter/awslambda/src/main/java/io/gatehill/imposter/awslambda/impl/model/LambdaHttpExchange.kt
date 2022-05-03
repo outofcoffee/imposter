@@ -50,8 +50,6 @@ import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.http.HttpResponse
 import io.gatehill.imposter.http.HttpRoute
 import io.gatehill.imposter.util.HttpUtil
-import io.vertx.core.buffer.Buffer
-import io.vertx.core.json.JsonObject
 
 /**
  * @author Pete Cornish
@@ -80,18 +78,6 @@ class LambdaHttpExchange(
     override val currentRoutePath: String?
         get() = currentRoute?.path
 
-    @Suppress("OVERRIDE_DEPRECATION")
-    override fun pathParams() = request.pathParams()
-
-    @Suppress("OVERRIDE_DEPRECATION")
-    override fun queryParams() = request.queryParams()
-
-    @Suppress("OVERRIDE_DEPRECATION")
-    override fun pathParam(paramName: String) = request.pathParam(paramName)
-
-    @Suppress("OVERRIDE_DEPRECATION")
-    override fun queryParam(queryParam: String) = request.queryParam(queryParam)
-
     override fun isAcceptHeaderEmpty(): Boolean {
         return Strings.isNullOrEmpty(request.getHeader("Accept"))
     }
@@ -100,18 +86,6 @@ class LambdaHttpExchange(
         // TODO handle wildcard mime types, not just exact matches
         return acceptedMimeTypes.contains(mimeType)
     }
-
-    @Suppress("OVERRIDE_DEPRECATION")
-    override val body: Buffer?
-        get() = request.body
-
-    @Suppress("OVERRIDE_DEPRECATION")
-    override val bodyAsString: String?
-        get() = request.bodyAsString
-
-    @Suppress("OVERRIDE_DEPRECATION")
-    override val bodyAsJson: JsonObject?
-        get() = request.bodyAsJson
 
     override fun fail(cause: Throwable?) {
         fail(500, cause)

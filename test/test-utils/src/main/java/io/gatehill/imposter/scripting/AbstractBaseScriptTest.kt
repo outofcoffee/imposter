@@ -116,12 +116,12 @@ abstract class AbstractBaseScriptTest {
         When(mockRequest.path()).thenReturn("/example")
         When(mockRequest.absoluteURI()).thenReturn("http://localhost:8080/example")
         When(mockRequest.headers()).thenReturn(headers)
+        When(mockRequest.pathParams()).thenReturn(pathParams)
+        When(mockRequest.queryParams()).thenReturn(queryParams)
+        When(mockRequest.bodyAsString).thenReturn(body)
 
         val mockHttpExchange = mock(HttpExchange::class.java)
         When(mockHttpExchange.request()).thenReturn(mockRequest)
-        When(mockHttpExchange.pathParams()).thenReturn(pathParams)
-        When(mockHttpExchange.queryParams()).thenReturn(queryParams)
-        When(mockHttpExchange.bodyAsString).thenReturn(body)
 
         val pluginConfig = mock(PluginConfig::class.java)
         val executionContext = ScriptUtil.buildContext(mockHttpExchange, null)

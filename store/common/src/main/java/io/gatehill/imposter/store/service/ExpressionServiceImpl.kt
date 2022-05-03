@@ -124,16 +124,16 @@ class ExpressionServiceImpl : ExpressionService {
                     "request" -> {
                         when (parts[2]) {
                             "body" -> checkExpression(expression, 3, parts) {
-                                httpExchange.bodyAsString
+                                httpExchange.request().bodyAsString
                             }
                             "headers" -> checkExpression(expression, 4, parts) {
                                 httpExchange.request().getHeader(parts[3])
                             }
                             "pathParams" -> checkExpression(expression, 4, parts) {
-                                httpExchange.pathParam(parts[3])
+                                httpExchange.request().pathParam(parts[3])
                             }
                             "queryParams" -> checkExpression(expression, 4, parts) {
-                                httpExchange.queryParam(parts[3])
+                                httpExchange.request().queryParam(parts[3])
                             }
                             else -> {
                                 LOGGER.warn("Could not parse request context expression: $expression")

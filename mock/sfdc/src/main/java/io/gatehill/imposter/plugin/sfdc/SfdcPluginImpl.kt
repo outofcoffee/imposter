@@ -90,7 +90,7 @@ class SfdcPluginImpl @Inject constructor(
         // oauth handler
         router.post("/services/oauth2/token").handler(
             resourceService.handleRoute(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
-                LOGGER.info("Handling oauth request: {}", httpExchange.bodyAsString)
+                LOGGER.info("Handling oauth request: {}", httpExchange.request().bodyAsString)
                 val authResponse = JsonObject()
                 authResponse.put("access_token", "dummyAccessToken")
                 authResponse.put("instance_url", imposterConfig.serverUrl)
@@ -102,10 +102,11 @@ class SfdcPluginImpl @Inject constructor(
         // query handler
         router.get("/services/data/:apiVersion/query/").handler(
             resourceService.handleRoute(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
-                val apiVersion = httpExchange.pathParam("apiVersion")!!
+                val request = httpExchange.request()
+                val apiVersion = request.pathParam("apiVersion")!!
 
                 // e.g. 'SELECT Name, Id from Account LIMIT 100'
-                val query = httpExchange.queryParam("q")!!
+                val query = request.queryParam("q")!!
                 val sObjectName = getSObjectName(query)
                     ?: throw RuntimeException("Could not determine SObject name from query: $query")
 
@@ -140,8 +141,9 @@ class SfdcPluginImpl @Inject constructor(
             val handler = resourceService.handleRoute(imposterConfig, config, resourceMatcher) { httpExchange: HttpExchange ->
                 // script should fire first
                 responseRoutingService.route(config, httpExchange) { responseBehaviour ->
-                    val apiVersion = httpExchange.pathParam("apiVersion")!!
-                    val sObjectId = httpExchange.pathParam("sObjectId")
+                    val request = httpExchange.request()
+                    val apiVersion = request.pathParam("apiVersion")!!
+                    val sObjectId = request.pathParam("sObjectId")
 
                     // find and enrich record
                     val result = findRow(
@@ -170,8 +172,9 @@ class SfdcPluginImpl @Inject constructor(
         // create SObject handler
         router.post("/services/data/:apiVersion/sobjects/:sObjectName").handler(
             resourceService.handleRoute(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
-                val sObjectName = httpExchange.pathParam("sObjectName")
-                val sObject = httpExchange.bodyAsJson
+                val request = httpExchange.request()
+                val sObjectName = request.pathParam("sObjectName")
+                val sObject = request.bodyAsJson
                 LOGGER.info("Received create request for {}: {}", sObjectName, sObject)
                 val result = JsonObject()
 
@@ -197,13 +200,14 @@ class SfdcPluginImpl @Inject constructor(
      */
     private fun handleUpdateRequest(): HttpExchangeHandler {
         return resourceService.handleRoute(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
-            val sObjectName = httpExchange.pathParam("sObjectName")
-            val sObjectId = httpExchange.pathParam("sObjectId")
-            val sObject = httpExchange.bodyAsJson
+            val request = httpExchange.request()
+            val sObjectName = request.pathParam("sObjectName")
+            val sObjectId = request.pathParam("sObjectId")
+            val sObject = request.bodyAsJson
 
             // SFDC work-around for HTTP clients that don't support PATCH
-            if (HttpMethod.PATCH != httpExchange.request().method()
-                && "PATCH" != httpExchange.queryParam("_HttpMethod")
+            if (HttpMethod.PATCH != request.method()
+                && "PATCH" != request.queryParam("_HttpMethod")
             ) {
                 httpExchange.fail(HttpUtil.HTTP_BAD_METHOD)
                 return@handleRoute

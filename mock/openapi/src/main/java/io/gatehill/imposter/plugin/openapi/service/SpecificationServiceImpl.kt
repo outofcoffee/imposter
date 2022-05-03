@@ -69,7 +69,7 @@ import io.swagger.v3.oas.models.tags.Tag
 import org.apache.logging.log4j.LogManager
 import java.net.URI
 import java.net.URISyntaxException
-import java.util.*
+import java.util.Objects
 import java.util.concurrent.ExecutionException
 import javax.inject.Inject
 
@@ -228,9 +228,9 @@ class SpecificationServiceImpl @Inject constructor(
 
         val request = httpExchange.request()
         val requestBuilder = SimpleRequest.Builder(request.method().toString(), request.path())
-            .withBody(httpExchange.bodyAsString)
+            .withBody(request.bodyAsString)
 
-        httpExchange.queryParams().forEach { p -> requestBuilder.withQueryParam(p.key, p.value) }
+        request.queryParams().forEach { p -> requestBuilder.withQueryParam(p.key, p.value) }
         request.headers().forEach { h -> requestBuilder.withHeader(h.key, h.value) }
 
         val report = validator.validateRequest(requestBuilder.build())

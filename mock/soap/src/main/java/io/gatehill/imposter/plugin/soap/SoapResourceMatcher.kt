@@ -101,7 +101,7 @@ class SoapResourceMatcher(
         return pathMatch
     }
 
-    private fun isOperationMatch(httpExchange: HttpExchange, configOpName: String, soapAction: String?) = httpExchange.body?.let { body ->
+    private fun isOperationMatch(httpExchange: HttpExchange, configOpName: String, soapAction: String?) = httpExchange.request().body?.let { body ->
         val soapEnv = SoapUtil.parseSoapEnvelope(body)
         val operation = determineOperation(soapAction, soapEnv)
         configOpName == operation?.name

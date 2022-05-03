@@ -92,8 +92,8 @@ class SingletonResourceMatcher : AbstractResourceMatcher() {
         }
 
         return pathMatch && methodMatch &&
-            matchPairs(httpExchange.pathParams(), resource.pathParams, true) &&
-            matchPairs(httpExchange.queryParams(), resource.queryParams, true) &&
+            matchPairs(request.pathParams(), resource.pathParams, true) &&
+            matchPairs(request.queryParams(), resource.queryParams, true) &&
             matchPairs(request.headers(), resource.requestHeaders, false) &&
             matchRequestBody(httpExchange, resource.config)
     }
