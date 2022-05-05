@@ -39,8 +39,14 @@ jobs:
           develop)
             EFFECTIVE_BRANCH_NAME="develop"
             ;;
-          *)
+          main)
             EFFECTIVE_BRANCH_NAME="main"
+            ;;
+          release/2.x)
+            EFFECTIVE_BRANCH_NAME="release/2.x"
+            ;;
+          *)
+            EFFECTIVE_BRANCH_NAME="dev"
             ;;
           esac
           echo "::set-output name=branch::${EFFECTIVE_BRANCH_NAME}"
@@ -66,7 +72,7 @@ jobs:
       - name: Build and push Docker images
         if: ${{ (startsWith(github.ref, 'refs/tags/') || steps.git-meta.outputs.branch == 'develop') && matrix.java == '8' }}
         run: |
-          case ${{ steps.git-meta.outputs.branch }} in
+          case "${{ steps.git-meta.outputs.branch }}" in
           develop)
             ./scripts/docker-build.sh -p true beta
             ;;
@@ -78,6 +84,14 @@ jobs:
             fi
             ./scripts/docker-build.sh -p true "${CURRENT_VERSION}"
             ./scripts/docker-build.sh -p true "latest"
+            ;;
+
+          release/2.x)
+            CURRENT_VERSION="$( git describe --tags --exact-match )"
+            if [[ "${CURRENT_VERSION:0:1}" == "v" ]]; then
+                CURRENT_VERSION="$( echo ${CURRENT_VERSION} | cut -c 2- )"
+            fi
+            ./scripts/docker-build.sh -p true "${CURRENT_VERSION}"
             ;;
           esac
         env:
