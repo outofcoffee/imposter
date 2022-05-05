@@ -43,6 +43,7 @@
 package io.gatehill.imposter.config.util
 
 import io.gatehill.imposter.config.model.PluginMetadata
+import io.gatehill.imposter.util.ClassLoaderUtil
 import org.apache.logging.log4j.LogManager
 import java.io.IOException
 import java.util.Objects
@@ -92,7 +93,7 @@ object MetaUtil {
             .filter { it.value.load == PluginMetadata.PluginLoadStrategy.EAGER }
             .keys
 
-        return defaultEnabled + metaPlugins
+        return (defaultEnabled + metaPlugins).distinct()
     }
 
     /**
@@ -141,5 +142,5 @@ object MetaUtil {
     }
 
     private val classLoader: ClassLoader
-        get() = MetaUtil::class.java.classLoader
+        get() = ClassLoaderUtil.pluginClassLoader
 }
