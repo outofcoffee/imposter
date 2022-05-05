@@ -8,3 +8,5 @@ out/
 target/
 node_modules/
 .serverless/
+.tool-versions
+.imposter
