@@ -47,6 +47,7 @@ jobs:
         run: ./gradlew test --info --stacktrace
 
       - name: Publish Unit Test Results
+        if: always()
         uses: EnricoMi/publish-unit-test-result-action@v1.33
         with:
           files: "**/test-results/**/*.xml"
