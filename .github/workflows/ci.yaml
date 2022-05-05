@@ -25,8 +25,10 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
 
-      - name: Disable gradle daemon
+      - name: Set up build environment
         run: |
+          chmod +x ./scripts/*.sh
+          # Disable gradle daemon
           mkdir -p ~/.gradle
           echo "org.gradle.daemon=false" >> ~/.gradle/gradle.properties
 
@@ -54,49 +56,19 @@ jobs:
           comment_mode: off
 
       - name: Build distributions
-        if: ${{ startsWith(github.ref, 'refs/tags/') || steps.git-meta.outputs.branch == 'develop' }}
-        run: |
-          chmod +x ./scripts/*.sh
-          ./gradlew dist --info --stacktrace
-
-      - name: Build Docker images
-        if: ${{ (startsWith(github.ref, 'refs/tags/') || steps.git-meta.outputs.branch == 'develop') && matrix.java == '11' }}
-        run: |
-          IMAGE_TAG_NAME="$( ./scripts/branch-to-tag-name.sh ${{ steps.git-meta.outputs.branch }} )"
-
-          case ${{ steps.git-meta.outputs.branch }} in
-          develop)
-            if [[ ! -z ${IMAGE_TAG_NAME} ]]; then
-              ./scripts/docker-build.sh -p false "${IMAGE_TAG_NAME}"
-            fi
-            ;;
-
-          main)
-            CURRENT_VERSION="$( git describe --tags --exact-match )"
-            if [[ "${CURRENT_VERSION:0:1}" == "v" ]]; then
-              CURRENT_VERSION="$( echo ${CURRENT_VERSION} | cut -c 2- )"
-            fi
-            ./scripts/docker-build.sh -p false "${CURRENT_VERSION}"
-            ./scripts/docker-build.sh -p false "latest"
-            ;;
-          esac
+        run: ./gradlew dist --info --stacktrace
 
       - name: Integration test
+        run: |
+          ./scripts/docker-build.sh -p false dev
+          ./scripts/integration-tests.sh dev
+
+      - name: Build and push Docker images
         if: ${{ (startsWith(github.ref, 'refs/tags/') || steps.git-meta.outputs.branch == 'develop') && matrix.java == '11' }}
         run: |
-          IMAGE_TAG_NAME="$( ./scripts/branch-to-tag-name.sh ${{ steps.git-meta.outputs.branch }} )"
-          ./scripts/integration-tests.sh "${IMAGE_TAG_NAME}"
-
-      - name: Push Docker images
-        if: ${{ (startsWith(github.ref, 'refs/tags/') || steps.git-meta.outputs.branch == 'develop') && matrix.java == '11' }}
-        run: |
-          IMAGE_TAG_NAME="$( ./scripts/branch-to-tag-name.sh ${{ steps.git-meta.outputs.branch }} )"
-
           case ${{ steps.git-meta.outputs.branch }} in
           develop)
-            if [[ ! -z ${IMAGE_TAG_NAME} ]]; then
-              ./scripts/docker-build.sh -p true "${IMAGE_TAG_NAME}"
-            fi
+            ./scripts/docker-build.sh -p true beta
             ;;
 
           main)
