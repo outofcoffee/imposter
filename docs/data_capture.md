@@ -176,7 +176,7 @@ resources:
     method: POST
     capture:
       personInTeam:
-        expression: "person=${context.request.pathParams.name},team=${context.request.pathParams.team}"
+        expression: "person=${context.request.pathParams.person},team=${context.request.pathParams.team}"
         store: testStore
 ```
 
