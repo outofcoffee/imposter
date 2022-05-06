@@ -35,20 +35,7 @@ jobs:
       - name: Determine effective branch
         id: git-meta
         run: |
-          case "$( git branch --show-current )" in
-          develop)
-            EFFECTIVE_BRANCH_NAME="develop"
-            ;;
-          main)
-            EFFECTIVE_BRANCH_NAME="main"
-            ;;
-          release/2.x)
-            EFFECTIVE_BRANCH_NAME="release/2.x"
-            ;;
-          *)
-            EFFECTIVE_BRANCH_NAME="dev"
-            ;;
-          esac
+          EFFECTIVE_BRANCH_NAME="$( ./scripts/get-effective-branch.sh )"
           echo "::set-output name=branch::${EFFECTIVE_BRANCH_NAME}"
 
       - name: Test
