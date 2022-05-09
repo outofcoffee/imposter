@@ -67,6 +67,7 @@ import io.gatehill.imposter.service.ResponseRoutingService
 import io.gatehill.imposter.service.ResponseService
 import io.gatehill.imposter.service.ResponseService.ResponseSender
 import io.gatehill.imposter.util.HttpUtil
+import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.ResourceUtil
 import io.vertx.core.Vertx
 import org.apache.logging.log4j.LogManager
@@ -200,7 +201,6 @@ class SoapPluginImpl @Inject constructor(
     ) {
         val statusCodeFactory = DefaultStatusCodeFactory.instance
         val responseBehaviourFactory = DefaultResponseBehaviourFactory.instance
-        val request = httpExchange.request()
         val resourceConfig = httpExchange.get<BasicResourceConfig>(ResourceUtil.RESOURCE_CONFIG_KEY)
 
         val defaultBehaviourHandler = { responseBehaviour: ResponseBehaviour ->
@@ -234,9 +234,8 @@ class SoapPluginImpl @Inject constructor(
 
             } ?: run {
                 LOGGER.warn(
-                    "No output type definition found in WSDL for {} {} and status code {}",
-                    request.method(),
-                    request.path(),
+                    "No output type definition found in WSDL for {} and status code {}",
+                    LogUtil.describeRequestShort(httpExchange),
                     responseBehaviour.statusCode,
                 )
                 response.end()

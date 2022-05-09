@@ -42,7 +42,7 @@
  */
 package io.gatehill.imposter.plugin.openapi.service
 
-import io.gatehill.imposter.http.HttpRequest
+import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.plugin.openapi.model.ContentTypedHolder
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.media.Schema
@@ -54,7 +54,7 @@ import io.swagger.v3.oas.models.media.Schema
  */
 interface SchemaService {
     fun collectExamples(
-        request: HttpRequest,
+        httpExchange: HttpExchange,
         spec: OpenAPI,
         schema: ContentTypedHolder<Schema<*>>
     ): ContentTypedHolder<*>

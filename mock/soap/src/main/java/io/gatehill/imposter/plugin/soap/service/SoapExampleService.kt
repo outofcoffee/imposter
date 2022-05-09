@@ -46,6 +46,7 @@ package io.gatehill.imposter.plugin.soap.service
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.plugin.soap.model.ParsedSoapMessage
 import io.gatehill.imposter.plugin.soap.util.SoapUtil
+import io.gatehill.imposter.util.LogUtil
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.apache.xmlbeans.impl.xb.xsdschema.SchemaDocument
@@ -87,16 +88,14 @@ class SoapExampleService {
         val responseBody = SoapUtil.wrapInEnv(example, soapEnv.soapEnvNamespace)
         if (logger.isTraceEnabled) {
             logger.trace(
-                "Serving mock example for URI {} with status code {}: {}",
-                httpExchange.request().absoluteURI(),
-                httpExchange.response().getStatusCode(),
+                "Serving mock example for {} with status code {}: {}",
+                LogUtil.describeRequestShort(httpExchange),
                 responseBody
             )
         } else {
             logger.info(
-                "Serving mock example for URI {} with status code {} (response body {} bytes)",
-                httpExchange.request().absoluteURI(),
-                httpExchange.response().getStatusCode(),
+                "Serving mock example for {} with status code {} (response body {} bytes)",
+                LogUtil.describeRequestShort(httpExchange),
                 responseBody.length
             )
         }

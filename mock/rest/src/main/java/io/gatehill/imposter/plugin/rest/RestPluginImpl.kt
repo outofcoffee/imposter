@@ -60,6 +60,7 @@ import io.gatehill.imposter.service.ResponseRoutingService
 import io.gatehill.imposter.service.ResponseService
 import io.gatehill.imposter.util.FileUtil.findRow
 import io.gatehill.imposter.util.HttpUtil
+import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.ResourceUtil
 import io.vertx.core.Vertx
 import org.apache.logging.log4j.LogManager
@@ -132,11 +133,9 @@ class RestPluginImpl @Inject constructor(
         httpExchange: HttpExchange,
         responseBehaviour: ResponseBehaviour,
     ) {
-        val request = httpExchange.request()
         LOGGER.info(
-            "Handling {} object request for: {}",
-            request.method(),
-            request.absoluteURI()
+            "Handling object request for: {}",
+            LogUtil.describeRequestShort(httpExchange)
         )
         responseService.sendResponse(pluginConfig, resourceConfig, httpExchange, responseBehaviour)
     }
@@ -156,9 +155,8 @@ class RestPluginImpl @Inject constructor(
 
         val request = httpExchange.request()
         LOGGER.info(
-            "Handling {} array request for: {}",
-            request.method(),
-            request.absoluteURI()
+            "Handling array request for: {}",
+            LogUtil.describeRequestShort(httpExchange)
         )
 
         // get the first param in the path

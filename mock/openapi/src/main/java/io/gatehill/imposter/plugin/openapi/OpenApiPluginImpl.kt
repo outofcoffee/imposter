@@ -272,7 +272,6 @@ class OpenApiPluginImpl @Inject constructor(
             val context = mutableMapOf<String, Any>()
             context["operation"] = operation
 
-            val request = httpExchange.request()
             val resourceConfig = httpExchange.get<BasicResourceConfig>(ResourceUtil.RESOURCE_CONFIG_KEY)
 
             val defaultBehaviourHandler = { responseBehaviour: ResponseBehaviour ->
@@ -309,9 +308,8 @@ class OpenApiPluginImpl @Inject constructor(
                         })
                 } ?: run {
                     LOGGER.warn(
-                        "No response found in specification for {} {} and status code {}",
-                        request.method(),
-                        request.path(),
+                        "No response found in specification for {} and status code {}",
+                        describeRequestShort(httpExchange),
                         responseBehaviour.statusCode
                     )
                     response.end()
@@ -392,8 +390,8 @@ class OpenApiPluginImpl @Inject constructor(
      */
     private fun fallback(httpExchange: HttpExchange, responseBehaviour: ResponseBehaviour): Boolean {
         LOGGER.warn(
-            "No example match found and no response file set for mock response for URI {} with status code {}" +
-                    " - sending empty response", httpExchange.request().absoluteURI(), responseBehaviour.statusCode
+            "No example match found and no response file set for mock response for {} with status code {}" +
+                    " - sending empty response", describeRequestShort(httpExchange), responseBehaviour.statusCode
         )
         httpExchange.response().end()
         return true
