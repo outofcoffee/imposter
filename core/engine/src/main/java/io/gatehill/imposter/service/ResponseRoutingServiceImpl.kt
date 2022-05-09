@@ -57,6 +57,7 @@ import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.ResponseBehaviour
 import io.gatehill.imposter.script.ResponseBehaviourType
+import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.LogUtil.describeRequest
 import org.apache.logging.log4j.LogManager
 import java.util.function.Consumer
@@ -143,8 +144,8 @@ class ResponseRoutingServiceImpl @Inject constructor(
             }
         } else {
             LOGGER.debug(
-                "Using default HTTP {} response behaviour for request: {} {}",
-                statusCode, httpExchange.request().method(), httpExchange.request().absoluteURI()
+                "Using default HTTP {} response behaviour for request: {}",
+                statusCode, LogUtil.describeRequestShort(httpExchange)
             )
             responseBehaviour = responseBehaviourFactory.build(statusCode, responseConfig)
         }

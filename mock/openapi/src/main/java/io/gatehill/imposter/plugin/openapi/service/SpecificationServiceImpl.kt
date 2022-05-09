@@ -55,6 +55,7 @@ import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginValidationConfig.ValidationIssueBehaviour
 import io.gatehill.imposter.plugin.openapi.model.ParsedSpec
 import io.gatehill.imposter.plugin.openapi.util.ValidationReportUtil
+import io.gatehill.imposter.util.LogUtil
 import io.swagger.models.Scheme
 import io.swagger.v3.core.util.Json
 import io.swagger.v3.oas.models.Components
@@ -69,7 +70,7 @@ import io.swagger.v3.oas.models.tags.Tag
 import org.apache.logging.log4j.LogManager
 import java.net.URI
 import java.net.URISyntaxException
-import java.util.Objects
+import java.util.*
 import java.util.concurrent.ExecutionException
 import javax.inject.Inject
 
@@ -236,7 +237,7 @@ class SpecificationServiceImpl @Inject constructor(
         val report = validator.validateRequest(requestBuilder.build())
         if (report.messages.isNotEmpty()) {
             val reportMessages = reportFormatter.apply(report)
-            LOGGER.warn("Validation failed for {} {}: {}", request.method(), request.absoluteURI(), reportMessages)
+            LOGGER.warn("Validation failed for {}: {}", LogUtil.describeRequestShort(httpExchange), reportMessages)
 
             // only respond with 400 if validation failures are at error level
             if (report.hasErrors() && ValidationIssueBehaviour.FAIL == pluginConfig.validation.request) {
@@ -250,7 +251,7 @@ class SpecificationServiceImpl @Inject constructor(
                 return false
             }
         } else {
-            LOGGER.debug("Validation passed for {} {}", request.method(), request.absoluteURI())
+            LOGGER.debug("Validation passed for {}", LogUtil.describeRequestShort(httpExchange))
         }
         return true
     }

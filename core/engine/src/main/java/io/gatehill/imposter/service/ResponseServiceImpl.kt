@@ -48,7 +48,6 @@ import io.gatehill.imposter.config.util.EnvVars.Companion.getEnv
 import io.gatehill.imposter.exception.ResponseException
 import io.gatehill.imposter.http.ExchangePhase
 import io.gatehill.imposter.http.HttpExchange
-import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.http.HttpResponse
 import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
 import io.gatehill.imposter.lifecycle.EngineLifecycleListener
@@ -58,6 +57,7 @@ import io.gatehill.imposter.plugin.config.resource.ResourceConfig
 import io.gatehill.imposter.script.ResponseBehaviour
 import io.gatehill.imposter.service.ResponseService.ResponseSender
 import io.gatehill.imposter.util.HttpUtil
+import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.LogUtil.describeRequest
 import io.gatehill.imposter.util.MetricsUtil
 import io.micrometer.core.instrument.Gauge
@@ -137,14 +137,14 @@ class ResponseServiceImpl @Inject constructor(
         responseBehaviour: ResponseBehaviour,
         vararg fallbackSenders: ResponseSender
     ) {
-        simulatePerformance(responseBehaviour, httpExchange.request()) {
+        simulatePerformance(responseBehaviour, httpExchange) {
             sendResponseInternal(pluginConfig, resourceConfig, httpExchange, responseBehaviour, fallbackSenders)
         }
     }
 
     private fun simulatePerformance(
         responseBehaviour: ResponseBehaviour,
-        request: HttpRequest,
+        httpExchange: HttpExchange,
         completion: Runnable
     ) {
         val performance = responseBehaviour.performanceSimulation
@@ -161,7 +161,7 @@ class ResponseServiceImpl @Inject constructor(
             }
         }
         if (delayMs > 0) {
-            LOGGER.info("Delaying mock response for {} {} by {}ms", request.method(), request.absoluteURI(), delayMs)
+            LOGGER.info("Delaying mock response for {} by {}ms", LogUtil.describeRequestShort(httpExchange), delayMs)
             vertx.setTimer(delayMs.toLong()) { completion.run() }
         } else {
             completion.run()
@@ -176,8 +176,8 @@ class ResponseServiceImpl @Inject constructor(
         fallbackSenders: Array<out ResponseSender>
     ) {
         LOGGER.trace(
-            "Sending mock response for URI {} with status code {}",
-            httpExchange.request().absoluteURI(),
+            "Sending mock response for {} with status code {}",
+            LogUtil.describeRequestShort(httpExchange),
             responseBehaviour.statusCode
         )
         try {
@@ -227,9 +227,9 @@ class ResponseServiceImpl @Inject constructor(
     ) {
         val response = httpExchange.response()
         LOGGER.info(
-            "Serving response file {} for URI {} with status code {}",
+            "Serving response file {} for {} with status code {}",
             responseBehaviour.responseFile,
-            httpExchange.request().absoluteURI(),
+            LogUtil.describeRequestShort(httpExchange),
             response.getStatusCode()
         )
 
@@ -272,9 +272,9 @@ class ResponseServiceImpl @Inject constructor(
         responseBehaviour: ResponseBehaviour
     ) {
         LOGGER.info(
-            "Serving response data ({} bytes) for URI {} with status code {}",
+            "Serving response data ({} bytes) for {} with status code {}",
             responseBehaviour.responseData!!.length,
-            httpExchange.request().absoluteURI(),
+            LogUtil.describeRequestShort(httpExchange),
             httpExchange.response().getStatusCode()
         )
         // raw data should be considered untrusted as it is not sanitised

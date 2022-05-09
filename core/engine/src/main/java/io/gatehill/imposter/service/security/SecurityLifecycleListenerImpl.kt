@@ -49,8 +49,9 @@ import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.security.SecurityConfig
 import io.gatehill.imposter.plugin.config.security.SecurityConfigHolder
 import io.gatehill.imposter.service.SecurityService
+import io.gatehill.imposter.util.LogUtil
 import org.apache.logging.log4j.LogManager
-import java.util.Objects
+import java.util.*
 import javax.inject.Inject
 
 /**
@@ -66,25 +67,22 @@ class SecurityLifecycleListenerImpl @Inject constructor(
         resolvedResourceConfigs: List<ResolvedResourceConfig?>,
         httpExchange: HttpExchange
     ): Boolean {
-        val request = httpExchange.request()
         val security = getSecurityConfig(rootResourceConfig, resourceConfig)
 
         return security?.let {
             if (LOGGER.isTraceEnabled) {
                 LOGGER.trace(
-                    "Enforcing security policy [{} conditions] for: {} {}",
+                    "Enforcing security policy [{} conditions] for: {}",
                     security.conditions.size,
-                    request.method(),
-                    request.absoluteURI()
+                    LogUtil.describeRequestShort(httpExchange)
                 )
             }
             securityService.enforce(security, httpExchange)
         } ?: run {
             if (LOGGER.isTraceEnabled) {
                 LOGGER.trace(
-                    "No security policy found for: {} {}",
-                    request.method(),
-                    request.absoluteURI()
+                    "No security policy found for: {}",
+                    LogUtil.describeRequestShort(httpExchange)
                 )
             }
             true

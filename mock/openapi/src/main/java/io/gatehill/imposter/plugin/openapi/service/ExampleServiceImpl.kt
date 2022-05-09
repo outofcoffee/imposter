@@ -50,6 +50,7 @@ import io.gatehill.imposter.plugin.openapi.model.ContentTypedHolder
 import io.gatehill.imposter.plugin.openapi.util.RefUtil
 import io.gatehill.imposter.script.ResponseBehaviour
 import io.gatehill.imposter.util.HttpUtil.readAcceptedContentTypes
+import io.gatehill.imposter.util.LogUtil
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.examples.Example
 import io.swagger.v3.oas.models.media.Content
@@ -93,8 +94,8 @@ class ExampleServiceImpl @Inject constructor(
 
         } ?: run {
             LOGGER.debug(
-                "No matching examples found in specification for URI {} and status code {}",
-                httpExchange.request().absoluteURI(), responseBehaviour.statusCode
+                "No matching examples found in specification for {} and status code {}",
+                LogUtil.describeRequestShort(httpExchange), responseBehaviour.statusCode
             )
 
             // no matching example
@@ -150,8 +151,8 @@ class ExampleServiceImpl @Inject constructor(
         }
         val example: ContentTypedHolder<Any>? = if (examples.size > 0) {
             LOGGER.trace(
-                "Checking for mock example in specification ({} candidates) for URI {}",
-                examples.size, httpExchange.request().absoluteURI()
+                "Checking for mock example in specification ({} candidates) for {}",
+                examples.size, LogUtil.describeRequestShort(httpExchange)
             )
             matchExample(httpExchange, config, responseBehaviour, examples)
         } else {
@@ -267,7 +268,7 @@ class ExampleServiceImpl @Inject constructor(
         schema: ContentTypedHolder<Schema<*>>
     ): Boolean {
         return try {
-            val dynamicExamples = schemaService.collectExamples(httpExchange.request(), spec, schema)
+            val dynamicExamples = schemaService.collectExamples(httpExchange, spec, schema)
             responseTransmissionService.transmitExample(httpExchange, dynamicExamples)
             true
         } catch (e: Exception) {

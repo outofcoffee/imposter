@@ -46,6 +46,7 @@ import com.fasterxml.jackson.core.JsonProcessingException
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.plugin.openapi.model.ContentTypedHolder
 import io.gatehill.imposter.util.HttpUtil.CONTENT_TYPE
+import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.MapUtil
 import io.gatehill.imposter.util.MapUtil.YAML_MAPPER
 import io.swagger.v3.oas.models.examples.Example
@@ -68,13 +69,13 @@ class ResponseTransmissionServiceImpl : ResponseTransmissionService {
         val exampleResponse = buildExampleResponse(example.contentType, example.value)
         if (LOGGER.isTraceEnabled) {
             LOGGER.trace(
-                "Serving mock example for URI {} with status code {}: {}",
-                httpExchange.request().absoluteURI(), httpExchange.response().getStatusCode(), exampleResponse
+                "Serving mock example for {} with status code {}: {}",
+                LogUtil.describeRequestShort(httpExchange), httpExchange.response().getStatusCode(), exampleResponse
             )
         } else {
             LOGGER.info(
-                "Serving mock example for URI {} with status code {} (response body {} bytes)",
-                httpExchange.request().absoluteURI(), httpExchange.response().getStatusCode(),
+                "Serving mock example for {} with status code {} (response body {} bytes)",
+                LogUtil.describeRequestShort(httpExchange), httpExchange.response().getStatusCode(),
                 exampleResponse?.let { obj: String -> obj.length } ?: 0
             )
         }
