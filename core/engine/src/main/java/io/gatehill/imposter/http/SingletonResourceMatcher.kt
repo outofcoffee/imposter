@@ -46,7 +46,7 @@ import io.gatehill.imposter.config.ResolvedResourceConfig
 import io.gatehill.imposter.plugin.config.resource.MethodResourceConfig
 import io.gatehill.imposter.util.CollectionUtil.convertKeysToLowerCase
 import io.gatehill.imposter.util.StringUtil.safeEquals
-import java.util.Locale
+import java.util.*
 import java.util.function.Function
 
 
@@ -129,10 +129,14 @@ class SingletonResourceMatcher : AbstractResourceMatcher() {
         if (resourceMap.isEmpty()) {
             return true
         }
-        val comparisonMap = if (caseSensitiveKeyMatch) requestMap else convertKeysToLowerCase(requestMap)
-        return resourceMap.entries.any { (key, value) ->
+
+        // optionally normalise request map
+        val comparisonRequestMap = if (caseSensitiveKeyMatch) requestMap else convertKeysToLowerCase(requestMap)
+
+        // all members of the config map must be present in the request for it to match
+        return resourceMap.all { (key, value) ->
             val configKey: String = if (caseSensitiveKeyMatch) key else key.lowercase(Locale.getDefault())
-            safeEquals(comparisonMap[configKey], value)
+            safeEquals(comparisonRequestMap[configKey], value)
         }
     }
 
