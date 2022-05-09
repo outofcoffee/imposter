@@ -48,6 +48,7 @@ import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyConfig
 import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyResourceConfig
 import io.gatehill.imposter.util.BodyQueryUtil
+import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.StringUtil.safeEquals
 import org.apache.logging.log4j.LogManager
 
@@ -66,19 +67,16 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
         httpExchange: HttpExchange,
     ): BasicResourceConfig? {
         val resourceConfigs = filterResourceConfigs(resources, httpExchange)
-
-        val request = httpExchange.request()
         when (resourceConfigs.size) {
             0 -> {
-                LOGGER.trace("No matching resource config for {} {}", request.method(), request.path())
+                LOGGER.trace("No matching resource config for {}", LogUtil.describeRequestShort(httpExchange))
                 return null
             }
-            1 -> LOGGER.debug("Matched resource config for {} {}", request.method(), request.path())
+            1 -> LOGGER.debug("Matched resource config for {}", LogUtil.describeRequestShort(httpExchange))
             else -> {
                 LOGGER.warn(
-                    "More than one resource config found for {} {} - this is probably a configuration error. Choosing first resource configuration.",
-                    request.method(),
-                    request.path()
+                    "More than one resource config found for {} - this is probably a configuration error. Guessing first resource configuration.",
+                    LogUtil.describeRequestShort(httpExchange)
                 )
             }
         }

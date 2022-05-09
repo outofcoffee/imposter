@@ -164,14 +164,12 @@ class ScriptedResponseServiceImpl @Inject constructor(
         checkNotNull(responseConfig.scriptFile) { "Script file not set" }
         val scriptFile = responseConfig.scriptFile!!
 
-        val request = httpExchange.request()
         try {
             val executionStart = System.nanoTime()
             LOGGER.trace(
-                "Executing script '{}' for request: {} {}",
+                "Executing script '{}' for request: {}",
                 responseConfig.scriptFile,
-                request.method(),
-                request.absoluteURI()
+                LogUtil.describeRequestShort(httpExchange)
             )
             val executionContext = ScriptUtil.buildContext(httpExchange, additionalContext)
             LOGGER.trace("Context for request: {}", Supplier<Any> { executionContext })
@@ -210,10 +208,9 @@ class ScriptedResponseServiceImpl @Inject constructor(
 
             LOGGER.debug(
                 String.format(
-                    "Executed script '%s' for request: %s %s in %.2fms",
+                    "Executed script '%s' for request: %s in %.2fms",
                     responseConfig.scriptFile,
-                    request.method(),
-                    request.absoluteURI(),
+                    LogUtil.describeRequestShort(httpExchange),
                     scriptDuration
                 )
             )
@@ -222,7 +219,7 @@ class ScriptedResponseServiceImpl @Inject constructor(
         } catch (e: Exception) {
             throw RuntimeException(
                 "Error executing script: '${responseConfig.scriptFile}' for request: " +
-                        "${request.method()} ${request.absoluteURI()}", e
+                        LogUtil.describeRequestShort(httpExchange), e
             )
         }
     }

@@ -42,11 +42,12 @@
  */
 package io.gatehill.imposter.plugin.openapi.service
 
-import io.gatehill.imposter.http.HttpRequest
+import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.plugin.openapi.model.ContentTypedHolder
 import io.gatehill.imposter.plugin.openapi.service.valueprovider.DEFAULT_VALUE_PROVIDERS
 import io.gatehill.imposter.plugin.openapi.util.RefUtil
 import io.gatehill.imposter.util.DateTimeUtil
+import io.gatehill.imposter.util.LogUtil
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.media.ArraySchema
 import io.swagger.v3.oas.models.media.ComposedSchema
@@ -66,16 +67,15 @@ import java.util.*
  */
 class SchemaServiceImpl : SchemaService {
     override fun collectExamples(
-        request: HttpRequest,
+        httpExchange: HttpExchange,
         spec: OpenAPI,
         schema: ContentTypedHolder<Schema<*>>
     ): ContentTypedHolder<*> {
         val example = collectSchemaExample(spec, schema.value)
         LOGGER.trace(
-            "Collected example from {} schema for {} {}: {}",
+            "Collected example from {} schema for {}: {}",
             schema.contentType,
-            request.method(),
-            request.absoluteURI(),
+            LogUtil.describeRequestShort(httpExchange),
             example
         )
         return ContentTypedHolder(schema.contentType, example)

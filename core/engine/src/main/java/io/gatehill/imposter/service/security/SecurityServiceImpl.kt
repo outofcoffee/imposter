@@ -54,9 +54,10 @@ import io.gatehill.imposter.plugin.config.security.SecurityEffect
 import io.gatehill.imposter.service.SecurityService
 import io.gatehill.imposter.util.CollectionUtil.convertKeysToLowerCase
 import io.gatehill.imposter.util.HttpUtil
+import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.StringUtil.safeEquals
 import org.apache.logging.log4j.LogManager
-import java.util.Locale
+import java.util.*
 import javax.inject.Inject
 
 /**
@@ -203,18 +204,17 @@ class SecurityServiceImpl @Inject constructor(
     }
 
     private fun enforceEffect(httpExchange: HttpExchange, outcome: PolicyOutcome): Boolean {
-        val request = httpExchange.request()
         return if (SecurityEffect.Permit != outcome.effect) {
             LOGGER.warn(
-                "Denying request {} {} due to security policy - {}",
-                request.method(), request.absoluteURI(), outcome.policySource
+                "Denying request {} due to security policy - {}",
+                LogUtil.describeRequestShort(httpExchange), outcome.policySource
             )
             httpExchange.fail(HttpUtil.HTTP_UNAUTHORIZED)
             false
         } else {
             LOGGER.trace(
-                "Permitting request {} {} due to security policy - {}",
-                request.method(), request.absoluteURI(), outcome.policySource
+                "Permitting request {} due to security policy - {}",
+                LogUtil.describeRequestShort(httpExchange), outcome.policySource
             )
             true
         }
