@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [ '8' ]
+        java: [ '8', '11' ]
     permissions:
       checks: write
       contents: write
@@ -52,6 +52,7 @@ jobs:
         run: ./gradlew dist --info --stacktrace
 
       - name: Integration test
+        if: ${{ matrix.java == '8' }}
         run: |
           ./scripts/docker-build.sh -p false dev
           ./scripts/integration-tests.sh dev
@@ -85,7 +86,7 @@ jobs:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Release Java assets
+      - name: Release Java 8 assets
         if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.java == '8' }}
         uses: actions/github-script@v6
         with:
@@ -102,9 +103,26 @@ jobs:
               './store/graphql/build/libs/imposter-plugin-store-graphql.jar',
             ])
 
-      - name: Publish Java Maven artifacts
+      - name: Release Java 11 assets
+        if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.java == '11' }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const script = require('./.github/github-release.js')
+            await script({github, context}, [
+              './scripting/nashorn-standalone/build/libs/imposter-plugin-js-nashorn-standalone.jar',
+            ])
+
+      - name: Publish Java 8 Maven artifacts
         if: ${{ (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop') && matrix.java == '8' }}
         run: ./gradlew publish --info --stacktrace
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Publish Java 11 Maven artifacts
+        if: ${{ (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop') && matrix.java == '11' }}
+        run: ./gradlew :scripting:scripting-nashorn-standalone:publish --info --stacktrace
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
