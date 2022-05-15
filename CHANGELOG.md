@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.13.4] - 2022-05-15
+## Changed
+- ci: reintroduces publishing for nashorn-standalone plugin.
+
 ## [2.13.3] - 2022-05-09
 ## Fixed
 - fix: resource matching should require all config entries to be present in request.
