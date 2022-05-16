@@ -1,0 +1,11 @@
+plugin: openapi
+specFile: "example-swagger2.yaml"
+validation:
+  request: true
+
+resources:
+  - method: GET
+    path: "/api/example"
+    response:
+      staticData: "Invalid request."
+      statusCode: 400
