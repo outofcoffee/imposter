@@ -47,6 +47,7 @@ import io.gatehill.imposter.awslambda.config.Settings
 import io.gatehill.imposter.awslambda.impl.LambdaServer
 import io.gatehill.imposter.awslambda.impl.LambdaServerFactory
 import io.gatehill.imposter.awslambda.util.ImposterBuilderKt
+import io.gatehill.imposter.plugin.internal.MetaInfPluginDetectorImpl
 import io.gatehill.imposter.plugin.openapi.OpenApiPluginImpl
 import io.gatehill.imposter.plugin.rest.RestPluginImpl
 import io.gatehill.imposter.server.RequestHandlingMode
@@ -79,6 +80,7 @@ abstract class AbstractHandler<Request, Response>(
         ImposterBuilderKt()
             .withPluginClass(OpenApiPluginImpl::class.java)
             .withPluginClass(RestPluginImpl::class.java)
+            .apply { if (Settings.metaInfScan) withPluginClass(MetaInfPluginDetectorImpl::class.java) }
             .withConfigurationDir(Settings.configDir ?: Settings.s3ConfigUrl)
             .withEngineOptions { options ->
                 options.pluginDiscoveryStrategy = Settings.pluginDiscoveryStrategy
