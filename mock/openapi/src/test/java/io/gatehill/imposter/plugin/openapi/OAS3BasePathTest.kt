@@ -57,11 +57,11 @@ import org.junit.Before
 import org.junit.Test
 
 /**
- * Tests for operation base path.
+ * Tests for operation base path for OAS3 specification.
  *
  * @author Pete Cornish
  */
-class BasePathTest : BaseVerticleTest() {
+class OAS3BasePathTest : BaseVerticleTest() {
     override val pluginClass = OpenApiPluginImpl::class.java
 
     @Before
@@ -110,5 +110,16 @@ class BasePathTest : BaseVerticleTest() {
             .statusCode(HttpUtil.HTTP_OK)
             .body("paths.'/animals/pets/{petId}'", notNullValue())
             .body("paths.'/shop/supplies'", notNullValue())
+    }
+
+    @Test
+    fun `server added in spec`() {
+        RestAssured.given()
+            .accept(ContentType.JSON)
+            .`when`()
+            .get("/_spec/combined.json")
+            .then()
+            .statusCode(HttpUtil.HTTP_OK)
+            .body("servers", hasItem(hasEntry("url", "http://$host:$listenPort/petstore")))
     }
 }
