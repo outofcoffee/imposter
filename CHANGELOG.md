@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.14.0] - 2022-05-16
+## Added
+- feat: allows META-INF scan to be enabled in Lambda.
+
 ## [2.13.5] - 2022-05-16
 ## Fixed
 - fix(openapi): separates serving prefix from specification path prefix.
