@@ -178,10 +178,10 @@ class OpenApiPluginImplTest : BaseVerticleTest() {
         testContext.assertTrue(combined.servers.any { it.url == "http://$host:$listenPort/simple" })
 
         // OASv2
-        testContext.assertTrue(combined.paths.containsKey("/simple/apis"))
-        testContext.assertTrue(combined.paths.containsKey("/simple/v2"))
-        testContext.assertTrue(combined.paths.containsKey("/api/pets"))
-        testContext.assertTrue(combined.paths.containsKey("/api/pets/{id}"))
+        testContext.assertTrue(combined.paths.containsKey("/apis"))
+        testContext.assertTrue(combined.paths.containsKey("/v2"))
+        testContext.assertTrue(combined.paths.containsKey("/pets"))
+        testContext.assertTrue(combined.paths.containsKey("/pets/{id}"))
 
         // OASv3
         testContext.assertTrue(combined.paths.containsKey("/oas3/apis"))

@@ -1,0 +1,18 @@
+swagger: "2.0"
+info:
+  description: "Base path test"
+  version: "1.0.0"
+  title: "Base path"
+basePath: "/api"
+paths:
+  /example:
+    get:
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: "OK"
+        "400":
+          description: "Bad Request"
