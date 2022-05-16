@@ -60,4 +60,7 @@ object Settings {
         EnvVars.getEnv("IMPOSTER_S3_CONFIG_URL")
             ?: throw IllegalStateException("Missing S3 configuration URL")
     }
+    val metaInfScan: Boolean by lazy {
+        EnvVars.getEnv("IMPOSTER_METAINF_SCAN")?.toBoolean() ?: false
+    }
 }
