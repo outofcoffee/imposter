@@ -7,6 +7,34 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## Added
 - ...
 
+## [2.14.2] - 2022-05-22
+## Fixed
+- fix(openapi): removes server base path from serving prefix.
+
+## [2.14.1] - 2022-05-22
+## Fixed
+- fix(openapi): allows adding server entry with path only.
+
+## [2.14.0] - 2022-05-16
+## Added
+- feat: allows META-INF scan to be enabled in Lambda.
+
+## [2.13.5] - 2022-05-16
+## Fixed
+- fix(openapi): separates serving prefix from specification path prefix.
+
+## [2.13.4] - 2022-05-15
+## Changed
+- ci: reintroduces publishing for nashorn-standalone plugin.
+
+## [2.13.3] - 2022-05-09
+## Fixed
+- fix: resource matching should require all config entries to be present in request.
+
+## [2.13.2] - 2022-05-06
+## Fixed
+- fix: uses plugin classloader for meta-detector plugin classpath scan.
+
 ## [2.13.1] - 2022-04-28
 ## Added
 - feat: allows plugin arguments to be set using environment variables.
