@@ -82,17 +82,21 @@ class SpecificationServiceImpl @Inject constructor(
     private val cache = CacheBuilder.newBuilder().build<String, Any>()
     private val reportFormatter = SimpleValidationReportFormat.getInstance()
 
+    private val serverBasePath: String? by lazy {
+        imposterConfig.pluginArgs!![ARG_SERVER_BASEPATH]
+    }
+
     private val serverPathOnly: Boolean by lazy {
         imposterConfig.pluginArgs!![ARG_SERVER_PATH_ONLY]?.toBoolean() == true
     }
 
     @Throws(ExecutionException::class)
-    override fun getCombinedSpec(allSpecs: List<ParsedSpec>, basePath: String?): OpenAPI {
+    override fun getCombinedSpec(allSpecs: List<ParsedSpec>): OpenAPI {
         return cache.get("combinedSpecObject") {
             try {
                 val scheme = Scheme.forValue(imposterConfig.pluginArgs!![ARG_SCHEME])
                 val title = imposterConfig.pluginArgs!![ARG_TITLE]
-                return@get combineSpecs(allSpecs, basePath, scheme, title)
+                return@get combineSpecs(allSpecs, scheme, title)
             } catch (e: Exception) {
                 throw ExecutionException(e)
             }
@@ -100,7 +104,7 @@ class SpecificationServiceImpl @Inject constructor(
     }
 
     @Throws(ExecutionException::class)
-    override fun getCombinedSpecSerialised(allSpecs: List<ParsedSpec>, basePath: String?): String {
+    override fun getCombinedSpecSerialised(allSpecs: List<ParsedSpec>): String {
         return cache.get("combinedSpecSerialised") {
             try {
                 // Use the v3 swagger-core serialiser (io.swagger.v3.core.util.Json) to serialise the spec,
@@ -108,7 +112,7 @@ class SpecificationServiceImpl @Inject constructor(
                 // In particular, these mixins correctly serialise extensions and components, like SecurityScheme,
                 // to their formal values, rather than the Java enum/toString() defaults.
                 return@get Json.mapper().writeValueAsString(
-                    getCombinedSpec(allSpecs, basePath)
+                    getCombinedSpec(allSpecs)
                 )
             } catch (e: JsonGenerationException) {
                 throw ExecutionException(e)
@@ -118,7 +122,6 @@ class SpecificationServiceImpl @Inject constructor(
 
     override fun combineSpecs(
         specs: List<ParsedSpec>,
-        basePath: String?,
         scheme: Scheme?,
         title: String?
     ): OpenAPI {
@@ -190,7 +193,7 @@ class SpecificationServiceImpl @Inject constructor(
         components.schemas = aggregate(allComponents) { it.schemas }
         components.securitySchemes = aggregate(allComponents) { it.securitySchemes }
         combined.components = components
-        combined.servers = buildServerList(servers, scheme, basePath)
+        combined.servers = buildServerList(servers, scheme, serverBasePath)
         combined.paths = paths
         combined.security = security
         combined.tags = tags
@@ -209,7 +212,6 @@ class SpecificationServiceImpl @Inject constructor(
         pluginConfig: OpenApiPluginConfig,
         httpExchange: HttpExchange,
         allSpecs: List<ParsedSpec>,
-        basePath: String?,
     ): Boolean {
         if (Objects.isNull(pluginConfig.validation)) {
             LOGGER.trace("Validation is disabled")
@@ -224,7 +226,7 @@ class SpecificationServiceImpl @Inject constructor(
         }
 
         val validator: OpenApiInteractionValidator = try {
-            getValidator(pluginConfig, allSpecs, basePath)
+            getValidator(pluginConfig, allSpecs)
         } catch (e: ExecutionException) {
             httpExchange.fail(RuntimeException("Error building spec validator", e))
             return false
@@ -263,9 +265,9 @@ class SpecificationServiceImpl @Inject constructor(
      * Returns the specification validator from cache, creating it first on cache miss.
      */
     @Throws(ExecutionException::class)
-    private fun getValidator(pluginConfig: OpenApiPluginConfig, allSpecs: List<ParsedSpec>, basePath: String?): OpenApiInteractionValidator {
+    private fun getValidator(pluginConfig: OpenApiPluginConfig, allSpecs: List<ParsedSpec>): OpenApiInteractionValidator {
         return cache.get("specValidator") {
-            val combined = getCombinedSpec(allSpecs, basePath)
+            val combined = getCombinedSpec(allSpecs)
             val builder = OpenApiInteractionValidator.createFor(combined)
 
             // custom validation levels
@@ -416,6 +418,7 @@ class SpecificationServiceImpl @Inject constructor(
         private const val DEFAULT_TITLE = "Imposter Mock APIs"
         private const val ARG_SCHEME = "openapi.scheme"
         private const val ARG_TITLE = "openapi.title"
+        private const val ARG_SERVER_BASEPATH = "openapi.server.basepath"
         private const val ARG_SERVER_PATH_ONLY = "openapi.server.path.only"
 
         private val defaultValidationLevels = mapOf(

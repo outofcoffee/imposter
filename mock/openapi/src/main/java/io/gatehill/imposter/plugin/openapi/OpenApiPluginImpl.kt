@@ -110,7 +110,6 @@ class OpenApiPluginImpl @Inject constructor(
     companion object {
         private val LOGGER = LogManager.getLogger(OpenApiPluginImpl::class.java)
         private const val UI_WEB_ROOT = "swagger-ui"
-        private const val ARG_BASEPATH = "openapi.basepath"
 
         /**
          * 'default' is a special case in OpenAPI that does not have a status code.
@@ -122,10 +121,6 @@ class OpenApiPluginImpl @Inject constructor(
         init {
             addJavaTimeSupport(Json.mapper())
         }
-    }
-
-    private val basePath: String? by lazy {
-        imposterConfig.pluginArgs!![ARG_BASEPATH]
     }
 
     private val resourceMatcher = SingletonResourceMatcher.instance
@@ -165,20 +160,25 @@ class OpenApiPluginImpl @Inject constructor(
 
             // The *path prefix* includes the plugin configuration root path,
             // but not the server 'basePath', as this is required only for
-            // the serving prefix and the list of server entries added to
-            // the combined spec. Crucially, the path prefix is incorporated
-            // into each of the paths within the spec.
+            // the list of server entries added to the combined spec.
+            // This, the path prefix, is incorporated into each of the
+            // operation paths within the spec.
             val pathPrefix = (config.path ?: "")
 
-            // The *serving prefix* includes the spec's first server entry path, however,
-            // the path in the combined spec document should not include this, as server
-            // entries are automatically prefixed by the spec UI.
+            // The *serving prefix* includes the spec's first server entry path.
+            // The operation paths in the combined spec document should not
+            // include this, as server entries are automatically prefixed by
+            // the spec UI.
             //
-            // It is built from a concatenation of:
-            // 1. the server 'basePath'
-            // 2. the plugin configuration root path
-            // 3. the path of the first 'server' entry in the spec
-            val servingPrefix = (basePath ?: "") + pathPrefix + if (config.stripServerPath) "" else specificationService.determinePathFromSpec(spec)
+            // The serving prefix is built from a concatenation of the plugin
+            // configuration root path (see path prefix) and, optionally,
+            // the path of the first 'server' entry in the spec. This means
+            // that other server entries' paths are ignored.
+            //
+            // If server-agnostic mock paths are required, set the
+            // 'stripServerPath=true' configuration option and specify the
+            // root path in the configuration.
+            val servingPrefix = pathPrefix + if (config.stripServerPath) "" else specificationService.determinePathFromSpec(spec)
 
             spec.paths.forEach { path: String, pathConfig: PathItem ->
                 handlePathOperations(router, config, spec, servingPrefix, path, pathConfig)
@@ -251,7 +251,7 @@ class OpenApiPluginImpl @Inject constructor(
         try {
             httpExchange.response()
                 .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_JSON)
-                .end(specificationService.getCombinedSpecSerialised(allSpecs, basePath))
+                .end(specificationService.getCombinedSpecSerialised(allSpecs))
         } catch (e: Exception) {
             httpExchange.fail(e)
         }
@@ -275,7 +275,7 @@ class OpenApiPluginImpl @Inject constructor(
         return resourceService.handleRoute(imposterConfig, pluginConfig, resourceMatcher) { httpExchange: HttpExchange ->
             LOGGER.trace("Operation ${operation.operationId} matched for request: ${describeRequestShort(httpExchange)}")
 
-            if (!specificationService.isValidRequest(pluginConfig, httpExchange, allSpecs, basePath)) {
+            if (!specificationService.isValidRequest(pluginConfig, httpExchange, allSpecs)) {
                 return@handleRoute
             }
 
