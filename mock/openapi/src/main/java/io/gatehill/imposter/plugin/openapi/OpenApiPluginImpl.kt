@@ -163,16 +163,22 @@ class OpenApiPluginImpl @Inject constructor(
         configs.forEach { config: OpenApiPluginConfig ->
             val spec = specificationLoaderService.parseSpecification(config)
 
-            // the prefix is built from a concatenation of:
+            // The *path prefix* includes the plugin configuration root path,
+            // but not the server 'basePath', as this is required only for
+            // the serving prefix and the list of server entries added to
+            // the combined spec. Crucially, the path prefix is incorporated
+            // into each of the paths within the spec.
+            val pathPrefix = (config.path ?: "")
+
+            // The *serving prefix* includes the spec's first server entry path, however,
+            // the path in the combined spec document should not include this, as server
+            // entries are automatically prefixed by the spec UI.
+            //
+            // It is built from a concatenation of:
             // 1. the server 'basePath'
             // 2. the plugin configuration root path
             // 3. the path of the first 'server' entry in the spec
-            val pathPrefix = (basePath ?: "") + (config.path ?: "")
-
-            // the _serving prefix_ includes the spec's first server entry path, however,
-            // the path in the combined spec document should not include this, as server
-            // entries are automatically prefixed by the spec UI.
-            val servingPrefix = pathPrefix + if (config.stripServerPath) "" else specificationService.determinePathFromSpec(spec)
+            val servingPrefix = (basePath ?: "") + pathPrefix + if (config.stripServerPath) "" else specificationService.determinePathFromSpec(spec)
 
             spec.paths.forEach { path: String, pathConfig: PathItem ->
                 handlePathOperations(router, config, spec, servingPrefix, path, pathConfig)
