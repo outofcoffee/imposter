@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.14.2] - 2022-05-22
+## Fixed
+- fix(openapi): removes server base path from serving prefix.
+
 ## [2.14.1] - 2022-05-22
 ## Fixed
 - fix(openapi): allows adding server entry with path only.
