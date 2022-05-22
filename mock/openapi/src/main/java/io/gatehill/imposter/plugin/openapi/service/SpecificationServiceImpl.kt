@@ -70,7 +70,7 @@ import io.swagger.v3.oas.models.tags.Tag
 import org.apache.logging.log4j.LogManager
 import java.net.URI
 import java.net.URISyntaxException
-import java.util.*
+import java.util.Objects
 import java.util.concurrent.ExecutionException
 import javax.inject.Inject
 
@@ -82,6 +82,10 @@ class SpecificationServiceImpl @Inject constructor(
 ) : SpecificationService {
     private val cache = CacheBuilder.newBuilder().build<String, Any>()
     private val reportFormatter = SimpleValidationReportFormat.getInstance()
+
+    private val serverPathOnly: Boolean by lazy {
+        imposterConfig.pluginArgs!![ARG_SERVER_PATH_ONLY]?.toBoolean() == true
+    }
 
     @Throws(ExecutionException::class)
     override fun getCombinedSpec(allSpecs: List<ParsedSpec>, basePath: String?): OpenAPI {
@@ -279,6 +283,7 @@ class SpecificationServiceImpl @Inject constructor(
     }
 
     private fun buildServerList(servers: List<Server>, scheme: Scheme?, basePath: String?): List<Server> {
+        val serverBaseUrl = if (serverPathOnly) "" else URI.create(imposterConfig.serverUrl!!).toString()
         val finalServers = servers.toMutableList()
 
         scheme?.let {
@@ -297,7 +302,7 @@ class SpecificationServiceImpl @Inject constructor(
         val mockEndpoints = mutableListOf<Server>()
         finalServers.forEach { server ->
             mockEndpoints += Server().apply {
-                this.url = URI.create(imposterConfig.serverUrl!!).toString() + determinePathFromServer(server)
+                this.url = serverBaseUrl + determinePathFromServer(server)
             }
         }
         // prepend mock endpoints to servers list
@@ -412,6 +417,7 @@ class SpecificationServiceImpl @Inject constructor(
         private const val DEFAULT_TITLE = "Imposter Mock APIs"
         private const val ARG_SCHEME = "openapi.scheme"
         private const val ARG_TITLE = "openapi.title"
+        private const val ARG_SERVER_PATH_ONLY = "openapi.server.path.only"
 
         private val defaultValidationLevels = mapOf(
             "validation.request.parameter.query.unexpected" to "IGNORE"
