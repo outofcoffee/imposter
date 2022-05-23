@@ -42,6 +42,8 @@
  */
 package io.gatehill.imposter.store.dynamodb
 
+import com.amazonaws.SDKGlobalConfiguration
+import com.amazonaws.regions.Regions
 import com.amazonaws.services.dynamodbv2.model.AttributeValue
 import com.amazonaws.services.dynamodbv2.model.GetItemRequest
 import io.gatehill.imposter.ImposterConfig
@@ -76,6 +78,8 @@ class DynamoDBStoreTtlTest {
         fun setUp() {
             // These tests need Docker
             TestEnvironmentUtil.assumeDockerAccessible()
+
+            System.setProperty(SDKGlobalConfiguration.AWS_REGION_SYSTEM_PROPERTY, Regions.US_EAST_1.name)
 
             dynamo = helper.startDynamoDb(
                 mapOf(
