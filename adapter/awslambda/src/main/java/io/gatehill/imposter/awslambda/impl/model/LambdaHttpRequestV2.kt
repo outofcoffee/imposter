@@ -44,6 +44,7 @@
 package io.gatehill.imposter.awslambda.impl.model
 
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent
+import com.google.common.io.BaseEncoding
 import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.http.HttpRoute
@@ -103,14 +104,23 @@ class LambdaHttpRequestV2(
         return event.queryStringParameters?.get(queryParam)
     }
 
+    /**
+     * Holds the request body, decoding it from Base-64 if required.
+     */
+    private val requestBodyDecoded: String? by lazy {
+        return@lazy event.body?.let { rawBody ->
+            if (event.isBase64Encoded) String(BaseEncoding.base64().decode(rawBody)) else rawBody
+        }
+    }
+
     override val body: Buffer? by lazy {
-        event.body?.let { Buffer.buffer(it) }
+        requestBodyDecoded?.let { Buffer.buffer(it) }
     }
 
     override val bodyAsString: String?
-        get() = event.body
+        get() = requestBodyDecoded
 
     override val bodyAsJson: JsonObject? by lazy {
-        event.body?.let { JsonObject(it) }
+        requestBodyDecoded?.let { JsonObject(it) }
     }
 }
