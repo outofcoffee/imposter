@@ -45,6 +45,7 @@ package io.gatehill.imposter.awslambda.impl
 
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent
 import com.google.common.base.Strings
+import com.google.common.io.BaseEncoding
 import io.gatehill.imposter.http.ExchangePhase
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpRequest
@@ -113,15 +114,24 @@ class LambdaHttpExchange(
         return acceptedMimeTypes.contains(mimeType)
     }
 
+    /**
+     * Holds the request body, decoding it from Base-64 if required.
+     */
+    private val requestBodyDecoded: String? by lazy {
+        return@lazy request.event.body?.let { rawBody ->
+            if (request.event.isBase64Encoded) String(BaseEncoding.base64().decode(rawBody)) else rawBody
+        }
+    }
+
     override val body: Buffer? by lazy {
-        request.event.body?.let { Buffer.buffer(it) }
+        requestBodyDecoded?.let { Buffer.buffer(it) }
     }
 
     override val bodyAsString: String?
-        get() = request.event.body
+        get() = requestBodyDecoded
 
     override val bodyAsJson: JsonObject? by lazy {
-        request.event.body?.let { JsonObject(it) }
+        requestBodyDecoded?.let { JsonObject(it) }
     }
 
     override fun fail(cause: Throwable?) {

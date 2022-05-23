@@ -114,6 +114,7 @@ class LambdaServer(router: HttpRouter) : HttpServer {
             .withHeaders(response.headers)
 
         if (response.bodyLength > 0) {
+            // TODO encode to base 64 if request.event.isBase64Encoded == true
             responseEvent
                 .withBody(response.bodyBuffer?.toString(Charsets.UTF_8))
                 .withIsBase64Encoded(false)
