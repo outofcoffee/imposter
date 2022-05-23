@@ -7,6 +7,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## Added
 - ...
 
+## [2.14.3] - 2022-05-23
+## Fixed
+- fix(awslambda): handle base64 encoded request body.
+
 ## [2.14.2] - 2022-05-22
 ## Fixed
 - fix(openapi): removes server base path from serving prefix.
