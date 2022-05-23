@@ -76,6 +76,7 @@ class ServerV2(
         headers = response.headers
 
         if (response.bodyLength > 0) {
+            // TODO encode to base 64 if request.event.isBase64Encoded == true
             body = response.bodyBuffer?.toString(Charsets.UTF_8)
             isBase64Encoded = false
         }
