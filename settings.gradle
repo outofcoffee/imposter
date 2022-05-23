@@ -46,6 +46,9 @@ project(':scripting:groovy').name = 'scripting-groovy'
 include ':scripting:nashorn-standalone'
 project(':scripting:nashorn-standalone').name = 'scripting-nashorn-standalone'
 
+include ':scripting:util-jwt'
+project(':scripting:util-jwt').name = 'scripting-util-jwt'
+
 // stores
 include ':store:common'
 project(':store:common').name = 'store-common'
