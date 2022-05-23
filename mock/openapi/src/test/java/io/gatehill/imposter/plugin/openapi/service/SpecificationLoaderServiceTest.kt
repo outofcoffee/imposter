@@ -43,7 +43,9 @@
 package io.gatehill.imposter.plugin.openapi.service
 
 import com.adobe.testing.s3mock.testcontainers.S3MockContainer
+import com.amazonaws.SDKGlobalConfiguration
 import com.amazonaws.client.builder.AwsClientBuilder
+import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import io.gatehill.imposter.config.S3FileDownloader
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig
@@ -55,11 +57,7 @@ import io.vertx.core.Vertx
 import io.vertx.core.http.HttpServer
 import io.vertx.core.http.HttpServerOptions
 import io.vertx.core.http.HttpServerRequest
-import org.junit.After
-import org.junit.AfterClass
-import org.junit.Assert
-import org.junit.BeforeClass
-import org.junit.Test
+import org.junit.*
 import java.net.ServerSocket
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -143,12 +141,13 @@ class SpecificationLoaderServiceTest {
         // These tests need Docker
         assumeDockerAccessible()
 
-        s3Mock = S3MockContainer("2.2.1").apply {
+        s3Mock = S3MockContainer("2.4.10").apply {
             withInitialBuckets("test")
             start()
         }
 
         S3FileDownloader.destroyInstance()
+        System.setProperty(SDKGlobalConfiguration.AWS_REGION_SYSTEM_PROPERTY, Regions.US_EAST_1.name)
         System.setProperty(S3FileDownloader.SYS_PROP_S3_API_ENDPOINT, s3Mock!!.httpEndpoint)
 
         val specFilePath =

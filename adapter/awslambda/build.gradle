@@ -36,7 +36,7 @@ dependencies {
     testImplementation "org.mockito:mockito-core:$version_mockito"
 
     testImplementation "org.testcontainers:testcontainers:$version_testcontainers"
-    testImplementation "com.adobe.testing:s3mock-testcontainers:2.2.1"
+    testImplementation "com.adobe.testing:s3mock-testcontainers:$version_s3mock"
 
     testImplementation platform("com.amazonaws:aws-java-sdk-bom:$version_aws_sdk")
     testImplementation 'com.amazonaws:aws-java-sdk-s3'
