@@ -44,7 +44,9 @@
 package io.gatehill.imposter.awslambda
 
 import com.adobe.testing.s3mock.testcontainers.S3MockContainer
+import com.amazonaws.SDKGlobalConfiguration
 import com.amazonaws.client.builder.AwsClientBuilder
+import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import io.gatehill.imposter.config.S3FileDownloader
 import io.gatehill.imposter.config.util.EnvVars
@@ -63,12 +65,13 @@ abstract class AbstractHandlerTest {
             // These tests need Docker
             assumeDockerAccessible()
 
-            s3Mock = S3MockContainer("2.2.1").apply {
+            s3Mock = S3MockContainer("2.4.10").apply {
                 withInitialBuckets("test")
                 start()
             }
 
             S3FileDownloader.destroyInstance()
+            System.setProperty(SDKGlobalConfiguration.AWS_REGION_SYSTEM_PROPERTY, Regions.US_EAST_1.name)
             System.setProperty(S3FileDownloader.SYS_PROP_S3_API_ENDPOINT, s3Mock!!.httpEndpoint)
 
             uploadFileToS3("/config", "imposter-config.yaml")

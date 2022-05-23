@@ -11,7 +11,7 @@ import java.util.function.Consumer
 
 object TestSupport {
     fun startS3Mock(): S3MockContainer {
-        return S3MockContainer("2.2.1").apply {
+        return S3MockContainer("2.4.10").apply {
             withInitialBuckets("test")
             start()
         }

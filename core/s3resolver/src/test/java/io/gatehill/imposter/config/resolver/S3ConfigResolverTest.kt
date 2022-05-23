@@ -43,6 +43,8 @@
 package io.gatehill.imposter.config.resolver
 
 import com.adobe.testing.s3mock.testcontainers.S3MockContainer
+import com.amazonaws.SDKGlobalConfiguration
+import com.amazonaws.regions.Regions
 import io.gatehill.imposter.config.S3FileDownloader
 import io.gatehill.imposter.config.support.TestSupport
 import io.gatehill.imposter.config.support.TestSupport.blockWait
@@ -50,14 +52,9 @@ import io.gatehill.imposter.config.support.TestSupport.startS3Mock
 import io.gatehill.imposter.util.TestEnvironmentUtil.assumeDockerAccessible
 import io.vertx.core.AsyncResult
 import io.vertx.core.Vertx
-import org.junit.After
-import org.junit.AfterClass
-import org.junit.Assert
+import org.junit.*
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
-import org.junit.Before
-import org.junit.BeforeClass
-import org.junit.Test
 
 /**
  * Verifies loading remote config.
@@ -76,6 +73,7 @@ class S3ConfigResolverTest {
         s3Mock = startS3Mock()
 
         S3FileDownloader.destroyInstance()
+        System.setProperty(SDKGlobalConfiguration.AWS_REGION_SYSTEM_PROPERTY, Regions.US_EAST_1.name)
         System.setProperty(S3FileDownloader.SYS_PROP_S3_API_ENDPOINT, s3Mock!!.httpEndpoint)
 
         TestSupport.uploadFileToS3(s3Mock!!, "/config", "imposter-config.yaml")

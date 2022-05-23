@@ -43,18 +43,16 @@
 package io.gatehill.imposter.config
 
 import com.adobe.testing.s3mock.testcontainers.S3MockContainer
+import com.amazonaws.SDKGlobalConfiguration
+import com.amazonaws.regions.Regions
 import io.gatehill.imposter.config.support.TestSupport
 import io.gatehill.imposter.config.support.TestSupport.blockWait
 import io.gatehill.imposter.config.support.TestSupport.uploadFileToS3
 import io.gatehill.imposter.util.TestEnvironmentUtil.assumeDockerAccessible
 import io.vertx.core.AsyncResult
 import io.vertx.core.Vertx
-import org.junit.After
-import org.junit.AfterClass
+import org.junit.*
 import org.junit.Assert.assertTrue
-import org.junit.Before
-import org.junit.BeforeClass
-import org.junit.Test
 import java.io.File
 import java.nio.file.Files
 
@@ -74,6 +72,7 @@ class S3FileDownloaderTest {
         s3Mock = TestSupport.startS3Mock()
 
         S3FileDownloader.destroyInstance()
+        System.setProperty(SDKGlobalConfiguration.AWS_REGION_SYSTEM_PROPERTY, Regions.US_EAST_1.name)
         System.setProperty(S3FileDownloader.SYS_PROP_S3_API_ENDPOINT, s3Mock!!.httpEndpoint)
 
         uploadFileToS3(s3Mock!!, "/config", "imposter-config.yaml")
