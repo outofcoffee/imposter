@@ -91,7 +91,7 @@ class SpecificationLoaderService @Inject constructor(
         logger.trace("Using version: {} parser for: {}", specVersion, specFile)
 
         val parseOptions = ParseOptions()
-        parseOptions.isResolveFully = true
+        parseOptions.setResolveFully(true)
 
         // convert or parse directly
         val parseResult: SwaggerParseResult? = when (specVersion) {
