@@ -21,8 +21,8 @@ dependencies {
 
     implementation "org.apache.logging.log4j:log4j-api:$version_log4j"
     implementation "org.apache.logging.log4j:log4j-core:$version_log4j"
-    implementation "org.apache.logging.log4j:log4j-slf4j18-impl:$version_log4j"
-    implementation "com.amazonaws:aws-lambda-java-log4j2:$version_lambda_logger"
+    runtimeOnly "org.apache.logging.log4j:log4j-slf4j18-impl:$version_log4j"
+    runtimeOnly "com.amazonaws:aws-lambda-java-log4j2:$version_lambda_logger"
 
     // opinionated implementations
     implementation project (':scripting:scripting-nashorn-standalone')
