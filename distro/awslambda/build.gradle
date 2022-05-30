@@ -27,6 +27,7 @@ shadowJar {
 
     append 'META-INF/imposter.properties'
     append 'META-INF/plugin.properties'
+    append 'META-INF/config-resolver.properties'
 
     mergeServiceFiles {
         include 'META-INF/services/io.vertx.core.spi.VerticleFactory'

@@ -43,11 +43,11 @@
 package io.gatehill.imposter.config.util
 
 import io.gatehill.imposter.config.model.PluginMetadata
+import io.gatehill.imposter.config.resolver.ConfigResolver
 import io.gatehill.imposter.util.ClassLoaderUtil
 import org.apache.logging.log4j.LogManager
 import java.io.IOException
-import java.util.Objects
-import java.util.Properties
+import java.util.*
 import java.util.jar.Manifest
 
 /**
@@ -58,6 +58,7 @@ object MetaUtil {
     private const val METADATA_MANIFEST = "META-INF/MANIFEST.MF"
     private const val METADATA_DEFAULT_PROPERTIES = "META-INF/imposter.properties"
     private const val METADATA_PLUGIN_PROPERTIES = "META-INF/plugin.properties"
+    private const val METADATA_RESOLVER_PROPERTIES = "META-INF/config-resolver.properties"
     private const val MANIFEST_VERSION_KEY = "Imposter-Version"
     private var version: String? = null
     private var defaultProperties: Properties? = null
@@ -100,7 +101,7 @@ object MetaUtil {
      * Load properties from the default metadata file(s), named [METADATA_DEFAULT_PROPERTIES],
      * found on the classpath.
      */
-    fun readMetaDefaultProperties(): Properties {
+    private fun readMetaDefaultProperties(): Properties {
         return defaultProperties ?: Properties().apply {
             try {
                 for (metaFile in classLoader.getResources(METADATA_DEFAULT_PROPERTIES)) {
@@ -139,6 +140,30 @@ object MetaUtil {
 
         LOGGER.trace("Read {} plugins from metadata: {}", metaPlugins.size, metaPlugins)
         return metaPlugins
+    }
+
+    /**
+     * List the supported config resolvers, from occurrences of
+     * [METADATA_RESOLVER_PROPERTIES] found on the classpath.
+     */
+    fun readConfigResolverMetaFiles(): List<Class<ConfigResolver>> {
+        val resolvers = mutableListOf<Class<ConfigResolver>>()
+        try {
+            for (metaFile in classLoader.getResources(METADATA_RESOLVER_PROPERTIES)) {
+                metaFile.openStream().use { properties ->
+                    properties?.let {
+                        val props = Properties().apply { load(properties) }
+                        val resolverClass = props["class"] as String
+                        resolvers += ClassLoaderUtil.loadClass(resolverClass)
+                    }
+                }
+            }
+        } catch (e: IOException) {
+            LOGGER.warn("Error reading config resolvers metadata from {} - continuing", METADATA_RESOLVER_PROPERTIES, e)
+        }
+
+        LOGGER.trace("Read {} config resolvers from metadata: {}", resolvers.size, resolvers)
+        return resolvers.distinct()
     }
 
     private val classLoader: ClassLoader
