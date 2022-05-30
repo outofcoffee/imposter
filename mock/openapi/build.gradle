@@ -13,6 +13,7 @@ compileJava {
 
 dependencies {
     implementation project(':core:imposter-engine')
+    implementation project(':core:config-s3resolver')
 
     implementation "io.swagger.parser.v3:swagger-parser:$version_swagger_parser"
     implementation "com.atlassian.oai:swagger-request-validator-core:$version_swagger_request_validator"
