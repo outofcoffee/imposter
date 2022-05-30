@@ -6,7 +6,6 @@ compileJava {
 
 dependencies {
     implementation project (':adapter:adapter-awslambda')
-    implementation project(':store:store-inmem')
 }
 
 jar {
@@ -16,7 +15,7 @@ jar {
 }
 
 task buildZip(type: Zip) {
-    archiveName("imposter-awslambda.zip")
+    archiveName('imposter-awslambda.zip')
     from compileJava
     from processResources
     into('lib') {
