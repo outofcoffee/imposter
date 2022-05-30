@@ -12,6 +12,7 @@ compileJava {
 
 dependencies {
     implementation project(':embedded:embedded-core')
+    implementation project(':core:config-s3resolver')
     implementation project(':mock:mock-openapi')
     implementation project(':mock:mock-rest')
 
