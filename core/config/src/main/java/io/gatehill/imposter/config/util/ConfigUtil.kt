@@ -48,7 +48,6 @@ import io.gatehill.imposter.config.resolver.ConfigResolver
 import io.gatehill.imposter.plugin.PluginManager
 import io.gatehill.imposter.plugin.config.PluginConfigImpl
 import io.gatehill.imposter.plugin.config.ResourcesHolder
-import io.gatehill.imposter.util.ClassLoaderUtil
 import io.gatehill.imposter.util.MapUtil
 import io.gatehill.imposter.util.ResourceUtil
 import org.apache.commons.io.FileUtils
@@ -97,15 +96,12 @@ object ConfigUtil {
     }
 
     private fun registerResolvers(): Set<ConfigResolver> {
-        val configResolvers = (MetaUtil.readMetaDefaultProperties().getProperty("config-resolvers")
-            ?.split(",")
-            ?: emptyList())
+        val configResolvers = MetaUtil.readConfigResolverMetaFiles()
+        LOGGER.trace("Configuration resolvers: {}", configResolvers)
 
-        LOGGER.trace("Configuration resolvers: $configResolvers")
         return configResolvers.distinct().map { resolver ->
             try {
-                val resolverClass = ClassLoaderUtil.loadClass<ConfigResolver>(resolver)
-                resolverClass.getDeclaredConstructor().newInstance()
+                resolver.getDeclaredConstructor().newInstance()
             } catch (e: Exception) {
                 throw RuntimeException("Error instantiating configuration resolver: $resolver", e)
             }
