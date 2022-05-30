@@ -8,6 +8,7 @@ compileJava {
 
 dependencies {
     api project (':core:imposter-engine')
+    implementation project (':core:config-s3resolver')
     api project (':imposter-server')
 }
 

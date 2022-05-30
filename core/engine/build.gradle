@@ -16,7 +16,6 @@ compileJava {
 dependencies {
     api project(':core:imposter-api')
     api project(':core:config')
-    api project(':core:s3resolver')
 
     implementation "org.apache.logging.log4j:log4j-core:$version_log4j"
 
