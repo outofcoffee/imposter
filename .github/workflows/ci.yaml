@@ -106,7 +106,7 @@ jobs:
             const script = require('./.github/github-release.js')
             await script({github, context}, [
               'main',
-              './distro/awslambda/build/libs/imposter-awslambda.jar',
+              './distro/awslambda/build/distributions/imposter-awslambda.zip',
               './mock/hbase/build/libs/imposter-plugin-mock-hbase.jar',
               './mock/sfdc/build/libs/imposter-plugin-mock-sfdc.jar',
               './mock/soap/build/libs/imposter-plugin-mock-soap.jar',
