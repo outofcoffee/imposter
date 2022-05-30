@@ -9,6 +9,7 @@ dependencies {
     api project(':core:imposter-engine')
     api project(':imposter-server')
     implementation project(':adapter:adapter-vertxweb')
+    implementation project(':core:config-dynamic')
 
     // test
     api "junit:junit:$version_junit"

@@ -53,15 +53,18 @@ object Settings {
         EnvVars.getEnv("IMPOSTER_CONFIG_DIR")
     }
 
-    val pluginDiscoveryStrategy: String by lazy {
+    /**
+     * FQCN of [io.gatehill.imposter.plugin.PluginDiscoveryStrategy] implementation.
+     */
+    val pluginDiscoveryStrategyClass: String? by lazy {
         EnvVars.getEnv("IMPOSTER_PLUGIN_DISCOVERY_STRATEGY")
-            ?: StaticPluginDiscoveryStrategyImpl::class.qualifiedName!!
     }
 
     val s3ConfigUrl: String by lazy {
         EnvVars.getEnv("IMPOSTER_S3_CONFIG_URL")
             ?: throw IllegalStateException("Missing S3 configuration URL")
     }
+
     val metaInfScan: Boolean by lazy {
         EnvVars.getEnv("IMPOSTER_METAINF_SCAN")?.toBoolean() ?: false
     }

@@ -187,7 +187,7 @@ class ImposterLauncher(args: Array<String>) {
 
         ConfigHolder.config.let { imposterConfig ->
             imposterConfig.serverFactory = serverFactory
-            imposterConfig.pluginDiscoveryStrategy = DynamicPluginDiscoveryStrategyImpl::class.qualifiedName
+            imposterConfig.pluginDiscoveryStrategyClass = DynamicPluginDiscoveryStrategyImpl::class.qualifiedName
             imposterConfig.listenPort = port
             imposterConfig.host = host
             imposterConfig.serverUrl = serverUrl

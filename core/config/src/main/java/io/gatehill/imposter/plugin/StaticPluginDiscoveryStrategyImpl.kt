@@ -41,22 +41,9 @@
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.gatehill.imposter.awslambda.config
+package io.gatehill.imposter.plugin
 
 import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.awslambda.util.LambdaModule
-import io.gatehill.imposter.plugin.Plugin
-import io.gatehill.imposter.plugin.PluginDependencies
-import io.gatehill.imposter.plugin.PluginDiscoveryStrategy
-import io.gatehill.imposter.plugin.openapi.OpenApiModule
-import io.gatehill.imposter.plugin.openapi.OpenApiPluginImpl
-import io.gatehill.imposter.plugin.rest.RestPluginImpl
-import io.gatehill.imposter.scripting.nashorn.NashornStandaloneScriptingModule
-import io.gatehill.imposter.scripting.nashorn.service.NashornStandaloneScriptServiceImpl
-import io.gatehill.imposter.store.dynamodb.DynamoDBStoreFactoryImpl
-import io.gatehill.imposter.store.dynamodb.DynamoDBStoreModule
-import io.gatehill.imposter.store.inmem.InMemoryStoreFactoryImpl
-import io.gatehill.imposter.store.inmem.InMemoryStoreModule
 import org.apache.logging.log4j.LogManager
 import java.io.File
 
@@ -69,16 +56,11 @@ import java.io.File
  *
  * @author Pete Cornish
  */
-class StaticPluginDiscoveryStrategyImpl : PluginDiscoveryStrategy {
+class StaticPluginDiscoveryStrategyImpl(
+    private val pluginClasses: Map<String, Class<out Plugin>>,
+    private val pluginDependencies: List<com.google.inject.Module>,
+) : PluginDiscoveryStrategy {
     private val logger = LogManager.getLogger(StaticPluginDiscoveryStrategyImpl::class.java)
-
-    private val pluginClasses = mapOf(
-        "openapi" to OpenApiPluginImpl::class.java,
-        "rest" to RestPluginImpl::class.java,
-        "js-nashorn-standalone" to NashornStandaloneScriptServiceImpl::class.java,
-        "store-inmem" to InMemoryStoreFactoryImpl::class.java,
-        "store-dynamodb" to DynamoDBStoreFactoryImpl::class.java,
-    )
 
     /**
      * Map of FQCN to plugin name.
@@ -101,17 +83,7 @@ class StaticPluginDiscoveryStrategyImpl : PluginDiscoveryStrategy {
         initialPlugins: List<String>,
         pluginConfigs: Map<String, List<File>>
     ): List<PluginDependencies> {
-        return listOf(
-            PluginDependencies(
-                listOf(
-                    LambdaModule(),
-                    OpenApiModule(),
-                    NashornStandaloneScriptingModule(),
-                    DynamoDBStoreModule(),
-                    InMemoryStoreModule(),
-                )
-            )
-        )
+        return listOf(PluginDependencies(pluginDependencies))
     }
 
     /**

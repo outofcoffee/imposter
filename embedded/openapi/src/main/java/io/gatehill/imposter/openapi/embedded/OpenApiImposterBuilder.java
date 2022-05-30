@@ -46,7 +46,7 @@ package io.gatehill.imposter.openapi.embedded;
 import io.gatehill.imposter.ImposterConfig;
 import io.gatehill.imposter.embedded.ImposterBuilder;
 import io.gatehill.imposter.embedded.ImposterLaunchException;
-import io.gatehill.imposter.plugin.Plugin;
+import io.gatehill.imposter.util.ClassLoaderUtil;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -110,7 +110,7 @@ public class OpenApiImposterBuilder<M extends OpenApiMockEngine, SELF extends Op
                 withConfigurationDir(ConfigGenerator.writeImposterConfig(specificationFiles));
             }
             if (pluginClasses.isEmpty()) {
-                withPluginClass((Class<? extends Plugin>) Class.forName(PLUGIN_FQCN));
+                withPluginClass(ClassLoaderUtil.INSTANCE.loadClass(PLUGIN_FQCN));
             }
             future = super.startAsync();
 

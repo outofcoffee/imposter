@@ -87,7 +87,7 @@ abstract class BaseVerticleTest {
     @Throws(Exception::class)
     protected open fun configure(imposterConfig: ImposterConfig) {
         imposterConfig.serverFactory = VertxWebServerFactoryImpl::class.qualifiedName
-        imposterConfig.pluginDiscoveryStrategy = DynamicPluginDiscoveryStrategyImpl::class.qualifiedName
+        imposterConfig.pluginDiscoveryStrategyClass = DynamicPluginDiscoveryStrategyImpl::class.qualifiedName
         imposterConfig.host = host
         imposterConfig.listenPort = findFreePort()
         imposterConfig.plugins = arrayOf(pluginClass.canonicalName)
