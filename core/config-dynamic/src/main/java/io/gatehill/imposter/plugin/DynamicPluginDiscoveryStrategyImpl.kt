@@ -58,6 +58,8 @@ import java.util.*
  * instantiating any plugin [Module]s on demand.
  *
  * Each plugin provider is called recursively to discover all plugins.
+ *
+ * @see StaticPluginDiscoveryStrategyImpl
  */
 class DynamicPluginDiscoveryStrategyImpl : PluginDiscoveryStrategy {
     private val classpathPlugins = mutableMapOf<String, String>()

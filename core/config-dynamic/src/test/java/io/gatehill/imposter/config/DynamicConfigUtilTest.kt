@@ -40,33 +40,43 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter
+package io.gatehill.imposter.config
 
-import io.gatehill.imposter.plugin.PluginDiscoveryStrategy
-import io.gatehill.imposter.server.RequestHandlingMode
+import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.config.util.ConfigUtil
+import io.gatehill.imposter.config.util.ConfigUtil.loadPluginConfigs
+import io.gatehill.imposter.plugin.DynamicPluginDiscoveryStrategyImpl
+import io.gatehill.imposter.plugin.PluginManager
+import io.gatehill.imposter.plugin.PluginManagerImpl
+import org.junit.Assert
+import org.junit.Assert.assertEquals
+import org.junit.Before
+import org.junit.Test
+import java.io.File
 
 /**
- * Mock engine settings.
+ * Dynamic tests for [io.gatehill.imposter.config.util.ConfigUtil].
  *
  * @author Pete Cornish
  */
-class ImposterConfig {
-    var host: String? = null
-    var listenPort = 0
-    var configDirs: Array<String> = emptyArray()
-    var serverUrl: String? = null
-    var isTlsEnabled = false
-    var keystorePath: String? = null
-    var keystorePassword: String? = null
-    var plugins: Array<String>? = null
-    var pluginArgs: Map<String, String>? = null
-    var serverFactory: String? = null
-    var pluginDiscoveryStrategy: PluginDiscoveryStrategy? = null
-    var pluginDiscoveryStrategyClass: String? = null
-    var requestHandlingMode = RequestHandlingMode.ASYNC
-    var useEmbeddedScriptEngine: Boolean = false
+class DynamicConfigUtilTest {
+    var pluginManager: PluginManager? = null
 
-    override fun toString(): String {
-        return "ImposterConfig(host=$host, listenPort=$listenPort, configDirs=${configDirs.contentToString()}, serverUrl=$serverUrl, isTlsEnabled=$isTlsEnabled, keystorePath=$keystorePath, keystorePassword=$keystorePassword, plugins=${plugins?.contentToString()}, pluginArgs=$pluginArgs, serverFactory=$serverFactory, pluginDiscoveryStrategy=$pluginDiscoveryStrategy, pluginDiscoveryStrategyClass=$pluginDiscoveryStrategyClass, requestHandlingMode=$requestHandlingMode, useEmbeddedScriptEngine=$useEmbeddedScriptEngine)"
+    @Before
+    fun setUp() {
+        pluginManager = PluginManagerImpl(DynamicPluginDiscoveryStrategyImpl())
+    }
+
+    @Test
+    fun testLoadPluginConfigs() {
+        val configDir = File(DynamicConfigUtilTest::class.java.getResource("/config").toURI()).path
+        val configFiles = ConfigUtil.discoverConfigFiles(arrayOf(configDir), false)
+
+        val configs: Map<String, List<File>> = loadPluginConfigs(ImposterConfig(), pluginManager!!, configFiles)
+        assertEquals(1, configs.size)
+
+        val pluginConfigs = configs["io.gatehill.imposter.core.test.ExamplePluginImpl"]!!
+        Assert.assertNotNull("Config files should be discovered", pluginConfigs)
+        assertEquals(2, pluginConfigs.size)
     }
 }
