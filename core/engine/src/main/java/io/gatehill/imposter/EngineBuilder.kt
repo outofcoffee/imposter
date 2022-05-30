@@ -80,14 +80,18 @@ object EngineBuilder {
     }
 
     private fun getPluginDiscoveryStrategy(imposterConfig: ImposterConfig): PluginDiscoveryStrategy {
-        try {
-            val pluginDiscoveryStrategyClass =
-                ClassLoaderUtil.loadClass<PluginDiscoveryStrategy>(imposterConfig.pluginDiscoveryStrategy!!)
+        return imposterConfig.pluginDiscoveryStrategy ?: run {
+            try {
+                val pluginDiscoveryStrategyClass =
+                    ClassLoaderUtil.loadClass<PluginDiscoveryStrategy>(imposterConfig.pluginDiscoveryStrategyClass!!)
 
-            return pluginDiscoveryStrategyClass.getDeclaredConstructor().newInstance()
+                return pluginDiscoveryStrategyClass.getDeclaredConstructor().newInstance()
 
-        } catch (e: Exception) {
-            throw RuntimeException("Error getting plugin discovery strategy '${imposterConfig.pluginDiscoveryStrategy}'", e)
+            } catch (e: Exception) {
+                throw RuntimeException(
+                    "Error getting plugin discovery strategy '${imposterConfig.pluginDiscoveryStrategyClass}'", e
+                )
+            }
         }
     }
 }

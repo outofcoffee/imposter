@@ -47,10 +47,19 @@ import io.gatehill.imposter.awslambda.config.Settings
 import io.gatehill.imposter.awslambda.impl.LambdaServer
 import io.gatehill.imposter.awslambda.impl.LambdaServerFactory
 import io.gatehill.imposter.awslambda.util.ImposterBuilderKt
+import io.gatehill.imposter.awslambda.util.LambdaModule
+import io.gatehill.imposter.plugin.StaticPluginDiscoveryStrategyImpl
 import io.gatehill.imposter.plugin.internal.MetaInfPluginDetectorImpl
+import io.gatehill.imposter.plugin.openapi.OpenApiModule
 import io.gatehill.imposter.plugin.openapi.OpenApiPluginImpl
 import io.gatehill.imposter.plugin.rest.RestPluginImpl
+import io.gatehill.imposter.scripting.nashorn.NashornStandaloneScriptingModule
+import io.gatehill.imposter.scripting.nashorn.service.NashornStandaloneScriptServiceImpl
 import io.gatehill.imposter.server.RequestHandlingMode
+import io.gatehill.imposter.store.dynamodb.DynamoDBStoreFactoryImpl
+import io.gatehill.imposter.store.dynamodb.DynamoDBStoreModule
+import io.gatehill.imposter.store.inmem.InMemoryStoreFactoryImpl
+import io.gatehill.imposter.store.inmem.InMemoryStoreModule
 import io.gatehill.imposter.util.InjectorUtil
 import io.gatehill.imposter.util.LogUtil
 import org.apache.logging.log4j.LogManager
@@ -83,9 +92,14 @@ abstract class AbstractHandler<Request, Response>(
             .apply { if (Settings.metaInfScan) withPluginClass(MetaInfPluginDetectorImpl::class.java) }
             .withConfigurationDir(Settings.configDir ?: Settings.s3ConfigUrl)
             .withEngineOptions { options ->
-                options.pluginDiscoveryStrategy = Settings.pluginDiscoveryStrategy
                 options.serverFactory = LambdaServerFactory::class.qualifiedName
                 options.requestHandlingMode = RequestHandlingMode.SYNC
+
+                Settings.pluginDiscoveryStrategyClass?.let { discoveryStrategy ->
+                    options.pluginDiscoveryStrategyClass = discoveryStrategy
+                } ?: run {
+                    options.pluginDiscoveryStrategy = buildStaticDiscoveryStrategy()
+                }
             }.startBlocking()
 
         val serverFactory = InjectorUtil.injector!!.getInstance(LambdaServerFactory::class.java)
@@ -94,5 +108,23 @@ abstract class AbstractHandler<Request, Response>(
         server = serverFactory.activeServer as LambdaServer<Request, Response>
 
         logger.info("Imposter handler ready")
+    }
+
+    private fun buildStaticDiscoveryStrategy(): StaticPluginDiscoveryStrategyImpl {
+        val pluginClasses = mapOf(
+            "openapi" to OpenApiPluginImpl::class.java,
+            "rest" to RestPluginImpl::class.java,
+            "js-nashorn-standalone" to NashornStandaloneScriptServiceImpl::class.java,
+            "store-inmem" to InMemoryStoreFactoryImpl::class.java,
+            "store-dynamodb" to DynamoDBStoreFactoryImpl::class.java,
+        )
+        val dependencies = listOf(
+            LambdaModule(),
+            OpenApiModule(),
+            NashornStandaloneScriptingModule(),
+            DynamoDBStoreModule(),
+            InMemoryStoreModule(),
+        )
+        return StaticPluginDiscoveryStrategyImpl(pluginClasses, dependencies)
     }
 }

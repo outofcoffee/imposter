@@ -45,15 +45,9 @@ package io.gatehill.imposter.config
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.util.ConfigUtil
 import io.gatehill.imposter.config.util.ConfigUtil.loadPluginConfig
-import io.gatehill.imposter.config.util.ConfigUtil.loadPluginConfigs
-import io.gatehill.imposter.plugin.DynamicPluginDiscoveryStrategyImpl
-import io.gatehill.imposter.plugin.PluginManager
-import io.gatehill.imposter.plugin.PluginManagerImpl
 import io.gatehill.imposter.plugin.config.PluginConfigImpl
-import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
-import org.junit.Before
 import org.junit.Test
 import java.io.File
 
@@ -63,26 +57,6 @@ import java.io.File
  * @author Pete Cornish
  */
 class ConfigUtilTest {
-    var pluginManager: PluginManager? = null
-
-    @Before
-    fun setUp() {
-        pluginManager = PluginManagerImpl(DynamicPluginDiscoveryStrategyImpl())
-    }
-
-    @Test
-    fun testLoadPluginConfigs() {
-        val configDir = File(ConfigUtilTest::class.java.getResource("/config").toURI()).path
-        val configFiles = ConfigUtil.discoverConfigFiles(arrayOf(configDir), false)
-
-        val configs: Map<String, List<File>> = loadPluginConfigs(ImposterConfig(), pluginManager!!, configFiles)
-        assertEquals(1, configs.size)
-
-        val pluginConfigs = configs["io.gatehill.imposter.core.test.ExamplePluginImpl"]!!
-        Assert.assertNotNull("Config files should be discovered", pluginConfigs)
-        assertEquals(2, pluginConfigs.size)
-    }
-
     @Test
     fun testLoadInterpolatedPluginConfig() {
         // override environment variables in string interpolators

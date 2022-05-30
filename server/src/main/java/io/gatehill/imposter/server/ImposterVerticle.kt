@@ -69,7 +69,7 @@ class ImposterVerticle : AbstractVerticle(), CoroutineScope by supervisedDefault
                     imposterConfig = ConfigHolder.config,
                     featureModules = featureModules,
                     GroovyScriptingModule(),
-                    CommonScriptingModule()
+                    CommonScriptingModule(),
                 )
                 imposter = engine
                 engine.start().await()
