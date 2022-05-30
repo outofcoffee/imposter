@@ -11,10 +11,8 @@ compileJava {
 }
 
 dependencies {
-    implementation project(':embedded:embedded-core')
-    implementation project(':core:config-s3resolver')
-    implementation project(':mock:mock-openapi')
-    implementation project(':mock:mock-rest')
+    implementation project (':embedded:embedded-core')
+    implementation project (':core:config-s3resolver')
 
     implementation 'com.amazonaws:aws-lambda-java-core:1.2.1'
     implementation 'com.amazonaws:aws-lambda-java-events:3.11.0'
@@ -25,11 +23,14 @@ dependencies {
     runtimeOnly "com.amazonaws:aws-lambda-java-log4j2:$version_lambda_logger"
 
     // opinionated implementations
+    implementation project (':mock:mock-openapi')
+    implementation project (':mock:mock-rest')
     implementation project (':scripting:scripting-nashorn-standalone')
     implementation project (':store:store-dynamodb')
+    implementation project (':store:store-inmem')
 
     // test
-    testImplementation project(':test:test-utils')
+    testImplementation project (':test:test-utils')
     testImplementation 'com.amazonaws:aws-lambda-java-tests:1.1.1'
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:$version_junit_jupiter"
@@ -39,7 +40,7 @@ dependencies {
     testImplementation "org.testcontainers:testcontainers:$version_testcontainers"
     testImplementation "com.adobe.testing:s3mock-testcontainers:$version_s3mock"
 
-    testImplementation platform("com.amazonaws:aws-java-sdk-bom:$version_aws_sdk")
+    testImplementation platform ("com.amazonaws:aws-java-sdk-bom:$version_aws_sdk")
     testImplementation 'com.amazonaws:aws-java-sdk-s3'
 }
 
