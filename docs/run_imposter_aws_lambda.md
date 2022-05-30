@@ -30,8 +30,8 @@ You can deploy Imposter as a [Lambda function](https://docs.aws.amazon.com/lambd
 
 The key concepts are:
 
-- you upload the Imposter JAR file and your configuration files to an S3 bucket
-- you create a Lambda function using the JAR file as the code source
+- you upload the Imposter ZIP file and your configuration files to an S3 bucket
+- you create a Lambda function using the ZIP file as the code source
 - you set the environment variables of the function to refer to the configuration path in S3
 - you access the Lambda function via a Lambda Function URL or Amazon API Gateway
 
@@ -57,7 +57,18 @@ s3://example-imposter-bucket/config/response.json
 ...
 ```
 
-### Option A: Using Serverless framework
+## Deployment examples
+
+The following section shows two possible deployment examples:
+
+1. Example A: Using Serverless framework
+2. Example B: Using the AWS Web Console
+
+> Other deployment methods are supported, such as infrastructure-as-code tools or the AWS CLI, but are outside the scope of this documentation.
+
+---
+
+### Example A: Using Serverless framework
 
 This method uses the [Serverless framework](https://www.serverless.com/framework) to create a Lambda function, and enables you to call it using the Lambda Function URL.
 
@@ -69,9 +80,9 @@ Install the Serverless framework:
 
 > See the [Serverless framework getting started](https://www.serverless.com/framework/docs/getting-started) documentation.
 
-#### Step 2: Download the JAR file
+#### Step 2: Download the Lambda deployment package (ZIP file)
 
-Download the `imposter-awslambda.jar` file from the [Releases page](https://github.com/outofcoffee/imposter/releases/latest).
+Download the `imposter-awslambda.zip` file from the [Releases page](https://github.com/outofcoffee/imposter/releases/latest).
 
 #### Step 3: Configure the function 
 
@@ -103,7 +114,7 @@ functions:
     timeout: 30
     url: true
     package:
-      artifact: "./imposter-awslambda.jar"
+      artifact: "./imposter-awslambda.zip"
     environment:
       IMPOSTER_S3_CONFIG_URL: "s3://imposter-lambda-example/config/"
 ```
@@ -124,20 +135,22 @@ Invoke the Imposter function:
 
     curl https://<Lambda Function URL>/system/status
 
-### Option B: Using the AWS Web Console
+---
+
+### Example B: Using the AWS Web Console
 
 This method uses the AWS Web Console to create a Lambda function, and enables you to call it using the Lambda Function URL.
 
 #### Step 1: Upload Imposter to an S3 bucket
 
-The Imposter engine for AWS Lambda is packaged as a JAR file. You should upload this file to an S3 bucket, from where it will be referenced by your Lambda function.
+The Imposter engine for AWS Lambda is packaged as a ZIP file. You should upload this file to an S3 bucket, from where it will be referenced by your Lambda function.
 
-Open the [AWS S3 Console](https://s3.console.aws.amazon.com/s3/home). Upload the `imposter-awslambda.jar` file from the [Releases page](https://github.com/outofcoffee/imposter/releases/latest) to an S3 bucket.
+Open the [AWS S3 Console](https://s3.console.aws.amazon.com/s3/home). Upload the `imposter-awslambda.zip` file from the [Releases page](https://github.com/outofcoffee/imposter/releases/latest) to an S3 bucket.
 
-For the purposes of this guide, we will assume you have uploaded the JAR file to a bucket named `example-imposter-bucket`, so the full path to the file would be:
+For the purposes of this guide, we will assume you have uploaded the ZIP file to a bucket named `example-imposter-bucket`, so the full path to the file would be:
 
 ```
-s3://example-imposter-bucket/imposter-awslambda.jar
+s3://example-imposter-bucket/imposter-awslambda.zip
 ```
 
 #### Step 2: Create your Lambda function

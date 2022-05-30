@@ -1,7 +1,4 @@
-import com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer
-
 apply plugin: 'java'
-apply plugin: 'com.github.johnrengelman.shadow'
 
 compileJava {
     sourceCompatibility = JavaVersion.VERSION_11
@@ -12,28 +9,21 @@ dependencies {
     implementation project(':store:store-inmem')
 }
 
-shadowJar {
-    baseName = 'imposter-awslambda'
-    classifier = ''
-    version = ''
-
-    transform(Log4j2PluginsCacheFileTransformer)
-
+jar {
     manifest {
-        attributes 'Main-Class': 'io.gatehill.imposter.server.ImposterLauncher'
-        attributes 'Main-Verticle': 'io.gatehill.imposter.server.ImposterVerticle'
         attributes 'Imposter-Version': project.version
     }
+}
 
-    append 'META-INF/imposter.properties'
-    append 'META-INF/plugin.properties'
-    append 'META-INF/config-resolver.properties'
-
-    mergeServiceFiles {
-        include 'META-INF/services/io.vertx.core.spi.VerticleFactory'
+task buildZip(type: Zip) {
+    archiveName("imposter-awslambda.zip")
+    from compileJava
+    from processResources
+    into('lib') {
+        from configurations.runtimeClasspath
     }
 }
 
 task dist {
-    dependsOn shadowJar
+    dependsOn buildZip
 }
