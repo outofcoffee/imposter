@@ -42,6 +42,7 @@
  */
 package io.gatehill.imposter.server.vertxweb
 
+import com.google.inject.Injector
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.http.HttpExchangeHandler
 import io.gatehill.imposter.http.HttpRouter
@@ -69,6 +70,7 @@ import java.util.concurrent.CompletableFuture
  */
 class VertxWebServerFactoryImpl : ServerFactory {
     override fun provide(
+        injector: Injector,
         imposterConfig: ImposterConfig,
         vertx: Vertx,
         router: HttpRouter

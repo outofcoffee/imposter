@@ -59,7 +59,6 @@ import io.gatehill.imposter.plugin.config.resource.PathParamsResourceConfig
 import io.gatehill.imposter.plugin.config.resource.QueryParamsResourceConfig
 import io.gatehill.imposter.plugin.config.resource.RequestHeadersResourceConfig
 import io.gatehill.imposter.server.RequestHandlingMode
-import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.LogUtil.describeRequest
 import io.gatehill.imposter.util.ResourceUtil
@@ -78,6 +77,7 @@ import javax.inject.Inject
 class ResourceServiceImpl @Inject constructor(
     private val securityService: SecurityService,
     private val securityLifecycle: SecurityLifecycleHooks,
+    private val responseService: ResponseService,
     private val vertx: Vertx,
 ) : ResourceService {
 
@@ -176,7 +176,7 @@ class ResourceServiceImpl @Inject constructor(
         if (null == httpExchange.get(ResourceUtil.RC_REQUEST_ID_KEY)) {
             // only override response processing if the 404 did not originate from the mock engine
             logAppropriatelyForPath(httpExchange, "File not found")
-            httpExchange.response().setStatusCode(HttpUtil.HTTP_NOT_FOUND).end()
+            responseService.sendNotFoundResponse(httpExchange)
         }
 
         // print summary

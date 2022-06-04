@@ -43,6 +43,7 @@
 package io.gatehill.imposter.service
 
 import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.http.HttpResponse
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig
 import io.gatehill.imposter.script.ResponseBehaviour
@@ -79,7 +80,7 @@ interface ResponseService {
         pluginConfig: PluginConfig,
         resourceConfig: ResourceConfig?,
         httpExchange: HttpExchange,
-        responseBehaviour: ResponseBehaviour
+        responseBehaviour: ResponseBehaviour,
     )
 
     /**
@@ -97,8 +98,29 @@ interface ResponseService {
         resourceConfig: ResourceConfig?,
         httpExchange: HttpExchange,
         responseBehaviour: ResponseBehaviour,
-        vararg fallbackSenders: ResponseSender
+        vararg fallbackSenders: ResponseSender,
     )
+
+    /**
+     * Convenience function, wrapping `sendNotFoundResponse(requestPath, requestMethod, response, acceptsHtml)`.
+     */
+    fun sendNotFoundResponse(httpExchange: HttpExchange)
+
+    /**
+     * Set the HTTP status code, headers and body, given the path and request method,
+     * then calls [HttpResponse.end].
+     */
+    fun sendNotFoundResponse(
+        requestPath: String,
+        requestMethod: String,
+        response: HttpResponse,
+        acceptsHtml: Boolean,
+    )
+
+    /**
+     * Add an HTML-formatted message to the 'not found' HTML response.
+     */
+    fun addNotFoundMessage(message: String)
 
     fun interface ResponseSender {
         @Throws(Exception::class)

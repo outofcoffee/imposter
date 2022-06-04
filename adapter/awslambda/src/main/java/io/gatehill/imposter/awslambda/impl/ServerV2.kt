@@ -49,6 +49,8 @@ import io.gatehill.imposter.awslambda.impl.model.LambdaHttpRequestV2
 import io.gatehill.imposter.awslambda.impl.model.LambdaHttpResponse
 import io.gatehill.imposter.http.HttpRoute
 import io.gatehill.imposter.http.HttpRouter
+import io.gatehill.imposter.service.ResponseService
+import io.gatehill.imposter.util.HttpUtil
 
 /**
  * Server for API Gateway v2 and/or Function URL events.
@@ -56,16 +58,21 @@ import io.gatehill.imposter.http.HttpRouter
  * @author pete
  */
 class ServerV2(
+    responseService: ResponseService,
     router: HttpRouter,
-) : LambdaServer<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse>(router) {
+) : LambdaServer<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse>(responseService, router) {
 
     init {
         logger.debug("Configured for API Gateway v2 and/or Function URL events")
     }
 
     override fun getRequestMethod(event: APIGatewayV2HTTPEvent): String = event.requestContext.http.method
-
     override fun getRequestPath(event: APIGatewayV2HTTPEvent): String = event.requestContext.http.path
+
+    override fun acceptsHtml(event: APIGatewayV2HTTPEvent): Boolean {
+        // TODO handle wildcard mime types, not just exact matches
+        return HttpUtil.readAcceptedContentTypes(event.headers["Accept"]).contains(HttpUtil.CONTENT_TYPE_HTML)
+    }
 
     override fun buildRequest(event: APIGatewayV2HTTPEvent, route: HttpRoute?) = LambdaHttpRequestV2(event, route)
 

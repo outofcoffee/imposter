@@ -43,14 +43,15 @@
 package io.gatehill.imposter.plugin.openapi.util
 
 import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.util.HttpUtil
 
 /**
  * @author Pete Cornish
  */
 object ValidationReportUtil {
     fun sendValidationReport(httpExchange: HttpExchange, reportMessages: String) {
-        if (httpExchange.acceptsMimeType("text/html")) {
-            httpExchange.response().putHeader("Content-Type", "text/html")
+        if (httpExchange.acceptsMimeType(HttpUtil.CONTENT_TYPE_HTML)) {
+            httpExchange.response().putHeader("Content-Type", HttpUtil.CONTENT_TYPE_HTML)
                 .end(buildResponseReportHtml(reportMessages))
         } else {
             httpExchange.response().putHeader("Content-Type", "text/plain")

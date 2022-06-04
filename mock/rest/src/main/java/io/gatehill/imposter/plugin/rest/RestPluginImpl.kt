@@ -92,9 +92,15 @@ class RestPluginImpl @Inject constructor(
             // a resource with a path set to "/"
             config.path = config.path ?: "/"
         }
-        findUniqueRoutes().forEach { (route, config) ->
+        val uniqueRoutes = findUniqueRoutes()
+        uniqueRoutes.forEach { (route, config) ->
             addResourceHandler(router, config, route)
         }
+        responseService.addNotFoundMessage("""The available REST resources are:
+            |<ul>
+            |${uniqueRoutes.keys.joinToString("</li>\n<li>", "<li>", "</li>") { (it.method?.let { m -> "$m " } ?: "") + it.path }}
+            |</ul>
+        """.trimMargin())
     }
 
     private fun addResourceHandler(

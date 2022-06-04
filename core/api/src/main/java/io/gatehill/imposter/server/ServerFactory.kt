@@ -42,6 +42,7 @@
  */
 package io.gatehill.imposter.server
 
+import com.google.inject.Injector
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.http.HttpExchangeHandler
 import io.gatehill.imposter.http.HttpRouter
@@ -60,7 +61,7 @@ interface ServerFactory {
      * @param router         the router
      * @return a future that provides the server
      */
-    fun provide(imposterConfig: ImposterConfig, vertx: Vertx, router: HttpRouter): CompletableFuture<HttpServer>
+    fun provide(injector: Injector, imposterConfig: ImposterConfig, vertx: Vertx, router: HttpRouter): CompletableFuture<HttpServer>
 
     fun createBodyHttpHandler(): HttpExchangeHandler
 
