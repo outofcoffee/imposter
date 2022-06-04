@@ -149,6 +149,7 @@ class OpenApiPluginImpl @Inject constructor(
             }
         )
         router.get("$SPECIFICATION_PATH/*").handler(serverFactory.createStaticHttpHandler(UI_WEB_ROOT))
+        responseService.addNotFoundMessage("""View the <a href="$SPECIFICATION_PATH/">available OpenAPI resources</a>.""")
     }
 
     private fun parseSpecs(router: HttpRouter) {

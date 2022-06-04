@@ -84,6 +84,8 @@ class ResponseServiceImpl @Inject constructor(
     private val vertx: Vertx,
 ) : ResponseService {
 
+    private var notFoundMessages = mutableListOf<String>()
+
     /**
      * Holds response files, with maximum number of entries determined by the environment
      * variable [ENV_RESPONSE_FILE_CACHE_ENTRIES].
@@ -120,7 +122,7 @@ class ResponseServiceImpl @Inject constructor(
         pluginConfig: PluginConfig,
         resourceConfig: ResourceConfig?,
         httpExchange: HttpExchange,
-        responseBehaviour: ResponseBehaviour
+        responseBehaviour: ResponseBehaviour,
     ) {
         sendResponse(
             pluginConfig,
@@ -135,7 +137,7 @@ class ResponseServiceImpl @Inject constructor(
         resourceConfig: ResourceConfig?,
         httpExchange: HttpExchange,
         responseBehaviour: ResponseBehaviour,
-        vararg fallbackSenders: ResponseSender
+        vararg fallbackSenders: ResponseSender,
     ) {
         simulatePerformance(responseBehaviour, httpExchange) {
             sendResponseInternal(pluginConfig, resourceConfig, httpExchange, responseBehaviour, fallbackSenders)
@@ -145,7 +147,7 @@ class ResponseServiceImpl @Inject constructor(
     private fun simulatePerformance(
         responseBehaviour: ResponseBehaviour,
         httpExchange: HttpExchange,
-        completion: Runnable
+        completion: Runnable,
     ) {
         val performance = responseBehaviour.performanceSimulation
         var delayMs = -1
@@ -173,7 +175,7 @@ class ResponseServiceImpl @Inject constructor(
         resourceConfig: ResourceConfig?,
         httpExchange: HttpExchange,
         responseBehaviour: ResponseBehaviour,
-        fallbackSenders: Array<out ResponseSender>
+        fallbackSenders: Array<out ResponseSender>,
     ) {
         LOGGER.trace(
             "Sending mock response for {} with status code {}",
@@ -197,7 +199,7 @@ class ResponseServiceImpl @Inject constructor(
             httpExchange.fail(
                 ResponseException(
                     "Error sending mock response with status code ${responseBehaviour.statusCode} for " +
-                            describeRequest(httpExchange), e
+                        describeRequest(httpExchange), e
                 )
             )
         } finally {
@@ -223,7 +225,7 @@ class ResponseServiceImpl @Inject constructor(
         pluginConfig: PluginConfig,
         resourceConfig: ResourceConfig?,
         httpExchange: HttpExchange,
-        responseBehaviour: ResponseBehaviour
+        responseBehaviour: ResponseBehaviour,
     ) {
         val response = httpExchange.response()
         LOGGER.info(
@@ -269,7 +271,7 @@ class ResponseServiceImpl @Inject constructor(
     private fun serveResponseData(
         resourceConfig: ResourceConfig?,
         httpExchange: HttpExchange,
-        responseBehaviour: ResponseBehaviour
+        responseBehaviour: ResponseBehaviour,
     ) {
         LOGGER.info(
             "Serving response data ({} bytes) for {} with status code {}",
@@ -300,7 +302,7 @@ class ResponseServiceImpl @Inject constructor(
         filenameHintForContentType: String?,
         origResponseData: Buffer,
         template: Boolean,
-        trustedData: Boolean
+        trustedData: Boolean,
     ) {
         val response = httpExchange.response()
         setContentTypeIfAbsent(resourceConfig, response, filenameHintForContentType)
@@ -320,7 +322,7 @@ class ResponseServiceImpl @Inject constructor(
     private fun setContentTypeIfAbsent(
         resourceConfig: ResourceConfig?,
         response: HttpResponse,
-        filenameHintForContentType: String?
+        filenameHintForContentType: String?,
     ) {
         // explicit content type
         if (resourceConfig is ContentTypedConfig) {
@@ -346,7 +348,7 @@ class ResponseServiceImpl @Inject constructor(
     private fun fallback(
         httpExchange: HttpExchange,
         responseBehaviour: ResponseBehaviour,
-        missingResponseSenders: Array<out ResponseSender>
+        missingResponseSenders: Array<out ResponseSender>,
     ) {
         for (sender in missingResponseSenders) {
             try {
@@ -379,6 +381,47 @@ class ResponseServiceImpl @Inject constructor(
         } catch (e: IOException) {
             throw RuntimeException(e)
         }
+    }
+
+    /**
+     * Set the HTTP status code, headers and body, given the path and request method.
+     */
+    override fun sendNotFoundResponse(httpExchange: HttpExchange) = sendNotFoundResponse(
+        httpExchange.request().path(),
+        httpExchange.request().method().toString(),
+        httpExchange.response(),
+        httpExchange.acceptsMimeType(HttpUtil.CONTENT_TYPE_HTML)
+    )
+
+    override fun sendNotFoundResponse(requestPath: String, requestMethod: String, response: HttpResponse, acceptsHtml: Boolean) {
+        response.setStatusCode(HttpUtil.HTTP_NOT_FOUND)
+
+        if (acceptsHtml) {
+            response.putHeader("Content-Type", HttpUtil.CONTENT_TYPE_HTML).end(
+                """
+                |<html>
+                |<head><title>Not found</title></head>
+                |<body>
+                |<h3>Resource not found</h3>
+                |<p>
+                |No resource exists for: <pre>$requestMethod $requestPath</pre>
+                |</p>
+                |${notFoundMessages.joinToString("</p>\n<p>","<p>","</p>")}
+                |<hr/>
+                |<p>
+                |<em><a href="https://www.imposter.sh">Imposter mock engine</a></em>
+                |</p>
+                |</body>
+                |</html>
+                """.trimMargin()
+            )
+        } else {
+            response.putHeader("Content-Type", "text/plain").end("Resource not found")
+        }
+    }
+
+    override fun addNotFoundMessage(message: String) {
+        notFoundMessages += message
     }
 
     companion object {

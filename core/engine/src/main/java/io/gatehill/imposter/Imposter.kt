@@ -126,7 +126,7 @@ class Imposter(
             pluginManager.startPlugins(injector, pluginConfigs)
 
             val router = configureRoutes()
-            httpServer = serverFactory.provide(imposterConfig, vertx, router).await()
+            httpServer = serverFactory.provide(injector, imposterConfig, vertx, router).await()
 
             LOGGER.info("Mock engine up and running on {}", imposterConfig.serverUrl)
 

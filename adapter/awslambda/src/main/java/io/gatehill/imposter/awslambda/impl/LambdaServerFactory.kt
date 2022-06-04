@@ -43,11 +43,13 @@
 
 package io.gatehill.imposter.awslambda.impl
 
+import com.google.inject.Injector
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.http.HttpExchangeHandler
 import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.server.HttpServer
 import io.gatehill.imposter.server.ServerFactory
+import io.gatehill.imposter.service.ResponseService
 import io.vertx.core.Vertx
 import java.util.concurrent.CompletableFuture
 
@@ -58,10 +60,11 @@ class LambdaServerFactory : ServerFactory {
     lateinit var activeServer: LambdaServer<*, *>
         private set
 
-    override fun provide(imposterConfig: ImposterConfig, vertx: Vertx, router: HttpRouter): CompletableFuture<HttpServer> {
+    override fun provide(injector: Injector, imposterConfig: ImposterConfig, vertx: Vertx, router: HttpRouter): CompletableFuture<HttpServer> {
+        val responseService = injector.getInstance(ResponseService::class.java)
         activeServer = when (eventType) {
-            EventType.ApiGatewayV1 -> ServerV1(router)
-            EventType.ApiGatewayV2 -> ServerV2(router)
+            EventType.ApiGatewayV1 -> ServerV1(responseService, router)
+            EventType.ApiGatewayV2 -> ServerV2(responseService, router)
         }
         return CompletableFuture.completedFuture(activeServer)
     }

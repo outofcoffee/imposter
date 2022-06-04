@@ -50,7 +50,7 @@ import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.http.HttpRoute
 import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.server.HttpServer
-import io.gatehill.imposter.util.HttpUtil
+import io.gatehill.imposter.service.ResponseService
 import io.vertx.core.AsyncResult
 import io.vertx.core.Handler
 import org.apache.logging.log4j.LogManager
@@ -61,6 +61,7 @@ import java.util.Collections.synchronizedMap
  * @author Pete Cornish
  */
 abstract class LambdaServer<Request, Response>(
+    private val responseService: ResponseService,
     router: HttpRouter,
 ) : HttpServer {
     protected val logger: Logger = LogManager.getLogger(LambdaServer::class.java)
@@ -135,9 +136,7 @@ abstract class LambdaServer<Request, Response>(
         }
         if (matchedRoutes.isEmpty() || matchedRoutes.all { it.isCatchAll() }) {
             logger.trace("No explicit routes matched for: ${describeRequestShort(event)}")
-            response.setStatusCode(HttpUtil.HTTP_NOT_FOUND)
-                .putHeader("Content-Type", "text/plain")
-                .end("Resource not found")
+            responseService.sendNotFoundResponse(requestPath, requestMethod, response, acceptsHtml(event))
             return emptyList()
         }
 
@@ -157,6 +156,7 @@ abstract class LambdaServer<Request, Response>(
 
     protected abstract fun getRequestMethod(event: Request): String
     protected abstract fun getRequestPath(event: Request): String
+    protected abstract fun acceptsHtml(event: Request): Boolean
     protected abstract fun buildRequest(event: Request, route: HttpRoute?): HttpRequest
     protected abstract fun buildResponse(response: LambdaHttpResponse): Response
 }
