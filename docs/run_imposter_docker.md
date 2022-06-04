@@ -23,9 +23,7 @@ There are many ways to run Imposter. This section describes how to use the Docke
 - Start mocks
 - Supports all [plugins](./plugins.md)
 
-## Run
-
-### Prerequisites
+## Prerequisites
 
 You must have [Docker](https://docs.docker.com/get-docker/) installed.
 
@@ -33,7 +31,7 @@ The easiest way to get started is to use an Imposter Docker container, such as:
 
     docker run -ti -p 8080:8080 outofcoffee/imposter-rest [args]
 
-### Docker images
+## Docker images
 
 Most users should choose the 'core' image available at: [outofcoffee/imposter](https://hub.docker.com/r/outofcoffee/imposter). This is the primary Imposter Docker image supporting both OpenAPI and plain REST APIs.
 
@@ -48,7 +46,7 @@ The following images are available:
 
 > You can also use the these images to create your own custom images with embedded configuration.
 
-### Configuration location
+## Configuration location
 
 When running the Imposter Docker container, place your files at the path:
 
@@ -56,17 +54,17 @@ When running the Imposter Docker container, place your files at the path:
 
 This is the location that the mock engine looks for configuration files (i.e. those with the `-config.yaml` suffix). Any files referenced from your configuration files will be resolved relative to this path within the container.
 
+---
+
 ## Run container
 
-> To get up and running quickly, see the [examples](https://github.com/outofcoffee/imposter/tree/main/examples).
-
-To start Imposter, simply map the path to the configuration files directory to the `/opt/imposter/config` directory within the container.
-
-For example:
+To run Imposter, map the path to the configuration files directory to the `/opt/imposter/config` directory within the container.
 
     docker run -ti -v /path/to/config:/opt/imposter/config -p 8080:8080 outofcoffee/imposter
 
-#### Full example
+> To get up and running quickly, see the [examples](https://github.com/outofcoffee/imposter/tree/main/examples).
+
+### Example
 
 ```shell
 $ docker run -it -p 8080:8080 -v $PWD/example-api:/opt/imposter/config outofcoffee/imposter
@@ -83,7 +81,7 @@ The mock server is running at [http://localhost:8080](http://localhost:8080)
 
 ## Build a self-contained container image
 
-If you wish to package your configuration within a container image, then you can build your own as follows.
+You can also build a self-contained image, containing both the Imposter mock engine and your configuration files. This makes your mock portable to wherever Docker runs.
 
 Let's assume the following file structure:
 
@@ -131,12 +129,9 @@ Mock engine up and running on http://localhost:8080
 
 The mock server is running at [http://localhost:8080](http://localhost:8080)
 
-## Usage
-
-See full [usage instructions](./usage.md).
-
 ---
 
 ## What's next
 
 - Learn how to use Imposter with the [Configuration guide](configuration.md).
+- See full [usage instructions](./usage.md).
