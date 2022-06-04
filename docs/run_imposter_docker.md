@@ -48,26 +48,88 @@ The following images are available:
 
 > You can also use the these images to create your own custom images with embedded configuration.
 
-### Run container
+### Configuration location
 
-Run using Docker:
+When running the Imposter Docker container, place your files at the path:
 
-    docker run -ti -p 8080:8080 \
-        -v /path/to/config:/opt/imposter/config \
-        outofcoffee/imposter-rest [args]
+    /opt/imposter/config
 
-...ensuring that you choose the right image for the [plugin](./plugins.md) you wish to use.
+This is the location that the mock engine looks for configuration files (i.e. those with the `-config.yaml` suffix). Any files referenced from your configuration files will be resolved relative to this path within the container.
 
-## Example
+## Run container
+
+> To get up and running quickly, see the [examples](https://github.com/outofcoffee/imposter/tree/main/examples).
+
+To start Imposter, simply map the path to the configuration files directory to the `/opt/imposter/config` directory within the container.
+
+For example:
+
+    docker run -ti -v /path/to/config:/opt/imposter/config -p 8080:8080 outofcoffee/imposter
+
+#### Full example
 
 ```shell
-$ docker run --rm -it -p 8080:8080 -v $PWD/example-api:/opt/imposter/config outofcoffee/imposter-rest
+$ docker run -it -p 8080:8080 -v $PWD/example-api:/opt/imposter/config outofcoffee/imposter
 
-Starting server on port 8080...
-Parsing configuration file: someapi-config.yaml
+Starting mock engine 2.13.1
+Loading configuration file: /opt/imposter/config/someapi-config.yaml
 ...
-Mock server is up and running
+Mock engine up and running on http://localhost:8080
 ```
+
+The mock server is running at [http://localhost:8080](http://localhost:8080)
+
+---
+
+## Build a self-contained container image
+
+If you wish to package your configuration within a container image, then you can build your own as follows.
+
+Let's assume the following file structure:
+
+```
+.
+├── Dockerfile
+└── config
+    ├── petstore-config.yaml
+    └── petstore.yaml
+```
+
+The content of the `Dockerfile` would be as follows:
+
+```
+FROM outofcoffee/imposter
+COPY ./config/* /opt/imposter/config/
+```
+
+Build your container image as follows:
+
+```shell
+$ docker build -t imposter-example .
+
+Sending build context to Docker daemon   5.12kB
+Step 1/2 : FROM outofcoffee/imposter
+ ---> 36d19405d09b
+Step 2/2 : COPY ./config/* /opt/imposter/config/
+ ---> 1f2667a1d5e5
+Successfully built 1f2667a1d5e5
+Successfully tagged imposter-example:latest
+```
+
+The container image `imposter-example` contains both the Imposter mock engine and your configuration files from the `config` directory.
+
+Run the container:
+
+```shell
+$ docker run -it -p 8080:8080 imposter-example
+
+Starting mock engine 2.13.1
+Loading configuration file: /opt/imposter/config/petstore-config.yaml
+...
+Mock engine up and running on http://localhost:8080
+```
+
+The mock server is running at [http://localhost:8080](http://localhost:8080)
 
 ## Usage
 
