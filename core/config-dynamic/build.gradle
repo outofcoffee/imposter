@@ -4,7 +4,6 @@ apply plugin: 'maven-publish'
 
 ext {
     version_classgraph = '4.8.54'
-    version_json_path = '2.6.0'
 }
 
 compileJava {
