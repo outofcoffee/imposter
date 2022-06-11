@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+## Added
+- ...
+
 ## [3.0.0] - 2022-06-11
 ## Added
 - feat: adds handler for API Gateway V2 and Function URL events.
