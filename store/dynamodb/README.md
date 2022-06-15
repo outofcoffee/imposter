@@ -16,12 +16,15 @@ This will install the plugin version matching the current engine version used by
 
 To use this plugin, download the plugin `imposter-plugin-store-dynamodb.jar` JAR file from the [Releases page](https://github.com/outofcoffee/imposter/releases).
 
-Enable it with the following environment variables:
+Set the following environment variable:
 
     IMPOSTER_PLUGIN_DIR="/path/to/dir/containing/plugin"
-    IMPOSTER_STORE_DRIVER="store-dynamodb"
 
 ## Configuration
+
+To activate the plugin set the following environment variable:
+
+    IMPOSTER_STORE_DRIVER="store-dynamodb"
 
 The following variables can be set:
 
