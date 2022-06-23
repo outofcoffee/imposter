@@ -48,7 +48,7 @@ The following images are available:
 
 ## Configuration location
 
-When running the Imposter Docker container, place your files at the path:
+When running the Imposter Docker container, place your files at the path within the container:
 
     /opt/imposter/config
 

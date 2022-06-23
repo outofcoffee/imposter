@@ -21,7 +21,7 @@ There are many ways to run Imposter. This section describes how to run it as a L
 ## AWS Lambda Features
 
 - Start mocks
-- Access mock server via AWS API Gateway
+- Access mock server via AWS API Gateway or Lambda Function URL
 - Supports [OpenAPI](./openapi_plugin.md) and [REST](./rest_plugin.md)
 
 ## Run
