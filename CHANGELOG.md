@@ -3,9 +3,18 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [3.0.1] - 2022-06-27
 ## Added
-- ...
+- docs: improves getting started.
+
+## Changed
+- build: removes package lock files from example projects.
+- build(deps): bump EnricoMi/publish-unit-test-result-action (#165)
+- build(deps): bump EnricoMi/publish-unit-test-result-action (#160)
+- build(deps): bump localstack from 1.16.3 to 1.17.2 (#153)
+- build(deps-dev): bump imposter.version in /examples/junit-sample (#155)
+- build(deps): bump byte-buddy-agent from 1.12.7 to 1.12.10 #152
+- build(deps): bump version_graal from 22.0.0.2 to 22.1.0.1 #150
 
 ## [3.0.0] - 2022-06-11
 ## Added
