@@ -5,5 +5,5 @@ compileJava {
 }
 
 dependencies {
-    compile 'com.sun.xml.ws:jaxws-rt:2.3.5'
+    compile 'com.sun.xml.ws:jaxws-rt:4.0.0'
 }
