@@ -20,7 +20,7 @@ dependencies {
 
     // test
     testImplementation project(':test:test-utils')
-    testImplementation "io.rest-assured:rest-assured:$version_restassured"
+    testImplementation project(':test:api-tests')
 
     // java 11 compatibility
     testImplementation ("javax.xml.bind:jaxb-api:$version_jaxb_api")

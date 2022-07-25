@@ -70,7 +70,8 @@ class RestPluginTest : BaseVerticleTest() {
 
     @Test
     fun testRequestStaticRootPathSuccess() {
-        RestAssured.given().`when`()["/example"]
+        RestAssured.given().`when`()
+            .get("/example")
             .then()
             .log().ifValidationFails()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
@@ -88,7 +89,8 @@ class RestPluginTest : BaseVerticleTest() {
     }
 
     private fun fetchVerifyRow(rowId: Int) {
-        RestAssured.given().`when`()["/example/$rowId"]
+        RestAssured.given().`when`()
+            .get("/example/$rowId")
             .then()
             .log().ifValidationFails()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
@@ -101,7 +103,8 @@ class RestPluginTest : BaseVerticleTest() {
     @Test
     fun testRequestScriptedResponseFile() {
         // default action should return static data file 1
-        RestAssured.given().`when`()["/scripted"]
+        RestAssured.given().`when`()
+            .get("/scripted")
             .then()
             .log().ifValidationFails()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
@@ -111,7 +114,8 @@ class RestPluginTest : BaseVerticleTest() {
             .body("testKey", Matchers.equalTo("testValue1"))
 
         // default action should return static data file 2
-        RestAssured.given().`when`()["/scripted?action=fetch"]
+        RestAssured.given().`when`()
+            .get("/scripted?action=fetch")
             .then()
             .log().ifValidationFails()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
@@ -124,33 +128,37 @@ class RestPluginTest : BaseVerticleTest() {
     @Test
     fun testRequestScriptedStatusCode() {
         // script causes short circuit to 201
-        RestAssured.given().`when`()["/scripted?action=create"]
+        RestAssured.given().`when`()
+            .get("/scripted?action=create")
             .then()
             .log().ifValidationFails()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_CREATED))
             .and()
-            .body(Matchers.`is`(Matchers.isEmptyOrNullString()))
+            .body(Matchers.`is`(Matchers.emptyOrNullString()))
 
         // script causes short circuit to 204
-        RestAssured.given().`when`()["/scripted?action=delete"]
+        RestAssured.given().`when`()
+            .get("/scripted?action=delete")
             .then()
             .log().ifValidationFails()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_NO_CONTENT))
             .and()
-            .body(Matchers.`is`(Matchers.isEmptyOrNullString()))
+            .body(Matchers.`is`(Matchers.emptyOrNullString()))
 
         // script causes short circuit to 400
-        RestAssured.given().`when`()["/scripted?bad"]
+        RestAssured.given().`when`()
+            .get("/scripted?bad")
             .then()
             .log().ifValidationFails()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_BAD_REQUEST))
             .and()
-            .body(Matchers.`is`(Matchers.isEmptyOrNullString()))
+            .body(Matchers.`is`(Matchers.emptyOrNullString()))
     }
 
     @Test
     fun testRequestNotFound() {
-        RestAssured.given().`when`()["/nonExistentEndpoint"]
+        RestAssured.given().`when`()
+            .get("/nonExistentEndpoint")
             .then()
             .log().ifValidationFails()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_NOT_FOUND))
@@ -170,7 +178,8 @@ class RestPluginTest : BaseVerticleTest() {
      */
     @Test
     fun testRequestStaticSingleFull() {
-        RestAssured.given().`when`()["/static-single"]
+        RestAssured.given().`when`()
+            .get("/static-single")
             .then()
             .log().ifValidationFails()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
@@ -194,7 +203,8 @@ class RestPluginTest : BaseVerticleTest() {
             .then()
             .log().ifValidationFails()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_MOVED_TEMP))
-            .body(Matchers.isEmptyOrNullString())
+            .body(Matchers.emptyOrNullString())
+
         RestAssured.given().`when`()["/static-multi"]
             .then()
             .log().ifValidationFails()

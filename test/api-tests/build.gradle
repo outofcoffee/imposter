@@ -1,0 +1,17 @@
+apply plugin: 'java-library'
+
+ext {
+    version_restassured = '5.1.1'
+}
+
+compileJava {
+    sourceCompatibility = JavaVersion.VERSION_11
+}
+
+dependencies {
+    api "io.rest-assured:rest-assured:$version_restassured"
+    constraints {
+        api "org.apache.groovy:groovy-json:$version_groovy"
+        api "org.apache.groovy:groovy-xml:$version_groovy"
+    }
+}
