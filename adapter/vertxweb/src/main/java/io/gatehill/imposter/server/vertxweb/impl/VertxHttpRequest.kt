@@ -96,9 +96,21 @@ class VertxHttpRequest(
         return routingContext.queryParam(queryParam)?.firstOrNull()
     }
 
-    override val body: Buffer? by lazy { routingContext.body }
+    /**
+     * Vert.x Web caches the body buffer as of 4.3
+     */
+    override val body: Buffer?
+        get() = routingContext.body().buffer()
 
-    override val bodyAsString: String? by lazy { routingContext.bodyAsString }
+    /**
+     * Vert.x Web caches the body string as of 4.3
+     */
+    override val bodyAsString: String?
+        get() = routingContext.body().asString()
 
-    override val bodyAsJson: JsonObject? by lazy { routingContext.bodyAsJson }
+    /**
+     * Vert.x Web caches the body JsonObject as of 4.3
+     */
+    override val bodyAsJson: JsonObject?
+        get() = routingContext.body().asJsonObject()
 }
