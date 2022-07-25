@@ -78,7 +78,6 @@ subprojects {
 
     repositories {
         mavenCentral()
-        jcenter()
     }
 
     plugins.withType(JavaPlugin).whenPluginAdded {
