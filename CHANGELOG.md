@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+## Changed
+- ...
+
 ## [3.0.2] - 2022-07-25
 ## Changed
 - chore: bumps Vert.x to 4.3.2.
