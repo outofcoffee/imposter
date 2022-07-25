@@ -42,10 +42,10 @@
  */
 package io.gatehill.imposter.server
 
-import com.jayway.restassured.RestAssured
-import com.jayway.restassured.http.ContentType
 import io.gatehill.imposter.plugin.test.TestPluginImpl
 import io.gatehill.imposter.util.HttpUtil
+import io.restassured.RestAssured
+import io.restassured.http.ContentType
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
 import org.hamcrest.Matchers.allOf

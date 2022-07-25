@@ -43,15 +43,15 @@
 
 package io.gatehill.imposter.embedded;
 
-import com.jayway.restassured.RestAssured;
 import io.gatehill.imposter.plugin.openapi.OpenApiPluginImpl;
 import io.gatehill.imposter.util.HttpUtil;
+import io.restassured.RestAssured;
 import org.junit.Test;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static com.jayway.restassured.RestAssured.given;
+import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 
 /**

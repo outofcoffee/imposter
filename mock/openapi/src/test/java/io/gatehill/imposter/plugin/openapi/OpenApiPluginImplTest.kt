@@ -42,10 +42,10 @@
  */
 package io.gatehill.imposter.plugin.openapi
 
-import com.jayway.restassured.RestAssured
-import com.jayway.restassured.http.ContentType
 import io.gatehill.imposter.server.BaseVerticleTest
 import io.gatehill.imposter.util.HttpUtil
+import io.restassured.RestAssured
+import io.restassured.http.ContentType
 import io.swagger.v3.parser.OpenAPIV3Parser
 import io.swagger.v3.parser.core.models.ParseOptions
 import io.vertx.core.json.JsonObject

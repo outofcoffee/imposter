@@ -42,11 +42,11 @@
  */
 package io.gatehill.imposter.plugin.rest
 
-import com.jayway.restassured.RestAssured
-import com.jayway.restassured.config.RedirectConfig
 import io.gatehill.imposter.server.BaseVerticleTest
 import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.HttpUtil.CONTENT_TYPE
+import io.restassured.RestAssured
+import io.restassured.config.RedirectConfig
 import io.vertx.ext.unit.TestContext
 import org.hamcrest.Matchers
 import org.junit.Before

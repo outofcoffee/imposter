@@ -42,10 +42,10 @@
  */
 package io.gatehill.imposter.plugin.soap
 
-import com.jayway.restassured.RestAssured
 import io.gatehill.imposter.plugin.soap.util.SoapUtil
 import io.gatehill.imposter.server.BaseVerticleTest
 import io.gatehill.imposter.util.HttpUtil
+import io.restassured.RestAssured
 import io.vertx.ext.unit.TestContext
 import org.hamcrest.Matchers.allOf
 import org.hamcrest.Matchers.containsString

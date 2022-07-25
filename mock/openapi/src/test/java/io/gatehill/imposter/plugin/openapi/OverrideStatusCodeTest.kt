@@ -42,9 +42,9 @@
  */
 package io.gatehill.imposter.plugin.openapi
 
-import com.jayway.restassured.RestAssured
-import com.jayway.restassured.http.ContentType
 import io.gatehill.imposter.server.BaseVerticleTest
+import io.restassured.RestAssured
+import io.restassured.http.ContentType
 import io.vertx.ext.unit.TestContext
 import org.junit.Before
 import org.junit.Test

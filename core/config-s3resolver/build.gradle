@@ -15,7 +15,7 @@ dependencies {
 
     // test
     testImplementation project(':test:test-utils')
-    testImplementation "com.jayway.restassured:rest-assured:$version_restassured"
+    testImplementation "io.rest-assured:rest-assured:$version_restassured"
     testImplementation "org.testcontainers:testcontainers:$version_testcontainers"
     testImplementation "com.adobe.testing:s3mock-testcontainers:$version_s3mock"
 

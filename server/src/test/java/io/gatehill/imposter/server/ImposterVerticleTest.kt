@@ -42,7 +42,6 @@
  */
 package io.gatehill.imposter.server
 
-import com.jayway.restassured.RestAssured
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.plugin.PluginManager
 import io.gatehill.imposter.plugin.test.TestPluginImpl
@@ -52,6 +51,7 @@ import io.gatehill.imposter.util.CryptoUtil.getDefaultKeystore
 import io.gatehill.imposter.util.FileUtil.CLASSPATH_PREFIX
 import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.InjectorUtil.injector
+import io.restassured.RestAssured
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
 import org.hamcrest.Matchers
