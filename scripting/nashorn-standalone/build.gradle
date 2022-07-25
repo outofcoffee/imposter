@@ -4,7 +4,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'com.github.johnrengelman.shadow'
 
 ext {
-    version_nashorn_core = '15.3'
+    version_nashorn_core = '15.4'
 }
 
 compileJava {
