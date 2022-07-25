@@ -3,7 +3,7 @@ apply plugin: 'kotlin'
 apply plugin: 'maven-publish'
 
 ext {
-    version_groovy = '3.0.10'
+    version_groovy = '4.0.4'
 }
 
 compileJava {
@@ -13,8 +13,8 @@ compileJava {
 dependencies {
     implementation project(':core:imposter-engine')
 
-    implementation "org.codehaus.groovy:groovy:$version_groovy"
-    implementation "org.codehaus.groovy:groovy-json:$version_groovy"
+    implementation "org.apache.groovy:groovy:$version_groovy"
+    implementation "org.apache.groovy:groovy-json:$version_groovy"
 
     // test
     testImplementation project(':test:test-utils')
