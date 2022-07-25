@@ -42,4 +42,4 @@ When started using this script, JVM debug mode is enabled and the debug socket i
 
 You can run a test using a specific JVM version using Docker and Gradle as follows:
 
-    docker run -it --rm -u gradle -v "$PWD":/home/gradle/project -w /home/gradle/project amd64/gradle:5.6-jdk8 gradle clean test
+    docker run -it --rm -u gradle -v "$PWD":/home/gradle/project -w /home/gradle/project amd64/gradle:6-jdk11 gradle clean test

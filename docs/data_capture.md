@@ -331,8 +331,10 @@ capture:
   example:
     expression: "${context.request.queryParams.example}"
     store: testStore
-    phase: RESPONSE_SENT # default value is REQUEST_RECEIVED
+    phase: RESPONSE_SENT
 ```
+
+> The default value of `phase` is `REQUEST_RECEIVED`
 
 ## Enable or disable capture configuration
 
@@ -342,7 +344,7 @@ You can selectively enable or disable a capture configuration using the `enabled
 # ...other configuration
 capture:
   firstName:
-    enabled: true # or false
+    enabled: true
     jsonPath: $.name
     store: testStore
 ```

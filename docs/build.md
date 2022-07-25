@@ -24,7 +24,7 @@ If you don't want to use the convenience script, then you can follow these steps
 
 ### Prerequisites
 
-* JDK 8
+* JDK 11
 
 ### Steps
 

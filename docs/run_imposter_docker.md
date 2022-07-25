@@ -79,7 +79,7 @@ The mock server is running at [http://localhost:8080](http://localhost:8080)
 
 ---
 
-## Build a self-contained container image
+## Build a self-contained image
 
 You can also build a self-contained image, containing both the Imposter mock engine and your configuration files. This makes your mock portable to wherever Docker runs.
 
