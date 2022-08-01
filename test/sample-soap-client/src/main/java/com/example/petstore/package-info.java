@@ -4,5 +4,5 @@
  *     
  * 
  */
-@javax.xml.bind.annotation.XmlSchema(namespace = "urn:com:example:petstore")
+@jakarta.xml.bind.annotation.XmlSchema(namespace = "urn:com:example:petstore")
 package com.example.petstore;
