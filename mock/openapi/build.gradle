@@ -4,7 +4,7 @@ apply plugin: 'maven-publish'
 
 ext {
     version_swagger_parser = '2.1.1'
-    version_swagger_request_validator = '2.27.2'
+    version_swagger_request_validator = '2.29.0'
 }
 
 compileJava {
