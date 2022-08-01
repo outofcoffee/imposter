@@ -3,9 +3,30 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [3.0.3] - 2022-08-01
+## Added
+- docs: improves build, capture and docker pages.
+
 ## Changed
-- ...
+- build(deps): bumps CLI to 0.16.0.
+- build(deps): bumps JRE to 11.0.16+8.
+- build(deps): bumps Kotlin to 1.7.10.
+- build(deps): bump swagger-parser from 2.0.32 to 2.1.1 (#183)
+- build(deps): bump aws-java-sdk-bom from 1.12.205 to 1.12.272 (#187)
+- build(deps): bump version_jackson from 2.13.2 to 2.13.3 (#188)
+- build(deps): bump version_graal from 22.1.0.1 to 22.2.0 (#179)
+- build(deps): bump testcontainers from 1.15.3 to 1.17.3 (#180)
+- build(deps): bump localstack from 1.17.2 to 1.17.3 (#182)
+- build(deps): bump version_log4j from 2.17.2 to 2.18.0 (#178)
+- build(deps): bump xmlbeans from 5.0.3 to 5.1.0 (#181)
+- build(deps): bump micrometer-registry-prometheus from 1.6.7 to 1.9.2 (#169)
+- build(deps): bump nashorn-core from 15.3 to 15.4 (#175)
+- build(deps): bump version_coroutines from 1.6.2 to 1.6.4 (#176)
+- build(deps): bumps deps in JUnit sample
+- build: removes unused jcenter repo.
+- build: moves restassured dependency and associated constraints to module.
+- chore: bumps groovy to 4.0.4.
+- chore: bumps restassured to 5.1.1.
 
 ## [3.0.2] - 2022-07-25
 ## Changed
