@@ -46,10 +46,10 @@ import com.example.petstore.ObjectFactory
 import com.example.petstore.PetService
 import io.gatehill.imposter.server.BaseVerticleTest
 import io.vertx.ext.unit.TestContext
+import jakarta.xml.ws.BindingProvider
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
-import javax.xml.ws.BindingProvider
 
 /**
  * Tests for [SoapPluginImpl] using JAX-WS.

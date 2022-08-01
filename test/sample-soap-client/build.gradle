@@ -5,5 +5,6 @@ compileJava {
 }
 
 dependencies {
-    api 'com.sun.xml.ws:jaxws-rt:2.3.5'
+    api 'jakarta.xml.ws:jakarta.xml.ws-api:4.0.0'
+    implementation 'com.sun.xml.ws:jaxws-rt:4.0.1'
 }
