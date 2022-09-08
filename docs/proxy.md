@@ -76,9 +76,10 @@ Call the mock:
 
 Imposter served the response based on what it captured.
 
-    13:06:53 DEBUG i.g.i.h.AbstractResourceMatcher - Matched resource config for GET http://localhost:9090/
-    13:06:53 DEBUG i.g.i.s.ResponseRoutingServiceImpl - Using default HTTP 200 response behaviour for request: GET http://localhost:9090/
-    13:06:53 INFO  i.g.i.s.ResponseServiceImpl - Serving response file GET-index.json for GET http://localhost:9090/ with status code 200
+    13:06:53 DEBUG i.g.i.h.AbstractResourceMatcher - Matched resource config for GET http://localhost:8080/
+    13:06:53 INFO  i.g.i.s.ResponseServiceImpl - Serving response file GET-index.json for GET http://localhost:8080/ with status code 200
+
+### Examine the mock
 
 You can examine your mock by looking at the configuration file:
 
