@@ -89,6 +89,8 @@ Imposter can log a JSON summary of each request, such as the following:
 
 To enable this, set the environment variable `IMPOSTER_LOG_SUMMARY=true`.
 
+#### Logging request/response headers
+
 You can optionally include request and response headers in the JSON summary such as:
 
 ```json
@@ -112,3 +114,12 @@ To add these, set the following environment variables:
 
     IMPOSTER_LOG_REQUEST_HEADERS="X-Correlation-ID,User-Agent"
     IMPOSTER_LOG_RESPONSE_HEADERS="Content-Length"
+
+#### Logging request/response body
+
+You can optionally include the request and/or response body in the JSON summary.
+
+To enable these, set the following environment variables:
+
+    IMPOSTER_LOG_REQUEST_BODY=true
+    IMPOSTER_LOG_RESPONSE_BODY=true

@@ -98,6 +98,20 @@ object LogUtil {
             ?: emptyArray()
     }
 
+    /**
+     * Whether to log the request body.
+     */
+    private val logRequestBody: Boolean by lazy {
+        EnvVars.getEnv("IMPOSTER_LOG_REQUEST_BODY")?.toBoolean() == true
+    }
+
+    /**
+     * Whether to log the response body.
+     */
+    private val logResponseBody: Boolean by lazy {
+        EnvVars.getEnv("IMPOSTER_LOG_RESPONSE_BODY")?.toBoolean() == true
+    }
+
     fun configureVertxLogging() {
         // delegate all Vert.x logging to Log4J2
         System.setProperty(VERTX_LOGGER_FACTORY, Log4j2LogDelegateFactory::class.java.canonicalName)
@@ -149,7 +163,7 @@ object LogUtil {
         return requestIdDescription + request.method() + " " + request.absoluteURI()
     }
 
-    fun formatDuration(input: Any) = String.format("%.2f", input)
+    private fun formatDuration(input: Any) = String.format("%.2f", input)
 
     fun logCompletion(httpExchange: HttpExchange) {
         if (!shouldLogSummary || !statsLogger.isInfoEnabled) {
@@ -181,6 +195,12 @@ object LogUtil {
             if (responseHeaderNames.isNotEmpty()) {
                 val responseHeaders = CollectionUtil.convertKeysToLowerCase<String>(response.headers())
                 responseHeaderNames.forEach { headerName -> fields[headerName] = responseHeaders[headerName] }
+            }
+            if (logRequestBody) {
+                fields["requestBody"] = httpExchange.request().bodyAsString
+            }
+            if (logResponseBody) {
+                fields["responseBody"] = httpExchange.response().bodyBuffer?.toString()
             }
 
             statsLogger.info(MapUtil.STATS_MAPPER.writeValueAsString(fields))
