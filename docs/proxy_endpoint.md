@@ -25,7 +25,7 @@ Start Imposter as a proxy:
 
     $ imposter proxy http://localhost:3000
 
-    INFO[0000] starting proxy for upstream http://localhost:3000 on port 8080
+    starting proxy for upstream http://localhost:3000 on port 8080
 
 > Imposter has started an HTTP server on port 8080. Any requests sent to `http://localhost:8080` will be forwarded to the upstream endpoint. Responses from the upstream will be recorded, then returned to the client. 
 
@@ -37,13 +37,13 @@ Now call the endpoint via the proxy:
 
 You'll notice the response from the upstream endpoint is still returned, but in addition, Imposter **captured the important parts** of the request and response for you.
 
-    DEBU[0003] received request GET / from client 127.0.0.1:53446
-    DEBU[0003] invoking upstream http://localhost:3000 with GET / [body: 0 bytes]
-    DEBU[0003] upstream responded to GET http://localhost:3000/ with status 200 [body 43 bytes]
-    DEBU[0003] wrote response [status: 200, body 43 bytes] to client 127.0.0.1:53446
-    DEBU[0003] proxied GET / to upstream [status: 200, body 43 bytes] for client 127.0.0.1:53446 in 1.82875ms
-    DEBU[0003] wrote response file /Users/mary/example/GET-index.json for GET /index.json [43 bytes]
-    DEBU[0003] wrote config file /Users/mary/example/localhost-3000-config.yaml for GET /index.json
+    received request GET / from client 127.0.0.1:53446
+    invoking upstream http://localhost:3000 with GET / [body: 0 bytes]
+    upstream responded to GET http://localhost:3000/ with status 200 [body 43 bytes]
+    wrote response [status: 200, body 43 bytes] to client 127.0.0.1:53446
+    proxied GET / to upstream [status: 200, body 43 bytes] for client 127.0.0.1:53446 in 1.82875ms
+    wrote response file /Users/mary/example/GET-index.json for GET /index.json [43 bytes]
+    wrote config file /Users/mary/example/localhost-3000-config.yaml for GET /index.json
 
 Look in the directory where you started Imposter and you will see two new files:
 
@@ -63,10 +63,10 @@ In the same directory as the files you captured above, start Imposter:
 
     $ imposter up
 
-    13:02:01 INFO  i.g.i.Imposter - Starting mock engine 3.0.4
-    13:02:02 DEBUG i.g.i.c.u.ConfigUtil - Loading configuration file: /opt/imposter/config/localhost-3000-config.yaml
-    13:02:03 DEBUG i.g.i.p.r.RestPluginImpl - Adding handler: GET -> /
-    13:02:03 INFO  i.g.i.Imposter - Mock engine up and running on http://localhost:8080
+    Starting mock engine 3.0.4
+    Loading configuration file: /opt/imposter/config/localhost-3000-config.yaml
+    Adding handler: GET -> /
+    Mock engine up and running on http://localhost:8080
 
 Imposter read the configuration files and a mock of the original endpoint is now running at `http://localhost:8080`
 
@@ -78,8 +78,8 @@ Call the mock:
 
 Imposter served the response based on what it captured.
 
-    13:06:53 DEBUG i.g.i.h.AbstractResourceMatcher - Matched resource config for GET http://localhost:8080/
-    13:06:53 INFO  i.g.i.s.ResponseServiceImpl - Serving response file GET-index.json for GET http://localhost:8080/ with status code 200
+    Matched resource config for GET http://localhost:8080/
+    Serving response file GET-index.json for GET http://localhost:8080/ with status code 200
 
 ### Examine the mock
 
@@ -87,6 +87,7 @@ You can examine your mock by looking at the configuration file:
 
 ```yaml
 # localhost-3000-config.yaml
+---
 plugin: rest
 resources:
 - method: GET

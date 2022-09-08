@@ -2,7 +2,7 @@
 
 Read this section to learn how to configure Imposter.
 
-You can get Imposter to create configuration files for you, based on an [existing endpoint](./proxy.md) or [OpenAPI specification](./scaffold.md). If you don't have either of these, it's easy to create the configuration using the following instructions. 
+You can get Imposter to create configuration files for you, based on an [existing endpoint](./proxy_endpoint.md) or [OpenAPI specification](./scaffold.md). If you don't have either of these, it's easy to create the configuration using the following instructions. 
 
 ## Basics
 
