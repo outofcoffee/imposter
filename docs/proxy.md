@@ -27,6 +27,8 @@ Start Imposter as a proxy:
 
     INFO[0000] starting proxy for upstream http://localhost:3000 on port 8080
 
+> Imposter has started an HTTP server on port 8080. Any requests sent to `http://localhost:8080` will be forwarded to the upstream endpoint. Responses from the upstream will be recorded, then returned to the client. 
+
 Now call the endpoint via the proxy:
 
     $ curl http://localhost:8080

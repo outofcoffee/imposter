@@ -1,6 +1,6 @@
 # Getting started
 
-There are many choices in how to run Imposter. There are two categories: run a standalone server, or embed it within unit/integration tests.
+There are many ways to run Imposter. There are two categories: run a standalone server, or embed it within unit/integration tests.
 
 ### Standalone mock server
 
