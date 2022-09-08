@@ -9,8 +9,9 @@ RUN_TESTS="true"
 DEBUG_MODE="true"
 SUSPEND_DEBUGGER="n"
 MEASURE_PERF="false"
+PORT="8080"
 
-while getopts "m:d:c:l:p:st:z:" opt; do
+while getopts "m:d:c:f:l:p:st:z:" opt; do
   case ${opt} in
     m )
       LAUNCH_MODE=$OPTARG
@@ -21,11 +22,14 @@ while getopts "m:d:c:l:p:st:z:" opt; do
     c )
       CONFIG_DIR=$OPTARG
       ;;
+    f )
+      MEASURE_PERF=$OPTARG
+      ;;
     l )
       IMPOSTER_LOG_LEVEL=$OPTARG
       ;;
     p )
-      MEASURE_PERF=$OPTARG
+      PORT=$OPTARG
       ;;
     s )
       SUSPEND_DEBUGGER="y"
@@ -95,7 +99,7 @@ case ${LAUNCH_MODE} in
       ;;
     esac
 
-    docker run -ti --rm -p 8080:8080 \
+    docker run -ti --rm -p $PORT:8080 \
       -v "${CONFIG_DIR}":/opt/imposter/config \
       -e IMPOSTER_LOG_LEVEL \
       -e JAVA_TOOL_OPTIONS \
@@ -104,6 +108,6 @@ case ${LAUNCH_MODE} in
 
   java)
     cd "distro/${DISTRO_NAME}/build/install/imposter"
-    "./bin/imposter" --configDir "${CONFIG_DIR}"
+    "./bin/imposter" "--listenPort=${PORT}" "--configDir=${CONFIG_DIR}"
     ;;
 esac
