@@ -131,7 +131,7 @@ class ScriptedResponseServiceImpl @Inject constructor(
     override fun determineResponseFromScript(
         httpExchange: HttpExchange,
         pluginConfig: PluginConfig,
-        resourceConfig: BasicResourceConfig?,
+        scriptFile: String?,
         additionalContext: Map<String, Any>?,
         additionalBindings: Map<String, Any>?
     ): ReadWriteResponseBehaviour {
@@ -140,7 +140,7 @@ class ScriptedResponseServiceImpl @Inject constructor(
                 determineResponseFromScriptInternal(
                     httpExchange,
                     pluginConfig,
-                    resourceConfig,
+                    scriptFile,
                     additionalContext,
                     additionalBindings
                 )
@@ -155,20 +155,17 @@ class ScriptedResponseServiceImpl @Inject constructor(
     private fun determineResponseFromScriptInternal(
         httpExchange: HttpExchange,
         pluginConfig: PluginConfig,
-        resourceConfig: BasicResourceConfig?,
+        scriptFile: String?,
         additionalContext: Map<String, Any>?,
         additionalBindings: Map<String, Any>?
     ): ReadWriteResponseBehaviour {
-        val responseConfig = resourceConfig!!.responseConfig
-
-        checkNotNull(responseConfig.scriptFile) { "Script file not set" }
-        val scriptFile = responseConfig.scriptFile!!
+        checkNotNull(scriptFile) { "Script file not set" }
 
         try {
             val executionStart = System.nanoTime()
             LOGGER.trace(
                 "Executing script '{}' for request: {}",
-                responseConfig.scriptFile,
+                scriptFile,
                 LogUtil.describeRequestShort(httpExchange)
             )
             val executionContext = ScriptUtil.buildContext(httpExchange, additionalContext)
@@ -180,7 +177,7 @@ class ScriptedResponseServiceImpl @Inject constructor(
                 executionContext
             )
 
-            val scriptLogger = buildScriptLogger(responseConfig)
+            val scriptLogger = buildScriptLogger(scriptFile)
             val runtimeContext = RuntimeContext(
                 EnvVars.getEnv(),
                 scriptLogger,
@@ -190,9 +187,10 @@ class ScriptedResponseServiceImpl @Inject constructor(
             )
 
             // execute the script and read response behaviour
+            val scriptPath = ScriptUtil.resolveScriptPath(pluginConfig, scriptFile)
             val responseBehaviour = scriptServiceFactory.fetchScriptService(scriptFile).executeScript(
                 pluginConfig,
-                resourceConfig,
+                scriptPath,
                 runtimeContext
             )
 
@@ -209,7 +207,7 @@ class ScriptedResponseServiceImpl @Inject constructor(
             LOGGER.debug(
                 String.format(
                     "Executed script '%s' for request: %s in %.2fms",
-                    responseConfig.scriptFile,
+                    scriptFile,
                     LogUtil.describeRequestShort(httpExchange),
                     scriptDuration
                 )
@@ -218,17 +216,16 @@ class ScriptedResponseServiceImpl @Inject constructor(
 
         } catch (e: Exception) {
             throw RuntimeException(
-                "Error executing script: '${responseConfig.scriptFile}' for request: " +
+                "Error executing script: '$scriptFile' for request: " +
                         LogUtil.describeRequestShort(httpExchange), e
             )
         }
     }
 
     @Throws(ExecutionException::class)
-    private fun buildScriptLogger(responseConfig: ResponseConfig): Logger {
-        val scriptFile = responseConfig.scriptFile
+    private fun buildScriptLogger(scriptFile: String): Logger {
         val name: String?
-        val dotIndex = scriptFile!!.lastIndexOf('.')
+        val dotIndex = scriptFile.lastIndexOf('.')
         name = if (dotIndex >= 1 && dotIndex < scriptFile.length - 1) {
             scriptFile.substring(0, dotIndex)
         } else {

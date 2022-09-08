@@ -129,11 +129,18 @@ class ResponseRoutingServiceImpl @Inject constructor(
         val statusCode = statusCodeFactory.calculateStatus(resourceConfig)
         val responseBehaviour: ReadWriteResponseBehaviour
 
-        if (!Strings.isNullOrEmpty(responseConfig.scriptFile) || imposterConfig.useEmbeddedScriptEngine) {
+        val scriptFile: String? = responseConfig.scriptFile ?: if (pluginConfig is ResourcesHolder<*> && pluginConfig.isDefaultsFromRootResponse == true && pluginConfig is BasicResourceConfig) {
+            LOGGER.trace("Inheriting root script file configuration as defaults")
+            pluginConfig.responseConfig.scriptFile
+        } else {
+            null
+        }
+
+        if (!Strings.isNullOrEmpty(scriptFile) || imposterConfig.useEmbeddedScriptEngine) {
             responseBehaviour = scriptedResponseService.determineResponseFromScript(
                 httpExchange,
                 pluginConfig,
-                resourceConfig,
+                scriptFile,
                 additionalContext,
                 additionalBindings
             )

@@ -43,11 +43,11 @@
 package io.gatehill.imposter.service.script
 
 import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.listener.ScriptListener
+import java.nio.file.Path
 
 /**
  * @author Pete Cornish
@@ -57,7 +57,7 @@ class EmbeddedScriptServiceImpl : EmbeddedScriptService {
 
     override fun executeScript(
         pluginConfig: PluginConfig,
-        resourceConfig: BasicResourceConfig,
+        scriptFile: Path,
         runtimeContext: RuntimeContext
     ): ReadWriteResponseBehaviour {
         check(listener != null) { "ScriptListener is not set" }

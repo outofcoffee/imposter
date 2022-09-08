@@ -45,8 +45,6 @@ package io.gatehill.imposter.scripting.common.service
 import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.plugin.PluginManager
 import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
-import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.scripting.common.util.JavaScriptUtil
 import io.gatehill.imposter.service.ScriptService
@@ -86,15 +84,11 @@ class DelegatingJsScriptServiceImpl @Inject constructor(
         }
     }
 
-    override fun initScript(scriptFile: Path) {
-        impl.initScript(scriptFile)
-    }
+    override fun initScript(scriptFile: Path) = impl.initScript(scriptFile)
 
     override fun executeScript(
         pluginConfig: PluginConfig,
-        resourceConfig: BasicResourceConfig,
+        scriptFile: Path,
         runtimeContext: RuntimeContext
-    ): ReadWriteResponseBehaviour {
-        return impl.executeScript(pluginConfig, resourceConfig, runtimeContext)
-    }
+    ) = impl.executeScript(pluginConfig, scriptFile, runtimeContext)
 }

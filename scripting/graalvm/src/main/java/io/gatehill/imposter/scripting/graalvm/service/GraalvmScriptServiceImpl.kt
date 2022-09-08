@@ -48,14 +48,13 @@ import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.RequireModules
 import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
-import io.gatehill.imposter.script.ScriptUtil
 import io.gatehill.imposter.scripting.common.util.JavaScriptUtil
 import io.gatehill.imposter.scripting.graalvm.GraalvmScriptingModule
 import io.gatehill.imposter.service.ScriptService
 import org.apache.logging.log4j.LogManager
+import java.nio.file.Path
 import javax.script.ScriptContext
 import javax.script.SimpleBindings
 
@@ -82,10 +81,9 @@ class GraalvmScriptServiceImpl : ScriptService, Plugin {
 
     override fun executeScript(
         pluginConfig: PluginConfig,
-        resourceConfig: BasicResourceConfig,
+        scriptFile: Path,
         runtimeContext: RuntimeContext
     ): ReadWriteResponseBehaviour {
-        val scriptFile = ScriptUtil.resolveScriptPath(pluginConfig, resourceConfig.responseConfig.scriptFile)
         LOGGER.trace("Executing script file: {}", scriptFile)
 
         val bindings = scriptEngine.getBindings(ScriptContext.ENGINE_SCOPE)

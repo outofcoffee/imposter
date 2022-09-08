@@ -48,7 +48,6 @@ import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.RequireModules
 import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.ScriptUtil
@@ -73,7 +72,6 @@ import javax.script.SimpleBindings
  *
  * @author Pete Cornish
  */
-@Suppress("DEPRECATION")
 @PluginInfo("js-nashorn-standalone")
 @RequireModules(NashornStandaloneScriptingModule::class)
 class NashornStandaloneScriptServiceImpl : ScriptService, Plugin {
@@ -110,10 +108,9 @@ class NashornStandaloneScriptServiceImpl : ScriptService, Plugin {
 
     override fun executeScript(
         pluginConfig: PluginConfig,
-        resourceConfig: BasicResourceConfig,
+        scriptFile: Path,
         runtimeContext: RuntimeContext
     ): ReadWriteResponseBehaviour {
-        val scriptFile = ScriptUtil.resolveScriptPath(pluginConfig, resourceConfig.responseConfig.scriptFile)
         LOGGER.trace("Executing script file: {}", scriptFile)
 
         return try {

@@ -43,7 +43,6 @@
 package io.gatehill.imposter.service
 
 import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
 import java.nio.file.Path
@@ -60,13 +59,13 @@ interface ScriptService {
      * Execute the script and read response behaviour.
      *
      * @param pluginConfig   the plugin configuration
-     * @param resourceConfig the resource configuration
+     * @param scriptFile     the path to the script file
      * @param runtimeContext the script engine runtime context
      * @return the response behaviour
      */
     fun executeScript(
         pluginConfig: PluginConfig,
-        resourceConfig: BasicResourceConfig,
+        scriptFile: Path,
         runtimeContext: RuntimeContext
     ): ReadWriteResponseBehaviour
 }

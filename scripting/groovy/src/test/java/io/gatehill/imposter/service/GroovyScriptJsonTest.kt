@@ -43,6 +43,7 @@
 package io.gatehill.imposter.service
 
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
+import io.gatehill.imposter.script.ScriptUtil
 import io.gatehill.imposter.scripting.AbstractBaseScriptTest
 import io.gatehill.imposter.scripting.groovy.service.GroovyScriptServiceImpl
 import org.junit.Assert
@@ -66,7 +67,8 @@ class GroovyScriptJsonTest : AbstractBaseScriptTest() {
         val resourceConfig = pluginConfig as BasicResourceConfig
 
         val runtimeContext = buildRuntimeContext(emptyMap(), body = """{ "hello": "world" }""")
-        val actual = getService().executeScript(pluginConfig, resourceConfig, runtimeContext)
+        val scriptPath = ScriptUtil.resolveScriptPath(pluginConfig, resourceConfig.responseConfig.scriptFile)
+        val actual = getService().executeScript(pluginConfig, scriptPath, runtimeContext)
 
         Assert.assertNotNull(actual)
         Assert.assertEquals("world", actual.responseData)
