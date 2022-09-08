@@ -3,9 +3,20 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [3.1.0] - 2022-09-08
+## Added
+- feat: enables script file configuration inheritance.
+- feat: enables request and response body to be included in structured log entries.
+- docs: describes proxy mode and updates getting started.
+- docs: describes scaffolding and updates getting started.
+
 ## Changed
-- ...
+- chore: bumps CLI to 0.21.0.
+- build(deps): bump jackson-databind in /examples/junit-sample (#208)
+- build(deps): bump actions/setup-python from 4.1.0 to 4.2.0 (#198)
+- build(deps-dev): bump imposter.version in /examples/junit-sample (#196)
+- build(deps): bump maven-site-plugin in /examples/junit-sample (#199)
+- build(deps): bump maven-project-info-reports-plugin (#203)
 
 ## [3.0.4] - 2022-08-01
 ## Changed
