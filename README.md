@@ -8,6 +8,7 @@
 > - **Embed** mocks within your tests (JVM or Node.js) to remove external dependencies.
 > - Script **dynamic** responses using JavaScript, Groovy or Java.
 > - **Capture** data from requests, then store it or return a **templated** response.
+> - **Proxy** an existing endpoint to replay its responses as a mock.
 
 ![Imposter logo](./docs/images/composite_logo13_cropped.png)
 
@@ -19,7 +20,8 @@
 - turn an OpenAPI/Swagger file or WSDL file into a mock API for dev or QA (use it before the real API is built)
 - decouple your integration tests from the cloud/back-end systems and take control of your dependencies
 - validate your API requests against an OpenAPI specification
-- capture data and retrieve later, or use in templates to for conditional responses
+- capture data to retrieve later, or use in templates to for conditional responses
+- proxy an existing endpoint to replay its responses as a mock
 
 Send dynamic responses:
 

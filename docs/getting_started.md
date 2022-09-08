@@ -1,6 +1,6 @@
 # Getting started
 
-There are many ways to run Imposter. They broadly fit in two categories - running a standalone server, or embedded within tests.
+There are many choices in how to run Imposter. There are two categories: run a standalone server, or embed it within unit/integration tests.
 
 ### Standalone mock server
 
@@ -9,10 +9,10 @@ There are many ways to run Imposter. They broadly fit in two categories - runnin
 - As a Lambda function in AWS - see [Imposter AWS Lambda](./run_imposter_aws_lambda.md)
 - As a JAR file on the JVM - see [Imposter JAR file](./run_imposter_jar.md)
 
-### Embedded in tests
+### Embed in unit/integration tests
 
-- Embedded within your **Java/Kotlin/Scala/JVM** unit tests - see [JVM bindings](./embed_jvm.md)
-- Embedded within your **JavaScript/Node.js** unit tests - see [JavaScript bindings](https://github.com/gatehill/imposter-js)
+- Embed within your **Java/Kotlin/Scala/JVM** unit tests - see [JVM bindings](./embed_jvm.md)
+- Embed within your **JavaScript/Node.js** unit tests - see [JavaScript bindings](https://github.com/gatehill/imposter-js)
 
 ---
 

@@ -2,6 +2,8 @@
 
 Read this section to learn how to configure Imposter.
 
+You can get Imposter to create configuration files for you, based on an [existing endpoint](./proxy.md) or OpenAPI specification. If you don't have either of these, it's easy to create the configuration using the following instructions. 
+
 ## Basics
 
 Imposter configuration files are in YAML or JSON format. They must be named with a `-config.yaml` or `-config.json` suffix. For example: `mymock-config.yaml`.

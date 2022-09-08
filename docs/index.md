@@ -12,6 +12,7 @@ Imposter is a mock server for REST APIs, OpenAPI (and Swagger) specifications, S
 - **Embed** mocks within your tests (JVM or Node.js) to remove external dependencies.
 - Script **dynamic** responses using JavaScript, Groovy or Java.
 - **Capture** data from requests, then store it or return a **templated** response.
+- **Proxy** an existing endpoint to replay its responses as a mock.
 
 ## Getting started
 
@@ -19,6 +20,7 @@ To begin, check out the [Getting started](getting_started.md) guide. See the _Us
 
 ## User documentation
 
+- [Getting started](getting_started.md)
 - [Configuration guide](configuration.md)
 - [Usage (arguments and environment variables)](usage.md)
 - [Scripting](scripting.md)
