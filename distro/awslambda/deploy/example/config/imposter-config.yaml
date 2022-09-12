@@ -7,4 +7,4 @@ resources:
     pathParams:
       petId: 2
     response:
-      staticFile: response.json
+      file: response.json

@@ -21,7 +21,7 @@ For the root resource:
 
 response:
   statusCode: 200
-  staticFile: "response.json"
+  file: "response.json"
   
   # exactly 1000ms delay
   delay:
@@ -38,7 +38,7 @@ resources:
     path: /example
     response:
       statusCode: 200
-      staticFile: "response.json"
+      file: "response.json"
       
       # delay in range of 500ms-1500ms
       delay:

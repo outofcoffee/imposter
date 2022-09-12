@@ -42,6 +42,7 @@
  */
 package io.gatehill.imposter.plugin.config.resource
 
+import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.gatehill.imposter.script.PerformanceSimulationConfig
 
@@ -49,8 +50,9 @@ import io.gatehill.imposter.script.PerformanceSimulationConfig
  * @author Pete Cornish
  */
 open class ResponseConfig {
-    @JsonProperty("staticFile")
-    var staticFile: String? = null
+    @JsonProperty("file")
+    @JsonAlias("staticFile")
+    var file: String? = null
 
     @JsonProperty("staticData")
     var staticData: String? = null

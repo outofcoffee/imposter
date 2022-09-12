@@ -2,4 +2,4 @@
 plugin: rest
 path: "/example"
 response:
-  staticFile: example-data.json
+  file: example-data.json

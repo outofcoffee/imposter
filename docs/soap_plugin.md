@@ -172,7 +172,7 @@ resources:
   - path: "/pets/"
     operation: getPetById
     response:
-      staticFile: getPetByIdResponse.xml
+      file: getPetByIdResponse.xml
       
   # return HTTP 400 response if SOAPAction matches a specific value
   - path: "/pets/"

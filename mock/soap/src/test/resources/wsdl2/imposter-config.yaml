@@ -5,4 +5,4 @@ resources:
   - binding: SoapBinding
     operation: getPetByName
     response:
-      staticFile: getPetByNameResponse.xml
+      file: getPetByNameResponse.xml

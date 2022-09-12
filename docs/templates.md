@@ -15,7 +15,7 @@ resources:
   - path: /example
     method: GET
     response:
-      staticFile: example-template.json
+      file: example-template.json
       template: true
 ```
 

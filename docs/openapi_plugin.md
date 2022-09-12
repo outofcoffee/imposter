@@ -262,7 +262,7 @@ As with the standard [scripting functionality](./scripting.md), you can also spe
   - path: /pets/3
     method: get
     response:
-      staticFile: tortoise.json
+      file: tortoise.json
       statusCode: 200
 ```
 

@@ -6,4 +6,4 @@ resources:
   - path: "/:id"
     type: ARRAY
     response:
-      staticFile: rest-plugin-list-data.json
+      file: rest-plugin-list-data.json

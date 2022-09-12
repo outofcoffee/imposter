@@ -93,7 +93,7 @@ resources:
 - method: GET
   path: /
   response:
-    staticFile: GET-index.json
+    file: GET-index.json
     statusCode: 200
     headers:
       Content-Type: application/json
@@ -102,7 +102,7 @@ resources:
 Some things to note:
 
 - The HTTP method and path from the request have been recorded by the proxy
-- The `staticFile: GET-index.json` property refers to the JSON file representing the captured response body
+- The `file: GET-index.json` property refers to the JSON file representing the captured response body
 - The response header (`Content-Type: application/json`) was also recorded
 
 For completeness, see the contents of the response file reflect the content of the response body from the upstream endpoint:

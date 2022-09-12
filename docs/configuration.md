@@ -16,7 +16,7 @@ Here is an example configuration file:
 plugin: rest
 path: "/example"
 response:
-  staticFile: example-data.json
+  file: example-data.json
 ```
 
 Or, in JSON format:
@@ -26,7 +26,7 @@ Or, in JSON format:
   "plugin": "rest",
   "path": "/example",
   "response": {
-    "staticFile": "example-data.json"
+    "file": "example-data.json"
   }
 }
 ```
@@ -41,7 +41,7 @@ Response files can be named anything you like; their path is resolved relative t
 
 ## Simple, static responses
 
-For simple scenarios, use the `staticFile` property within the `response` object in your configuration.
+For simple scenarios, use the `file` property within the `response` object in your configuration.
 
 In the example above, we are using a static response file (`example-data.json`) containing the following:
 
@@ -61,7 +61,7 @@ Using the configuration above, if we were to send an HTTP request to the `/examp
       "hello": "world"
     }
 
-The plugin has returned the contents of the `staticFile` in the HTTP response.
+The plugin has returned the contents of the `file` in the HTTP response.
 
 Your response files can also be templated - that is, contain placeholders substituted at runtime. See [templates](./templates.md) for more information.
 
@@ -79,7 +79,7 @@ path: "/example"
 method: POST
 contentType: "application/json"
 response:
-  staticFile: data.json
+  file: data.json
   statusCode: 201
   headers:
     X-Custom-Header: foo
@@ -105,7 +105,7 @@ resources:
   contentType: "application/json"
   method: GET
   response:
-    staticFile: data1.json
+    file: data1.json
     statusCode: 200
     headers:
       X-Custom-Header: foo
@@ -161,7 +161,7 @@ If unset by configuration or a script, the default values for response configura
 | `contentType`         | all           | String                | `application/json`, or determined from static file | `text/plain`                        |
 | `response.statusCode` | openapi, rest | Integer (HTTP status) | `200`                                              | `201`                               |
 | `response.staticData` | openapi, rest | String                | empty                                              | `hello world`                       |
-| `response.staticFile` | all           | String                | empty                                              | `data.json`                         |
+| `response.file`       | all           | String                | empty                                              | `data.json`                         |
 | `response.headers`    | openapi, rest | Map of String:String  | empty                                              | `{ "X-Custom-Header": "value" }`    |
 
 ## Conditional responses

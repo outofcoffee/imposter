@@ -283,7 +283,7 @@ resources:
         pathParam: userName
         store: request
     response:
-      staticFile: example-template.json
+      file: example-template.json
       template: true
 ```
 

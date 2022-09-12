@@ -100,7 +100,7 @@ class ImposterVerticleTest : BaseVerticleTest() {
 
         val pluginConfig = plugin.configs[0]
         testContext.assertEquals("/example", pluginConfig.path)
-        testContext.assertEquals("test-plugin-data.json", pluginConfig.responseConfig.staticFile)
+        testContext.assertEquals("test-plugin-data.json", pluginConfig.responseConfig.file)
         testContext.assertEquals("testValue", pluginConfig.customProperty)
     }
 

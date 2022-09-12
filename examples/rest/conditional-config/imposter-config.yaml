@@ -5,9 +5,9 @@ resources:
   - path: "/users"
     method: GET
     response:
-      staticFile: users.json
+      file: users.json
 
   - path: "/pets"
     method: GET
     response:
-      staticFile: pets.json
+      file: pets.json

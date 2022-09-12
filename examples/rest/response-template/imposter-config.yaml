@@ -4,7 +4,7 @@ resources:
 - method: GET
   path: /example
   response:
-    staticFile: simpleTemplate.txt
+    file: simpleTemplate.txt
     template: true
 
 - method: PUT
@@ -14,7 +14,7 @@ resources:
       pathParam: petId
       store: request
   response:
-    staticFile: petTemplate.txt
+    file: petTemplate.txt
     template: true
 
 - method: POST
@@ -24,5 +24,5 @@ resources:
       jsonPath: $.address
       store: templateTest
   response:
-    staticFile: jsonPathTemplate.txt
+    file: jsonPathTemplate.txt
     template: true

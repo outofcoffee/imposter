@@ -26,7 +26,7 @@ Here is an example configuration file:
     plugin: rest
     path: "/example"
     response:
-      staticFile: example-data.json
+      file: example-data.json
 
 In this example, we are using a static response file (`example-data.json`) containing the following:
 
@@ -79,11 +79,11 @@ We can configure different responses at multiple paths as follows:
       - path: "/cats/:id"
         type: array
         response:
-          staticFile: cats.json
+          file: cats.json
       - path: "/dogs/:id"
         type: array
         response:
-          staticFile: dogs.json
+          file: dogs.json
 
 Let's return an array of data at each endpoint:
 
@@ -142,7 +142,7 @@ Once you're finished, stop the server with CTRL+C.
 
 ## Scripted responses (advanced)
 
-For simple scenarios, use the `staticFile` property within the `response` object in your configuration.
+For simple scenarios, use the `file` property within the `response` object in your configuration.
 
 For more advanced scenarios, you can also control Imposter's responses using JavaScript or Groovy scripts.
 
