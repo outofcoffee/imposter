@@ -52,4 +52,7 @@ import io.gatehill.imposter.plugin.config.resource.ResponseConfig
  */
 class OpenApiResponseConfig : ResponseConfig() {
     val exampleName: String? = null
+
+    override fun hasConfiguration(): Boolean =
+        super.hasConfiguration() || null != exampleName
 }

@@ -77,12 +77,24 @@ class InheritRootResponseConfigTest : BaseVerticleTest() {
      * Interpolate a simple template placeholder using a store value.
      */
     @Test
-    fun testAlwaysReceiveHeader() {
+    fun `test always receives header`() {
         RestAssured.given().`when`()
             .get("/example")
             .then()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
             .body(Matchers.equalTo("Hello world")) // header inherited from root response config
             .header("X-Always-Present", "Yes")
+    }
+
+    /**
+     * There is no response configuration set for the root resource,
+     * so it should return 404 instead of 200 and a blank response.
+     */
+    @Test
+    fun `test unset root config returns 404`() {
+        RestAssured.given().`when`()
+            .get("/")
+            .then()
+            .statusCode(Matchers.equalTo(HttpUtil.HTTP_NOT_FOUND))
     }
 }

@@ -43,11 +43,7 @@
 package io.gatehill.imposter.plugin.rest
 
 import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.http.HttpExchange
-import io.gatehill.imposter.http.HttpMethod
-import io.gatehill.imposter.http.HttpRouter
-import io.gatehill.imposter.http.SingletonResourceMatcher
-import io.gatehill.imposter.http.UniqueRoute
+import io.gatehill.imposter.http.*
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin
 import io.gatehill.imposter.plugin.config.ContentTypedConfig
@@ -88,9 +84,16 @@ class RestPluginImpl @Inject constructor(
 
     override fun configureRoutes(router: HttpRouter) {
         configs.forEach { config: RestPluginConfig ->
-            // the REST plugin treats an undefined root path as equivalent to
-            // a resource with a path set to "/"
-            config.path = config.path ?: "/"
+            if (config.path.isNullOrEmpty() && config.responseConfig.hasConfiguration()) {
+                // The REST plugin treats an undefined root path as equivalent to
+                // a resource with a path set to "/"
+                LOGGER.trace("Root response configuration set for root resource")
+                config.path = config.path ?: "/"
+            } else {
+                // If there is no response configuration set for the root resource,
+                // it should return 404 instead of 200 and a blank response.
+                LOGGER.trace("No root response configuration set for root resource")
+            }
         }
         val uniqueRoutes = findUniqueRoutes()
         uniqueRoutes.forEach { (route, config) ->

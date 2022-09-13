@@ -69,4 +69,16 @@ open class ResponseConfig {
 
     @JsonProperty("delay")
     var performanceDelay: PerformanceSimulationConfig? = null
+
+    /**
+     * @return `true` if properties of the response configuration have been set
+     */
+    open fun hasConfiguration(): Boolean = arrayOf(
+        this.file,
+        this.headers,
+        this.performanceDelay,
+        this.scriptFile,
+        this.staticData,
+        this.statusCode,
+    ).any { it != null }
 }
