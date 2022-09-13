@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+## Changed
+- ...
+
 ## [3.2.2] - 2022-10-21
 ## Changed
 - build(deps): bump version_commons_text from 1.9 to 1.10.0.
