@@ -3,9 +3,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [3.2.0] - 2022-09-13
 ## Changed
-- ...
+- refactor: renames `staticData` to `content` in response config. Also adds an alias to ensure backwards compatibility.
+- refactor: renames `staticFile` to `file` in response config. Also adds an alias to ensure backwards compatibility.
+
+## Fixed
+- fix(rest): skips adding route for root resource if response configuration is blank.
 
 ## [3.1.0] - 2022-09-08
 ## Added
