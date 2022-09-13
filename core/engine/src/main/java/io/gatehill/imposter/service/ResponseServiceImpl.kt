@@ -190,7 +190,7 @@ class ResponseServiceImpl @Inject constructor(
             }
             if (!Strings.isNullOrEmpty(responseBehaviour.responseFile)) {
                 serveResponseFile(pluginConfig, resourceConfig, httpExchange, responseBehaviour)
-            } else if (!Strings.isNullOrEmpty(responseBehaviour.responseData)) {
+            } else if (!Strings.isNullOrEmpty(responseBehaviour.content)) {
                 serveResponseData(resourceConfig, httpExchange, responseBehaviour)
             } else {
                 fallback(httpExchange, responseBehaviour, fallbackSenders)
@@ -275,7 +275,7 @@ class ResponseServiceImpl @Inject constructor(
     ) {
         LOGGER.info(
             "Serving response data ({} bytes) for {} with status code {}",
-            responseBehaviour.responseData!!.length,
+            responseBehaviour.content!!.length,
             LogUtil.describeRequestShort(httpExchange),
             httpExchange.response().getStatusCode()
         )
@@ -284,7 +284,7 @@ class ResponseServiceImpl @Inject constructor(
             resourceConfig = resourceConfig,
             httpExchange = httpExchange,
             filenameHintForContentType = null,
-            origResponseData = Buffer.buffer(responseBehaviour.responseData),
+            origResponseData = Buffer.buffer(responseBehaviour.content),
             template = responseBehaviour.isTemplate,
             trustedData = false
         )

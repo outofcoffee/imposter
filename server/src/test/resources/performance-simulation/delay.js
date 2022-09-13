@@ -3,7 +3,7 @@ switch (context.request.path) {
     case '/scripted-exact-delay':
         respond()
             .withStatusCode(200)
-            .withData('Belated hello')
+            .withContent('Belated hello')
             .withDelay(500);
 
         break;
@@ -11,7 +11,7 @@ switch (context.request.path) {
     case '/scripted-range-delay':
         respond()
             .withStatusCode(200)
-            .withData('Belated hello')
+            .withContent('Belated hello')
             .withDelayRange(200, 400);
 
         break;

@@ -140,7 +140,7 @@ The response behaviour object provides a number of methods to enable you to cont
 |------------------------------|-----------|------------------------------------------------------------------------------------|
 | `withStatusCode(int)`        | all       | Set the HTTP status code for the response.                                         |
 | `withFile(String)`           | all       | Respond with the content of a static file. Also see `template`.                    |
-| `withData(String)`           | all       | Respond with the literal content of a string. Also see `template`.                 |
+| `withContent(String)`        | all       | Respond with the literal content of a string. Also see `template`.                 |
 | `withExampleName(String)`    | openapi   | Respond with the OpenAPI specification example with a given name.                  |
 | `withHeader(String, String)` | all       | Set a response header.                                                             |
 | `withEmpty()`                | all       | Respond with empty content, or no records.                                         |
@@ -222,10 +222,10 @@ respond().withHeader('X-Custom-Header', 'example value')
 
 ### Returning raw data
 
-You can return raw data using the `withData(String)` method.
+You can return raw data using the `withContent(String)` method.
 
 ```groovy
-respond().withData('{ "someKey": "someValue" }')
+respond().withContent('{ "someKey": "someValue" }')
 ```
 
 ### Returning a specific example

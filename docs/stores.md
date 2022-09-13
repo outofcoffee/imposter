@@ -27,7 +27,7 @@ exampleStore.save('foo', context.request.queryParams.foo);
 var previousFoo = exampleStore.load('foo');
 respond()
   .withStatusCode(200)
-  .withData(previousFoo);
+  .withContent(previousFoo);
 ```
 
 Stores also support deletion:

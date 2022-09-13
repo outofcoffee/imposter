@@ -49,7 +49,7 @@ open class ReadWriteResponseBehaviourImpl : ReadWriteResponseBehaviour {
     override var behaviourType = ResponseBehaviourType.DEFAULT_BEHAVIOUR
     override var statusCode = 0
     override var responseFile: String? = null
-    override var responseData: String? = null
+    override var content: String? = null
     override var isTemplate = false
     override var exampleName: String? = null
     override val responseHeaders: MutableMap<String, String> = mutableMapOf()
@@ -102,8 +102,8 @@ open class ReadWriteResponseBehaviourImpl : ReadWriteResponseBehaviour {
         return this
     }
 
-    override fun withData(responseData: String?): MutableResponseBehaviour {
-        this.responseData = responseData
+    override fun withContent(content: String?): MutableResponseBehaviour {
+        this.content = content
         return this
     }
 
@@ -145,10 +145,7 @@ open class ReadWriteResponseBehaviourImpl : ReadWriteResponseBehaviour {
     /**
      * @return this
      */
-    @Deprecated(
-        """use {@link #skipDefaultBehaviour()} instead
-      """
-    )
+    @Deprecated("Use skipDefaultBehaviour() instead", ReplaceWith("skipDefaultBehaviour()"))
     override fun immediately(): MutableResponseBehaviour {
         return skipDefaultBehaviour()
     }

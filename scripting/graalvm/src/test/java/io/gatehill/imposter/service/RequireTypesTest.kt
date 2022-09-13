@@ -76,7 +76,7 @@ class RequireTypesTest : AbstractBaseScriptTest() {
 
         Assert.assertNotNull(actual)
         Assert.assertEquals(201, actual.statusCode)
-        Assert.assertEquals("foo", actual.responseData)
+        Assert.assertEquals("foo", actual.content)
         Assert.assertEquals(ResponseBehaviourType.DEFAULT_BEHAVIOUR, actual.behaviourType)
     }
 }

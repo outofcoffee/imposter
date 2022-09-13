@@ -43,11 +43,7 @@
 package io.gatehill.imposter.scripting.groovy.impl
 
 import groovy.lang.Script
-import io.gatehill.imposter.script.MutableResponseBehaviour
-import io.gatehill.imposter.script.PerformanceSimulationConfig
-import io.gatehill.imposter.script.ReadWriteResponseBehaviour
-import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl
-import io.gatehill.imposter.script.ResponseBehaviourType
+import io.gatehill.imposter.script.*
 import io.gatehill.imposter.scripting.groovy.util.ScriptLoader
 import java.nio.file.Path
 
@@ -69,8 +65,8 @@ abstract class GroovyResponseBehaviourImpl : Script(), ReadWriteResponseBehaviou
     override val statusCode: Int
         get() = delegate.statusCode
 
-    override val responseData: String?
-        get() = delegate.responseData
+    override val content: String?
+        get() = delegate.content
 
     override fun template(): MutableResponseBehaviour {
         return delegate.template()
@@ -100,7 +96,14 @@ abstract class GroovyResponseBehaviourImpl : Script(), ReadWriteResponseBehaviou
         return this
     }
 
+    override fun withContent(content: String?): MutableResponseBehaviour {
+        delegate.withContent(content)
+        return this
+    }
+
+    @Deprecated("Use withContent(String) instead", replaceWith = ReplaceWith("withContent"))
     override fun withData(responseData: String?): MutableResponseBehaviour {
+        @Suppress("DEPRECATION")
         delegate.withData(responseData)
         return this
     }
@@ -125,12 +128,11 @@ abstract class GroovyResponseBehaviourImpl : Script(), ReadWriteResponseBehaviou
         return this
     }
 
-    /**
-     * @return this
-     */
     @Deprecated("Use skipDefaultBehaviour() instead", ReplaceWith("skipDefaultBehaviour()"))
     override fun immediately(): MutableResponseBehaviour {
-        return skipDefaultBehaviour()
+        @Suppress("DEPRECATION")
+        delegate.immediately()
+        return this
     }
 
     override fun respond(): MutableResponseBehaviour {

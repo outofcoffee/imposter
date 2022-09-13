@@ -49,7 +49,7 @@ interface ResponseBehaviour {
     val responseHeaders: MutableMap<String, String>
     val statusCode: Int
     val responseFile: String?
-    val responseData: String?
+    val content: String?
     val isTemplate: Boolean
     val exampleName: String?
     val behaviourType: ResponseBehaviourType

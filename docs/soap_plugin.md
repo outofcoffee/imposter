@@ -266,7 +266,7 @@ respond().withFile('some-file.xml')
 2. a literal string to return
 
 ```groovy
-respond().withData('''<?xml version="1.0" encoding="UTF-8"?>
+respond().withContent('''<?xml version="1.0" encoding="UTF-8"?>
 <env:Envelope xmlns:env="http://www.w3.org/2001/12/soap-envelope">
     <env:Header/>
     <env:Body>

@@ -10,6 +10,6 @@ switch (context.request.path) {
         respond()
             .withStatusCode(200)
             .withHeader('Content-Type', 'text/plain')
-            .withData(testStore.load('foo'));
+            .withContent(testStore.load('foo'));
         break;
 }

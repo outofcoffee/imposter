@@ -1,0 +1,19 @@
+plugin: "io.gatehill.imposter.plugin.test.TestPluginImpl"
+
+resources:
+- method: GET
+  path: /legacy-content
+  response:
+    # legacy 'staticData' replaced by 'content'
+    staticData: "Hello content"
+
+- method: GET
+  path: /legacy-file
+  response:
+    # legacy 'staticFile' replaced by 'file'
+    staticFile: "example.txt"
+
+- method: GET
+  path: /legacy-script
+  response:
+    scriptFile: "example.groovy"

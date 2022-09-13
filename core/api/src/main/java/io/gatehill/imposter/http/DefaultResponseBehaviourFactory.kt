@@ -69,8 +69,8 @@ open class DefaultResponseBehaviourFactory protected constructor() : ResponseBeh
         if (Strings.isNullOrEmpty(responseBehaviour.responseFile) && !Strings.isNullOrEmpty(responseConfig.file)) {
             responseBehaviour.withFile(responseConfig.file!!)
         }
-        if (Strings.isNullOrEmpty(responseBehaviour.responseData)) {
-            responseBehaviour.withData(responseConfig.content)
+        if (Strings.isNullOrEmpty(responseBehaviour.content)) {
+            responseBehaviour.withContent(responseConfig.content)
         }
         if (responseConfig.isTemplate) {
             responseBehaviour.template()

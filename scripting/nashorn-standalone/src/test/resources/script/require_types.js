@@ -6,4 +6,4 @@ var exampleHeader = context.request.headers['X-Example'];
 
 respond()
     .withStatusCode(201)
-    .withData(exampleHeader);
+    .withContent(exampleHeader);

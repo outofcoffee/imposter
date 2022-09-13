@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2022.
  *
  * This file is part of Imposter.
  *
@@ -40,37 +40,63 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.service
+package io.gatehill.imposter.server
 
-import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
-import io.gatehill.imposter.script.ScriptUtil
-import io.gatehill.imposter.scripting.AbstractBaseScriptTest
-import io.gatehill.imposter.scripting.groovy.service.GroovyScriptServiceImpl
-import org.junit.Assert
+import io.gatehill.imposter.plugin.test.TestPluginImpl
+import io.gatehill.imposter.util.HttpUtil
+import io.restassured.RestAssured
+import io.vertx.ext.unit.TestContext
+import io.vertx.ext.unit.junit.VertxUnitRunner
+import org.hamcrest.Matchers
+import org.junit.Before
 import org.junit.Test
-import javax.inject.Inject
+import org.junit.runner.RunWith
 
 /**
+ * Tests for legacy response configuration.
+ *
  * @author Pete Cornish
  */
-class GroovyScriptJsonTest : AbstractBaseScriptTest() {
-    @Inject
-    private var service: GroovyScriptServiceImpl? = null
+@RunWith(VertxUnitRunner::class)
+class DeprecatedResponseConfigTest : BaseVerticleTest() {
+    override val pluginClass = TestPluginImpl::class.java
 
-    override fun getService() = service!!
+    @Before
+    @Throws(Exception::class)
+    override fun setUp(testContext: TestContext) {
+        super.setUp(testContext)
+        RestAssured.baseURI = "http://$host:$listenPort"
+        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails()
+    }
 
-    override fun getScriptName() = "json-parse.groovy"
+    override val testConfigDirs = listOf(
+        "/deprecated-response-config"
+    )
 
     @Test
-    fun `parse JSON`() {
-        val pluginConfig = configureScript()
-        val resourceConfig = pluginConfig as BasicResourceConfig
+    fun `test legacy staticData property`() {
+        RestAssured.given().`when`()
+            .get("/legacy-content")
+            .then()
+            .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
+            .body(Matchers.equalTo("Hello content"))
+    }
 
-        val runtimeContext = buildRuntimeContext(emptyMap(), body = """{ "hello": "world" }""")
-        val scriptPath = ScriptUtil.resolveScriptPath(pluginConfig, resourceConfig.responseConfig.scriptFile)
-        val actual = getService().executeScript(pluginConfig, scriptPath, runtimeContext)
+    @Test
+    fun `test legacy staticFile property`() {
+        RestAssured.given().`when`()
+            .get("/legacy-file")
+            .then()
+            .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
+            .body(Matchers.equalTo("Hello file"))
+    }
 
-        Assert.assertNotNull(actual)
-        Assert.assertEquals("world", actual.content)
+    @Test
+    fun `test legacy withData script function`() {
+        RestAssured.given().`when`()
+            .get("/legacy-script")
+            .then()
+            .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
+            .body(Matchers.equalTo("Hello script"))
     }
 }

@@ -415,7 +415,7 @@ respond().withFile('some-file.json')
 3. a literal string to return
 
 ```groovy
-respond().withData('{ "foo": "bar" }')
+respond().withContent('{ "foo": "bar" }')
 ```
 
 ### Returning a named example

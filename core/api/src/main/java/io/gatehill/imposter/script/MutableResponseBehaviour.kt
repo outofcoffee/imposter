@@ -50,7 +50,9 @@ interface MutableResponseBehaviour {
     fun withStatusCode(statusCode: Int): MutableResponseBehaviour
     fun withFile(responseFile: String): MutableResponseBehaviour
     fun withEmpty(): MutableResponseBehaviour
-    fun withData(responseData: String?): MutableResponseBehaviour
+    fun withContent(content: String?): MutableResponseBehaviour
+    @Deprecated("Use withContent(String) instead", replaceWith = ReplaceWith("withContent"))
+    fun withData(responseData: String?) = withContent(responseData)
     fun template(): MutableResponseBehaviour
     fun withExampleName(exampleName: String): MutableResponseBehaviour
     fun usingDefaultBehaviour(): MutableResponseBehaviour
