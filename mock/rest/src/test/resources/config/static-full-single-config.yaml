@@ -8,7 +8,7 @@ response:
   statusCode: 200
   headers:
     X-Example: "foo"
-  staticData: |
+  content: |
     <html>
       <head>
         <title>Example</title>

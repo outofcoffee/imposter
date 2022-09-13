@@ -3,4 +3,4 @@
 plugin: rest
 path: /example
 response:
-  staticData: "${env.EXAMPLE_RESPONSE}"
+  content: "${env.EXAMPLE_RESPONSE}"

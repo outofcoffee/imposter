@@ -70,7 +70,7 @@ open class DefaultResponseBehaviourFactory protected constructor() : ResponseBeh
             responseBehaviour.withFile(responseConfig.file!!)
         }
         if (Strings.isNullOrEmpty(responseBehaviour.responseData)) {
-            responseBehaviour.withData(responseConfig.staticData)
+            responseBehaviour.withData(responseConfig.content)
         }
         if (responseConfig.isTemplate) {
             responseBehaviour.template()

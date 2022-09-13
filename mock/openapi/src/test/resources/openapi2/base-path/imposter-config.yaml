@@ -7,5 +7,5 @@ resources:
   - method: GET
     path: "/api/example"
     response:
-      staticData: "Invalid request."
+      content: "Invalid request."
       statusCode: 400

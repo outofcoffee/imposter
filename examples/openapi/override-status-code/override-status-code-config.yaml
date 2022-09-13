@@ -32,7 +32,7 @@ resources:
       petId: 10
     response:
       statusCode: 401
-      staticData: "You do not have permission to view this pet."
+      content: "You do not have permission to view this pet."
 
   # handles PUT /pets/:petId with a request header 'X-Pet-Username: foo'
   - path: "/pets/:petId"
@@ -41,4 +41,4 @@ resources:
       X-Pet-Username: foo
     response:
       statusCode: 409
-      staticData: "Username already exists."
+      content: "Username already exists."

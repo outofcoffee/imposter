@@ -63,5 +63,5 @@ resources:
       store: captureResponseBody
       phase: RESPONSE_SENT
   response:
-    staticData: "Example response"
+    content: "Example response"
     statusCode: 200

@@ -11,9 +11,9 @@ resources:
   - method: GET
     path: /example1
     response:
-      staticData: "Hello world"
+      content: "Hello world"
 
   - method: GET
     path: /example2
     response:
-      staticData: "Lorem ipsum"
+      content: "Lorem ipsum"

@@ -8,6 +8,6 @@ response:
 resources:
   - path: /test
     response:
-      staticData: "Hello, world!"
+      content: "Hello, world!"
       headers:
         Content-Type: "application/javascript"

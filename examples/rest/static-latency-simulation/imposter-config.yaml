@@ -4,7 +4,7 @@ resources:
 - method: GET
   path: /static-exact-delay
   response:
-    staticData: "Belated hello"
+    content: "Belated hello"
 
     # delay 500ms before responding
     delay:
@@ -13,7 +13,7 @@ resources:
 - method: GET
   path: /static-range-delay
   response:
-    staticData: "Belated hello"
+    content: "Belated hello"
 
     # delay 500ms before responding
     delay:

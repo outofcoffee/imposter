@@ -2,7 +2,7 @@ plugin: "io.gatehill.imposter.plugin.test.TestPluginImpl"
 
 path: /
 response:
-  staticData: "Hello"
+  content: "Hello"
 
 security:
   # no requests permitted by default
@@ -19,4 +19,4 @@ resources:
   - method: GET
     path: /example
     response:
-      staticData: "Hello"
+      content: "Hello"

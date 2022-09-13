@@ -54,8 +54,9 @@ open class ResponseConfig {
     @JsonAlias("staticFile")
     var file: String? = null
 
-    @JsonProperty("staticData")
-    var staticData: String? = null
+    @JsonProperty("content")
+    @JsonAlias("staticData")
+    var content: String? = null
 
     @JsonProperty("template")
     var isTemplate = false
@@ -76,11 +77,11 @@ open class ResponseConfig {
      * @return `true` if properties of the response configuration have been set
      */
     open fun hasConfiguration(): Boolean = arrayOf(
+        this.content,
         this.file,
         this.headers,
         this.performanceDelay,
         this.scriptFile,
-        this.staticData,
         this.statusCode,
     ).any { it != null }
 }

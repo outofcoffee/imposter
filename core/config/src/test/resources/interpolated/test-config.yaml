@@ -4,4 +4,4 @@ plugin: io.gatehill.imposter.core.test.ExamplePluginImpl
 path: "${env.EXAMPLE_PATH}"
 contentType: text/plain
 response:
-  staticData: Hello, world!
+  content: Hello, world!

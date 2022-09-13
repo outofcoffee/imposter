@@ -12,5 +12,5 @@ resources:
   - path: /example
     method: GET
     response:
-      staticData: "Hello ${exampleStore.foo}"
+      content: "Hello ${exampleStore.foo}"
       template: true

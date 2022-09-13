@@ -117,7 +117,7 @@ resources:
     statusCode: 201
     headers:
       X-Custom-Header: bar
-    staticData: |
+    content: |
       This is some
       multiline response data.
 ```
@@ -140,12 +140,12 @@ resources:
 - method: GET
   path: /example1
   response:
-    staticData: "Hello world"
+    content: "Hello world"
 
 - method: GET
   path: /example2
   response:
-    staticData: "Lorem ipsum"
+    content: "Lorem ipsum"
 ```
 
 In this example, responses to both `/example1` and `/example2` will have the header `X-Always-Present: Yes` set, as it is inherited from the root configuration.
@@ -160,7 +160,7 @@ If unset by configuration or a script, the default values for response configura
 |-----------------------|---------------|-----------------------|----------------------------------------------------|-------------------------------------|
 | `contentType`         | all           | String                | `application/json`, or determined from static file | `text/plain`                        |
 | `response.statusCode` | openapi, rest | Integer (HTTP status) | `200`                                              | `201`                               |
-| `response.staticData` | openapi, rest | String                | empty                                              | `hello world`                       |
+| `response.content` | openapi, rest | String                | empty                                              | `hello world`                       |
 | `response.file`       | all           | String                | empty                                              | `data.json`                         |
 | `response.headers`    | openapi, rest | Map of String:String  | empty                                              | `{ "X-Custom-Header": "value" }`    |
 
@@ -205,7 +205,7 @@ resources:
       petId: 10
     response:
       statusCode: 401
-      staticData: "You do not have permission to view this pet."
+      content: "You do not have permission to view this pet."
   
   # handles PUT /pets/:petId with a request header 'X-Pet-Username: foo'
   - path: "/pets/:petId"
@@ -214,7 +214,7 @@ resources:
       X-Pet-Username: foo
     response:
       statusCode: 409
-      staticData: "Username already exists."
+      content: "Username already exists."
 ```
 
 ### Matching the request body
@@ -237,7 +237,7 @@ You can use environment variables as placeholders in plugin configuration files.
 plugin: rest
 path: /example
 response:
-  staticData: "${env.EXAMPLE_RESPONSE}"
+  content: "${env.EXAMPLE_RESPONSE}"
 ```
 
 Here the environment variable `EXAMPLE_RESPONSE` will be substituted into the configuration. For example, if the variable was set as follows:
