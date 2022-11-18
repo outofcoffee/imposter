@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-    implementation 'net.bytebuddy:byte-buddy-dep:1.12.7'
+    implementation 'net.bytebuddy:byte-buddy-dep:1.12.19'
     implementation 'net.bytebuddy:byte-buddy-agent:1.12.17'
 }
 
