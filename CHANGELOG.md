@@ -3,6 +3,41 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.2.3] - 2022-12-03
+## Changed
+- build(deps): jackson-databind to 2.13.4.2.
+- build(deps): bump version_groovy from 4.0.5 to 4.0.6
+- build(deps): bump localstack from 1.17.3 to 1.17.6
+- build(deps): bump maven-install-plugin in /examples/junit-sample
+- build(deps): bump byte-buddy-dep from 1.12.7 to 1.12.19
+- build(deps): bump jackson-databind in /examples/junit-sample
+- build(deps): bump mockito-core from 3.10.0 to 4.9.0
+- build(deps-dev): bump imposter.version in /examples/junit-sample (#240)
+- build(deps): bump redisson from 3.17.0 to 3.17.7 (#242)
+- build(deps): bump version_jackson from 2.13.3 to 2.13.4 (#226)
+- build(deps): bump version_graal from 22.2.0 to 22.2.0.1 (#232)
+- build(deps): bump aws-java-sdk-core from 1.12.309 to 1.12.325 (#239)
+- build(deps): bump rest-assured from 5.1.1 to 5.2.0 (#227)
+- build(deps): bump classgraph from 4.8.54 to 4.8.149 (#229)
+- build(deps): bump actions/setup-python from 4.2.0 to 4.3.0 (#228)
+- build(deps): bump jackson-databind in /examples/junit-sample (#231)
+- build(deps): bump byte-buddy-agent from 1.12.10 to 1.12.17 (#217)
+- build(deps): bump version_vertx from 4.3.2 to 4.3.4 (#225)
+- build(deps): bump version_groovy from 4.0.4 to 4.0.5 (#224)
+- build(deps): bump micrometer-registry-prometheus from 1.9.2 to 1.9.4 (#219)
+- build(deps): bump s3mock-testcontainers from 2.4.10 to 2.8.0 (#223)
+- build(deps): bump aws-java-sdk-core from 1.12.205 to 1.12.309 (#218)
+- build(deps): bump maven-jar-plugin in /examples/junit-sample (#216)
+- build(deps): bump swagger-request-validator-core from 2.27.2 to 2.30.0 (#200)
+- refactor: fixes some deprecated method calls.
+
+## Added
+- test: adds recursive config scan option to dev convenience script.
+
+## [3.2.2] - 2022-10-21
+## Changed
+- build(deps): bump version_commons_text from 1.9 to 1.10.0.
+
 ## [3.2.1] - 2022-09-13
 ## Changed
 - refactor: renames `withData` script function to `withContent`. Retains deprecated function name for backwards compatibility.

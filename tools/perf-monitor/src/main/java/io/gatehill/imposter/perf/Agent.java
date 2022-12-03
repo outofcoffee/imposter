@@ -23,7 +23,7 @@ public class Agent {
                 .type(
                         ElementMatchers.nameStartsWith("io.gatehill.imposter.")
                 )
-                .transform((builder, typeDescription, classLoader, module) -> builder
+                .transform((builder, typeDescription, classLoader, module, protectionDomain) -> builder
                         .method(ElementMatchers.any())
                         .intercept(Advice.to(CallTimerAdvice.class))
                 )

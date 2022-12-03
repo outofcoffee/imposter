@@ -9,9 +9,10 @@ RUN_TESTS="true"
 DEBUG_MODE="true"
 SUSPEND_DEBUGGER="n"
 MEASURE_PERF="false"
+RECURSIVE_CONFIG="false"
 PORT="8080"
 
-while getopts "m:d:c:f:l:p:st:z:" opt; do
+while getopts "m:d:c:f:l:p:rst:z:" opt; do
   case ${opt} in
     m )
       LAUNCH_MODE=$OPTARG
@@ -30,6 +31,9 @@ while getopts "m:d:c:f:l:p:st:z:" opt; do
       ;;
     p )
       PORT=$OPTARG
+      ;;
+    r )
+      RECURSIVE_CONFIG="true"
       ;;
     s )
       SUSPEND_DEBUGGER="y"
@@ -51,7 +55,7 @@ done
 shift $((OPTIND -1))
 
 function usage() {
-  echo -e "Usage:\n  $( basename $0 ) -m <docker|java> -c config-dir [-d distro-name] [-l log-level] [-t run-tests] [-s suspend-debugger] [-z debug-mode]"
+  echo -e "Usage:\n  $( basename $0 ) -m <docker|java> -c config-dir [-d distro-name] [-l log-level] [-t run-tests] [-r recursive-config] [-s suspend-debugger] [-z debug-mode]"
   exit 1
 }
 
@@ -79,6 +83,10 @@ fi
 if [[ "true" == "${MEASURE_PERF}" ]]; then
   ./gradlew :tools:perf-monitor:shadowJar
   JAVA_TOOL_OPTIONS="-javaagent:${ROOT_DIR}/tools/perf-monitor/build/libs/imposter-perf-monitor.jar=/tmp/imposter-method-perf.csv ${JAVA_TOOL_OPTIONS}"
+fi
+
+if [[ "true" == "${RECURSIVE_CONFIG}" ]]; then
+  export IMPOSTER_CONFIG_SCAN_RECURSIVE="true"
 fi
 
 # consumed below

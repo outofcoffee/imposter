@@ -201,7 +201,7 @@ class DynamicPluginDiscoveryStrategyImpl : PluginDiscoveryStrategy {
 
         ClassGraph().enableClassInfo().enableAnnotationInfo()
             .addClassLoader(ClassLoaderUtil.pluginClassLoader)
-            .whitelistPackages(*pluginBasePackages).scan().use { result ->
+            .acceptPackages(*pluginBasePackages).scan().use { result ->
                 val pluginClassInfos = result
                     .getClassesImplementing(Plugin::class.qualifiedName)
                     .filter { classInfo: ClassInfo -> classInfo.hasAnnotation(PluginInfo::class.qualifiedName) }
