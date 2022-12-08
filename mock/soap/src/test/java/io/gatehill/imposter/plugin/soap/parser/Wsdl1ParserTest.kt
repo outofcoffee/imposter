@@ -103,6 +103,11 @@ class Wsdl1ParserTest {
         assertEquals("document", operation.style)
         assertEquals(QName("urn:com:example:petstore","getPetByIdRequest"), operation.inputElementRef)
         assertEquals(QName("urn:com:example:petstore","getPetByIdResponse"), operation.outputElementRef)
+
+        // operation style should fall back to binding style in WSDL 1.x
+        val petNameOp = binding.operations.find { it.name == "getPetByName" }
+        assertNotNull(petNameOp)
+        assertEquals("document", petNameOp?.style)
     }
 
     @Test

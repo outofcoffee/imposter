@@ -159,10 +159,16 @@ class Wsdl1Parser(
         val input = getMessagePartElementName(portTypeOperation, "./wsdl:input")!!
         val output = getMessagePartElementName(portTypeOperation, "./wsdl:output")!!
 
+        val style = soapOperation.getAttributeValue("style") ?: run {
+            // fall back to soap:binding
+            val soapBinding = selectSingleNode(binding, "./soap:binding")
+            soapBinding?.getAttributeValue("style")
+        }
+
         return WsdlOperation(
             name = bindingOperation.getAttributeValue("name"),
             soapAction = soapOperation.getAttributeValue("soapAction"),
-            style = soapOperation.getAttributeValue("style"),
+            style = style,
             inputElementRef = input,
             outputElementRef = output,
         )

@@ -99,7 +99,8 @@
         </operation>
 
         <operation name="getPetByName">
-            <soap:operation soapAction="getPetByName" style="document"/>
+            <!-- soap:operation style omitted - fall back to soap:binding style -->
+            <soap:operation soapAction="getPetByName"/>
             <input name="getPetByNameRequest">
                 <soap:body use="literal"/>
             </input>
