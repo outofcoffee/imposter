@@ -91,4 +91,18 @@ ${body.replaceIndent("    ")}
 </env:Envelope>
 """.trim()
     }
+
+    /**
+     * Returns the local part of an element, if prefixed with a namespace. If `elementName` is unqualified,
+     * it is returned.
+     */
+    fun getLocalPart(elementName: String): String {
+        return if (elementName.contains(":")) {
+            // qualified
+            elementName.split(":")[1]
+        } else {
+            // unqualified
+            elementName
+        }
+    }
 }

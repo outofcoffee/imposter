@@ -49,6 +49,7 @@ import io.gatehill.imposter.plugin.soap.model.WsdlEndpoint
 import io.gatehill.imposter.plugin.soap.model.WsdlInterface
 import io.gatehill.imposter.plugin.soap.model.WsdlOperation
 import io.gatehill.imposter.plugin.soap.model.WsdlService
+import io.gatehill.imposter.plugin.soap.util.SoapUtil
 import io.gatehill.imposter.util.BodyQueryUtil
 import org.jdom2.Document
 import org.jdom2.Element
@@ -64,7 +65,7 @@ import javax.xml.namespace.QName
  */
 class Wsdl1Parser(
     wsdlFile: File,
-    document: Document
+    document: Document,
 ) : AbstractWsdlParser(wsdlFile, document) {
 
     override val version = WsdlParser.WsdlVersion.V1
@@ -194,10 +195,13 @@ class Wsdl1Parser(
      */
     private fun getMessagePartElementName(context: Element, expression: String): QName? {
         val inputOrOutputNode = selectSingleNode(context, expression)!!
-        val messageName = inputOrOutputNode.getAttributeValue("name")!!
+        val msgAttr = inputOrOutputNode.getAttributeValue("message")!!
+        val messageName = msgAttr.let { SoapUtil.getLocalPart(msgAttr) }
 
         // look up message
-        val messagePart = selectSingleNode(document, "/wsdl:definitions/wsdl:message[@name='$messageName']/wsdl:part")!!
+        val messagePart = selectSingleNode(document, "/wsdl:definitions/wsdl:message[@name='$messageName']/wsdl:part")
+            ?: throw IllegalStateException("Message $msgAttr not found")
+
         val elementName = messagePart.getAttributeValue("element")
         return resolveElementFromXsd(elementName)
     }

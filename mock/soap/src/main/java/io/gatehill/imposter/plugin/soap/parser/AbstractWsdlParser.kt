@@ -43,6 +43,7 @@
 
 package io.gatehill.imposter.plugin.soap.parser
 
+import io.gatehill.imposter.plugin.soap.util.SoapUtil
 import io.gatehill.imposter.util.BodyQueryUtil
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -113,9 +114,8 @@ abstract class AbstractWsdlParser(
 
     protected fun selectSingleNodeWithName(context: Any, expressionTemplate: String, name: String): Element? {
         return selectSingleNode(context, String.format(expressionTemplate, name))
-            ?: name.takeIf { it.contains(":") }.let {
-                val localName = name.substring(name.indexOf(':') + 1)
-                selectSingleNode(context, String.format(expressionTemplate, localName))
+            ?: name.takeIf { it.contains(":") }?.let {
+                selectSingleNode(context, String.format(expressionTemplate, SoapUtil.getLocalPart(name)))
             }
     }
 
@@ -132,14 +132,7 @@ abstract class AbstractWsdlParser(
      * from within the XSD.
      */
     protected fun resolveElementFromXsd(elementName: String): QName? {
-        val localPart: String
-        if (elementName.contains(":")) {
-            // qualified
-            localPart = elementName.split(":")[1]
-        } else {
-            // unqualified
-            localPart = elementName
-        }
+        val localPart = SoapUtil.getLocalPart(elementName)
 
         // the top level element from the XSD
         val matchingTypeElement: QName? =
