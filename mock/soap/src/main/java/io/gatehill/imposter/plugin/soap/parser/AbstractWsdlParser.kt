@@ -72,8 +72,7 @@ abstract class AbstractWsdlParser(
 
     private fun discoverSchemas(): Array<SchemaDocument> {
         val schemas = mutableListOf<SchemaDocument>()
-
-        findEmbeddedTypesSchema()?.let { schemas += it }
+        schemas += findEmbeddedTypesSchemas()
 
         // TODO consider only those referenced by 'xs:import'
         val xsds = wsdlFile.parentFile.listFiles { _, name -> name.endsWith(".xsd") }?.toList() ?: emptyList()
@@ -85,18 +84,20 @@ abstract class AbstractWsdlParser(
         return schemas.toTypedArray()
     }
 
-    private fun findEmbeddedTypesSchema(): SchemaDocument? {
-        return findEmbeddedTypesSchemaNode()?.let {
+    private fun findEmbeddedTypesSchemas(): List<SchemaDocument> {
+        val schemaNodes = findEmbeddedTypesSchemaNodes()
+        if (schemaNodes.isEmpty()) {
+            logger.warn("No embedded types schema found")
+            return emptyList()
+        }
+        return schemaNodes.map {
             val schemaXml = XMLOutputter().outputString(it)
             logger.trace("Embedded types schema: {}", schemaXml)
-            return SchemaDocument.Factory.parse(schemaXml)
-        } ?: run {
-            logger.warn("No embedded types schema found")
-            return null
+            return@map SchemaDocument.Factory.parse(schemaXml)
         }
     }
 
-    protected abstract fun findEmbeddedTypesSchemaNode(): Element?
+    protected abstract fun findEmbeddedTypesSchemaNodes(): List<Element>
 
     private fun buildXsdFromSchemas(): SchemaTypeSystem {
         if (schemas.isEmpty()) {
@@ -118,7 +119,6 @@ abstract class AbstractWsdlParser(
             }
     }
 
-    @Suppress("UNCHECKED_CAST")
     protected fun selectNodes(context: Any, expression: String): List<Element> =
         BodyQueryUtil.selectNodes(context, expression, xPathNamespaces)
 

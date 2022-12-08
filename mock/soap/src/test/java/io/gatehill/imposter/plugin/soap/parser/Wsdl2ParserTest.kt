@@ -115,4 +115,12 @@ class Wsdl2ParserTest {
         assertEquals(2, iface.operationNames.size)
         assertEquals("getPetById", iface.operationNames.first())
     }
+
+    @Test
+    fun getSchemas() {
+        // first schema is from the WSDL types element and just contains an import
+        // second schema is the imported external XSD
+        // third schema is the embedded schema from the WSDL types element
+        assertEquals(3, parser.schemas.size)
+    }
 }

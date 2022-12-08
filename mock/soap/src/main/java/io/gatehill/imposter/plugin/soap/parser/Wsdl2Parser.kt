@@ -177,9 +177,9 @@ class Wsdl2Parser(
         Namespace.getNamespace("soap", "http://www.w3.org/ns/wsdl/soap"),
     )
 
-    override fun findEmbeddedTypesSchemaNode(): Element? {
+    override fun findEmbeddedTypesSchemaNodes(): List<Element> {
         val xsNamespaces = xPathNamespaces + Namespace.getNamespace("xs", "http://www.w3.org/2001/XMLSchema")
-        return BodyQueryUtil.selectSingleNode(document, "/wsdl:description/wsdl:types/xs:schema", xsNamespaces)
+        return BodyQueryUtil.selectNodes(document, "/wsdl:description/wsdl:types/xs:schema", xsNamespaces)
     }
 
     companion object {

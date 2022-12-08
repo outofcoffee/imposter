@@ -12,12 +12,26 @@
 
     <!-- Abstract type -->
     <types>
+        <!-- imported schema -->
         <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
                    xmlns="urn:com:example:petstore"
                    targetNamespace="urn:com:example:petstore">
 
             <xs:import namespace="urn:com:example:petstore"
                        schemaLocation="schema.xsd"/>
+        </xs:schema>
+
+        <!-- embedded schema -->
+        <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                   xmlns="urn:com:example:petstore"
+                   targetNamespace="urn:com:example:petstore">
+
+            <xs:complexType name="petBreed">
+                <xs:all>
+                    <xs:element name="id" type="xs:int"/>
+                    <xs:element name="name" type="xs:string"/>
+                </xs:all>
+            </xs:complexType>
         </xs:schema>
     </types>
 
