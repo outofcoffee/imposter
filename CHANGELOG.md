@@ -3,9 +3,16 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [3.3.0] - 2022-12-08
+## Added
+- feat(soap): adds support for multiple schemas within a WSDL file.
+
+## Fixed
+- fix(soap): use message attribute to locate message element in WSDL1 parser.
+- fix(soap): operation style should fall back to binding style in WSDL1 parser.
+
 ## Changed
-...
+- feat: changed OpenAPI Docker image working directory to `/opt/imposter/config` so `$ref` paths load correctly (thanks, Raymond Chin)
 
 ## [3.2.3] - 2022-12-03
 ## Changed
