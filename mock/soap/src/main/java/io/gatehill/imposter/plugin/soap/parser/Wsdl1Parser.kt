@@ -104,6 +104,8 @@ class Wsdl1Parser(
 
     private fun parseBindingType(binding: Element): BindingType {
         val soapBinding = selectSingleNode(binding, "./soap:binding")
+            ?: selectSingleNode(binding, "./soap12:binding")
+
         return when (soapBinding?.getAttributeValue("transport")) {
             "http://schemas.xmlsoap.org/soap/http" -> BindingType.HTTP
             "http://schemas.xmlsoap.org/soap/soap" -> BindingType.SOAP
@@ -128,26 +130,30 @@ class Wsdl1Parser(
     }
 
     private fun getPorts(serviceNode: Element): List<WsdlEndpoint> {
-        return selectNodes(serviceNode, "./wsdl:port").map { node ->
-            val soapAddress = selectSingleNode(node, "./soap:address")!!
+        return selectNodes(serviceNode, "./wsdl:port").map { port ->
+            val soapAddress = selectSingleNode(port, "./soap:address")
+                ?: selectSingleNode(port, "./soap12:address")
+                ?: throw IllegalStateException("No SOAP address element found for port: ${describeNode(port)}")
+
             WsdlEndpoint(
-                name = node.getAttributeValue("name"),
-                bindingName = node.getAttributeValue("binding"),
+                name = port.getAttributeValue("name"),
+                bindingName = port.getAttributeValue("binding"),
                 address = URI(soapAddress.getAttributeValue("location")),
             )
         }
     }
 
     private fun getOperation(bindingName: String, operationName: String, bindingNode: Element? = null): WsdlOperation? {
-        val binding = bindingNode ?: getBindingElement(bindingName)
-        ?: return null
+        val binding = bindingNode ?: getBindingElement(bindingName) ?: return null
 
         val bindingOperation = selectSingleNodeWithName(
             context = binding,
             expressionTemplate = "./wsdl:operation[@name='%s']",
             name = operationName
         )!!
-        val soapOperation = selectSingleNode(bindingOperation, "./soap:operation")!!
+        val soapOperation = selectSingleNode(bindingOperation, "./soap:operation")
+            ?: selectSingleNode(bindingOperation, "./soap12:operation")
+            ?: throw IllegalStateException("No SOAP operation element found for binding operation: ${describeNode(bindingOperation)}")
 
         // binding type=portType name
         val portTypeName = binding.getAttributeValue("type")
@@ -163,6 +169,8 @@ class Wsdl1Parser(
         val style = soapOperation.getAttributeValue("style") ?: run {
             // fall back to soap:binding
             val soapBinding = selectSingleNode(binding, "./soap:binding")
+                ?: selectSingleNode(binding, "./soap12:binding")
+
             soapBinding?.getAttributeValue("style")
         }
 
@@ -209,12 +217,18 @@ class Wsdl1Parser(
     override val xPathNamespaces = listOf(
         Namespace.getNamespace("wsdl", wsdl1Namespace),
         Namespace.getNamespace("soap", "http://schemas.xmlsoap.org/wsdl/soap/"),
+        Namespace.getNamespace("soap12", "http://schemas.xmlsoap.org/wsdl/soap12/"),
     )
 
     override fun findEmbeddedTypesSchemaNodes(): List<Element> {
         val xsNamespaces = xPathNamespaces + Namespace.getNamespace("xs", "http://www.w3.org/2001/XMLSchema")
         return BodyQueryUtil.selectNodes(document, "/wsdl:definitions/wsdl:types/xs:schema", xsNamespaces)
     }
+
+    /**
+     * @return a human-readable description of the node
+     */
+    private fun describeNode(node: Element): String = node.getAttributeValue("name") ?: node.toString()
 
     companion object {
         const val wsdl1Namespace = "http://schemas.xmlsoap.org/wsdl/"

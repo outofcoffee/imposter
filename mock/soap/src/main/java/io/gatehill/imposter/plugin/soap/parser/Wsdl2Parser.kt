@@ -121,11 +121,11 @@ class Wsdl2Parser(
     }
 
     private fun getEndpoints(serviceNode: Element): List<WsdlEndpoint> {
-        return selectNodes(serviceNode, "./wsdl:endpoint").map { node ->
+        return selectNodes(serviceNode, "./wsdl:endpoint").map { endpoint ->
             WsdlEndpoint(
-                name = node.getAttributeValue("name"),
-                bindingName = node.getAttributeValue("binding"),
-                address = URI(node.getAttributeValue("address")),
+                name = endpoint.getAttributeValue("name"),
+                bindingName = endpoint.getAttributeValue("binding"),
+                address = URI(endpoint.getAttributeValue("address")),
             )
         }
     }
