@@ -43,14 +43,17 @@
 
 package io.gatehill.imposter.plugin.soap.util
 
+import io.gatehill.imposter.plugin.soap.model.ParsedRawBody
 import io.gatehill.imposter.plugin.soap.model.ParsedSoapMessage
 import io.gatehill.imposter.util.BodyQueryUtil
 import io.vertx.core.buffer.Buffer
+import org.jdom2.Document
 import org.jdom2.Namespace
 import org.jdom2.input.SAXBuilder
 
 object SoapUtil {
-    const val soap11ContentType = "text/xml"
+    const val textXmlContentType = "text/xml"
+    const val soap11ContentType = textXmlContentType
     const val soap12ContentType = "application/soap+xml"
 
     val soap11EnvNamespace: Namespace = Namespace.getNamespace(
@@ -67,9 +70,7 @@ object SoapUtil {
     )
 
     fun parseSoapEnvelope(body: Buffer): ParsedSoapMessage {
-        val doc = body.bytes.inputStream().use { stream ->
-            SAXBuilder().build(stream)
-        }
+        val doc = parseDoc(body)
         val envNs = when (doc.rootElement.namespace) {
             soap11EnvNamespace -> soap11EnvNamespace
             soap12DraftEnvNamespace -> soap12DraftEnvNamespace
@@ -78,6 +79,15 @@ object SoapUtil {
         }
         val soapBody = BodyQueryUtil.selectSingleNode(doc, "/soap-env:Envelope/soap-env:Body", listOf(envNs))
         return ParsedSoapMessage(soapBody, envNs)
+    }
+
+    fun parseRawBody(body: Buffer): ParsedRawBody {
+        val doc = parseDoc(body)
+        return ParsedRawBody(doc.rootElement)
+    }
+
+    private fun parseDoc(body: Buffer): Document = body.bytes.inputStream().use { stream ->
+        SAXBuilder().build(stream)
     }
 
     fun wrapInEnv(body: String, soapNamespace: Namespace): String {

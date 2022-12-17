@@ -44,6 +44,8 @@
 package io.gatehill.imposter.plugin.soap.service
 
 import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.plugin.soap.model.MessageBodyHolder
+import io.gatehill.imposter.plugin.soap.model.ParsedRawBody
 import io.gatehill.imposter.plugin.soap.model.ParsedSoapMessage
 import io.gatehill.imposter.plugin.soap.util.SoapUtil
 import io.gatehill.imposter.util.LogUtil
@@ -64,7 +66,7 @@ class SoapExampleService {
         httpExchange: HttpExchange,
         schemas: Array<SchemaDocument>,
         outputTypeDefName: QName,
-        soapEnv: ParsedSoapMessage,
+        bodyHolder: MessageBodyHolder,
     ): Boolean {
         logger.debug("Generating example for $outputTypeDefName")
 
@@ -74,28 +76,34 @@ class SoapExampleService {
             SchemaInstanceGenerator.Xsd2InstOptions()
         )
 
-        transmitExample(httpExchange, example, soapEnv)
+        transmitExample(httpExchange, example, bodyHolder)
         return true
     }
 
-    private fun transmitExample(httpExchange: HttpExchange, example: String?, soapEnv: ParsedSoapMessage) {
+    private fun transmitExample(httpExchange: HttpExchange, example: String?, bodyHolder: MessageBodyHolder) {
         example ?: run {
             logger.warn("No example found - returning empty response")
             httpExchange.response().end()
             return
         }
 
-        val responseBody = SoapUtil.wrapInEnv(example, soapEnv.soapEnvNamespace)
+        val responseBody = when (bodyHolder) {
+            is ParsedSoapMessage -> SoapUtil.wrapInEnv(example, bodyHolder.soapEnvNamespace)
+            is ParsedRawBody -> example
+            else -> throw IllegalStateException("Unsupported request body: ${bodyHolder::class.java.canonicalName}")
+        }
         if (logger.isTraceEnabled) {
             logger.trace(
                 "Serving mock example for {} with status code {}: {}",
                 LogUtil.describeRequestShort(httpExchange),
+                httpExchange.response().getStatusCode(),
                 responseBody
             )
         } else {
             logger.info(
                 "Serving mock example for {} with status code {} (response body {} bytes)",
                 LogUtil.describeRequestShort(httpExchange),
+                httpExchange.response().getStatusCode(),
                 responseBody.length
             )
         }

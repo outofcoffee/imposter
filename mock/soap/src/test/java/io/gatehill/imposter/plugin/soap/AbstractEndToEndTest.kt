@@ -49,6 +49,7 @@ import io.restassured.RestAssured
 import io.vertx.ext.unit.TestContext
 import org.hamcrest.Matchers.allOf
 import org.hamcrest.Matchers.containsString
+import org.hamcrest.Matchers.not
 import org.jdom2.Namespace
 import org.junit.Assert.assertNotNull
 import org.junit.Before
@@ -173,8 +174,36 @@ abstract class AbstractEndToEndTest : BaseVerticleTest() {
             .statusCode(HttpUtil.HTTP_OK)
             .body(
                 allOf(
+                    containsString("Envelope"),
                     containsString("getPetByNameResponse"),
                     containsString("Fluffy"),
+                )
+            )
+    }
+
+    @Test
+    fun testHttpBinding() {
+        val getPetByNameRaw = """
+<getPetByNameRequest xmlns="urn:com:example:petstore">
+  <name>Fluffy</name>
+</getPetByNameRequest>
+""".trim()
+
+        RestAssured.given()
+            .log().ifValidationFails()
+            .accept(soapContentType)
+            .contentType(soapContentType)
+            .`when`()
+            .body(getPetByNameRaw)
+            .post("/http/")
+            .then()
+            .log().ifValidationFails()
+            .statusCode(HttpUtil.HTTP_OK)
+            .body(
+                allOf(
+                    not(containsString("Envelope")),
+                    containsString("getPetByNameResponse"),
+                    containsString("Paws"),
                 )
             )
     }

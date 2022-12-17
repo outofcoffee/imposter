@@ -199,7 +199,7 @@ class OpenApiPluginImpl @Inject constructor(
     /**
      * Bind a handler to each operation.
      *
-     * @param router     the Vert.x router
+     * @param router     the HTTP router
      * @param config     the plugin configuration
      * @param spec       the OpenAPI specification
      * @param pathPrefix

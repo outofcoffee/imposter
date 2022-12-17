@@ -6,3 +6,12 @@ resources:
     operation: getPetByName
     response:
       file: getPetByNameResponse.xml
+
+  - binding: HttpBinding
+    operation: getPetByName
+    response:
+      content: |
+        <getPetByNameResponse xmlns="urn:com:example:petstore">
+            <id>4</id>
+            <name>Paws</name>
+        </getPetByNameResponse>

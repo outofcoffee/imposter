@@ -48,7 +48,8 @@ import io.gatehill.imposter.http.AbstractResourceMatcher
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.plugin.soap.config.SoapPluginResourceConfig
-import io.gatehill.imposter.plugin.soap.model.ParsedSoapMessage
+import io.gatehill.imposter.plugin.soap.model.BindingType
+import io.gatehill.imposter.plugin.soap.model.MessageBodyHolder
 import io.gatehill.imposter.plugin.soap.model.WsdlBinding
 import io.gatehill.imposter.plugin.soap.model.WsdlOperation
 import io.gatehill.imposter.plugin.soap.util.SoapUtil
@@ -102,16 +103,23 @@ class SoapResourceMatcher(
     }
 
     private fun isOperationMatch(httpExchange: HttpExchange, configOpName: String, soapAction: String?) = httpExchange.request().body?.let { body ->
-        val soapEnv = SoapUtil.parseSoapEnvelope(body)
-        val operation = determineOperation(soapAction, soapEnv)
+        val bodyHolder: MessageBodyHolder = when (binding.type) {
+            BindingType.SOAP -> SoapUtil.parseSoapEnvelope(body)
+            BindingType.HTTP -> SoapUtil.parseRawBody(body)
+            else -> {
+                LOGGER.warn("Unsupported binding type: ${binding.type} - unable to determine operation match")
+                return false
+            }
+        }
+        val operation = determineOperation(soapAction, bodyHolder)
         configOpName == operation?.name
     } ?: false
 
-    fun determineOperation(soapAction: String?, soapEnv: ParsedSoapMessage): WsdlOperation? {
+    fun determineOperation(soapAction: String?, bodyHolder: MessageBodyHolder): WsdlOperation? {
         soapAction?.let {
             return binding.operations.firstOrNull { it.soapAction == soapAction }
         }
-        return determineOperationFromRequestBody(soapEnv)
+        return determineOperationFromRequestBody(bodyHolder)
     }
 
     fun getSoapAction(httpExchange: HttpExchange): String? {
@@ -152,13 +160,9 @@ class SoapResourceMatcher(
         return null
     }
 
-    private fun determineOperationFromRequestBody(soapEnv: ParsedSoapMessage): WsdlOperation? {
-        soapEnv.soapBody ?: run {
-            LOGGER.warn("Missing body in SOAP envelope")
-            return null
-        }
-        val bodyRootElement = soapEnv.soapBody.children.firstOrNull() ?: run {
-            LOGGER.warn("Missing element in SOAP body")
+    private fun determineOperationFromRequestBody(bodyHolder: MessageBodyHolder): WsdlOperation? {
+        val bodyRootElement = bodyHolder.bodyRootElement ?: run {
+            LOGGER.warn("Missing body element in request")
             return null
         }
 

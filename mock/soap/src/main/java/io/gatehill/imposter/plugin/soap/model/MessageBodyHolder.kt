@@ -43,28 +43,11 @@
 
 package io.gatehill.imposter.plugin.soap.model
 
-import org.apache.logging.log4j.LogManager
 import org.jdom2.Element
-import org.jdom2.Namespace
 
-data class ParsedSoapMessage(
-    val soapBody: Element?,
-    val soapEnvNamespace: Namespace,
-) : MessageBodyHolder {
-    override val bodyRootElement: Element?
-        get() {
-            soapBody ?: run {
-                logger.warn("Missing body in SOAP envelope")
-                return null
-            }
-            val bodyRootElement = soapBody.children.firstOrNull() ?: run {
-                logger.warn("Missing element in SOAP body")
-                return null
-            }
-            return bodyRootElement
-        }
-
-    companion object {
-        private val logger = LogManager.getLogger(ParsedSoapMessage::class.java)
-    }
+/**
+ * The holder of the body, such as a SOAP envelope or raw HTTP request body.
+ */
+interface MessageBodyHolder {
+    val bodyRootElement: Element?
 }

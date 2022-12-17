@@ -54,6 +54,8 @@ import io.gatehill.imposter.plugin.config.ConfiguredPlugin
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.soap.config.SoapPluginConfig
 import io.gatehill.imposter.plugin.soap.model.BindingType
+import io.gatehill.imposter.plugin.soap.model.MessageBodyHolder
+import io.gatehill.imposter.plugin.soap.model.ParsedRawBody
 import io.gatehill.imposter.plugin.soap.model.ParsedSoapMessage
 import io.gatehill.imposter.plugin.soap.model.WsdlBinding
 import io.gatehill.imposter.plugin.soap.model.WsdlOperation
@@ -122,11 +124,11 @@ class SoapPluginImpl @Inject constructor(
                     val binding = wsdlParser.getBinding(endpoint.bindingName)
                         ?: throw IllegalStateException("Binding: ${endpoint.bindingName} not found")
 
-                    if (binding.type == BindingType.SOAP) {
-                        handleBindingOperations(router, config, wsdlParser, path, binding)
-                    } else {
-                        // TODO handle HTTP binding
-                        LOGGER.debug("Ignoring non-SOAP binding: ${binding.name}")
+                    when (binding.type) {
+                        BindingType.SOAP, BindingType.HTTP -> {
+                            handleBindingOperations(router, config, wsdlParser, path, binding)
+                        }
+                        else -> LOGGER.debug("Ignoring unsupported binding: ${binding.name}")
                     }
                 }
             }
@@ -136,7 +138,7 @@ class SoapPluginImpl @Inject constructor(
     /**
      * Bind a handler to each operation.
      *
-     * @param router     the Vert.x router
+     * @param router     the HTTP router
      * @param config     the plugin configuration
      * @param parser     the WSDL parser
      * @param path       the path of this service
@@ -150,21 +152,37 @@ class SoapPluginImpl @Inject constructor(
         binding: WsdlBinding,
     ) {
         val fullPath = (config.path ?: "") + path
-        LOGGER.debug("Adding mock endpoint: ${binding.name} -> $fullPath")
+        LOGGER.debug("Adding mock endpoint: ${binding.name} -> ${binding.type} $fullPath")
 
         val soapResourceMatcher = SoapResourceMatcher(binding)
 
         // TODO parse HTTP binding to check for other verbs
         router.route(HttpMethod.POST, fullPath).handler(
             resourceService.handleRoute(imposterConfig, config, soapResourceMatcher) { httpExchange: HttpExchange ->
-                val soapEnv = httpExchange.request().body?.let { body -> SoapUtil.parseSoapEnvelope(body) } ?: run {
-                    LOGGER.warn("No request body - unable to parse SOAP envelope")
-                    httpExchange.response().setStatusCode(400).end()
-                    return@handleRoute
+                val bodyHolder: MessageBodyHolder = when (binding.type) {
+                    BindingType.SOAP -> {
+                        httpExchange.request().body?.let { body -> SoapUtil.parseSoapEnvelope(body) } ?: run {
+                            LOGGER.warn("No request body - unable to parse SOAP envelope")
+                            httpExchange.response().setStatusCode(400).end()
+                            return@handleRoute
+                        }
+                    }
+                    BindingType.HTTP -> {
+                        httpExchange.request().body?.let { body -> SoapUtil.parseRawBody(body) } ?: run {
+                            LOGGER.warn("No request body - unable to parse request")
+                            httpExchange.response().setStatusCode(400).end()
+                            return@handleRoute
+                        }
+                    }
+                    else -> {
+                        LOGGER.warn("Unsupported binding type: ${binding.type} - unable to parse request")
+                        httpExchange.response().setStatusCode(400).end()
+                        return@handleRoute
+                    }
                 }
 
                 val soapAction = soapResourceMatcher.getSoapAction(httpExchange)
-                val operation = soapResourceMatcher.determineOperation(soapAction, soapEnv) ?: run {
+                val operation = soapResourceMatcher.determineOperation(soapAction, bodyHolder) ?: run {
                     httpExchange.response().setStatusCode(404).end()
                     LOGGER.warn("Unable to find a matching binding operation using SOAPAction or SOAP request body")
                     return@handleRoute
@@ -174,7 +192,7 @@ class SoapPluginImpl @Inject constructor(
                 }
 
                 LOGGER.debug("Matched operation: ${operation.name} in binding ${binding.name}")
-                handle(config, parser, binding, operation, httpExchange, soapEnv, soapAction)
+                handle(config, parser, binding, operation, httpExchange, bodyHolder, soapAction)
             }
         )
     }
@@ -187,7 +205,7 @@ class SoapPluginImpl @Inject constructor(
      * @param binding      the WSDL binding
      * @param operation    the WSDL operation
      * @param httpExchange the current exchange
-     * @param soapEnv      the SOAP envelope
+     * @param bodyHolder   the holder of the body, such as a SOAP envelope or raw HTTP request body
      * @param soapAction   the SOAPAction, if present
      */
     private fun handle(
@@ -196,7 +214,7 @@ class SoapPluginImpl @Inject constructor(
         binding: WsdlBinding,
         operation: WsdlOperation,
         httpExchange: HttpExchange,
-        soapEnv: ParsedSoapMessage,
+        bodyHolder: MessageBodyHolder,
         soapAction: String?,
     ) {
         val statusCodeFactory = DefaultStatusCodeFactory.instance
@@ -212,15 +230,19 @@ class SoapPluginImpl @Inject constructor(
                 LOGGER.trace("Using output schema type: ${operation.outputElementRef}")
 
                 if (!responseBehaviour.responseHeaders.containsKey(HttpUtil.CONTENT_TYPE)) {
-                    responseBehaviour.responseHeaders[HttpUtil.CONTENT_TYPE] = when (parser.version) {
-                        WsdlParser.WsdlVersion.V1 -> SoapUtil.soap11ContentType
-                        WsdlParser.WsdlVersion.V2 -> SoapUtil.soap12ContentType
+                    responseBehaviour.responseHeaders[HttpUtil.CONTENT_TYPE] = when (bodyHolder) {
+                        is ParsedSoapMessage -> when (parser.version) {
+                            WsdlParser.WsdlVersion.V1 -> SoapUtil.soap11ContentType
+                            WsdlParser.WsdlVersion.V2 -> SoapUtil.soap12ContentType
+                        }
+                        is ParsedRawBody -> SoapUtil.textXmlContentType
+                        else -> throw IllegalStateException("Unsupported request body: ${bodyHolder::class.java.canonicalName}")
                     }
                 }
 
                 // build a response from the XSD
                 val exampleSender = ResponseSender { httpExchange: HttpExchange, _: ResponseBehaviour ->
-                    soapExampleService.serveExample(httpExchange, parser.schemas, operation.outputElementRef, soapEnv)
+                    soapExampleService.serveExample(httpExchange, parser.schemas, operation.outputElementRef, bodyHolder)
                 }
 
                 // attempt to serve the example, falling back if not present

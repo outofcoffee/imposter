@@ -74,7 +74,7 @@ http://www.w3.org/ns/wsdl/soap http://www.w3.org/2002/ws/desc/ns/soap.xsd">
     <service name="PetService" interface="tns:PetInterface">
         <endpoint name="HttpEndpoint"
                   binding="tns:HttpBinding"
-                  address="http://www.example.com/rest/"/>
+                  address="http://www.example.com/http/"/>
         <endpoint name="SoapEndpoint"
                   binding="tns:SoapBinding"
                   address="http://www.example.com/soap/"/>
