@@ -45,12 +45,12 @@ package io.gatehill.imposter.plugin.soap
 import io.gatehill.imposter.plugin.soap.util.SoapUtil
 
 /**
- * Tests for [SoapPluginImpl] using WSDL v1.
+ * Tests for [SoapPluginImpl] using WSDL v1 and SOAP 1.1.
  *
  * @author Pete Cornish
  */
-class Wsdl1EndToEndTest : AbstractEndToEndTest() {
-    override val testConfigDirs = listOf("/wsdl1")
+class Wsdl1Soap11EndToEndTest : AbstractEndToEndTest() {
+    override val testConfigDirs = listOf("/wsdl1-soap11")
     override val soapEnvNamespace = SoapUtil.soap11EnvNamespace
     override val soapContentType = SoapUtil.soap11ContentType
 }

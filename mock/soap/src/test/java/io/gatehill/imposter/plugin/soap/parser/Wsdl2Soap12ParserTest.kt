@@ -53,16 +53,16 @@ import java.io.File
 import javax.xml.namespace.QName
 
 /**
- * Tests for [Wsdl2Parser].
+ * Tests for [Wsdl2Parser] using a WSDL 2 document and SOAP 1.2.
  *
  * @author Pete Cornish
  */
-class Wsdl2ParserTest {
+class Wsdl2Soap12ParserTest {
     private lateinit var parser: Wsdl2Parser
 
     @Before
     fun setUp() {
-        val wsdlFile = File(Wsdl2ParserTest::class.java.getResource("/wsdl2/service.wsdl")!!.toURI())
+        val wsdlFile = File(Wsdl2Soap12ParserTest::class.java.getResource("/wsdl2-soap12/service.wsdl")!!.toURI())
         val document = SAXBuilder().build(wsdlFile)
         parser = Wsdl2Parser(wsdlFile, document)
     }

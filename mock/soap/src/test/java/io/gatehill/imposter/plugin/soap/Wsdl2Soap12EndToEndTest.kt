@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022.
+ * Copyright (c) 2016-2021.
  *
  * This file is part of Imposter.
  *
@@ -40,32 +40,17 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.plugin.soap
 
-package io.gatehill.imposter.plugin.soap.parser
-
-import org.junit.Assert.assertEquals
-import org.junit.Test
-import java.io.File
+import io.gatehill.imposter.plugin.soap.util.SoapUtil
 
 /**
- * Tests for [VersionAwareWsdlParser].
+ * Tests for [SoapPluginImpl] using WSDL v2 and SOAP 1.2.
  *
  * @author Pete Cornish
  */
-class VersionAwareWsdlParserTest {
-    @Test
-    fun parseV1() {
-        val wsdlFile = File(VersionAwareWsdlParserTest::class.java.getResource("/wsdl1-soap11/service.wsdl")!!.toURI())
-        val parser = VersionAwareWsdlParser(wsdlFile)
-
-        assertEquals(WsdlParser.WsdlVersion.V1, parser.version)
-    }
-
-    @Test
-    fun parseV2() {
-        val wsdlFile = File(VersionAwareWsdlParserTest::class.java.getResource("/wsdl2-soap12/service.wsdl")!!.toURI())
-        val parser = VersionAwareWsdlParser(wsdlFile)
-
-        assertEquals(WsdlParser.WsdlVersion.V2, parser.version)
-    }
+class Wsdl2Soap12EndToEndTest : AbstractEndToEndTest() {
+    override val testConfigDirs = listOf("/wsdl2-soap12")
+    override val soapEnvNamespace = SoapUtil.soap12RecEnvNamespace
+    override val soapContentType = SoapUtil.soap12ContentType
 }

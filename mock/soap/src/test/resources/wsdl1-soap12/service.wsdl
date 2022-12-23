@@ -3,11 +3,12 @@
 <definitions name="PetService" xmlns="http://schemas.xmlsoap.org/wsdl/"
              xmlns:tns="urn:com:example:petstore"
              xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
-             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/"
              targetNamespace="urn:com:example:petstore">
 
     <documentation>
         This is a sample WSDL 1.1 document describing the pet service.
+        It has SOAP 1.2 bindings.
     </documentation>
 
     <!-- Abstract type -->
@@ -62,50 +63,50 @@
 
     <!-- Concrete Binding Over HTTP -->
     <binding name="HttpBinding" type="tns:PetPortType">
-        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <soap12:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
 
         <operation name="getPetById">
-            <soap:operation soapAction="getPetById" style="document"/>
+            <soap12:operation soapAction="getPetById" style="document"/>
             <input name="getPetByIdRequest">
-                <soap:body use="literal"/>
+                <soap12:body use="literal"/>
             </input>
             <output name="getPetByIdResponse">
-                <soap:body use="literal"/>
+                <soap12:body use="literal"/>
             </output>
         </operation>
         <operation name="getPetByName">
-            <soap:operation soapAction="getPetByName" style="document"/>
+            <soap12:operation soapAction="getPetByName" style="document"/>
             <input name="getPetByNameRequest">
-                <soap:body use="literal"/>
+                <soap12:body use="literal"/>
             </input>
             <output name="getPetByNameResponse">
-                <soap:body use="literal"/>
+                <soap12:body use="literal"/>
             </output>
         </operation>
     </binding>
 
     <!-- Concrete Binding with SOAP-->
     <binding name="SoapBinding" type="tns:PetPortType">
-        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/soap"/>
+        <soap12:binding style="document" transport="http://schemas.xmlsoap.org/soap/soap"/>
 
         <operation name="getPetById">
-            <soap:operation soapAction="getPetById" style="document"/>
+            <soap12:operation soapAction="getPetById" style="document"/>
             <input name="getPetByIdRequest">
-                <soap:body use="literal"/>
+                <soap12:body use="literal"/>
             </input>
             <output name="getPetByIdResponse">
-                <soap:body use="literal"/>
+                <soap12:body use="literal"/>
             </output>
         </operation>
 
         <operation name="getPetByName">
-            <!-- soap:operation style omitted - fall back to soap:binding style -->
-            <soap:operation soapAction="getPetByName"/>
+            <!-- soap12:operation style omitted - fall back to soap12:binding style -->
+            <soap12:operation soapAction="getPetByName"/>
             <input name="getPetByNameRequest">
-                <soap:body use="literal"/>
+                <soap12:body use="literal"/>
             </input>
             <output name="getPetByNameResponse">
-                <soap:body use="literal"/>
+                <soap12:body use="literal"/>
             </output>
         </operation>
     </binding>
@@ -113,10 +114,10 @@
     <!-- Web Service offering endpoints for both bindings-->
     <service name="PetService">
         <port name="HttpEndpoint" binding="tns:HttpBinding">
-            <soap:address location="http://www.example.com/http/"/>
+            <soap12:address location="http://www.example.com/http/"/>
         </port>
         <port name="SoapEndpoint" binding="tns:SoapBinding">
-            <soap:address location="http://www.example.com/soap/"/>
+            <soap12:address location="http://www.example.com/soap/"/>
         </port>
     </service>
 </definitions>

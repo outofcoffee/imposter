@@ -53,16 +53,16 @@ import java.io.File
 import javax.xml.namespace.QName
 
 /**
- * Tests for [Wsdl1Parser].
+ * Tests for [Wsdl1Parser] using a WSDL 1 document and SOAP 1.1.
  *
  * @author Pete Cornish
  */
-class Wsdl1ParserTest {
+class Wsdl1Soap11ParserTest {
     private lateinit var parser: Wsdl1Parser
 
     @Before
     fun setUp() {
-        val wsdlFile = File(Wsdl1ParserTest::class.java.getResource("/wsdl1/service.wsdl")!!.toURI())
+        val wsdlFile = File(Wsdl1Soap11ParserTest::class.java.getResource("/wsdl1-soap11/service.wsdl")!!.toURI())
         val document = SAXBuilder().build(wsdlFile)
         parser = Wsdl1Parser(wsdlFile, document)
     }

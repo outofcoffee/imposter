@@ -58,7 +58,7 @@ import javax.xml.ws.BindingProvider
  */
 class JAXWSTest : BaseVerticleTest() {
     override val pluginClass = SoapPluginImpl::class.java
-    override val testConfigDirs = listOf("/wsdl1")
+    override val testConfigDirs = listOf("/wsdl1-soap11")
 
     private lateinit var baseURI: String
 
@@ -71,7 +71,7 @@ class JAXWSTest : BaseVerticleTest() {
 
     @Test
     fun testRequestResponseUsingSoapClient() {
-        val wsdlUrl = JAXWSTest::class.java.getResource("/wsdl1/service.wsdl")
+        val wsdlUrl = JAXWSTest::class.java.getResource("/wsdl1-soap11/service.wsdl")
         val soapEndpoint = PetService(wsdlUrl).soapEndpoint
 
         (soapEndpoint as BindingProvider)

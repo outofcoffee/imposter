@@ -10,6 +10,7 @@ http://www.w3.org/ns/wsdl/soap http://www.w3.org/2002/ws/desc/ns/soap.xsd">
 
     <documentation>
         This is a sample WSDL 2.0 document describing the pet service.
+        It has SOAP 1.2 bindings.
     </documentation>
 
     <types>
