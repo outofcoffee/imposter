@@ -3,9 +3,16 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [3.4.0] - 2022-12-23
+## Added
+- feat: adds support for SOAP HTTP binding transport type.
+- feat: adds support for using SOAP 1.2 binding with WSDL 1.
+- test: splits parser tests to support more combinations of WSDL1 and SOAP 1.1/1.2.
+
 ## Changed
-- ...
+- build(deps): bump version_vertx from 4.3.5 to 4.3.6 (#267)
+- build(deps): bump version_jackson from 2.13.4 to 2.14.1 (#261)
+- build(deps): bump xmlbeans from 5.1.0 to 5.1.1 (#260)
 
 ## [3.3.0] - 2022-12-08
 ## Added
