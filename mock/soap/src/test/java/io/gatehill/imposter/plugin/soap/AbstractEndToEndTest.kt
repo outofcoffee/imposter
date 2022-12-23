@@ -178,19 +178,4 @@ abstract class AbstractEndToEndTest : BaseVerticleTest() {
                 )
             )
     }
-
-    @Test
-    fun testInvalidSoapAction() {
-        RestAssured.given()
-            .log().ifValidationFails()
-            .accept(soapContentType)
-            .contentType(soapContentType)
-            .header("SOAPAction", "invalid-pet-action")
-            .`when`()
-            .body(getPetByIdEnv)
-            .post("/soap/")
-            .then()
-            .log().ifValidationFails()
-            .statusCode(HttpUtil.HTTP_NOT_FOUND)
-    }
 }
