@@ -33,3 +33,13 @@ resources:
   response:
     file: jsonPathTemplate.txt
     template: true
+
+- method: GET
+  path: /greeting/{name}
+  # no capture configuration
+  response:
+    content: |
+      Hello ${context.request.pathParams.name}!
+    template: true
+    headers:
+      Content-Type: text/plain

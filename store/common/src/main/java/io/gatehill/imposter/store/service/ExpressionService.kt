@@ -1,6 +1,9 @@
 package io.gatehill.imposter.store.service
 
 import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.store.service.expression.ContextEvaluator
+import io.gatehill.imposter.store.service.expression.DateTimeEvaluator
+import io.gatehill.imposter.store.service.expression.ExpressionEvaluator
 
 /**
  * Evaluates expressions against the [HttpExchange].
@@ -19,18 +22,12 @@ interface ExpressionService {
      * ```
      * If no expression is found, [expression] is returned.
      */
-    fun eval(expression: String, httpExchange: HttpExchange): String
+    fun eval(expression: String, httpExchange: HttpExchange, evaluators: Map<String, ExpressionEvaluator<*>>? = null): String
 
-    /**
-     * Loads a value for the specified key, optionally applying a JsonPath query
-     * to the value.
-     *
-     * The [rawItemKey] can be in the form of a string such as `a.b.c`, or, optionally
-     * include a JsonPath query, prefixed with a colon, such as `a.b.c:$.jp`, where
-     * `$.jp` is a valid JsonPath expression.
-     *
-     * @param rawItemKey the placeholder key
-     * @param valueResolver the function to resolve the value, prior to any querying
-     */
-    fun <T:Any> loadAndQuery(rawItemKey: String, valueResolver: (key: String) -> T?): T?
+    companion object {
+        val builtin = mapOf(
+            "context" to ContextEvaluator,
+            "datetime" to DateTimeEvaluator,
+        )
+    }
 }

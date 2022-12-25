@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2022.
  *
  * This file is part of Imposter.
  *
@@ -40,62 +40,47 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.store.service
+
+package io.gatehill.imposter.store.service.expression
 
 import io.gatehill.imposter.http.HttpExchange
-import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
-import io.gatehill.imposter.lifecycle.EngineLifecycleListener
 import io.gatehill.imposter.store.factory.StoreFactory
-import io.gatehill.imposter.store.service.expression.StoreEvaluator
-import io.gatehill.imposter.store.util.StoreUtil
-import io.gatehill.imposter.util.ResourceUtil
-import io.vertx.core.buffer.Buffer
-import java.util.regex.Pattern
-import javax.inject.Inject
+import org.apache.logging.log4j.LogManager
 
 /**
- * Resolves response template placeholders using stores.
- *
- * @author Pete Cornish
+ * Evaluates a store expression in the form:
+ * ```
+ * storename.itemkey
+ * ```
  */
-class TemplateServiceImpl @Inject constructor(
-    storeFactory: StoreFactory,
-    private val expressionService: ExpressionService,
-    engineLifecycle: EngineLifecycleHooks,
-) : EngineLifecycleListener {
-    /**
-     * Add store evaluator as a wildcard.
-     */
-    private val evaluators = ExpressionService.builtin + mapOf(
-        "*" to StoreEvaluator(storeFactory),
-    )
+class StoreEvaluator(
+    private val storeFactory: StoreFactory,
+) : ExpressionEvaluator<Any> {
+    override fun eval(expression: String, httpExchange: HttpExchange): Any? {
+        try {
+            val parts = expression.split(
+                delimiters = arrayOf("."),
+                ignoreCase = false,
+                limit = 2,
+            )
+            if (parts.size < 2) {
+                LOGGER.warn("Could not parse store expression: $expression")
+                return ""
+            }
+            val storeName = parts[0]
+            val itemKey = parts[1]
 
-    init {
-        engineLifecycle.registerListener(this)
-    }
+            val store = storeFactory.getStoreByName(storeName, false)
+            val itemValue = store.load<Any>(itemKey)
+            LOGGER.trace("Loaded value for key: {} in store: {} as: {}", itemKey, storeName, itemValue)
+            return itemValue
 
-    override fun beforeTransmittingTemplate(
-        httpExchange: HttpExchange,
-        responseData: Buffer,
-        trustedData: Boolean,
-    ): Buffer {
-        if (responseData.length() == 0) {
-            return responseData
+        } catch (e: Exception) {
+            throw RuntimeException("Error replacing template placeholder '$expression' with store item", e)
         }
-
-        val unmodified = responseData.toString(Charsets.UTF_8)
-
-        // shim for request scoped store
-        val uniqueRequestId = httpExchange.get<String>(ResourceUtil.RC_REQUEST_ID_KEY)!!
-        val shimmed = requestStorePrefixPattern
-            .matcher(unmodified)
-            .replaceAll("\\$\\{" + StoreUtil.buildRequestStoreName(uniqueRequestId) + ".")
-
-        val evaluated = expressionService.eval(shimmed, httpExchange, evaluators)
-        return Buffer.buffer(evaluated)
     }
 
     companion object {
-        private val requestStorePrefixPattern = Pattern.compile("\\$\\{" + StoreUtil.REQUEST_SCOPED_STORE_NAME + "\\.")
+        private val LOGGER = LogManager.getLogger(StoreEvaluator::class.java)
     }
 }

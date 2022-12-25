@@ -121,7 +121,7 @@ class ScriptedResponseServiceImpl @Inject constructor(
             .forEach { (config, responseConfig) -> initScript(config, responseConfig) }
     }
 
-    fun initScript(pluginConfig: PluginConfig, responseConfig: ResponseConfig) {
+    private fun initScript(pluginConfig: PluginConfig, responseConfig: ResponseConfig) {
         responseConfig.scriptFile?.let { scriptFile ->
             val scriptPath = ScriptUtil.resolveScriptPath(pluginConfig, scriptFile)
             scriptServiceFactory.fetchScriptService(scriptFile).initScript(scriptPath)

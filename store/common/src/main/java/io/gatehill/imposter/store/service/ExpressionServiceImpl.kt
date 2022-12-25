@@ -42,14 +42,10 @@
  */
 package io.gatehill.imposter.store.service
 
-import io.gatehill.imposter.http.ExchangePhase
 import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.store.service.expression.ExpressionEvaluator
 import io.gatehill.imposter.util.BodyQueryUtil
-import io.gatehill.imposter.util.DateTimeUtil
 import org.apache.logging.log4j.LogManager
-import java.time.LocalDateTime
-import java.time.OffsetDateTime
-import java.time.temporal.ChronoUnit
 import java.util.regex.Pattern
 
 /**
@@ -61,14 +57,15 @@ class ExpressionServiceImpl : ExpressionService {
     /**
      * {@inheritDoc}
      */
-    override fun eval(expression: String, httpExchange: HttpExchange): String {
+    override fun eval(expression: String, httpExchange: HttpExchange, evaluators: Map<String, ExpressionEvaluator<*>>?): String {
+        val finalEvaluators = evaluators ?: ExpressionService.builtin
         val matcher = expressionPattern.matcher(expression)
         var matched = false
         val sb = StringBuffer()
         while (matcher.find()) {
             matched = true
             val subExpression = matcher.group(1)
-            val result = evalSingle(subExpression, httpExchange) ?: ""
+            val result = evalSingle(subExpression, httpExchange, finalEvaluators) ?: ""
             matcher.appendReplacement(sb, result)
         }
         return if (matched) {
@@ -88,160 +85,47 @@ class ExpressionServiceImpl : ExpressionService {
     private fun evalSingle(
         expression: String,
         httpExchange: HttpExchange,
+        evaluators: Map<String, ExpressionEvaluator<*>>
     ): String? = loadAndQuery(expression) { itemKey ->
-        evalSingleInternal(itemKey, httpExchange)
-    }
+        evalSingleInternal(itemKey, httpExchange, evaluators)
+    }?.toString()
 
     /**
      * @see evalSingle
      */
-    private fun evalSingleInternal(expression: String, httpExchange: HttpExchange): String? {
-        return if (expression.startsWith("context.")) {
-            evalContext(expression, httpExchange)
-        } else if (expression.startsWith("datetime.")) {
-            evalDatetime(expression)
-        } else {
+    private fun evalSingleInternal(
+        expression: String,
+        httpExchange: HttpExchange,
+        evaluators: Map<String, ExpressionEvaluator<*>>,
+    ): Any? {
+        val root = expression.substringBefore(".").takeIf { it.isNotEmpty() }
+        LOGGER.trace("Evaluating expression: {}", expression)
+
+        return root?.let {
+            // fallback to wildcard evaluator if no explicit match
+            val evaluator = evaluators[root] ?: evaluators["*"]
+            evaluator?.let {
+                LOGGER.trace("Using {} expression evaluator for expression: {}", evaluator::class.java.simpleName, expression)
+                evaluator.eval(expression, httpExchange)
+            }
+        } ?: run {
             LOGGER.warn("Unsupported expression: $expression")
             null
         }
     }
 
     /**
-     * Evaluates a context expression in the form:
-     * ```
-     * context.a.b.c
-     * ```
+     * Loads a value for the specified key, optionally applying a JsonPath query
+     * to the value.
+     *
+     * The [rawItemKey] can be in the form of a string such as `a.b.c`, or, optionally
+     * include a JsonPath query, prefixed with a colon, such as `a.b.c:$.jp`, where
+     * `$.jp` is a valid JsonPath expression.
+     *
+     * @param rawItemKey the placeholder key
+     * @param valueResolver the function to resolve the value, prior to any querying
      */
-    private fun evalContext(expression: String, httpExchange: HttpExchange): String? {
-        try {
-            val parts = expression.split(
-                delimiters = arrayOf("."),
-                ignoreCase = false,
-                limit = 4,
-            )
-            val parsed: String? = when (parts[0]) {
-                "context" -> when (parts[1]) {
-                    "request" -> {
-                        when (parts[2]) {
-                            "body" -> checkExpression(expression, 3, parts) {
-                                httpExchange.request().bodyAsString
-                            }
-                            "headers" -> checkExpression(expression, 4, parts) {
-                                httpExchange.request().getHeader(parts[3])
-                            }
-                            "pathParams" -> checkExpression(expression, 4, parts) {
-                                httpExchange.request().pathParam(parts[3])
-                            }
-                            "queryParams" -> checkExpression(expression, 4, parts) {
-                                httpExchange.request().queryParam(parts[3])
-                            }
-                            else -> {
-                                LOGGER.warn("Could not parse request context expression: $expression")
-                                null
-                            }
-                        }
-                    }
-                    "response" -> {
-                        check(httpExchange.phase == ExchangePhase.RESPONSE_SENT) {
-                            "Cannot capture response outside of ${ExchangePhase.RESPONSE_SENT} phase"
-                        }
-                        when (parts[2]) {
-                            "body" -> checkExpression(expression, 3, parts) {
-                                httpExchange.response().bodyBuffer?.toString(Charsets.UTF_8)
-                            }
-                            "headers" -> checkExpression(expression, 4, parts) {
-                                httpExchange.response().headers()[parts[3]]
-                            }
-                            else -> {
-                                LOGGER.warn("Could not parse response context expression: $expression")
-                                null
-                            }
-                        }
-                    }
-                    else -> {
-                        LOGGER.warn("Could not parse context expression: $expression")
-                        null
-                    }
-                }
-                else -> {
-                    LOGGER.warn("Could not parse context expression: $expression")
-                    null
-                }
-            }
-            return parsed
-
-        } catch (e: Exception) {
-            throw RuntimeException("Error evaluating context expression: $expression", e)
-        }
-    }
-
-    private fun checkExpression(
-        expression: String,
-        minParts: Int,
-        parts: List<String>,
-        valueSupplier: () -> String?,
-    ): String? {
-        if (parts.size < minParts) {
-            LOGGER.warn("Could not parse context expression: $expression - expected $minParts parts, but was ${parts.size}")
-            return null
-        }
-        return valueSupplier()
-    }
-
-    /**
-     * Evaluates a datetime expression in the form:
-     * ```
-     * datetime.a.b
-     * ```
-     */
-    private fun evalDatetime(expression: String): String? {
-        try {
-            val parts = expression.split(
-                delimiters = arrayOf("."),
-                ignoreCase = false,
-                limit = 3,
-            )
-            if (parts.size < 3) {
-                LOGGER.warn("Could not parse datetime expression: $expression")
-                return null
-            }
-            val parsed = when (parts[0]) {
-                "datetime" -> when (parts[1]) {
-                    "now" -> when (parts[2]) {
-                        "millis" -> System.currentTimeMillis().toString()
-                        "nanos" -> System.nanoTime().toString()
-                        "iso8601_date" -> DateTimeUtil.DATE_FORMATTER.format(
-                            LocalDateTime.now().truncatedTo(ChronoUnit.DAYS)
-                        )
-                        "iso8601_datetime" -> DateTimeUtil.DATE_TIME_FORMATTER.format(
-                            OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS)
-                        )
-                        else -> {
-                            LOGGER.warn("Could not parse datetime expression: $expression")
-                            null
-                        }
-                    }
-                    else -> {
-                        LOGGER.warn("Could not parse datetime expression: $expression")
-                        null
-                    }
-                }
-                else -> {
-                    LOGGER.warn("Could not parse datetime expression: $expression")
-                    null
-                }
-            }
-            return parsed
-
-        } catch (e: Exception) {
-            throw RuntimeException("Error evaluating datetime expression: $expression", e)
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    override fun <T : Any> loadAndQuery(rawItemKey: String, valueResolver: (key: String) -> T?): T? {
+    private fun <T : Any> loadAndQuery(rawItemKey: String, valueResolver: (key: String) -> T?): T? {
         val itemKey: String
         val jsonPath: String?
 
@@ -262,6 +146,7 @@ class ExpressionServiceImpl : ExpressionService {
     }
 
     private fun <T : Any> queryWithJsonPath(rawValue: T, jsonPath: String?): T? {
+        LOGGER.trace("Evaluating JSONPath: {} on expression value: {}", jsonPath, rawValue)
         val context = when (rawValue) {
             // raw JSON will be parsed by the context
             is String -> BodyQueryUtil.JSONPATH_PARSE_CONTEXT.parse(rawValue as String)

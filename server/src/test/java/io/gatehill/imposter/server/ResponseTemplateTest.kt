@@ -157,4 +157,18 @@ class ResponseTemplateTest : BaseVerticleTest() {
             .body(Matchers.equalTo("Postcode: PO5 7CO")) // content type inferred from response file name
             .contentType(ContentType.TEXT)
     }
+
+    /**
+     * Interpolate a simple expression, without any capture.
+     */
+    @Test
+    @Throws(Exception::class)
+    fun testExpressionTemplate() {
+        RestAssured.given().`when`()
+            .get("/greeting/world")
+            .then()
+            .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
+            .body(Matchers.equalToCompressingWhiteSpace("Hello world!")) // content type inferred from response file name
+            .contentType(ContentType.TEXT)
+    }
 }

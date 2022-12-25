@@ -50,7 +50,6 @@ The following environment variables are supported:
 | IMPOSTER_SCRIPT_CACHE_ENTRIES                 | The number of precompiled scripts to cache. Precompiled scripts execute faster, but the cache uses memory.                                | `20`                                        | `30`                                                                                            |
 | IMPOSTER_SCRIPT_PRECOMPILE                    | Whether to precompile scripts at startup.                                                                                                 | `true`                                      | boolean                                                                                         |
 | IMPOSTER_RESPONSE_FILE_CACHE_ENTRIES          | The number of response files to cache in memory. Cached response files don't require disk I/O, but the cache uses memory.                 | `20`                                        | `30`                                                                                            |
-| IMPOSTER_UNTRUSTED_RECURSIVE_TEMPLATES        | Whether to permit recursive templating of untrusted data. This is a security risk if untrusted/unsanitised data is templated recursively. | `false`                                     | Disabled by default.                                                                            |
 
 > Note: other features may include their own environment variables. See the feature specific documentation for more details.
 
