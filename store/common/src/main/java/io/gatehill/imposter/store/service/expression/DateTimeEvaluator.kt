@@ -59,6 +59,8 @@ import java.time.temporal.ChronoUnit
 object DateTimeEvaluator : ExpressionEvaluator<String> {
     private val LOGGER = LogManager.getLogger(DateTimeEvaluator::class.java)
 
+    override val name = "datetime"
+
     override fun eval(expression: String, httpExchange: HttpExchange): String? {
         try {
             val parts = expression.split(

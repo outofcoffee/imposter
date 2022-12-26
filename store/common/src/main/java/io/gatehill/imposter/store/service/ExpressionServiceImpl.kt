@@ -101,17 +101,18 @@ class ExpressionServiceImpl : ExpressionService {
         val root = expression.substringBefore(".").takeIf { it.isNotEmpty() }
         LOGGER.trace("Evaluating expression: {}", expression)
 
-        return root?.let {
-            // fallback to wildcard evaluator if no explicit match
-            val evaluator = evaluators[root] ?: evaluators["*"]
-            evaluator?.let {
-                LOGGER.trace("Using {} expression evaluator for expression: {}", evaluator::class.java.simpleName, expression)
-                evaluator.eval(expression, httpExchange)
+        // fallback to wildcard evaluator if no explicit match
+        val evaluator = evaluators[root] ?: evaluators["*"]
+        evaluator?.let {
+            LOGGER.trace("Using {} expression evaluator for expression: {}", evaluator.name, expression)
+            return evaluator.eval(expression, httpExchange) ?: run {
+                LOGGER.debug("Expression: {} evaluated to null", expression)
+                null
             }
-        } ?: run {
-            LOGGER.warn("Unsupported expression: $expression")
-            null
         }
+
+        LOGGER.warn("Unsupported expression: $expression")
+        return null
     }
 
     /**

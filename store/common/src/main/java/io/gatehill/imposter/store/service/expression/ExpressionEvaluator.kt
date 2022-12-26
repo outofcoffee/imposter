@@ -46,5 +46,7 @@ package io.gatehill.imposter.store.service.expression
 import io.gatehill.imposter.http.HttpExchange
 
 interface ExpressionEvaluator<T> {
+    val name: String
+
     fun eval(expression: String, httpExchange: HttpExchange): T?
 }

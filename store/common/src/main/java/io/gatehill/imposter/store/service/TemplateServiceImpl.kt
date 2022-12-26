@@ -47,10 +47,7 @@ import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
 import io.gatehill.imposter.lifecycle.EngineLifecycleListener
 import io.gatehill.imposter.store.factory.StoreFactory
 import io.gatehill.imposter.store.service.expression.StoreEvaluator
-import io.gatehill.imposter.store.util.StoreUtil
-import io.gatehill.imposter.util.ResourceUtil
 import io.vertx.core.buffer.Buffer
-import java.util.regex.Pattern
 import javax.inject.Inject
 
 /**
@@ -83,19 +80,8 @@ class TemplateServiceImpl @Inject constructor(
             return responseData
         }
 
-        val unmodified = responseData.toString(Charsets.UTF_8)
-
-        // shim for request scoped store
-        val uniqueRequestId = httpExchange.get<String>(ResourceUtil.RC_REQUEST_ID_KEY)!!
-        val shimmed = requestStorePrefixPattern
-            .matcher(unmodified)
-            .replaceAll("\\$\\{" + StoreUtil.buildRequestStoreName(uniqueRequestId) + ".")
-
-        val evaluated = expressionService.eval(shimmed, httpExchange, evaluators)
+        val original = responseData.toString(Charsets.UTF_8)
+        val evaluated = expressionService.eval(original, httpExchange, evaluators)
         return Buffer.buffer(evaluated)
-    }
-
-    companion object {
-        private val requestStorePrefixPattern = Pattern.compile("\\$\\{" + StoreUtil.REQUEST_SCOPED_STORE_NAME + "\\.")
     }
 }

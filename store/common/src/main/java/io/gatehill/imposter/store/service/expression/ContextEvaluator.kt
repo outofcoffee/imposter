@@ -56,6 +56,8 @@ import org.apache.logging.log4j.LogManager
 object ContextEvaluator : ExpressionEvaluator<String> {
     private val LOGGER = LogManager.getLogger(ContextEvaluator::class.java)
 
+    override val name = "context"
+
     override fun eval(expression: String, httpExchange: HttpExchange): String? {
         try {
             val parts = expression.split(

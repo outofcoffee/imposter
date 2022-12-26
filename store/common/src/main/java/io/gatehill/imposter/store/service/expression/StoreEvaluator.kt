@@ -45,6 +45,8 @@ package io.gatehill.imposter.store.service.expression
 
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.store.factory.StoreFactory
+import io.gatehill.imposter.store.util.StoreUtil
+import io.gatehill.imposter.util.ResourceUtil
 import org.apache.logging.log4j.LogManager
 
 /**
@@ -56,6 +58,8 @@ import org.apache.logging.log4j.LogManager
 class StoreEvaluator(
     private val storeFactory: StoreFactory,
 ) : ExpressionEvaluator<Any> {
+    override val name = "store"
+
     override fun eval(expression: String, httpExchange: HttpExchange): Any? {
         try {
             val parts = expression.split(
@@ -67,10 +71,18 @@ class StoreEvaluator(
                 LOGGER.warn("Could not parse store expression: $expression")
                 return ""
             }
+
             val storeName = parts[0]
             val itemKey = parts[1]
 
-            val store = storeFactory.getStoreByName(storeName, false)
+            val store = if (StoreUtil.isRequestScopedStore(storeName)) {
+                val uniqueRequestId = httpExchange.get<String>(ResourceUtil.RC_REQUEST_ID_KEY)!!
+                val requestStoreName = StoreUtil.buildRequestStoreName(uniqueRequestId)
+                storeFactory.getStoreByName(requestStoreName, true)
+            } else {
+                storeFactory.getStoreByName(storeName, false)
+            }
+
             val itemValue = store.load<Any>(itemKey)
             LOGGER.trace("Loaded value for key: {} in store: {} as: {}", itemKey, storeName, itemValue)
             return itemValue
