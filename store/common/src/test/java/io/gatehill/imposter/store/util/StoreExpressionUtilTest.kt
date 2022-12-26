@@ -1,4 +1,4 @@
-package io.gatehill.imposter.store.service
+package io.gatehill.imposter.store.util
 
 import io.gatehill.imposter.http.ExchangePhase
 import io.gatehill.imposter.http.HttpExchange
@@ -12,20 +12,12 @@ import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.number.OrderingComparison
 import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
-import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 
-class ExpressionServiceImplTest {
-    private lateinit var service: ExpressionServiceImpl
-
-    @Before
-    fun setUp() {
-        service = ExpressionServiceImpl()
-    }
-
+class StoreExpressionUtilTest {
     @Test
     fun `eval request header`() {
         val request = mock<HttpRequest> {
@@ -35,7 +27,7 @@ class ExpressionServiceImplTest {
             on { request() } doReturn request
         }
 
-        val result = service.eval(
+        val result = StoreExpressionUtil.eval(
             expression = "\${context.request.headers.Correlation-ID}",
             httpExchange = httpExchange,
         )
@@ -52,7 +44,7 @@ class ExpressionServiceImplTest {
             on { request() } doReturn httpRequest
         }
 
-        val result = service.eval(
+        val result = StoreExpressionUtil.eval(
             expression = "\${context.request.pathParams.userId}",
             httpExchange = httpExchange,
         )
@@ -69,7 +61,7 @@ class ExpressionServiceImplTest {
             on { request() } doReturn httpRequest
         }
 
-        val result = service.eval(
+        val result = StoreExpressionUtil.eval(
             expression = "\${context.request.queryParams.page}",
             httpExchange = httpExchange,
         )
@@ -86,7 +78,7 @@ class ExpressionServiceImplTest {
             on { request() } doReturn httpRequest
         }
 
-        val result = service.eval(
+        val result = StoreExpressionUtil.eval(
             expression = "\${context.request.body}",
             httpExchange = httpExchange,
         )
@@ -103,7 +95,7 @@ class ExpressionServiceImplTest {
             on { request() } doReturn httpRequest
         }
 
-        val result = service.eval(
+        val result = StoreExpressionUtil.eval(
             expression = "\${context.request.body:$.name}",
             httpExchange = httpExchange,
         )
@@ -120,7 +112,7 @@ class ExpressionServiceImplTest {
             on { request() } doReturn httpRequest
         }
 
-        val result = service.eval(
+        val result = StoreExpressionUtil.eval(
             expression = "\${context.request.pathParams.foo:-fallback}",
             httpExchange = httpExchange,
         )
@@ -138,7 +130,7 @@ class ExpressionServiceImplTest {
             on { response() } doReturn response
         }
 
-        val result = service.eval(
+        val result = StoreExpressionUtil.eval(
             expression = "\${context.response.body}",
             httpExchange = httpExchange,
         )
@@ -158,7 +150,7 @@ class ExpressionServiceImplTest {
             on { response() } doReturn response
         }
 
-        val result = service.eval(
+        val result = StoreExpressionUtil.eval(
             expression = "\${context.response.headers.X-Example}",
             httpExchange = httpExchange,
         )
@@ -179,7 +171,7 @@ class ExpressionServiceImplTest {
     private fun checkExceptionThrownForPhase(httpExchange: HttpExchange, expression: String) {
         var cause: Throwable? = null
         try {
-            service.eval(
+            StoreExpressionUtil.eval(
                 expression = expression,
                 httpExchange = httpExchange,
             )
@@ -204,7 +196,7 @@ class ExpressionServiceImplTest {
             on { request() } doReturn request
         }
 
-        val result = service.eval(
+        val result = StoreExpressionUtil.eval(
             expression = "\${context.request.headers.Correlation-ID}_\${context.request.headers.User-Agent}",
             httpExchange = httpExchange,
         )
@@ -216,19 +208,19 @@ class ExpressionServiceImplTest {
     fun `eval datetime`() {
         val httpExchange = mock<HttpExchange>()
 
-        val millis = service.eval(
+        val millis = StoreExpressionUtil.eval(
             expression = "\${datetime.now.millis}",
             httpExchange = httpExchange,
         )
         assertThat(millis.toLong(), OrderingComparison.lessThanOrEqualTo(System.currentTimeMillis()))
 
-        val nanos = service.eval(
+        val nanos = StoreExpressionUtil.eval(
             expression = "\${datetime.now.nanos}",
             httpExchange = httpExchange,
         )
         assertThat(nanos.toLong(), OrderingComparison.lessThanOrEqualTo(System.nanoTime()))
 
-        val iso8601Date = service.eval(
+        val iso8601Date = StoreExpressionUtil.eval(
             expression = "\${datetime.now.iso8601_date}",
             httpExchange = httpExchange,
         )
@@ -238,7 +230,7 @@ class ExpressionServiceImplTest {
             fail("Failed to parse ISO-8601 date: ${e.message}")
         }
 
-        val iso8601DateTime = service.eval(
+        val iso8601DateTime = StoreExpressionUtil.eval(
             expression = "\${datetime.now.iso8601_datetime}",
             httpExchange = httpExchange,
         )
@@ -253,7 +245,7 @@ class ExpressionServiceImplTest {
     fun `eval invalid expression`() {
         val httpExchange = mock<HttpExchange>()
 
-        val result = service.eval(
+        val result = StoreExpressionUtil.eval(
             expression = "\${invalid}",
             httpExchange = httpExchange,
         )

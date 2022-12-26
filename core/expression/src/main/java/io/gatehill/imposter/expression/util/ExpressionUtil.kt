@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2022.
  *
  * This file is part of Imposter.
  *
@@ -40,32 +40,54 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.store.service
+package io.gatehill.imposter.expression.util
 
-import io.gatehill.imposter.http.HttpExchange
-import io.gatehill.imposter.store.service.expression.ExpressionEvaluator
-import io.gatehill.imposter.util.BodyQueryUtil
+import io.gatehill.imposter.expression.JsonPathProvider
+import io.gatehill.imposter.expression.eval.ExpressionEvaluator
 import org.apache.logging.log4j.LogManager
 import java.util.regex.Pattern
 
 /**
- * Evaluates expressions against the [HttpExchange].
+ * Evaluates expressions against a context.
  *
  * @author Pete Cornish
  */
-class ExpressionServiceImpl : ExpressionService {
+object ExpressionUtil {
+    private val LOGGER = LogManager.getLogger(ExpressionUtil::class.java)
+
     /**
-     * {@inheritDoc}
+     * Matches instances of:
+     * ```
+     * ${something}
+     * ```
+     * ...with the group being the characters between brackets.
      */
-    override fun eval(expression: String, context: Map<String, Any>, evaluators: Map<String, ExpressionEvaluator<*>>?): String {
-        val finalEvaluators = evaluators ?: ExpressionService.builtin
+    private val expressionPattern = Pattern.compile("\\$\\{(.+?)}")
+
+    /**
+     * Evaluates an expression in the form:
+     * ```
+     * ${expression}
+     * ```
+     * or composite expressions such as:
+     * ```
+     * ${expression1}...${expression2}...
+     * ```
+     * If no expression is found, [expression] is returned.
+     */
+    fun eval(
+        expression: String,
+        evaluators: Map<String, ExpressionEvaluator<*>>,
+        context: Map<String, Any> = emptyMap(),
+        jsonPathProvider: JsonPathProvider? = null,
+    ): String {
         val matcher = expressionPattern.matcher(expression)
         var matched = false
         val sb = StringBuffer()
         while (matcher.find()) {
             matched = true
             val subExpression = matcher.group(1)
-            val result = evalSingle(subExpression, context, finalEvaluators) ?: ""
+            val result = evalSingle(subExpression, context, evaluators, jsonPathProvider) ?: ""
             matcher.appendReplacement(sb, result)
         }
         return if (matched) {
@@ -85,8 +107,9 @@ class ExpressionServiceImpl : ExpressionService {
     private fun evalSingle(
         expression: String,
         context: Map<String, *>,
-        evaluators: Map<String, ExpressionEvaluator<*>>
-    ): String? = loadAndQuery(expression) { itemKey ->
+        evaluators: Map<String, ExpressionEvaluator<*>>,
+        jsonPathProvider: JsonPathProvider?
+    ): String? = loadAndQuery(expression, jsonPathProvider) { itemKey ->
         evalSingleInternal(itemKey, context, evaluators)
     }
 
@@ -126,7 +149,7 @@ class ExpressionServiceImpl : ExpressionService {
      * @param rawItemKey the placeholder key
      * @param valueResolver the function to resolve the value, prior to any querying
      */
-    private fun <T : Any> loadAndQuery(rawItemKey: String, valueResolver: (key: String) -> T?): String? {
+    private fun <T : Any> loadAndQuery(rawItemKey: String, jsonPathProvider: JsonPathProvider?, valueResolver: (key: String) -> T?): String? {
         val itemKey: String
         var jsonPath: String? = null
         var fallbackValue: String? = null
@@ -144,33 +167,8 @@ class ExpressionServiceImpl : ExpressionService {
         }
 
         val resolvedValue = valueResolver(itemKey)?.let { itemValue ->
-            jsonPath?.let { queryWithJsonPath(itemValue, jsonPath) } ?: itemValue
+            jsonPath?.let { jsonPathProvider?.queryWithJsonPath(itemValue, jsonPath) } ?: itemValue
         }
         return resolvedValue?.toString() ?: fallbackValue
-    }
-
-    private fun <T : Any> queryWithJsonPath(rawValue: T, jsonPath: String?): T? {
-        LOGGER.trace("Evaluating JSONPath: {} on expression value: {}", jsonPath, rawValue)
-        val context = when (rawValue) {
-            // raw JSON will be parsed by the context
-            is String -> BodyQueryUtil.JSONPATH_PARSE_CONTEXT.parse(rawValue as String)
-
-            // assumes already deserialised
-            else -> BodyQueryUtil.JSONPATH_PARSE_CONTEXT.parse(rawValue)
-        }
-        return context.read(jsonPath)
-    }
-
-    companion object {
-        private val LOGGER = LogManager.getLogger(ExpressionServiceImpl::class.java)
-
-        /**
-         * Matches instances of:
-         * ```
-         * ${something}
-         * ```
-         * ...with the group being the characters between brackets.
-         */
-        private val expressionPattern = Pattern.compile("\\$\\{(.+?)}")
     }
 }

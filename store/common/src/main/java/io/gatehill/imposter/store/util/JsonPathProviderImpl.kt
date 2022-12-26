@@ -41,10 +41,30 @@
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.gatehill.imposter.store.service.expression
+package io.gatehill.imposter.store.util
 
-interface ExpressionEvaluator<T> {
-    val name: String
+import io.gatehill.imposter.expression.JsonPathProvider
+import io.gatehill.imposter.util.BodyQueryUtil
+import org.apache.logging.log4j.LogManager
 
-    fun eval(expression: String, context: Map<String, *>): T?
+/**
+ *
+ * @author pete
+ */
+class JsonPathProviderImpl : JsonPathProvider {
+    override fun <T : Any> queryWithJsonPath(rawValue: T, jsonPath: String?): T? {
+        LOGGER.trace("Evaluating JSONPath: {} on value of expression: {}", jsonPath, rawValue)
+        val context = when (rawValue) {
+            // raw JSON will be parsed by the context
+            is String -> BodyQueryUtil.JSONPATH_PARSE_CONTEXT.parse(rawValue as String)
+
+            // assumes already deserialised
+            else -> BodyQueryUtil.JSONPATH_PARSE_CONTEXT.parse(rawValue)
+        }
+        return context.read(jsonPath)
+    }
+
+    companion object {
+        private val LOGGER = LogManager.getLogger(JsonPathProviderImpl::class.java)
+    }
 }

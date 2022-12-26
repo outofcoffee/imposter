@@ -8,6 +8,7 @@ compileJava {
 
 dependencies {
     api project(':core:imposter-engine')
+    implementation project(':core:expression')
 
     // test
     testImplementation "junit:junit:$version_junit"

@@ -43,6 +43,7 @@
 
 package io.gatehill.imposter.store.service.expression
 
+import io.gatehill.imposter.expression.eval.ExpressionEvaluator
 import io.gatehill.imposter.http.HttpExchange
 
 abstract class HttpExpressionEvaluator<T> : ExpressionEvaluator<T> {

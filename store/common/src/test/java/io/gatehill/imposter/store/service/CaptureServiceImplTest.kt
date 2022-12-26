@@ -26,7 +26,6 @@ class CaptureServiceImplTest {
         val service = CaptureServiceImpl(
             storeFactory = storeFactory,
             engineLifecycle = EngineLifecycleHooks(),
-            expressionService = ExpressionServiceImpl(),
         )
 
         val request = mock<HttpRequest> {
@@ -58,7 +57,6 @@ class CaptureServiceImplTest {
         val service = CaptureServiceImpl(
             storeFactory = storeFactory,
             engineLifecycle = EngineLifecycleHooks(),
-            expressionService = ExpressionServiceImpl(),
         )
 
         val request = mock<HttpRequest>()
@@ -90,7 +88,6 @@ class CaptureServiceImplTest {
         val service = CaptureServiceImpl(
             storeFactory = storeFactory,
             engineLifecycle = EngineLifecycleHooks(),
-            expressionService = ExpressionServiceImpl(),
         )
 
         val request = mock<HttpRequest>()

@@ -47,6 +47,7 @@ import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
 import io.gatehill.imposter.lifecycle.EngineLifecycleListener
 import io.gatehill.imposter.store.factory.StoreFactory
 import io.gatehill.imposter.store.service.expression.StoreEvaluator
+import io.gatehill.imposter.store.util.StoreExpressionUtil
 import io.vertx.core.buffer.Buffer
 import javax.inject.Inject
 
@@ -57,13 +58,12 @@ import javax.inject.Inject
  */
 class TemplateServiceImpl @Inject constructor(
     storeFactory: StoreFactory,
-    private val expressionService: ExpressionService,
     engineLifecycle: EngineLifecycleHooks,
 ) : EngineLifecycleListener {
     /**
      * Add store evaluator as a wildcard.
      */
-    private val evaluators = ExpressionService.builtin + mapOf(
+    private val evaluators = StoreExpressionUtil.builtin + mapOf(
         "*" to StoreEvaluator(storeFactory),
     )
 
@@ -81,7 +81,7 @@ class TemplateServiceImpl @Inject constructor(
         }
 
         val original = responseData.toString(Charsets.UTF_8)
-        val evaluated = expressionService.eval(original, httpExchange, evaluators)
+        val evaluated = StoreExpressionUtil.eval(original, httpExchange, evaluators)
 
         // only rebuffer if changed
         return if (evaluated === original) responseData else Buffer.buffer(evaluated)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2022-2022.
  *
  * This file is part of Imposter.
  *
@@ -40,39 +40,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.store
 
-import com.google.inject.AbstractModule
-import com.google.inject.Singleton
-import io.gatehill.imposter.service.DeferredOperationService
-import io.gatehill.imposter.store.factory.DelegatingStoreFactoryImpl
-import io.gatehill.imposter.store.factory.StoreFactory
-import io.gatehill.imposter.store.service.CaptureServiceImpl
-import io.gatehill.imposter.store.service.StoreRestApiServiceImpl
-import io.gatehill.imposter.store.service.StoreService
-import io.gatehill.imposter.store.service.StoreServiceImpl
-import io.gatehill.imposter.store.service.TemplateServiceImpl
+package io.gatehill.imposter.expression.eval
 
-/**
- * @author Pete Cornish
- */
-class StoreModule : AbstractModule() {
-    override fun configure() {
-        bind(DeferredOperationService::class.java).`in`(Singleton::class.java)
-
-        // needs to be eager to register lifecycle listener
-        bind(StoreService::class.java).to(StoreServiceImpl::class.java).asEagerSingleton()
-
-        // needs to be eager to register lifecycle listener
-        bind(StoreRestApiServiceImpl::class.java).asEagerSingleton()
-
-        // needs to be eager to register lifecycle listener
-        bind(CaptureServiceImpl::class.java).asEagerSingleton()
-
-        // needs to be eager to register lifecycle listener
-        bind(TemplateServiceImpl::class.java).asEagerSingleton()
-
-        // determines driver
-        bind(StoreFactory::class.java).to(DelegatingStoreFactoryImpl::class.java).`in`(Singleton::class.java)
-    }
+interface ExpressionEvaluator<T> {
+    val name: String
+    fun eval(expression: String, context: Map<String, *>): T?
 }

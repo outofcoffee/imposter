@@ -53,6 +53,7 @@ import io.gatehill.imposter.plugin.config.capture.ItemCaptureConfig
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig
 import io.gatehill.imposter.store.core.Store
 import io.gatehill.imposter.store.factory.StoreFactory
+import io.gatehill.imposter.store.util.StoreExpressionUtil
 import io.gatehill.imposter.store.util.StoreUtil
 import io.gatehill.imposter.util.BodyQueryUtil
 import io.gatehill.imposter.util.ResourceUtil
@@ -67,7 +68,6 @@ import javax.inject.Inject
  */
 class CaptureServiceImpl @Inject constructor(
     private val storeFactory: StoreFactory,
-    private val expressionService: ExpressionService,
     engineLifecycle: EngineLifecycleHooks,
 ) : EngineLifecycleListener {
 
@@ -235,7 +235,7 @@ class CaptureServiceImpl @Inject constructor(
             ) as T?
 
         } else if (!Strings.isNullOrEmpty(captureConfig.expression)) {
-            expressionService.eval(captureConfig.expression!!, httpExchange) as T?
+            StoreExpressionUtil.eval(captureConfig.expression!!, httpExchange) as T?
 
         } else {
             null

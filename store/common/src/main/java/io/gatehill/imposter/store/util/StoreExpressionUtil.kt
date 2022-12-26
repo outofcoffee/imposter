@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2022.
  *
  * This file is part of Imposter.
  *
@@ -40,39 +40,33 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.store
+package io.gatehill.imposter.store.util
 
-import com.google.inject.AbstractModule
-import com.google.inject.Singleton
-import io.gatehill.imposter.service.DeferredOperationService
-import io.gatehill.imposter.store.factory.DelegatingStoreFactoryImpl
-import io.gatehill.imposter.store.factory.StoreFactory
-import io.gatehill.imposter.store.service.CaptureServiceImpl
-import io.gatehill.imposter.store.service.StoreRestApiServiceImpl
-import io.gatehill.imposter.store.service.StoreService
-import io.gatehill.imposter.store.service.StoreServiceImpl
-import io.gatehill.imposter.store.service.TemplateServiceImpl
+import io.gatehill.imposter.expression.eval.ExpressionEvaluator
+import io.gatehill.imposter.expression.util.ExpressionUtil
+import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.store.service.expression.ContextEvaluator
+import io.gatehill.imposter.store.service.expression.DateTimeEvaluator
+import io.gatehill.imposter.store.service.expression.HttpExpressionEvaluator
 
-/**
- * @author Pete Cornish
- */
-class StoreModule : AbstractModule() {
-    override fun configure() {
-        bind(DeferredOperationService::class.java).`in`(Singleton::class.java)
+object StoreExpressionUtil {
+    val builtin = mapOf(
+        "context" to ContextEvaluator,
+        "datetime" to DateTimeEvaluator,
+    )
 
-        // needs to be eager to register lifecycle listener
-        bind(StoreService::class.java).to(StoreServiceImpl::class.java).asEagerSingleton()
+    private val jsonPathProvider = JsonPathProviderImpl()
 
-        // needs to be eager to register lifecycle listener
-        bind(StoreRestApiServiceImpl::class.java).asEagerSingleton()
-
-        // needs to be eager to register lifecycle listener
-        bind(CaptureServiceImpl::class.java).asEagerSingleton()
-
-        // needs to be eager to register lifecycle listener
-        bind(TemplateServiceImpl::class.java).asEagerSingleton()
-
-        // determines driver
-        bind(StoreFactory::class.java).to(DelegatingStoreFactoryImpl::class.java).`in`(Singleton::class.java)
+    /**
+     * Convenience function that provides the [HttpExchange] in the context.
+     * @see ExpressionUtil.eval
+     */
+    fun eval(
+        expression: String,
+        httpExchange: HttpExchange,
+        evaluators: Map<String, ExpressionEvaluator<*>> = builtin,
+    ): String {
+        val context = mapOf(HttpExpressionEvaluator.HTTP_EXCHANGE_KEY to httpExchange)
+        return ExpressionUtil.eval(expression, evaluators, context, jsonPathProvider)
     }
 }
