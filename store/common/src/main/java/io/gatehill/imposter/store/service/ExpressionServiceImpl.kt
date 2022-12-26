@@ -57,7 +57,7 @@ class ExpressionServiceImpl : ExpressionService {
     /**
      * {@inheritDoc}
      */
-    override fun eval(expression: String, httpExchange: HttpExchange, evaluators: Map<String, ExpressionEvaluator<*>>?): String {
+    override fun eval(expression: String, context: Map<String, Any>, evaluators: Map<String, ExpressionEvaluator<*>>?): String {
         val finalEvaluators = evaluators ?: ExpressionService.builtin
         val matcher = expressionPattern.matcher(expression)
         var matched = false
@@ -65,7 +65,7 @@ class ExpressionServiceImpl : ExpressionService {
         while (matcher.find()) {
             matched = true
             val subExpression = matcher.group(1)
-            val result = evalSingle(subExpression, httpExchange, finalEvaluators) ?: ""
+            val result = evalSingle(subExpression, context, finalEvaluators) ?: ""
             matcher.appendReplacement(sb, result)
         }
         return if (matched) {
@@ -84,10 +84,10 @@ class ExpressionServiceImpl : ExpressionService {
      */
     private fun evalSingle(
         expression: String,
-        httpExchange: HttpExchange,
+        context: Map<String, *>,
         evaluators: Map<String, ExpressionEvaluator<*>>
     ): String? = loadAndQuery(expression) { itemKey ->
-        evalSingleInternal(itemKey, httpExchange, evaluators)
+        evalSingleInternal(itemKey, context, evaluators)
     }
 
     /**
@@ -95,7 +95,7 @@ class ExpressionServiceImpl : ExpressionService {
      */
     private fun evalSingleInternal(
         expression: String,
-        httpExchange: HttpExchange,
+        context: Map<String, *>,
         evaluators: Map<String, ExpressionEvaluator<*>>,
     ): Any? {
         val root = expression.substringBefore(".").takeIf { it.isNotEmpty() }
@@ -105,7 +105,7 @@ class ExpressionServiceImpl : ExpressionService {
         val evaluator = evaluators[root] ?: evaluators["*"]
         evaluator?.let {
             LOGGER.trace("Using {} expression evaluator for expression: {}", evaluator.name, expression)
-            return evaluator.eval(expression, httpExchange) ?: run {
+            return evaluator.eval(expression, context) ?: run {
                 LOGGER.debug("Expression: {} evaluated to null", expression)
                 null
             }

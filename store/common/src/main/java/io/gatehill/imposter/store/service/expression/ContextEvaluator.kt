@@ -44,7 +44,6 @@
 package io.gatehill.imposter.store.service.expression
 
 import io.gatehill.imposter.http.ExchangePhase
-import io.gatehill.imposter.http.HttpExchange
 import org.apache.logging.log4j.LogManager
 
 /**
@@ -53,18 +52,19 @@ import org.apache.logging.log4j.LogManager
  * context.a.b.c
  * ```
  */
-object ContextEvaluator : ExpressionEvaluator<String> {
+object ContextEvaluator : HttpExpressionEvaluator<String>() {
     private val LOGGER = LogManager.getLogger(ContextEvaluator::class.java)
 
     override val name = "context"
 
-    override fun eval(expression: String, httpExchange: HttpExchange): String? {
+    override fun eval(expression: String, context: Map<String, *>): String? {
         try {
             val parts = expression.split(
                 delimiters = arrayOf("."),
                 ignoreCase = false,
                 limit = 4,
             )
+            val httpExchange = getHttpExchange(context)
             val parsed: String? = when (parts[0]) {
                 "context" -> when (parts[1]) {
                     "request" -> {

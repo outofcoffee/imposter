@@ -43,56 +43,13 @@
 
 package io.gatehill.imposter.store.service.expression
 
-import io.gatehill.imposter.store.factory.StoreFactory
-import io.gatehill.imposter.store.util.StoreUtil
-import io.gatehill.imposter.util.ResourceUtil
-import org.apache.logging.log4j.LogManager
+import io.gatehill.imposter.http.HttpExchange
 
-/**
- * Evaluates a store expression in the form:
- * ```
- * storename.itemkey
- * ```
- */
-class StoreEvaluator(
-    private val storeFactory: StoreFactory,
-) : HttpExpressionEvaluator<Any>() {
-    override val name = "store"
-
-    override fun eval(expression: String, context: Map<String, *>): Any? {
-        try {
-            val parts = expression.split(
-                delimiters = arrayOf("."),
-                ignoreCase = false,
-                limit = 2,
-            )
-            if (parts.size < 2) {
-                LOGGER.warn("Could not parse store expression: $expression")
-                return ""
-            }
-
-            val storeName = parts[0]
-            val itemKey = parts[1]
-
-            val store = if (StoreUtil.isRequestScopedStore(storeName)) {
-                val httpExchange = getHttpExchange(context)
-                val uniqueRequestId = httpExchange.get<String>(ResourceUtil.RC_REQUEST_ID_KEY)!!
-                val requestStoreName = StoreUtil.buildRequestStoreName(uniqueRequestId)
-                storeFactory.getStoreByName(requestStoreName, true)
-            } else {
-                storeFactory.getStoreByName(storeName, false)
-            }
-
-            val itemValue = store.load<Any>(itemKey)
-            LOGGER.trace("Loaded value for key: {} in store: {} as: {}", itemKey, storeName, itemValue)
-            return itemValue
-
-        } catch (e: Exception) {
-            throw RuntimeException("Error replacing template placeholder '$expression' with store item", e)
-        }
-    }
+abstract class HttpExpressionEvaluator<T> : ExpressionEvaluator<T> {
+    protected fun getHttpExchange(context: Map<String, *>) = context[HTTP_EXCHANGE_KEY] as? HttpExchange
+        ?: throw RuntimeException("Missing HTTP exchange in context")
 
     companion object {
-        private val LOGGER = LogManager.getLogger(StoreEvaluator::class.java)
+        const val HTTP_EXCHANGE_KEY = "HttpExchange"
     }
 }

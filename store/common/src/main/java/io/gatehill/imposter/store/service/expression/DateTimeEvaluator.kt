@@ -43,7 +43,6 @@
 
 package io.gatehill.imposter.store.service.expression
 
-import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.util.DateTimeUtil
 import org.apache.logging.log4j.LogManager
 import java.time.LocalDateTime
@@ -61,7 +60,7 @@ object DateTimeEvaluator : ExpressionEvaluator<String> {
 
     override val name = "datetime"
 
-    override fun eval(expression: String, httpExchange: HttpExchange): String? {
+    override fun eval(expression: String, context: Map<String, *>): String? {
         try {
             val parts = expression.split(
                 delimiters = arrayOf("."),
