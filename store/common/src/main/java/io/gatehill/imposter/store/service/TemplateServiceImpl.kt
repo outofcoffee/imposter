@@ -82,6 +82,8 @@ class TemplateServiceImpl @Inject constructor(
 
         val original = responseData.toString(Charsets.UTF_8)
         val evaluated = expressionService.eval(original, httpExchange, evaluators)
-        return Buffer.buffer(evaluated)
+
+        // only rebuffer if changed
+        return if (evaluated === original) responseData else Buffer.buffer(evaluated)
     }
 }
