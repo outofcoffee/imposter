@@ -88,7 +88,7 @@ class ExpressionServiceImpl : ExpressionService {
         evaluators: Map<String, ExpressionEvaluator<*>>
     ): String? = loadAndQuery(expression) { itemKey ->
         evalSingleInternal(itemKey, httpExchange, evaluators)
-    }?.toString()
+    }
 
     /**
      * @see evalSingle
@@ -125,24 +125,27 @@ class ExpressionServiceImpl : ExpressionService {
      * @param rawItemKey the placeholder key
      * @param valueResolver the function to resolve the value, prior to any querying
      */
-    private fun <T : Any> loadAndQuery(rawItemKey: String, valueResolver: (key: String) -> T?): T? {
+    private fun <T : Any> loadAndQuery(rawItemKey: String, valueResolver: (key: String) -> T?): String? {
         val itemKey: String
-        val jsonPath: String?
+        var jsonPath: String? = null
+        var fallbackValue: String? = null
 
         // check for jsonpath expression
         val colonIndex = rawItemKey.indexOf(":")
         if (colonIndex > 0) {
-            jsonPath = rawItemKey.substring(colonIndex + 1)
+            when (rawItemKey[colonIndex + 1]) {
+                '$' -> jsonPath = rawItemKey.substring(colonIndex + 1)
+                '-' -> fallbackValue = rawItemKey.substring(colonIndex + 2)
+            }
             itemKey = rawItemKey.substring(0, colonIndex)
         } else {
             itemKey = rawItemKey
-            jsonPath = null
         }
 
-        val itemValue = valueResolver(itemKey)
-        return itemValue?.let {
+        val resolvedValue = valueResolver(itemKey)?.let { itemValue ->
             jsonPath?.let { queryWithJsonPath(itemValue, jsonPath) } ?: itemValue
         }
+        return resolvedValue?.toString() ?: fallbackValue
     }
 
     private fun <T : Any> queryWithJsonPath(rawValue: T, jsonPath: String?): T? {

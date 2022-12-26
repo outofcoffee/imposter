@@ -1,6 +1,5 @@
 package io.gatehill.imposter.store.service
 
-import com.jayway.jsonpath.internal.path.PathCompiler.fail
 import io.gatehill.imposter.http.ExchangePhase
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpRequest
@@ -12,6 +11,7 @@ import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.number.OrderingComparison
 import org.junit.Assert.assertEquals
+import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.doReturn
@@ -109,6 +109,23 @@ class ExpressionServiceImplTest {
         )
 
         assertThat(result, equalTo("Ada"))
+    }
+
+    @Test
+    fun `eval request path param with fallback`() {
+        val httpRequest = mock<HttpRequest> {
+            on { pathParam(eq("foo")) } doReturn null
+        }
+        val httpExchange = mock<HttpExchange> {
+            on { request() } doReturn httpRequest
+        }
+
+        val result = service.eval(
+            expression = "\${context.request.pathParams.foo:-fallback}",
+            httpExchange = httpExchange,
+        )
+
+        assertThat(result, equalTo("fallback"))
     }
 
     @Test

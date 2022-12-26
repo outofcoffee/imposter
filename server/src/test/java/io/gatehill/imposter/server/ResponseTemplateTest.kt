@@ -168,7 +168,21 @@ class ResponseTemplateTest : BaseVerticleTest() {
             .get("/greeting/world")
             .then()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
-            .body(Matchers.equalToCompressingWhiteSpace("Hello world!")) // content type inferred from response file name
+            .body(Matchers.equalToCompressingWhiteSpace("Hello world!"))
+            .contentType(ContentType.TEXT)
+    }
+
+    /**
+     * Fall back to a value when an expression resolves to null.
+     */
+    @Test
+    @Throws(Exception::class)
+    fun testFallbackExpression() {
+        RestAssured.given().`when`()
+            .get("/fallback")
+            .then()
+            .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
+            .body(Matchers.equalToCompressingWhiteSpace("fallback"))
             .contentType(ContentType.TEXT)
     }
 }

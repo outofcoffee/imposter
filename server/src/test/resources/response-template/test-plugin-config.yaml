@@ -43,3 +43,12 @@ resources:
     template: true
     headers:
       Content-Type: text/plain
+
+- method: GET
+  path: /fallback
+  # no capture configuration
+  response:
+    content: "${context.request.pathParams.nonexistent:-fallback}"
+    template: true
+    headers:
+      Content-Type: text/plain
