@@ -15,7 +15,6 @@ dependencies {
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$version_jackson"
 
     api "commons-io:commons-io:$version_commons_io"
-    api "org.apache.commons:commons-text:$version_commons_text"
 
     // test
     testImplementation "junit:junit:$version_junit"

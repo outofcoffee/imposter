@@ -44,14 +44,15 @@ package io.gatehill.imposter.config.util
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.config.expression.EnvEvaluator
 import io.gatehill.imposter.config.resolver.ConfigResolver
+import io.gatehill.imposter.expression.util.ExpressionUtil
 import io.gatehill.imposter.plugin.PluginManager
 import io.gatehill.imposter.plugin.config.PluginConfigImpl
 import io.gatehill.imposter.plugin.config.ResourcesHolder
 import io.gatehill.imposter.util.MapUtil
 import io.gatehill.imposter.util.ResourceUtil
 import org.apache.commons.io.FileUtils
-import org.apache.commons.text.StringSubstitutor
 import org.apache.logging.log4j.LogManager
 import java.io.File
 import java.io.IOException
@@ -77,7 +78,7 @@ object ConfigUtil {
     private val scanRecursiveConfig
         get() = EnvVars.getEnv("IMPOSTER_CONFIG_SCAN_RECURSIVE")?.toBoolean() == true
 
-    private var placeholderSubstitutor: StringSubstitutor? = null
+    private var envEvaluator: EnvEvaluator? = null
 
     private val defaultIgnoreList: List<String> by lazy {
         ConfigUtil::class.java.getResourceAsStream("/$IGNORE_FILE_NAME")?.use {
@@ -109,11 +110,7 @@ object ConfigUtil {
     }
 
     fun initInterpolators(environment: Map<String, String>) {
-        // prefix all environment vars with 'env.'
-        val environmentVars: Map<String, String> = environment.entries.associate { (key, value) ->
-            "env.$key" to value
-        }
-        placeholderSubstitutor = StringSubstitutor(environmentVars)
+        envEvaluator = EnvEvaluator(environment)
     }
 
     /**
@@ -236,7 +233,7 @@ object ConfigUtil {
         try {
             val rawContents = FileUtils.readFileToString(configFile, StandardCharsets.UTF_8)
             val parsedContents = if (substitutePlaceholders) {
-                placeholderSubstitutor!!.replace(rawContents)
+                ExpressionUtil.eval(rawContents, mapOf("env" to envEvaluator!!), nullifyUnsupported = false)
             } else {
                 rawContents
             }
