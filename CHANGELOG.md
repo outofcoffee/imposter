@@ -3,9 +3,17 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [3.5.0] - 2022-12-27
+## Added
+- feat: allows expressions to be used in response templates.
+- feat: adds support for expression fallback values.
+
 ## Changed
-- ...
+- feat: removes commons-text dependency in favour of expression util.
+- feat: only rebuffer template response if changed.
+- refactor: simplifies request scoped store handling in templates.
+- build(deps): bump aws-java-sdk-bom from 1.12.357 to 1.12.372 (#274)
+- build(deps): bump testcontainers from 1.17.3 to 1.17.6 (#266)
 
 ## [3.4.0] - 2022-12-23
 ## Added
@@ -14,8 +22,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - test: splits parser tests to support more combinations of WSDL1 and SOAP 1.1/1.2.
 
 ## Changed
-- build(deps): bump version_vertx from 4.3.5 to 4.3.6 (#267)
 - build(deps): bump version_jackson from 2.13.4 to 2.14.1 (#261)
+- build(deps): bump version_vertx from 4.3.5 to 4.3.6 (#267)
 - build(deps): bump xmlbeans from 5.1.0 to 5.1.1 (#260)
 
 ## [3.3.0] - 2022-12-08
@@ -31,30 +39,23 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [3.2.3] - 2022-12-03
 ## Changed
-- build(deps): jackson-databind to 2.13.4.2.
-- build(deps): bump version_groovy from 4.0.5 to 4.0.6
-- build(deps): bump localstack from 1.17.3 to 1.17.6
-- build(deps): bump maven-install-plugin in /examples/junit-sample
-- build(deps): bump byte-buddy-dep from 1.12.7 to 1.12.19
-- build(deps): bump jackson-databind in /examples/junit-sample
-- build(deps): bump mockito-core from 3.10.0 to 4.9.0
-- build(deps-dev): bump imposter.version in /examples/junit-sample (#240)
-- build(deps): bump redisson from 3.17.0 to 3.17.7 (#242)
-- build(deps): bump version_jackson from 2.13.3 to 2.13.4 (#226)
-- build(deps): bump version_graal from 22.2.0 to 22.2.0.1 (#232)
-- build(deps): bump aws-java-sdk-core from 1.12.309 to 1.12.325 (#239)
-- build(deps): bump rest-assured from 5.1.1 to 5.2.0 (#227)
-- build(deps): bump classgraph from 4.8.54 to 4.8.149 (#229)
 - build(deps): bump actions/setup-python from 4.2.0 to 4.3.0 (#228)
-- build(deps): bump jackson-databind in /examples/junit-sample (#231)
+- build(deps): bump aws-java-sdk-core from 1.12.205 to 1.12.325 (#218,#239)
 - build(deps): bump byte-buddy-agent from 1.12.10 to 1.12.17 (#217)
-- build(deps): bump version_vertx from 4.3.2 to 4.3.4 (#225)
-- build(deps): bump version_groovy from 4.0.4 to 4.0.5 (#224)
+- build(deps): bump byte-buddy-dep from 1.12.7 to 1.12.19
+- build(deps): bump classgraph from 4.8.54 to 4.8.149 (#229)
+- build(deps): bump localstack from 1.17.3 to 1.17.6
 - build(deps): bump micrometer-registry-prometheus from 1.9.2 to 1.9.4 (#219)
+- build(deps): bump mockito-core from 3.10.0 to 4.9.0
+- build(deps): bump redisson from 3.17.0 to 3.17.7 (#242)
+- build(deps): bump rest-assured from 5.1.1 to 5.2.0 (#227)
 - build(deps): bump s3mock-testcontainers from 2.4.10 to 2.8.0 (#223)
-- build(deps): bump aws-java-sdk-core from 1.12.205 to 1.12.309 (#218)
-- build(deps): bump maven-jar-plugin in /examples/junit-sample (#216)
 - build(deps): bump swagger-request-validator-core from 2.27.2 to 2.30.0 (#200)
+- build(deps): bump version_graal from 22.2.0 to 22.2.0.1 (#232)
+- build(deps): bump version_groovy from 4.0.4 to 4.0.6
+- build(deps): bump version_jackson from 2.13.3 to 2.13.4 (#226)
+- build(deps): bump version_vertx from 4.3.2 to 4.3.4 (#225)
+- build(deps): jackson-databind to 2.13.4.2.
 - refactor: fixes some deprecated method calls.
 
 ## Added
@@ -85,10 +86,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Changed
 - chore: bumps CLI to 0.21.0.
-- build(deps): bump jackson-databind in /examples/junit-sample (#208)
 - build(deps): bump actions/setup-python from 4.1.0 to 4.2.0 (#198)
-- build(deps-dev): bump imposter.version in /examples/junit-sample (#196)
-- build(deps): bump maven-site-plugin in /examples/junit-sample (#199)
 - build(deps): bump maven-project-info-reports-plugin (#203)
 
 ## [3.0.4] - 2022-08-01
@@ -131,10 +129,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Changed
 - build: removes package lock files from example projects.
-- build(deps): bump EnricoMi/publish-unit-test-result-action (#165)
-- build(deps): bump EnricoMi/publish-unit-test-result-action (#160)
 - build(deps): bump localstack from 1.16.3 to 1.17.2 (#153)
-- build(deps-dev): bump imposter.version in /examples/junit-sample (#155)
 - build(deps): bump byte-buddy-agent from 1.12.7 to 1.12.10 #152
 - build(deps): bump version_graal from 22.0.0.2 to 22.1.0.1 #150
 
@@ -218,10 +213,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - feat: adds engine lifecycle hook for startup errors.
 - feat: allows Lambda plugin discovery strategy to be set.
 - refactor: moves runtime context hook to script lifecycle.
-- build(deps): bump EnricoMi/publish-unit-test-result-action (#125)
 - build(deps): bump aws-java-sdk-core from 1.12.201 to 1.12.205 (#124)
 - build(deps): bump aws-java-sdk-bom from 1.12.191 to 1.12.205 (#126)
-- build(deps-dev): bump imposter.version in /examples/junit-sample (#127)
 
 ### Fixed
 - fix: sets version in Docker image for CLI consumption.
