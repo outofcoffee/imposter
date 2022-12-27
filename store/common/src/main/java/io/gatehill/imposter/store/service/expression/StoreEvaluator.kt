@@ -88,7 +88,7 @@ class StoreEvaluator(
             return itemValue
 
         } catch (e: Exception) {
-            throw RuntimeException("Error replacing template placeholder '$expression' with store item", e)
+            throw RuntimeException("Error replacing placeholder '$expression' with store item", e)
         }
     }
 

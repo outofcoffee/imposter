@@ -41,16 +41,36 @@
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.gatehill.imposter.expression.eval
+package io.gatehill.imposter.config.expression
 
-/**
- *
- * @author pete
- */
-class EnvVarEvaluator : ExpressionEvaluator<String> {
+import io.gatehill.imposter.config.util.EnvVars
+import io.gatehill.imposter.expression.eval.ExpressionEvaluator
+import org.apache.logging.log4j.LogManager
+
+class EnvEvaluator(
+    private val env: Map<String, String> = EnvVars.getEnv(),
+) : ExpressionEvaluator<String> {
     override val name = "env"
 
     override fun eval(expression: String, context: Map<String, *>): String? {
-        TODO("Not yet implemented")
+        try {
+            val parts = expression.split(
+                delimiters = arrayOf("."),
+                ignoreCase = false,
+                limit = 2,
+            )
+            if (parts.size < 2) {
+                LOGGER.warn("Could not parse environment expression: $expression")
+                return ""
+            }
+            return env[parts[1]]
+
+        } catch (e: Exception) {
+            throw RuntimeException("Error replacing placeholder '$expression' with environment variable", e)
+        }
+    }
+
+    companion object {
+        private val LOGGER = LogManager.getLogger(EnvEvaluator::class.java)
     }
 }

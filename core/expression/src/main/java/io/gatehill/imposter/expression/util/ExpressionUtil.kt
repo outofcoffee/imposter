@@ -80,6 +80,7 @@ object ExpressionUtil {
         evaluators: Map<String, ExpressionEvaluator<*>>,
         context: Map<String, Any> = emptyMap(),
         jsonPathProvider: JsonPathProvider? = null,
+        nullifyUnsupported: Boolean,
     ): String {
         val matcher = expressionPattern.matcher(expression)
         var matched = false
@@ -87,8 +88,9 @@ object ExpressionUtil {
         while (matcher.find()) {
             matched = true
             val subExpression = matcher.group(1)
-            val result = evalSingle(subExpression, context, evaluators, jsonPathProvider) ?: ""
+            val result = evalSingle(subExpression, evaluators, context, jsonPathProvider, nullifyUnsupported)
             matcher.appendReplacement(sb, result)
+            LOGGER.trace("{}={}", subExpression, result)
         }
         return if (matched) {
             matcher.appendTail(sb)
@@ -98,47 +100,56 @@ object ExpressionUtil {
         }
     }
 
-    /**
-     * Evaluates a single expression in the form `expression`
-     * or `expression:$.jp`, where `$.jp` is a valid JsonPath expression.
-     *
-     * Note: [expression] does not have the template syntax surrounding it.
-     */
     private fun evalSingle(
-        expression: String,
-        context: Map<String, *>,
+        subExpression: String,
         evaluators: Map<String, ExpressionEvaluator<*>>,
-        jsonPathProvider: JsonPathProvider?
-    ): String? = loadAndQuery(expression, jsonPathProvider) { itemKey ->
-        evalSingleInternal(itemKey, context, evaluators)
+        context: Map<String, Any>,
+        jsonPathProvider: JsonPathProvider?,
+        nullifyUnsupported: Boolean,
+    ): String? {
+        var result: String? = null
+
+        val evaluator = lookupEvaluator(subExpression, evaluators)
+        evaluator?.let {
+            result = loadAndQuery(subExpression, context, evaluator, jsonPathProvider) ?: ""
+
+        } ?: run {
+            if (nullifyUnsupported) {
+                LOGGER.warn("Unsupported expression: $subExpression")
+                result = ""
+            } else {
+                // don't replace; should ignore match
+                result = "\\\${$subExpression}"
+            }
+        }
+        return result
     }
 
-    /**
-     * @see evalSingle
-     */
-    private fun evalSingleInternal(
+    private fun lookupEvaluator(
         expression: String,
-        context: Map<String, *>,
         evaluators: Map<String, ExpressionEvaluator<*>>,
-    ): Any? {
+    ): ExpressionEvaluator<*>? {
         val root = expression.substringBefore(".").takeIf { it.isNotEmpty() }
         LOGGER.trace("Evaluating expression: {}", expression)
 
         // fallback to wildcard evaluator if no explicit match
         val evaluator = evaluators[root] ?: evaluators["*"]
-        evaluator?.let {
+        evaluator?.also {
             LOGGER.trace("Using {} expression evaluator for expression: {}", evaluator.name, expression)
-            return evaluator.eval(expression, context) ?: run {
-                LOGGER.debug("Expression: {} evaluated to null", expression)
-                null
+        } ?: run {
+            if (LOGGER.isTraceEnabled) {
+                LOGGER.trace("Unsupported expression: {}, evaluators: {}", expression, evaluators.keys)
             }
         }
-
-        LOGGER.warn("Unsupported expression: $expression")
-        return null
+        return evaluator
     }
 
     /**
+     * Evaluates a single expression in the form `expression`
+     * or `expression:$.jp`, where `$.jp` is a valid JsonPath expression.
+     *
+     * Note: [rawItemKey] does not have the template syntax surrounding it.
+     *
      * Loads a value for the specified key, optionally applying a JsonPath query
      * to the value.
      *
@@ -147,9 +158,14 @@ object ExpressionUtil {
      * `$.jp` is a valid JsonPath expression.
      *
      * @param rawItemKey the placeholder key
-     * @param valueResolver the function to resolve the value, prior to any querying
+     * @param evaluator the evaluator to provide the value, prior to any querying
      */
-    private fun <T : Any> loadAndQuery(rawItemKey: String, jsonPathProvider: JsonPathProvider?, valueResolver: (key: String) -> T?): String? {
+    private fun loadAndQuery(
+        rawItemKey: String,
+        context: Map<String, *>,
+        evaluator: ExpressionEvaluator<*>,
+        jsonPathProvider: JsonPathProvider?,
+    ): String? {
         val itemKey: String
         var jsonPath: String? = null
         var fallbackValue: String? = null
@@ -166,9 +182,13 @@ object ExpressionUtil {
             itemKey = rawItemKey
         }
 
-        val resolvedValue = valueResolver(itemKey)?.let { itemValue ->
+        val resolvedValue = evaluator.eval(itemKey, context)?.let { itemValue ->
             jsonPath?.let { jsonPathProvider?.queryWithJsonPath(itemValue, jsonPath) } ?: itemValue
+        } ?: run {
+            LOGGER.debug("Expression: {} evaluated to null", itemKey)
+            null
         }
+        LOGGER.trace("Resolved {} to value: {}, fallback: {}", itemKey, resolvedValue, fallbackValue)
         return resolvedValue?.toString() ?: fallbackValue
     }
 }

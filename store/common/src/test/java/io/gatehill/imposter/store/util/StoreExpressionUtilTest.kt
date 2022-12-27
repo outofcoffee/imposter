@@ -104,7 +104,7 @@ class StoreExpressionUtilTest {
     }
 
     @Test
-    fun `eval request path param with fallback`() {
+    fun `eval missing request path param with fallback`() {
         val httpRequest = mock<HttpRequest> {
             on { pathParam(eq("foo")) } doReturn null
         }

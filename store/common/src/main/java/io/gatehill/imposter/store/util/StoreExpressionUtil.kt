@@ -42,6 +42,7 @@
  */
 package io.gatehill.imposter.store.util
 
+import io.gatehill.imposter.config.expression.EnvEvaluator
 import io.gatehill.imposter.expression.eval.ExpressionEvaluator
 import io.gatehill.imposter.expression.util.ExpressionUtil
 import io.gatehill.imposter.http.HttpExchange
@@ -53,6 +54,7 @@ object StoreExpressionUtil {
     val builtin = mapOf(
         "context" to ContextEvaluator,
         "datetime" to DateTimeEvaluator,
+        "env" to EnvEvaluator(),
     )
 
     private val jsonPathProvider = JsonPathProviderImpl()
@@ -67,6 +69,6 @@ object StoreExpressionUtil {
         evaluators: Map<String, ExpressionEvaluator<*>> = builtin,
     ): String {
         val context = mapOf(HttpExpressionEvaluator.HTTP_EXCHANGE_KEY to httpExchange)
-        return ExpressionUtil.eval(expression, evaluators, context, jsonPathProvider)
+        return ExpressionUtil.eval(expression, evaluators, context, jsonPathProvider, nullifyUnsupported = true)
     }
 }
