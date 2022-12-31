@@ -161,7 +161,7 @@ object BodyQueryUtil {
      */
     private fun getRequestXmlDocument(httpExchange: HttpExchange, body: String?): Document {
         val xmlDocumentHolder =
-            httpExchange.getOrPut("request.xml.document", { AtomicReference<Document>() })
+            httpExchange.getOrPut("request.xml.document") { AtomicReference<Document>() }
 
         var xmlDocument = xmlDocumentHolder.get()
         if (null == xmlDocument) {
