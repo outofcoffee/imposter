@@ -48,10 +48,12 @@ import io.gatehill.imposter.plugin.PluginClassLoader
 import org.apache.logging.log4j.LogManager
 import java.io.File
 import java.net.URLClassLoader
-import java.util.Objects
 
 object ClassLoaderUtil {
     val pluginClassLoader: ClassLoader
+
+    private val pluginDirPath: String?
+        get() = EnvVars.getEnv("IMPOSTER_PLUGIN_DIR")?.trim()?.takeIf { it.isNotEmpty() }
 
     private val logger = LogManager.getLogger(ClassLoaderUtil::class.java)
     private const val pluginFileExtension = ".jar"
@@ -62,12 +64,10 @@ object ClassLoaderUtil {
     }
 
     private fun determineClassLoader(): ClassLoader {
-        val pluginDirPath = EnvVars.getEnv("IMPOSTER_PLUGIN_DIR")?.trim()?.takeIf(Objects::nonNull)
-
-        val jarUrls = pluginDirPath?.let {
-            val pluginDir = File(pluginDirPath).also {
+        val jarUrls = pluginDirPath?.let { dir ->
+            val pluginDir = File(dir).also {
                 if (!it.exists() || !it.isDirectory) {
-                    logger.warn("Path $pluginDirPath is not a valid directory")
+                    logger.warn("Path $dir is not a valid directory")
                     return@let null
                 }
             }
@@ -97,4 +97,6 @@ object ClassLoaderUtil {
     fun <T> loadClass(className: String): Class<T> {
         return pluginClassLoader.loadClass(className) as Class<T>
     }
+
+    fun describePluginPath(): String = pluginDirPath?.let { "$it or " } + "program classpath"
 }
