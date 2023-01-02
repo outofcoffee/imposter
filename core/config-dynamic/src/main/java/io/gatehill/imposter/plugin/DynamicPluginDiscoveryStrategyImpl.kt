@@ -132,6 +132,9 @@ class DynamicPluginDiscoveryStrategyImpl : PluginDiscoveryStrategy {
                 logger.warn("Skipped registering existing plugin: $pluginName with class: $pluginClassname")
                 return null
             }
+        } catch (e: ClassNotFoundException) {
+            logger.trace(e)
+            throw RuntimeException("Could not find the plugin: $pluginClassname - is it installed and on the plugin path (${ClassLoaderUtil.describePluginPath()})?")
         } catch (e: Exception) {
             throw RuntimeException("Failed to register plugin: $pluginClassname", e)
         }
