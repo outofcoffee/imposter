@@ -139,7 +139,7 @@ abstract class AbstractWsdlParser(
             // TODO should this be filtered on unqualified elements?
             xsd.documentTypes().find { it.documentElementName.localPart == localPart }?.documentElementName
 
-        logger.debug("Resolved element name $elementName to qualified type: $matchingTypeElement")
+        logger.trace("Resolved element name {} to qualified type: {}", elementName, matchingTypeElement)
         return matchingTypeElement
     }
 }
