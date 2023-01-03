@@ -3,9 +3,20 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [3.5.2] - 2023-01-03
 ## Added
-- ...
+- docs: adds example for SOAP request body matching with XPath.
+- docs: improves template store placeholder example.
+
+## Changed
+- build(deps): bump version_groovy from 4.0.6 to 4.0.7 (#276)
+- build(deps-dev): bump imposter.version in /examples/junit-sample (#280)
+- chore: bumps CLI to 0.24.1.
+
+## Fixed
+- fix: improves error message when plugin cannot be found.
+- fix(soap): quietens logging for XSD element resolution.
+- fix: removes environment evaluator from default list.
 
 ## [3.5.1] - 2023-01-01
 ## Fixed
@@ -21,7 +32,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Changed
 - feat: removes commons-text dependency in favour of expression util.
-- feat: only rebuffer template response if changed.
+- feat: only rebuffers template response if changed.
 - refactor: simplifies request scoped store handling in templates.
 - build(deps): bump aws-java-sdk-bom from 1.12.357 to 1.12.372 (#274)
 - build(deps): bump testcontainers from 1.17.3 to 1.17.6 (#266)
