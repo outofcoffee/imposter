@@ -46,6 +46,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.expression.EnvEvaluator
 import io.gatehill.imposter.config.resolver.ConfigResolver
+import io.gatehill.imposter.expression.eval.ExpressionEvaluator
 import io.gatehill.imposter.expression.util.ExpressionUtil
 import io.gatehill.imposter.plugin.PluginManager
 import io.gatehill.imposter.plugin.config.PluginConfigImpl
@@ -78,7 +79,7 @@ object ConfigUtil {
     private val scanRecursiveConfig
         get() = EnvVars.getEnv("IMPOSTER_CONFIG_SCAN_RECURSIVE")?.toBoolean() == true
 
-    private var envEvaluator: EnvEvaluator? = null
+    private var expressionEvaluators: Map<String, ExpressionEvaluator<*>> = emptyMap()
 
     private val defaultIgnoreList: List<String> by lazy {
         ConfigUtil::class.java.getResourceAsStream("/$IGNORE_FILE_NAME")?.use {
@@ -110,7 +111,8 @@ object ConfigUtil {
     }
 
     fun initInterpolators(environment: Map<String, String>) {
-        envEvaluator = EnvEvaluator(environment)
+        // reset the environment used by the expression evaluator
+        expressionEvaluators = mapOf("env" to EnvEvaluator(environment))
     }
 
     /**
@@ -233,7 +235,7 @@ object ConfigUtil {
         try {
             val rawContents = FileUtils.readFileToString(configFile, StandardCharsets.UTF_8)
             val parsedContents = if (substitutePlaceholders) {
-                ExpressionUtil.eval(rawContents, mapOf("env" to envEvaluator!!), nullifyUnsupported = false)
+                ExpressionUtil.eval(rawContents, expressionEvaluators, nullifyUnsupported = false)
             } else {
                 rawContents
             }
