@@ -40,14 +40,13 @@ resources:
 
 There are many placeholder types (see [placeholder types](#placeholder-types) section), including:
 
-- request path parameters, query parameters, headers, body
+- properties of the request, such as path parameters, query parameters, headers or body
 - date/time values, such as timestamps, epoc time in millis, nanos etc.
-- environment variables
-- data from [Stores](./stores.md)
+- data from [Stores](./stores.md), including data [captured](./data_capture.md) previously
 
 ## Placeholder types
 
-The following types of placeholder are supported.
+This section details the placeholder types.
 
 ### Request path parameters
 
@@ -151,7 +150,7 @@ Hello alice
 
 > Note: the use of curl's `--data` argument implies this is a `POST` request, with the value `alice` sent as the request body.
 
-### Datetime values
+### Date/time values
 
 Syntax: `datetime.now.[function]`
 
@@ -185,34 +184,25 @@ Valid date/time functions:
 | `datetime.now.millis`           | `${datetime.now.millis}`                   | `"1642688570140"`            |
 | `datetime.now.nanos`            | `${datetime.now.nanos}`                    | `"30225267785430"`           |
 
-## Configuration-driven templates
+### Items in a Store
 
-When you are using [configuration](./configuration.md) files to control mock behaviour, you can use the `template: true` property of the response object, as follows:
+You can use items from a [Store](./stores.md), including data [captured](./data_capture.md) previously, or set by a script.
 
-```yaml
-# part of your configuration file
+Syntax: `${STORE_NAME.ITEM_NAME}`
 
-resources:
-- path: /example
-  method: GET
-  response:
-    file: example-template.json
-    template: true
-```
-
-In this example, the template file ('example-template.json') might look like this:
+For example, a template file might look like this:
 
 ```
 {
-  "userName": "${testStore.user}"
+  "userName": "${testStore.person}"
 }
 ```
 
-Notice the placeholder: `${testStore.user}` - this refers to an item named 'user' in the store named 'testStore'.
+The placeholder `${testStore.person}` refers to an item named 'person' in the store named 'testStore'.
 
 > Learn more about [stores](./stores.md).
 
-A common pattern is to [capture](./data_capture.md) elements of the request into a store and use them in a templated response.
+---
 
 ## Script-driven templates
 
@@ -222,11 +212,9 @@ When you are using [scripting](./scripting.md) to control mock behaviour, you ca
 respond().withFile('example-template.json').template();
 ```
 
-As with the configuration-driven approach described above, your template includes placeholders referring to data items in a store.
+As with the configuration-driven approach described above, your template includes placeholders.
 
-> Learn more about [stores](./stores.md).
-
-A common pattern would be to retrieve items from a store using a script, or generate values dynamically and set them in the `request` store, for use by a template.
+A common pattern is to use a script to retrieve items from a store, or generate values dynamically and set them in a store, for use in a template.
 
 ## Using JsonPath in placeholders
 
