@@ -12,7 +12,7 @@ dependencies {
 
     // test
     testImplementation project(':test:test-utils')
-    testImplementation 'com.frejo:force-rest-api:0.0.44'
+    testImplementation 'com.frejo:force-rest-api:0.0.45'
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
