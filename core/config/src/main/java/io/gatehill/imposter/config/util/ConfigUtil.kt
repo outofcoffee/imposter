@@ -71,9 +71,9 @@ object ConfigUtil {
     private const val IGNORE_FILE_NAME = ".imposterignore"
 
     private val CONFIG_FILE_MAPPERS: Map<String, ObjectMapper> = mapOf(
-        ".json" to MapUtil.JSON_MAPPER,
-        ".yaml" to MapUtil.YAML_MAPPER,
-        ".yml" to MapUtil.YAML_MAPPER
+        "json" to MapUtil.JSON_MAPPER,
+        "yaml" to MapUtil.YAML_MAPPER,
+        "yml" to MapUtil.YAML_MAPPER
     )
 
     private val scanRecursiveConfig
@@ -90,18 +90,18 @@ object ConfigUtil {
         }
     }
 
-    val resolvers: Set<ConfigResolver>
+    val configResolvers: Set<ConfigResolver>
 
     init {
-        resolvers = registerResolvers()
+        configResolvers = registerResolvers()
         initInterpolators(EnvVars.getEnv())
     }
 
     private fun registerResolvers(): Set<ConfigResolver> {
-        val configResolvers = MetaUtil.readConfigResolverMetaFiles()
-        LOGGER.trace("Configuration resolvers: {}", configResolvers)
+        val resolvers = MetaUtil.readConfigResolverMetaFiles()
+        LOGGER.trace("Configuration resolvers: {}", resolvers)
 
-        return configResolvers.distinct().map { resolver ->
+        return resolvers.map { resolver ->
             try {
                 resolver.getDeclaredConstructor().newInstance()
             } catch (e: Exception) {
@@ -189,7 +189,7 @@ object ConfigUtil {
     fun listConfigFiles(configDir: File, scanRecursive: Boolean, exclusions: List<String>): List<File> {
         val configFiles = mutableListOf<File>()
 
-        configDir.listFiles()?.filterNot { exclusions.contains(it.name) }?.forEach { file ->
+        configDir.listFiles { _, filename -> !exclusions.contains(filename) }?.forEach { file ->
             if (isConfigFile(file.name)) {
                 configFiles += file
             } else {
@@ -204,16 +204,15 @@ object ConfigUtil {
     }
 
     private fun resolveToLocal(rawConfigDirs: Array<String>): List<File> {
-        return rawConfigDirs.map { rawDir ->
-            val resolver = resolvers.firstOrNull { it.handles(rawDir) }
-                ?: throw IllegalStateException("No config resolver can handle path: $rawDir")
-
-            return@map resolver.resolve(rawDir)
+        return rawConfigDirs.flatMap { rawDir ->
+            val resolvers = configResolvers.filter { it.handles(rawDir) }
+            if (resolvers.isEmpty()) throw IllegalStateException("No config resolver can handle path: $rawDir")
+            return@flatMap resolvers.map { it.resolve(rawDir) }
         }
     }
 
     private fun isConfigFile(name: String): Boolean {
-        return CONFIG_FILE_MAPPERS.keys.any { extension -> name.endsWith(CONFIG_FILE_SUFFIX + extension) }
+        return CONFIG_FILE_MAPPERS.keys.any { extension -> name.endsWith("$CONFIG_FILE_SUFFIX.$extension") }
     }
 
     /**
@@ -268,8 +267,8 @@ object ConfigUtil {
      * @param configFile the configuration file
      * @return the mapper
      */
-    private fun lookupMapper(configFile: File?): ObjectMapper {
-        val extension = configFile!!.name.substring(configFile.name.lastIndexOf("."))
+    private fun lookupMapper(configFile: File): ObjectMapper {
+        val extension = configFile.name.substringAfterLast(".")
         return CONFIG_FILE_MAPPERS[extension]
             ?: throw IllegalStateException("Unable to locate mapper for config file: $configFile")
     }
