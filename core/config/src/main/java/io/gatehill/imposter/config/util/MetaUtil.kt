@@ -104,13 +104,7 @@ object MetaUtil {
     private fun readMetaDefaultProperties(): Properties {
         return defaultProperties ?: Properties().apply {
             try {
-                for (metaFile in classLoader.getResources(METADATA_DEFAULT_PROPERTIES)) {
-                    metaFile.openStream().use { properties ->
-                        if (!Objects.isNull(properties)) {
-                            load(properties)
-                        }
-                    }
-                }
+                readMetaFiles(METADATA_DEFAULT_PROPERTIES, this)
             } catch (e: IOException) {
                 LOGGER.warn("Error reading metadata properties from {} - continuing", METADATA_DEFAULT_PROPERTIES, e)
             }
@@ -125,14 +119,9 @@ object MetaUtil {
     private fun readPluginMetaFiles(): Map<String, PluginMetadata> {
         val metaPlugins = mutableMapOf<String, PluginMetadata>()
         try {
-            for (metaFile in classLoader.getResources(METADATA_PLUGIN_PROPERTIES)) {
-                metaFile.openStream().use { properties ->
-                    properties?.let {
-                        val plugin = Properties().apply { load(properties) }
-                        val meta = PluginMetadata.parse(plugin)
-                        metaPlugins[meta.name] = meta
-                    }
-                }
+            readMetaFiles(METADATA_PLUGIN_PROPERTIES) { props ->
+                val meta = PluginMetadata.parse(props)
+                metaPlugins[meta.name] = meta
             }
         } catch (e: IOException) {
             LOGGER.warn("Error reading plugin metadata from {} - continuing", METADATA_DEFAULT_PROPERTIES, e)
@@ -149,14 +138,9 @@ object MetaUtil {
     fun readConfigResolverMetaFiles(): List<Class<ConfigResolver>> {
         val resolvers = mutableListOf<Class<ConfigResolver>>()
         try {
-            for (metaFile in classLoader.getResources(METADATA_RESOLVER_PROPERTIES)) {
-                metaFile.openStream().use { properties ->
-                    properties?.let {
-                        val props = Properties().apply { load(properties) }
-                        val resolverClass = props["class"] as String
-                        resolvers += ClassLoaderUtil.loadClass(resolverClass)
-                    }
-                }
+            readMetaFiles(METADATA_RESOLVER_PROPERTIES) { props ->
+                val resolverClass = props["class"] as String
+                resolvers += ClassLoaderUtil.loadClass(resolverClass)
             }
         } catch (e: IOException) {
             LOGGER.warn("Error reading config resolvers metadata from {} - continuing", METADATA_RESOLVER_PROPERTIES, e)
@@ -164,6 +148,21 @@ object MetaUtil {
 
         LOGGER.trace("Read {} config resolvers from metadata: {}", resolvers.size, resolvers)
         return resolvers.distinct()
+    }
+
+    private fun readMetaFiles(
+        fileName: String,
+        props: Properties = Properties(),
+        handler: ((Properties) -> Unit)? = null
+    ) {
+        for (metaFile in classLoader.getResources(fileName)) {
+            metaFile.openStream().use { properties ->
+                properties?.let {
+                    props.load(properties)
+                    handler?.invoke(props)
+                }
+            }
+        }
     }
 
     private val classLoader: ClassLoader
