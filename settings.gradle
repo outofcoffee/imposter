@@ -7,10 +7,8 @@ include ':core:api'
 project(':core:api').name = 'imposter-api'
 
 include ':core:config'
-project(':core:config').name = 'config'
-
 include ':core:config-dynamic'
-project(':core:config-dynamic').name = 'config-dynamic'
+include ':core:config-resolver-s3'
 
 include ':core:engine'
 project(':core:engine').name = 'imposter-engine'
@@ -20,9 +18,6 @@ include ':core:expression'
 include ':core:http'
 
 include ':core:plugin-detector'
-
-include ':core:config-s3resolver'
-project(':core:config-s3resolver').name = 'config-s3resolver'
 
 include ':server'
 project(':server').name = 'imposter-server'
