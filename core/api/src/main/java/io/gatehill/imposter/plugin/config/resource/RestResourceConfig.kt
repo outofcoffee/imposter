@@ -56,7 +56,7 @@ open class RestResourceConfig : AbstractResourceConfig(), MethodResourceConfig, 
     RequestBodyResourceConfig {
 
     @JsonProperty("method")
-    override val method: HttpMethod? = null
+    override var method: HttpMethod? = null
 
     @JsonProperty("pathParams")
     override val pathParams: Map<String, String>? = null
@@ -66,7 +66,7 @@ open class RestResourceConfig : AbstractResourceConfig(), MethodResourceConfig, 
     override val queryParams: Map<String, String>? = null
 
     @JsonProperty("requestHeaders")
-    override val requestHeaders: Map<String, String>? = null
+    override var requestHeaders: Map<String, String>? = null
 
     @JsonProperty("requestBody")
     override val requestBody: RequestBodyConfig? = null

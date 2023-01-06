@@ -59,7 +59,7 @@ open class ResponseConfig {
     var content: String? = null
 
     @JsonProperty("template")
-    var isTemplate = false
+    var isTemplate: Boolean? = null
 
     @JsonProperty("scriptFile")
     var scriptFile: String? = null

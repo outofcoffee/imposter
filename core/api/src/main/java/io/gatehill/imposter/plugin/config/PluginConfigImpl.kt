@@ -58,7 +58,7 @@ import java.io.File
 @JsonIgnoreProperties(ignoreUnknown = true)
 open class PluginConfigImpl : AbstractResourceConfig(), SystemConfigHolder, PluginConfig {
     @JsonProperty("plugin")
-    override val plugin: String? = null
+    override var plugin: String? = null
 
     @JsonProperty("system")
     override val systemConfig: SystemConfig? = null

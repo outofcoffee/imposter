@@ -72,7 +72,7 @@ open class DefaultResponseBehaviourFactory protected constructor() : ResponseBeh
         if (Strings.isNullOrEmpty(responseBehaviour.content)) {
             responseBehaviour.withContent(responseConfig.content)
         }
-        if (responseConfig.isTemplate) {
+        if (responseConfig.isTemplate == true) {
             responseBehaviour.template()
         }
         if (Objects.isNull(responseBehaviour.performanceSimulation)) {

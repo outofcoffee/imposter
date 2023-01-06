@@ -59,7 +59,7 @@ class RestPluginConfig : PluginConfigImpl(), MethodResourceConfig,
         protected set
 
     @JsonProperty("resources")
-    override val resources: List<RestPluginResourceConfig>? = null
+    override var resources: List<RestPluginResourceConfig>? = null
 
     @JsonProperty("method")
     override val method: HttpMethod? = null
