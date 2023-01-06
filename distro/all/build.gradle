@@ -25,6 +25,7 @@ dependencies {
 
     // config resolvers
     implementation project (':core:config-resolver-s3')
+    implementation project (':core:config-resolver-wiremock')
 }
 
 mainClassName = 'io.gatehill.imposter.cmd.ImposterLauncher'
