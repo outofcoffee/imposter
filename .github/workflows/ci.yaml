@@ -93,14 +93,15 @@ jobs:
             const script = require('./.github/github-release.js')
             await script({github, context}, [
               'main',
+              './core/config-resolver-wiremock/build/distributions/imposter-plugin-wiremock.jar',
               './distro/awslambda/build/distributions/imposter-awslambda.zip',
               './mock/hbase/build/libs/imposter-plugin-mock-hbase.jar',
               './mock/sfdc/build/libs/imposter-plugin-mock-sfdc.jar',
               './mock/soap/build/libs/imposter-plugin-mock-soap.jar',
               './scripting/nashorn-standalone/build/libs/imposter-plugin-js-nashorn-standalone.jar',
               './store/dynamodb/build/libs/imposter-plugin-store-dynamodb.jar',
-              './store/redis/build/libs/imposter-plugin-store-redis.jar',
               './store/graphql/build/libs/imposter-plugin-store-graphql.jar',
+              './store/redis/build/libs/imposter-plugin-store-redis.jar',
             ])
 
       - name: Publish Java Maven artifacts
