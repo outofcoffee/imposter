@@ -22,6 +22,9 @@ dependencies {
     implementation project (':store:store-dynamodb')
     implementation project (':store:store-redis')
     implementation project (':store:store-graphql')
+
+    // config resolvers
+    implementation project (':core:config-resolver-s3')
 }
 
 mainClassName = 'io.gatehill.imposter.cmd.ImposterLauncher'
