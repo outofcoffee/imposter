@@ -9,6 +9,7 @@ project(':core:api').name = 'imposter-api'
 include ':core:config'
 include ':core:config-dynamic'
 include ':core:config-resolver-s3'
+include ':core:config-resolver-wiremock'
 
 include ':core:engine'
 project(':core:engine').name = 'imposter-engine'
