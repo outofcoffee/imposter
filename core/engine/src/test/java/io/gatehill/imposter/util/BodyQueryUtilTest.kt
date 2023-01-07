@@ -48,10 +48,12 @@ import io.gatehill.imposter.http.HttpRequest
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.equalTo
 import org.jdom2.Document
+import org.jdom2.input.SAXBuilder
 import org.junit.Test
 import org.mockito.Mockito.anyString
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import java.io.StringReader
 import java.util.concurrent.atomic.AtomicReference
 
 /**
@@ -59,7 +61,7 @@ import java.util.concurrent.atomic.AtomicReference
  */
 class BodyQueryUtilTest {
     @Test
-    fun queryRequestBodyXPath() {
+    fun `query request body using XPath`() {
         val body = """<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope">
   <env:Header/>
   <env:Body>
@@ -84,6 +86,23 @@ class BodyQueryUtilTest {
         val xPath = "/env:Envelope/env:Body/pets:getPetByIdRequest/pets:id"
 
         val result = BodyQueryUtil.queryRequestBodyXPath(xPath, namespaces, exchange)
+        assertThat(result, equalTo("10"))
+    }
+
+    @Test
+    fun `query document with non-namespaced XPath`() {
+        val body = """<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope">
+  <env:Header/>
+  <env:Body>
+    <getPetByIdRequest>
+      <id>10</id>
+    </getPetByIdRequest>
+  </env:Body>
+</env:Envelope>"""
+
+        val document = SAXBuilder().build(StringReader(body))
+        val xPath = "//id"
+        val result = BodyQueryUtil.selectSingleNode(document, xPath, emptyList())?.value
         assertThat(result, equalTo("10"))
     }
 }
