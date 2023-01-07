@@ -42,7 +42,7 @@
  */
 package io.gatehill.imposter.expression.util
 
-import io.gatehill.imposter.expression.JsonPathProvider
+import io.gatehill.imposter.expression.QueryProvider
 import io.gatehill.imposter.expression.eval.ExpressionEvaluator
 import org.apache.logging.log4j.LogManager
 import java.util.regex.Pattern
@@ -79,7 +79,7 @@ object ExpressionUtil {
         expression: String,
         evaluators: Map<String, ExpressionEvaluator<*>>,
         context: Map<String, Any> = emptyMap(),
-        jsonPathProvider: JsonPathProvider? = null,
+        queryProvider: QueryProvider? = null,
         nullifyUnsupported: Boolean,
     ): String {
         val matcher = expressionPattern.matcher(expression)
@@ -88,7 +88,7 @@ object ExpressionUtil {
         while (matcher.find()) {
             matched = true
             val subExpression = matcher.group(1)
-            val result = evalSingle(subExpression, evaluators, context, jsonPathProvider, nullifyUnsupported)
+            val result = evalSingle(subExpression, evaluators, context, queryProvider, nullifyUnsupported)
             matcher.appendReplacement(sb, result)
             LOGGER.trace("{}={}", subExpression, result)
         }
@@ -104,14 +104,14 @@ object ExpressionUtil {
         subExpression: String,
         evaluators: Map<String, ExpressionEvaluator<*>>,
         context: Map<String, Any>,
-        jsonPathProvider: JsonPathProvider?,
+        queryProvider: QueryProvider?,
         nullifyUnsupported: Boolean,
     ): String? {
         var result: String? = null
 
         val evaluator = lookupEvaluator(subExpression, evaluators)
         evaluator?.let {
-            result = loadAndQuery(subExpression, context, evaluator, jsonPathProvider) ?: ""
+            result = loadAndQuery(subExpression, context, evaluator, queryProvider) ?: ""
 
         } ?: run {
             if (nullifyUnsupported) {
@@ -164,10 +164,11 @@ object ExpressionUtil {
         rawItemKey: String,
         context: Map<String, *>,
         evaluator: ExpressionEvaluator<*>,
-        jsonPathProvider: JsonPathProvider?,
+        queryProvider: QueryProvider?,
     ): String? {
         val itemKey: String
         var jsonPath: String? = null
+        var xPath: String? = null
         var fallbackValue: String? = null
 
         // check for jsonpath expression
@@ -175,6 +176,7 @@ object ExpressionUtil {
         if (colonIndex > 0) {
             when (rawItemKey[colonIndex + 1]) {
                 '$' -> jsonPath = rawItemKey.substring(colonIndex + 1)
+                '/' -> xPath = rawItemKey.substring(colonIndex + 1)
                 '-' -> fallbackValue = rawItemKey.substring(colonIndex + 2)
             }
             itemKey = rawItemKey.substring(0, colonIndex)
@@ -183,7 +185,10 @@ object ExpressionUtil {
         }
 
         val resolvedValue = evaluator.eval(itemKey, context)?.let { itemValue ->
-            jsonPath?.let { jsonPathProvider?.queryWithJsonPath(itemValue, jsonPath) } ?: itemValue
+            jsonPath?.let { queryProvider?.queryWithJsonPath(itemValue, jsonPath) } 
+                ?: xPath?.let { queryProvider?.queryWithXPath(itemValue, xPath) }
+                ?: itemValue
+            
         } ?: run {
             LOGGER.debug("Expression: {} evaluated to null", itemKey)
             null

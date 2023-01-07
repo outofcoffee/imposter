@@ -55,7 +55,7 @@ object StoreExpressionUtil {
         "datetime" to DateTimeEvaluator,
     )
 
-    private val jsonPathProvider = JsonPathProviderImpl()
+    private val queryProvider = QueryProviderImpl()
 
     /**
      * Convenience function that provides the [HttpExchange] in the context.
@@ -67,6 +67,6 @@ object StoreExpressionUtil {
         evaluators: Map<String, ExpressionEvaluator<*>> = builtin,
     ): String {
         val context = mapOf(HttpExpressionEvaluator.HTTP_EXCHANGE_KEY to httpExchange)
-        return ExpressionUtil.eval(expression, evaluators, context, jsonPathProvider, nullifyUnsupported = true)
+        return ExpressionUtil.eval(expression, evaluators, context, queryProvider, nullifyUnsupported = true)
     }
 }

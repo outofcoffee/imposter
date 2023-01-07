@@ -43,17 +43,15 @@
 
 package io.gatehill.imposter.store.util
 
-import io.gatehill.imposter.expression.JsonPathProvider
+import io.gatehill.imposter.expression.QueryProvider
 import io.gatehill.imposter.util.BodyQueryUtil
 import org.apache.logging.log4j.LogManager
+import org.jdom2.input.SAXBuilder
+import java.io.StringReader
 
-/**
- *
- * @author pete
- */
-class JsonPathProviderImpl : JsonPathProvider {
-    override fun <T : Any> queryWithJsonPath(rawValue: T, jsonPath: String?): T? {
-        LOGGER.trace("Evaluating JSONPath: {} on value of expression: {}", jsonPath, rawValue)
+class QueryProviderImpl : QueryProvider {
+    override fun queryWithJsonPath(rawValue: Any, jsonPath: String): String? {
+        LOGGER.trace("Evaluating JsonPath: {} on value of expression: {}", jsonPath, rawValue)
         val context = when (rawValue) {
             // raw JSON will be parsed by the context
             is String -> BodyQueryUtil.JSONPATH_PARSE_CONTEXT.parse(rawValue as String)
@@ -64,7 +62,19 @@ class JsonPathProviderImpl : JsonPathProvider {
         return context.read(jsonPath)
     }
 
+    override fun queryWithXPath(rawValue: Any, xPath: String): String? {
+        LOGGER.trace("Evaluating XPath: {} on value of expression: {}", xPath, rawValue)
+        val document: Any = when (rawValue) {
+            // raw XML
+            is String -> SAXBuilder().build(StringReader(rawValue))
+
+            // assumes already a document/element/node etc.
+            else -> rawValue
+        }
+        return BodyQueryUtil.selectSingleNode(document, xPath, emptyList())?.value
+    }
+
     companion object {
-        private val LOGGER = LogManager.getLogger(JsonPathProviderImpl::class.java)
+        private val LOGGER = LogManager.getLogger(QueryProviderImpl::class.java)
     }
 }

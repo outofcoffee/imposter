@@ -43,6 +43,7 @@
 
 package io.gatehill.imposter.expression
 
-interface JsonPathProvider {
-    fun <T : Any> queryWithJsonPath(rawValue: T, jsonPath: String?): T?
+interface QueryProvider {
+    fun queryWithJsonPath(rawValue: Any, jsonPath: String): String?
+    fun queryWithXPath(rawValue: Any, xPath: String): String?
 }
