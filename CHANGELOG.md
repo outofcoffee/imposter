@@ -3,9 +3,14 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [3.6.0] - 2023-01-07
+## Added
+- feat: adds XPath query support to expressions.
+- feat(lambda): loads additional plugins and modules via environment variables.
+
 ## Changed
-- ...
+- test: improves coverage for XPath utils.
+- feat: allows multiple config resolvers to handle a single path.
 
 ## [3.5.2] - 2023-01-03
 ## Added
@@ -14,7 +19,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Changed
 - build(deps): bump version_groovy from 4.0.6 to 4.0.7 (#276)
-- build(deps-dev): bump imposter.version in /examples/junit-sample (#280)
 - chore: bumps CLI to 0.24.1.
 
 ## Fixed
@@ -138,7 +142,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - build(deps): bump micrometer-registry-prometheus from 1.6.7 to 1.9.2 (#169)
 - build(deps): bump nashorn-core from 15.3 to 15.4 (#175)
 - build(deps): bump version_coroutines from 1.6.2 to 1.6.4 (#176)
-- build(deps): bumps deps in JUnit sample
 - build: removes unused jcenter repo.
 - build: moves restassured dependency and associated constraints to module.
 - chore: bumps groovy to 4.0.4.
@@ -281,7 +284,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - chore: bumps CLI to 0.12.6.
 - chore: bumps jackson-databind to 2.13.2.2.
 - chore: bumps JUnit to 2.13.1.
-- docs: bumps Imposter version in JUnit sample.
 
 ## [2.11.1] - 2022-03-22
 ### Fixed
