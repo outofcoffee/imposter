@@ -52,7 +52,6 @@ object Settings {
     val configDir: String? by lazy {
         EnvVars.getEnv("IMPOSTER_CONFIG_DIR")
     }
-
     /**
      * FQCN of [io.gatehill.imposter.plugin.PluginDiscoveryStrategy] implementation.
      */
@@ -68,4 +67,23 @@ object Settings {
     val metaInfScan: Boolean by lazy {
         EnvVars.getEnv("IMPOSTER_METAINF_SCAN")?.toBoolean() ?: false
     }
+
+    /**
+     * Example:
+     *
+     *     plugin1=io.gatehill.imposter.plugin.Plugin1,plugin2=io.gatehill.imposter.plugin.Plugin2
+     */
+    val additionalPlugins: Map<String, String>? get() =
+        EnvVars.getEnv("IMPOSTER_STATIC_PLUGINS")?.split(",")?.map {
+            val entry = it.split("=")
+            return@map entry[0].trim() to entry[1].trim()
+        }?.toMap()
+
+    /**
+     * Example:
+     *
+     *     io.gatehill.imposter.plugin.Module1,io.gatehill.imposter.plugin.Module2
+     */
+    val additionalModules: List<String>? get() =
+        EnvVars.getEnv("IMPOSTER_STATIC_MODULES")?.split(",")?.map { it.trim() }
 }
