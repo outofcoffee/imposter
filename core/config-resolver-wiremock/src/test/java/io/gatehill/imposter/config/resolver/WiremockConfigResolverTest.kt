@@ -55,10 +55,10 @@ import java.io.File
  */
 class WiremockConfigResolverTest {
     private val configResolver = WiremockConfigResolver()
-    private val mappingsDir = File(WiremockConfigResolverTest::class.java.getResource("/wiremock")!!.toURI())
 
     @Test
     fun `can handle dir containing wiremock mappings`() {
+        val mappingsDir = File(WiremockConfigResolverTest::class.java.getResource("/wiremock-simple")!!.toURI())
         assertTrue("Should handle wiremock mappings dir", configResolver.handles(mappingsDir.absolutePath))
 
         val configDir = File(WiremockConfigResolverTest::class.java.getResource("/config")!!.toURI())
@@ -66,7 +66,9 @@ class WiremockConfigResolverTest {
     }
 
     @Test
-    fun `can convert wiremock mappings to imposter config`() {
+    fun `can convert simple wiremock mappings`() {
+        val mappingsDir = File(WiremockConfigResolverTest::class.java.getResource("/wiremock-simple")!!.toURI())
+
         val configDir = configResolver.resolve(mappingsDir.absolutePath)
         assertTrue("Config dir should exist", configDir.exists())
         assertThat("Config dir should differ from source dir", configDir, not(equalTo(mappingsDir)))
@@ -76,5 +78,25 @@ class WiremockConfigResolverTest {
 
         assertThat(files, hasItem("wiremock-0-config.json"))
         assertThat(files, hasItem("response.json"))
+    }
+
+    @Test
+    fun `can convert templated wiremock mappings`() {
+        val mappingsDir = File(WiremockConfigResolverTest::class.java.getResource("/wiremock-templated")!!.toURI())
+
+        val configDir = configResolver.resolve(mappingsDir.absolutePath)
+        assertTrue("Config dir should exist", configDir.exists())
+        assertThat("Config dir should differ from source dir", configDir, not(equalTo(mappingsDir)))
+
+        val files = configDir.listFiles()?.map { it.name }
+        assertEquals(2, files?.size)
+
+        assertThat(files, hasItem("wiremock-0-config.json"))
+        assertThat(files, hasItem("response.xml"))
+
+        val responseFile = File(configDir, "response.xml").readText()
+        assertThat(responseFile, not(containsString("{{")))
+        assertThat(responseFile, containsString("\${context.request.body://getPetByIdRequest/id}"))
+        assertThat(responseFile, containsString("\${random.alphabetic(length=5,uppercase=true)}"))
     }
 }

@@ -42,6 +42,7 @@
  */
 package io.gatehill.imposter.config.resolver
 
+import com.google.common.base.Verify
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
 import io.gatehill.imposter.config.resolver.model.WiremockMapping
@@ -52,10 +53,16 @@ import io.gatehill.imposter.plugin.rest.config.RestPluginResourceConfig
 import io.gatehill.imposter.util.MapUtil
 import org.apache.logging.log4j.LogManager
 import java.io.File
+import java.io.FileNotFoundException
 import java.nio.file.Files
 import java.nio.file.Paths
-import kotlin.io.path.copyTo
+import java.util.regex.Pattern
+import kotlin.io.path.exists
 import kotlin.io.path.name
+import kotlin.io.path.readText
+import kotlin.io.path.writeText
+
+private typealias ExpressionHandler = (args: List<String>) -> String
 
 /**
  * Converts wiremock mappings to Imposter format in a temporary directory,
@@ -118,23 +125,100 @@ class WiremockConfigResolver : ConfigResolver {
                 statusCode = mapping.response.status
                 headers = mapping.response.headers
                 file = mapping.response.bodyFileName?.let {
-                    copyResponseFile(sourceDir, destDir, mapping.response.bodyFileName)
+                    convertResponseFile(sourceDir, destDir, mapping.response.bodyFileName)
                 }
                 isTemplate = mapping.response.transformers?.contains("response-template")
             }
         }
 
-    private fun copyResponseFile(
+    private fun convertConditionalHeaders(headers: Map<String, Map<String, String>>?) =
+        headers?.mapNotNull { (k, v) -> v["equalTo"]?.let { k to it } }?.toMap()
+
+    private fun convertResponseFile(
         sourceDir: File,
         destDir: File,
         bodyFileName: String
     ): String {
         val sourceFile = Paths.get(sourceDir.path, "__files", bodyFileName).normalize()
+        if (!sourceFile.exists()) {
+            throw FileNotFoundException("Response body file: $sourceFile does not exist")
+        }
+        val responseFile = convertPlaceholders(sourceFile.readText())
+
         val destFile = Paths.get(destDir.path, sourceFile.name)
-        sourceFile.copyTo(destFile)
+        destFile.writeText(responseFile)
         return destFile.name
     }
 
-    private fun convertConditionalHeaders(headers: Map<String, Map<String, String>>?) =
-        headers?.mapNotNull { (k, v) -> v["equalTo"]?.let { k to it } }?.toMap()
+    private fun convertPlaceholders(source: String): String {
+        val matcher = wiremockPlaceholderPattern.matcher(source)
+        var matched = false
+        val sb = StringBuffer()
+        while (matcher.find()) {
+            matched = true
+            val args = matcher.group(2).split(whitespacePattern)
+            val handler = expressionHandlers[matcher.group(1)]
+            val result = handler?.invoke(args) ?: "null"
+            matcher.appendReplacement(sb, result)
+        }
+        return if (matched) {
+            matcher.appendTail(sb)
+            sb.toString()
+        } else {
+            source
+        }
+    }
+
+    companion object {
+        /**
+         * Examples:
+         *
+         *     {{jsonPath request.body '$.foo'}}
+         *     {{xPath request.body '//foo'}}
+         */
+        private val wiremockPlaceholderPattern = Pattern.compile("\\{\\{\\s?(.+?)\\s+(.+?)\\s?}}")
+
+        private val whitespacePattern = Pattern.compile("\\s+")
+
+        private val expressionHandlers: Map<String, ExpressionHandler> = mapOf(
+            "jsonPath" to parseSimple { input, expression -> "\\\${${input}:${expression}}" },
+            "soapXPath" to parseSimple { input, expression -> "\\\${${input}:/env:Envelope/env:Body${expression}}" },
+            "xPath" to parseSimple { input, expression -> "\\\${${input}:${expression}}" },
+            "randomValue" to parseRandom()
+        )
+
+        /**
+         * Example:
+         *
+         *      xPath request.body '//foo/bar'
+         */
+        private fun parseSimple(handler: (input: String, expression: String) -> String): ExpressionHandler = { args ->
+            val input = args[0].let { if (it.startsWith("request.")) "context.$it" else it }
+            val expression = args[1].removeSurrounding("'")
+            handler(input, expression)
+        }
+
+        /**
+         * Example:
+         *
+         *     randomValue length=6 type='ALPHABETIC' uppercase=true
+         */
+        private fun parseRandom(): ExpressionHandler = { args ->
+            var length: Int? = null
+            var type: String? = null
+            var uppercase = false
+            for (arg in args) {
+                if (arg.startsWith("length=")) {
+                    length = arg.substringAfter("=").toInt()
+                } else if (arg.startsWith("type=")) {
+                    type = arg.substringAfter("=").removeSurrounding("'").lowercase()
+                } else if (arg.startsWith("uppercase=")) {
+                    uppercase = arg.substringAfter("=").toBoolean()
+                }
+            }
+            Verify.verifyNotNull(type, "type is required")
+            Verify.verifyNotNull(length, "length is required")
+            "\\\${random.$type(length=$length,uppercase=$uppercase)}"
+        }
+    }
 }
