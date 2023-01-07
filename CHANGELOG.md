@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+## Changed
+- ...
+
 ## [3.6.0] - 2023-01-07
 ## Added
 - feat: adds XPath query support to expressions.
