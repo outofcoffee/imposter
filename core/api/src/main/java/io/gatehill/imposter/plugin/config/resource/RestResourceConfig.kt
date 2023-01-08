@@ -43,6 +43,7 @@
 package io.gatehill.imposter.plugin.config.resource
 
 import com.fasterxml.jackson.annotation.JsonAlias
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyConfig
@@ -55,22 +56,23 @@ open class RestResourceConfig : AbstractResourceConfig(), MethodResourceConfig, 
     QueryParamsResourceConfig, LegacyQueryParamsResourceConfig, RequestHeadersResourceConfig,
     RequestBodyResourceConfig {
 
-    @JsonProperty("method")
+    @field:JsonProperty("method")
     override var method: HttpMethod? = null
 
-    @JsonProperty("pathParams")
-    override val pathParams: Map<String, String>? = null
+    @field:JsonProperty("pathParams")
+    override var pathParams: Map<String, String>? = null
 
-    @JsonProperty("queryParams")
-    @JsonAlias("params")
-    override val queryParams: Map<String, String>? = null
+    @field:JsonProperty("queryParams")
+    @field:JsonAlias("params")
+    override var queryParams: Map<String, String>? = null
 
-    @JsonProperty("requestHeaders")
+    @field:JsonProperty("requestHeaders")
     override var requestHeaders: Map<String, String>? = null
 
-    @JsonProperty("requestBody")
-    override val requestBody: RequestBodyConfig? = null
+    @field:JsonProperty("requestBody")
+    override var requestBody: RequestBodyConfig? = null
 
+    @get:JsonIgnore
     override val params: Map<String, String>?
         get() = queryParams
 }

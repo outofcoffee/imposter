@@ -52,11 +52,11 @@ class RequestBodyConfig {
     val jsonPath: String? = null
 
     @JsonProperty("xPath")
-    val xPath: String? = null
+    var xPath: String? = null
 
     @JsonProperty("xmlNamespaces")
-    val xmlNamespaces: Map<String, String>? = null
+    var xmlNamespaces: Map<String, String>? = null
 
     @JsonProperty("value")
-    val value: String? = null
+    var value: String? = null
 }
