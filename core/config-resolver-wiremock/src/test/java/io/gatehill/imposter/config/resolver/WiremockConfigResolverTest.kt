@@ -77,7 +77,12 @@ class WiremockConfigResolverTest {
         assertEquals(2, files?.size)
 
         assertThat(files, hasItem("wiremock-0-config.json"))
-        assertThat(files, hasItem("response.json"))
+        assertThat(files, hasItem("files"))
+
+        val responseFileDir = File(configDir, "files")
+        val responseFiles = responseFileDir.listFiles()?.map { it.name }
+        assertEquals(1, responseFiles?.size)
+        assertThat(responseFiles, hasItem("response.json"))
     }
 
     @Test
@@ -92,9 +97,14 @@ class WiremockConfigResolverTest {
         assertEquals(2, files?.size)
 
         assertThat(files, hasItem("wiremock-0-config.json"))
-        assertThat(files, hasItem("response.xml"))
+        assertThat(files, hasItem("files"))
 
-        val responseFile = File(configDir, "response.xml").readText()
+        val responseFileDir = File(configDir, "files")
+        val responseFiles = responseFileDir.listFiles()?.map { it.name }
+        assertEquals(1, responseFiles?.size)
+        assertThat(responseFiles, hasItem("response.xml"))
+
+        val responseFile = File(responseFileDir, "response.xml").readText()
         assertThat(responseFile, not(containsString("{{")))
         assertThat(responseFile, containsString("\${context.request.body://getPetByIdRequest/id}"))
         assertThat(responseFile, containsString("\${random.alphabetic(length=5,uppercase=true)}"))

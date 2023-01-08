@@ -55,6 +55,7 @@ import io.gatehill.imposter.util.MapUtil
 import org.apache.logging.log4j.LogManager
 import java.io.File
 import java.io.FileNotFoundException
+import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.regex.Pattern
@@ -86,9 +87,14 @@ class WiremockConfigResolver : ConfigResolver {
     override fun resolve(configPath: String): File {
         val sourceDir = File(configPath)
         val localConfigDir = Files.createTempDirectory("wiremock").toFile()
+
+        val responseFileDir = File(localConfigDir, RESPONSE_FILE_SUBDIR)
+        if (!responseFileDir.mkdirs()) {
+            throw IOException("Failed to create response file dir: $responseFileDir")
+        }
+
         mappingCache.get(configPath)?.let { wiremockMappings ->
             logger.debug("Converting ${wiremockMappings.size} wiremock mapping file(s) from $configPath")
-
             val converted = wiremockMappings.map {
                 it.mappings.map { m -> convertMapping(sourceDir, localConfigDir, m) }
             }
@@ -155,9 +161,10 @@ class WiremockConfigResolver : ConfigResolver {
         }
         val responseFile = convertPlaceholders(sourceFile.readText())
 
-        val destFile = Paths.get(destDir.path, sourceFile.name)
+        val destFile = Paths.get(destDir.path, RESPONSE_FILE_SUBDIR, sourceFile.name)
         destFile.writeText(responseFile)
-        return destFile.name
+        logger.trace("Converted response file {} to {}", sourceFile, destFile)
+        return RESPONSE_FILE_SUBDIR + "/" + destFile.name
     }
 
     private fun convertPlaceholders(source: String): String {
@@ -180,6 +187,8 @@ class WiremockConfigResolver : ConfigResolver {
     }
 
     companion object {
+        private const val RESPONSE_FILE_SUBDIR = "files"
+
         /**
          * Examples:
          *
