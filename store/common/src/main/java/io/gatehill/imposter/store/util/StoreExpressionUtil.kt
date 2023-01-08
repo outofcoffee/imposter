@@ -64,11 +64,11 @@ object StoreExpressionUtil {
      * @see ExpressionUtil.eval
      */
     fun eval(
-        expression: String,
+        input: String,
         httpExchange: HttpExchange,
         evaluators: Map<String, ExpressionEvaluator<*>> = builtin,
     ): String {
         val context = mapOf(HttpExpressionEvaluator.HTTP_EXCHANGE_KEY to httpExchange)
-        return ExpressionUtil.eval(expression, evaluators, context, queryProvider, nullifyUnsupported = true)
+        return ExpressionUtil.eval(input, evaluators, context, queryProvider, nullifyUnsupported = true)
     }
 }

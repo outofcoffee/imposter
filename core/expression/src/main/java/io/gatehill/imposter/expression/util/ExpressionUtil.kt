@@ -73,35 +73,38 @@ object ExpressionUtil {
      * ```
      * ${expression1}...${expression2}...
      * ```
-     * If no expression is found, [expression] is returned.
      */
     fun eval(
-        expression: String,
+        input: String,
         evaluators: Map<String, ExpressionEvaluator<*>>,
         context: Map<String, Any> = emptyMap(),
         queryProvider: QueryProvider? = null,
         nullifyUnsupported: Boolean,
     ): String {
-        val matcher = expressionPattern.matcher(expression)
+        val matcher = expressionPattern.matcher(input)
         var matched = false
         val sb = StringBuffer()
         while (matcher.find()) {
             matched = true
-            val subExpression = matcher.group(1)
-            val result = evalSingle(subExpression, evaluators, context, queryProvider, nullifyUnsupported)
-            matcher.appendReplacement(sb, result)
-            LOGGER.trace("{}={}", subExpression, result)
+            val expression = matcher.group(1)
+            try {
+                val result = evalSingle(expression, evaluators, context, queryProvider, nullifyUnsupported)
+                LOGGER.trace("{}={}", expression, result)
+                matcher.appendReplacement(sb, result)
+            } catch (e: Exception) {
+                throw RuntimeException("Error evaluating expression: $expression", e)
+            }
         }
         return if (matched) {
             matcher.appendTail(sb)
             sb.toString()
         } else {
-            expression
+            input
         }
     }
 
     private fun evalSingle(
-        subExpression: String,
+        expression: String,
         evaluators: Map<String, ExpressionEvaluator<*>>,
         context: Map<String, Any>,
         queryProvider: QueryProvider?,
@@ -109,17 +112,17 @@ object ExpressionUtil {
     ): String? {
         var result: String? = null
 
-        val evaluator = lookupEvaluator(subExpression, evaluators)
+        val evaluator = lookupEvaluator(expression, evaluators)
         evaluator?.let {
-            result = loadAndQuery(subExpression, context, evaluator, queryProvider) ?: ""
+            result = loadAndQuery(expression, context, evaluator, queryProvider) ?: ""
 
         } ?: run {
             if (nullifyUnsupported) {
-                LOGGER.warn("Unsupported expression: $subExpression")
+                LOGGER.warn("Unsupported expression: $expression")
                 result = ""
             } else {
                 // don't replace; should ignore match
-                result = "\\\${$subExpression}"
+                result = "\\\${$expression}"
             }
         }
         return result
@@ -171,7 +174,7 @@ object ExpressionUtil {
         var xPath: String? = null
         var fallbackValue: String? = null
 
-        // check for jsonpath expression
+        // check for query
         val colonIndex = rawItemKey.indexOf(":")
         if (colonIndex > 0) {
             when (rawItemKey[colonIndex + 1]) {
@@ -184,16 +187,31 @@ object ExpressionUtil {
             itemKey = rawItemKey
         }
 
-        val resolvedValue = evaluator.eval(itemKey, context)?.let { itemValue ->
-            jsonPath?.let { queryProvider?.queryWithJsonPath(itemValue, jsonPath) } 
-                ?: xPath?.let { queryProvider?.queryWithXPath(itemValue, xPath) }
-                ?: itemValue
-            
-        } ?: run {
-            LOGGER.debug("Expression: {} evaluated to null", itemKey)
-            null
+        val evaluated = evaluator.eval(itemKey, context)
+
+        // apply query
+        val finalValue = if (queryProvider != null) {
+            evaluated?.let { runQuery(it, queryProvider, jsonPath, xPath) }
+        } else {
+            evaluated
         }
-        LOGGER.trace("Resolved {} to value: {}, fallback: {}", itemKey, resolvedValue, fallbackValue)
-        return resolvedValue?.toString() ?: fallbackValue
+        LOGGER.trace("Resolved {} to value: {}, fallback: {}", itemKey, finalValue, fallbackValue)
+        if (finalValue == null) {
+            LOGGER.debug("Expression: {} evaluated to null", itemKey)
+        }
+        return finalValue?.toString() ?: fallbackValue
+    }
+
+    private fun runQuery(
+        evaluated: Any,
+        queryProvider: QueryProvider,
+        jsonPath: String?,
+        xPath: String?
+    ) = if (jsonPath != null) {
+        queryProvider.queryWithJsonPath(evaluated, jsonPath)
+    } else if (xPath != null) {
+        queryProvider.queryWithXPath(evaluated, xPath)
+    } else {
+        evaluated
     }
 }

@@ -9,7 +9,7 @@ class ExpressionUtilTest {
     @Test
     fun `eval missing with fallback`() {
         val result = ExpressionUtil.eval(
-            expression = "\${foo:-fallback}",
+            input = "\${foo:-fallback}",
             evaluators = mapOf(
                 "*" to object : ExpressionEvaluator<String> {
                     override val name = "foo"
@@ -25,7 +25,7 @@ class ExpressionUtilTest {
     @Test
     fun `eval invalid expression`() {
         val result = ExpressionUtil.eval(
-            expression = "\${invalid}",
+            input = "\${invalid}",
             evaluators = emptyMap(),
             nullifyUnsupported = true,
         )

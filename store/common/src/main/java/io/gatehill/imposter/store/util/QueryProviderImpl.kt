@@ -52,26 +52,38 @@ import java.io.StringReader
 class QueryProviderImpl : QueryProvider {
     override fun queryWithJsonPath(rawValue: Any, jsonPath: String): String? {
         LOGGER.trace("Evaluating JsonPath: {} on value of expression: {}", jsonPath, rawValue)
-        val context = when (rawValue) {
-            // raw JSON will be parsed by the context
-            is String -> BodyQueryUtil.JSONPATH_PARSE_CONTEXT.parse(rawValue as String)
+        try {
+            val context = when (rawValue) {
+                // raw JSON will be parsed by the context
+                is String -> BodyQueryUtil.JSONPATH_PARSE_CONTEXT.parse(rawValue as String)
 
-            // assumes already deserialised
-            else -> BodyQueryUtil.JSONPATH_PARSE_CONTEXT.parse(rawValue)
+                // assumes already deserialised
+                else -> BodyQueryUtil.JSONPATH_PARSE_CONTEXT.parse(rawValue)
+            }
+            return context.read(jsonPath)
+
+        } catch (e: Exception) {
+            LOGGER.warn("Error executing JsonPath: $jsonPath - returning null", e)
+            return null
         }
-        return context.read(jsonPath)
     }
 
     override fun queryWithXPath(rawValue: Any, xPath: String): String? {
         LOGGER.trace("Evaluating XPath: {} on value of expression: {}", xPath, rawValue)
-        val document: Any = when (rawValue) {
-            // raw XML
-            is String -> SAXBuilder().build(StringReader(rawValue))
+        try {
+            val document: Any = when (rawValue) {
+                // raw XML
+                is String -> SAXBuilder().build(StringReader(rawValue))
 
-            // assumes already a document/element/node etc.
-            else -> rawValue
+                // assumes already a document/element/node etc.
+                else -> rawValue
+            }
+            return BodyQueryUtil.selectSingleNode(document, xPath, emptyList())?.value
+
+        } catch (e: Exception) {
+            LOGGER.warn("Error executing XPath: $xPath - returning null", e)
+            return null
         }
-        return BodyQueryUtil.selectSingleNode(document, xPath, emptyList())?.value
     }
 
     companion object {

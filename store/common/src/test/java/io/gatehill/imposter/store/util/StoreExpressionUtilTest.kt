@@ -28,7 +28,7 @@ class StoreExpressionUtilTest {
         }
 
         val result = StoreExpressionUtil.eval(
-            expression = "\${context.request.headers.Correlation-ID}",
+            input = "\${context.request.headers.Correlation-ID}",
             httpExchange = httpExchange,
         )
 
@@ -45,7 +45,7 @@ class StoreExpressionUtilTest {
         }
 
         val result = StoreExpressionUtil.eval(
-            expression = "\${context.request.pathParams.userId}",
+            input = "\${context.request.pathParams.userId}",
             httpExchange = httpExchange,
         )
 
@@ -62,7 +62,7 @@ class StoreExpressionUtilTest {
         }
 
         val result = StoreExpressionUtil.eval(
-            expression = "\${context.request.queryParams.page}",
+            input = "\${context.request.queryParams.page}",
             httpExchange = httpExchange,
         )
 
@@ -79,7 +79,7 @@ class StoreExpressionUtilTest {
         }
 
         val result = StoreExpressionUtil.eval(
-            expression = "\${context.request.body}",
+            input = "\${context.request.body}",
             httpExchange = httpExchange,
         )
 
@@ -96,7 +96,7 @@ class StoreExpressionUtilTest {
         }
 
         val result = StoreExpressionUtil.eval(
-            expression = "\${context.request.body:$.name}",
+            input = "\${context.request.body:$.name}",
             httpExchange = httpExchange,
         )
 
@@ -113,7 +113,7 @@ class StoreExpressionUtilTest {
         }
 
         val result = StoreExpressionUtil.eval(
-            expression = "\${context.request.pathParams.foo:-fallback}",
+            input = "\${context.request.pathParams.foo:-fallback}",
             httpExchange = httpExchange,
         )
 
@@ -131,7 +131,7 @@ class StoreExpressionUtilTest {
         }
 
         val result = StoreExpressionUtil.eval(
-            expression = "\${context.response.body}",
+            input = "\${context.response.body}",
             httpExchange = httpExchange,
         )
 
@@ -151,7 +151,7 @@ class StoreExpressionUtilTest {
         }
 
         val result = StoreExpressionUtil.eval(
-            expression = "\${context.response.headers.X-Example}",
+            input = "\${context.response.headers.X-Example}",
             httpExchange = httpExchange,
         )
 
@@ -172,7 +172,7 @@ class StoreExpressionUtilTest {
         var cause: Throwable? = null
         try {
             StoreExpressionUtil.eval(
-                expression = expression,
+                input = expression,
                 httpExchange = httpExchange,
             )
             fail("IllegalStateException should have been thrown")
@@ -197,7 +197,7 @@ class StoreExpressionUtilTest {
         }
 
         val result = StoreExpressionUtil.eval(
-            expression = "\${context.request.headers.Correlation-ID}_\${context.request.headers.User-Agent}",
+            input = "\${context.request.headers.Correlation-ID}_\${context.request.headers.User-Agent}",
             httpExchange = httpExchange,
         )
 
@@ -209,19 +209,19 @@ class StoreExpressionUtilTest {
         val httpExchange = mock<HttpExchange>()
 
         val millis = StoreExpressionUtil.eval(
-            expression = "\${datetime.now.millis}",
+            input = "\${datetime.now.millis}",
             httpExchange = httpExchange,
         )
         assertThat(millis.toLong(), OrderingComparison.lessThanOrEqualTo(System.currentTimeMillis()))
 
         val nanos = StoreExpressionUtil.eval(
-            expression = "\${datetime.now.nanos}",
+            input = "\${datetime.now.nanos}",
             httpExchange = httpExchange,
         )
         assertThat(nanos.toLong(), OrderingComparison.lessThanOrEqualTo(System.nanoTime()))
 
         val iso8601Date = StoreExpressionUtil.eval(
-            expression = "\${datetime.now.iso8601_date}",
+            input = "\${datetime.now.iso8601_date}",
             httpExchange = httpExchange,
         )
         try {
@@ -231,7 +231,7 @@ class StoreExpressionUtilTest {
         }
 
         val iso8601DateTime = StoreExpressionUtil.eval(
-            expression = "\${datetime.now.iso8601_datetime}",
+            input = "\${datetime.now.iso8601_datetime}",
             httpExchange = httpExchange,
         )
         try {
@@ -246,7 +246,7 @@ class StoreExpressionUtilTest {
         val httpExchange = mock<HttpExchange>()
 
         val result = StoreExpressionUtil.eval(
-            expression = "\${invalid}",
+            input = "\${invalid}",
             httpExchange = httpExchange,
         )
         assertThat(result, equalTo(""))
