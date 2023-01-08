@@ -19,7 +19,7 @@ dependencies {
     // test
     testImplementation project(':test:test-utils')
     testImplementation project(':test:api-tests')
-    testImplementation group: 'org.hamcrest', name: 'hamcrest-all', version: version_hamcrest
+    testImplementation group: 'org.hamcrest', name: 'hamcrest', version: version_hamcrest
 
     // java 11 compatibility
     testImplementation ("javax.xml.bind:jaxb-api:$version_jaxb_api")
