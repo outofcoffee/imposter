@@ -59,4 +59,7 @@ class RequestBodyConfig {
 
     @JsonProperty("value")
     var value: String? = null
+
+    @JsonProperty("exists")
+    var exists: Boolean? = null
 }

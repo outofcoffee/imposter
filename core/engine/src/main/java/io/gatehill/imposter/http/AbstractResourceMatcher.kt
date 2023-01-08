@@ -134,7 +134,7 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
             httpExchange
         )
         // resource matching always uses strings
-        return safeEquals(requestBodyConfig.value, bodyValue?.toString())
+        return checkMatch(requestBodyConfig, bodyValue?.toString())
     }
 
     private fun matchRequestBodyXPath(
@@ -146,7 +146,19 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
             requestBodyConfig.xmlNamespaces,
             httpExchange
         )
-        return safeEquals(requestBodyConfig.value, bodyValue)
+        return checkMatch(requestBodyConfig, bodyValue)
+    }
+
+    private fun checkMatch(requestBodyConfig: RequestBodyConfig, actualValue: Any?): Boolean {
+        requestBodyConfig.exists?.let { shouldExist ->
+            // the expression is checking for the existence of a value using the given query,
+            // perhaps by using embedded conditional checks
+            return (actualValue != null) == shouldExist
+
+        } ?: run {
+            // compare the actual value to the configured value
+            return safeEquals(requestBodyConfig.value, actualValue)
+        }
     }
 
     companion object {

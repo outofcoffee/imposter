@@ -81,7 +81,7 @@ class RequestBodyJsonPathTest : BaseVerticleTest() {
         RestAssured.given().`when`()
             .contentType(ContentType.JSON)
             .body("""{ "foo": "bar" }""")
-            .get("/example")
+            .post("/example")
             .then()
             .statusCode(Matchers.equalTo(204))
     }
@@ -94,7 +94,7 @@ class RequestBodyJsonPathTest : BaseVerticleTest() {
         RestAssured.given().`when`()
             .contentType(ContentType.JSON)
             .body("""{ "baz": 99 }""")
-            .get("/example")
+            .post("/example")
             .then()
             .statusCode(Matchers.equalTo(302))
     }
@@ -107,8 +107,34 @@ class RequestBodyJsonPathTest : BaseVerticleTest() {
         RestAssured.given().`when`()
             .contentType(ContentType.JSON)
             .body("""{ "foo": "bar" }""")
-            .get("/example-nonmatch")
+            .post("/example-nonmatch")
             .then()
             .statusCode(Matchers.equalTo(409))
+    }
+
+    /**
+     * Match when a given node exists.
+     */
+    @Test
+    fun testMatchNodeExists() {
+        RestAssured.given().`when`()
+            .contentType(ContentType.JSON)
+            .body("""{ "qux": "bar" }""")
+            .post("/example-exists")
+            .then()
+            .statusCode(Matchers.equalTo(201))
+    }
+
+    /**
+     * Match when a given node does not exist.
+     */
+    @Test
+    fun testMatchNodeNotExists() {
+        RestAssured.given().`when`()
+            .contentType(ContentType.JSON)
+            .body("""{ "qux": "bar" }""")
+            .post("/example-not-exists")
+            .then()
+            .statusCode(Matchers.equalTo(202))
     }
 }

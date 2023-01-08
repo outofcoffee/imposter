@@ -1,7 +1,7 @@
 plugin: "io.gatehill.imposter.plugin.test.TestPluginImpl"
 
 resources:
-- method: GET
+- method: POST
   path: /example
   requestBody:
     xPath: "/env:Envelope/env:Body/pets:animal/pets:name"
@@ -12,7 +12,7 @@ resources:
   response:
     statusCode: 204
 
-- method: GET
+- method: POST
   path: /example
   requestBody:
     xPath: "/env:Envelope/env:Body/pets:animal/pets:id"
@@ -23,7 +23,7 @@ resources:
   response:
     statusCode: 302
 
-- method: GET
+- method: POST
   path: /example-nonmatch
   requestBody:
     xPath: "/env:Envelope/env:Body/pets:animal/pets:nothing"
@@ -34,3 +34,25 @@ resources:
       pets: "urn:com:example:petstore"
   response:
     statusCode: 409
+
+- method: POST
+  path: /example-exists
+  requestBody:
+    xPath: "/env:Envelope/env:Body/pets:animal/pets:id"
+    exists: true
+    xmlNamespaces:
+      env: "http://schemas.xmlsoap.org/soap/envelope/"
+      pets: "urn:com:example:petstore"
+  response:
+    statusCode: 201
+
+- method: POST
+  path: /example-not-exists
+  requestBody:
+    xPath: "/env:Envelope/env:Body/pets:animal/pets:notexist"
+    exists: false
+    xmlNamespaces:
+      env: "http://schemas.xmlsoap.org/soap/envelope/"
+      pets: "urn:com:example:petstore"
+  response:
+    statusCode: 202

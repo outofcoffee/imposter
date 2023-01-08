@@ -91,7 +91,7 @@ class RequestBodyXPathTest : BaseVerticleTest() {
   </env:Body>
 </env:Envelope>
 """.trim())
-            .get("/example")
+            .post("/example")
             .then()
             .statusCode(Matchers.equalTo(204))
     }
@@ -114,7 +114,7 @@ class RequestBodyXPathTest : BaseVerticleTest() {
   </env:Body>
 </env:Envelope>
 """.trim())
-            .get("/example")
+            .post("/example")
             .then()
             .statusCode(Matchers.equalTo(302))
     }
@@ -138,8 +138,58 @@ class RequestBodyXPathTest : BaseVerticleTest() {
   </env:Body>
 </env:Envelope>
 """.trim())
-            .get("/example-nonmatch")
+            .post("/example-nonmatch")
             .then()
             .statusCode(Matchers.equalTo(409))
+    }
+
+    /**
+     * Match when a given node exists.
+     */
+    @Test
+    fun testMatchNodeExists() {
+        RestAssured.given().`when`()
+            .contentType(ContentType.JSON)
+            .body(
+                """
+<?xml version="1.0" encoding="UTF-8"?>
+<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"> 
+  <env:Header/>
+  <env:Body>
+    <pets:animal xmlns:pets="urn:com:example:petstore">
+      <pets:id>3</pets:id>
+      <pets:name>Fluffy</pets:name>
+    </pets:animal>
+  </env:Body>
+</env:Envelope>
+""".trim()
+            )
+            .post("/example-exists")
+            .then()
+            .statusCode(Matchers.equalTo(201))
+    }
+
+    /**
+     * Match when a given node does not exist.
+     */
+    @Test
+    fun testMatchNodeNotExists() {
+        RestAssured.given().`when`()
+            .contentType(ContentType.JSON)
+            .body("""
+<?xml version="1.0" encoding="UTF-8"?>
+<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"> 
+  <env:Header/>
+  <env:Body>
+    <pets:animal xmlns:pets="urn:com:example:petstore">
+      <pets:id>3</pets:id>
+      <pets:name>Fluffy</pets:name>
+    </pets:animal>
+  </env:Body>
+</env:Envelope>
+""".trim())
+            .post("/example-not-exists")
+            .then()
+            .statusCode(Matchers.equalTo(202))
     }
 }

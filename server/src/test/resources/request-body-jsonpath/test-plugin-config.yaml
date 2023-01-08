@@ -1,7 +1,7 @@
 plugin: "io.gatehill.imposter.plugin.test.TestPluginImpl"
 
 resources:
-- method: GET
+- method: POST
   path: /example
   requestBody:
     jsonPath: $.foo
@@ -9,7 +9,7 @@ resources:
   response:
     statusCode: 204
 
-- method: GET
+- method: POST
   path: /example
   requestBody:
     jsonPath: $.baz
@@ -17,7 +17,7 @@ resources:
   response:
     statusCode: 302
 
-- method: GET
+- method: POST
   path: /example-nonmatch
   requestBody:
     jsonPath: $.notmatching
@@ -25,3 +25,19 @@ resources:
     value: ~
   response:
     statusCode: 409
+
+- method: POST
+  path: /example-exists
+  requestBody:
+    jsonPath: $.qux
+    exists: true
+  response:
+    statusCode: 201
+
+- method: POST
+  path: /example-not-exists
+  requestBody:
+    jsonPath: $.notexist
+    exists: false
+  response:
+    statusCode: 202
