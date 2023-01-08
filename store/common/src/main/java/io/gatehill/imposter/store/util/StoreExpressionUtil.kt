@@ -43,6 +43,7 @@
 package io.gatehill.imposter.store.util
 
 import io.gatehill.imposter.expression.eval.ExpressionEvaluator
+import io.gatehill.imposter.expression.eval.RandomEvaluator
 import io.gatehill.imposter.expression.util.ExpressionUtil
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.store.service.expression.ContextEvaluator
@@ -50,9 +51,10 @@ import io.gatehill.imposter.store.service.expression.DateTimeEvaluator
 import io.gatehill.imposter.store.service.expression.HttpExpressionEvaluator
 
 object StoreExpressionUtil {
-    val builtin = mapOf(
+    val builtin: Map<String, ExpressionEvaluator<*>> = mapOf(
         "context" to ContextEvaluator,
         "datetime" to DateTimeEvaluator,
+        "random" to RandomEvaluator,
     )
 
     private val queryProvider = QueryProviderImpl()

@@ -45,5 +45,9 @@ package io.gatehill.imposter.expression.eval
 
 interface ExpressionEvaluator<T> {
     val name: String
+
+    /**
+     * @param expression the expression to evaluate in the format `x[.y][.z]` - note this should not be surrounded by placeholder syntax (i.e. `${...}`)
+     */
     fun eval(expression: String, context: Map<String, *>): T?
 }
