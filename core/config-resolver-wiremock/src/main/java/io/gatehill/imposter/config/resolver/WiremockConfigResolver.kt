@@ -47,6 +47,7 @@ import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
 import io.gatehill.imposter.config.resolver.model.WiremockMapping
 import io.gatehill.imposter.config.resolver.model.WiremockMappings
+import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.plugin.rest.config.RestPluginConfig
 import io.gatehill.imposter.plugin.rest.config.RestPluginResourceConfig
@@ -70,6 +71,7 @@ private typealias ExpressionHandler = (args: List<String>) -> String
  */
 class WiremockConfigResolver : ConfigResolver {
     private val logger = LogManager.getLogger(WiremockConfigResolver::class.java)
+    private val separateConfigFiles = EnvVars.getEnv("IMPOSTER_WIREMOCK_SEPARATE_CONFIG").toBoolean()
 
     private val mappingCache = CacheBuilder.newBuilder().maximumSize(20)
         .build(object : CacheLoader<String, List<WiremockMappings>>() {
@@ -86,7 +88,15 @@ class WiremockConfigResolver : ConfigResolver {
         val localConfigDir = Files.createTempDirectory("wiremock").toFile()
         mappingCache.get(configPath)?.let { wiremockMappings ->
             logger.debug("Converting ${wiremockMappings.size} wiremock mapping file(s) from $configPath")
-            wiremockMappings.forEachIndexed { i, mappings -> convert(sourceDir, localConfigDir, i, mappings) }
+
+            val converted = wiremockMappings.map {
+                it.mappings.map { m -> convertMapping(sourceDir, localConfigDir, m) }
+            }
+            if (separateConfigFiles) {
+                converted.forEachIndexed { index, res -> writeConfig(localConfigDir, index, res) }
+            } else {
+                writeConfig(localConfigDir, 0, converted.flatten())
+            }
         }
         return localConfigDir
     }
@@ -103,11 +113,11 @@ class WiremockConfigResolver : ConfigResolver {
             }
         } ?: emptyList()
 
-    private fun convert(sourceDir: File, destDir: File, index: Int, mappings: WiremockMappings) {
+    private fun writeConfig(destDir: File, index: Int, resources: List<RestPluginResourceConfig>) {
         val destFile = File(destDir, "wiremock-$index-config.json")
         val config = RestPluginConfig().apply {
             plugin = "rest"
-            resources = mappings.mappings.map { convertMapping(sourceDir, destDir, it) }
+            this.resources = resources
         }
         destFile.outputStream().use { os ->
             MapUtil.JSON_MAPPER.writeValue(os, config)
