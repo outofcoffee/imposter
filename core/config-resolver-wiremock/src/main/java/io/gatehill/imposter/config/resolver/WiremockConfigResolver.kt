@@ -45,10 +45,13 @@ package io.gatehill.imposter.config.resolver
 import com.google.common.base.Verify
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
+import io.gatehill.imposter.config.resolver.model.BodyPattern
 import io.gatehill.imposter.config.resolver.model.WiremockMapping
 import io.gatehill.imposter.config.resolver.model.WiremockMappings
 import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.http.HttpMethod
+import io.gatehill.imposter.plugin.config.resource.ResourceMatchOperator
+import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyConfig
 import io.gatehill.imposter.plugin.rest.config.RestPluginConfig
 import io.gatehill.imposter.plugin.rest.config.RestPluginResourceConfig
 import io.gatehill.imposter.util.MapUtil
@@ -137,6 +140,7 @@ class WiremockConfigResolver : ConfigResolver {
             path = mapping.request.url
             method = mapping.request.method?.uppercase()?.let { HttpMethod.valueOf(it) }
             requestHeaders = mapping.request.headers?.let { convertConditionalHeaders(it) }
+            requestBody = convertBodyPatterns(mapping.request.bodyPatterns)
             responseConfig.apply {
                 statusCode = mapping.response.status
                 headers = mapping.response.headers
@@ -146,6 +150,77 @@ class WiremockConfigResolver : ConfigResolver {
                 isTemplate = mapping.response.transformers?.contains("response-template")
             }
         }
+
+    /**
+     * Example:
+     * ```
+     * [
+     *   {
+     *     "matchesXPath": {
+     *       "expression": "//foo/text()",
+     *       "contains": "bar"
+     *      }
+     *   },
+     *   {
+     *     "matchesXPath": {
+     *       "expression": "//foo/text()",
+     *       "equalTo": "baz"
+     *      }
+     *   },
+     *   {
+     *     "matchesXPath": {
+     *       "expression": "//foo/text()",
+     *       "matches": "f.*"
+     *      }
+     *   },
+     *   {
+     *     "matchesXPath": "/qux:corge",
+     *     "xPathNamespaces": {
+     *       "qux" : "http://example.com/somens"
+     *     }
+     *   }
+     * ]
+     * ```
+     */
+    private fun convertBodyPatterns(bodyPatterns: List<BodyPattern>?): RequestBodyConfig? {
+        if (bodyPatterns?.isNotEmpty() == true) {
+            if (bodyPatterns.size > 1) {
+                logger.warn("Only one body pattern is supported - all but the first will be ignored")
+            }
+            val bodyPattern = bodyPatterns.first()
+            val requestBodyConfig = RequestBodyConfig()
+            when (bodyPattern.matchesXPath) {
+                is String -> {
+                    // body pattern using XPath with embedded conditional check, but no value
+                    requestBodyConfig.xPath = bodyPattern.matchesXPath
+                    requestBodyConfig.exists = true
+                }
+
+                is Map<*, *> -> {
+                    bodyPattern.matchesXPath["expression"]?.let { expression ->
+                        requestBodyConfig.xPath = expression.toString()
+                    }
+                    bodyPattern.matchesXPath["equalTo"]?.let { equalTo ->
+                        requestBodyConfig.value = equalTo.toString()
+                    } ?: bodyPattern.matchesXPath["contains"]?.let { contains ->
+                        requestBodyConfig.value = contains.toString()
+                        requestBodyConfig.operator = ResourceMatchOperator.Contains
+                    } ?: bodyPattern.matchesXPath["matches"]?.let { matches ->
+                        requestBodyConfig.value = matches.toString()
+                        requestBodyConfig.operator = ResourceMatchOperator.Matches
+                    } ?: bodyPattern.matchesXPath["doesNotMatch"]?.let { matches ->
+                        requestBodyConfig.value = matches.toString()
+                        requestBodyConfig.operator = ResourceMatchOperator.NotMatches
+                    }
+                }
+            }
+            requestBodyConfig.xmlNamespaces = bodyPattern.xPathNamespaces
+            return requestBodyConfig
+
+        } else {
+            return null
+        }
+    }
 
     private fun convertConditionalHeaders(headers: Map<String, Map<String, String>>?) =
         headers?.mapNotNull { (k, v) -> v["equalTo"]?.let { k to it } }?.toMap()
