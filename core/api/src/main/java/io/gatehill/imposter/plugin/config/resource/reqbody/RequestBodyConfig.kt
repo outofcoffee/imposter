@@ -43,6 +43,7 @@
 package io.gatehill.imposter.plugin.config.resource.reqbody
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import io.gatehill.imposter.plugin.config.resource.ResourceMatchOperator
 
 /**
  * @author Pete Cornish
@@ -62,4 +63,7 @@ class RequestBodyConfig {
 
     @JsonProperty("exists")
     var exists: Boolean? = null
+
+    @JsonProperty("operator")
+    var operator: ResourceMatchOperator = ResourceMatchOperator.EqualTo
 }

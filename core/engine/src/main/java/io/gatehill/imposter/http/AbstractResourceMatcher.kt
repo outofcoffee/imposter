@@ -45,6 +45,7 @@ package io.gatehill.imposter.http
 import com.google.common.base.Strings.isNullOrEmpty
 import io.gatehill.imposter.config.ResolvedResourceConfig
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
+import io.gatehill.imposter.plugin.config.resource.ResourceMatchOperator
 import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyConfig
 import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyResourceConfig
 import io.gatehill.imposter.util.BodyQueryUtil
@@ -134,7 +135,7 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
             httpExchange
         )
         // resource matching always uses strings
-        return checkMatch(requestBodyConfig, bodyValue?.toString())
+        return checkBodyMatch(requestBodyConfig, bodyValue?.toString())
     }
 
     private fun matchRequestBodyXPath(
@@ -146,18 +147,40 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
             requestBodyConfig.xmlNamespaces,
             httpExchange
         )
-        return checkMatch(requestBodyConfig, bodyValue)
+        return checkBodyMatch(requestBodyConfig, bodyValue)
     }
 
-    private fun checkMatch(requestBodyConfig: RequestBodyConfig, actualValue: Any?): Boolean {
+    private fun checkBodyMatch(requestBodyConfig: RequestBodyConfig, actualValue: Any?): Boolean {
         requestBodyConfig.exists?.let { shouldExist ->
             // the expression is checking for the existence of a value using the given query,
             // perhaps by using embedded conditional checks
             return (actualValue != null) == shouldExist
 
         } ?: run {
+            val configuredValue = requestBodyConfig.value
+            val operator = requestBodyConfig.operator
+
             // compare the actual value to the configured value
-            return safeEquals(requestBodyConfig.value, actualValue)
+            val matched = when(operator) {
+                ResourceMatchOperator.EqualTo, ResourceMatchOperator.NotEqualTo -> {
+                    val valueMatch = safeEquals(configuredValue, actualValue)
+
+                    // apply the operator
+                    operator === ResourceMatchOperator.EqualTo && valueMatch ||
+                            operator === ResourceMatchOperator.NotEqualTo && !valueMatch
+                }
+                ResourceMatchOperator.Contains -> {
+                    if (actualValue != null && configuredValue != null) {
+                        actualValue.toString().contains(configuredValue)
+                    } else {
+                        false
+                    }
+                }
+            }
+            if (LOGGER.isTraceEnabled) {
+                LOGGER.trace("Body match result for {} {}: {}", operator, configuredValue, matched)
+            }
+            return matched
         }
     }
 

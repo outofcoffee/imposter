@@ -47,7 +47,7 @@ import io.restassured.RestAssured
 import io.restassured.http.ContentType
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
-import org.hamcrest.Matchers
+import org.hamcrest.Matchers.equalTo
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -74,7 +74,7 @@ class RequestBodyXPathTest : BaseVerticleTest() {
     )
 
     /**
-     * Match against a string in the request body
+     * Match against a string in the request body.
      */
     @Test
     fun testMatchStringInRequestBody() {
@@ -93,11 +93,11 @@ class RequestBodyXPathTest : BaseVerticleTest() {
 """.trim())
             .post("/example")
             .then()
-            .statusCode(Matchers.equalTo(204))
+            .statusCode(equalTo(204))
     }
 
     /**
-     * Match against an integer in the request body
+     * Match against an integer in the request body.
      */
     @Test
     fun testMatchIntegerInRequestBody() {
@@ -116,11 +116,11 @@ class RequestBodyXPathTest : BaseVerticleTest() {
 """.trim())
             .post("/example")
             .then()
-            .statusCode(Matchers.equalTo(302))
+            .statusCode(equalTo(302))
     }
 
     /**
-     * Match null against an empty XPath result in the request body
+     * Match null against an empty XPath result in the request body.
      */
     @Test
     fun testMatchNullRequestBody() {
@@ -140,7 +140,7 @@ class RequestBodyXPathTest : BaseVerticleTest() {
 """.trim())
             .post("/example-nonmatch")
             .then()
-            .statusCode(Matchers.equalTo(409))
+            .statusCode(equalTo(409))
     }
 
     /**
@@ -149,7 +149,7 @@ class RequestBodyXPathTest : BaseVerticleTest() {
     @Test
     fun testMatchNodeExists() {
         RestAssured.given().`when`()
-            .contentType(ContentType.JSON)
+            .contentType(ContentType.XML)
             .body(
                 """
 <?xml version="1.0" encoding="UTF-8"?>
@@ -166,7 +166,7 @@ class RequestBodyXPathTest : BaseVerticleTest() {
             )
             .post("/example-exists")
             .then()
-            .statusCode(Matchers.equalTo(201))
+            .statusCode(equalTo(201))
     }
 
     /**
@@ -175,7 +175,7 @@ class RequestBodyXPathTest : BaseVerticleTest() {
     @Test
     fun testMatchNodeNotExists() {
         RestAssured.given().`when`()
-            .contentType(ContentType.JSON)
+            .contentType(ContentType.XML)
             .body("""
 <?xml version="1.0" encoding="UTF-8"?>
 <env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"> 
@@ -190,6 +190,54 @@ class RequestBodyXPathTest : BaseVerticleTest() {
 """.trim())
             .post("/example-not-exists")
             .then()
-            .statusCode(Matchers.equalTo(202))
+            .statusCode(equalTo(202))
+    }
+
+    /**
+     * Negative match against a string in the request body.
+     */
+    @Test
+    fun testNegativeMatchStringInRequestBody() {
+        RestAssured.given().`when`()
+            .contentType(ContentType.XML)
+            .body("""
+<?xml version="1.0" encoding="UTF-8"?>
+<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"> 
+  <env:Header/>
+  <env:Body>
+    <pets:animal xmlns:pets="urn:com:example:petstore">
+      <pets:id>3</pets:id>
+      <pets:name>Fluffy</pets:name>
+    </pets:animal>
+  </env:Body>
+</env:Envelope>
+""".trim())
+            .post("/example-negative")
+            .then()
+            .statusCode(equalTo(205))
+    }
+
+    /**
+     * Match when a string in the request body contains a given value.
+     */
+    @Test
+    fun testMatchStringContainsInRequestBody() {
+        RestAssured.given().`when`()
+            .contentType(ContentType.XML)
+            .body("""
+<?xml version="1.0" encoding="UTF-8"?>
+<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"> 
+  <env:Header/>
+  <env:Body>
+    <pets:animal xmlns:pets="urn:com:example:petstore">
+      <pets:id>3</pets:id>
+      <pets:name>Fluffy</pets:name>
+    </pets:animal>
+  </env:Body>
+</env:Envelope>
+""".trim())
+            .post("/example-contains")
+            .then()
+            .statusCode(equalTo(206))
     }
 }

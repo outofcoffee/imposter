@@ -41,3 +41,21 @@ resources:
     exists: false
   response:
     statusCode: 202
+
+- method: POST
+  path: /example-negative
+  requestBody:
+    jsonPath: $.foo
+    value: baz
+    operator: NotEqualTo
+  response:
+    statusCode: 205
+
+- method: POST
+  path: /example-contains
+  requestBody:
+    jsonPath: $.foo
+    value: "b"
+    operator: Contains
+  response:
+    statusCode: 206

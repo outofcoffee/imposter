@@ -56,3 +56,27 @@ resources:
       pets: "urn:com:example:petstore"
   response:
     statusCode: 202
+
+- method: POST
+  path: /example-negative
+  requestBody:
+    xPath: "/env:Envelope/env:Body/pets:animal/pets:name"
+    value: "baz"
+    xmlNamespaces:
+      env: "http://schemas.xmlsoap.org/soap/envelope/"
+      pets: "urn:com:example:petstore"
+    operator: NotEqualTo
+  response:
+    statusCode: 205
+
+- method: POST
+  path: /example-contains
+  requestBody:
+    xPath: "/env:Envelope/env:Body/pets:animal/pets:name"
+    value: "Flu"
+    xmlNamespaces:
+      env: "http://schemas.xmlsoap.org/soap/envelope/"
+      pets: "urn:com:example:petstore"
+    operator: Contains
+  response:
+    statusCode: 206

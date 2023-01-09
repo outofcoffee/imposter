@@ -45,12 +45,7 @@ package io.gatehill.imposter.service.security
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.lifecycle.SecurityLifecycleHooks
 import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.config.security.ConditionalNameValuePair
-import io.gatehill.imposter.plugin.config.security.MatchOperator
-import io.gatehill.imposter.plugin.config.security.SecurityCondition
-import io.gatehill.imposter.plugin.config.security.SecurityConfig
-import io.gatehill.imposter.plugin.config.security.SecurityConfigHolder
-import io.gatehill.imposter.plugin.config.security.SecurityEffect
+import io.gatehill.imposter.plugin.config.security.*
 import io.gatehill.imposter.service.SecurityService
 import io.gatehill.imposter.util.CollectionUtil.convertKeysToLowerCase
 import io.gatehill.imposter.util.HttpUtil
@@ -179,8 +174,8 @@ class SecurityServiceImpl @Inject constructor(
                 comparisonMap[if (caseSensitiveKeyMatch) conditionValue.name else conditionValue.name.lowercase(Locale.getDefault())],
                 conditionValue.value
             )
-            val matched = conditionValue.operator === MatchOperator.EqualTo && valueMatch ||
-                    conditionValue.operator === MatchOperator.NotEqualTo && !valueMatch
+            val matched = conditionValue.operator === SecurityMatchOperator.EqualTo && valueMatch ||
+                    conditionValue.operator === SecurityMatchOperator.NotEqualTo && !valueMatch
 
             val finalEffect: SecurityEffect = if (matched) {
                 conditionEffect
