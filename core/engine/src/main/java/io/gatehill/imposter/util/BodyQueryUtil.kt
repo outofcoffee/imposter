@@ -44,11 +44,7 @@
 package io.gatehill.imposter.util
 
 import com.google.common.base.Strings
-import com.jayway.jsonpath.Configuration
-import com.jayway.jsonpath.DocumentContext
-import com.jayway.jsonpath.JsonPath
-import com.jayway.jsonpath.ParseContext
-import com.jayway.jsonpath.PathNotFoundException
+import com.jayway.jsonpath.*
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider
 import io.gatehill.imposter.http.HttpExchange
 import org.apache.logging.log4j.LogManager
@@ -77,12 +73,13 @@ object BodyQueryUtil {
             .build()
     )
 
-    fun buildXPath(expression: String, xPathNamespaces: Map<String, String> = emptyMap()): XPathExpression<*> {
-        return buildXPath(expression, buildNamespaces(xPathNamespaces))
-    }
-
-    fun buildXPath(expression: String, xPathNamespaces: List<Namespace> = emptyList()): XPathExpression<*> {
-        return XPathFactory.instance().compile(expression, Filters.element(), emptyMap(), xPathNamespaces)
+    private fun buildXPath(expression: String, xPathNamespaces: List<Namespace> = emptyList()): XPathExpression<*> {
+        val finalXPath = if (expression.startsWith('!')) {
+            normaliseXPathExpression(expression.substring(1))
+        } else {
+            expression
+        }
+        return XPathFactory.instance().compile(finalXPath, Filters.element(), emptyMap(), xPathNamespaces)
     }
 
     private fun buildNamespaces(namespaces: Map<String, String>?) =
@@ -124,7 +121,7 @@ object BodyQueryUtil {
      * Gets the JSON document context for JsonPath queries against the request body.
      * The context is cached in the [HttpExchange].
      */
-    fun getRequestJsonContext(httpExchange: HttpExchange, body: String? = httpExchange.request().bodyAsString): DocumentContext {
+    private fun getRequestJsonContext(httpExchange: HttpExchange, body: String? = httpExchange.request().bodyAsString): DocumentContext {
         val jsonContextHolder =
             httpExchange.getOrPut("request.json.context", { AtomicReference<DocumentContext>() })
 
@@ -139,7 +136,7 @@ object BodyQueryUtil {
     fun queryRequestBodyXPath(
         xPath: String,
         xmlNamespaces: Map<String, String>?,
-        httpExchange: HttpExchange
+        httpExchange: HttpExchange,
     ): Any? {
         val body = httpExchange.request().bodyAsString
         return if (Strings.isNullOrEmpty(body)) {
@@ -169,5 +166,25 @@ object BodyQueryUtil {
             xmlDocumentHolder.set(xmlDocument)
         }
         return xmlDocument
+    }
+
+    fun normaliseXPathExpression(expression: String): String {
+        val parts = expression.split("/")
+        val sb = StringBuffer()
+        for (i in 1 until parts.size) {
+            val part = parts[i]
+            if (part.isEmpty()) {
+                sb.append("/")
+                continue
+            } else if (part == "text()") {
+                continue
+            }
+            var pathElement = part
+            if (!pathElement.contains(':') && !pathElement.startsWith('*')) {
+                pathElement = "*[local-name()='$pathElement']"
+            }
+            sb.append('/').append(pathElement)
+        }
+        return sb.toString()
     }
 }

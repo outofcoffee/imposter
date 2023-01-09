@@ -47,6 +47,7 @@ import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpRequest
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.equalTo
+import org.hamcrest.core.IsEqual
 import org.jdom2.Document
 import org.jdom2.input.SAXBuilder
 import org.junit.Test
@@ -104,5 +105,17 @@ class BodyQueryUtilTest {
         val xPath = "//id"
         val result = BodyQueryUtil.selectSingleNode(document, xPath, emptyList())?.value
         assertThat(result, equalTo("10"))
+    }
+
+    @Test
+    fun normaliseXPathExpression() {
+        val normalised = BodyQueryUtil.normaliseXPathExpression("//foo/bar/text()")
+        assertThat(normalised, IsEqual.equalTo("//*[local-name()='foo']/*[local-name()='bar']"))
+    }
+
+    @Test
+    fun normaliseXPathExpressionIgnoreExisting() {
+        val normalised = BodyQueryUtil.normaliseXPathExpression("//*[local-name()='foo']/bar")
+        assertThat(normalised, IsEqual.equalTo("//*[local-name()='foo']/*[local-name()='bar']"))
     }
 }

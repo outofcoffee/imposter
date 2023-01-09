@@ -179,7 +179,7 @@ object ExpressionUtil {
         if (colonIndex > 0) {
             when (rawItemKey[colonIndex + 1]) {
                 '$' -> jsonPath = rawItemKey.substring(colonIndex + 1)
-                '/' -> xPath = rawItemKey.substring(colonIndex + 1)
+                '/', '!' -> xPath = rawItemKey.substring(colonIndex + 1)
                 '-' -> fallbackValue = rawItemKey.substring(colonIndex + 2)
             }
             itemKey = rawItemKey.substring(0, colonIndex)
@@ -195,9 +195,9 @@ object ExpressionUtil {
         } else {
             evaluated
         }
-        LOGGER.trace("Resolved {} to value: {}, fallback: {}", itemKey, finalValue, fallbackValue)
+        LOGGER.trace("Resolved {} to value: {}, fallback: {}", rawItemKey, finalValue, fallbackValue)
         if (finalValue == null) {
-            LOGGER.debug("Expression: {} evaluated to null", itemKey)
+            LOGGER.debug("Expression: {} evaluated to null", rawItemKey)
         }
         return finalValue?.toString() ?: fallbackValue
     }
