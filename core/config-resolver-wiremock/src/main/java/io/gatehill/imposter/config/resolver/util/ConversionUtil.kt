@@ -134,7 +134,7 @@ object ConversionUtil {
                 // body pattern using XPath with embedded conditional check, but no value;
                 // treat as existence check
                 requestBodyConfig.xPath = matchesXPath
-                requestBodyConfig.exists = true
+                requestBodyConfig.operator = ResourceMatchOperator.Exists
             }
 
             is Map<*, *> -> {
