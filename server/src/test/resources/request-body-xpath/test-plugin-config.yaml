@@ -92,3 +92,27 @@ resources:
     operator: NotContains
   response:
     content: "NotContains"
+
+- method: POST
+  path: /example-regex
+  requestBody:
+    xPath: "/env:Envelope/env:Body/pets:animal/pets:name"
+    value: "Flu.*"
+    xmlNamespaces:
+      env: "http://schemas.xmlsoap.org/soap/envelope/"
+      pets: "urn:com:example:petstore"
+    operator: Matches
+  response:
+    content: "Matches"
+
+- method: POST
+  path: /example-regex-negative
+  requestBody:
+    xPath: "/env:Envelope/env:Body/pets:animal/pets:name"
+    value: "Flu.*"
+    xmlNamespaces:
+      env: "http://schemas.xmlsoap.org/soap/envelope/"
+      pets: "urn:com:example:petstore"
+    operator: NotMatches
+  response:
+    content: "NotMatches"

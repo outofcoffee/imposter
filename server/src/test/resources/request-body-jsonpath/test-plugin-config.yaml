@@ -68,3 +68,21 @@ resources:
     operator: NotContains
   response:
     content: "NotContains"
+
+- method: POST
+  path: /example-regex
+  requestBody:
+    jsonPath: $.foo
+    value: "b.*"
+    operator: Matches
+  response:
+    content: "Matches"
+
+- method: POST
+  path: /example-regex-negative
+  requestBody:
+    jsonPath: $.foo
+    value: "b.*"
+    operator: NotMatches
+  response:
+    content: "NotMatches"

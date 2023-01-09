@@ -264,4 +264,52 @@ class RequestBodyXPathTest : BaseVerticleTest() {
             .then()
             .body(equalTo("NotContains"))
     }
+
+    /**
+     * Regex match on a string in the request body.
+     */
+    @Test
+    fun testMatchStringRegexInRequestBody() {
+        RestAssured.given().`when`()
+            .contentType(ContentType.XML)
+            .body("""
+<?xml version="1.0" encoding="UTF-8"?>
+<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"> 
+  <env:Header/>
+  <env:Body>
+    <pets:animal xmlns:pets="urn:com:example:petstore">
+      <pets:id>3</pets:id>
+      <pets:name>Fluffy</pets:name>
+    </pets:animal>
+  </env:Body>
+</env:Envelope>
+""".trim())
+            .post("/example-regex")
+            .then()
+            .body(equalTo("Matches"))
+    }
+
+    /**
+     * Negative regex match on a string in the request body.
+     */
+    @Test
+    fun testNegativeMatchStringRegexInRequestBody() {
+        RestAssured.given().`when`()
+            .contentType(ContentType.XML)
+            .body("""
+<?xml version="1.0" encoding="UTF-8"?>
+<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"> 
+  <env:Header/>
+  <env:Body>
+    <pets:animal xmlns:pets="urn:com:example:petstore">
+      <pets:id>3</pets:id>
+      <pets:name>Paws</pets:name>
+    </pets:animal>
+  </env:Body>
+</env:Envelope>
+""".trim())
+            .post("/example-regex-negative")
+            .then()
+            .body(equalTo("NotMatches"))
+    }
 }

@@ -43,6 +43,7 @@
 package io.gatehill.imposter.http
 
 import com.google.common.base.Strings.isNullOrEmpty
+import com.google.common.cache.CacheBuilder
 import io.gatehill.imposter.config.ResolvedResourceConfig
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.resource.ResourceMatchOperator
@@ -52,6 +53,7 @@ import io.gatehill.imposter.util.BodyQueryUtil
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.StringUtil.safeEquals
 import org.apache.logging.log4j.LogManager
+import java.util.regex.Pattern
 
 
 /**
@@ -168,6 +170,9 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
 
                 ResourceMatchOperator.Contains, ResourceMatchOperator.NotContains ->
                     matchUsingContains(actualValue, configuredValue, operator)
+
+                ResourceMatchOperator.Matches, ResourceMatchOperator.NotMatches ->
+                    matchUsingRegex(actualValue, configuredValue, operator)
             }
             if (LOGGER.isTraceEnabled) {
                 LOGGER.trace("Body match result for {} {}: {}", operator, configuredValue, matched)
@@ -204,7 +209,25 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
                 operator === ResourceMatchOperator.NotContains && !valueMatch
     }
 
+    private fun matchUsingRegex(
+        actualValue: Any?,
+        configuredValue: String?,
+        operator: ResourceMatchOperator
+    ): Boolean {
+        val valueMatch = if (actualValue != null && configuredValue != null) {
+            val pattern = patternCache.get(configuredValue) { Pattern.compile(configuredValue) }
+            pattern.matcher(actualValue.toString()).matches()
+        } else {
+            false
+        }
+
+        // apply operator
+        return operator === ResourceMatchOperator.Matches && valueMatch ||
+                operator === ResourceMatchOperator.NotMatches && !valueMatch
+    }
+
     companion object {
         private val LOGGER = LogManager.getLogger(AbstractResourceMatcher::class.java)
+        private val patternCache = CacheBuilder.newBuilder().maximumSize(20).build<String, Pattern>()
     }
 }
