@@ -198,8 +198,9 @@ class WiremockConfigResolver : ConfigResolver {
 
                 is Map<*, *> -> {
                     bodyPattern.matchesXPath["expression"]?.let { expression ->
-                        requestBodyConfig.xPath = expression.toString()
+                        requestBodyConfig.xPath = "!$expression"
                     }
+                    // operator
                     bodyPattern.matchesXPath["equalTo"]?.let { equalTo ->
                         requestBodyConfig.value = equalTo.toString()
                     } ?: bodyPattern.matchesXPath["contains"]?.let { contains ->
@@ -276,7 +277,7 @@ class WiremockConfigResolver : ConfigResolver {
 
         private val expressionHandlers: Map<String, ExpressionHandler> = mapOf(
             "jsonPath" to parseSimple { input, expression -> "\\\${${input}:${expression}}" },
-            "soapXPath" to parseSimple { input, expression -> "\\\${${input}:/env:Envelope/env:Body${expression}}" },
+            "soapXPath" to parseSimple { input, expression -> "\\\${${input}:!/*[name()='Envelope']/*[name()='Body']${expression}}" },
             "xPath" to parseSimple { input, expression -> "\\\${${input}:${expression}}" },
             "randomValue" to parseRandom()
         )
