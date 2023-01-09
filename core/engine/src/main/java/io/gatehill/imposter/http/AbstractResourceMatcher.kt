@@ -73,6 +73,7 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
                 LOGGER.trace("No matching resource config for {}", LogUtil.describeRequestShort(httpExchange))
                 return null
             }
+
             1 -> LOGGER.debug("Matched resource config for {}", LogUtil.describeRequestShort(httpExchange))
             else -> {
                 LOGGER.warn(
@@ -161,27 +162,46 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
             val operator = requestBodyConfig.operator
 
             // compare the actual value to the configured value
-            val matched = when(operator) {
-                ResourceMatchOperator.EqualTo, ResourceMatchOperator.NotEqualTo -> {
-                    val valueMatch = safeEquals(configuredValue, actualValue)
+            val matched = when (operator) {
+                ResourceMatchOperator.EqualTo, ResourceMatchOperator.NotEqualTo ->
+                    matchUsingEquality(configuredValue, actualValue, operator)
 
-                    // apply the operator
-                    operator === ResourceMatchOperator.EqualTo && valueMatch ||
-                            operator === ResourceMatchOperator.NotEqualTo && !valueMatch
-                }
-                ResourceMatchOperator.Contains -> {
-                    if (actualValue != null && configuredValue != null) {
-                        actualValue.toString().contains(configuredValue)
-                    } else {
-                        false
-                    }
-                }
+                ResourceMatchOperator.Contains, ResourceMatchOperator.NotContains ->
+                    matchUsingContains(actualValue, configuredValue, operator)
             }
             if (LOGGER.isTraceEnabled) {
                 LOGGER.trace("Body match result for {} {}: {}", operator, configuredValue, matched)
             }
             return matched
         }
+    }
+
+    private fun matchUsingEquality(
+        configuredValue: String?,
+        actualValue: Any?,
+        operator: ResourceMatchOperator
+    ): Boolean {
+        val valueMatch = safeEquals(configuredValue, actualValue)
+
+        // apply operator
+        return operator === ResourceMatchOperator.EqualTo && valueMatch ||
+                operator === ResourceMatchOperator.NotEqualTo && !valueMatch
+    }
+
+    private fun matchUsingContains(
+        actualValue: Any?,
+        configuredValue: String?,
+        operator: ResourceMatchOperator
+    ): Boolean {
+        val valueMatch = if (actualValue != null && configuredValue != null) {
+            actualValue.toString().contains(configuredValue)
+        } else {
+            false
+        }
+
+        // apply operator
+        return operator === ResourceMatchOperator.Contains && valueMatch ||
+                operator === ResourceMatchOperator.NotContains && !valueMatch
     }
 
     companion object {

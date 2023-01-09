@@ -87,6 +87,19 @@ class RequestBodyJsonPathTest : BaseVerticleTest() {
     }
 
     /**
+     * Negative match against a string in the request body.
+     */
+    @Test
+    fun testNegativeMatchStringInRequestBody() {
+        RestAssured.given().`when`()
+            .contentType(ContentType.JSON)
+            .body("""{ "foo": "bar" }""")
+            .post("/example-negative")
+            .then()
+            .body(equalTo("NotEqualTo"))
+    }
+
+    /**
      * Match against an integer in the request body.
      */
     @Test
@@ -139,19 +152,6 @@ class RequestBodyJsonPathTest : BaseVerticleTest() {
     }
 
     /**
-     * Negative match against a string in the request body.
-     */
-    @Test
-    fun testNegativeMatchStringInRequestBody() {
-        RestAssured.given().`when`()
-            .contentType(ContentType.JSON)
-            .body("""{ "foo": "bar" }""")
-            .post("/example-negative")
-            .then()
-            .statusCode(equalTo(205))
-    }
-
-    /**
      * Match when a string in the request body contains a given value.
      */
     @Test
@@ -161,6 +161,19 @@ class RequestBodyJsonPathTest : BaseVerticleTest() {
             .body("""{ "foo": "bar" }""")
             .post("/example-contains")
             .then()
-            .statusCode(equalTo(206))
+            .body(equalTo("Contains"))
+    }
+
+    /**
+     * Negative match when a string in the request body contains a given value.
+     */
+    @Test
+    fun testNegativeMatchStringContainsInRequestBody() {
+        RestAssured.given().`when`()
+            .contentType(ContentType.JSON)
+            .body("""{ "foo": "qux" }""")
+            .post("/example-contains-negative")
+            .then()
+            .body(equalTo("NotContains"))
     }
 }
