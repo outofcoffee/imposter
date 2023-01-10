@@ -55,7 +55,7 @@ class QueryProviderImpl : QueryProvider {
         try {
             val context = when (rawValue) {
                 // raw JSON will be parsed by the context
-                is String -> BodyQueryUtil.JSONPATH_PARSE_CONTEXT.parse(rawValue as String)
+                is String -> @Suppress("USELESS_CAST") BodyQueryUtil.JSONPATH_PARSE_CONTEXT.parse(rawValue as String)
 
                 // assumes already deserialised
                 else -> BodyQueryUtil.JSONPATH_PARSE_CONTEXT.parse(rawValue)

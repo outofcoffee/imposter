@@ -63,6 +63,7 @@ interface MutableResponseBehaviour {
     fun withPerformance(performance: PerformanceSimulationConfig?): MutableResponseBehaviour
     fun withDelay(exactDelayMs: Int): MutableResponseBehaviour
     fun withDelayRange(minDelayMs: Int, maxDelayMs: Int): MutableResponseBehaviour
+    fun withFailure(failureType: FailureSimulationType?): MutableResponseBehaviour
 
     @Deprecated("Use skipDefaultBehaviour() instead", ReplaceWith("skipDefaultBehaviour()"))
     fun immediately(): MutableResponseBehaviour

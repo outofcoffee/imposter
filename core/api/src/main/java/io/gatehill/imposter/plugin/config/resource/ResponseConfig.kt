@@ -44,6 +44,7 @@ package io.gatehill.imposter.plugin.config.resource
 
 import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonProperty
+import io.gatehill.imposter.script.FailureSimulationType
 import io.gatehill.imposter.script.PerformanceSimulationConfig
 
 /**
@@ -73,15 +74,20 @@ open class ResponseConfig {
     @JsonProperty("delay")
     var performanceDelay: PerformanceSimulationConfig? = null
 
+    @JsonProperty("fail")
+    var failureType: FailureSimulationType? = null
+
     /**
      * @return `true` if properties of the response configuration have been set
      */
     open fun hasConfiguration(): Boolean = arrayOf(
         this.content,
+        this.failureType,
         this.file,
         this.headers,
         this.performanceDelay,
         this.scriptFile,
         this.statusCode,
+        this.isTemplate,
     ).any { it != null }
 }

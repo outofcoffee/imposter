@@ -81,6 +81,9 @@ abstract class GroovyResponseBehaviourImpl : Script(), ReadWriteResponseBehaviou
     override val performanceSimulation: PerformanceSimulationConfig?
         get() = delegate.performanceSimulation
 
+    override val failureType: FailureSimulationType?
+        get() = delegate.failureType
+
     override fun withHeader(header: String, value: String?): MutableResponseBehaviour {
         delegate.withHeader(header, value)
         return this
@@ -162,6 +165,11 @@ abstract class GroovyResponseBehaviourImpl : Script(), ReadWriteResponseBehaviou
 
     override fun withDelayRange(minDelayMs: Int, maxDelayMs: Int): MutableResponseBehaviour {
         delegate.withDelayRange(minDelayMs, maxDelayMs)
+        return this
+    }
+
+    override fun withFailure(failureType: FailureSimulationType?): MutableResponseBehaviour {
+        delegate.withFailure(failureType)
         return this
     }
 

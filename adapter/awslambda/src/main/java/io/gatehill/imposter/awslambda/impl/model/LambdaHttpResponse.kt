@@ -85,6 +85,12 @@ class LambdaHttpResponse : HttpResponse {
         }
     }
 
+    override fun close() {
+        statusCode = 0
+        bodyBuffer = null
+        headers.clear()
+    }
+
     val bodyLength
         get() = bodyBuffer?.length() ?: 0
 }

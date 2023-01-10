@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022.
+ * Copyright (c) 2023.
  *
  * This file is part of Imposter.
  *
@@ -40,26 +40,56 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.server
 
-package io.gatehill.imposter.http
-
-import io.vertx.core.MultiMap
-import io.vertx.core.buffer.Buffer
+import io.gatehill.imposter.plugin.test.TestPluginImpl
+import io.gatehill.imposter.util.HttpUtil
+import io.restassured.RestAssured
+import io.vertx.ext.unit.TestContext
+import io.vertx.ext.unit.junit.VertxUnitRunner
+import org.apache.http.NoHttpResponseException
+import org.hamcrest.Matchers.*
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
 
 /**
+ * Tests for failure simulation.
+ *
  * @author Pete Cornish
  */
-interface HttpResponse {
-    fun setStatusCode(statusCode: Int): HttpResponse
-    fun getStatusCode(): Int
-    fun putHeader(headerKey: String, headerValue: String): HttpResponse
-    fun headers(): MultiMap
-    fun end()
-    fun end(body: Buffer)
-    fun end(body: String?) {
-        body?.let { end(Buffer.buffer(body)) } ?: end()
-    }
-    fun close()
+@RunWith(VertxUnitRunner::class)
+class FailureSimulationTest : BaseVerticleTest() {
+    override val pluginClass = TestPluginImpl::class.java
 
-    val bodyBuffer: Buffer?
+    @Before
+    @Throws(Exception::class)
+    override fun setUp(testContext: TestContext) {
+        super.setUp(testContext)
+        RestAssured.baseURI = "http://$host:$listenPort"
+    }
+
+    override val testConfigDirs = listOf(
+        "/failure-simulation"
+    )
+
+    @Test
+    fun `test empty response failure`() {
+        RestAssured.given().`when`()
+            .get("/static-failure-empty")
+            .then()
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .body(hasLength(0))
+            .headers(emptyMap<String, String>())
+    }
+
+    @Test(expected = NoHttpResponseException::class)
+    fun `test close connection failure`() {
+        RestAssured.given().`when`()
+            .get("/static-failure-close")
+            .then()
+            .statusCode(equalTo(0))
+            .body(hasLength(0))
+            .headers(emptyMap<String, String>())
+    }
 }

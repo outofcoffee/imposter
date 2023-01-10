@@ -1,0 +1,12 @@
+plugin: "io.gatehill.imposter.plugin.test.TestPluginImpl"
+
+resources:
+- method: GET
+  path: /static-failure-empty
+  response:
+    fail: EmptyResponse
+
+- method: GET
+  path: /static-failure-close
+  response:
+    fail: CloseConnection

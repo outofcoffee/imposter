@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022.
+ * Copyright (c) 2023.
  *
  * This file is part of Imposter.
  *
@@ -40,26 +40,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-
-package io.gatehill.imposter.http
-
-import io.vertx.core.MultiMap
-import io.vertx.core.buffer.Buffer
+package io.gatehill.imposter.script
 
 /**
  * @author Pete Cornish
  */
-interface HttpResponse {
-    fun setStatusCode(statusCode: Int): HttpResponse
-    fun getStatusCode(): Int
-    fun putHeader(headerKey: String, headerValue: String): HttpResponse
-    fun headers(): MultiMap
-    fun end()
-    fun end(body: Buffer)
-    fun end(body: String?) {
-        body?.let { end(Buffer.buffer(body)) } ?: end()
-    }
-    fun close()
-
-    val bodyBuffer: Buffer?
+enum class FailureSimulationType {
+    EmptyResponse,
+    CloseConnection,
 }

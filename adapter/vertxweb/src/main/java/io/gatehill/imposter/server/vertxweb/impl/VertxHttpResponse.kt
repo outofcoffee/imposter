@@ -79,4 +79,8 @@ class VertxHttpResponse(private val vertxResponse: HttpServerResponse) : HttpRes
         bodyBuffer = body
         vertxResponse.end(body)
     }
+
+    override fun close() {
+        vertxResponse.close()
+    }
 }

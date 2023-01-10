@@ -46,7 +46,6 @@ import com.google.common.base.Strings
 import io.gatehill.imposter.plugin.config.resource.ResponseConfig
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl
-import java.util.*
 
 /**
  * @author Pete Cornish
@@ -75,9 +74,11 @@ open class DefaultResponseBehaviourFactory protected constructor() : ResponseBeh
         if (responseConfig.isTemplate == true) {
             responseBehaviour.template()
         }
-        if (Objects.isNull(responseBehaviour.performanceSimulation)) {
-            responseBehaviour
-                .withPerformance(responseConfig.performanceDelay)
+        if (null == responseBehaviour.performanceSimulation) {
+            responseBehaviour.withPerformance(responseConfig.performanceDelay)
+        }
+        if (null == responseBehaviour.failureType) {
+            responseBehaviour.withFailure(responseConfig.failureType)
         }
         responseConfig.headers?.let { headers -> responseBehaviour.responseHeaders.putAll(headers) }
     }

@@ -54,4 +54,5 @@ interface ResponseBehaviour {
     val exampleName: String?
     val behaviourType: ResponseBehaviourType
     val performanceSimulation: PerformanceSimulationConfig?
+    val failureType: FailureSimulationType?
 }

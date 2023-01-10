@@ -55,6 +55,7 @@ open class ReadWriteResponseBehaviourImpl : ReadWriteResponseBehaviour {
     override val responseHeaders: MutableMap<String, String> = mutableMapOf()
     private var behaviourConfigured = false
     override var performanceSimulation: PerformanceSimulationConfig? = null
+    override var failureType: FailureSimulationType? = null
 
     override fun template(): MutableResponseBehaviour {
         isTemplate = true
@@ -195,6 +196,11 @@ open class ReadWriteResponseBehaviourImpl : ReadWriteResponseBehaviour {
             this.minDelayMs = minDelayMs
             this.maxDelayMs = maxDelayMs
         }
+        return this
+    }
+
+    override fun withFailure(failureType: FailureSimulationType?): MutableResponseBehaviour {
+        this.failureType = failureType
         return this
     }
 }

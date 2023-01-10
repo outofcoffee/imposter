@@ -54,6 +54,7 @@ import io.gatehill.imposter.lifecycle.EngineLifecycleListener
 import io.gatehill.imposter.plugin.config.ContentTypedConfig
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig
+import io.gatehill.imposter.script.FailureSimulationType
 import io.gatehill.imposter.script.ResponseBehaviour
 import io.gatehill.imposter.service.ResponseService.ResponseSender
 import io.gatehill.imposter.util.HttpUtil
@@ -141,7 +142,11 @@ class ResponseServiceImpl @Inject constructor(
         vararg fallbackSenders: ResponseSender,
     ) {
         val completion = {
-            sendResponseInternal(pluginConfig, resourceConfig, httpExchange, responseBehaviour, fallbackSenders)
+            responseBehaviour.failureType?.let { failureType ->
+                sendFailure(resourceConfig, httpExchange, failureType)
+            } ?: run {
+                sendResponseInternal(pluginConfig, resourceConfig, httpExchange, responseBehaviour, fallbackSenders)
+            }
         }
         val delayMs = simulatePerformance(responseBehaviour)
         if (delayMs > 0) {
@@ -181,26 +186,62 @@ class ResponseServiceImpl @Inject constructor(
             LogUtil.describeRequestShort(httpExchange),
             responseBehaviour.statusCode
         )
-        try {
-            val response = httpExchange.response()
-            response.setStatusCode(responseBehaviour.statusCode)
-            responseBehaviour.responseHeaders.forEach { (name: String?, value: String?) ->
-                response.putHeader(name, value)
-            }
-            if (!Strings.isNullOrEmpty(responseBehaviour.responseFile)) {
-                serveResponseFile(pluginConfig, resourceConfig, httpExchange, responseBehaviour)
-            } else if (!Strings.isNullOrEmpty(responseBehaviour.content)) {
-                serveResponseData(resourceConfig, httpExchange, responseBehaviour)
-            } else {
-                fallback(httpExchange, responseBehaviour, fallbackSenders)
-            }
-        } catch (e: Exception) {
-            httpExchange.fail(
-                ResponseException(
-                    "Error sending mock response with status code ${responseBehaviour.statusCode} for " +
-                        describeRequest(httpExchange), e
+        finalise(resourceConfig, httpExchange) {
+            try {
+                val response = httpExchange.response()
+                response.setStatusCode(responseBehaviour.statusCode)
+                responseBehaviour.responseHeaders.forEach { (name: String?, value: String?) ->
+                    response.putHeader(name, value)
+                }
+                if (!Strings.isNullOrEmpty(responseBehaviour.responseFile)) {
+                    serveResponseFile(pluginConfig, resourceConfig, httpExchange, responseBehaviour)
+                } else if (!Strings.isNullOrEmpty(responseBehaviour.content)) {
+                    serveResponseData(resourceConfig, httpExchange, responseBehaviour)
+                } else {
+                    fallback(httpExchange, responseBehaviour, fallbackSenders)
+                }
+            } catch (e: Exception) {
+                httpExchange.fail(
+                    ResponseException(
+                        "Error sending mock response with status code ${responseBehaviour.statusCode} for " +
+                            describeRequest(httpExchange), e
+                    )
                 )
-            )
+            }
+        }
+    }
+
+    private fun sendFailure(
+        resourceConfig: ResourceConfig?,
+        httpExchange: HttpExchange,
+        failureType: FailureSimulationType,
+    ) {
+        LOGGER.trace(
+            "Simulating {} failure for {}",
+            failureType,
+            LogUtil.describeRequestShort(httpExchange),
+        )
+        finalise(resourceConfig, httpExchange) {
+            try {
+                when (failureType) {
+                    FailureSimulationType.EmptyResponse -> httpExchange.response().end()
+                    FailureSimulationType.CloseConnection -> httpExchange.response().close()
+                }
+            } catch (e: Exception) {
+                httpExchange.fail(
+                    ResponseException("Error simulating $failureType failure for " + describeRequest(httpExchange), e)
+                )
+            }
+        }
+    }
+
+    private fun finalise(
+        resourceConfig: ResourceConfig?,
+        httpExchange: HttpExchange,
+        block: () -> Unit,
+    ) {
+        try {
+            block()
         } finally {
             // always set phase and perform tidy up once handled, regardless of outcome
             httpExchange.phase = ExchangePhase.RESPONSE_SENT
