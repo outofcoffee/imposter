@@ -42,25 +42,35 @@
  */
 package io.gatehill.imposter.plugin.config.resource.reqbody
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.gatehill.imposter.plugin.config.resource.ResourceMatchOperator
 
 /**
  * @author Pete Cornish
  */
-class RequestBodyConfig {
-    @JsonProperty("jsonPath")
+open class BaseRequestBodyConfig {
+    @field:JsonProperty("jsonPath")
     val jsonPath: String? = null
 
-    @JsonProperty("xPath")
+    @get:JsonIgnore
+    @field:JsonProperty("xPath")
     var xPath: String? = null
 
-    @JsonProperty("xmlNamespaces")
+    @field:JsonProperty("xmlNamespaces")
     var xmlNamespaces: Map<String, String>? = null
 
-    @JsonProperty("value")
+    @field:JsonProperty("value")
     var value: String? = null
 
-    @JsonProperty("operator")
-    var operator: ResourceMatchOperator = ResourceMatchOperator.EqualTo
+    @field:JsonProperty("operator")
+    var operator: ResourceMatchOperator? = null
+}
+
+/**
+ * @author Pete Cornish
+ */
+class RequestBodyConfig : BaseRequestBodyConfig() {
+    @field:JsonProperty("allOf")
+    var allOf: List<BaseRequestBodyConfig>? = null
 }

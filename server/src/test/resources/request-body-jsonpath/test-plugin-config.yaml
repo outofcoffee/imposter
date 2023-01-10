@@ -86,3 +86,14 @@ resources:
     operator: NotMatches
   response:
     content: "NotMatches"
+
+- method: POST
+  path: /example-allof
+  requestBody:
+    allOf:
+    - jsonPath: $.foo
+      value: bar
+    - jsonPath: $.baz
+      value: qux
+  response:
+    content: "AllOf"

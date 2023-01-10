@@ -116,3 +116,20 @@ resources:
     operator: NotMatches
   response:
     content: "NotMatches"
+
+- method: POST
+  path: /example-allof
+  requestBody:
+    allOf:
+    - xPath: "/env:Envelope/env:Body/pets:animal/pets:name"
+      value: "Fluffy"
+      xmlNamespaces:
+        env: "http://schemas.xmlsoap.org/soap/envelope/"
+        pets: "urn:com:example:petstore"
+    - xPath: "/env:Envelope/env:Body/pets:animal/pets:id"
+      value: "3"
+      xmlNamespaces:
+        env: "http://schemas.xmlsoap.org/soap/envelope/"
+        pets: "urn:com:example:petstore"
+  response:
+    content: "AllOf"

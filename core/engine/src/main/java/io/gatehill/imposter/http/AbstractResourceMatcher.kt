@@ -47,7 +47,7 @@ import com.google.common.cache.CacheBuilder
 import io.gatehill.imposter.config.ResolvedResourceConfig
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.resource.ResourceMatchOperator
-import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyConfig
+import io.gatehill.imposter.plugin.config.resource.reqbody.BaseRequestBodyConfig
 import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyResourceConfig
 import io.gatehill.imposter.util.BodyQueryUtil
 import io.gatehill.imposter.util.LogUtil
@@ -118,11 +118,27 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
             // none configured - implies any match
             return true
         }
+        return resourceConfig.requestBody?.allOf?.let { bodyConfigs ->
+            if (LOGGER.isTraceEnabled) {
+                LOGGER.trace("Matching against ${bodyConfigs.size} request body configs for ${LogUtil.describeRequestShort(httpExchange)}")
+            }
+            bodyConfigs.all { matchUsingBodyConfig(it, httpExchange) }
+        } ?: run {
+            if (LOGGER.isTraceEnabled) {
+                LOGGER.trace("Matching against a single request body config for ${LogUtil.describeRequestShort(httpExchange)}")
+            }
+            matchUsingBodyConfig(resourceConfig.requestBody, httpExchange)
+        }
+    }
 
-        if (!isNullOrEmpty(resourceConfig.requestBody?.jsonPath)) {
-            return matchRequestBodyJsonPath(resourceConfig.requestBody!!, httpExchange)
-        } else if (!isNullOrEmpty(resourceConfig.requestBody?.xPath)) {
-            return matchRequestBodyXPath(resourceConfig.requestBody!!, httpExchange)
+    private fun matchUsingBodyConfig(
+        bodyConfig: BaseRequestBodyConfig?,
+        httpExchange: HttpExchange
+    ): Boolean {
+        if (!isNullOrEmpty(bodyConfig?.jsonPath)) {
+            return matchRequestBodyJsonPath(bodyConfig!!, httpExchange)
+        } else if (!isNullOrEmpty(bodyConfig?.xPath)) {
+            return matchRequestBodyXPath(bodyConfig!!, httpExchange)
         } else {
             // none configured - implies any match
             return true
@@ -130,47 +146,50 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
     }
 
     private fun matchRequestBodyJsonPath(
-        requestBodyConfig: RequestBodyConfig,
+        bodyConfig: BaseRequestBodyConfig,
         httpExchange: HttpExchange
     ): Boolean {
         val bodyValue = BodyQueryUtil.queryRequestBodyJsonPath(
-            requestBodyConfig.jsonPath!!,
+            bodyConfig.jsonPath!!,
             httpExchange
         )
         // resource matching always uses strings
-        return checkBodyMatch(requestBodyConfig, bodyValue?.toString())
+        return checkBodyMatch(bodyConfig, bodyValue?.toString())
     }
 
     private fun matchRequestBodyXPath(
-        requestBodyConfig: RequestBodyConfig,
+        bodyConfig: BaseRequestBodyConfig,
         httpExchange: HttpExchange
     ): Boolean {
         val bodyValue = BodyQueryUtil.queryRequestBodyXPath(
-            requestBodyConfig.xPath!!,
-            requestBodyConfig.xmlNamespaces,
+            bodyConfig.xPath!!,
+            bodyConfig.xmlNamespaces,
             httpExchange
         )
-        return checkBodyMatch(requestBodyConfig, bodyValue)
+        return checkBodyMatch(bodyConfig, bodyValue)
     }
 
-    private fun checkBodyMatch(requestBodyConfig: RequestBodyConfig, actualValue: Any?): Boolean {
-        val matched = when (val operator = requestBodyConfig.operator) {
+    private fun checkBodyMatch(bodyConfig: BaseRequestBodyConfig, actualValue: Any?): Boolean {
+        // defaults to equality check
+        val operator = bodyConfig.operator ?: ResourceMatchOperator.EqualTo
+
+        val matched = when (operator) {
             ResourceMatchOperator.Exists, ResourceMatchOperator.NotExists -> {
                 // the expression is checking for the existence of a value using the given query
                 return (actualValue != null) == (operator == ResourceMatchOperator.Exists)
             }
 
             ResourceMatchOperator.EqualTo, ResourceMatchOperator.NotEqualTo ->
-                matchUsingEquality(requestBodyConfig.value, actualValue, operator)
+                matchUsingEquality(bodyConfig.value, actualValue, operator)
 
             ResourceMatchOperator.Contains, ResourceMatchOperator.NotContains ->
-                matchUsingContains(actualValue, requestBodyConfig.value, operator)
+                matchUsingContains(actualValue, bodyConfig.value, operator)
 
             ResourceMatchOperator.Matches, ResourceMatchOperator.NotMatches ->
-                matchUsingRegex(actualValue, requestBodyConfig.value, operator)
+                matchUsingRegex(actualValue, bodyConfig.value, operator)
         }
         if (LOGGER.isTraceEnabled) {
-            LOGGER.trace("Body match result for {} {}: {}", requestBodyConfig.operator, requestBodyConfig.value, matched)
+            LOGGER.trace("Body match result for {} {}: {}", bodyConfig.operator, bodyConfig.value, matched)
         }
         return matched
     }

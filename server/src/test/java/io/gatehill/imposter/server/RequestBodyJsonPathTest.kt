@@ -48,6 +48,7 @@ import io.restassured.http.ContentType
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
 import org.hamcrest.Matchers.equalTo
+import org.hamcrest.Matchers.hasLength
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -201,5 +202,31 @@ class RequestBodyJsonPathTest : BaseVerticleTest() {
             .post("/example-regex-negative")
             .then()
             .body(equalTo("NotMatches"))
+    }
+
+    /**
+     * Match requiring multiple strings in the request body.
+     */
+    @Test
+    fun testAllOfMatchInRequestBody() {
+        RestAssured.given().`when`()
+            .contentType(ContentType.JSON)
+            .body("""{ "foo": "bar", "baz": "qux" }""")
+            .post("/example-allof")
+            .then()
+            .body(equalTo("AllOf"))
+    }
+
+    /**
+     * Unsatisfied match requiring multiple strings in the request body.
+     */
+    @Test
+    fun testUnsatisfiedAllOfMatchInRequestBody() {
+        RestAssured.given().`when`()
+            .contentType(ContentType.JSON)
+            .body("""{ "foo": "bar", "baz": "no match" }""")
+            .post("/example-allof")
+            .then()
+            .body(hasLength(0))
     }
 }

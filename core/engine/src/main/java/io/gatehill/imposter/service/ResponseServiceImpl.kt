@@ -106,7 +106,7 @@ class ResponseServiceImpl @Inject constructor(
 
     override fun sendEmptyResponse(httpExchange: HttpExchange, responseBehaviour: ResponseBehaviour): Boolean {
         return try {
-            LOGGER.info(
+            LOGGER.warn(
                 "Response file and data are blank - returning empty response for {}",
                 describeRequest(httpExchange)
             )
@@ -129,7 +129,8 @@ class ResponseServiceImpl @Inject constructor(
             resourceConfig,
             httpExchange,
             responseBehaviour,
-            ResponseSender { rc, rb -> sendEmptyResponse(rc, rb) })
+            ResponseSender { rc, rb -> sendEmptyResponse(rc, rb) }
+        )
     }
 
     override fun sendResponse(

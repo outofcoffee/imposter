@@ -42,7 +42,6 @@
  */
 package io.gatehill.imposter.service
 
-import com.google.common.base.Preconditions
 import com.google.common.base.Strings
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.exception.ResponseException
@@ -123,8 +122,8 @@ class ResponseRoutingServiceImpl @Inject constructor(
         statusCodeFactory: StatusCodeFactory,
         responseBehaviourFactory: ResponseBehaviourFactory,
     ): ResponseBehaviour {
-        val responseConfig = resourceConfig!!.responseConfig
-        Preconditions.checkNotNull(responseConfig, "Response configuration must not be null")
+        val responseConfig = resourceConfig?.responseConfig
+        checkNotNull(responseConfig) { "Response configuration must not be null" }
 
         val statusCode = statusCodeFactory.calculateStatus(resourceConfig)
         val responseBehaviour: ReadWriteResponseBehaviour

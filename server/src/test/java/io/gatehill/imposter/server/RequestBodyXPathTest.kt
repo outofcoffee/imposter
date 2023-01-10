@@ -47,6 +47,7 @@ import io.restassured.RestAssured
 import io.restassured.http.ContentType
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
+import org.hamcrest.Matchers
 import org.hamcrest.Matchers.equalTo
 import org.junit.Before
 import org.junit.Test
@@ -311,5 +312,53 @@ class RequestBodyXPathTest : BaseVerticleTest() {
             .post("/example-regex-negative")
             .then()
             .body(equalTo("NotMatches"))
+    }
+
+    /**
+     * Match requiring multiple strings in the request body.
+     */
+    @Test
+    fun testAllOfMatchInRequestBody() {
+        RestAssured.given().`when`()
+            .contentType(ContentType.XML)
+            .body("""
+<?xml version="1.0" encoding="UTF-8"?>
+<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"> 
+  <env:Header/>
+  <env:Body>
+    <pets:animal xmlns:pets="urn:com:example:petstore">
+      <pets:id>3</pets:id>
+      <pets:name>Fluffy</pets:name>
+    </pets:animal>
+  </env:Body>
+</env:Envelope>
+""".trim())
+            .post("/example-allof")
+            .then()
+            .body(equalTo("AllOf"))
+    }
+
+    /**
+     * Unsatisfied match requiring multiple strings in the request body.
+     */
+    @Test
+    fun testUnsatisfiedAllOfMatchInRequestBody() {
+        RestAssured.given().`when`()
+            .contentType(ContentType.XML)
+            .body("""
+<?xml version="1.0" encoding="UTF-8"?>
+<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"> 
+  <env:Header/>
+  <env:Body>
+    <pets:animal xmlns:pets="urn:com:example:petstore">
+      <pets:id>3</pets:id>
+      <pets:name>no match</pets:name>
+    </pets:animal>
+  </env:Body>
+</env:Envelope>
+""".trim())
+            .post("/example-allof")
+            .then()
+            .body(Matchers.hasLength(0))
     }
 }
