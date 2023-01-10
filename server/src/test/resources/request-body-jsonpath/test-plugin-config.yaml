@@ -39,7 +39,7 @@ resources:
   path: /example-exists
   requestBody:
     jsonPath: $.qux
-    exists: true
+    operator: Exists
   response:
     statusCode: 201
 
@@ -47,7 +47,7 @@ resources:
   path: /example-not-exists
   requestBody:
     jsonPath: $.notexist
-    exists: false
+    operator: NotExists
   response:
     statusCode: 202
 

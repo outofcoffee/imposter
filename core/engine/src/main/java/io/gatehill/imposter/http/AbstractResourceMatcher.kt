@@ -154,31 +154,25 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
     }
 
     private fun checkBodyMatch(requestBodyConfig: RequestBodyConfig, actualValue: Any?): Boolean {
-        requestBodyConfig.exists?.let { shouldExist ->
-            // the expression is checking for the existence of a value using the given query,
-            // perhaps by using embedded conditional checks
-            return (actualValue != null) == shouldExist
-
-        } ?: run {
-            val configuredValue = requestBodyConfig.value
-            val operator = requestBodyConfig.operator
-
-            // compare the actual value to the configured value
-            val matched = when (operator) {
-                ResourceMatchOperator.EqualTo, ResourceMatchOperator.NotEqualTo ->
-                    matchUsingEquality(configuredValue, actualValue, operator)
-
-                ResourceMatchOperator.Contains, ResourceMatchOperator.NotContains ->
-                    matchUsingContains(actualValue, configuredValue, operator)
-
-                ResourceMatchOperator.Matches, ResourceMatchOperator.NotMatches ->
-                    matchUsingRegex(actualValue, configuredValue, operator)
+        val matched = when (val operator = requestBodyConfig.operator) {
+            ResourceMatchOperator.Exists, ResourceMatchOperator.NotExists -> {
+                // the expression is checking for the existence of a value using the given query
+                return (actualValue != null) == (operator == ResourceMatchOperator.Exists)
             }
-            if (LOGGER.isTraceEnabled) {
-                LOGGER.trace("Body match result for {} {}: {}", operator, configuredValue, matched)
-            }
-            return matched
+
+            ResourceMatchOperator.EqualTo, ResourceMatchOperator.NotEqualTo ->
+                matchUsingEquality(requestBodyConfig.value, actualValue, operator)
+
+            ResourceMatchOperator.Contains, ResourceMatchOperator.NotContains ->
+                matchUsingContains(actualValue, requestBodyConfig.value, operator)
+
+            ResourceMatchOperator.Matches, ResourceMatchOperator.NotMatches ->
+                matchUsingRegex(actualValue, requestBodyConfig.value, operator)
         }
+        if (LOGGER.isTraceEnabled) {
+            LOGGER.trace("Body match result for {} {}: {}", requestBodyConfig.operator, requestBodyConfig.value, matched)
+        }
+        return matched
     }
 
     private fun matchUsingEquality(

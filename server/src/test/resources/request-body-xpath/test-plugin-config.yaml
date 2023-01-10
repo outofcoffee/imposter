@@ -51,7 +51,7 @@ resources:
   path: /example-exists
   requestBody:
     xPath: "/env:Envelope/env:Body/pets:animal/pets:id"
-    exists: true
+    operator: Exists
     xmlNamespaces:
       env: "http://schemas.xmlsoap.org/soap/envelope/"
       pets: "urn:com:example:petstore"
@@ -62,7 +62,7 @@ resources:
   path: /example-not-exists
   requestBody:
     xPath: "/env:Envelope/env:Body/pets:animal/pets:notexist"
-    exists: false
+    operator: NotExists
     xmlNamespaces:
       env: "http://schemas.xmlsoap.org/soap/envelope/"
       pets: "urn:com:example:petstore"
