@@ -3,9 +3,23 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [3.7.0] - 2023-01-10
+## Added
+- feat: adds failure simulation.
+- feat: supports multiple request body matchers.
+- feat: allows matching body based on existence of node at JsonPath/XPath expression.
+- feat: adds string contains check and negative check for request body matching.
+- feat: adds regex body matcher.
+- feat: adds negative contains body matcher.
+- feat: adds syntax to normalise XPath expressions.
+- feat: adds random value expression evaluator.
+
 ## Changed
-- ...
+- refactor: moves performance delay to idiomatic Kotlin random generator.
+- chore: bumps hamcrest to 2.2.
+
+## Fixed
+- fix: improves error trapping in expression evaluator.
 
 ## [3.6.0] - 2023-01-07
 ## Added
