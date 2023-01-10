@@ -42,11 +42,9 @@
  */
 package io.gatehill.imposter.config.resolver.util
 
-import com.google.common.base.Verify
 import io.gatehill.imposter.config.resolver.model.BodyPattern
 import io.gatehill.imposter.plugin.config.resource.ResourceMatchOperator
 import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyConfig
-import org.apache.logging.log4j.LogManager
 import java.util.regex.Pattern
 
 object ConversionUtil {
@@ -67,15 +65,13 @@ object ConversionUtil {
         "randomValue" to convertRandom()
     )
 
-    private val logger = LogManager.getLogger(ConversionUtil::class.java)
-
     fun convertBodyPatterns(bodyPatterns: List<BodyPattern>?): RequestBodyConfig? {
         if (bodyPatterns?.isNotEmpty() == true) {
-            if (bodyPatterns.size > 1) {
-                logger.warn("Only one body pattern is supported - all but the first will be ignored")
+            if (bodyPatterns.size == 1) {
+                return convertBodyPattern(bodyPatterns.first())
+            } else {
+                return RequestBodyConfig().apply { allOf = bodyPatterns.map { convertBodyPattern(it) } }
             }
-            val bodyPattern = bodyPatterns.first()
-            return ConversionUtil.convertBodyPattern(bodyPattern)
         } else {
             return null
         }
@@ -85,7 +81,7 @@ object ConversionUtil {
         headers?.mapNotNull { (k, v) -> v["equalTo"]?.let { k to it } }?.toMap()
 
     /**
-     * Examples patterns shown below.
+     * Convert a body pattern to its corresponding request body configuration. Example patterns shown below.
      *
      * Contains:
      * ```
@@ -136,7 +132,6 @@ object ConversionUtil {
                 requestBodyConfig.xPath = matchesXPath
                 requestBodyConfig.operator = ResourceMatchOperator.Exists
             }
-
             is Map<*, *> -> {
                 matchesXPath["expression"]?.let { expression ->
                     requestBodyConfig.xPath = "!$expression"
@@ -208,8 +203,8 @@ object ConversionUtil {
                 uppercase = arg.substringAfter("=").toBoolean()
             }
         }
-        Verify.verifyNotNull(type, "type is required")
-        Verify.verifyNotNull(length, "length is required")
+        checkNotNull(type) { "type is required" }
+        checkNotNull(length) { "length is required" }
         "\\\${random.$type(length=$length,uppercase=$uppercase)}"
     }
 }
