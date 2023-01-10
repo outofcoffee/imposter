@@ -56,6 +56,7 @@ import org.apache.logging.log4j.LogManager
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
+import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Paths
 import kotlin.io.path.exists
@@ -93,7 +94,7 @@ class WiremockConfigResolver : ConfigResolver {
         mappingCache.get(configPath)?.let { wiremockMappings ->
             logger.debug("Converting ${wiremockMappings.size} wiremock mapping file(s) from $configPath")
             val converted = wiremockMappings.map {
-                it.mappings.map { m -> convertMapping(sourceDir, localConfigDir, m) }
+                it.mappings.mapNotNull { m -> convertMapping(sourceDir, localConfigDir, m) }
             }
             if (separateConfigFiles) {
                 converted.forEachIndexed { index, res -> writeConfig(localConfigDir, index, res) }
@@ -133,11 +134,18 @@ class WiremockConfigResolver : ConfigResolver {
         logger.trace("Converted wiremock mapping file to Imposter config: {}", destFile)
     }
 
-    private fun convertMapping(sourceDir: File, destDir: File, mapping: WiremockMapping) =
-        RestPluginResourceConfig().apply {
-            path = mapping.request.url
+    private fun convertMapping(sourceDir: File, destDir: File, mapping: WiremockMapping): RestPluginResourceConfig? {
+        if (null == mapping.request.url) {
+            logger.warn("Skipping conversion of mapping with no URL: $mapping")
+            return null
+        }
+
+        val uri = URI(mapping.request.url)
+        return RestPluginResourceConfig().apply {
+            path = uri.path
+            queryParams = ConversionUtil.convertQueryParams(uri.query)
             method = mapping.request.method?.uppercase()?.let { HttpMethod.valueOf(it) }
-            requestHeaders = mapping.request.headers?.let { ConversionUtil.convertConditionalHeaders(it) }
+            requestHeaders = mapping.request.headers?.let { ConversionUtil.convertHeaders(it) }
             requestBody = ConversionUtil.convertBodyPatterns(mapping.request.bodyPatterns)
             responseConfig.apply {
                 statusCode = mapping.response.status
@@ -148,6 +156,7 @@ class WiremockConfigResolver : ConfigResolver {
                 isTemplate = mapping.response.transformers?.contains("response-template")
             }
         }
+    }
 
     private fun convertResponseFile(
         sourceDir: File,
