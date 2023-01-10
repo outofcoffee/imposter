@@ -179,8 +179,6 @@ class ResponseTransmissionServiceImpl : ResponseTransmissionService {
     }
 
     companion object {
-        private val LOGGER = LogManager.getLogger(
-            ResponseTransmissionServiceImpl::class.java
-        )
+        private val LOGGER = LogManager.getLogger(ResponseTransmissionServiceImpl::class.java)
     }
 }

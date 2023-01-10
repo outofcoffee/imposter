@@ -71,10 +71,10 @@ import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.concurrent.ThreadLocalRandom
 import javax.inject.Inject
 import kotlin.io.path.exists
 import kotlin.io.path.readBytes
+import kotlin.random.Random
 
 /**
  * @author Pete Cornish
@@ -140,16 +140,19 @@ class ResponseServiceImpl @Inject constructor(
         responseBehaviour: ResponseBehaviour,
         vararg fallbackSenders: ResponseSender,
     ) {
-        simulatePerformance(responseBehaviour, httpExchange) {
+        val completion = {
             sendResponseInternal(pluginConfig, resourceConfig, httpExchange, responseBehaviour, fallbackSenders)
+        }
+        val delayMs = simulatePerformance(responseBehaviour)
+        if (delayMs > 0) {
+            LOGGER.info("Delaying mock response for {} by {}ms", LogUtil.describeRequestShort(httpExchange), delayMs)
+            vertx.setTimer(delayMs.toLong()) { completion() }
+        } else {
+            completion()
         }
     }
 
-    private fun simulatePerformance(
-        responseBehaviour: ResponseBehaviour,
-        httpExchange: HttpExchange,
-        completion: Runnable,
-    ) {
+    private fun simulatePerformance(responseBehaviour: ResponseBehaviour): Int {
         val performance = responseBehaviour.performanceSimulation
         var delayMs = -1
         performance?.let {
@@ -159,16 +162,11 @@ class ResponseServiceImpl @Inject constructor(
                 val minDelayMs = performance.minDelayMs ?: 0
                 val maxDelayMs = performance.maxDelayMs ?: 0
                 if (minDelayMs > 0 && maxDelayMs >= minDelayMs) {
-                    delayMs = ThreadLocalRandom.current().nextInt(maxDelayMs - minDelayMs) + minDelayMs
+                    delayMs = Random.nextInt(minDelayMs, maxDelayMs)
                 }
             }
         }
-        if (delayMs > 0) {
-            LOGGER.info("Delaying mock response for {} by {}ms", LogUtil.describeRequestShort(httpExchange), delayMs)
-            vertx.setTimer(delayMs.toLong()) { completion.run() }
-        } else {
-            completion.run()
-        }
+        return delayMs
     }
 
     private fun sendResponseInternal(
