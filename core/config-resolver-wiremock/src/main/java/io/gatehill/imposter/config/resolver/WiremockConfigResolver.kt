@@ -153,6 +153,13 @@ class WiremockConfigResolver : ConfigResolver {
                 file = mapping.response.bodyFileName?.let {
                     convertResponseFile(sourceDir, destDir, mapping.response.bodyFileName)
                 }
+                // TODO consider whether to move inline content to response files
+                content = mapping.response.jsonBody?.let {
+                    headers = (headers?.toMutableMap() ?: mutableMapOf()).apply {
+                        this["content-type"] = "application/json"
+                    }
+                    return@let MapUtil.JSON_MAPPER.writeValueAsString(it)
+                }
                 isTemplate = mapping.response.transformers?.contains("response-template")
             }
         }

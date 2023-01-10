@@ -78,7 +78,7 @@ object ConversionUtil {
     }
 
     fun convertQueryParams(query: String?) =
-        query?.let { query -> query.split('&').map { it.split('=') }.map { it[0] to it[1] } }?.toMap()
+        query?.let { query.split('&').map { it.split('=') }.map { it[0] to it[1] } }?.toMap()
 
     fun convertHeaders(headers: Map<String, Map<String, String>>?) =
         headers?.mapNotNull { (k, v) -> v["equalTo"]?.let { k to it } }?.toMap()
