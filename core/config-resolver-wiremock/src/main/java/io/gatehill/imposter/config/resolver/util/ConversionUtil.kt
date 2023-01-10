@@ -45,6 +45,7 @@ package io.gatehill.imposter.config.resolver.util
 import io.gatehill.imposter.config.resolver.model.BodyPattern
 import io.gatehill.imposter.plugin.config.resource.ResourceMatchOperator
 import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyConfig
+import io.gatehill.imposter.script.FailureSimulationType
 import java.util.regex.Pattern
 
 object ConversionUtil {
@@ -82,6 +83,13 @@ object ConversionUtil {
 
     fun convertHeaders(headers: Map<String, Map<String, String>>?) =
         headers?.mapNotNull { (k, v) -> v["equalTo"]?.let { k to it } }?.toMap()
+
+    fun convertFault(fault: String?) = when (fault) {
+        "EMPTY_RESPONSE" -> FailureSimulationType.EmptyResponse
+        // not like-for-like behaviour
+        "CONNECTION_RESET_BY_PEER" -> FailureSimulationType.CloseConnection
+        else -> null
+    }
 
     /**
      * Convert a body pattern to its corresponding request body configuration. Example patterns shown below.

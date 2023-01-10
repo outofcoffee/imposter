@@ -161,6 +161,7 @@ class WiremockConfigResolver : ConfigResolver {
                     return@let MapUtil.JSON_MAPPER.writeValueAsString(it)
                 }
                 isTemplate = mapping.response.transformers?.contains("response-template")
+                failureType = ConversionUtil.convertFault(mapping.response.fault)
             }
         }
     }
