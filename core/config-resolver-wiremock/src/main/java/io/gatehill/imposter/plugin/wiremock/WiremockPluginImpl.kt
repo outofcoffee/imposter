@@ -40,24 +40,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.config.resolver.model
+package io.gatehill.imposter.plugin.wiremock
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.annotation.JsonProperty
+import io.gatehill.imposter.plugin.Plugin
+import io.gatehill.imposter.plugin.PluginInfo
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class MappingRequest(
-    val method: String?,
-    val url: String?,
-    val headers: Map<String, Map<String, String>>?,
-    val bodyPatterns: List<BodyPattern>?,
-)
-
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class BodyPattern(
-    @JsonProperty("matchesXPath")
-    val matchesXPath: Any?,
-
-    @JsonProperty("xPathNamespaces")
-    val xPathNamespaces: Map<String, String>?,
-)
+@PluginInfo("wiremock")
+class WiremockPluginImpl : Plugin

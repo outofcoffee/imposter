@@ -40,17 +40,18 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.config.resolver
+package io.gatehill.imposter.plugin.wiremock.config
 
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
-import io.gatehill.imposter.config.resolver.model.WiremockMapping
-import io.gatehill.imposter.config.resolver.model.WiremockMappings
-import io.gatehill.imposter.config.resolver.util.ConversionUtil
+import io.gatehill.imposter.config.resolver.ConfigResolver
 import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.plugin.rest.config.RestPluginConfig
 import io.gatehill.imposter.plugin.rest.config.RestPluginResourceConfig
+import io.gatehill.imposter.plugin.wiremock.model.WiremockMapping
+import io.gatehill.imposter.plugin.wiremock.model.WiremockMappings
+import io.gatehill.imposter.plugin.wiremock.util.ConversionUtil
 import io.gatehill.imposter.util.MapUtil
 import org.apache.logging.log4j.LogManager
 import java.io.File

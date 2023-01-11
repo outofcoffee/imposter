@@ -40,11 +40,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.config.resolver.util
+package io.gatehill.imposter.plugin.wiremock.util
 
-import io.gatehill.imposter.config.resolver.model.BodyPattern
 import io.gatehill.imposter.plugin.config.resource.ResourceMatchOperator
 import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyConfig
+import io.gatehill.imposter.plugin.wiremock.model.BodyPattern
 import io.gatehill.imposter.script.FailureSimulationType
 import java.util.regex.Pattern
 
@@ -219,5 +219,4 @@ object ConversionUtil {
         "\\\${random.$type(length=$length,uppercase=$uppercase)}"
     }
 }
-
 private typealias ExpressionHandler = (args: List<String>) -> String
