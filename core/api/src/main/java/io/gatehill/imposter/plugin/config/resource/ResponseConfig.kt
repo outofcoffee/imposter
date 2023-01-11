@@ -90,4 +90,14 @@ open class ResponseConfig {
         this.statusCode,
         this.isTemplate,
     ).any { it != null }
+
+    /**
+     * Sets a response header. If the [headers] map is `null`, it
+     * is first initialised.
+     */
+    fun setHeader(name: String, value: String) {
+        val h = headers?.toMutableMap() ?: mutableMapOf()
+        h[name] = value
+        headers = h
+    }
 }
