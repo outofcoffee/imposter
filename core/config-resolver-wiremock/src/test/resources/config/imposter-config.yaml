@@ -1,3 +1,0 @@
-plugin: "rest"
-response:
-  content: "Hello world"
