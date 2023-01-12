@@ -46,6 +46,7 @@ import io.gatehill.imposter.plugin.config.resource.ResourceMatchOperator
 import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyConfig
 import io.gatehill.imposter.plugin.wiremock.model.BodyPattern
 import io.gatehill.imposter.script.FailureSimulationType
+import org.apache.logging.log4j.LogManager
 import java.util.regex.Pattern
 
 object ConversionUtil {
@@ -66,6 +67,8 @@ object ConversionUtil {
         "randomValue" to convertRandom()
     )
 
+    private val logger = LogManager.getLogger(ConversionUtil::class.java)
+
     fun convertBodyPatterns(bodyPatterns: List<BodyPattern>?): RequestBodyConfig? {
         if (bodyPatterns?.isNotEmpty() == true) {
             if (bodyPatterns.size == 1) {
@@ -79,16 +82,36 @@ object ConversionUtil {
     }
 
     fun convertQueryParams(query: String?) =
-        query?.let { query.split('&').map { it.split('=') }.map { it[0] to it[1] } }?.toMap()
+        query?.split('&')?.map { it.split('=') }?.associate { it[0] to it[1] }
 
-    fun convertHeaders(headers: Map<String, Map<String, String>>?) =
-        headers?.mapNotNull { (k, v) -> v["equalTo"]?.let { k to it } }?.toMap()
+    fun convertHeaders(headers: Map<String, Map<String, String>>?) = headers?.mapNotNull { (k, v) ->
+        v["equalTo"]?.let { equalTo ->
+            k to equalTo
+        } ?: v["contains"]?.let {
+            // TODO add support for contains
+            logger.warn("Header contains operator is not supported")
+            null
+        } ?: v["matches"]?.let {
+            // TODO add support for matches
+            logger.warn("Header matches operator is not supported")
+            null
+        } ?: v["doesNotMatch"]?.let {
+            // TODO add support for doesNotMatch
+            logger.warn("Header doesNotMatch operator is not supported")
+            null
+        }
+    }?.toMap()
 
-    fun convertFault(fault: String?) = when (fault) {
-        "EMPTY_RESPONSE" -> FailureSimulationType.EmptyResponse
-        // not like-for-like behaviour
-        "CONNECTION_RESET_BY_PEER" -> FailureSimulationType.CloseConnection
-        else -> null
+    fun convertFault(fault: String?) = fault?.let {
+        when (fault) {
+            "EMPTY_RESPONSE" -> FailureSimulationType.EmptyResponse
+            // not like-for-like behaviour
+            "CONNECTION_RESET_BY_PEER" -> FailureSimulationType.CloseConnection
+            else -> {
+                logger.warn("Unsupported fault type: $fault")
+                null
+            }
+        }
     }
 
     /**
@@ -143,6 +166,7 @@ object ConversionUtil {
                 requestBodyConfig.xPath = matchesXPath
                 requestBodyConfig.operator = ResourceMatchOperator.Exists
             }
+
             is Map<*, *> -> {
                 matchesXPath["expression"]?.let { expression ->
                     requestBodyConfig.xPath = "!$expression"
