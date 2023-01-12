@@ -18,7 +18,7 @@ import java.io.File
  * @author Pete Cornish
  */
 class WiremockPluginTest {
-    private val configResolver = WiremockPluginImpl(
+    private val wiremock = WiremockPluginImpl(
         Vertx.vertx(),
         ImposterConfig(),
         mock(),
@@ -71,7 +71,7 @@ class WiremockPluginTest {
 
     private fun convert(mappingsPath: String): File {
         val mappingsDir = File(WiremockPluginTest::class.java.getResource(mappingsPath)!!.toURI())
-        val configFiles = configResolver.convert(File(mappingsDir, "imposter-config.yaml"))
+        val configFiles = wiremock.convert(File(mappingsDir, "imposter-config.yaml"))
 
         val configDirs = configFiles.map { it.parentFile }
         assertThat(configDirs, hasSize(1))

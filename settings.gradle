@@ -9,7 +9,6 @@ project(':core:api').name = 'imposter-api'
 include ':core:config'
 include ':core:config-dynamic'
 include ':core:config-resolver-s3'
-include ':core:config-resolver-wiremock'
 
 include ':core:engine'
 project(':core:engine').name = 'imposter-engine'
@@ -79,6 +78,9 @@ project(':mock:sfdc').name = 'mock-sfdc'
 
 include ':mock:soap'
 project(':mock:soap').name = 'mock-soap'
+
+include ':mock:wiremock'
+project(':mock:wiremock').name = 'mock-wiremock'
 
 // embedded
 include ':embedded:core'
