@@ -18,13 +18,18 @@ import java.io.File
  * @author Pete Cornish
  */
 class WiremockPluginTest {
-    private val wiremock = WiremockPluginImpl(
-        Vertx.vertx(),
-        ImposterConfig(),
-        mock(),
-        mock(),
-        mock(),
-    )
+    private val wiremock = WiremockPluginImpl(Vertx.vertx(), ImposterConfig(), mock(), mock(), mock())
+
+    @Test
+    fun `can convert unwrapped wiremock mappings`() {
+        val configDir = convert("/wiremock-nowrap")
+
+        val files = configDir.listFiles()?.map { it.name }
+        Assert.assertEquals(2, files?.size)
+
+        assertThat(files, CoreMatchers.hasItem("wiremock-0-config.json"))
+        assertThat(files, CoreMatchers.hasItem("files"))
+    }
 
     @Test
     fun `can convert simple wiremock mappings`() {

@@ -45,12 +45,19 @@ package io.gatehill.imposter.plugin.wiremock.model
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class WiremockMappings(
-    val mappings: List<WiremockMapping>
-)
+class WiremockFile(
+    val mappings: List<WiremockMapping>?,
+    override val request: MappingRequest?,
+    override val response: MappingResponse?,
+) : IWiremockMapping
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class WiremockMapping(
-    val request: MappingRequest,
-    val response: MappingResponse,
-)
+open class WiremockMapping(
+    override val request: MappingRequest,
+    override val response: MappingResponse,
+) : IWiremockMapping
+
+interface IWiremockMapping {
+    val request: MappingRequest?
+    val response: MappingResponse?
+}

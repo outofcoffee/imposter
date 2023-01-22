@@ -50,8 +50,8 @@ import io.gatehill.imposter.plugin.config.resource.ResponseConfig
 import io.gatehill.imposter.plugin.rest.RestPluginImpl
 import io.gatehill.imposter.plugin.rest.config.RestPluginConfig
 import io.gatehill.imposter.plugin.rest.config.RestPluginResourceConfig
+import io.gatehill.imposter.plugin.wiremock.model.WiremockFile
 import io.gatehill.imposter.plugin.wiremock.model.WiremockMapping
-import io.gatehill.imposter.plugin.wiremock.model.WiremockMappings
 import io.gatehill.imposter.plugin.wiremock.util.ConversionUtil
 import io.gatehill.imposter.service.ResourceService
 import io.gatehill.imposter.service.ResponseRoutingService
@@ -101,41 +101,48 @@ class WiremockPluginImpl @Inject constructor(
         val sourceDir = mappingsFile.parentFile
         val localConfigDir = Files.createTempDirectory("wiremock").toFile()
 
-        val responseFileDir = File(localConfigDir, RESPONSE_FILE_SUBDIR)
-        if (!responseFileDir.mkdirs()) {
-            throw IOException("Failed to create response file dir: $responseFileDir")
-        }
+        val mappings = loadMappings(sourceDir)
+        if (!mappings.isNullOrEmpty()) {
+            logger.debug("Converting ${mappings.size} wiremock mapping file(s) from $sourceDir")
 
-        val configFiles = mutableListOf<File>()
-        loadMappings(sourceDir)?.let { wiremockMappings ->
-            logger.debug("Converting ${wiremockMappings.size} wiremock mapping file(s) from $sourceDir")
-            val converted = wiremockMappings.map {
-                it.mappings.mapNotNull { m -> convertMapping(sourceDir, localConfigDir, m) }
+            val responseFileDir = File(localConfigDir, RESPONSE_FILE_SUBDIR)
+            if (!responseFileDir.mkdirs()) {
+                throw IOException("Failed to create response file dir: $responseFileDir")
             }
-            if (separateConfigFiles) {
-                configFiles += converted.mapIndexed { index, res -> writeConfig(localConfigDir, index, res) }
-            } else {
-                configFiles += writeConfig(localConfigDir, 0, converted.flatten())
-            }
-            logger.debug("Wrote converted wiremock mapping file(s) to $localConfigDir")
 
-        } ?: run {
-            logger.warn("No wiremock mapping files found in $sourceDir")
+            val configFiles = mutableListOf<File>()
+            val converted = mappings.map {
+                mappings.mapNotNull { m -> convertMapping(sourceDir, localConfigDir, m) }
+            }
+            if (converted.isNotEmpty()) {
+                if (separateConfigFiles) {
+                    configFiles += converted.mapIndexed { index, res -> writeConfig(localConfigDir, index, res) }
+                } else {
+                    configFiles += writeConfig(localConfigDir, 0, converted.flatten())
+                }
+                logger.debug("Wrote converted wiremock mapping file(s) to $localConfigDir")
+                return configFiles
+            }
         }
-        return configFiles
+        logger.warn("No wiremock mapping files found in $sourceDir")
+        return emptyList()
     }
 
-    private fun loadMappings(configPath: File): List<WiremockMappings>? =
+    private fun loadMappings(configPath: File): List<WiremockMapping>? =
         File(configPath, "mappings").listFiles { _, filename -> filename.endsWith(".json") }?.mapNotNull { jsonFile ->
             try {
-                val config = MapUtil.JSON_MAPPER.readValue(jsonFile, WiremockMappings::class.java)
+                val config = MapUtil.JSON_MAPPER.readValue(jsonFile, WiremockFile::class.java)
                 logger.trace("Parsed {} as wiremock mapping file: {}", configPath, config)
-                config
+                if (config.mappings.isNullOrEmpty()) {
+                    return@mapNotNull listOf(WiremockMapping(config.request!!, config.response!!))
+                } else {
+                    return@mapNotNull config.mappings
+                }
             } catch (e: Exception) {
                 logger.trace("Unable to parse {} as wiremock mapping file: {}", configPath, e.message)
                 null
             }
-        }
+        }?.flatten()
 
     private fun writeConfig(destDir: File, index: Int, resources: List<RestPluginResourceConfig>): File {
         val destFile = File(destDir, "wiremock-$index-config.json")
@@ -143,21 +150,19 @@ class WiremockPluginImpl @Inject constructor(
             plugin = "rest"
             this.resources = resources
         }
-        destFile.outputStream().use { os ->
-            MapUtil.JSON_MAPPER.writeValue(os, config)
-            os.flush()
-        }
+        destFile.writeText(MapUtil.jsonify(config))
         logger.trace("Converted wiremock mapping file to Imposter config: {}", destFile)
         return destFile
     }
 
     private fun convertMapping(sourceDir: File, destDir: File, mapping: WiremockMapping): RestPluginResourceConfig? {
-        if (null == mapping.request.url) {
+        val url = mapping.request.url
+        if (null == url) {
             logger.warn("Skipping conversion of mapping with no URL: $mapping")
             return null
         }
 
-        val uri = URI(mapping.request.url)
+        val uri = URI(url)
         return RestPluginResourceConfig().apply {
             path = uri.path
             queryParams = ConversionUtil.convertQueryParams(uri.query)
@@ -167,8 +172,8 @@ class WiremockPluginImpl @Inject constructor(
             responseConfig.apply {
                 statusCode = mapping.response.status
                 headers = mapping.response.headers
-                file = mapping.response.bodyFileName?.let {
-                    convertResponseFile(sourceDir, destDir, mapping.response.bodyFileName)
+                file = mapping.response.bodyFileName?.let { bodyFileName ->
+                    convertResponseFile(sourceDir, destDir, bodyFileName)
                 }
                 // TODO consider moving inline content to response files
                 content = mapping.response.body ?: mapping.response.jsonBody?.let { jsonBody ->
@@ -183,7 +188,7 @@ class WiremockPluginImpl @Inject constructor(
     private fun convertResponseFile(
         sourceDir: File,
         destDir: File,
-        bodyFileName: String
+        bodyFileName: String,
     ): String {
         val sourceFile = Paths.get(sourceDir.path, "__files", bodyFileName).normalize()
         if (!sourceFile.exists()) {
@@ -197,9 +202,9 @@ class WiremockPluginImpl @Inject constructor(
         return RESPONSE_FILE_SUBDIR + "/" + destFile.name
     }
 
-    private fun convertJsonBody(responseConfig: ResponseConfig, it: Any): String? {
+    private fun convertJsonBody(responseConfig: ResponseConfig, it: Any): String {
         responseConfig.setHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_JSON)
-        return MapUtil.JSON_MAPPER.writeValueAsString(it)
+        return MapUtil.jsonify(it)
     }
 
     companion object {
