@@ -50,6 +50,7 @@ data class MappingResponse(
     val bodyFileName: String?,
     val headers: Map<String, String>?,
     val transformers: List<String>?,
+    val body: String?,
     val jsonBody: Any?,
     val fault: String?,
 )

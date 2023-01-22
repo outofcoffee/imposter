@@ -171,7 +171,7 @@ class WiremockPluginImpl @Inject constructor(
                     convertResponseFile(sourceDir, destDir, mapping.response.bodyFileName)
                 }
                 // TODO consider moving inline content to response files
-                content = mapping.response.jsonBody?.let { jsonBody ->
+                content = mapping.response.body ?: mapping.response.jsonBody?.let { jsonBody ->
                     convertJsonBody(responseConfig, jsonBody)
                 }
                 isTemplate = mapping.response.transformers?.contains("response-template")
