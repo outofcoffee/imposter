@@ -100,4 +100,8 @@ object MapUtil {
     fun addJavaTimeSupport(mapper: ObjectMapper) {
         mapper.registerModule(JavaTimeModule())
     }
+
+    fun jsonify(obj: Any?): String = obj?.let { JSON_MAPPER.writeValueAsString(it) } ?: ""
+
+    fun yamlify(obj: Any?): String = obj?.let { YAML_MAPPER.writeValueAsString(obj) } ?: ""
 }

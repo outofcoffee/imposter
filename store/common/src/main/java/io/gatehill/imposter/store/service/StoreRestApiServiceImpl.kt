@@ -253,7 +253,7 @@ class StoreRestApiServiceImpl @Inject constructor(
         try {
             httpExchange.response()
                 .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_JSON)
-                .end(MapUtil.JSON_MAPPER.writeValueAsString(body))
+                .end(MapUtil.jsonify(body))
         } catch (e: JsonProcessingException) {
             httpExchange.fail(e)
         }

@@ -51,7 +51,7 @@ import io.gatehill.imposter.util.MapUtil
 import io.gatehill.imposter.util.MapUtil.YAML_MAPPER
 import io.swagger.v3.oas.models.examples.Example
 import org.apache.logging.log4j.LogManager
-import java.util.*
+import java.util.Objects
 
 /**
  * Serialises and transmits examples to the client.
@@ -164,7 +164,7 @@ class ResponseTransmissionServiceImpl : ResponseTransmissionService {
     private fun serialise(contentType: String, example: Any): String {
         return try {
             val exampleResponse: String = when (contentType) {
-                "application/json" -> MapUtil.JSON_MAPPER.writeValueAsString(example)
+                "application/json" -> MapUtil.jsonify(example)
                 "text/x-yaml", "application/x-yaml", "application/yaml" -> YAML_MAPPER.writeValueAsString(example)
                 else -> {
                     LOGGER.warn("Unsupported response MIME type '{}' - returning example object as string", contentType)
