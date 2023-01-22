@@ -3,12 +3,14 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
-## Changed
-- ...
+## [3.7.1] - 2023-01-22
+### Changed
+- refactor: allows REST plugin to be extended.
+- build(deps): bumps Kotlin to 1.7.22.
+- build(deps): bump force-rest-api from 0.0.44 to 0.0.45 (#283)
 
 ## [3.7.0] - 2023-01-10
-## Added
+### Added
 - feat: adds failure simulation.
 - feat: supports multiple request body matchers.
 - feat: allows matching body based on existence of node at JsonPath/XPath expression.
@@ -18,49 +20,49 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - feat: adds syntax to normalise XPath expressions.
 - feat: adds random value expression evaluator.
 
-## Changed
+### Changed
 - refactor: moves performance delay to idiomatic Kotlin random generator.
 - chore: bumps hamcrest to 2.2.
 
-## Fixed
+### Fixed
 - fix: improves error trapping in expression evaluator.
 
 ## [3.6.0] - 2023-01-07
-## Added
+### Added
 - feat: adds XPath query support to expressions.
 - feat(lambda): loads additional plugins and modules via environment variables.
 
-## Changed
+### Changed
 - test: improves coverage for XPath utils.
 - feat: allows multiple config resolvers to handle a single path.
 
 ## [3.5.2] - 2023-01-03
-## Added
+### Added
 - docs: adds example for SOAP request body matching with XPath.
 - docs: improves template store placeholder example.
 
-## Changed
+### Changed
 - build(deps): bump version_groovy from 4.0.6 to 4.0.7 (#276)
 - chore: bumps CLI to 0.24.1.
 
-## Fixed
+### Fixed
 - fix: improves error message when plugin cannot be found.
 - fix(soap): quietens logging for XSD element resolution.
 - fix: removes environment evaluator from default list.
 
 ## [3.5.1] - 2023-01-01
-## Fixed
+### Fixed
 - fix: SOAP request body matching should work for XPath expressions.
 
-## Added
+### Added
 - docs: adds description for template expressions.
 
 ## [3.5.0] - 2022-12-27
-## Added
+### Added
 - feat: allows expressions to be used in response templates.
 - feat: adds support for expression fallback values.
 
-## Changed
+### Changed
 - feat: removes commons-text dependency in favour of expression util.
 - feat: only rebuffers template response if changed.
 - refactor: simplifies request scoped store handling in templates.
@@ -68,29 +70,29 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - build(deps): bump testcontainers from 1.17.3 to 1.17.6 (#266)
 
 ## [3.4.0] - 2022-12-23
-## Added
+### Added
 - feat: adds support for SOAP HTTP binding transport type.
 - feat: adds support for using SOAP 1.2 binding with WSDL 1.
 - test: splits parser tests to support more combinations of WSDL1 and SOAP 1.1/1.2.
 
-## Changed
+### Changed
 - build(deps): bump version_jackson from 2.13.4 to 2.14.1 (#261)
 - build(deps): bump version_vertx from 4.3.5 to 4.3.6 (#267)
 - build(deps): bump xmlbeans from 5.1.0 to 5.1.1 (#260)
 
 ## [3.3.0] - 2022-12-08
-## Added
+### Added
 - feat(soap): adds support for multiple schemas within a WSDL file.
 
-## Fixed
+### Fixed
 - fix(soap): use message attribute to locate message element in WSDL1 parser.
 - fix(soap): operation style should fall back to binding style in WSDL1 parser.
 
-## Changed
+### Changed
 - feat: changed OpenAPI Docker image working directory to `/opt/imposter/config` so `$ref` paths load correctly (thanks, Raymond Chin)
 
 ## [3.2.3] - 2022-12-03
-## Changed
+### Changed
 - build(deps): bump actions/setup-python from 4.2.0 to 4.3.0 (#228)
 - build(deps): bump aws-java-sdk-core from 1.12.205 to 1.12.325 (#218,#239)
 - build(deps): bump byte-buddy-agent from 1.12.10 to 1.12.17 (#217)
@@ -110,46 +112,46 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - build(deps): jackson-databind to 2.13.4.2.
 - refactor: fixes some deprecated method calls.
 
-## Added
+### Added
 - test: adds recursive config scan option to dev convenience script.
 
 ## [3.2.2] - 2022-10-21
-## Changed
+### Changed
 - build(deps): bump version_commons_text from 1.9 to 1.10.0.
 
 ## [3.2.1] - 2022-09-13
-## Changed
+### Changed
 - refactor: renames `withData` script function to `withContent`. Retains deprecated function name for backwards compatibility.
 
 ## [3.2.0] - 2022-09-13
-## Changed
+### Changed
 - refactor: renames `staticData` to `content` in response config. Also adds an alias to ensure backwards compatibility.
 - refactor: renames `staticFile` to `file` in response config. Also adds an alias to ensure backwards compatibility.
 
-## Fixed
+### Fixed
 - fix(rest): skips adding route for root resource if response configuration is blank.
 
 ## [3.1.0] - 2022-09-08
-## Added
+### Added
 - feat: enables script file configuration inheritance.
 - feat: enables request and response body to be included in structured log entries.
 - docs: describes proxy mode and updates getting started.
 - docs: describes scaffolding and updates getting started.
 
-## Changed
+### Changed
 - chore: bumps CLI to 0.21.0.
 - build(deps): bump actions/setup-python from 4.1.0 to 4.2.0 (#198)
 - build(deps): bump maven-project-info-reports-plugin (#203)
 
 ## [3.0.4] - 2022-08-01
-## Changed
+### Changed
 - build(deps): bumps CLI to 0.16.1.
 
 ## [3.0.3] - 2022-08-01
-## Added
+### Added
 - docs: improves build, capture and docker pages.
 
-## Changed
+### Changed
 - build(deps): bumps CLI to 0.16.0.
 - build(deps): bumps JRE to 11.0.16+8.
 - build(deps): bumps Kotlin to 1.7.10.
@@ -170,22 +172,22 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - chore: bumps restassured to 5.1.1.
 
 ## [3.0.2] - 2022-07-25
-## Changed
+### Changed
 - chore: bumps Vert.x to 4.3.2.
 - build: bumps Maven example project dependencies.
 
 ## [3.0.1] - 2022-06-27
-## Added
+### Added
 - docs: improves getting started.
 
-## Changed
+### Changed
 - build: removes package lock files from example projects.
 - build(deps): bump localstack from 1.16.3 to 1.17.2 (#153)
 - build(deps): bump byte-buddy-agent from 1.12.7 to 1.12.10 #152
 - build(deps): bump version_graal from 22.0.0.2 to 22.1.0.1 #150
 
 ## [3.0.0] - 2022-06-11
-## Added
+### Added
 - feat: adds handler for API Gateway V2 and Function URL events.
 - docs: adds serverless example and instructions for using Lambda Function URL.
 - docs(docker): improves Docker documentation example.
@@ -196,7 +198,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - test: sets region in DynamoDB test.
 - test: bumps S3Mock version to gain aarch64 support.
 
-## Changed
+### Changed
 - BREAKING CHANGE: drops support for Java 8. Imposter no longer supports Java 8, due to the complexity of maintaining multiple codepaths depending on target JVMs. If Java 8 support is required, Imposter 2.x is still available, but may no longer be maintained.
 - BREAKING CHANGE: removes deprecated script context properties. As signalled in version 2.x, deprecated script context properties have been removed. Removal of legacy `context.params` map - use `context.request.queryParams` instead. Removal of legacy `context.request.params` map - use `context.request.queryParams` instead. Removal of legacy `context.uri` map - use `context.request.uri` instead.
 - BREAKING CHANGE: makes request header keys lowercase by default. Effectively sets IMPOSTER_NORMALISE_HEADER_KEYS=true.
@@ -216,7 +218,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - ci: always build dev docker image and run integration tests.
 - ci: always publish test results, even on prior step failure.
 
-## Fixed
+### Fixed
 - fix(awslambda): handle base64 encoded request body.
 - fix(openapi): removes server base path from serving prefix.
 - fix(openapi): allows adding server entry with path only.
@@ -225,39 +227,39 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - fix: uses plugin classloader for meta-detector plugin classpath scan.
 
 ## [2.14.3] - 2022-05-23
-## Fixed
+### Fixed
 - fix(awslambda): handle base64 encoded request body.
 
 ## [2.14.2] - 2022-05-22
-## Fixed
+### Fixed
 - fix(openapi): removes server base path from serving prefix.
 
 ## [2.14.1] - 2022-05-22
-## Fixed
+### Fixed
 - fix(openapi): allows adding server entry with path only.
 
 ## [2.14.0] - 2022-05-16
-## Added
+### Added
 - feat: allows META-INF scan to be enabled in Lambda.
 
 ## [2.13.5] - 2022-05-16
-## Fixed
+### Fixed
 - fix(openapi): separates serving prefix from specification path prefix.
 
 ## [2.13.4] - 2022-05-15
-## Changed
+### Changed
 - ci: reintroduces publishing for nashorn-standalone plugin.
 
 ## [2.13.3] - 2022-05-09
-## Fixed
+### Fixed
 - fix: resource matching should require all config entries to be present in request.
 
 ## [2.13.2] - 2022-05-06
-## Fixed
+### Fixed
 - fix: uses plugin classloader for meta-detector plugin classpath scan.
 
 ## [2.13.1] - 2022-04-28
-## Added
+### Added
 - feat: allows plugin arguments to be set using environment variables.
 
 ### Changed
@@ -271,7 +273,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - fix: sets version in Docker image for CLI consumption.
 
 ## [2.13.0] - 2022-04-24
-## Added
+### Added
 - ci: publishes nashorn standalone maven artifacts.
 - docs: adds test logging configuration to JUnit sample.
 - docs: adds example environment variable config for JUnit sample on Java 8.
