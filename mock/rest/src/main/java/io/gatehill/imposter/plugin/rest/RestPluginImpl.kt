@@ -69,7 +69,7 @@ import javax.inject.Inject
  * @author Pete Cornish
  */
 @PluginInfo("rest")
-class RestPluginImpl @Inject constructor(
+open class RestPluginImpl @Inject constructor(
     vertx: Vertx,
     imposterConfig: ImposterConfig,
     private val resourceService: ResourceService,
