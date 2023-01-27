@@ -1,7 +1,7 @@
 package io.gatehill.imposter.plugin.wiremock
 
 import io.gatehill.imposter.ImposterConfig
-import io.vertx.core.Vertx
+import io.gatehill.imposter.config.util.EnvVars
 import org.hamcrest.CoreMatchers
 import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.CoreMatchers.not
@@ -18,8 +18,6 @@ import java.io.File
  * @author Pete Cornish
  */
 class WiremockPluginTest {
-    private val wiremock = WiremockPluginImpl(Vertx.vertx(), ImposterConfig(), mock(), mock(), mock())
-
     @Test
     fun `can convert unwrapped wiremock mappings`() {
         val configDir = convert("/wiremock-nowrap")
@@ -32,13 +30,30 @@ class WiremockPluginTest {
     }
 
     @Test
-    fun `can convert simple wiremock mappings`() {
+    fun `can convert simple wiremock mappings to single config file`() {
         val configDir = convert("/wiremock-simple")
 
         val files = configDir.listFiles()?.map { it.name }
         Assert.assertEquals(2, files?.size)
 
         assertThat(files, CoreMatchers.hasItem("wiremock-0-config.json"))
+        assertThat(files, CoreMatchers.hasItem("files"))
+
+        val responseFileDir = File(configDir, "files")
+        val responseFiles = responseFileDir.listFiles()?.map { it.name }
+        Assert.assertEquals(1, responseFiles?.size)
+        assertThat(responseFiles, CoreMatchers.hasItem("response.json"))
+    }
+
+    @Test
+    fun `can convert simple wiremock mappings to separate config files`() {
+        val configDir = convert("/wiremock-simple", 2, "IMPOSTER_WIREMOCK_SEPARATE_CONFIG" to "true")
+
+        val files = configDir.listFiles()?.map { it.name }
+        Assert.assertEquals(3, files?.size)
+
+        assertThat(files, CoreMatchers.hasItem("wiremock-0-config.json"))
+        assertThat(files, CoreMatchers.hasItem("wiremock-1-config.json"))
         assertThat(files, CoreMatchers.hasItem("files"))
 
         val responseFileDir = File(configDir, "files")
@@ -74,13 +89,18 @@ class WiremockPluginTest {
         )
     }
 
-    private fun convert(mappingsPath: String): File {
+    private fun convert(mappingsPath: String, expectedConfigFiles: Int = 1, vararg env: Pair<String, String>): File {
         val mappingsDir = File(WiremockPluginTest::class.java.getResource(mappingsPath)!!.toURI())
-        val configFiles = wiremock.convert(File(mappingsDir, "imposter-config.yaml"))
 
-        val configDirs = configFiles.map { it.parentFile }
-        assertThat(configDirs, hasSize(1))
-        val configDir = configDirs.first()
+        if (env.isNotEmpty()) {
+            EnvVars.populate(*env)
+        }
+
+        val wiremock = WiremockPluginImpl(mock(), ImposterConfig(), mock(), mock(), mock())
+        val configFiles = wiremock.convert(File(mappingsDir, "imposter-config.yaml"))
+        assertThat(configFiles, hasSize(expectedConfigFiles))
+
+        val configDir = configFiles.first().parentFile
 
         Assert.assertTrue("Config dir should exist", configDir.exists())
         assertThat(

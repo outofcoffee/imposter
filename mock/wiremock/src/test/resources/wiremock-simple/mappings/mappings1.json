@@ -3,7 +3,7 @@
     {
       "request": {
         "method": "GET",
-        "url": "/example",
+        "url": "/example1",
         "headers": {
           "content-type": {
             "equalTo": "application/json"

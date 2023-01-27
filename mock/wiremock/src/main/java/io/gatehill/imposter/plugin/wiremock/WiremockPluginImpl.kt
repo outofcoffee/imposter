@@ -111,8 +111,8 @@ class WiremockPluginImpl @Inject constructor(
             }
 
             val configFiles = mutableListOf<File>()
-            val converted = mappings.map {
-                mappings.mapNotNull { m -> convertMapping(sourceDir, localConfigDir, m) }
+            val converted = mappings.map { mf ->
+                mf.mapNotNull { m -> convertMapping(sourceDir, localConfigDir, m) }
             }
             if (converted.isNotEmpty()) {
                 if (separateConfigFiles) {
@@ -128,7 +128,7 @@ class WiremockPluginImpl @Inject constructor(
         return emptyList()
     }
 
-    private fun loadMappings(configPath: File): List<WiremockMapping>? =
+    private fun loadMappings(configPath: File): List<List<WiremockMapping>>? =
         File(configPath, "mappings").listFiles { _, filename -> filename.endsWith(".json") }?.mapNotNull { jsonFile ->
             try {
                 val config = MapUtil.JSON_MAPPER.readValue(jsonFile, WiremockFile::class.java)
@@ -142,7 +142,7 @@ class WiremockPluginImpl @Inject constructor(
                 logger.trace("Unable to parse {} as wiremock mapping file: {}", configPath, e.message)
                 null
             }
-        }?.flatten()
+        }
 
     private fun writeConfig(destDir: File, index: Int, resources: List<RestPluginResourceConfig>): File {
         val destFile = File(destDir, "wiremock-$index-config.json")
