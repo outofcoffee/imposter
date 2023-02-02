@@ -53,4 +53,13 @@ data class MappingResponse(
     val body: String?,
     val jsonBody: Any?,
     val fault: String?,
+    val fixedDelayMilliseconds: Int?,
+    val delayDistribution: DelayDistribution?,
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class DelayDistribution(
+    val type: String?,
+    val lower: Int?,
+    val upper: Int?,
 )

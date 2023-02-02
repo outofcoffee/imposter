@@ -45,8 +45,11 @@ package io.gatehill.imposter.plugin.wiremock.util
 import io.gatehill.imposter.plugin.config.resource.ResourceMatchOperator
 import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyConfig
 import io.gatehill.imposter.plugin.wiremock.model.BodyPattern
+import io.gatehill.imposter.plugin.wiremock.model.MappingResponse
 import io.gatehill.imposter.script.FailureSimulationType
+import io.gatehill.imposter.script.PerformanceSimulationConfig
 import org.apache.logging.log4j.LogManager
+import java.util.Objects.nonNull
 import java.util.regex.Pattern
 
 object ConversionUtil {
@@ -112,6 +115,24 @@ object ConversionUtil {
                 null
             }
         }
+    }
+
+    fun convertDelay(mappingResponse: MappingResponse): PerformanceSimulationConfig? {
+        if (nonNull(mappingResponse.fixedDelayMilliseconds)) {
+            return PerformanceSimulationConfig().apply {
+                exactDelayMs = mappingResponse.fixedDelayMilliseconds
+            }
+        } else if (nonNull(mappingResponse.delayDistribution)) {
+            if (mappingResponse.delayDistribution?.type == "uniform") {
+                return PerformanceSimulationConfig().apply {
+                    minDelayMs = mappingResponse.delayDistribution.lower
+                    maxDelayMs = mappingResponse.delayDistribution.upper
+                }
+            } else {
+                logger.warn("Delay distribution type '${mappingResponse.delayDistribution?.type}' is not supported")
+            }
+        }
+        return null
     }
 
     /**
@@ -243,4 +264,5 @@ object ConversionUtil {
         "\\\${random.$type(length=$length,uppercase=$uppercase)}"
     }
 }
+
 private typealias ExpressionHandler = (args: List<String>) -> String
