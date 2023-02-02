@@ -3,8 +3,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
-- ...
+## [3.7.2] - 2023-02-02
+### Added
+- feat: adds null-safe function for setting response headers.
+
+### Changed
+- build(deps): bump version_vertx from 4.3.6 to 4.3.7 (#290)
+- build(deps): bump jackson-databind in /examples/junit-sample (#292)
 
 ## [3.7.1] - 2023-01-22
 ### Changed
