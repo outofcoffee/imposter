@@ -54,6 +54,7 @@ Imposter provides specialised mocks for the following scenarios:
 - **[SOAP](docs/soap_plugin.md)** - Support for SOAP web services (and WSDL files).
 - **[HBase](docs/hbase_plugin.md)** - Basic HBase mock implementation.
 - **[SFDC (Salesforce)](docs/sfdc_plugin.md)** - Basic Salesforce mock implementation.
+- **[WireMock](docs/wiremock_plugin.md)** - Support for WireMock mappings files.
 
 These use a plugin system, so you can also create your own plugins, using any JVM language.
 

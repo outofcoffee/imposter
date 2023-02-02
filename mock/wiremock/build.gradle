@@ -1,0 +1,78 @@
+apply plugin: 'java-library'
+apply plugin: 'kotlin'
+apply plugin: 'maven-publish'
+apply plugin: 'com.github.johnrengelman.shadow'
+
+compileJava {
+    sourceCompatibility = JavaVersion.VERSION_11
+}
+
+dependencies {
+    implementation project(':core:imposter-engine')
+    implementation project(':mock:mock-rest')
+
+    // test
+    testImplementation project(':test:test-utils')
+    testImplementation group: 'org.hamcrest', name: 'hamcrest', version: version_hamcrest
+    testImplementation "org.mockito.kotlin:mockito-kotlin:4.0.0"
+
+    // java 11 compatibility
+    testImplementation ("javax.xml.bind:jaxb-api:$version_jaxb_api")
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    archiveClassifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives sourcesJar
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+
+            repositories {
+                maven {
+                    url = version.endsWith('SNAPSHOT') ? mavenSnapshotRepository : mavenReleaseRepository
+                    credentials(AwsCredentials) {
+                        accessKey awsAccessKey
+                        secretKey awsSecretKey
+                    }
+                }
+            }
+        }
+    }
+}
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_11
+
+        // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
+        freeCompilerArgs = ["-Xjvm-default=all"]
+    }
+}
+
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_11
+
+        // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
+        freeCompilerArgs = ["-Xjvm-default=all"]
+    }
+}
+
+shadowJar {
+    archiveBaseName.set("imposter-plugin-wiremock")
+    archiveVersion.set('')
+    archiveClassifier.set('')
+    configurations = [project.configurations.pluginImplementation]
+}
+
+task dist {
+    dependsOn shadowJar
+}

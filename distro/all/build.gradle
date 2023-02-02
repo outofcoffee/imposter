@@ -17,6 +17,7 @@ dependencies {
     implementation project (':mock:mock-rest')
     implementation project (':mock:mock-sfdc')
     implementation project (':mock:mock-soap')
+    implementation project (':mock:mock-wiremock')
 
     // stores
     implementation project (':store:store-dynamodb')

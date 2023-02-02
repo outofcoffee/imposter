@@ -1,0 +1,5 @@
+<getPetByIdResponse xmlns="urn:com:example:petstore">
+    <id>{{xPath request.body '//getPetByIdRequest/id'}}</id>
+    <name>Fluffy</name>
+    <owner>{{randomValue length=5 type='ALPHABETIC' uppercase=true}}</owner>
+</getPetByIdResponse>

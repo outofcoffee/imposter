@@ -23,6 +23,7 @@ nav:
     - SOAP (and WSDL): 'soap_plugin.md'
     - HBase: 'hbase_plugin.md'
     - SFDC (Salesforce): 'sfdc_plugin.md'
+    - WireMock: 'wiremock_plugin.md'
 
   - Data capture, storage and templates:
     - Data capture: 'data_capture.md'

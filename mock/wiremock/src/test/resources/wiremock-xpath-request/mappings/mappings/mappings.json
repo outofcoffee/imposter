@@ -1,0 +1,32 @@
+{
+  "mappings": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "/example",
+        "headers": {
+          "content-type": {
+            "equalTo": "application/json"
+          }
+        },
+        "bodyPatterns": [
+          {
+            "matchesXPath": "/foo:bar[./foo:baz='1']",
+            "xPathNamespaces": {
+              "foo": "http://example.com/namespaces/foo"
+            }
+          },
+          {
+            "matchesXPath" : {
+              "expression": "//username/text()",
+              "contains": "alice"
+            }
+          }
+        ]
+      },
+      "response": {
+        "status": 201
+      }
+    }
+  ]
+}

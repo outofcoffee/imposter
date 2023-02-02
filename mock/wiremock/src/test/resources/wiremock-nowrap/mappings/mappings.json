@@ -1,0 +1,19 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "/example",
+    "headers": {
+      "content-type": {
+        "equalTo": "application/json"
+      }
+    },
+    "bodyPatterns": []
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json"
+    },
+    "transformers": []
+  }
+}

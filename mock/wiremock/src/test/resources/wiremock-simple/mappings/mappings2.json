@@ -1,0 +1,19 @@
+{
+  "mappings": [
+    {
+      "request": {
+        "method": "GET",
+        "url": "/example2",
+        "headers": {
+          "content-type": {
+            "equalTo": "application/json"
+          }
+        },
+        "bodyPatterns": []
+      },
+      "response": {
+        "status": 200
+      }
+    }
+  ]
+}
