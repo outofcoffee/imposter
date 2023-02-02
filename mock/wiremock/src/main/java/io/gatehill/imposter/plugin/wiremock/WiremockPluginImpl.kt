@@ -181,6 +181,7 @@ class WiremockPluginImpl @Inject constructor(
                 }
                 isTemplate = mapping.response.transformers?.contains("response-template")
                 failureType = ConversionUtil.convertFault(mapping.response.fault)
+                performanceDelay = ConversionUtil.convertDelay(mapping.response)
             }
         }
     }
