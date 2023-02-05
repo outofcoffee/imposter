@@ -13,7 +13,7 @@ dependencies {
     // test
     testImplementation "junit:junit:$version_junit"
     testImplementation "org.mockito:mockito-core:$version_mockito"
-    testImplementation "org.mockito.kotlin:mockito-kotlin:4.0.0"
+    testImplementation "org.mockito.kotlin:mockito-kotlin:$version_mockito_kotlin"
     testImplementation group: 'org.hamcrest', name: 'hamcrest', version: version_hamcrest
     testImplementation "org.apache.logging.log4j:log4j-slf4j-impl:$version_log4j"
 }

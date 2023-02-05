@@ -21,7 +21,7 @@ dependencies {
     // test
     testImplementation "junit:junit:$version_junit"
     testImplementation "org.mockito:mockito-core:$version_mockito"
-    testImplementation "org.mockito.kotlin:mockito-kotlin:4.0.0"
+    testImplementation "org.mockito.kotlin:mockito-kotlin:$version_mockito_kotlin"
     testImplementation project(':store:store-inmem')
 }
 
