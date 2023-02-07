@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.8.2] - 2023-02-07
+### Added
+- feat(wiremock): adds support for fixed and uniform delays.
+
+### Changed
+- build(deps): bump io.rest-assured:rest-assured from 5.2.0 to 5.3.0 (#298)
+- build(deps): bump jaxen from 1.2.0 to 2.0.0 (#271)
+- build(deps): bump version_groovy from 4.0.7 to 4.0.8 (#297)
+
 ## [3.8.1] - 2023-02-07
 ### Added
 - ci: generates changelog on release.
