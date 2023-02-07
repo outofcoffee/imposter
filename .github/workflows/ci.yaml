@@ -57,6 +57,7 @@ jobs:
           ./scripts/integration-tests.sh dev
 
       - name: Build and push Docker images
+        id: docker-build
         if: ${{ (startsWith(github.ref, 'refs/tags/') || steps.git-meta.outputs.branch == 'develop') && matrix.java == '11' }}
         run: |
           case ${{ steps.git-meta.outputs.branch }} in
@@ -66,6 +67,7 @@ jobs:
 
           main)
             CURRENT_VERSION="$( git describe --tags --exact-match )"
+            echo "::set-output name=tag::${CURRENT_VERSION}"
             if [[ "${CURRENT_VERSION:0:1}" == "v" ]]; then
                 CURRENT_VERSION="$( echo ${CURRENT_VERSION} | cut -c 2- )"
             fi
@@ -75,6 +77,7 @@ jobs:
 
           release/2.x)
             CURRENT_VERSION="$( git describe --tags --exact-match )"
+            echo "::set-output name=tag::${CURRENT_VERSION}"
             if [[ "${CURRENT_VERSION:0:1}" == "v" ]]; then
                 CURRENT_VERSION="$( echo ${CURRENT_VERSION} | cut -c 2- )"
             fi
@@ -84,6 +87,13 @@ jobs:
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Generate release notes
+        if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.java == '11' }}
+        run: |
+          mkdir -p build
+          touch build/CHANGES.md
+          docker run -v "$PWD":/workdir quay.io/git-chglog/git-chglog:0.15.1 --output build/CHANGES.md ${{ steps.docker-build.outputs.tag }}
 
       - name: Release Java assets
         if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.java == '11' }}
