@@ -70,11 +70,20 @@ async function getExistingRelease(releaseVersion, github) {
  */
 async function createRelease(releaseVersion, github) {
     console.log(`Creating release: ${releaseVersion}`);
+
+    let body = '';
+    try {
+        body = await fs.promises.readFile('./build/CHANGES.md', 'utf8');
+    } catch (e) {
+        console.warn(`Failed to read CHANGES.md: ${e}`);
+    }
+    body += '\n\nSee [change log](https://github.com/outofcoffee/imposter/blob/main/CHANGELOG.md).'
+
     const release = await github.rest.repos.createRelease({
         owner: 'outofcoffee',
         repo: 'imposter',
         tag_name: releaseVersion,
-        body: 'See [change log](https://github.com/outofcoffee/imposter/blob/main/CHANGELOG.md).',
+        body,
     });
     return release.data.id;
 }
