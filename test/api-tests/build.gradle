@@ -1,7 +1,7 @@
 apply plugin: 'java-library'
 
 ext {
-    version_restassured = '5.2.0'
+    version_restassured = '5.3.0'
 }
 
 compileJava {
