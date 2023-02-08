@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.9.0] - 2023-02-08
+### Added
+- feat: includes SOAP plugin in core distribution and AWS Lambda distribution.
+
 ## [3.8.2] - 2023-02-07
 ### Added
 - feat(wiremock): adds support for fixed and uniform delays.
