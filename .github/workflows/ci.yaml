@@ -113,8 +113,8 @@ jobs:
               './store/redis/build/libs/imposter-plugin-store-redis.jar',
             ])
 
-      - name: Publish Java Maven artifacts
-        if: ${{ (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop') && matrix.java == '11' }}
+      - name: Publish Maven artifacts
+        if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.java == '11' }}
         run: ./gradlew publish --info --stacktrace
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
