@@ -21,6 +21,7 @@ There are many ways to run Imposter. This section describes using the command li
 - Generate mock configuration from OpenAPI files (`imposter scaffold`)
 - Supports all [plugins](./plugins.md)
 - Supports JVM and Docker engine types
+- Supports both 'core' and 'all' distributions
 
 ## Installation
 
@@ -57,7 +58,15 @@ Parsing configuration file: someapi-config.yaml
 Mock server is up and running
 ```
 
-## Usage
+## Different distributions
+
+The previous command starts Imposter using the 'core' distribution, which includes common [plugins](./plugins.md) only. To use the 'all' distribution, which includes all plugins, use the `-t` (engine type) flag:
+
+```shell
+$ imposter up -t docker-all
+```
+
+## CLI usage
 
 See full usage instructions on [Imposter CLI](https://github.com/gatehill/imposter-cli).
 

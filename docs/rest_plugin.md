@@ -42,6 +42,8 @@ A few things to call out:
 
 ### Start Imposter with the REST plugin
 
+> The REST plugin is bundled with the core Imposter distribution.
+
 Let's assume your configuration is in the directory: `examples/rest/simple`.
 
 Docker example:

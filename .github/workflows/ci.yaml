@@ -106,7 +106,6 @@ jobs:
               './distro/awslambda/build/distributions/imposter-awslambda.zip',
               './mock/hbase/build/libs/imposter-plugin-mock-hbase.jar',
               './mock/sfdc/build/libs/imposter-plugin-mock-sfdc.jar',
-              './mock/soap/build/libs/imposter-plugin-mock-soap.jar',
               './mock/wiremock/build/libs/imposter-plugin-wiremock.jar',
               './scripting/nashorn-standalone/build/libs/imposter-plugin-js-nashorn-standalone.jar',
               './store/dynamodb/build/libs/imposter-plugin-store-dynamodb.jar',

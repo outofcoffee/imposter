@@ -96,11 +96,12 @@ A few things to call out:
 
 ### Start Imposter with the SOAP plugin
 
+> The SOAP plugin is bundled with the core Imposter distribution.
+
 Let's assume your configuration is in the directory: `examples/soap/simple`. Here are a few ways to start a mock running on port 8080.
 
 CLI example:
 
-    imposter plugin install -d mock-soap
     imposter up -p 8080 ./examples/soap/simple
 
 Docker example:

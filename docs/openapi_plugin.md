@@ -104,6 +104,8 @@ A few things to call out:
 
 ### Start Imposter with the OpenAPI plugin
 
+> The OpenAPI plugin is bundled with the core Imposter distribution.
+
 Let's assume your configuration is in the directory: `examples/openapi/simple`. Here are a few ways to start a mock running on port 8080.
 
 CLI example:

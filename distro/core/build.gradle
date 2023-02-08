@@ -14,6 +14,7 @@ dependencies {
     implementation project (':core:plugin-detector')
     implementation project (':mock:mock-openapi')
     implementation project (':mock:mock-rest')
+    implementation project (':mock:mock-soap')
 }
 
 mainClassName = 'io.gatehill.imposter.cmd.ImposterLauncher'
