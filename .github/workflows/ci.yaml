@@ -15,6 +15,25 @@ jobs:
       CONTAINER_BUILDER: "buildx"
     steps:
       - uses: actions/checkout@v3
+
+      - name: Build changelog
+        if: ${{ (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop') && matrix.java == '11' }}
+        uses: mikepenz/release-changelog-builder-action@v3.6.0
+        id: build_changelog
+        with:
+          configuration: ".github/changelog-config.json"
+          commitMode: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Write changelog
+        if: ${{ (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop') && matrix.java == '11' }}
+        run: |
+          mkdir -p build
+          touch build/CHANGES.md
+          echo "${{ steps.build_changelog.outputs.changelog }}" | sed 's/- PR: #0//g' >> build/CHANGES.md
+          cat build/CHANGES.md
+
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
@@ -87,13 +106,6 @@ jobs:
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Generate release notes
-        if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.java == '11' }}
-        run: |
-          mkdir -p build
-          touch build/CHANGES.md
-          docker run -v "$PWD":/workdir quay.io/git-chglog/git-chglog:0.15.1 --output build/CHANGES.md ${{ steps.docker-build.outputs.tag }}
 
       - name: Release Java assets
         if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.java == '11' }}
