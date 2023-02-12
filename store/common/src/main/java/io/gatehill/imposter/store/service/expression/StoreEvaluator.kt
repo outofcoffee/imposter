@@ -53,6 +53,10 @@ import org.apache.logging.log4j.LogManager
  * ```
  * storename.itemkey
  * ```
+ * or:
+ * ```
+ * stores.storename.itemkey
+ * ```
  */
 class StoreEvaluator(
     private val storeFactory: StoreFactory,
@@ -61,7 +65,8 @@ class StoreEvaluator(
 
     override fun eval(expression: String, context: Map<String, *>): Any? {
         try {
-            val parts = expression.split(
+            // remove prefix if present
+            val parts = expression.substringAfter(evaluatorPrefix).split(
                 delimiters = arrayOf("."),
                 ignoreCase = false,
                 limit = 2,
@@ -94,5 +99,6 @@ class StoreEvaluator(
 
     companion object {
         private val LOGGER = LogManager.getLogger(StoreEvaluator::class.java)
+        private const val evaluatorPrefix = "stores."
     }
 }

@@ -64,6 +64,7 @@ class TemplateServiceImpl @Inject constructor(
      * Add store evaluator as a wildcard.
      */
     private val evaluators = StoreExpressionUtil.builtin + mapOf(
+        "stores" to StoreEvaluator(storeFactory),
         "*" to StoreEvaluator(storeFactory),
     )
 
