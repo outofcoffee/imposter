@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -51,7 +51,6 @@ import io.gatehill.imposter.store.service.CaptureServiceImpl
 import io.gatehill.imposter.store.service.StoreRestApiServiceImpl
 import io.gatehill.imposter.store.service.StoreService
 import io.gatehill.imposter.store.service.StoreServiceImpl
-import io.gatehill.imposter.store.service.TemplateServiceImpl
 
 /**
  * @author Pete Cornish
@@ -68,9 +67,6 @@ class StoreModule : AbstractModule() {
 
         // needs to be eager to register lifecycle listener
         bind(CaptureServiceImpl::class.java).asEagerSingleton()
-
-        // needs to be eager to register lifecycle listener
-        bind(TemplateServiceImpl::class.java).asEagerSingleton()
 
         // determines driver
         bind(StoreFactory::class.java).to(DelegatingStoreFactoryImpl::class.java).`in`(Singleton::class.java)

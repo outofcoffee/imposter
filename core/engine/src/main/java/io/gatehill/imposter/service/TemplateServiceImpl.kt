@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2022.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -40,35 +40,40 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.store.util
+package io.gatehill.imposter.service
 
-import io.gatehill.imposter.expression.eval.ExpressionEvaluator
-import io.gatehill.imposter.expression.eval.RandomEvaluator
-import io.gatehill.imposter.expression.util.ExpressionUtil
 import io.gatehill.imposter.http.HttpExchange
-import io.gatehill.imposter.store.service.expression.ContextEvaluator
-import io.gatehill.imposter.store.service.expression.DateTimeEvaluator
-import io.gatehill.imposter.store.service.expression.HttpExpressionEvaluator
+import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
+import io.gatehill.imposter.lifecycle.EngineLifecycleListener
+import io.gatehill.imposter.util.PlaceholderUtil
+import io.vertx.core.buffer.Buffer
+import javax.inject.Inject
 
-object StoreExpressionUtil {
-    val builtin: Map<String, ExpressionEvaluator<*>> = mapOf(
-        "context" to ContextEvaluator,
-        "datetime" to DateTimeEvaluator,
-        "random" to RandomEvaluator,
-    )
+/**
+ * Resolves response template placeholders.
+ *
+ * @author Pete Cornish
+ */
+class TemplateServiceImpl @Inject constructor(
+    engineLifecycle: EngineLifecycleHooks,
+) : EngineLifecycleListener {
+    init {
+        engineLifecycle.registerListener(this)
+    }
 
-    private val queryProvider = QueryProviderImpl()
-
-    /**
-     * Convenience function that provides the [HttpExchange] in the context.
-     * @see ExpressionUtil.eval
-     */
-    fun eval(
-        input: String,
+    override fun beforeTransmittingTemplate(
         httpExchange: HttpExchange,
-        evaluators: Map<String, ExpressionEvaluator<*>> = builtin,
-    ): String {
-        val context = mapOf(HttpExpressionEvaluator.HTTP_EXCHANGE_KEY to httpExchange)
-        return ExpressionUtil.eval(input, evaluators, context, queryProvider, nullifyUnsupported = true)
+        responseData: Buffer,
+        trustedData: Boolean,
+    ): Buffer {
+        if (responseData.length() == 0) {
+            return responseData
+        }
+
+        val original = responseData.toString(Charsets.UTF_8)
+        val evaluated = PlaceholderUtil.replace(original, httpExchange, PlaceholderUtil.templateEvaluators)
+
+        // only rebuffer if changed
+        return if (evaluated === original) responseData else Buffer.buffer(evaluated)
     }
 }

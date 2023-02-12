@@ -1,10 +1,52 @@
-package io.gatehill.imposter.store.util
+/*
+ * Copyright (c) 2023-2023.
+ *
+ * This file is part of Imposter.
+ *
+ * "Commons Clause" License Condition v1.0
+ *
+ * The Software is provided to you by the Licensor under the License, as
+ * defined below, subject to the following condition.
+ *
+ * Without limiting other conditions in the License, the grant of rights
+ * under the License will not include, and the License does not grant to
+ * you, the right to Sell the Software.
+ *
+ * For purposes of the foregoing, "Sell" means practicing any or all of
+ * the rights granted to you under the License to provide to third parties,
+ * for a fee or other consideration (including without limitation fees for
+ * hosting or consulting/support services related to the Software), a
+ * product or service whose value derives, entirely or substantially, from
+ * the functionality of the Software. Any license notice or attribution
+ * required by the License must also include this Commons Clause License
+ * Condition notice.
+ *
+ * Software: Imposter
+ *
+ * License: GNU Lesser General Public License version 3
+ *
+ * Licensor: Peter Cornish
+ *
+ * Imposter is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Imposter is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package io.gatehill.imposter.util
 
 import io.gatehill.imposter.http.ExchangePhase
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.http.HttpResponse
-import io.gatehill.imposter.util.DateTimeUtil
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.http.impl.headers.HeadersMultiMap
 import org.hamcrest.CoreMatchers.equalTo
@@ -17,7 +59,7 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 
-class StoreExpressionUtilTest {
+class PlaceholderUtilTest {
     @Test
     fun `eval request header`() {
         val request = mock<HttpRequest> {
@@ -27,9 +69,10 @@ class StoreExpressionUtilTest {
             on { request() } doReturn request
         }
 
-        val result = StoreExpressionUtil.eval(
+        val result = PlaceholderUtil.replace(
             input = "\${context.request.headers.Correlation-ID}",
             httpExchange = httpExchange,
+            evaluators = PlaceholderUtil.defaultEvaluators,
         )
 
         assertThat(result, equalTo("foo"))
@@ -44,9 +87,10 @@ class StoreExpressionUtilTest {
             on { request() } doReturn httpRequest
         }
 
-        val result = StoreExpressionUtil.eval(
+        val result = PlaceholderUtil.replace(
             input = "\${context.request.pathParams.userId}",
             httpExchange = httpExchange,
+            evaluators = PlaceholderUtil.defaultEvaluators,
         )
 
         assertThat(result, equalTo("Example-User-ID"))
@@ -61,9 +105,10 @@ class StoreExpressionUtilTest {
             on { request() } doReturn httpRequest
         }
 
-        val result = StoreExpressionUtil.eval(
+        val result = PlaceholderUtil.replace(
             input = "\${context.request.queryParams.page}",
             httpExchange = httpExchange,
+            evaluators = PlaceholderUtil.defaultEvaluators,
         )
 
         assertThat(result, equalTo("1"))
@@ -78,9 +123,10 @@ class StoreExpressionUtilTest {
             on { request() } doReturn httpRequest
         }
 
-        val result = StoreExpressionUtil.eval(
+        val result = PlaceholderUtil.replace(
             input = "\${context.request.body}",
             httpExchange = httpExchange,
+            evaluators = PlaceholderUtil.defaultEvaluators,
         )
 
         assertThat(result, equalTo("Request body"))
@@ -95,9 +141,10 @@ class StoreExpressionUtilTest {
             on { request() } doReturn httpRequest
         }
 
-        val result = StoreExpressionUtil.eval(
+        val result = PlaceholderUtil.replace(
             input = "\${context.request.body:$.name}",
             httpExchange = httpExchange,
+            evaluators = PlaceholderUtil.defaultEvaluators,
         )
 
         assertThat(result, equalTo("Ada"))
@@ -112,9 +159,10 @@ class StoreExpressionUtilTest {
             on { request() } doReturn httpRequest
         }
 
-        val result = StoreExpressionUtil.eval(
+        val result = PlaceholderUtil.replace(
             input = "\${context.request.pathParams.foo:-fallback}",
             httpExchange = httpExchange,
+            evaluators = PlaceholderUtil.defaultEvaluators,
         )
 
         assertThat(result, equalTo("fallback"))
@@ -130,9 +178,10 @@ class StoreExpressionUtilTest {
             on { response() } doReturn response
         }
 
-        val result = StoreExpressionUtil.eval(
+        val result = PlaceholderUtil.replace(
             input = "\${context.response.body}",
             httpExchange = httpExchange,
+            evaluators = PlaceholderUtil.defaultEvaluators,
         )
 
         assertThat(result, equalTo("Response body"))
@@ -150,9 +199,10 @@ class StoreExpressionUtilTest {
             on { response() } doReturn response
         }
 
-        val result = StoreExpressionUtil.eval(
+        val result = PlaceholderUtil.replace(
             input = "\${context.response.headers.X-Example}",
             httpExchange = httpExchange,
+            evaluators = PlaceholderUtil.defaultEvaluators,
         )
 
         assertThat(result, equalTo("foo"))
@@ -171,9 +221,10 @@ class StoreExpressionUtilTest {
     private fun checkExceptionThrownForPhase(httpExchange: HttpExchange, expression: String) {
         var cause: Throwable? = null
         try {
-            StoreExpressionUtil.eval(
+            PlaceholderUtil.replace(
                 input = expression,
                 httpExchange = httpExchange,
+                evaluators = PlaceholderUtil.defaultEvaluators,
             )
             fail("IllegalStateException should have been thrown")
 
@@ -196,9 +247,10 @@ class StoreExpressionUtilTest {
             on { request() } doReturn request
         }
 
-        val result = StoreExpressionUtil.eval(
+        val result = PlaceholderUtil.replace(
             input = "\${context.request.headers.Correlation-ID}_\${context.request.headers.User-Agent}",
             httpExchange = httpExchange,
+            evaluators = PlaceholderUtil.defaultEvaluators,
         )
 
         assertThat(result, equalTo("foo_mozilla"))
@@ -208,21 +260,24 @@ class StoreExpressionUtilTest {
     fun `eval datetime`() {
         val httpExchange = mock<HttpExchange>()
 
-        val millis = StoreExpressionUtil.eval(
+        val millis = PlaceholderUtil.replace(
             input = "\${datetime.now.millis}",
             httpExchange = httpExchange,
+            evaluators = PlaceholderUtil.defaultEvaluators,
         )
         assertThat(millis.toLong(), OrderingComparison.lessThanOrEqualTo(System.currentTimeMillis()))
 
-        val nanos = StoreExpressionUtil.eval(
+        val nanos = PlaceholderUtil.replace(
             input = "\${datetime.now.nanos}",
             httpExchange = httpExchange,
+            evaluators = PlaceholderUtil.defaultEvaluators,
         )
         assertThat(nanos.toLong(), OrderingComparison.lessThanOrEqualTo(System.nanoTime()))
 
-        val iso8601Date = StoreExpressionUtil.eval(
+        val iso8601Date = PlaceholderUtil.replace(
             input = "\${datetime.now.iso8601_date}",
             httpExchange = httpExchange,
+            evaluators = PlaceholderUtil.defaultEvaluators,
         )
         try {
             DateTimeUtil.DATE_FORMATTER.parse(iso8601Date)
@@ -230,9 +285,10 @@ class StoreExpressionUtilTest {
             fail("Failed to parse ISO-8601 date: ${e.message}")
         }
 
-        val iso8601DateTime = StoreExpressionUtil.eval(
+        val iso8601DateTime = PlaceholderUtil.replace(
             input = "\${datetime.now.iso8601_datetime}",
             httpExchange = httpExchange,
+            evaluators = PlaceholderUtil.defaultEvaluators,
         )
         try {
             DateTimeUtil.DATE_TIME_FORMATTER.parse(iso8601DateTime)
@@ -245,9 +301,10 @@ class StoreExpressionUtilTest {
     fun `eval invalid expression`() {
         val httpExchange = mock<HttpExchange>()
 
-        val result = StoreExpressionUtil.eval(
+        val result = PlaceholderUtil.replace(
             input = "\${invalid}",
             httpExchange = httpExchange,
+            evaluators = PlaceholderUtil.defaultEvaluators,
         )
         assertThat(result, equalTo(""))
     }

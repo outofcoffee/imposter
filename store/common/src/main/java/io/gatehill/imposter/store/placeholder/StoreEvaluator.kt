@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022.
+ * Copyright (c) 2022-2023.
  *
  * This file is part of Imposter.
  *
@@ -41,8 +41,9 @@
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.gatehill.imposter.store.service.expression
+package io.gatehill.imposter.store.placeholder
 
+import io.gatehill.imposter.placeholder.HttpExpressionEvaluator
 import io.gatehill.imposter.store.factory.StoreFactory
 import io.gatehill.imposter.store.util.StoreUtil
 import io.gatehill.imposter.util.ResourceUtil

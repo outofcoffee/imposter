@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022.
+ * Copyright (c) 2022-2023.
  *
  * This file is part of Imposter.
  *
@@ -41,7 +41,7 @@
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.gatehill.imposter.store.util
+package io.gatehill.imposter.placeholder
 
 import io.gatehill.imposter.expression.QueryProvider
 import io.gatehill.imposter.util.BodyQueryUtil
@@ -49,6 +49,9 @@ import org.apache.logging.log4j.LogManager
 import org.jdom2.input.SAXBuilder
 import java.io.StringReader
 
+/**
+ * Provides concrete implementations of query operations.
+ */
 class QueryProviderImpl : QueryProvider {
     override fun queryWithJsonPath(rawValue: Any, jsonPath: String): String? {
         LOGGER.trace("Evaluating JsonPath: {} on value of expression: {}", jsonPath, rawValue)

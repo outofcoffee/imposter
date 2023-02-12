@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022.
+ * Copyright (c) 2022-2023.
  *
  * This file is part of Imposter.
  *
@@ -41,7 +41,7 @@
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.gatehill.imposter.store.service.expression
+package io.gatehill.imposter.placeholder
 
 import io.gatehill.imposter.expression.eval.ExpressionEvaluator
 import io.gatehill.imposter.util.DateTimeUtil

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2022.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -54,6 +54,7 @@ import io.gatehill.imposter.service.ResponseService
 import io.gatehill.imposter.service.ResponseServiceImpl
 import io.gatehill.imposter.service.ScriptedResponseService
 import io.gatehill.imposter.service.SecurityService
+import io.gatehill.imposter.service.TemplateServiceImpl
 import io.gatehill.imposter.service.script.EmbeddedScriptService
 import io.gatehill.imposter.service.script.EmbeddedScriptServiceImpl
 import io.gatehill.imposter.service.script.ScriptServiceFactory
@@ -80,5 +81,8 @@ internal class EngineModule : AbstractModule() {
 
         // needs to be eager to register lifecycle listener
         bind(SecurityService::class.java).to(SecurityServiceImpl::class.java).asEagerSingleton()
+
+        // needs to be eager to register lifecycle listener
+        bind(TemplateServiceImpl::class.java).asEagerSingleton()
     }
 }

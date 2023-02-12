@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -56,8 +56,10 @@ import io.gatehill.imposter.plugin.config.system.SystemConfigHolder
 import io.gatehill.imposter.script.ExecutionContext
 import io.gatehill.imposter.store.factory.StoreFactory
 import io.gatehill.imposter.store.model.StoreHolder
+import io.gatehill.imposter.store.placeholder.StoreEvaluator
 import io.gatehill.imposter.store.util.StoreUtil
 import io.gatehill.imposter.util.MapUtil
+import io.gatehill.imposter.util.PlaceholderUtil
 import io.gatehill.imposter.util.ResourceUtil
 import org.apache.logging.log4j.LogManager
 import java.io.IOException
@@ -77,12 +79,19 @@ class StoreServiceImpl @Inject constructor(
         LOGGER.trace("Stores enabled")
         engineLifecycle.registerListener(this)
         scriptLifecycle.registerListener(this)
+
+        // resolve response template placeholders using stores
+        val storeEvaluator = StoreEvaluator(storeFactory)
+        PlaceholderUtil.templateEvaluators["stores"] = storeEvaluator
+
+        // also add store evaluator as a wildcard for backwards compatibility
+        PlaceholderUtil.templateEvaluators["*"] = storeEvaluator
     }
 
     override fun afterRoutesConfigured(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>,
-        router: HttpRouter
+        router: HttpRouter,
     ) {
         preloadStores(allPluginConfigs)
     }
@@ -133,7 +142,7 @@ class StoreServiceImpl @Inject constructor(
     override fun beforeBuildingRuntimeContext(
         httpExchange: HttpExchange,
         additionalBindings: MutableMap<String, Any>,
-        executionContext: ExecutionContext
+        executionContext: ExecutionContext,
     ) {
         // inject store object into script engine
         val requestId = httpExchange.get<String>(ResourceUtil.RC_REQUEST_ID_KEY)!!

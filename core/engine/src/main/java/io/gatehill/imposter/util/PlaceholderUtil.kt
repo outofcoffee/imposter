@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -40,51 +40,50 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.store.service
+package io.gatehill.imposter.util
 
+import io.gatehill.imposter.expression.eval.ExpressionEvaluator
+import io.gatehill.imposter.expression.eval.RandomEvaluator
+import io.gatehill.imposter.expression.util.ExpressionUtil
 import io.gatehill.imposter.http.HttpExchange
-import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
-import io.gatehill.imposter.lifecycle.EngineLifecycleListener
-import io.gatehill.imposter.store.factory.StoreFactory
-import io.gatehill.imposter.store.service.expression.StoreEvaluator
-import io.gatehill.imposter.store.util.StoreExpressionUtil
-import io.vertx.core.buffer.Buffer
-import javax.inject.Inject
+import io.gatehill.imposter.placeholder.ContextEvaluator
+import io.gatehill.imposter.placeholder.DateTimeEvaluator
+import io.gatehill.imposter.placeholder.HttpExpressionEvaluator
+import io.gatehill.imposter.placeholder.QueryProviderImpl
 
 /**
- * Resolves response template placeholders using stores.
- *
- * @author Pete Cornish
+ * Replaces expression placeholders during the lifecycle of a request/response exchange.
  */
-class TemplateServiceImpl @Inject constructor(
-    storeFactory: StoreFactory,
-    engineLifecycle: EngineLifecycleHooks,
-) : EngineLifecycleListener {
+object PlaceholderUtil {
     /**
-     * Add store evaluator as a wildcard.
+     * Evaluators that are always available.
      */
-    private val evaluators = StoreExpressionUtil.builtin + mapOf(
-        "stores" to StoreEvaluator(storeFactory),
-        "*" to StoreEvaluator(storeFactory),
+    val defaultEvaluators: Map<String, ExpressionEvaluator<*>> = mapOf(
+        "context" to ContextEvaluator,
+        "datetime" to DateTimeEvaluator,
+        "random" to RandomEvaluator,
     )
 
-    init {
-        engineLifecycle.registerListener(this)
-    }
+    /**
+     * Evaluators used for response template placeholder replacement. These might
+     * depend on state set during the request lifecycle.
+     *
+     * Mutable to allow additional evaluators to be registered.
+     */
+    val templateEvaluators: MutableMap<String, ExpressionEvaluator<*>> = defaultEvaluators.toMutableMap()
 
-    override fun beforeTransmittingTemplate(
+    private val queryProvider = QueryProviderImpl()
+
+    /**
+     * Convenience function that provides the [HttpExchange] in the context.
+     * @see ExpressionUtil.eval
+     */
+    fun replace(
+        input: String,
         httpExchange: HttpExchange,
-        responseData: Buffer,
-        trustedData: Boolean,
-    ): Buffer {
-        if (responseData.length() == 0) {
-            return responseData
-        }
-
-        val original = responseData.toString(Charsets.UTF_8)
-        val evaluated = StoreExpressionUtil.eval(original, httpExchange, evaluators)
-
-        // only rebuffer if changed
-        return if (evaluated === original) responseData else Buffer.buffer(evaluated)
+        evaluators: Map<String, ExpressionEvaluator<*>>,
+    ): String {
+        val context = mapOf(HttpExpressionEvaluator.HTTP_EXCHANGE_KEY to httpExchange)
+        return ExpressionUtil.eval(input, evaluators, context, queryProvider, nullifyUnsupported = true)
     }
 }

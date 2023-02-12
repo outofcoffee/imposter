@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -53,9 +53,9 @@ import io.gatehill.imposter.plugin.config.capture.ItemCaptureConfig
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig
 import io.gatehill.imposter.store.core.Store
 import io.gatehill.imposter.store.factory.StoreFactory
-import io.gatehill.imposter.store.util.StoreExpressionUtil
 import io.gatehill.imposter.store.util.StoreUtil
 import io.gatehill.imposter.util.BodyQueryUtil
+import io.gatehill.imposter.util.PlaceholderUtil
 import io.gatehill.imposter.util.ResourceUtil
 import org.apache.logging.log4j.LogManager
 import java.util.Objects
@@ -235,7 +235,7 @@ class CaptureServiceImpl @Inject constructor(
             ) as T?
 
         } else if (!Strings.isNullOrEmpty(captureConfig.expression)) {
-            StoreExpressionUtil.eval(captureConfig.expression!!, httpExchange) as T?
+            PlaceholderUtil.replace(captureConfig.expression!!, httpExchange, PlaceholderUtil.defaultEvaluators) as T?
 
         } else {
             null
