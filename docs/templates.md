@@ -152,7 +152,7 @@ Hello alice
 
 ### Date/time values
 
-Syntax: `datetime.now.[function]`
+Syntax: `datetime.now.<property>`
 
 Example config:
 
@@ -175,7 +175,7 @@ $ curl http://localhost:8080/now
 The date is 2022-12-28
 ```
 
-Valid date/time functions:
+Valid date/time properties:
 
 | Syntax                          | Example                                    | Example value                |
 |---------------------------------|--------------------------------------------|------------------------------|
@@ -183,6 +183,42 @@ Valid date/time functions:
 | `datetime.now.iso8601_datetime` | `${datetime.now.iso8601_datetime}`         | `"2022-01-20T14:23:25.737Z"` |
 | `datetime.now.millis`           | `${datetime.now.millis}`                   | `"1642688570140"`            |
 | `datetime.now.nanos`            | `${datetime.now.nanos}`                    | `"30225267785430"`           |
+
+### Random values
+
+Syntax: `random.<function>`
+
+Example config:
+
+```yaml
+# part of your configuration file
+
+resources:
+- path: /now
+  method: POST
+  response:
+    content: "An integer is ${random.numeric}"
+    template: true
+```
+
+Example request:
+
+```
+$ curl http://localhost:8080/now
+
+An integer is 42
+```
+
+Valid random functions:
+
+| Syntax                  | Example                    | Example value                            |
+|-------------------------|----------------------------|------------------------------------------|
+| `random.alphabetic()`   | `${random.alphabetic()}`   | `"i"`                                    |
+| `random.alphanumeric()` | `${random.alphanumeric()}` | `"i"` or `"42"`                          |
+| `random.numeric()`      | `${random.numeric()}`      | `"42"`                                   |
+| `random.uuid()`         | `${random.uuid()}`         | `"e1a4fba9-33eb-4241-84cf-472f90639c37"` |
+
+> Note: the syntax for `random` is slightly different to the other placeholder types. These are functions, not properties, so are called with parentheses.
 
 ### Items in a Store
 
