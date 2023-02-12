@@ -10,3 +10,9 @@ resources:
   path: /load
   response:
     scriptFile: store.js
+
+- method: GET
+  path: /templated
+  response:
+    content: Hello ${stores.templateTest.foo}
+    template: true

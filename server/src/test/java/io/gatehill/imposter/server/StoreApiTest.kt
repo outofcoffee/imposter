@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -58,12 +58,12 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * Tests for storage subsystem.
+ * Tests for stores REST API.
  *
  * @author Pete Cornish
  */
 @RunWith(VertxUnitRunner::class)
-class StoreTest : BaseVerticleTest() {
+class StoreApiTest : BaseVerticleTest() {
     override val pluginClass = TestPluginImpl::class.java
 
     @Before
@@ -75,27 +75,8 @@ class StoreTest : BaseVerticleTest() {
     }
 
     override val testConfigDirs = listOf(
-        "/store"
+        "/simple-config"
     )
-
-    /**
-     * Save and load from the store across multiple requests.
-     */
-    @Test
-    fun testSetAndGetFromStoreScripted() {
-        // save via script
-        RestAssured.given().`when`()
-            .queryParam("foo", "qux")
-            .put("/store")
-            .then()
-            .statusCode(equalTo(HttpUtil.HTTP_CREATED))
-
-        // load via script
-        RestAssured.given().`when`()["/load"]
-            .then()
-            .statusCode(equalTo(HttpUtil.HTTP_OK))
-            .body(equalTo("qux"))
-    }
 
     /**
      * Fail to load a nonexistent store.
@@ -103,7 +84,8 @@ class StoreTest : BaseVerticleTest() {
     @Test
     fun testNonexistentStore() {
         RestAssured.given().`when`()
-            .pathParam("storeId", "nonexistent")["/system/store/{storeId}"]
+            .pathParam("storeId", "nonexistent")
+            .get("/system/store/{storeId}")
             .then()
             .statusCode(equalTo(HttpUtil.HTTP_OK))
     }
@@ -126,14 +108,16 @@ class StoreTest : BaseVerticleTest() {
         // incorrect mime type
         RestAssured.given().`when`()
             .pathParam("storeId", "umt")
-            .accept(ContentType.XML)["/system/store/{storeId}"]
+            .accept(ContentType.XML)
+            .get("/system/store/{storeId}")
             .then()
             .statusCode(equalTo(HttpUtil.HTTP_NOT_ACCEPTABLE))
 
         // correct mime type
         RestAssured.given().`when`()
             .pathParam("storeId", "umt")
-            .accept(ContentType.JSON)["/system/store/{storeId}"]
+            .accept(ContentType.JSON)
+            .get("/system/store/{storeId}")
             .then()
             .statusCode(equalTo(HttpUtil.HTTP_OK))
     }
@@ -146,7 +130,8 @@ class StoreTest : BaseVerticleTest() {
         // initially empty
         RestAssured.given().`when`()
             .pathParam("storeId", "sgs")
-            .pathParam("key", "bar")["/system/store/{storeId}/{key}"]
+            .pathParam("key", "bar")
+            .get("/system/store/{storeId}/{key}")
             .then()
             .statusCode(equalTo(HttpUtil.HTTP_NOT_FOUND))
 
@@ -173,7 +158,8 @@ class StoreTest : BaseVerticleTest() {
         // retrieve via system
         RestAssured.given().`when`()
             .pathParam("storeId", "sgs")
-            .pathParam("key", "bar")["/system/store/{storeId}/{key}"]
+            .pathParam("key", "bar")
+            .get("/system/store/{storeId}/{key}")
             .then()
             .statusCode(equalTo(HttpUtil.HTTP_OK))
             .body(equalTo("quux"))
@@ -186,7 +172,8 @@ class StoreTest : BaseVerticleTest() {
     fun testSetAndGetMultipleFromStore() {
         // initially empty
         RestAssured.given().`when`()
-            .pathParam("storeId", "sgm")["/system/store/{storeId}"]
+            .pathParam("storeId", "sgm")
+            .get("/system/store/{storeId}")
             .then()
             .statusCode(equalTo(HttpUtil.HTTP_OK))
 
@@ -206,7 +193,8 @@ class StoreTest : BaseVerticleTest() {
 
         // load all
         RestAssured.given().`when`()
-            .pathParam("storeId", "sgm")["/system/store/{storeId}"]
+            .pathParam("storeId", "sgm")
+            .get("/system/store/{storeId}")
             .then()
             .statusCode(equalTo(HttpUtil.HTTP_OK))
             .body(
@@ -242,7 +230,8 @@ class StoreTest : BaseVerticleTest() {
         // should not exist
         RestAssured.given().`when`()
             .pathParam("storeId", "ditem")
-            .pathParam("key", "corge")["/system/store/{storeId}/{key}"]
+            .pathParam("key", "corge")
+            .get("/system/store/{storeId}/{key}")
             .then()
             .statusCode(equalTo(HttpUtil.HTTP_NOT_FOUND))
     }
@@ -264,7 +253,8 @@ class StoreTest : BaseVerticleTest() {
 
         // load all
         RestAssured.given().`when`()
-            .pathParam("storeId", "sga")["/system/store/{storeId}"]
+            .pathParam("storeId", "sga")
+            .get("/system/store/{storeId}")
             .then()
             .statusCode(equalTo(HttpUtil.HTTP_OK))
             .body("$", hasEntry("baz", "quuz"))
@@ -319,7 +309,8 @@ class StoreTest : BaseVerticleTest() {
 
         // should not exist
         RestAssured.given().`when`()
-            .pathParam("storeId", "dstore")["/system/store/{storeId}"]
+            .pathParam("storeId", "dstore")
+            .get("/system/store/{storeId}")
             .then()
             .statusCode(equalTo(HttpUtil.HTTP_OK))
             .body("$", not(hasEntry(any(Any::class.java), any(Any::class.java))))
