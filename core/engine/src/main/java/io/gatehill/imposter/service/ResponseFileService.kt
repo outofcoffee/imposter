@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2023-2023.
  *
  * This file is part of Imposter.
  *
@@ -40,40 +40,31 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 package io.gatehill.imposter.service
 
 import io.gatehill.imposter.http.HttpExchange
-import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
-import io.gatehill.imposter.lifecycle.EngineLifecycleListener
-import io.gatehill.imposter.util.PlaceholderUtil
-import io.vertx.core.buffer.Buffer
-import javax.inject.Inject
+import io.gatehill.imposter.plugin.config.PluginConfig
+import io.gatehill.imposter.plugin.config.resource.ResourceConfig
+import io.gatehill.imposter.script.ResponseBehaviour
+import io.vertx.core.json.JsonArray
 
-/**
- * Resolves response template placeholders.
- *
- * @author Pete Cornish
- */
-class TemplateServiceImpl @Inject constructor(
-    engineLifecycle: EngineLifecycleHooks,
-) : EngineLifecycleListener {
-    init {
-        engineLifecycle.registerListener(this)
-    }
+interface ResponseFileService {
+    /**
+     * Reply with a static response file. Note that the content type is determined
+     * by the file being sent.
+     *
+     * @param pluginConfig      the plugin configuration
+     * @param resourceConfig    the resource configuration
+     * @param httpExchange    the HTTP exchange
+     * @param responseBehaviour the response behaviour
+     */
+    fun serveResponseFile(pluginConfig: PluginConfig, resourceConfig: ResourceConfig?, httpExchange: HttpExchange, responseBehaviour: ResponseBehaviour)
 
-    override fun beforeTransmittingTemplate(
-        httpExchange: HttpExchange,
-        responseData: Buffer,
-        trustedData: Boolean,
-    ): Buffer {
-        if (responseData.length() == 0) {
-            return responseData
-        }
+    /**
+     * Convenience method that uses [ResponseBehaviour.responseFile] as the response file.
+     */
+    fun loadResponseAsJsonArray(config: PluginConfig, behaviour: ResponseBehaviour): JsonArray
 
-        val original = responseData.toString(Charsets.UTF_8)
-        val evaluated = PlaceholderUtil.replace(original, httpExchange, PlaceholderUtil.templateEvaluators)
-
-        // only rebuffer if changed
-        return if (evaluated === original) responseData else Buffer.buffer(evaluated)
-    }
+    fun loadResponseAsJsonArray(config: PluginConfig, responseFile: String): JsonArray
 }

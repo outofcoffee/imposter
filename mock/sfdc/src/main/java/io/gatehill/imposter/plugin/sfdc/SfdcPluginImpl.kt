@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -52,8 +52,8 @@ import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin
 import io.gatehill.imposter.plugin.sfdc.config.SfdcPluginConfig
 import io.gatehill.imposter.service.ResourceService
+import io.gatehill.imposter.service.ResponseFileService
 import io.gatehill.imposter.service.ResponseRoutingService
-import io.gatehill.imposter.service.ResponseService
 import io.gatehill.imposter.util.FileUtil.findRow
 import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.HttpUtil.CONTENT_TYPE
@@ -77,7 +77,7 @@ class SfdcPluginImpl @Inject constructor(
     vertx: Vertx,
     imposterConfig: ImposterConfig,
     private val resourceService: ResourceService,
-    private val responseService: ResponseService,
+    private val responseFileService: ResponseFileService,
     private val responseRoutingService: ResponseRoutingService,
 ) : ConfiguredPlugin<SfdcPluginConfig>(
     vertx, imposterConfig
@@ -117,7 +117,7 @@ class SfdcPluginImpl @Inject constructor(
                 // script should fire first
                 responseRoutingService.route(config, httpExchange) { responseBehaviour ->
                     // enrich records
-                    val records = responseService.loadResponseAsJsonArray(config, responseBehaviour)
+                    val records = responseFileService.loadResponseAsJsonArray(config, responseBehaviour)
                     for (i in 0 until records.size()) {
                         addRecordAttributes(records.getJsonObject(i), apiVersion, config.sObjectName)
                     }
@@ -149,7 +149,7 @@ class SfdcPluginImpl @Inject constructor(
                     val result = findRow(
                         idFieldName = FIELD_ID,
                         rowId = sObjectId,
-                        rows = responseService.loadResponseAsJsonArray(config, responseBehaviour)
+                        rows = responseFileService.loadResponseAsJsonArray(config, responseBehaviour)
                     )?.let { r: JsonObject -> addRecordAttributes(r, apiVersion, config.sObjectName) }
 
                     val response = httpExchange.response()

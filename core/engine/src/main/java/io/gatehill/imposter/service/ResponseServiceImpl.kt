@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -43,8 +43,6 @@
 package io.gatehill.imposter.service
 
 import com.google.common.base.Strings
-import com.google.common.cache.CacheBuilder
-import io.gatehill.imposter.config.util.EnvVars.Companion.getEnv
 import io.gatehill.imposter.exception.ResponseException
 import io.gatehill.imposter.http.ExchangePhase
 import io.gatehill.imposter.http.HttpExchange
@@ -54,56 +52,29 @@ import io.gatehill.imposter.lifecycle.EngineLifecycleListener
 import io.gatehill.imposter.plugin.config.ContentTypedConfig
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig
-import io.gatehill.imposter.script.FailureSimulationType
 import io.gatehill.imposter.script.ResponseBehaviour
 import io.gatehill.imposter.service.ResponseService.ResponseSender
 import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.LogUtil.describeRequest
-import io.gatehill.imposter.util.MetricsUtil
-import io.micrometer.core.instrument.Gauge
+import io.gatehill.imposter.util.PlaceholderUtil
 import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.http.impl.MimeMapping
-import io.vertx.core.json.JsonArray
-import org.apache.commons.io.FileUtils
 import org.apache.logging.log4j.LogManager
-import java.io.IOException
-import java.nio.charset.StandardCharsets
-import java.nio.file.Path
-import java.nio.file.Paths
 import javax.inject.Inject
-import kotlin.io.path.exists
-import kotlin.io.path.readBytes
-import kotlin.random.Random
 
 /**
  * @author Pete Cornish
  */
 class ResponseServiceImpl @Inject constructor(
     private val engineLifecycle: EngineLifecycleHooks,
+    private val characteristicsService: CharacteristicsService,
+    private val responseFileService: ResponseFileService,
     private val vertx: Vertx,
 ) : ResponseService {
 
     private var notFoundMessages = mutableListOf<String>()
-
-    /**
-     * Holds response files, with maximum number of entries determined by the environment
-     * variable [ENV_RESPONSE_FILE_CACHE_ENTRIES].
-     */
-    private val responseFileCache = CacheBuilder.newBuilder()
-        .maximumSize(getEnv(ENV_RESPONSE_FILE_CACHE_ENTRIES)?.toLong() ?: DEFAULT_RESPONSE_FILE_CACHE_ENTRIES)
-        .build<Path, Buffer>()
-
-    init {
-        MetricsUtil.doIfMetricsEnabled(
-            METRIC_RESPONSE_FILE_CACHE_ENTRIES
-        ) { registry ->
-            Gauge.builder(METRIC_RESPONSE_FILE_CACHE_ENTRIES) { responseFileCache.size() }
-                .description("The number of cached response files")
-                .register(registry)
-        }
-    }
 
     override fun sendEmptyResponse(httpExchange: HttpExchange, responseBehaviour: ResponseBehaviour): Boolean {
         return try {
@@ -143,35 +114,18 @@ class ResponseServiceImpl @Inject constructor(
     ) {
         val completion = {
             responseBehaviour.failureType?.let { failureType ->
-                sendFailure(resourceConfig, httpExchange, failureType)
+                characteristicsService.sendFailure(resourceConfig, httpExchange, failureType)
             } ?: run {
                 sendResponseInternal(pluginConfig, resourceConfig, httpExchange, responseBehaviour, fallbackSenders)
             }
         }
-        val delayMs = simulatePerformance(responseBehaviour)
+        val delayMs = characteristicsService.simulatePerformance(responseBehaviour)
         if (delayMs > 0) {
             LOGGER.info("Delaying mock response for {} by {}ms", LogUtil.describeRequestShort(httpExchange), delayMs)
             vertx.setTimer(delayMs.toLong()) { completion() }
         } else {
             completion()
         }
-    }
-
-    private fun simulatePerformance(responseBehaviour: ResponseBehaviour): Int {
-        val performance = responseBehaviour.performanceSimulation
-        var delayMs = -1
-        performance?.let {
-            performance.exactDelayMs?.takeIf { it > 0 }?.let { exactDelayMs ->
-                delayMs = exactDelayMs
-            } ?: run {
-                val minDelayMs = performance.minDelayMs ?: 0
-                val maxDelayMs = performance.maxDelayMs ?: 0
-                if (minDelayMs > 0 && maxDelayMs >= minDelayMs) {
-                    delayMs = Random.nextInt(minDelayMs, maxDelayMs)
-                }
-            }
-        }
-        return delayMs
     }
 
     private fun sendResponseInternal(
@@ -186,7 +140,7 @@ class ResponseServiceImpl @Inject constructor(
             LogUtil.describeRequestShort(httpExchange),
             responseBehaviour.statusCode
         )
-        finalise(resourceConfig, httpExchange) {
+        finaliseExchange(resourceConfig, httpExchange) {
             try {
                 val response = httpExchange.response()
                 response.setStatusCode(responseBehaviour.statusCode)
@@ -194,7 +148,7 @@ class ResponseServiceImpl @Inject constructor(
                     response.putHeader(name, value)
                 }
                 if (!Strings.isNullOrEmpty(responseBehaviour.responseFile)) {
-                    serveResponseFile(pluginConfig, resourceConfig, httpExchange, responseBehaviour)
+                    responseFileService.serveResponseFile(pluginConfig, resourceConfig, httpExchange, responseBehaviour)
                 } else if (!Strings.isNullOrEmpty(responseBehaviour.content)) {
                     serveResponseData(resourceConfig, httpExchange, responseBehaviour)
                 } else {
@@ -209,95 +163,6 @@ class ResponseServiceImpl @Inject constructor(
                 )
             }
         }
-    }
-
-    private fun sendFailure(
-        resourceConfig: ResourceConfig?,
-        httpExchange: HttpExchange,
-        failureType: FailureSimulationType,
-    ) {
-        LOGGER.trace(
-            "Simulating {} failure for {}",
-            failureType,
-            LogUtil.describeRequestShort(httpExchange),
-        )
-        finalise(resourceConfig, httpExchange) {
-            try {
-                when (failureType) {
-                    FailureSimulationType.EmptyResponse -> httpExchange.response().end()
-                    FailureSimulationType.CloseConnection -> httpExchange.response().close()
-                }
-            } catch (e: Exception) {
-                httpExchange.fail(
-                    ResponseException("Error simulating $failureType failure for " + describeRequest(httpExchange), e)
-                )
-            }
-        }
-    }
-
-    private fun finalise(
-        resourceConfig: ResourceConfig?,
-        httpExchange: HttpExchange,
-        block: () -> Unit,
-    ) {
-        try {
-            block()
-        } finally {
-            // always set phase and perform tidy up once handled, regardless of outcome
-            httpExchange.phase = ExchangePhase.RESPONSE_SENT
-
-            engineLifecycle.forEach { listener: EngineLifecycleListener ->
-                listener.afterResponseSent(httpExchange, resourceConfig)
-            }
-        }
-    }
-
-    /**
-     * Reply with a static response file. Note that the content type is determined
-     * by the file being sent.
-     *
-     * @param pluginConfig      the plugin configuration
-     * @param resourceConfig    the resource configuration
-     * @param httpExchange    the HTTP exchange
-     * @param responseBehaviour the response behaviour
-     */
-    private fun serveResponseFile(
-        pluginConfig: PluginConfig,
-        resourceConfig: ResourceConfig?,
-        httpExchange: HttpExchange,
-        responseBehaviour: ResponseBehaviour,
-    ) {
-        val response = httpExchange.response()
-        LOGGER.info(
-            "Serving response file {} for {} with status code {}",
-            responseBehaviour.responseFile,
-            LogUtil.describeRequestShort(httpExchange),
-            response.getStatusCode()
-        )
-
-        val responseFile = responseBehaviour.responseFile ?: throw IllegalStateException("Response file not set")
-        val normalisedPath = normalisePath(pluginConfig, responseFile)
-
-        val responseData = responseFileCache.getIfPresent(normalisedPath) ?: run {
-            if (normalisedPath.exists()) {
-                Buffer.buffer(normalisedPath.readBytes()).also {
-                    responseFileCache.put(normalisedPath, it)
-                }
-            } else {
-                LOGGER.warn("Response file does not exist: $normalisedPath - returning 404 status code")
-                httpExchange.response().setStatusCode(HttpUtil.HTTP_NOT_FOUND).end()
-                return
-            }
-        }
-
-        writeResponseData(
-            resourceConfig = resourceConfig,
-            httpExchange = httpExchange,
-            filenameHintForContentType = normalisedPath.fileName.toString(),
-            origResponseData = responseData,
-            template = responseBehaviour.isTemplate,
-            trustedData = false
-        )
     }
 
     /**
@@ -330,13 +195,7 @@ class ResponseServiceImpl @Inject constructor(
         )
     }
 
-    /**
-     * Write the response data, optionally resolving placeholders if templating is enabled.
-     *
-     * @param httpExchange the HTTP exchange
-     * @param origResponseData   the data
-     */
-    private fun writeResponseData(
+    override fun writeResponseData(
         resourceConfig: ResourceConfig?,
         httpExchange: HttpExchange,
         filenameHintForContentType: String?,
@@ -347,14 +206,10 @@ class ResponseServiceImpl @Inject constructor(
         val response = httpExchange.response()
         setContentTypeIfAbsent(resourceConfig, response, filenameHintForContentType)
 
-        var responseData = origResponseData
-        if (template) {
-            // listeners may transform response data
-            if (!engineLifecycle.isEmpty) {
-                engineLifecycle.forEach { listener: EngineLifecycleListener ->
-                    responseData = listener.beforeTransmittingTemplate(httpExchange, responseData, trustedData)
-                }
-            }
+        val responseData = if (template) {
+            resolvePlaceholders(httpExchange, origResponseData)
+        } else {
+            origResponseData
         }
         response.end(responseData)
     }
@@ -385,6 +240,18 @@ class ResponseServiceImpl @Inject constructor(
         }
     }
 
+    private fun resolvePlaceholders(httpExchange: HttpExchange, responseData: Buffer): Buffer {
+        if (responseData.length() == 0) {
+            return responseData
+        }
+
+        val original = responseData.toString(Charsets.UTF_8)
+        val evaluated = PlaceholderUtil.replace(original, httpExchange, PlaceholderUtil.templateEvaluators)
+
+        // only rebuffer if changed
+        return if (evaluated === original) responseData else Buffer.buffer(evaluated)
+    }
+
     private fun fallback(
         httpExchange: HttpExchange,
         responseBehaviour: ResponseBehaviour,
@@ -400,27 +267,6 @@ class ResponseServiceImpl @Inject constructor(
             }
         }
         throw ResponseException("All attempts to send a response failed")
-    }
-
-    private fun normalisePath(config: PluginConfig, responseFile: String): Path {
-        return Paths.get(config.parentDir.absolutePath, responseFile)
-    }
-
-    override fun loadResponseAsJsonArray(config: PluginConfig, behaviour: ResponseBehaviour): JsonArray {
-        return loadResponseAsJsonArray(config, behaviour.responseFile!!)
-    }
-
-    override fun loadResponseAsJsonArray(config: PluginConfig, responseFile: String): JsonArray {
-        if (Strings.isNullOrEmpty(responseFile)) {
-            LOGGER.debug("Response file blank - returning empty array")
-            return JsonArray()
-        }
-        return try {
-            val configPath = normalisePath(config, responseFile).toFile()
-            JsonArray(FileUtils.readFileToString(configPath, StandardCharsets.UTF_8))
-        } catch (e: IOException) {
-            throw RuntimeException(e)
-        }
     }
 
     /**
@@ -446,7 +292,7 @@ class ResponseServiceImpl @Inject constructor(
                 |<p>
                 |No resource exists for: <pre>$requestMethod $requestPath</pre>
                 |</p>
-                |${notFoundMessages.joinToString("</p>\n<p>","<p>","</p>")}
+                |${notFoundMessages.joinToString("</p>\n<p>", "<p>", "</p>")}
                 |<hr/>
                 |<p>
                 |<em><a href="https://www.imposter.sh">Imposter mock engine</a></em>
@@ -464,10 +310,24 @@ class ResponseServiceImpl @Inject constructor(
         notFoundMessages += message
     }
 
+    override fun finaliseExchange(
+        resourceConfig: ResourceConfig?,
+        httpExchange: HttpExchange,
+        block: () -> Unit,
+    ) {
+        try {
+            block()
+        } finally {
+            // always set phase and perform tidy up once handled, regardless of outcome
+            httpExchange.phase = ExchangePhase.RESPONSE_SENT
+
+            engineLifecycle.forEach { listener: EngineLifecycleListener ->
+                listener.afterResponseSent(httpExchange, resourceConfig)
+            }
+        }
+    }
+
     companion object {
         private val LOGGER = LogManager.getLogger(ResponseServiceImpl::class.java)
-        private const val ENV_RESPONSE_FILE_CACHE_ENTRIES = "IMPOSTER_RESPONSE_FILE_CACHE_ENTRIES"
-        private const val DEFAULT_RESPONSE_FILE_CACHE_ENTRIES = 20L
-        private const val METRIC_RESPONSE_FILE_CACHE_ENTRIES = "response.file.cache.entries"
     }
 }

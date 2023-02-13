@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023.
+ * Copyright (c) 2023-2023.
  *
  * This file is part of Imposter.
  *
@@ -54,6 +54,7 @@ import io.gatehill.imposter.plugin.wiremock.model.WiremockFile
 import io.gatehill.imposter.plugin.wiremock.model.WiremockMapping
 import io.gatehill.imposter.plugin.wiremock.util.ConversionUtil
 import io.gatehill.imposter.service.ResourceService
+import io.gatehill.imposter.service.ResponseFileService
 import io.gatehill.imposter.service.ResponseRoutingService
 import io.gatehill.imposter.service.ResponseService
 import io.gatehill.imposter.util.HttpUtil
@@ -77,12 +78,14 @@ class WiremockPluginImpl @Inject constructor(
     vertx: Vertx,
     imposterConfig: ImposterConfig,
     resourceService: ResourceService,
+    responseFileService: ResponseFileService,
     responseService: ResponseService,
     responseRoutingService: ResponseRoutingService,
 ) : RestPluginImpl(
     vertx,
     imposterConfig,
     resourceService,
+    responseFileService,
     responseService,
     responseRoutingService,
 ) {

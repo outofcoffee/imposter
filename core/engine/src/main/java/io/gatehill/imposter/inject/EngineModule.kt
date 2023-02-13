@@ -44,17 +44,19 @@ package io.gatehill.imposter.inject
 
 import com.google.inject.AbstractModule
 import com.google.inject.Singleton
+import io.gatehill.imposter.service.CharacteristicsService
 import io.gatehill.imposter.service.FileCacheService
 import io.gatehill.imposter.service.FileCacheServiceImpl
 import io.gatehill.imposter.service.ResourceService
 import io.gatehill.imposter.service.ResourceServiceImpl
+import io.gatehill.imposter.service.ResponseFileService
+import io.gatehill.imposter.service.ResponseFileServiceImpl
 import io.gatehill.imposter.service.ResponseRoutingService
 import io.gatehill.imposter.service.ResponseRoutingServiceImpl
 import io.gatehill.imposter.service.ResponseService
 import io.gatehill.imposter.service.ResponseServiceImpl
 import io.gatehill.imposter.service.ScriptedResponseService
 import io.gatehill.imposter.service.SecurityService
-import io.gatehill.imposter.service.TemplateServiceImpl
 import io.gatehill.imposter.service.script.EmbeddedScriptService
 import io.gatehill.imposter.service.script.EmbeddedScriptServiceImpl
 import io.gatehill.imposter.service.script.ScriptServiceFactory
@@ -69,7 +71,9 @@ internal class EngineModule : AbstractModule() {
         bind(ResourceService::class.java).to(ResourceServiceImpl::class.java).`in`(Singleton::class.java)
         bind(ResponseRoutingService::class.java).to(ResponseRoutingServiceImpl::class.java).`in`(Singleton::class.java)
         bind(ResponseService::class.java).to(ResponseServiceImpl::class.java).`in`(Singleton::class.java)
+        bind(ResponseFileService::class.java).to(ResponseFileServiceImpl::class.java).`in`(Singleton::class.java)
         bind(FileCacheService::class.java).to(FileCacheServiceImpl::class.java).`in`(Singleton::class.java)
+        bind(CharacteristicsService::class.java).`in`(Singleton::class.java)
         bind(ScriptServiceFactory::class.java).`in`(Singleton::class.java)
 
         // needs to be eager to register lifecycle listener
@@ -81,8 +85,5 @@ internal class EngineModule : AbstractModule() {
 
         // needs to be eager to register lifecycle listener
         bind(SecurityService::class.java).to(SecurityServiceImpl::class.java).asEagerSingleton()
-
-        // needs to be eager to register lifecycle listener
-        bind(TemplateServiceImpl::class.java).asEagerSingleton()
     }
 }

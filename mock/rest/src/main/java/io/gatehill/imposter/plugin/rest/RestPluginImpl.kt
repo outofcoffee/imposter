@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -52,6 +52,7 @@ import io.gatehill.imposter.plugin.rest.config.RestPluginConfig
 import io.gatehill.imposter.plugin.rest.config.RestPluginResourceConfig
 import io.gatehill.imposter.script.ResponseBehaviour
 import io.gatehill.imposter.service.ResourceService
+import io.gatehill.imposter.service.ResponseFileService
 import io.gatehill.imposter.service.ResponseRoutingService
 import io.gatehill.imposter.service.ResponseService
 import io.gatehill.imposter.util.FileUtil.findRow
@@ -73,6 +74,7 @@ open class RestPluginImpl @Inject constructor(
     vertx: Vertx,
     imposterConfig: ImposterConfig,
     private val resourceService: ResourceService,
+    private val responseFileService: ResponseFileService,
     private val responseService: ResponseService,
     private val responseRoutingService: ResponseRoutingService,
 ) : ConfiguredPlugin<RestPluginConfig>(
@@ -175,7 +177,7 @@ open class RestPluginImpl @Inject constructor(
         // find row
         val result = findRow(
             idFieldName, idField,
-            responseService.loadResponseAsJsonArray(pluginConfig, responseBehaviour)
+            responseFileService.loadResponseAsJsonArray(pluginConfig, responseBehaviour)
         )
         val response = httpExchange.response()
 

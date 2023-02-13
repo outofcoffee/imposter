@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -61,8 +61,8 @@ import io.gatehill.imposter.plugin.hbase.service.ScannerService
 import io.gatehill.imposter.plugin.hbase.service.serialisation.DeserialisationService
 import io.gatehill.imposter.plugin.hbase.service.serialisation.SerialisationService
 import io.gatehill.imposter.service.ResourceService
+import io.gatehill.imposter.service.ResponseFileService
 import io.gatehill.imposter.service.ResponseRoutingService
-import io.gatehill.imposter.service.ResponseService
 import io.gatehill.imposter.util.FileUtil.findRow
 import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.HttpUtil.CONTENT_TYPE_JSON
@@ -83,7 +83,7 @@ class HBasePluginImpl @Inject constructor(
     vertx: Vertx,
     imposterConfig: ImposterConfig,
     private val resourceService: ResourceService,
-    private val responseService: ResponseService,
+    private val responseFileService: ResponseFileService,
     private val responseRoutingService: ResponseRoutingService,
     private val scannerService: ScannerService,
 ) : ConfiguredPlugin<HBasePluginConfig>(
@@ -158,7 +158,7 @@ class HBasePluginImpl @Inject constructor(
                 )
                 responseRoutingService.route(config, httpExchange, bindings) { responseBehaviour ->
                     // find the right row from results
-                    val results = responseService.loadResponseAsJsonArray(config, responseBehaviour)
+                    val results = responseFileService.loadResponseAsJsonArray(config, responseBehaviour)
                     val result = findRow(config.idField, recordInfo.recordId, results)
                     val response = httpExchange.response()
 
@@ -298,7 +298,7 @@ class HBasePluginImpl @Inject constructor(
                 )
                 responseRoutingService.route(config, httpExchange, bindings) { responseBehaviour ->
                     // build results
-                    val results = responseService.loadResponseAsJsonArray(config, responseBehaviour)
+                    val results = responseFileService.loadResponseAsJsonArray(config, responseBehaviour)
                     val serialiser = findSerialiser(httpExchange)
                     val buffer = serialiser.serialise(tableName, scannerId, results, scanner, rows)
                     httpExchange.response()
