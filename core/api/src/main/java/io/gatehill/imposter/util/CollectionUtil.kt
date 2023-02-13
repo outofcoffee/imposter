@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -43,7 +43,7 @@
 package io.gatehill.imposter.util
 
 import io.vertx.core.MultiMap
-import java.util.*
+import java.util.Locale
 
 /**
  * @author Pete Cornish
@@ -55,17 +55,6 @@ object CollectionUtil {
     @JvmStatic
     fun asMap(input: MultiMap): Map<String, String> {
         return input.associate { (k, v) -> k to v }
-    }
-
-    /**
-     * @return a copy of the input [MultiMap] as a [Map] with all strings in lowercase
-     */
-    @JvmStatic
-    fun <V> convertKeysToLowerCase(input: MultiMap): Map<String, V> {
-        return input.associate { (k, v) ->
-            @Suppress("UNCHECKED_CAST")
-            k.lowercase(Locale.getDefault()) to v as V
-        }
     }
 
     /**

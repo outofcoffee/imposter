@@ -89,8 +89,8 @@ class CharacteristicsService @Inject constructor(
         responseService.finaliseExchange(resourceConfig, httpExchange) {
             try {
                 when (failureType) {
-                    FailureSimulationType.EmptyResponse -> httpExchange.response().end()
-                    FailureSimulationType.CloseConnection -> httpExchange.response().close()
+                    FailureSimulationType.EmptyResponse -> httpExchange.response.end()
+                    FailureSimulationType.CloseConnection -> httpExchange.response.close()
                 }
             } catch (e: Exception) {
                 httpExchange.fail(

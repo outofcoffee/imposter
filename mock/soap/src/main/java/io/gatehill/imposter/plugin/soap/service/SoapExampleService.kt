@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022.
+ * Copyright (c) 2022-2023.
  *
  * This file is part of Imposter.
  *
@@ -83,7 +83,7 @@ class SoapExampleService {
     private fun transmitExample(httpExchange: HttpExchange, example: String?, bodyHolder: MessageBodyHolder) {
         example ?: run {
             logger.warn("No example found - returning empty response")
-            httpExchange.response().end()
+            httpExchange.response.end()
             return
         }
 
@@ -96,17 +96,17 @@ class SoapExampleService {
             logger.trace(
                 "Serving mock example for {} with status code {}: {}",
                 LogUtil.describeRequestShort(httpExchange),
-                httpExchange.response().getStatusCode(),
+                httpExchange.response.statusCode,
                 responseBody
             )
         } else {
             logger.info(
                 "Serving mock example for {} with status code {} (response body {} bytes)",
                 LogUtil.describeRequestShort(httpExchange),
-                httpExchange.response().getStatusCode(),
+                httpExchange.response.statusCode,
                 responseBody.length
             )
         }
-        httpExchange.response().end(responseBody)
+        httpExchange.response.end(responseBody)
     }
 }

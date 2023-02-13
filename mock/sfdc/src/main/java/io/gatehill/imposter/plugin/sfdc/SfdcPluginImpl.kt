@@ -90,23 +90,23 @@ class SfdcPluginImpl @Inject constructor(
         // oauth handler
         router.post("/services/oauth2/token").handler(
             resourceService.handleRoute(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
-                LOGGER.info("Handling oauth request: {}", httpExchange.request().bodyAsString)
+                LOGGER.info("Handling oauth request: {}", httpExchange.request.bodyAsString)
                 val authResponse = JsonObject()
                 authResponse.put("access_token", "dummyAccessToken")
                 authResponse.put("instance_url", imposterConfig.serverUrl)
-                httpExchange.response().putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON)
-                httpExchange.response().end(authResponse.encode())
+                httpExchange.response.putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON)
+                httpExchange.response.end(authResponse.encode())
             }
         )
 
         // query handler
         router.get("/services/data/:apiVersion/query/").handler(
             resourceService.handleRoute(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
-                val request = httpExchange.request()
-                val apiVersion = request.pathParam("apiVersion")!!
+                val request = httpExchange.request
+                val apiVersion = request.getPathParam("apiVersion")!!
 
                 // e.g. 'SELECT Name, Id from Account LIMIT 100'
-                val query = request.queryParam("q")!!
+                val query = request.getQueryParam("q")!!
                 val sObjectName = getSObjectName(query)
                     ?: throw RuntimeException("Could not determine SObject name from query: $query")
 
@@ -128,7 +128,7 @@ class SfdcPluginImpl @Inject constructor(
                     responseWrapper.put("totalSize", records.size())
                     LOGGER.info("Sending {} SObjects in response to query: {}", records.size(), query)
 
-                    httpExchange.response()
+                    httpExchange.response
                         .putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON)
                         .setStatusCode(HttpUtil.HTTP_OK)
                         .end(Buffer.buffer(responseWrapper.encodePrettily()))
@@ -141,9 +141,9 @@ class SfdcPluginImpl @Inject constructor(
             val handler = resourceService.handleRoute(imposterConfig, config, resourceMatcher) { httpExchange: HttpExchange ->
                 // script should fire first
                 responseRoutingService.route(config, httpExchange) { responseBehaviour ->
-                    val request = httpExchange.request()
-                    val apiVersion = request.pathParam("apiVersion")!!
-                    val sObjectId = request.pathParam("sObjectId")
+                    val request = httpExchange.request
+                    val apiVersion = request.getPathParam("apiVersion")!!
+                    val sObjectId = request.getPathParam("sObjectId")
 
                     // find and enrich record
                     val result = findRow(
@@ -152,7 +152,7 @@ class SfdcPluginImpl @Inject constructor(
                         rows = responseFileService.loadResponseAsJsonArray(config, responseBehaviour)
                     )?.let { r: JsonObject -> addRecordAttributes(r, apiVersion, config.sObjectName) }
 
-                    val response = httpExchange.response()
+                    val response = httpExchange.response
 
                     result?.let {
                         LOGGER.info("Sending SObject with ID: {}", sObjectId)
@@ -172,8 +172,8 @@ class SfdcPluginImpl @Inject constructor(
         // create SObject handler
         router.post("/services/data/:apiVersion/sobjects/:sObjectName").handler(
             resourceService.handleRoute(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
-                val request = httpExchange.request()
-                val sObjectName = request.pathParam("sObjectName")
+                val request = httpExchange.request
+                val sObjectName = request.getPathParam("sObjectName")
                 val sObject = request.bodyAsJson
                 LOGGER.info("Received create request for {}: {}", sObjectName, sObject)
                 val result = JsonObject()
@@ -181,7 +181,7 @@ class SfdcPluginImpl @Inject constructor(
                 // Note: ID response field name has to be lowercase, for some reason
                 result.put("id", generateBase62Id())
                 result.put("success", true)
-                httpExchange.response()
+                httpExchange.response
                     .putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON)
                     .setStatusCode(HttpUtil.HTTP_CREATED)
                     .end(Buffer.buffer(result.encodePrettily()))
@@ -200,20 +200,20 @@ class SfdcPluginImpl @Inject constructor(
      */
     private fun handleUpdateRequest(): HttpExchangeHandler {
         return resourceService.handleRoute(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
-            val request = httpExchange.request()
-            val sObjectName = request.pathParam("sObjectName")
-            val sObjectId = request.pathParam("sObjectId")
+            val request = httpExchange.request
+            val sObjectName = request.getPathParam("sObjectName")
+            val sObjectId = request.getPathParam("sObjectId")
             val sObject = request.bodyAsJson
 
             // SFDC work-around for HTTP clients that don't support PATCH
-            if (HttpMethod.PATCH != request.method()
-                && "PATCH" != request.queryParam("_HttpMethod")
+            if (HttpMethod.PATCH != request.method
+                && "PATCH" != request.getQueryParam("_HttpMethod")
             ) {
                 httpExchange.fail(HttpUtil.HTTP_BAD_METHOD)
                 return@handleRoute
             }
             LOGGER.info("Received update request for {} with ID: {}: {}", sObjectName, sObjectId, sObject)
-            httpExchange.response()
+            httpExchange.response
                 .putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON)
                 .setStatusCode(HttpUtil.HTTP_NO_CONTENT)
                 .end()

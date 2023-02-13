@@ -48,7 +48,6 @@ import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.http.HttpResponse
 import io.vertx.core.buffer.Buffer
-import io.vertx.core.http.impl.headers.HeadersMultiMap
 import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.number.OrderingComparison
@@ -66,7 +65,7 @@ class PlaceholderUtilTest {
             on { getHeader(eq("Correlation-ID")) } doReturn "foo"
         }
         val httpExchange = mock<HttpExchange> {
-            on { request() } doReturn request
+            on { this.request } doReturn request
         }
 
         val result = PlaceholderUtil.replace(
@@ -81,10 +80,10 @@ class PlaceholderUtilTest {
     @Test
     fun `eval request path param`() {
         val httpRequest = mock<HttpRequest> {
-            on { pathParam("userId") } doReturn "Example-User-ID"
+            on { getPathParam("userId") } doReturn "Example-User-ID"
         }
         val httpExchange = mock<HttpExchange> {
-            on { request() } doReturn httpRequest
+            on { this.request } doReturn httpRequest
         }
 
         val result = PlaceholderUtil.replace(
@@ -99,10 +98,10 @@ class PlaceholderUtilTest {
     @Test
     fun `eval request query param`() {
         val httpRequest = mock<HttpRequest> {
-            on { queryParam("page") } doReturn "1"
+            on { getQueryParam("page") } doReturn "1"
         }
         val httpExchange = mock<HttpExchange> {
-            on { request() } doReturn httpRequest
+            on { this.request } doReturn httpRequest
         }
 
         val result = PlaceholderUtil.replace(
@@ -120,7 +119,7 @@ class PlaceholderUtilTest {
             on { bodyAsString } doReturn "Request body"
         }
         val httpExchange = mock<HttpExchange> {
-            on { request() } doReturn httpRequest
+            on { this.request } doReturn httpRequest
         }
 
         val result = PlaceholderUtil.replace(
@@ -138,7 +137,7 @@ class PlaceholderUtilTest {
             on { bodyAsString } doReturn """{ "name": "Ada" }"""
         }
         val httpExchange = mock<HttpExchange> {
-            on { request() } doReturn httpRequest
+            on { this.request } doReturn httpRequest
         }
 
         val result = PlaceholderUtil.replace(
@@ -153,10 +152,10 @@ class PlaceholderUtilTest {
     @Test
     fun `eval missing request path param with fallback`() {
         val httpRequest = mock<HttpRequest> {
-            on { pathParam(eq("foo")) } doReturn null
+            on { getPathParam(eq("foo")) } doReturn null
         }
         val httpExchange = mock<HttpExchange> {
-            on { request() } doReturn httpRequest
+            on { this.request } doReturn httpRequest
         }
 
         val result = PlaceholderUtil.replace(
@@ -175,7 +174,7 @@ class PlaceholderUtilTest {
         }
         val httpExchange = mock<HttpExchange> {
             on { phase } doReturn ExchangePhase.RESPONSE_SENT
-            on { response() } doReturn response
+            on { this.response } doReturn response
         }
 
         val result = PlaceholderUtil.replace(
@@ -190,13 +189,11 @@ class PlaceholderUtilTest {
     @Test
     fun `eval response header`() {
         val response = mock<HttpResponse> {
-            on { headers() } doReturn HeadersMultiMap.headers().apply {
-                add("X-Example", "foo")
-            }
+            on { getHeader(eq("X-Example")) } doReturn "foo"
         }
         val httpExchange = mock<HttpExchange> {
             on { phase } doReturn ExchangePhase.RESPONSE_SENT
-            on { response() } doReturn response
+            on { this.response } doReturn response
         }
 
         val result = PlaceholderUtil.replace(
@@ -244,7 +241,7 @@ class PlaceholderUtilTest {
             on { getHeader(eq("User-Agent")) } doReturn "mozilla"
         }
         val httpExchange = mock<HttpExchange> {
-            on { request() } doReturn request
+            on { this.request } doReturn request
         }
 
         val result = PlaceholderUtil.replace(

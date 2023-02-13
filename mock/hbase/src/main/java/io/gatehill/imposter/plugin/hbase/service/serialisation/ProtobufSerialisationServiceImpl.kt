@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -103,7 +103,7 @@ class ProtobufSerialisationServiceImpl @Inject constructor(
     @Throws(IOException::class)
     private fun getScannerModel(httpExchange: HttpExchange): ScannerModel {
         val scannerModel = ScannerModel()
-        val rawMessage = httpExchange.request().body!!.bytes
+        val rawMessage = httpExchange.request.body!!.bytes
 
         // deserialise from protobuf
         scannerModel.getObjectFromMessage(rawMessage)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -60,39 +60,33 @@ class VertxHttpRequest(
     private val _queryParams by lazy { CollectionUtil.asMap(routingContext.queryParams()) }
     private val _headers by lazy { CollectionUtil.asMap(vertxRequest.headers()) }
 
-    override fun path(): String {
-        return vertxRequest.path() ?: ""
-    }
+    override val path: String
+        get() = vertxRequest.path() ?: ""
 
-    override fun method(): HttpMethod {
-        return VertxResourceUtil.convertMethodFromVertx(vertxRequest.method())
-    }
+    override val method: HttpMethod
+        get() = VertxResourceUtil.convertMethodFromVertx(vertxRequest.method())
 
-    override fun absoluteURI(): String {
-        return vertxRequest.absoluteURI()
-    }
+    override val absoluteUri: String
+        get() = vertxRequest.absoluteURI()
 
-    override fun headers(): Map<String, String> {
-        return _headers
-    }
+    override val headers: Map<String, String>
+        get() = _headers
 
     override fun getHeader(headerKey: String): String? {
         return vertxRequest.getHeader(headerKey)
     }
 
-    override fun pathParams(): Map<String, String> {
-        return routingContext.pathParams()
-    }
+    override val pathParams: Map<String, String>
+        get() = routingContext.pathParams()
 
-    override fun queryParams(): Map<String, String> {
-        return _queryParams
-    }
-
-    override fun pathParam(paramName: String): String? {
+    override fun getPathParam(paramName: String): String? {
         return routingContext.pathParam(paramName)
     }
 
-    override fun queryParam(queryParam: String): String? {
+    override val queryParams: Map<String, String>
+        get() = _queryParams
+
+    override fun getQueryParam(queryParam: String): String? {
         return routingContext.queryParam(queryParam)?.firstOrNull()
     }
 

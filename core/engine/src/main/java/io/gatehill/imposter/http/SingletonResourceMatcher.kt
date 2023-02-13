@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2022.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -46,7 +46,7 @@ import io.gatehill.imposter.config.ResolvedResourceConfig
 import io.gatehill.imposter.plugin.config.resource.MethodResourceConfig
 import io.gatehill.imposter.util.CollectionUtil.convertKeysToLowerCase
 import io.gatehill.imposter.util.StringUtil.safeEquals
-import java.util.*
+import java.util.Locale
 import java.util.function.Function
 
 
@@ -78,23 +78,23 @@ class SingletonResourceMatcher : AbstractResourceMatcher() {
         httpExchange: HttpExchange,
     ): Boolean {
         val resourceConfig = resource.config
-        val request = httpExchange.request()
+        val request = httpExchange.request
 
         // path template can be null when a regex route is used
         val pathTemplate = httpExchange.currentRoutePath
-        val pathMatch = request.path() == resourceConfig.path || (pathTemplate?.let { it == resourceConfig.path } == true)
+        val pathMatch = request.path == resourceConfig.path || (pathTemplate?.let { it == resourceConfig.path } == true)
 
         val methodMatch = if (resourceConfig is MethodResourceConfig && null != resourceConfig.method) {
-            request.method() == resourceConfig.method
+            request.method == resourceConfig.method
         } else {
             // unspecified implies any match
             true
         }
 
         return pathMatch && methodMatch &&
-            matchPairs(request.pathParams(), resource.pathParams, true) &&
-            matchPairs(request.queryParams(), resource.queryParams, true) &&
-            matchPairs(request.headers(), resource.requestHeaders, false) &&
+            matchPairs(request.pathParams, resource.pathParams, true) &&
+            matchPairs(request.queryParams, resource.queryParams, true) &&
+            matchPairs(request.headers, resource.requestHeaders, false) &&
             matchRequestBody(httpExchange, resource.config)
     }
 

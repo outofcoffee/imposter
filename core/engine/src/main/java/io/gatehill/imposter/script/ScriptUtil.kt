@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -72,10 +72,10 @@ object ScriptUtil {
      */
     @JvmStatic
     fun buildContext(httpExchange: HttpExchange, additionalContext: Map<String, Any>?): ExecutionContext {
-        val internalRequest = httpExchange.request()
+        val internalRequest = httpExchange.request
 
         val headersSupplier: () -> Map<String, String> = {
-            val entries = internalRequest.headers()
+            val entries = internalRequest.headers
             if (forceHeaderKeyNormalisation) {
                 LowercaseKeysMap(entries)
             } else {
@@ -84,10 +84,10 @@ object ScriptUtil {
         }
 
         val pathParamsSupplier: () -> Map<String, String> = {
-            internalRequest.pathParams()
+            internalRequest.pathParams
         }
         val queryParamsSupplier: () -> Map<String, String> = {
-            internalRequest.queryParams()
+            internalRequest.queryParams
         }
         val bodySupplier: () -> String? = {
             internalRequest.bodyAsString
@@ -95,9 +95,9 @@ object ScriptUtil {
 
         // request information
         val request = ExecutionContext.Request(headersSupplier, pathParamsSupplier, queryParamsSupplier, bodySupplier)
-        request.path = internalRequest.path()
-        request.method = internalRequest.method().name
-        request.uri = internalRequest.absoluteURI()
+        request.path = internalRequest.path
+        request.method = internalRequest.method.name
+        request.uri = internalRequest.absoluteUri
 
         // root context
         val executionContext = ExecutionContext(request)

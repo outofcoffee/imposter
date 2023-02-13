@@ -164,7 +164,7 @@ open class RestPluginImpl @Inject constructor(
             "Resource '$resourcePath' does not contain a field ID parameter"
         }
 
-        val request = httpExchange.request()
+        val request = httpExchange.request
         LOGGER.info(
             "Handling array request for: {}",
             LogUtil.describeRequestShort(httpExchange)
@@ -172,14 +172,14 @@ open class RestPluginImpl @Inject constructor(
 
         // get the first param in the path
         val idFieldName = matcher.group(1)
-        val idField = request.pathParam(idFieldName)
+        val idField = request.getPathParam(idFieldName)
 
         // find row
         val result = findRow(
             idFieldName, idField,
             responseFileService.loadResponseAsJsonArray(pluginConfig, responseBehaviour)
         )
-        val response = httpExchange.response()
+        val response = httpExchange.response
 
         result?.let {
             LOGGER.info("Returning single row for {}:{}", idFieldName, idField)

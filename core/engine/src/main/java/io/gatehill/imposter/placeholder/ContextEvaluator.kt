@@ -70,16 +70,16 @@ object ContextEvaluator : HttpExpressionEvaluator<String>() {
                     "request" -> {
                         when (parts[2]) {
                             "body" -> checkExpression(expression, 3, parts) {
-                                httpExchange.request().bodyAsString
+                                httpExchange.request.bodyAsString
                             }
                             "headers" -> checkExpression(expression, 4, parts) {
-                                httpExchange.request().getHeader(parts[3])
+                                httpExchange.request.getHeader(parts[3])
                             }
                             "pathParams" -> checkExpression(expression, 4, parts) {
-                                httpExchange.request().pathParam(parts[3])
+                                httpExchange.request.getPathParam(parts[3])
                             }
                             "queryParams" -> checkExpression(expression, 4, parts) {
-                                httpExchange.request().queryParam(parts[3])
+                                httpExchange.request.getQueryParam(parts[3])
                             }
                             else -> {
                                 LOGGER.warn("Could not parse request context expression: $expression")
@@ -93,10 +93,10 @@ object ContextEvaluator : HttpExpressionEvaluator<String>() {
                         }
                         when (parts[2]) {
                             "body" -> checkExpression(expression, 3, parts) {
-                                httpExchange.response().bodyBuffer?.toString(Charsets.UTF_8)
+                                httpExchange.response.bodyBuffer?.toString(Charsets.UTF_8)
                             }
                             "headers" -> checkExpression(expression, 4, parts) {
-                                httpExchange.response().headers()[parts[3]]
+                                httpExchange.response.getHeader(parts[3])
                             }
                             else -> {
                                 LOGGER.warn("Could not parse response context expression: $expression")

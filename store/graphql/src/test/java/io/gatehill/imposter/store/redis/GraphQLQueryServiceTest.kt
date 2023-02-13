@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -83,7 +83,7 @@ class GraphQLQueryServiceTest {
             on { putHeader(any(), any()) } doAnswer { httpResponse }
         }
         httpExchange = mock {
-            on { response() } doReturn httpResponse
+            on { this.response } doReturn httpResponse
         }
     }
 
@@ -162,7 +162,7 @@ class GraphQLQueryServiceTest {
             service.execute(query, "{}", httpExchange).join()
         }
 
-        verify(httpExchange).response()
+        verify(httpExchange).response
         verify(httpResponse).putHeader(eq(HttpUtil.CONTENT_TYPE), eq(HttpUtil.CONTENT_TYPE_JSON))
 
         val endCaptor = argumentCaptor<String>()

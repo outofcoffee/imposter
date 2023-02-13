@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -95,15 +95,15 @@ class StoreRestApiServiceImpl @Inject constructor(
         allPluginConfigs: List<PluginConfig>
     ): HttpExchangeHandler {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, resourceMatcher) { httpExchange: HttpExchange ->
-            val request = httpExchange.request()
-            val storeName = request.pathParam("storeName")!!
+            val request = httpExchange.request
+            val storeName = request.getPathParam("storeName")!!
             val store = openStore(storeName)
             if (Objects.isNull(store)) {
                 return@handleRoute
             }
 
             if (httpExchange.isAcceptHeaderEmpty() || httpExchange.acceptsMimeType(HttpUtil.CONTENT_TYPE_JSON)) {
-                val items = request.queryParam("keyPrefix")?.let { keyPrefix ->
+                val items = request.getQueryParam("keyPrefix")?.let { keyPrefix ->
                     LOGGER.debug("Listing items in store: {} with key prefix: {}", storeName, keyPrefix)
                     store.loadByKeyPrefix(keyPrefix)
                 } ?: run {
@@ -115,7 +115,7 @@ class StoreRestApiServiceImpl @Inject constructor(
             } else {
                 // client doesn't accept JSON
                 LOGGER.warn("Cannot serialise store: {} as client does not accept JSON", storeName)
-                httpExchange.response()
+                httpExchange.response
                     .setStatusCode(HttpUtil.HTTP_NOT_ACCEPTABLE)
                     .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_PLAIN_TEXT)
                     .end("Stores are only available as JSON. Please set an appropriate Accept header.")
@@ -128,11 +128,11 @@ class StoreRestApiServiceImpl @Inject constructor(
         allPluginConfigs: List<PluginConfig>
     ): HttpExchangeHandler {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, resourceMatcher) { httpExchange: HttpExchange ->
-            val storeName = httpExchange.request().pathParam("storeName")!!
+            val storeName = httpExchange.request.getPathParam("storeName")!!
             storeFactory.clearStore(storeName, ephemeral = false)
             LOGGER.debug("Deleted store: {}", storeName)
 
-            httpExchange.response()
+            httpExchange.response
                 .setStatusCode(HttpUtil.HTTP_NO_CONTENT)
                 .end()
         }
@@ -143,18 +143,18 @@ class StoreRestApiServiceImpl @Inject constructor(
         allPluginConfigs: List<PluginConfig>
     ): HttpExchangeHandler {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, resourceMatcher) { httpExchange: HttpExchange ->
-            val request = httpExchange.request()
-            val storeName = request.pathParam("storeName")!!
+            val request = httpExchange.request
+            val storeName = request.getPathParam("storeName")!!
             val store = openStore(storeName)
             if (Objects.isNull(store)) {
                 return@handleRoute
             }
 
-            val key = request.pathParam("key")!!
+            val key = request.getPathParam("key")!!
             store.load<Any>(key)?.let { value ->
                 if (value is String) {
                     LOGGER.debug("Returning string item: {} from store: {}", key, storeName)
-                    httpExchange.response()
+                    httpExchange.response
                         .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_PLAIN_TEXT)
                         .end(value)
                 } else {
@@ -164,7 +164,7 @@ class StoreRestApiServiceImpl @Inject constructor(
 
             } ?: run {
                 LOGGER.debug("Nonexistent item: {} in store: {}", key, storeName)
-                httpExchange.response()
+                httpExchange.response
                     .setStatusCode(HttpUtil.HTTP_NOT_FOUND)
                     .end()
             }
@@ -176,13 +176,13 @@ class StoreRestApiServiceImpl @Inject constructor(
         allPluginConfigs: List<PluginConfig>
     ): HttpExchangeHandler {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, resourceMatcher) { httpExchange: HttpExchange ->
-            val request = httpExchange.request()
-            val storeName = request.pathParam("storeName")!!
+            val request = httpExchange.request
+            val storeName = request.getPathParam("storeName")!!
             val store = openStore(storeName)
             if (Objects.isNull(store)) {
                 return@handleRoute
             }
-            val key = request.pathParam("key")!!
+            val key = request.getPathParam("key")!!
 
             // "If the target resource does not have a current representation and the
             // PUT successfully creates one, then the origin server MUST inform the
@@ -194,7 +194,7 @@ class StoreRestApiServiceImpl @Inject constructor(
             store.save(key, value)
             LOGGER.debug("Saved item: {} to store: {}", key, storeName)
 
-            httpExchange.response()
+            httpExchange.response
                 .setStatusCode(statusCode)
                 .end()
         }
@@ -205,8 +205,8 @@ class StoreRestApiServiceImpl @Inject constructor(
         allPluginConfigs: List<PluginConfig>
     ): HttpExchangeHandler {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, resourceMatcher) { httpExchange: HttpExchange ->
-            val request = httpExchange.request()
-            val storeName = request.pathParam("storeName")!!
+            val request = httpExchange.request
+            val storeName = request.getPathParam("storeName")!!
             val store = openStore(storeName)
             if (Objects.isNull(store)) {
                 return@handleRoute
@@ -217,7 +217,7 @@ class StoreRestApiServiceImpl @Inject constructor(
             val itemCount = items?.size() ?: 0
             LOGGER.debug("Saved {} items to store: {}", itemCount, storeName)
 
-            httpExchange.response()
+            httpExchange.response
                 .setStatusCode(HttpUtil.HTTP_OK)
                 .end()
         }
@@ -228,18 +228,18 @@ class StoreRestApiServiceImpl @Inject constructor(
         allPluginConfigs: List<PluginConfig>
     ): HttpExchangeHandler {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, resourceMatcher) { httpExchange: HttpExchange ->
-            val request = httpExchange.request()
-            val storeName = request.pathParam("storeName")!!
+            val request = httpExchange.request
+            val storeName = request.getPathParam("storeName")!!
             val store = openStore(storeName)
             if (Objects.isNull(store)) {
                 return@handleRoute
             }
 
-            val key = request.pathParam("key")!!
+            val key = request.getPathParam("key")!!
             store.delete(key)
             LOGGER.debug("Deleted item: {} from store: {}", key, storeName)
 
-            httpExchange.response()
+            httpExchange.response
                 .setStatusCode(HttpUtil.HTTP_NO_CONTENT)
                 .end()
         }
@@ -251,7 +251,7 @@ class StoreRestApiServiceImpl @Inject constructor(
 
     private fun serialiseBodyAsJson(httpExchange: HttpExchange, body: Any?) {
         try {
-            httpExchange.response()
+            httpExchange.response
                 .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_JSON)
                 .end(MapUtil.jsonify(body))
         } catch (e: JsonProcessingException) {

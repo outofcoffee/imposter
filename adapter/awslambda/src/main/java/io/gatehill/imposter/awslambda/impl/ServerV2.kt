@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022.
+ * Copyright (c) 2022-2023.
  *
  * This file is part of Imposter.
  *
@@ -78,7 +78,7 @@ class ServerV2(
 
     override fun buildResponse(response: LambdaHttpResponse) = APIGatewayV2HTTPResponse().apply {
         // read status again in case modified by error handler
-        statusCode = response.getStatusCode()
+        statusCode = response.statusCode
 
         headers = response.headers
 

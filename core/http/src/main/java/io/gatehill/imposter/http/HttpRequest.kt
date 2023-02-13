@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022.
+ * Copyright (c) 2022-2023.
  *
  * This file is part of Imposter.
  *
@@ -50,15 +50,15 @@ import io.vertx.core.json.JsonObject
  * @author Pete Cornish
  */
 interface HttpRequest {
-    fun path(): String
-    fun method(): HttpMethod
-    fun absoluteURI(): String
-    fun headers(): Map<String, String>
+    val path: String
+    val method: HttpMethod
+    val absoluteUri: String
+    val headers: Map<String, String>
     fun getHeader(headerKey: String): String?
-    fun pathParams(): Map<String, String>
-    fun queryParams(): Map<String, String>
-    fun pathParam(paramName: String): String?
-    fun queryParam(queryParam: String): String?
+    val pathParams: Map<String, String>
+    fun getPathParam(paramName: String): String?
+    val queryParams: Map<String, String>
+    fun getQueryParam(queryParam: String): String?
 
     val body: Buffer?
     val bodyAsString: String?

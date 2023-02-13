@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -63,23 +63,23 @@ class ResponseTransmissionServiceImpl : ResponseTransmissionService {
         val exampleValue: Any? = example.value
         if (Objects.isNull(exampleValue)) {
             LOGGER.info("No example found - returning empty response")
-            httpExchange.response().end()
+            httpExchange.response.end()
             return
         }
         val exampleResponse = buildExampleResponse(example.contentType, example.value)
         if (LOGGER.isTraceEnabled) {
             LOGGER.trace(
                 "Serving mock example for {} with status code {}: {}",
-                LogUtil.describeRequestShort(httpExchange), httpExchange.response().getStatusCode(), exampleResponse
+                LogUtil.describeRequestShort(httpExchange), httpExchange.response.statusCode, exampleResponse
             )
         } else {
             LOGGER.info(
                 "Serving mock example for {} with status code {} (response body {} bytes)",
-                LogUtil.describeRequestShort(httpExchange), httpExchange.response().getStatusCode(),
+                LogUtil.describeRequestShort(httpExchange), httpExchange.response.statusCode,
                 exampleResponse?.let { obj: String -> obj.length } ?: 0
             )
         }
-        httpExchange.response()
+        httpExchange.response
             .putHeader(CONTENT_TYPE, example.contentType)
             .end(exampleResponse)
     }

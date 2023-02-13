@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2021.
+ * Copyright (c) 2021-2023.
  *
  * This file is part of Imposter.
  *
@@ -96,7 +96,7 @@ abstract class LambdaServer<Request, Response>(
             failureCause = e
         }
 
-        when (val statusCode = response.getStatusCode()) {
+        when (val statusCode = response.statusCode) {
             in 400..499 -> {
                 errorHandlers[statusCode]?.let { errorHandler ->
                     failExchange(event, response, statusCode, null, errorHandler)

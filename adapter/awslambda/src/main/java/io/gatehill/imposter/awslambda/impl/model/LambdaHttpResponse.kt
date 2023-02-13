@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022.
+ * Copyright (c) 2022-2023.
  *
  * This file is part of Imposter.
  *
@@ -44,15 +44,13 @@
 package io.gatehill.imposter.awslambda.impl.model
 
 import io.gatehill.imposter.http.HttpResponse
-import io.vertx.core.MultiMap
 import io.vertx.core.buffer.Buffer
-import io.vertx.core.http.impl.headers.HeadersMultiMap
 
 /**
  * @author Pete Cornish
  */
 class LambdaHttpResponse : HttpResponse {
-    private var statusCode: Int = 200
+    override var statusCode: Int = 200
     override var bodyBuffer: Buffer? = null
     val headers = mutableMapOf<String, String>()
 
@@ -61,17 +59,17 @@ class LambdaHttpResponse : HttpResponse {
         return this
     }
 
-    override fun getStatusCode(): Int {
-        return this.statusCode
-    }
-
     override fun putHeader(headerKey: String, headerValue: String): HttpResponse {
         headers[headerKey] = headerValue
         return this
     }
 
-    override fun headers(): MultiMap {
-        return HeadersMultiMap.headers().addAll(this.headers)
+    override fun getHeader(headerKey: String): String? {
+        return headers[headerKey]
+    }
+
+    override fun getHeadersIgnoreCase(headerKeys: Array<String>): Map<String, String> {
+        return headers.filterKeys { headerKeys.contains(it.lowercase()) }
     }
 
     override fun end() {

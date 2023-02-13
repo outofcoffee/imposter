@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -47,8 +47,8 @@ package io.gatehill.imposter.http
  */
 interface HttpExchange {
     var phase: ExchangePhase
-    fun request(): HttpRequest
-    fun response(): HttpResponse
+    val request: HttpRequest
+    val response: HttpResponse
     fun isAcceptHeaderEmpty(): Boolean
     fun acceptsMimeType(mimeType: String): Boolean
 

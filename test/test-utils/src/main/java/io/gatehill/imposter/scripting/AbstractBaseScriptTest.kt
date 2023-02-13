@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -112,16 +112,16 @@ abstract class AbstractBaseScriptTest {
         val logger = LogManager.getLogger("script-engine-test")
 
         val mockRequest = mock(HttpRequest::class.java)
-        When(mockRequest.method()).thenReturn(HttpMethod.GET)
-        When(mockRequest.path()).thenReturn("/example")
-        When(mockRequest.absoluteURI()).thenReturn("http://localhost:8080/example")
-        When(mockRequest.headers()).thenReturn(headers)
-        When(mockRequest.pathParams()).thenReturn(pathParams)
-        When(mockRequest.queryParams()).thenReturn(queryParams)
+        When(mockRequest.method).thenReturn(HttpMethod.GET)
+        When(mockRequest.path).thenReturn("/example")
+        When(mockRequest.absoluteUri).thenReturn("http://localhost:8080/example")
+        When(mockRequest.headers).thenReturn(headers)
+        When(mockRequest.pathParams).thenReturn(pathParams)
+        When(mockRequest.queryParams).thenReturn(queryParams)
         When(mockRequest.bodyAsString).thenReturn(body)
 
         val mockHttpExchange = mock(HttpExchange::class.java)
-        When(mockHttpExchange.request()).thenReturn(mockRequest)
+        When(mockHttpExchange.request).thenReturn(mockRequest)
 
         val pluginConfig = mock(PluginConfig::class.java)
         val executionContext = ScriptUtil.buildContext(mockHttpExchange, null)

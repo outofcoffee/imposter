@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -248,7 +248,7 @@ object HttpUtil {
      */
     @JvmStatic
     fun readAcceptedContentTypes(httpExchange: HttpExchange): List<String> {
-        return readAcceptedContentTypes(httpExchange.request().getHeader("Accept"))
+        return readAcceptedContentTypes(httpExchange.request.getHeader("Accept"))
     }
 
     /**

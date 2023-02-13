@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -45,14 +45,19 @@ package io.gatehill.imposter.service.security
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.lifecycle.SecurityLifecycleHooks
 import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.config.security.*
+import io.gatehill.imposter.plugin.config.security.ConditionalNameValuePair
+import io.gatehill.imposter.plugin.config.security.SecurityCondition
+import io.gatehill.imposter.plugin.config.security.SecurityConfig
+import io.gatehill.imposter.plugin.config.security.SecurityConfigHolder
+import io.gatehill.imposter.plugin.config.security.SecurityEffect
+import io.gatehill.imposter.plugin.config.security.SecurityMatchOperator
 import io.gatehill.imposter.service.SecurityService
 import io.gatehill.imposter.util.CollectionUtil.convertKeysToLowerCase
 import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.StringUtil.safeEquals
 import org.apache.logging.log4j.LogManager
-import java.util.*
+import java.util.Locale
 import javax.inject.Inject
 
 /**
@@ -125,13 +130,13 @@ class SecurityServiceImpl @Inject constructor(
      */
     private fun checkCondition(condition: SecurityCondition, httpExchange: HttpExchange): Boolean {
         val results = mutableListOf<SecurityEffect>()
-        val request = httpExchange.request()
+        val request = httpExchange.request
 
         // query params
         results.addAll(
             checkCondition(
                 condition.queryParams,
-                request.queryParams(),
+                request.queryParams,
                 condition.effect,
                 caseSensitiveKeyMatch = true
             )
@@ -141,7 +146,7 @@ class SecurityServiceImpl @Inject constructor(
         results.addAll(
             checkCondition(
                 condition.requestHeaders,
-                request.headers(),
+                request.headers,
                 condition.effect,
                 caseSensitiveKeyMatch = false
             )

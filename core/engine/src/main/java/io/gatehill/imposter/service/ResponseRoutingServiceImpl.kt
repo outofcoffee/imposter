@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -99,7 +99,7 @@ class ResponseRoutingServiceImpl @Inject constructor(
                 responseBehaviourFactory
             )
             if (ResponseBehaviourType.SHORT_CIRCUIT == responseBehaviour.behaviourType) {
-                httpExchange.response()
+                httpExchange.response
                     .setStatusCode(responseBehaviour.statusCode)
                     .end()
             } else {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022.
+ * Copyright (c) 2021-2023.
  *
  * This file is part of Imposter.
  *
@@ -55,8 +55,8 @@ import io.gatehill.imposter.util.HttpUtil
  * @author Pete Cornish
  */
 class LambdaHttpExchange(
-    private val request: HttpRequest,
-    private val response: HttpResponse,
+    override val request: HttpRequest,
+    override val response: HttpResponse,
     private val currentRoute: HttpRoute?,
 ) : HttpExchange {
     override var phase = ExchangePhase.REQUEST_RECEIVED
@@ -65,14 +65,6 @@ class LambdaHttpExchange(
 
     private val acceptedMimeTypes: List<String> by lazy {
         HttpUtil.readAcceptedContentTypes(this@LambdaHttpExchange)
-    }
-
-    override fun request(): HttpRequest {
-        return request
-    }
-
-    override fun response(): HttpResponse {
-        return response
     }
 
     override val currentRoutePath: String?

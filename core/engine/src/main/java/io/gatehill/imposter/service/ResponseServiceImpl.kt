@@ -82,7 +82,7 @@ class ResponseServiceImpl @Inject constructor(
                 "Response file and data are blank - returning empty response for {}",
                 describeRequest(httpExchange)
             )
-            httpExchange.response().end()
+            httpExchange.response.end()
             true
         } catch (e: Exception) {
             LOGGER.warn("Error sending empty response for " + describeRequest(httpExchange), e)
@@ -142,7 +142,7 @@ class ResponseServiceImpl @Inject constructor(
         )
         finaliseExchange(resourceConfig, httpExchange) {
             try {
-                val response = httpExchange.response()
+                val response = httpExchange.response
                 response.setStatusCode(responseBehaviour.statusCode)
                 responseBehaviour.responseHeaders.forEach { (name: String?, value: String?) ->
                     response.putHeader(name, value)
@@ -182,7 +182,7 @@ class ResponseServiceImpl @Inject constructor(
             "Serving response data ({} bytes) for {} with status code {}",
             responseBehaviour.content!!.length,
             LogUtil.describeRequestShort(httpExchange),
-            httpExchange.response().getStatusCode()
+            httpExchange.response.statusCode
         )
         // raw data should be considered untrusted as it is not sanitised
         writeResponseData(
@@ -203,7 +203,7 @@ class ResponseServiceImpl @Inject constructor(
         template: Boolean,
         trustedData: Boolean,
     ) {
-        val response = httpExchange.response()
+        val response = httpExchange.response
         setContentTypeIfAbsent(resourceConfig, response, filenameHintForContentType)
 
         val responseData = if (template) {
@@ -227,7 +227,7 @@ class ResponseServiceImpl @Inject constructor(
         }
 
         // infer from filename hint
-        if (!response.headers().contains(HttpUtil.CONTENT_TYPE) && !Strings.isNullOrEmpty(filenameHintForContentType)) {
+        if (response.getHeader(HttpUtil.CONTENT_TYPE).isNullOrBlank() && !filenameHintForContentType.isNullOrBlank()) {
             val contentType = MimeMapping.getMimeTypeForFilename(filenameHintForContentType)
             if (!Strings.isNullOrEmpty(contentType)) {
                 LOGGER.debug("Inferred {} content type", contentType)
@@ -273,9 +273,9 @@ class ResponseServiceImpl @Inject constructor(
      * Set the HTTP status code, headers and body, given the path and request method.
      */
     override fun sendNotFoundResponse(httpExchange: HttpExchange) = sendNotFoundResponse(
-        httpExchange.request().path(),
-        httpExchange.request().method().toString(),
-        httpExchange.response(),
+        httpExchange.request.path,
+        httpExchange.request.method.toString(),
+        httpExchange.response,
         httpExchange.acceptsMimeType(HttpUtil.CONTENT_TYPE_HTML)
     )
 

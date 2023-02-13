@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -233,12 +233,12 @@ class SpecificationServiceImpl @Inject constructor(
             return false
         }
 
-        val request = httpExchange.request()
-        val requestBuilder = SimpleRequest.Builder(request.method().toString(), request.path())
+        val request = httpExchange.request
+        val requestBuilder = SimpleRequest.Builder(request.method.toString(), request.path)
             .withBody(request.bodyAsString)
 
-        request.queryParams().forEach { p -> requestBuilder.withQueryParam(p.key, p.value) }
-        request.headers().forEach { h -> requestBuilder.withHeader(h.key, h.value) }
+        request.queryParams.forEach { p -> requestBuilder.withQueryParam(p.key, p.value) }
+        request.headers.forEach { h -> requestBuilder.withHeader(h.key, h.value) }
 
         val report = validator.validateRequest(requestBuilder.build())
         if (report.messages.isNotEmpty()) {
@@ -247,7 +247,7 @@ class SpecificationServiceImpl @Inject constructor(
 
             // only respond with 400 if validation failures are at error level
             if (report.hasErrors() && ValidationIssueBehaviour.FAIL == pluginConfig.validation.request) {
-                val response = httpExchange.response()
+                val response = httpExchange.response
                 response.setStatusCode(400)
                 if (pluginConfig.validation.returnErrorsInResponse) {
                     ValidationReportUtil.sendValidationReport(httpExchange, reportMessages)

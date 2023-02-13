@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022.
+ * Copyright (c) 2022-2023.
  *
  * This file is part of Imposter.
  *
@@ -100,7 +100,7 @@ object BodyQueryUtil {
         jsonPath: String,
         httpExchange: HttpExchange
     ): Any? {
-        val body = httpExchange.request().bodyAsString
+        val body = httpExchange.request.bodyAsString
         return if (Strings.isNullOrEmpty(body)) {
             null
         } else {
@@ -121,7 +121,7 @@ object BodyQueryUtil {
      * Gets the JSON document context for JsonPath queries against the request body.
      * The context is cached in the [HttpExchange].
      */
-    private fun getRequestJsonContext(httpExchange: HttpExchange, body: String? = httpExchange.request().bodyAsString): DocumentContext {
+    private fun getRequestJsonContext(httpExchange: HttpExchange, body: String? = httpExchange.request.bodyAsString): DocumentContext {
         val jsonContextHolder =
             httpExchange.getOrPut("request.json.context", { AtomicReference<DocumentContext>() })
 
@@ -138,7 +138,7 @@ object BodyQueryUtil {
         xmlNamespaces: Map<String, String>?,
         httpExchange: HttpExchange,
     ): Any? {
-        val body = httpExchange.request().bodyAsString
+        val body = httpExchange.request.bodyAsString
         return if (Strings.isNullOrEmpty(body)) {
             null
         } else {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2022.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -161,29 +161,29 @@ class SoapPluginImpl @Inject constructor(
             resourceService.handleRoute(imposterConfig, config, soapResourceMatcher) { httpExchange: HttpExchange ->
                 val bodyHolder: MessageBodyHolder = when (binding.type) {
                     BindingType.SOAP -> {
-                        httpExchange.request().body?.let { body -> SoapUtil.parseSoapEnvelope(body) } ?: run {
+                        httpExchange.request.body?.let { body -> SoapUtil.parseSoapEnvelope(body) } ?: run {
                             LOGGER.warn("No request body - unable to parse SOAP envelope")
-                            httpExchange.response().setStatusCode(400).end()
+                            httpExchange.response.setStatusCode(400).end()
                             return@handleRoute
                         }
                     }
                     BindingType.HTTP -> {
-                        httpExchange.request().body?.let { body -> SoapUtil.parseRawBody(body) } ?: run {
+                        httpExchange.request.body?.let { body -> SoapUtil.parseRawBody(body) } ?: run {
                             LOGGER.warn("No request body - unable to parse request")
-                            httpExchange.response().setStatusCode(400).end()
+                            httpExchange.response.setStatusCode(400).end()
                             return@handleRoute
                         }
                     }
                     else -> {
                         LOGGER.warn("Unsupported binding type: ${binding.type} - unable to parse request")
-                        httpExchange.response().setStatusCode(400).end()
+                        httpExchange.response.setStatusCode(400).end()
                         return@handleRoute
                     }
                 }
 
                 val soapAction = soapResourceMatcher.getSoapAction(httpExchange)
                 val operation = soapResourceMatcher.determineOperation(soapAction, bodyHolder) ?: run {
-                    httpExchange.response().setStatusCode(404).end()
+                    httpExchange.response.setStatusCode(404).end()
                     LOGGER.warn("Unable to find a matching binding operation using SOAPAction or SOAP request body")
                     return@handleRoute
                 }
@@ -223,7 +223,7 @@ class SoapPluginImpl @Inject constructor(
 
         val defaultBehaviourHandler = { responseBehaviour: ResponseBehaviour ->
             // set status code regardless of response strategy
-            val response = httpExchange.response()
+            val response = httpExchange.response
                 .setStatusCode(responseBehaviour.statusCode)
 
             operation.outputElementRef?.let {

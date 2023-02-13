@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -144,8 +144,8 @@ object LogUtil {
      * @return a short description of the request
      */
     fun describeRequestShort(httpExchange: HttpExchange): String {
-        val request = httpExchange.request()
-        return request.method().toString() + " " + request.absoluteURI()
+        val request = httpExchange.request
+        return request.method.toString() + " " + request.absoluteUri
     }
 
     /**
@@ -158,9 +158,9 @@ object LogUtil {
         httpExchange: HttpExchange,
         requestId: String? = httpExchange.get(ResourceUtil.RC_REQUEST_ID_KEY)
     ): String {
-        val request = httpExchange.request()
+        val request = httpExchange.request
         val requestIdDescription = requestId?.let { "[$it] " } ?: ""
-        return requestIdDescription + request.method() + " " + request.absoluteURI()
+        return requestIdDescription + request.method + " " + request.absoluteUri
     }
 
     private fun formatDuration(input: Any) = String.format("%.2f", input)
@@ -170,15 +170,15 @@ object LogUtil {
             return
         }
         try {
-            val request = httpExchange.request()
-            val response = httpExchange.response()
+            val request = httpExchange.request
+            val response = httpExchange.response
 
             val fields = mutableMapOf<String, String?>(
                 "timestamp" to OffsetDateTime.now().toString(),
-                "uri" to request.absoluteURI(),
-                "path" to request.path(),
-                "method" to request.method().toString(),
-                "statusCode" to response.getStatusCode().toString(),
+                "uri" to request.absoluteUri,
+                "path" to request.path,
+                "method" to request.method.toString(),
+                "statusCode" to response.statusCode.toString(),
             )
             httpExchange.get<Long>(KEY_REQUEST_START)?.let { startNanos ->
                 val duration = formatDuration((System.nanoTime() - startNanos) / 1000000f)
@@ -189,18 +189,16 @@ object LogUtil {
                 fields["scriptTime"] = scriptTime
             }
             if (requestHeaderNames.isNotEmpty()) {
-                val requestHeaders = CollectionUtil.convertKeysToLowerCase(request.headers())
-                requestHeaderNames.forEach { headerName -> fields[headerName] = requestHeaders[headerName] }
+                fields += request.headers.filterKeys { requestHeaderNames.contains(it.lowercase()) }
             }
             if (responseHeaderNames.isNotEmpty()) {
-                val responseHeaders = CollectionUtil.convertKeysToLowerCase<String>(response.headers())
-                responseHeaderNames.forEach { headerName -> fields[headerName] = responseHeaders[headerName] }
+                fields += response.getHeadersIgnoreCase(responseHeaderNames)
             }
             if (logRequestBody) {
-                fields["requestBody"] = httpExchange.request().bodyAsString
+                fields["requestBody"] = httpExchange.request.bodyAsString
             }
             if (logResponseBody) {
-                fields["responseBody"] = httpExchange.response().bodyBuffer?.toString()
+                fields["responseBody"] = httpExchange.response.bodyBuffer?.toString()
             }
 
             statsLogger.info(MapUtil.STATS_MAPPER.writeValueAsString(fields))

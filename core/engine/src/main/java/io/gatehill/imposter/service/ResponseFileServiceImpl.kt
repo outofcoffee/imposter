@@ -94,12 +94,12 @@ class ResponseFileServiceImpl @Inject constructor(
         httpExchange: HttpExchange,
         responseBehaviour: ResponseBehaviour,
     ) {
-        val response = httpExchange.response()
+        val response = httpExchange.response
         LOGGER.info(
             "Serving response file {} for {} with status code {}",
             responseBehaviour.responseFile,
             LogUtil.describeRequestShort(httpExchange),
-            response.getStatusCode()
+            response.statusCode
         )
 
         val responseFile = responseBehaviour.responseFile ?: throw IllegalStateException("Response file not set")
@@ -112,7 +112,7 @@ class ResponseFileServiceImpl @Inject constructor(
                 }
             } else {
                 LOGGER.warn("Response file does not exist: $normalisedPath - returning 404 status code")
-                httpExchange.response().setStatusCode(HttpUtil.HTTP_NOT_FOUND).end()
+                httpExchange.response.setStatusCode(HttpUtil.HTTP_NOT_FOUND).end()
                 return
             }
         }

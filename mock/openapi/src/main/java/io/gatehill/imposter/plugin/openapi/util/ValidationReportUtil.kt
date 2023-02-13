@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -51,10 +51,10 @@ import io.gatehill.imposter.util.HttpUtil
 object ValidationReportUtil {
     fun sendValidationReport(httpExchange: HttpExchange, reportMessages: String) {
         if (httpExchange.acceptsMimeType(HttpUtil.CONTENT_TYPE_HTML)) {
-            httpExchange.response().putHeader("Content-Type", HttpUtil.CONTENT_TYPE_HTML)
+            httpExchange.response.putHeader("Content-Type", HttpUtil.CONTENT_TYPE_HTML)
                 .end(buildResponseReportHtml(reportMessages))
         } else {
-            httpExchange.response().putHeader("Content-Type", "text/plain")
+            httpExchange.response.putHeader("Content-Type", "text/plain")
                 .end(buildResponseReportPlain(reportMessages))
         }
     }

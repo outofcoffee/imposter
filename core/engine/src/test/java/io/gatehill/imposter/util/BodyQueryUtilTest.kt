@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022.
+ * Copyright (c) 2022-2023.
  *
  * This file is part of Imposter.
  *
@@ -76,7 +76,7 @@ class BodyQueryUtilTest {
             val httpRequest = mock<HttpRequest> {
                 on { bodyAsString } doReturn body
             }
-            on { request() } doReturn httpRequest
+            on { this.request } doReturn httpRequest
             on { getOrPut<AtomicReference<Document>>(anyString(), org.mockito.kotlin.any()) } doReturn AtomicReference<Document>()
         }
 

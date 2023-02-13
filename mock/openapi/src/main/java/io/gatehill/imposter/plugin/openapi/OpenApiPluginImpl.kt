@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -145,7 +145,7 @@ class OpenApiPluginImpl @Inject constructor(
             )
             router.getWithRegex("$SPECIFICATION_PATH$").handler(
                 resourceService.handleRoute(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
-                    httpExchange.response()
+                    httpExchange.response
                         .putHeader("Location", "$SPECIFICATION_PATH/")
                         .setStatusCode(HttpUtil.HTTP_MOVED_PERM)
                         .end()
@@ -256,7 +256,7 @@ class OpenApiPluginImpl @Inject constructor(
      */
     private fun handleCombinedSpec(httpExchange: HttpExchange) {
         try {
-            httpExchange.response()
+            httpExchange.response
                 .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_JSON)
                 .end(specificationService.getCombinedSpecSerialised(allSpecs))
         } catch (e: Exception) {
@@ -293,7 +293,7 @@ class OpenApiPluginImpl @Inject constructor(
 
             val defaultBehaviourHandler = { responseBehaviour: ResponseBehaviour ->
                 // set status code regardless of response strategy
-                val response = httpExchange.response().setStatusCode(responseBehaviour.statusCode)
+                val response = httpExchange.response.setStatusCode(responseBehaviour.statusCode)
 
                 findApiResponse(operation, responseBehaviour.statusCode)?.let { specResponse ->
                     if (!responseBehaviour.responseHeaders.containsKey(HttpUtil.CONTENT_TYPE)) {
@@ -410,7 +410,7 @@ class OpenApiPluginImpl @Inject constructor(
             "No example match found and no response file set for mock response for {} with status code {}" +
                     " - sending empty response", describeRequestShort(httpExchange), responseBehaviour.statusCode
         )
-        httpExchange.response().end()
+        httpExchange.response.end()
         return true
     }
 }

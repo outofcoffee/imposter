@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022.
+ * Copyright (c) 2022-2023.
  *
  * This file is part of Imposter.
  *
@@ -61,46 +61,40 @@ class LambdaHttpRequestV2(
     private val baseUrl: String
 
     private val pathParameters by lazy {
-        currentRoute?.extractPathParams(path()) ?: emptyMap()
+        currentRoute?.extractPathParams(path) ?: emptyMap()
     }
 
     init {
         baseUrl = "http://" + (getHeader("Host") ?: "0.0.0.0")
     }
 
-    override fun path(): String {
-        return event.requestContext.http.path ?: ""
-    }
+    override val path: String
+        get() = event.requestContext.http.path ?: ""
 
-    override fun method(): HttpMethod {
-        return HttpMethod.valueOf(event.requestContext.http.method!!)
-    }
+    override val method: HttpMethod
+        get() = HttpMethod.valueOf(event.requestContext.http.method!!)
 
-    override fun absoluteURI(): String {
-        return "$baseUrl${path()}"
-    }
+    override val absoluteUri: String
+        get() = "$baseUrl$path"
 
-    override fun headers(): Map<String, String> {
-        return event.headers ?: emptyMap()
-    }
+    override val headers: Map<String, String>
+        get() = event.headers ?: emptyMap()
 
     override fun getHeader(headerKey: String): String? {
         return event.headers?.get(headerKey)
     }
 
-    override fun pathParams(): Map<String, String> {
-        return pathParameters
-    }
+    override val pathParams: Map<String, String>
+        get() = pathParameters
 
-    override fun queryParams(): Map<String, String> {
-        return event.queryStringParameters ?: emptyMap()
-    }
-
-    override fun pathParam(paramName: String): String? {
+    override fun getPathParam(paramName: String): String? {
         return pathParameters[paramName]
     }
 
-    override fun queryParam(queryParam: String): String? {
+    override val queryParams: Map<String, String>
+        get() = event.queryStringParameters ?: emptyMap()
+
+    override fun getQueryParam(queryParam: String): String? {
         return event.queryStringParameters?.get(queryParam)
     }
 

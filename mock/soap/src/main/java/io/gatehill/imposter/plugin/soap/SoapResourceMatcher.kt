@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022.
+ * Copyright (c) 2022-2023.
  *
  * This file is part of Imposter.
  *
@@ -72,7 +72,7 @@ class SoapResourceMatcher(
         httpExchange: HttpExchange,
     ): Boolean {
         val resourceConfig = resource.config as SoapPluginResourceConfig
-        val request = httpExchange.request()
+        val request = httpExchange.request
 
         val pathMatch = isPathMatch(httpExchange, resourceConfig, request)
         val bindingMatch = resourceConfig.binding?.let { it == binding.name } ?: true
@@ -96,13 +96,13 @@ class SoapResourceMatcher(
 
         // if path is un-set, implies match all
         val pathMatch = resourceConfig.path?.let {
-            request.path() == resourceConfig.path || (pathTemplate?.let { it == resourceConfig.path } == true)
+            request.path == resourceConfig.path || (pathTemplate?.let { it == resourceConfig.path } == true)
         } ?: true
 
         return pathMatch
     }
 
-    private fun isOperationMatch(httpExchange: HttpExchange, configOpName: String, soapAction: String?) = httpExchange.request().body?.let { body ->
+    private fun isOperationMatch(httpExchange: HttpExchange, configOpName: String, soapAction: String?) = httpExchange.request.body?.let { body ->
         val bodyHolder: MessageBodyHolder = when (binding.type) {
             BindingType.SOAP -> SoapUtil.parseSoapEnvelope(body)
             BindingType.HTTP -> SoapUtil.parseRawBody(body)
@@ -123,7 +123,7 @@ class SoapResourceMatcher(
     }
 
     fun getSoapAction(httpExchange: HttpExchange): String? {
-        val request = httpExchange.request()
+        val request = httpExchange.request
 
         val soapAction: String? = getSoapActionHeader(request)
             ?: getSoapActionFromContentType(request)

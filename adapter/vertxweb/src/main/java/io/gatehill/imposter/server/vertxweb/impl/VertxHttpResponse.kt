@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -43,7 +43,6 @@
 package io.gatehill.imposter.server.vertxweb.impl
 
 import io.gatehill.imposter.http.HttpResponse
-import io.vertx.core.MultiMap
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.http.HttpServerResponse
 
@@ -58,17 +57,22 @@ class VertxHttpResponse(private val vertxResponse: HttpServerResponse) : HttpRes
         return this
     }
 
-    override fun getStatusCode(): Int {
-        return vertxResponse.statusCode
-    }
+    override val statusCode: Int
+        get() = vertxResponse.statusCode
 
     override fun putHeader(headerKey: String, headerValue: String): HttpResponse {
         vertxResponse.putHeader(headerKey, headerValue)
         return this
     }
 
-    override fun headers(): MultiMap {
+    override fun getHeader(headerKey: String): String? {
+        return vertxResponse.headers()[headerKey]
+    }
+
+    override fun getHeadersIgnoreCase(headerKeys: Array<String>): Map<String, String> {
         return vertxResponse.headers()
+            .filter { headerKeys.contains(it.key.lowercase()) }
+            .associate { it.key to it.value }
     }
 
     override fun end() {

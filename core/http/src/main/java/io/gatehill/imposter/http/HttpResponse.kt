@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022.
+ * Copyright (c) 2022-2023.
  *
  * This file is part of Imposter.
  *
@@ -43,7 +43,6 @@
 
 package io.gatehill.imposter.http
 
-import io.vertx.core.MultiMap
 import io.vertx.core.buffer.Buffer
 
 /**
@@ -51,9 +50,16 @@ import io.vertx.core.buffer.Buffer
  */
 interface HttpResponse {
     fun setStatusCode(statusCode: Int): HttpResponse
-    fun getStatusCode(): Int
+    val statusCode: Int
     fun putHeader(headerKey: String, headerValue: String): HttpResponse
-    fun headers(): MultiMap
+    fun getHeader(headerKey: String): String?
+
+    /**
+     * Gets response headers filtered by case-insensitive list of keys.
+     * @param headerKeys the keys to filter by, which *must* be lowercase
+     * @return the headers for the given keys
+     */
+    fun getHeadersIgnoreCase(headerKeys: Array<String>): Map<String, String>
     fun end()
     fun end(body: Buffer)
     fun end(body: String?) {

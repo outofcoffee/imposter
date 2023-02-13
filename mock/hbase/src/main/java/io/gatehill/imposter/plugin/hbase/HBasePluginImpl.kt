@@ -130,9 +130,9 @@ class HBasePluginImpl @Inject constructor(
     private fun addRowRetrievalRoute(pluginConfig: PluginConfig, router: HttpRouter, path: String) {
         router.get("$path/:tableName/:recordId/").handler(
             resourceService.handleRoute(imposterConfig, pluginConfig, resourceMatcher) { httpExchange: HttpExchange ->
-                val request = httpExchange.request()
-                val tableName = request.pathParam("tableName")!!
-                val recordId = request.pathParam("recordId")!!
+                val request = httpExchange.request
+                val tableName = request.getPathParam("tableName")!!
+                val recordId = request.getPathParam("recordId")!!
 
                 val recordInfo = RecordInfo(recordId)
                 val config: HBasePluginConfig
@@ -140,7 +140,7 @@ class HBasePluginImpl @Inject constructor(
                 // check that the table is registered
                 if (!tableConfigs.containsKey(tableName)) {
                     LOGGER.error("Received row request for unknown table: {}", tableName)
-                    httpExchange.response()
+                    httpExchange.response
                         .setStatusCode(HttpUtil.HTTP_NOT_FOUND)
                         .end()
                     return@handleRoute
@@ -160,7 +160,7 @@ class HBasePluginImpl @Inject constructor(
                     // find the right row from results
                     val results = responseFileService.loadResponseAsJsonArray(config, responseBehaviour)
                     val result = findRow(config.idField, recordInfo.recordId, results)
-                    val response = httpExchange.response()
+                    val response = httpExchange.response
 
                     result?.let {
                         val serialiser = findSerialiser(httpExchange)
@@ -186,12 +186,12 @@ class HBasePluginImpl @Inject constructor(
     private fun addCreateScannerRoute(pluginConfig: PluginConfig, router: HttpRouter, path: String) {
         router.post("$path/:tableName/scanner").handler(
             resourceService.handleRoute(imposterConfig, pluginConfig, resourceMatcher) { httpExchange: HttpExchange ->
-                val tableName = httpExchange.request().pathParam("tableName")!!
+                val tableName = httpExchange.request.getPathParam("tableName")!!
 
                 // check that the table is registered
                 if (!tableConfigs.containsKey(tableName)) {
                     LOGGER.error("Received scanner request for unknown table: {}", tableName)
-                    httpExchange.response()
+                    httpExchange.response
                         .setStatusCode(HttpUtil.HTTP_NOT_FOUND)
                         .end()
                     return@handleRoute
@@ -231,7 +231,7 @@ class HBasePluginImpl @Inject constructor(
                 responseRoutingService.route(config, httpExchange, bindings) {
                     val scannerId = scannerService.registerScanner(config, scanner)
                     val resultUrl = imposterConfig.serverUrl + path + "/" + tableName + "/scanner/" + scannerId
-                    httpExchange.response()
+                    httpExchange.response
                         .putHeader("Location", resultUrl)
                         .setStatusCode(HttpUtil.HTTP_CREATED)
                         .end()
@@ -250,17 +250,17 @@ class HBasePluginImpl @Inject constructor(
     private fun addReadScannerResultsRoute(pluginConfig: HBasePluginConfig, router: HttpRouter, path: String) {
         router.get("$path/:tableName/scanner/:scannerId").handler(
             resourceService.handleRoute(imposterConfig, pluginConfig, resourceMatcher) { httpExchange: HttpExchange ->
-                val request = httpExchange.request()
-                val tableName = request.pathParam("tableName")!!
-                val scannerId = request.pathParam("scannerId")!!
+                val request = httpExchange.request
+                val tableName = request.getPathParam("tableName")!!
+                val scannerId = request.getPathParam("scannerId")!!
 
                 // query param e.g. ?n=1
-                val rows = Integer.valueOf(request.queryParam("n"))
+                val rows = Integer.valueOf(request.getQueryParam("n"))
 
                 // check that the table is registered
                 if (!tableConfigs.containsKey(tableName)) {
                     LOGGER.error("Received result request for unknown table: {}", tableName)
-                    httpExchange.response()
+                    httpExchange.response
                         .setStatusCode(HttpUtil.HTTP_NOT_FOUND)
                         .end()
                     return@handleRoute
@@ -274,7 +274,7 @@ class HBasePluginImpl @Inject constructor(
                         scannerId,
                         tableName
                     )
-                    httpExchange.response()
+                    httpExchange.response
                         .setStatusCode(HttpUtil.HTTP_NOT_FOUND)
                         .end()
                     return@handleRoute
@@ -301,7 +301,7 @@ class HBasePluginImpl @Inject constructor(
                     val results = responseFileService.loadResponseAsJsonArray(config, responseBehaviour)
                     val serialiser = findSerialiser(httpExchange)
                     val buffer = serialiser.serialise(tableName, scannerId, results, scanner, rows)
-                    httpExchange.response()
+                    httpExchange.response
                         .setStatusCode(HttpUtil.HTTP_OK)
                         .end(buffer)
                 }
@@ -350,7 +350,7 @@ class HBasePluginImpl @Inject constructor(
      * @return the deserialiser
      */
     private fun findDeserialiser(httpExchange: HttpExchange): DeserialisationService {
-        var contentType = httpExchange.request().getHeader("Content-Type")
+        var contentType = httpExchange.request.getHeader("Content-Type")
 
         // use JSON as default
         if (Strings.isNullOrEmpty(contentType)) {

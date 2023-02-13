@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -204,7 +204,7 @@ class ResourceServiceImpl @Inject constructor(
 
     private fun determineLogLevel(httpExchange: HttpExchange): Level {
         return try {
-            httpExchange.request().path().takeIf { path: String ->
+            httpExchange.request.path.takeIf { path: String ->
                 IGNORED_ERROR_PATHS.any { p: Pattern -> p.matcher(path).matches() }
             }?.let { Level.TRACE } ?: Level.ERROR
 
@@ -226,7 +226,7 @@ class ResourceServiceImpl @Inject constructor(
         val requestId = UUID.randomUUID().toString()
         httpExchange.put(ResourceUtil.RC_REQUEST_ID_KEY, requestId)
 
-        val response = httpExchange.response()
+        val response = httpExchange.response
 
         if (shouldAddEngineResponseHeaders) {
             response.putHeader("X-Imposter-Request", requestId)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -60,13 +60,11 @@ class VertxHttpExchange(
     private val _request by lazy { VertxHttpRequest(routingContext) }
     private val _response by lazy { VertxHttpResponse(routingContext.response()) }
 
-    override fun request(): HttpRequest {
-        return _request
-    }
+    override val request: HttpRequest
+        get() = _request
 
-    override fun response(): HttpResponse {
-        return _response
-    }
+    override val response: HttpResponse
+        get() = _response
 
     override fun isAcceptHeaderEmpty(): Boolean {
         return routingContext.parsedHeaders().accept().isEmpty()
