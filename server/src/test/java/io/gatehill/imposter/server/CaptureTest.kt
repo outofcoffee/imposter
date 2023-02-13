@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -49,14 +49,12 @@ import io.restassured.RestAssured
 import io.restassured.http.ContentType
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
-import org.apache.commons.io.FileUtils
 import org.hamcrest.MatcherAssert
 import org.hamcrest.Matchers
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
-import java.nio.charset.StandardCharsets
 
 /**
  * Tests for item capture.
@@ -125,10 +123,7 @@ class CaptureTest : BaseVerticleTest() {
     @Test
     @Throws(Exception::class)
     fun testCaptureBodyItems() {
-        val users = FileUtils.readFileToString(
-            File(CaptureTest::class.java.getResource("/capture/user.json").toURI()),
-            StandardCharsets.UTF_8
-        )
+        val users = File(CaptureTest::class.java.getResource("/capture/user.json").toURI()).readText()
 
         // send data for capture
         RestAssured.given().`when`()

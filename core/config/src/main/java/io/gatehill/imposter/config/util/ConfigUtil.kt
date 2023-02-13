@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -53,11 +53,9 @@ import io.gatehill.imposter.plugin.config.PluginConfigImpl
 import io.gatehill.imposter.plugin.config.ResourcesHolder
 import io.gatehill.imposter.util.MapUtil
 import io.gatehill.imposter.util.ResourceUtil
-import org.apache.commons.io.FileUtils
 import org.apache.logging.log4j.LogManager
 import java.io.File
 import java.io.IOException
-import java.nio.charset.StandardCharsets
 
 /**
  * Utility methods for reading configuration.
@@ -232,7 +230,7 @@ object ConfigUtil {
         convertPathParameters: Boolean
     ): T {
         try {
-            val rawContents = FileUtils.readFileToString(configFile, StandardCharsets.UTF_8)
+            val rawContents = configFile.readText()
             val parsedContents = if (substitutePlaceholders) {
                 ExpressionUtil.eval(rawContents, expressionEvaluators, nullifyUnsupported = false)
             } else {

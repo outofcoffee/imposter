@@ -55,10 +55,8 @@ import io.gatehill.imposter.util.MetricsUtil
 import io.micrometer.core.instrument.Gauge
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.json.JsonArray
-import org.apache.commons.io.FileUtils
 import org.apache.logging.log4j.LogManager
 import java.io.IOException
-import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.nio.file.Paths
 import javax.inject.Inject
@@ -144,7 +142,7 @@ class ResponseFileServiceImpl @Inject constructor(
         }
         return try {
             val configPath = normalisePath(config, responseFile).toFile()
-            JsonArray(FileUtils.readFileToString(configPath, StandardCharsets.UTF_8))
+            JsonArray(configPath.readText())
         } catch (e: IOException) {
             throw RuntimeException(e)
         }

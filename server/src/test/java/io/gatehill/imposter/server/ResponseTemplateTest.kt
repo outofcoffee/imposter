@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -48,13 +48,11 @@ import io.restassured.RestAssured
 import io.restassured.http.ContentType
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
-import org.apache.commons.io.FileUtils
 import org.hamcrest.Matchers
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
-import java.nio.charset.StandardCharsets
 
 /**
  * Tests for response templates.
@@ -144,10 +142,7 @@ class ResponseTemplateTest : BaseVerticleTest() {
     @Test
     @Throws(Exception::class)
     fun testJsonPathInterpolatedTemplate() {
-        val user = FileUtils.readFileToString(
-            File(CaptureTest::class.java.getResource("/response-template/user.json").toURI()),
-            StandardCharsets.UTF_8
-        )
+        val user = File(CaptureTest::class.java.getResource("/response-template/user.json").toURI()).readText()
         RestAssured.given().`when`()
             .body(user)
             .contentType(ContentType.JSON)

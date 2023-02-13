@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -42,12 +42,10 @@
  */
 package io.gatehill.imposter.store.redis
 
-import com.google.common.base.Charsets
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.service.DeferredOperationService
 import io.gatehill.imposter.store.AbstractStoreFactoryTest
 import io.gatehill.imposter.util.TestEnvironmentUtil
-import org.apache.commons.io.FileUtils
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.testcontainers.containers.GenericContainer
@@ -113,7 +111,7 @@ singleServerConfig:
 """
 
             val redissonConfigFile = File(configDir.toFile(), "redisson.yaml")
-            FileUtils.write(redissonConfigFile, redissonConfig, Charsets.UTF_8)
+            redissonConfigFile.writeText(redissonConfig)
         }
     }
 

@@ -30,8 +30,6 @@ ext {
 
     version_args4j = '2.33'
     version_aws_sdk = '1.12.372'
-    version_commons_io = '2.11.0'
-    version_commons_text = '1.10.0'
     version_coroutines = '1.6.4'
     version_hamcrest = '2.2'
     version_groovy = '4.0.8'
