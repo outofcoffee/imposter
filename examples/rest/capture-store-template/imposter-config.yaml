@@ -1,0 +1,28 @@
+plugin: rest
+
+resources:
+- path: "/"
+  method: "GET"
+  response:
+    file: index.html
+
+- path: "/pets"
+  method: "GET"
+  response:
+    content: |
+      Pet name: ${stores.pets.name:-None}
+    template: true
+    headers:
+      Content-Type: text/plain
+
+- path: "/pets"
+  method: "POST"
+  capture:
+    name:
+      expression: ${context.request.queryParams.name}
+      store: pets
+  response:
+    content: Set name to ${stores.pets.name}!
+    template: true
+    headers:
+      Content-Type: text/plain

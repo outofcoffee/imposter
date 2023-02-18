@@ -1,0 +1,121 @@
+<!--
+  ~ Copyright (c) 2023-2023.
+  ~
+  ~ This file is part of Imposter.
+  ~
+  ~ "Commons Clause" License Condition v1.0
+  ~
+  ~ The Software is provided to you by the Licensor under the License, as
+  ~ defined below, subject to the following condition.
+  ~
+  ~ Without limiting other conditions in the License, the grant of rights
+  ~ under the License will not include, and the License does not grant to
+  ~ you, the right to Sell the Software.
+  ~
+  ~ For purposes of the foregoing, "Sell" means practicing any or all of
+  ~ the rights granted to you under the License to provide to third parties,
+  ~ for a fee or other consideration (including without limitation fees for
+  ~ hosting or consulting/support services related to the Software), a
+  ~ product or service whose value derives, entirely or substantially, from
+  ~ the functionality of the Software. Any license notice or attribution
+  ~ required by the License must also include this Commons Clause License
+  ~ Condition notice.
+  ~
+  ~ Software: Imposter
+  ~
+  ~ License: GNU Lesser General Public License version 3
+  ~
+  ~ Licensor: Peter Cornish
+  ~
+  ~ Imposter is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Lesser General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ Imposter is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public License
+  ~ along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>CORS example</title>
+    <script type="text/javascript">
+        async function getName() {
+            try {
+                const req = new Request(`/pets`);
+                const resp = await fetch(req);
+                showResult(await resp.text());
+            } catch (e) {
+                showError(e);
+            }
+        }
+
+        async function setName() {
+            const petName = document.getElementById('petName').value;
+            try {
+                const req = new Request(`/pets?name=${petName}`);
+                const resp = await fetch(req, { method: "POST" });
+                showResult(await resp.text());
+            } catch (e) {
+                showError(e);
+            }
+        }
+
+        function showResult(body) {
+            const resultEl = document.getElementById('result');
+            resultEl.className = "alert alert-primary";
+            resultEl.innerHTML = body;
+        }
+
+        function showError(error) {
+            const resultEl = document.getElementById('result');
+            resultEl.className = "alert alert-danger";
+            resultEl.innerHTML = `Request failed, due to: ${error}`;
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css"
+          integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
+</head>
+<body>
+<div class="container">
+    <div class="jumbotron">
+        <h1>Store, capture and template example</h1>
+    </div>
+    <div class="row">
+        <div class="col-6">
+            <h3>Test it</h3>
+            <p>Use the buttons below to store and retrieve data from the API.</p>
+            <div class="col-6 pt-3">
+                <div id="result" class="alert alert-primary invisible" role="alert"></div>
+            </div>
+
+            <div class="row">
+                <div class="col-6">
+                    <h4>Get pet name</h4>
+                    <button type="submit" class="btn-lg btn btn-primary" onClick="getName()">Get pet name (GET)</button>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-6">
+                    <h4>Set pet name</h4>
+                    <div class="form-group">
+                        <label for="petName">Pet name</label>
+                        <input type="text" class="form-control" id="petName" placeholder="Enter pet name" value="Fluffy">
+                    </div>
+                    <button type="submit" class="btn-lg btn btn-primary" onClick="setName()">Set pet name (POST)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
