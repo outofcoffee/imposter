@@ -12,5 +12,5 @@ resources:
   - path: /example
     method: GET
     response:
-      content: "Hello ${exampleStore.foo}"
+      content: "Hello ${stores.exampleStore.foo}"
       template: true

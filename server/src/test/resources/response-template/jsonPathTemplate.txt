@@ -1,1 +1,1 @@
-Postcode: ${templateTest.address:$.postCode}
+Postcode: ${stores.templateTest.address:$.postCode}

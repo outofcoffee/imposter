@@ -11,7 +11,7 @@ resources:
   path: /example-inline
   contentType: "text/plain"
   response:
-    content: "Inline ${templateTest.foo-inline}"
+    content: "Inline ${stores.templateTest.foo-inline}"
     template: true
 
 - method: PUT
