@@ -1,28 +1,26 @@
-# Response templates queries
+# Response template queries
 
-Imposter allows you to respond with a template - that is, a file containing placeholders, which are replaced with values at runtime.
+Imposter allows you to respond with a template - that is, a file containing placeholders, which are replaced with values at runtime. See the [templates](./templates.md) page for more information.
 
-> See the [Templates](./templates.md) page for more information on templates.
+You can also use a JsonPath expression to query an object when using a placeholder.
+
+This is useful if you have an object, such as a request body or object within a [store](./stores.md), and wish to render a child property of the object instead of the whole object.
 
 ## Using JsonPath in placeholders
 
-You can use a JsonPath expression to query a complex object in a placeholder.
-
-This is useful if you have stored/captured an object, such as from a request body, and wish to use some part of the object instead of the whole object in a template.
-
-The syntax is as follows:
+The JsonPath placeholder syntax is as follows:
 
 ```
-stores.<store name>.<item name>:<JsonPath expression>
+<placeholder expression>:<JsonPath expression>
 ```
 
-For example:
+Here is an example that queries the request body:
 
 ```
-${stores.request.person:$.name}
+${context.request.body:$.name}
 ```
 
-In this example, there is quite a lot going on. First, the item named `person` is retrieved from the `request` store. Remember that when [capturing](./data_capture.md) data from the request, you specify the name of the item (in this case, 'person') and the source of the data. Our request body looks like this:
+In this example, the request body is parsed as a JSON object, then the JsonPath expression `$.name` is executed. The request body looks like this:
 
 ```json
 {
@@ -31,28 +29,38 @@ In this example, there is quite a lot going on. First, the item named `person` i
 }
 ```
 
-The corresponding capture configuration is as follows:
+The result of the query is the string `Alice`, which is then substituted into the template.
 
-```yaml
-# part of your configuration file
-
-resources:
-- path: "/users"
-  method: POST
-  capture:
-    person:
-      jsonPath: $
-```
-
-> Note that `$` indicates the whole request body object should be captured into the `person` item.
-
-Since the `person` item is an object, we can use JsonPath to query the `name` property - hence the expression `$.name` in the template placeholder.
-
-Similarly, you could refer to other properties of the item - `occupation` would look like this:
+Similarly, you could refer to other properties of the body - `occupation` would look like this:
 
 ```
-Your occupation is: ${stores.request.person:$.occupation}
+Your occupation is: ${context.request.body:$.occupation}
 ```
+
+### Example using stores
+
+This example fetches an item in a store, and returns the `name` property using a JsonPath expression.
+
+> Learn more about [stores](./stores.md).
+
+This will return the `name` property from the `person` item in the `request` store:
+
+```
+${stores.request.person:$.name}
+```
+
+This retrieves the item named `person` from the `request` store. The item must be an object, or a string representation of a valid JSON object.
+
+The `person` item looks like this:
+
+```json
+{
+  "name": "Alice",
+  "occupation": "Programmer"
+}
+```
+
+Since this item is an object, we can use JsonPath to query the `name` property - hence the expression `$.name` in the template placeholder.
 
 ## Templating performance
 

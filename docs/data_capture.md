@@ -100,6 +100,22 @@ resources:
 
 In this example, the `name` property of the body would be stored in the 'firstName' item in the store named 'testStore'.
 
+To capture the whole request body, use the `$` expression:
+
+```yaml
+# part of your configuration file
+
+resources:
+- path: "/users"
+  method: POST
+  capture:
+    person:
+      jsonPath: $
+      store: testStore
+```
+
+In this example, the `$` expression indicates the whole request body object should be captured into the 'person' item.
+
 #### XPath example
 
 For example, if the request body was:

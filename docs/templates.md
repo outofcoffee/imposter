@@ -256,7 +256,7 @@ A common pattern is to use a script to retrieve items from a store, or generate 
 
 ## Using JsonPath in placeholders
 
-You can use a JsonPath expression to query a complex object in a placeholder.
+You can use a JsonPath expression to query an object when using a placeholder.
 
 See the [template queries](template_queries.md) page for more details.
 
@@ -265,8 +265,6 @@ See the [template queries](template_queries.md) page for more details.
 Templating incurs a performance penalty, but is often faster than dynamically generating large objects using scripts, so is generally a better tradeoff when dynamic responses are required.
 
 Template files are cached in memory once read from disk, so they do not incur as high an I/O cost from storage on subsequent requests.
-
-Using JsonPath in placeholder templates is computationally expensive, as it requires parsing and querying of an item rather than just value substitution.
 
 ## Examples
 
