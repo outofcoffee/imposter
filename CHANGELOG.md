@@ -3,9 +3,16 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [3.10.0] - 2023-02-18
 ### Added
-- ...
+- feat: allows templates to access to stores via `stores.` prefix.
+- docs: adds end to end store/template example.
+- docs: describes random placeholders.
+
+### Changed
+- refactor: removes commons-io dependency.
+- refactor: moves template logic to engine.
+- test: defaults launch mode to java in dev convenience script.
 
 ## [3.9.0] - 2023-02-08
 ### Added
