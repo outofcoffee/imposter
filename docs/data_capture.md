@@ -100,22 +100,6 @@ resources:
 
 In this example, the `name` property of the body would be stored in the 'firstName' item in the store named 'testStore'.
 
-To capture the whole request body, use the `$` expression:
-
-```yaml
-# part of your configuration file
-
-resources:
-- path: "/users"
-  method: POST
-  capture:
-    person:
-      jsonPath: $
-      store: testStore
-```
-
-In this example, the `$` expression indicates the whole request body object should be captured into the 'person' item.
-
 #### XPath example
 
 For example, if the request body was:
@@ -229,6 +213,22 @@ For example, to capture the address from the example above, use the JsonPath exp
 
 You can retrieve this object in a script, by accessing the [store](./stores.md) named 'testStore', or you could use it in a JsonPath placeholder within a [template](./templates.md).
 
+To capture the whole request body, use the `$` expression:
+
+```yaml
+# part of your configuration file
+
+resources:
+- path: "/users"
+  method: POST
+  capture:
+    person:
+      jsonPath: $
+      store: testStore
+```
+
+Here the `$` expression indicates the whole request body object should be captured into the 'person' item.
+
 ### Constant values
 
 In some scenarios, you may wish to capture a constant value.
@@ -252,7 +252,7 @@ resources:
 
 In the example above, the value `received` is stored in the 'example' store, with the name 'receivedRequest', when the given endpoint is hit.
 
-### Dynamic item names
+### Dynamic item name
 
 You do not have to specify a constant value for the item name - you can use a property of the request, such as a query or path parameter, header or body element as the item name.
 
@@ -277,6 +277,26 @@ resources:
 ```
 
 In the example above, an item corresponding to the `userId` parameter in the request is added to the 'adminUsers' store with the value of the current date/time.
+
+Expressions can also be used in the key, for example:
+
+```yaml
+plugin: rest
+
+resources:
+- method: PUT
+  path: /users/admins/:userId
+  capture:
+    adminUser:
+      expression: "${datetime.now.iso8601_datetime}"
+      key:
+        expression: "${context.request.pathParams.userId}"
+      store: adminUsers
+  response:
+    statusCode: 200
+```
+
+---
 
 ## Request scoped store
 
@@ -305,9 +325,9 @@ resources:
 
 Here is the corresponding template file:
 
-```
+```json
 {
-  "userName": "${request.user}"
+  "userName": "${stores.request.user}"
 }
 ```
 
@@ -324,6 +344,8 @@ curl -X PUT http://localhost:8080/users/alice
   "userName": "alice"
 }
 ```
+
+---
 
 ## Deferred capture
 
@@ -351,6 +373,8 @@ capture:
 ```
 
 > The default value of `phase` is `REQUEST_RECEIVED`
+
+---
 
 ## Enable or disable capture configuration
 
