@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- ...
+
 ## [3.10.0] - 2023-02-18
 ### Added
 - feat: allows templates to access to stores via `stores.` prefix.
