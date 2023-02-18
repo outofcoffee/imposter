@@ -22,19 +22,19 @@ To begin, check out the [Getting started](getting_started.md) guide. See the _Us
 
 - [Getting started](getting_started.md)
 - [Configuration guide](configuration.md)
-- [Usage (arguments and environment variables)](usage.md)
+- [Response templates](templates.md)
 - [Scripting](scripting.md)
 - [Security](security.md)
 
-### Data capture, storage and templates
+### Data capture and storage
 
 - [Data capture](data_capture.md)
-- [Response templates](templates.md)
 - [Stores](stores.md)
 - [GraphQL](stores_graphql.md)
 
 ### Advanced
 
+- [Usage (arguments and environment variables)](usage.md)
 - [Advanced request matching](request_matching.md)
 - [OpenAPI validation](openapi_validation.md)
 - [Performance simulation](performance_simulation.md)

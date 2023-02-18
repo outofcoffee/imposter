@@ -14,6 +14,7 @@ nav:
   - Introduction: 'index.md'
   - Getting started: 'getting_started.md'
   - Configuration guide: 'configuration.md'
+  - Response templates: 'templates.md'
   - Scripting: 'scripting.md'
   - Security: 'security.md'
 
@@ -25,9 +26,8 @@ nav:
     - SFDC (Salesforce): 'sfdc_plugin.md'
     - WireMock: 'wiremock_plugin.md'
 
-  - Data capture, storage and templates:
+  - Data capture and storage:
     - Data capture: 'data_capture.md'
-    - Response templates: 'templates.md'
     - Stores: 'stores.md'
     - GraphQL: 'stores_graphql.md'
 
