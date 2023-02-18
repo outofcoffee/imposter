@@ -224,17 +224,17 @@ Valid random functions:
 
 You can use items from a [Store](./stores.md), including data [captured](./data_capture.md) previously, or set by a script.
 
-Syntax: `${STORE_NAME.ITEM_NAME}`
+Syntax: `stores.<store name>.<item name>`
 
 For example, a template file might look like this:
 
 ```
 {
-  "userName": "${testStore.person}"
+  "userName": "${stores.testStore.person}"
 }
 ```
 
-The placeholder `${testStore.person}` refers to an item named 'person' in the store named 'testStore'.
+The placeholder `${stores.testStore.person}` refers to an item named 'person' in the store named 'testStore'.
 
 > Learn more about [stores](./stores.md).
 
@@ -252,55 +252,13 @@ As with the configuration-driven approach described above, your template include
 
 A common pattern is to use a script to retrieve items from a store, or generate values dynamically and set them in a store, for use in a template.
 
+---
+
 ## Using JsonPath in placeholders
 
 You can use a JsonPath expression to query a complex object in a placeholder.
 
-This is useful if you have stored/captured an object, such as from a request body, and wish to use some part of the object instead of the whole object in a template.
-
-The syntax is as follows:
-
-```
-${STORE_NAME.ITEM_NAME:JSONPATH_EXPRESSION}
-```
-
-For example:
-
-```
-${request.person:$.name}
-```
-
-In this example, there is quite a lot going on. First, the item named `person` is retrieved from the `request` store. Remember that when [capturing](./data_capture.md) data from the request, you specify the name of the item (in this case, 'person') and the source of the data. Our request body looks like this:
-
-```json
-{
-  "name": "Alice",
-  "occupation": "Programmer"
-}
-```
-
-The corresponding capture configuration is as follows:
-
-```yaml
-# part of your configuration file
-
-resources:
-- path: "/users"
-  method: POST
-  capture:
-    person:
-      jsonPath: $
-```
-
-> Note that `$` indicates the whole request body object should be captured into the `person` item.
-
-Since the `person` item is an object, we can use JsonPath to query the `name` property - hence the expression `$.name` in the template placeholder.
-
-Similarly, you could refer to other properties of the item - `occupation` would look like this:
-
-```
-Your occupation is: ${request.person:$.occupation}
-```
+See the [template queries](template_queries.md) page for more details.
 
 ## Templating performance
 
