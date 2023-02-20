@@ -8,8 +8,7 @@ ext {
 }
 
 compileJava {
-    sourceCompatibility = 11
-    targetCompatibility = 11
+    sourceCompatibility = JavaVersion.VERSION_11
 }
 
 dependencies {
