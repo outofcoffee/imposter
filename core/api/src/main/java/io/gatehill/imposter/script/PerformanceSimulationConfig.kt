@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -47,13 +47,13 @@ import com.fasterxml.jackson.annotation.JsonProperty
 /**
  * @author Pete Cornish
  */
-class PerformanceSimulationConfig {
+data class PerformanceSimulationConfig(
     @JsonProperty("exact")
-    var exactDelayMs: Int? = null
+    var exactDelayMs: Int? = null,
 
     @JsonProperty("min")
-    var minDelayMs: Int? = null
+    var minDelayMs: Int? = null,
 
     @JsonProperty("max")
-    var maxDelayMs: Int? = null
-}
+    var maxDelayMs: Int? = null,
+)
