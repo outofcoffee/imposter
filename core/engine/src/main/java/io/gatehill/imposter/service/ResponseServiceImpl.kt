@@ -272,18 +272,20 @@ class ResponseServiceImpl @Inject constructor(
     /**
      * Set the HTTP status code, headers and body, given the path and request method.
      */
-    override fun sendNotFoundResponse(httpExchange: HttpExchange) = sendNotFoundResponse(
-        httpExchange.request.path,
-        httpExchange.request.method.toString(),
-        httpExchange.response,
-        httpExchange.acceptsMimeType(HttpUtil.CONTENT_TYPE_HTML)
-    )
+    override fun sendNotFoundResponse(httpExchange: HttpExchange) = finaliseExchange(null, httpExchange) {
+        sendNotFoundResponse(
+            httpExchange.request.path,
+            httpExchange.request.method.toString(),
+            httpExchange.response,
+            httpExchange.acceptsMimeType(HttpUtil.CONTENT_TYPE_HTML)
+        )
+    }
 
     override fun sendNotFoundResponse(requestPath: String, requestMethod: String, response: HttpResponse, acceptsHtml: Boolean) {
         response.setStatusCode(HttpUtil.HTTP_NOT_FOUND)
 
         if (acceptsHtml) {
-            response.putHeader("Content-Type", HttpUtil.CONTENT_TYPE_HTML).end(
+            response.putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_HTML).end(
                 """
                 |<html>
                 |<head><title>Not found</title></head>
@@ -302,7 +304,7 @@ class ResponseServiceImpl @Inject constructor(
                 """.trimMargin()
             )
         } else {
-            response.putHeader("Content-Type", "text/plain").end("Resource not found")
+            response.putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_PLAIN_TEXT).end("Resource not found")
         }
     }
 

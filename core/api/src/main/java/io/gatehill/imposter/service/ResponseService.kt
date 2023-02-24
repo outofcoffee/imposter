@@ -99,12 +99,16 @@ interface ResponseService {
 
     /**
      * Convenience function, wrapping `sendNotFoundResponse(requestPath, requestMethod, response, acceptsHtml)`.
+     *
+     * Note: this method calls [finaliseExchange].
      */
     fun sendNotFoundResponse(httpExchange: HttpExchange)
 
     /**
      * Set the HTTP status code, headers and body, given the path and request method,
      * then calls [HttpResponse.end].
+     *
+     * Note: this method does **not** call [finaliseExchange].
      */
     fun sendNotFoundResponse(
         requestPath: String,

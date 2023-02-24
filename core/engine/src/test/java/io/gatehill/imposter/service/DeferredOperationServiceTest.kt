@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -49,6 +49,9 @@ import org.apache.logging.log4j.LogManager
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
+/**
+ * Tests for [DeferredOperationService].
+ */
 class DeferredOperationServiceTest {
     private val logger = LogManager.getLogger(DeferredOperationServiceTest::class.java)
     private val service = DeferredOperationService()
