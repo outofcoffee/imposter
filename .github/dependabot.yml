@@ -7,6 +7,9 @@ updates:
       interval: "daily"
     target-branch: "develop"
     open-pull-requests-limit: 4
+    labels:
+      - "dependencies"
+      - "github_actions"
     commit-message:
       prefix: "chore"
       include: "scope"
@@ -17,6 +20,9 @@ updates:
       interval: "daily"
     target-branch: "develop"
     open-pull-requests-limit: 4
+    labels:
+      - "dependencies"
+      - "java"
     commit-message:
       prefix: "chore"
       include: "scope"
@@ -27,6 +33,9 @@ updates:
       interval: "daily"
     target-branch: "develop"
     open-pull-requests-limit: 4
+    labels:
+      - "dependencies"
+      - "examples"
     commit-message:
       prefix: "chore"
       include: "scope"
