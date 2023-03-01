@@ -49,6 +49,8 @@ import io.gatehill.imposter.plugin.StaticPluginDiscoveryStrategyImpl
 import io.gatehill.imposter.plugin.openapi.OpenApiModule
 import io.gatehill.imposter.plugin.openapi.OpenApiPluginImpl
 import io.gatehill.imposter.plugin.rest.RestPluginImpl
+import io.gatehill.imposter.plugin.soap.SoapModule
+import io.gatehill.imposter.plugin.soap.SoapPluginImpl
 import io.gatehill.imposter.scripting.nashorn.NashornStandaloneScriptingModule
 import io.gatehill.imposter.scripting.nashorn.service.NashornStandaloneScriptServiceImpl
 import io.gatehill.imposter.store.dynamodb.DynamoDBStoreFactoryImpl
@@ -61,6 +63,7 @@ object PluginUtil {
     private val defaultPluginClasses = mapOf(
         "openapi" to OpenApiPluginImpl::class.java,
         "rest" to RestPluginImpl::class.java,
+        "soap" to SoapPluginImpl::class.java,
         "js-nashorn-standalone" to NashornStandaloneScriptServiceImpl::class.java,
         "store-inmem" to InMemoryStoreFactoryImpl::class.java,
         "store-dynamodb" to DynamoDBStoreFactoryImpl::class.java,
@@ -69,6 +72,7 @@ object PluginUtil {
     private val defaultDependencies = listOf(
         LambdaModule(),
         OpenApiModule(),
+        SoapModule(),
         NashornStandaloneScriptingModule(),
         DynamoDBStoreModule(),
         InMemoryStoreModule(),
