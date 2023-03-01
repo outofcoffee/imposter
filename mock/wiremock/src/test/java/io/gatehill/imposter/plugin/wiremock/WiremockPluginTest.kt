@@ -45,6 +45,11 @@ package io.gatehill.imposter.plugin.wiremock
 
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.util.EnvVars
+import io.gatehill.imposter.service.ResourceService
+import io.gatehill.imposter.service.ResponseFileService
+import io.gatehill.imposter.service.ResponseRoutingService
+import io.gatehill.imposter.service.ResponseService
+import io.vertx.core.Vertx
 import org.hamcrest.CoreMatchers
 import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.CoreMatchers.not
@@ -139,7 +144,14 @@ class WiremockPluginTest {
             EnvVars.populate(*env)
         }
 
-        val wiremock = WiremockPluginImpl(mock(), ImposterConfig(), mock(), mock(), mock(), mock())
+        val wiremock = WiremockPluginImpl(
+            mock<Vertx>(),
+            ImposterConfig(),
+            mock<ResourceService>(),
+            mock<ResponseFileService>(),
+            mock<ResponseService>(),
+            mock<ResponseRoutingService>()
+        )
         val configFiles = wiremock.convert(File(mappingsDir, "imposter-config.yaml"))
         assertThat(configFiles, hasSize(expectedConfigFiles))
 
