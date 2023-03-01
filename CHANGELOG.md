@@ -3,9 +3,18 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [3.11.0] - 2023-03-01
 ### Added
-- ...
+- feat: adds SOAP plugin to Lambda default plugins.
+- test: improves coverage for response service, response file transmission, failure simulation and performance simulation.
+- docs: adds CORS example.
+
+### Changed
+- build(deps): bump com.atlassian.oai:swagger-request-validator-core from 2.30.0 to 2.33.1 (#299)
+- build(deps): bump swagger-parser to 2.1.9 (#299)
+
+### Fixed
+- build: fixes target compatibility for nashorn plugin.
 
 ## [3.10.0] - 2023-02-18
 ### Added
