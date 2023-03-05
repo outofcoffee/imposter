@@ -3,9 +3,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
-### Added
-- ...
+## [3.11.3] - 2023-03-05
+### Changed
+- chore(deps): bump actions/checkout from 2 to 3 (#313)
+- chore(deps): bump com.amazonaws:aws-java-sdk-core (#317)
+- ci: pins changelog parser version.
 
 ## [3.11.2] - 2023-03-04
 ### Changed
