@@ -9,7 +9,7 @@ jobs:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'dependencies') && contains(github.event.pull_request.labels.*.name, 'examples') }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: ahmadnassri/action-dependabot-auto-merge@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
