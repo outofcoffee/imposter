@@ -22,7 +22,7 @@ jobs:
           GOBIN: /usr/local/bin/
         run: |
           mkdir -p build
-          go install github.com/outofcoffee/changelog-parser@v0.2.0
+          go install github.com/outofcoffee/changelog-parser@v0.3.0
           changelog-parser > build/CHANGES.md
           cat build/CHANGES.md
 
