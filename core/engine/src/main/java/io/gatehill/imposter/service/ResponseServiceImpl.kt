@@ -180,7 +180,7 @@ class ResponseServiceImpl @Inject constructor(
     ) {
         LOGGER.info(
             "Serving response data ({} bytes) for {} with status code {}",
-            responseBehaviour.content!!.length,
+            responseBehaviour.content?.length ?: 0,
             LogUtil.describeRequestShort(httpExchange),
             httpExchange.response.statusCode
         )
