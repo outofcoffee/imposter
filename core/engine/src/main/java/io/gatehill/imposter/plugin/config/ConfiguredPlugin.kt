@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -46,6 +46,7 @@ import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.util.ConfigUtil
 import io.gatehill.imposter.http.UniqueRoute
 import io.gatehill.imposter.plugin.RoutablePlugin
+import io.gatehill.imposter.plugin.config.resource.PassthroughResourceConfig
 import io.vertx.core.Vertx
 import java.io.File
 import javax.inject.Inject
@@ -64,15 +65,31 @@ abstract class ConfiguredPlugin<T : PluginConfigImpl> @Inject constructor(
 
     override fun loadConfiguration(configFiles: List<File>) {
         configs = configFiles.map { file ->
-            ConfigUtil.loadPluginConfig(
+            val config = ConfigUtil.loadPluginConfig(
                 imposterConfig,
                 file,
                 configClass,
                 substitutePlaceholders = true,
                 convertPathParameters = true
             )
+            validateConfig(file, config)
+            config
         }
         configurePlugin(configs)
+    }
+
+    protected fun validateConfig(file: File, config: T) {
+        try {
+            if (config is ResourcesHolder<*>) {
+                config.resources?.forEach { resource ->
+                    if (resource is PassthroughResourceConfig && resource.responseConfig.hasConfiguration() && !resource.passthrough.isNullOrBlank()) {
+                        throw IllegalArgumentException("Passthrough and response configuration are mutually exclusive")
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            throw IllegalArgumentException("Invalid configuration in file: ${file.absolutePath}", e)
+        }
     }
 
     /**

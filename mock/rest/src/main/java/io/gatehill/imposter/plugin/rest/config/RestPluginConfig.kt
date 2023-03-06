@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -48,12 +48,14 @@ import io.gatehill.imposter.plugin.config.ContentTypedConfig
 import io.gatehill.imposter.plugin.config.PluginConfigImpl
 import io.gatehill.imposter.plugin.config.ResourcesHolder
 import io.gatehill.imposter.plugin.config.resource.MethodResourceConfig
+import io.gatehill.imposter.plugin.config.resource.UpstreamConfig
+import io.gatehill.imposter.plugin.config.resource.UpstreamsHolder
 
 /**
  * @author Pete Cornish
  */
 class RestPluginConfig : PluginConfigImpl(), MethodResourceConfig,
-    ResourcesHolder<RestPluginResourceConfig>, ContentTypedConfig {
+    ResourcesHolder<RestPluginResourceConfig>, ContentTypedConfig, UpstreamsHolder {
 
     override var contentType: String? = null
         protected set
@@ -66,4 +68,7 @@ class RestPluginConfig : PluginConfigImpl(), MethodResourceConfig,
 
     @JsonProperty("defaultsFromRootResponse")
     override val isDefaultsFromRootResponse = false
+
+    @JsonProperty("upstreams")
+    override val upstreams: Map<String, UpstreamConfig>? = null
 }

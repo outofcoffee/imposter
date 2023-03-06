@@ -57,6 +57,7 @@ import io.gatehill.imposter.service.ResponseService
 import io.gatehill.imposter.service.ResponseServiceImpl
 import io.gatehill.imposter.service.ScriptedResponseService
 import io.gatehill.imposter.service.SecurityService
+import io.gatehill.imposter.service.UpstreamService
 import io.gatehill.imposter.service.script.EmbeddedScriptService
 import io.gatehill.imposter.service.script.EmbeddedScriptServiceImpl
 import io.gatehill.imposter.service.script.ScriptServiceFactory
@@ -85,5 +86,7 @@ internal class EngineModule : AbstractModule() {
 
         // needs to be eager to register lifecycle listener
         bind(SecurityService::class.java).to(SecurityServiceImpl::class.java).asEagerSingleton()
+
+        bind(UpstreamService::class.java).`in`(Singleton::class.java)
     }
 }

@@ -1,0 +1,18 @@
+plugin: rest
+
+upstreams:
+  example:
+    url: https://example.com
+
+resources:
+  # forward requests to upstream
+  - path: /
+    passthrough: example
+
+  # mock a response
+  - path: /mock
+    response:
+      statusCode: 200
+      content: "Hello from a mock"
+      headers:
+        Content-Type: text/plain
