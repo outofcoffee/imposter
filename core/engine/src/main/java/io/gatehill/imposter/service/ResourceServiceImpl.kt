@@ -55,9 +55,11 @@ import io.gatehill.imposter.lifecycle.SecurityLifecycleListener
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.ResourcesHolder
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
+import io.gatehill.imposter.plugin.config.resource.PassthroughResourceConfig
 import io.gatehill.imposter.plugin.config.resource.PathParamsResourceConfig
 import io.gatehill.imposter.plugin.config.resource.QueryParamsResourceConfig
 import io.gatehill.imposter.plugin.config.resource.RequestHeadersResourceConfig
+import io.gatehill.imposter.plugin.config.resource.UpstreamsHolder
 import io.gatehill.imposter.server.RequestHandlingMode
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.LogUtil.describeRequest
@@ -78,6 +80,7 @@ class ResourceServiceImpl @Inject constructor(
     private val securityService: SecurityService,
     private val securityLifecycle: SecurityLifecycleHooks,
     private val responseService: ResponseService,
+    private val upstreamService: UpstreamService,
     private val vertx: Vertx,
 ) : ResourceService {
 
@@ -242,11 +245,15 @@ class ResourceServiceImpl @Inject constructor(
         httpExchange.put(ResourceUtil.RESOURCE_CONFIG_KEY, resourceConfig)
 
         if (isRequestPermitted(rootResourceConfig, resourceConfig, resolvedResourceConfigs, httpExchange)) {
-            try {
-                httpExchangeHandler(httpExchange)
-                LogUtil.logCompletion(httpExchange)
-            } finally {
-                httpExchange.phase = ExchangePhase.REQUEST_DISPATCHED
+            if (pluginConfig is UpstreamsHolder && resourceConfig is PassthroughResourceConfig && !resourceConfig.passthrough.isNullOrBlank()) {
+                upstreamService.forwardToUpstream(pluginConfig, resourceConfig, httpExchange)
+            } else {
+                try {
+                    httpExchangeHandler(httpExchange)
+                    LogUtil.logCompletion(httpExchange)
+                } finally {
+                    httpExchange.phase = ExchangePhase.REQUEST_DISPATCHED
+                }
             }
         } else {
             LOGGER.trace("Request {} was not permitted to continue", describeRequest(httpExchange, requestId))

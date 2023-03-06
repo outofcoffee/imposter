@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2023-2023.
  *
  * This file is part of Imposter.
  *
@@ -40,27 +40,18 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.plugin.soap.config
 
-import com.fasterxml.jackson.annotation.JsonProperty
-import io.gatehill.imposter.plugin.config.PluginConfigImpl
-import io.gatehill.imposter.plugin.config.ResourcesHolder
-import io.gatehill.imposter.plugin.config.resource.UpstreamConfig
-import io.gatehill.imposter.plugin.config.resource.UpstreamsHolder
+package io.gatehill.imposter.plugin.config.resource
 
 /**
+ * Zero or more named upstreams to which requests can be passed.
+ *
  * @author Pete Cornish
  */
-class SoapPluginConfig : PluginConfigImpl(), ResourcesHolder<SoapPluginResourceConfig>, UpstreamsHolder {
-    @JsonProperty("wsdlFile")
-    var wsdlFile: String? = null
-
-    @JsonProperty("resources")
-    override val resources: List<SoapPluginResourceConfig>? = null
-
-    @JsonProperty("defaultsFromRootResponse")
-    override val isDefaultsFromRootResponse = false
-
-    @JsonProperty("upstreams")
-    override val upstreams: Map<String, UpstreamConfig>? = null
+interface UpstreamsHolder {
+    val upstreams: Map<String, UpstreamConfig>?
 }
+
+data class UpstreamConfig(
+    val url: String,
+)

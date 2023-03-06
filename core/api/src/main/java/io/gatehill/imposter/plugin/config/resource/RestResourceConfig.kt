@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -54,7 +54,7 @@ import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyResourceCo
  */
 open class RestResourceConfig : AbstractResourceConfig(), MethodResourceConfig, PathParamsResourceConfig,
     QueryParamsResourceConfig, LegacyQueryParamsResourceConfig, RequestHeadersResourceConfig,
-    RequestBodyResourceConfig {
+    RequestBodyResourceConfig, PassthroughResourceConfig {
 
     @field:JsonProperty("method")
     override var method: HttpMethod? = null
@@ -71,6 +71,9 @@ open class RestResourceConfig : AbstractResourceConfig(), MethodResourceConfig, 
 
     @field:JsonProperty("requestBody")
     override var requestBody: RequestBodyConfig? = null
+
+    @field:JsonProperty("passthrough")
+    override var passthrough: String? = null
 
     @get:JsonIgnore
     override val params: Map<String, String>?
