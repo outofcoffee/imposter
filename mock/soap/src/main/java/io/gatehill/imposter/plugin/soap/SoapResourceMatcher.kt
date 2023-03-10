@@ -86,22 +86,6 @@ class SoapResourceMatcher(
             matchRequestBody(httpExchange, resource.config)
     }
 
-    private fun isPathMatch(
-        httpExchange: HttpExchange,
-        resourceConfig: SoapPluginResourceConfig,
-        request: HttpRequest
-    ): Boolean {
-        // note: path template can be null when a regex route is used
-        val pathTemplate = httpExchange.currentRoutePath
-
-        // if path is un-set, implies match all
-        val pathMatch = resourceConfig.path?.let {
-            request.path == resourceConfig.path || (pathTemplate?.let { it == resourceConfig.path } == true)
-        } ?: true
-
-        return pathMatch
-    }
-
     private fun isOperationMatch(httpExchange: HttpExchange, configOpName: String, soapAction: String?) = httpExchange.request.body?.let { body ->
         val bodyHolder: MessageBodyHolder = when (binding.type) {
             BindingType.SOAP -> SoapUtil.parseSoapEnvelope(body)

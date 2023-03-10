@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2022.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -105,6 +105,22 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
         resource: ResolvedResourceConfig,
         httpExchange: HttpExchange,
     ): Boolean
+
+    protected fun isPathMatch(
+        httpExchange: HttpExchange,
+        resourceConfig: BasicResourceConfig,
+        request: HttpRequest
+    ): Boolean {
+        // note: path template can be null when a regex route is used
+        val pathTemplate = httpExchange.currentRoutePath
+
+        // if path is un-set, implies match all
+        val pathMatch = resourceConfig.path?.let {
+            request.path == resourceConfig.path || (pathTemplate?.let { it == resourceConfig.path } == true)
+        } ?: true
+
+        return pathMatch
+    }
 
     /**
      * Match the request body against the supplied configuration.

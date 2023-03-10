@@ -47,7 +47,6 @@ import io.gatehill.imposter.plugin.config.resource.MethodResourceConfig
 import io.gatehill.imposter.util.CollectionUtil.convertKeysToLowerCase
 import io.gatehill.imposter.util.StringUtil.safeEquals
 import java.util.Locale
-import java.util.function.Function
 
 
 /**
@@ -80,9 +79,7 @@ class SingletonResourceMatcher : AbstractResourceMatcher() {
         val resourceConfig = resource.config
         val request = httpExchange.request
 
-        // path template can be null when a regex route is used
-        val pathTemplate = httpExchange.currentRoutePath
-        val pathMatch = request.path == resourceConfig.path || (pathTemplate?.let { it == resourceConfig.path } == true)
+        val pathMatch = isPathMatch(httpExchange, resourceConfig, request)
 
         val methodMatch = if (resourceConfig is MethodResourceConfig && null != resourceConfig.method) {
             request.method == resourceConfig.method
@@ -100,9 +97,9 @@ class SingletonResourceMatcher : AbstractResourceMatcher() {
 
     private fun filterByPairs(
         resourceConfigs: List<ResolvedResourceConfig>,
-        pairsSupplier: Function<ResolvedResourceConfig, Map<String, String>>
+        pairsSupplier: (ResolvedResourceConfig) -> Map<String, String>
     ): List<ResolvedResourceConfig> {
-        val configsWithPairs = resourceConfigs.filter { res -> pairsSupplier.apply(res).isNotEmpty() }
+        val configsWithPairs = resourceConfigs.filter { res -> pairsSupplier(res).isNotEmpty() }
 
         return configsWithPairs.ifEmpty {
             // no resource configs specified params - don't filter
