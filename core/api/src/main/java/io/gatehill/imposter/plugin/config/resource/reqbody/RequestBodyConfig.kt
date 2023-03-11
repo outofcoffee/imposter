@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -65,6 +65,10 @@ open class BaseRequestBodyConfig {
 
     @field:JsonProperty("operator")
     var operator: ResourceMatchOperator? = null
+
+    override fun toString(): String {
+        return "BaseRequestBodyConfig(jsonPath=$jsonPath, xPath=$xPath, xmlNamespaces=$xmlNamespaces, value=$value, operator=$operator)"
+    }
 }
 
 /**
