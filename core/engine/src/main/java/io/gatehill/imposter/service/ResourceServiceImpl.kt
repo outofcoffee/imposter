@@ -245,8 +245,8 @@ class ResourceServiceImpl @Inject constructor(
         httpExchange.put(ResourceUtil.RESOURCE_CONFIG_KEY, resourceConfig)
 
         if (isRequestPermitted(rootResourceConfig, resourceConfig, resolvedResourceConfigs, httpExchange)) {
-            if (pluginConfig is UpstreamsHolder && resourceConfig is PassthroughResourceConfig && !resourceConfig.passthrough.isNullOrBlank()) {
-                upstreamService.forwardToUpstream(pluginConfig, resourceConfig, httpExchange)
+            if (shouldForwardToUpstream(pluginConfig, resourceConfig, httpExchange)) {
+                upstreamService.forwardToUpstream(pluginConfig as UpstreamsHolder, resourceConfig as PassthroughResourceConfig, httpExchange)
             } else {
                 try {
                     httpExchangeHandler(httpExchange)
@@ -258,6 +258,18 @@ class ResourceServiceImpl @Inject constructor(
         } else {
             LOGGER.trace("Request {} was not permitted to continue", describeRequest(httpExchange, requestId))
         }
+    }
+
+    private fun shouldForwardToUpstream(
+        pluginConfig: PluginConfig,
+        resourceConfig: BasicResourceConfig,
+        httpExchange: HttpExchange,
+    ): Boolean {
+        if (pluginConfig !is UpstreamsHolder || resourceConfig !is PassthroughResourceConfig || resourceConfig.passthrough.isNullOrBlank()) {
+            return false
+        }
+        // don't forward requests to the upstream if the request is for system resources
+        return !httpExchange.request.path.startsWith("/system")
     }
 
     private fun isRequestPermitted(
