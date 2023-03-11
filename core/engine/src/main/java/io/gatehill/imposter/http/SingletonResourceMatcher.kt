@@ -58,7 +58,7 @@ class SingletonResourceMatcher : AbstractResourceMatcher() {
     override fun filterResourceConfigs(
         resources: List<ResolvedResourceConfig>,
         httpExchange: HttpExchange,
-    ): List<ResolvedResourceConfig> {
+    ): List<MatchedResource> {
         var resourceConfigs = super.filterResourceConfigs(resources, httpExchange)
 
         // find the most specific, by filtering those that match by those that specify parameters
@@ -72,14 +72,14 @@ class SingletonResourceMatcher : AbstractResourceMatcher() {
     /**
      * {@inheritDoc}
      */
-    override fun isRequestMatch(
+    override fun matchRequest(
         resource: ResolvedResourceConfig,
         httpExchange: HttpExchange,
-    ): Boolean {
+    ): MatchedResource {
         val resourceConfig = resource.config
         val request = httpExchange.request
 
-        val pathMatch = isPathMatch(httpExchange, resourceConfig, request)
+        val pathMatch = matchPath(httpExchange, resourceConfig, request)
 
         val methodMatch = if (resourceConfig is MethodResourceConfig && null != resourceConfig.method) {
             request.method == resourceConfig.method
@@ -88,18 +88,21 @@ class SingletonResourceMatcher : AbstractResourceMatcher() {
             true
         }
 
-        return pathMatch && methodMatch &&
+        val matched = methodMatch &&
+            (pathMatch == PathMatchResult.EXACT_MATCH || pathMatch == PathMatchResult.WILDCARD_MATCH) &&
             matchPairs(request.pathParams, resource.pathParams, true) &&
             matchPairs(request.queryParams, resource.queryParams, true) &&
             matchPairs(request.headers, resource.requestHeaders, false) &&
             matchRequestBody(httpExchange, resource.config)
+
+        return MatchedResource(resource, matched, pathMatch == PathMatchResult.EXACT_MATCH)
     }
 
     private fun filterByPairs(
-        resourceConfigs: List<ResolvedResourceConfig>,
+        resourceConfigs: List<MatchedResource>,
         pairsSupplier: (ResolvedResourceConfig) -> Map<String, String>
-    ): List<ResolvedResourceConfig> {
-        val configsWithPairs = resourceConfigs.filter { res -> pairsSupplier(res).isNotEmpty() }
+    ): List<MatchedResource> {
+        val configsWithPairs = resourceConfigs.filter { res -> pairsSupplier(res.resource).isNotEmpty() }
 
         return configsWithPairs.ifEmpty {
             // no resource configs specified params - don't filter

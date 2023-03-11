@@ -76,22 +76,45 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
                 return null
             }
 
-            1 -> LOGGER.debug("Matched resource config for {}", LogUtil.describeRequestShort(httpExchange))
+            1 -> {
+                LOGGER.debug("Matched resource config for {}", LogUtil.describeRequestShort(httpExchange))
+                return resourceConfigs[0].resource.config
+            }
+
             else -> {
-                LOGGER.warn(
-                    "More than one resource config found for {} - this is probably a configuration error. Guessing first resource configuration.",
-                    LogUtil.describeRequestShort(httpExchange)
-                )
+                // multiple candidates - prefer exact matches
+                val exactMatches = resourceConfigs.filter { it.exact }
+                when (exactMatches.size) {
+                    0 -> {
+                        LOGGER.warn(
+                            "More than one resource config matched a wildcard path for {} - this is probably a configuration error. Guessing first resource configuration.",
+                            LogUtil.describeRequestShort(httpExchange)
+                        )
+                        return resourceConfigs[0].resource.config
+                    }
+
+                    1 -> {
+                        LOGGER.debug("Matched resource config for {}", LogUtil.describeRequestShort(httpExchange))
+                        return exactMatches[0].resource.config
+                    }
+
+                    else -> {
+                        LOGGER.warn(
+                            "More than one resource config matched an exact path for {} - this is probably a configuration error. Guessing first resource configuration.",
+                            LogUtil.describeRequestShort(httpExchange)
+                        )
+                        return exactMatches[0].resource.config
+                    }
+                }
             }
         }
-        return resourceConfigs[0].config
     }
 
     protected open fun filterResourceConfigs(
         resources: List<ResolvedResourceConfig>,
         httpExchange: HttpExchange,
-    ): List<ResolvedResourceConfig> {
-        return resources.filter { res -> isRequestMatch(res, httpExchange) }
+    ): List<MatchedResource> {
+        return resources.map { matchRequest(it, httpExchange) }.filter { it.matched }
     }
 
     /**
@@ -101,23 +124,29 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
      * @param httpExchange the current exchange
      * @return `true` if the resource matches the request, otherwise `false`
      */
-    protected abstract fun isRequestMatch(
+    protected abstract fun matchRequest(
         resource: ResolvedResourceConfig,
         httpExchange: HttpExchange,
-    ): Boolean
+    ): MatchedResource
 
-    protected fun isPathMatch(
+    protected fun matchPath(
         httpExchange: HttpExchange,
         resourceConfig: BasicResourceConfig,
-        request: HttpRequest
-    ): Boolean {
+        request: HttpRequest,
+    ): PathMatchResult {
         // note: path template can be null when a regex route is used
         val pathTemplate = httpExchange.currentRoutePath
 
-        // if path is un-set, implies match all
-        val pathMatch = resourceConfig.path?.let {
-            request.path == resourceConfig.path || (pathTemplate?.let { it == resourceConfig.path } == true)
-        } ?: true
+        val pathMatch = resourceConfig.path?.let { resourceConfigPath ->
+            if (request.path == resourceConfigPath || pathTemplate?.let { it == resourceConfigPath } == true) {
+                return@let PathMatchResult.EXACT_MATCH
+            } else if (resourceConfigPath.endsWith("*") && request.path.startsWith(resourceConfigPath.substring(0, resourceConfigPath.length - 1))) {
+                return@let PathMatchResult.WILDCARD_MATCH
+            } else {
+                return@let PathMatchResult.NOT_MATCHED
+            }
+            // if path is un-set, implies match all
+        } ?: PathMatchResult.EXACT_MATCH
 
         return pathMatch
     }
@@ -259,6 +288,18 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
         // apply operator
         return operator === ResourceMatchOperator.Matches && valueMatch ||
             operator === ResourceMatchOperator.NotMatches && !valueMatch
+    }
+
+    protected data class MatchedResource(
+        val resource: ResolvedResourceConfig,
+        val matched: Boolean,
+        val exact: Boolean,
+    )
+
+    protected enum class PathMatchResult {
+        NOT_MATCHED,
+        EXACT_MATCH,
+        WILDCARD_MATCH,
     }
 
     companion object {

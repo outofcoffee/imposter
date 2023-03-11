@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022.
+ * Copyright (c) 2022-2023.
  *
  * This file is part of Imposter.
  *
@@ -88,7 +88,7 @@ data class HttpRoute(
 
     fun matches(requestPath: String): Boolean {
         return path?.let {
-            requestPath == path || isPathPlaceholderMatch(requestPath)
+            requestPath == path || isPathPlaceholderMatch(requestPath) || isTrailingWildcardMatch(requestPath)
         } ?: regex?.let {
             regexPattern.matcher(requestPath).matches()
         } ?: false
@@ -100,6 +100,14 @@ data class HttpRoute(
             return false
         }
         return parsedPathParams.pathPattern.matcher(requestPath).matches()
+    }
+
+    private fun isTrailingWildcardMatch(requestPath: String): Boolean {
+        if (path?.endsWith('*') != true) {
+            // no wildcard
+            return false
+        }
+        return requestPath.startsWith(path.substring(0, path.length - 1))
     }
 
     fun extractPathParams(requestPath: String): Map<String, String> {

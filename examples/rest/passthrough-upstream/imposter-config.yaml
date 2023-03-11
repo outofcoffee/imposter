@@ -6,7 +6,7 @@ upstreams:
 
 resources:
   # forward requests to upstream
-  - path: /
+  - path: /*
     passthrough: example
 
   # mock a response

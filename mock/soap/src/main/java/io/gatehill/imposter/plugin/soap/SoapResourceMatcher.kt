@@ -67,14 +67,14 @@ class SoapResourceMatcher(
     /**
      * {@inheritDoc}
      */
-    override fun isRequestMatch(
+    override fun matchRequest(
         resource: ResolvedResourceConfig,
         httpExchange: HttpExchange,
-    ): Boolean {
+    ): MatchedResource {
         val resourceConfig = resource.config as SoapPluginResourceConfig
         val request = httpExchange.request
 
-        val pathMatch = isPathMatch(httpExchange, resourceConfig, request)
+        val pathMatch = matchPath(httpExchange, resourceConfig, request)
         val bindingMatch = resourceConfig.binding?.let { it == binding.name } ?: true
 
         val soapAction = getSoapAction(httpExchange)
@@ -82,8 +82,13 @@ class SoapResourceMatcher(
 
         val operationMatch = resourceConfig.operation?.let { isOperationMatch(httpExchange, it, soapAction) } ?: true
 
-        return pathMatch && bindingMatch && operationMatch && soapActionMatch &&
+        val matched = (pathMatch == PathMatchResult.EXACT_MATCH || pathMatch == PathMatchResult.WILDCARD_MATCH) &&
+            bindingMatch &&
+            operationMatch &&
+            soapActionMatch &&
             matchRequestBody(httpExchange, resource.config)
+
+        return MatchedResource(resource, matched, pathMatch == PathMatchResult.EXACT_MATCH)
     }
 
     private fun isOperationMatch(httpExchange: HttpExchange, configOpName: String, soapAction: String?) = httpExchange.request.body?.let { body ->
