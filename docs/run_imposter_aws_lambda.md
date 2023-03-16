@@ -22,7 +22,7 @@ There are many ways to run Imposter. This section describes how to run it as a L
 
 - Start mocks
 - Access mock server via Lambda function URL (or AWS API Gateway)
-- Supports [OpenAPI](./openapi_plugin.md) and [REST](./rest_plugin.md)
+- Supports [OpenAPI](./openapi_plugin.md), [REST](./rest_plugin.md) and [SOAP](./soap_plugin.md) mocks
 
 You can deploy Imposter as a [Lambda function](https://docs.aws.amazon.com/lambda/latest/dg/java-package.html) in various ways, such as the AWS Console, using infrastructure as code (e.g. Terraform) or a framework such as Serverless.
 
