@@ -2,21 +2,18 @@
 
 There are many ways to run Imposter. This section describes how to run it as a Lambda function in AWS.
 
----
-### Other ways to run Imposter
-
-#### Standalone mock server
-
-- Using the command line client - see [Imposter CLI](./run_imposter_cli.md)
-- As a Docker container - see [Imposter Docker container](./run_imposter_docker.md)
-- As a JAR file on the JVM - see [Imposter JAR file](./run_imposter_jar.md)
-
-#### Embedded in tests
-
-- Embedded within your **Java/Kotlin/Scala/JVM** unit tests - see [JVM bindings](./embed_jvm.md)
-- Embedded within your **JavaScript/Node.js** unit tests - see [JavaScript bindings](https://github.com/gatehill/imposter-js)
-
----
+> ### Other ways to run Imposter
+> 
+> #### Standalone mock server
+> 
+> - Using the command line client - see [Imposter CLI](./run_imposter_cli.md)
+> - As a Docker container - see [Imposter Docker container](./run_imposter_docker.md)
+> - As a JAR file on the JVM - see [Imposter JAR file](./run_imposter_jar.md)
+> 
+> #### Embedded in tests
+> 
+> - Embedded within your **Java/Kotlin/Scala/JVM** unit tests - see [JVM bindings](./embed_jvm.md)
+> - Embedded within your **JavaScript/Node.js** unit tests - see [JavaScript bindings](https://github.com/gatehill/imposter-js)
 
 ## AWS Lambda Features
 
@@ -37,8 +34,8 @@ You can deploy Imposter as a Lambda function using the Imposter CLI.
 
 The key steps are:
 
-- use the Imposter CLI to create a ZIP bundle containing your configuration and the Imposter Lambda function
-- use the Imposter CLI to deploy the bundle as a Lambda function to the desired AWS region, providing any custom IAM roles etc.
+- use the Imposter CLI to configure AWS Lambda as the remote deployment target
+- use the Imposter CLI to deploy your configuration (bundled with the Imposter engine) as a Lambda function to the desired AWS region
 - access the Lambda function via a Lambda Function URL
 
 ### Prerequisites
@@ -46,17 +43,17 @@ The key steps are:
 - You must have an AWS account and permission to deploy Lambda functions, fetch an IAM role (and optionally create a role if not using an existing role).
 - You must install the [Imposter CLI](./run_imposter_cli.md).
 
-### Deploy to AWS Lambda
+### Deployment steps
 
 For the purposes of this guide, we will assume your working directory contains an Imposter configuration file.
-
-> **Note**
-> See the [Configuration section](./configuration.md) for more information.
 
 ```shell
 $ ls -l
 mock-config.yaml   response.txt
 ```
+
+> **Note**
+> See the [Configuration section](./configuration.md) for more information.
 
 #### Step 1: Prepare your workspace
 
@@ -110,6 +107,7 @@ $ imposter remote deploy
 > The deploy command uses the standard AWS mechanisms for locating credetials. For example, you may have set environment variables, or use the `~/.aws/` directory, or an instance role if running within EC2.
 >
 > If you receive a credential error, check that:
+>
 > - you have active AWS credentials, e.g. run `aws iam get-user`
 > - you have the permissions described in the _Prerequisites_ section
 
