@@ -68,14 +68,16 @@ $ imposter workspace new example
 created workspace 'example'
 ```
 
-A workspace holds configuration, such as details of the remote deployment. You can commit your workspace directory to your source control system (by default, stored under the `.imposter` subdirectory).
+A workspace holds configuration, such as details of the remote deployment.
 
-> You can always check the active workspace by running the `imposter workspace show` command:
-> ```shell
-> $ imposter workspace show
-> 
-> active workspace: example
-> ```
+You can always check the active workspace by running the `imposter workspace show` command:
+```shell
+$ imposter workspace show
+
+active workspace: example
+```
+
+> You can commit your workspace directory to your source control system (by default, stored under the `.imposter` subdirectory).
 
 #### Step 2: Configure the remote
 
@@ -94,7 +96,7 @@ Once you have the remote type, you can further configure the remote using the `i
 - `iamRoleName` - the name of a custom IAM Role for the Lambda's execution role
 - `engineVersion` - the version of the Imposter engine to use, such as `3.2.1`
 - `memory` - the amount of memory, in megabytes, for the function, such as `768`
-- `anonAccess` - whether to permit anonymous access to the Lambda invocation endpoint (`true`|`false`)
+- `anonAccess` - whether to permit anonymous access to the Lambda function URL (`true`|`false`)
 
 #### Step 3: Deploy to Lambda
 
