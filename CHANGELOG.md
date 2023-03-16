@@ -3,9 +3,18 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [3.12.0] - 2023-03-16
 ### Added
-- ...
+- feat: supports trailing wildcards in resource paths.
+- feat: allows requests to be proxied to an upstream server.
+- feat: improves logging for request body matching.
+- docs: adds instructions for Lambda deployment using CLI.
+
+### Changed
+- chore: bumps CLI to 0.27.1.
+
+### Fixed
+- fix: removes unnecessary non-null assertion.
 
 ## [3.11.3] - 2023-03-05
 ### Changed
