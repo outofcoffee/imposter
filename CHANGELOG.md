@@ -3,9 +3,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
-### Added
-- ...
+## [3.12.1] - 2023-03-20
+### Fixed
+- fix: SOAP HTTP binding should use Envelope by default.
+
+### Changed
+- chore: bumps CLI to 0.28.0.
 
 ## [3.12.0] - 2023-03-16
 ### Added
