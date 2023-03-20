@@ -46,7 +46,7 @@ import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.util.MetaUtil
 import io.gatehill.imposter.http.HttpExchange
 import java.net.URI
-import java.util.Locale
+import java.util.*
 import java.util.regex.Pattern
 
 /**
@@ -313,5 +313,15 @@ object HttpUtil {
                 )
             }
         }
+    }
+
+    fun joinPaths(base: String?, append: String?): String? {
+        if (append.isNullOrBlank()) {
+            return base
+        } else if (base.isNullOrBlank()) {
+            return append
+        }
+        return (if (base.endsWith("/")) base.substring(0, base.length -1) else base) +
+                (if (!append.startsWith("/")) "/$append" else append)
     }
 }

@@ -48,14 +48,11 @@ import io.gatehill.imposter.http.ExchangePhase
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.plugin.config.resource.PassthroughResourceConfig
 import io.gatehill.imposter.plugin.config.resource.UpstreamsHolder
+import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.LogUtil
 import io.vertx.core.buffer.Buffer
-import okhttp3.Call
-import okhttp3.Callback
-import okhttp3.OkHttpClient
-import okhttp3.Request
+import okhttp3.*
 import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.Response
 import org.apache.logging.log4j.LogManager
 import java.io.IOException
 import java.net.URI
@@ -112,7 +109,7 @@ class UpstreamService @Inject constructor(
                 upstreamUri.userInfo ?: requestUri.userInfo,
                 upstreamUri.host,
                 upstreamUri.port,
-                requestUri.path,
+                HttpUtil.joinPaths(upstreamUri.path, requestUri.path),
                 requestUri.query,
                 requestUri.fragment
             )

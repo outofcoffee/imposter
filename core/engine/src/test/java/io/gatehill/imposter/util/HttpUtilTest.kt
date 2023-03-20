@@ -43,7 +43,11 @@
 package io.gatehill.imposter.util
 
 import io.gatehill.imposter.util.HttpUtil.readAcceptedContentTypes
-import org.junit.Assert
+import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.Matchers.equalTo
+import org.hamcrest.Matchers.nullValue
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Test
 
 /**
@@ -53,20 +57,32 @@ import org.junit.Test
  */
 class HttpUtilTest {
     @Test
-    @Throws(Exception::class)
     fun readAcceptedContentTypes() {
         // note: provided out of order, but should be sorted by 'q' weight
         val acceptHeader = "text/html; q=1.0, text/*; q=0.8, image/jpeg; q=0.5, image/gif; q=0.7, image/*; q=0.4, */*; q=0.1"
         val actual = readAcceptedContentTypes(acceptHeader)
-        Assert.assertNotNull(actual)
-        Assert.assertEquals(6, actual.size.toLong())
+        assertNotNull(actual)
+        assertEquals(6, actual.size.toLong())
 
         // check order
-        Assert.assertEquals("text/html", actual[0])
-        Assert.assertEquals("text/*", actual[1])
-        Assert.assertEquals("image/gif", actual[2])
-        Assert.assertEquals("image/jpeg", actual[3])
-        Assert.assertEquals("image/*", actual[4])
-        Assert.assertEquals("*/*", actual[5])
+        assertEquals("text/html", actual[0])
+        assertEquals("text/*", actual[1])
+        assertEquals("image/gif", actual[2])
+        assertEquals("image/jpeg", actual[3])
+        assertEquals("image/*", actual[4])
+        assertEquals("*/*", actual[5])
+    }
+
+    @Test
+    fun joinPaths() {
+        assertThat(HttpUtil.joinPaths("/foo", "/bar"), equalTo("/foo/bar"))
+        assertThat(HttpUtil.joinPaths("/foo", "bar"), equalTo("/foo/bar"))
+        assertThat(HttpUtil.joinPaths("/foo/", "/bar"), equalTo("/foo/bar"))
+        assertThat(HttpUtil.joinPaths("/foo/", "/bar/"), equalTo("/foo/bar/"))
+        assertThat(HttpUtil.joinPaths("", "/bar"), equalTo("/bar"))
+        assertThat(HttpUtil.joinPaths("/foo", ""), equalTo("/foo"))
+        assertThat(HttpUtil.joinPaths(null, "/bar"), equalTo("/bar"))
+        assertThat(HttpUtil.joinPaths("/foo", null), equalTo("/foo"))
+        assertThat(HttpUtil.joinPaths(null, null), nullValue())
     }
 }
