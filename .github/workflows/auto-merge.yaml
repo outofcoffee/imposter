@@ -6,7 +6,7 @@ on:
 
 jobs:
   auto-merge:
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'dependencies') && contains(github.event.pull_request.labels.*.name, 'examples') }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'examples') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
