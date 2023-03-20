@@ -17,9 +17,9 @@ There are many ways to run Imposter. This section describes how to run it as a L
 
 ## AWS Lambda Features
 
-- Start mocks
-- Access mock server via Lambda function URL (or AWS API Gateway)
+- Access to mock server via Lambda function URL (or AWS API Gateway)
 - Supports [OpenAPI](./openapi_plugin.md), [REST](./rest_plugin.md) and [SOAP](./soap_plugin.md) mocks
+- Supports [Stores](./stores.md) for recording data for later use or review
 
 You can deploy Imposter as a [Lambda function](https://docs.aws.amazon.com/lambda/latest/dg/java-package.html) in various ways, such as the AWS Console, using infrastructure as code (e.g. Terraform) or a framework such as Serverless.
 
@@ -78,7 +78,7 @@ active workspace: example
 
 #### Step 2: Configure the remote
 
-Set the remote type to AWS Lambda:
+A workspace has a 'remote', where Imposter will be deployed. Set the remote type to AWS Lambda:
 
 ```shell
 $ imposter remote set-type awslambda
@@ -95,6 +95,12 @@ Once you have the remote type, you can further configure the remote using the `i
 - `memory` - the amount of memory, in megabytes, for the function, such as `768`
 - `anonAccess` - whether to permit anonymous access to the Lambda function URL (`true`|`false`)
 
+For example:
+
+```shell
+$ imposter remote config region=eu-west-1
+```
+
 #### Step 3: Deploy to Lambda
 
 Now the remote is configured, deploy the Lambda function:
@@ -104,7 +110,7 @@ $ imposter remote deploy
 ```
 
 > **Note**
-> The deploy command uses the standard AWS mechanisms for locating credetials. For example, you may have set environment variables, or use the `~/.aws/` directory, or an instance role if running within EC2.
+> The deploy command uses the standard AWS mechanisms for locating credentials. For example, you may have set environment variables, or use the `~/.aws/` directory, or an instance role if running within EC2.
 >
 > If you receive a credential error, check that:
 >
@@ -118,6 +124,7 @@ deploying workspace 'example' to awslambda remote
 bundling 2 files from workspace
 created function: example with arn: arn:aws:lambda:us-east-1:123456789:function:example
 deployed workspace 'example'
+
 Base URL: https://url-to-invoke-lambda-function
 Status: https://url-to-invoke-lambda-function/system/status
 ```
