@@ -10,8 +10,4 @@ resources:
   - binding: HttpBinding
     operation: getPetByName
     response:
-      content: |
-        <getPetByNameResponse xmlns="urn:com:example:petstore">
-            <id>4</id>
-            <name>Paws</name>
-        </getPetByNameResponse>
+      file: getPetByNameResponse.xml

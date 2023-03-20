@@ -1,0 +1,16 @@
+plugin: soap
+wsdlFile: service.wsdl
+
+# don't wrap request/response in a SOAP envelope
+envelope: false
+
+resources:
+  - binding: SoapBinding
+    operation: getPetById
+    response:
+      template: true
+      content: |
+        <getPetByIdResponse xmlns="urn:com:example:petstore">
+            <id>3</id>
+            <name>Paws</name>
+        </getPetByIdResponse>

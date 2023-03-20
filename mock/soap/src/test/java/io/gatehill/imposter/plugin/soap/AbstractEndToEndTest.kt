@@ -49,7 +49,6 @@ import io.restassured.RestAssured
 import io.vertx.ext.unit.TestContext
 import org.hamcrest.Matchers.allOf
 import org.hamcrest.Matchers.containsString
-import org.hamcrest.Matchers.not
 import org.jdom2.Namespace
 import org.junit.Assert.assertNotNull
 import org.junit.Before
@@ -68,10 +67,19 @@ abstract class AbstractEndToEndTest : BaseVerticleTest() {
 
     private val getPetByIdEnv
         get() = SoapUtil.wrapInEnv(
-        """
+            """
 <getPetByIdRequest xmlns="urn:com:example:petstore">
   <id>3</id>
 </getPetByIdRequest>
+""".trim(), soapEnvNamespace
+        )
+
+    private val getPetByNameEnv
+        get() = SoapUtil.wrapInEnv(
+            """
+<getPetByNameRequest xmlns="urn:com:example:petstore">
+  <name>Fluffy</name>
+</getPetByNameRequest>
 """.trim(), soapEnvNamespace
     )
 
@@ -154,14 +162,6 @@ abstract class AbstractEndToEndTest : BaseVerticleTest() {
 
     @Test
     fun testBindingAndOperationMatch() {
-        val getPetByNameEnv = SoapUtil.wrapInEnv(
-            """
-<getPetByNameRequest xmlns="urn:com:example:petstore">
-  <name>Fluffy</name>
-</getPetByNameRequest>
-""".trim(), soapEnvNamespace
-        )
-
         RestAssured.given()
             .log().ifValidationFails()
             .accept(soapContentType)
@@ -183,27 +183,21 @@ abstract class AbstractEndToEndTest : BaseVerticleTest() {
 
     @Test
     fun testHttpBinding() {
-        val getPetByNameRaw = """
-<getPetByNameRequest xmlns="urn:com:example:petstore">
-  <name>Fluffy</name>
-</getPetByNameRequest>
-""".trim()
-
         RestAssured.given()
             .log().ifValidationFails()
             .accept(soapContentType)
             .contentType(soapContentType)
             .`when`()
-            .body(getPetByNameRaw)
+            .body(getPetByNameEnv)
             .post("/http/")
             .then()
             .log().ifValidationFails()
             .statusCode(HttpUtil.HTTP_OK)
             .body(
                 allOf(
-                    not(containsString("Envelope")),
+                    containsString("Envelope"),
                     containsString("getPetByNameResponse"),
-                    containsString("Paws"),
+                    containsString("Fluffy"),
                 )
             )
     }

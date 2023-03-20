@@ -43,22 +43,13 @@
 package io.gatehill.imposter.plugin.soap
 
 import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.http.DefaultResponseBehaviourFactory
-import io.gatehill.imposter.http.DefaultStatusCodeFactory
-import io.gatehill.imposter.http.HttpExchange
-import io.gatehill.imposter.http.HttpMethod
-import io.gatehill.imposter.http.HttpRouter
+import io.gatehill.imposter.http.*
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.RequireModules
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.soap.config.SoapPluginConfig
-import io.gatehill.imposter.plugin.soap.model.BindingType
-import io.gatehill.imposter.plugin.soap.model.MessageBodyHolder
-import io.gatehill.imposter.plugin.soap.model.ParsedRawBody
-import io.gatehill.imposter.plugin.soap.model.ParsedSoapMessage
-import io.gatehill.imposter.plugin.soap.model.WsdlBinding
-import io.gatehill.imposter.plugin.soap.model.WsdlOperation
+import io.gatehill.imposter.plugin.soap.model.*
 import io.gatehill.imposter.plugin.soap.parser.VersionAwareWsdlParser
 import io.gatehill.imposter.plugin.soap.parser.WsdlParser
 import io.gatehill.imposter.plugin.soap.service.SoapExampleService
@@ -160,16 +151,9 @@ class SoapPluginImpl @Inject constructor(
         router.route(HttpMethod.POST, fullPath).handler(
             resourceService.handleRoute(imposterConfig, config, soapResourceMatcher) { httpExchange: HttpExchange ->
                 val bodyHolder: MessageBodyHolder = when (binding.type) {
-                    BindingType.SOAP -> {
-                        httpExchange.request.body?.let { body -> SoapUtil.parseSoapEnvelope(body) } ?: run {
-                            LOGGER.warn("No request body - unable to parse SOAP envelope")
-                            httpExchange.response.setStatusCode(400).end()
-                            return@handleRoute
-                        }
-                    }
-                    BindingType.HTTP -> {
-                        httpExchange.request.body?.let { body -> SoapUtil.parseRawBody(body) } ?: run {
-                            LOGGER.warn("No request body - unable to parse request")
+                    BindingType.SOAP, BindingType.HTTP -> {
+                        httpExchange.request.body?.let { body -> SoapUtil.parseBody(config, body) } ?: run {
+                            LOGGER.warn("No request body - unable to parse SOAP message")
                             httpExchange.response.setStatusCode(400).end()
                             return@handleRoute
                         }

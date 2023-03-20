@@ -43,10 +43,11 @@
 package io.gatehill.imposter.http
 
 import io.gatehill.imposter.config.ResolvedResourceConfig
+import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.MethodResourceConfig
 import io.gatehill.imposter.util.CollectionUtil.convertKeysToLowerCase
 import io.gatehill.imposter.util.StringUtil.safeEquals
-import java.util.Locale
+import java.util.*
 
 
 /**
@@ -56,10 +57,11 @@ import java.util.Locale
  */
 class SingletonResourceMatcher : AbstractResourceMatcher() {
     override fun filterResourceConfigs(
+        pluginConfig: PluginConfig,
         resources: List<ResolvedResourceConfig>,
         httpExchange: HttpExchange,
     ): List<MatchedResource> {
-        var resourceConfigs = super.filterResourceConfigs(resources, httpExchange)
+        var resourceConfigs = super.filterResourceConfigs(pluginConfig, resources, httpExchange)
 
         // find the most specific, by filtering those that match by those that specify parameters
         resourceConfigs = filterByPairs(resourceConfigs, ResolvedResourceConfig::pathParams)
@@ -73,6 +75,7 @@ class SingletonResourceMatcher : AbstractResourceMatcher() {
      * {@inheritDoc}
      */
     override fun matchRequest(
+        pluginConfig: PluginConfig,
         resource: ResolvedResourceConfig,
         httpExchange: HttpExchange,
     ): MatchedResource {

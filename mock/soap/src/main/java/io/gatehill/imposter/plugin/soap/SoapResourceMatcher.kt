@@ -47,6 +47,8 @@ import io.gatehill.imposter.config.ResolvedResourceConfig
 import io.gatehill.imposter.http.AbstractResourceMatcher
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpRequest
+import io.gatehill.imposter.plugin.config.PluginConfig
+import io.gatehill.imposter.plugin.soap.config.SoapPluginConfig
 import io.gatehill.imposter.plugin.soap.config.SoapPluginResourceConfig
 import io.gatehill.imposter.plugin.soap.model.BindingType
 import io.gatehill.imposter.plugin.soap.model.MessageBodyHolder
@@ -68,6 +70,7 @@ class SoapResourceMatcher(
      * {@inheritDoc}
      */
     override fun matchRequest(
+        pluginConfig: PluginConfig,
         resource: ResolvedResourceConfig,
         httpExchange: HttpExchange,
     ): MatchedResource {
@@ -80,21 +83,27 @@ class SoapResourceMatcher(
         val soapAction = getSoapAction(httpExchange)
         val soapActionMatch = resourceConfig.soapAction?.let { it == soapAction } ?: true
 
-        val operationMatch = resourceConfig.operation?.let { isOperationMatch(httpExchange, it, soapAction) } ?: true
+        val operationMatch = resourceConfig.operation?.let {
+            isOperationMatch(pluginConfig, httpExchange, it, soapAction)
+        } ?: true
 
         val matched = (pathMatch == PathMatchResult.EXACT_MATCH || pathMatch == PathMatchResult.WILDCARD_MATCH) &&
-            bindingMatch &&
-            operationMatch &&
-            soapActionMatch &&
-            matchRequestBody(httpExchange, resource.config)
+                bindingMatch &&
+                operationMatch &&
+                soapActionMatch &&
+                matchRequestBody(httpExchange, resource.config)
 
         return MatchedResource(resource, matched, pathMatch == PathMatchResult.EXACT_MATCH)
     }
 
-    private fun isOperationMatch(httpExchange: HttpExchange, configOpName: String, soapAction: String?) = httpExchange.request.body?.let { body ->
+    private fun isOperationMatch(
+        config: PluginConfig,
+        httpExchange: HttpExchange,
+        configOpName: String,
+        soapAction: String?,
+    ) = httpExchange.request.body?.let { body ->
         val bodyHolder: MessageBodyHolder = when (binding.type) {
-            BindingType.SOAP -> SoapUtil.parseSoapEnvelope(body)
-            BindingType.HTTP -> SoapUtil.parseRawBody(body)
+            BindingType.SOAP, BindingType.HTTP -> SoapUtil.parseBody(config as SoapPluginConfig, body)
             else -> {
                 LOGGER.warn("Unsupported binding type: ${binding.type} - unable to determine operation match")
                 return false
@@ -121,7 +130,7 @@ class SoapResourceMatcher(
         return soapAction
     }
 
-    private fun getSoapActionHeader(request: HttpRequest) :String? {
+    private fun getSoapActionHeader(request: HttpRequest): String? {
         request.getHeader("SOAPAction")?.let { actionHeader ->
             // e.g. SOAPAction: example
             val soapAction = actionHeader.trim().removeSurrounding("\"").takeIf { it.isNotBlank() }
@@ -157,7 +166,7 @@ class SoapResourceMatcher(
 
         val matchedOps = binding.operations.filter { op ->
             op.inputElementRef?.namespaceURI == bodyRootElement.namespaceURI &&
-                op.inputElementRef?.localPart == bodyRootElement.name
+                    op.inputElementRef?.localPart == bodyRootElement.name
         }
         if (LOGGER.isTraceEnabled) {
             LOGGER.trace(
@@ -180,6 +189,7 @@ class SoapResourceMatcher(
                 LOGGER.warn("No operations found matching body root element: {}", bodyRootElement.qualifiedName)
                 null
             }
+
             1 -> matchedOps.first()
             else -> {
                 LOGGER.warn("Multiple operations found matching body root element: {}", bodyRootElement.qualifiedName)

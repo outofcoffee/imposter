@@ -43,6 +43,8 @@
 
 package io.gatehill.imposter.plugin.soap.util
 
+import io.gatehill.imposter.plugin.soap.config.SoapPluginConfig
+import io.gatehill.imposter.plugin.soap.model.MessageBodyHolder
 import io.gatehill.imposter.plugin.soap.model.ParsedRawBody
 import io.gatehill.imposter.plugin.soap.model.ParsedSoapMessage
 import io.gatehill.imposter.util.BodyQueryUtil
@@ -69,7 +71,15 @@ object SoapUtil {
         "http://www.w3.org/2003/05/soap-envelope"
     )
 
-    fun parseSoapEnvelope(body: Buffer): ParsedSoapMessage {
+    fun parseBody(config: SoapPluginConfig, body: Buffer): MessageBodyHolder {
+        return if (config.envelope) {
+            parseSoapEnvelope(body)
+        } else {
+            parseRawBody(body)
+        }
+    }
+
+    private fun parseSoapEnvelope(body: Buffer): ParsedSoapMessage {
         val doc = parseDoc(body)
         val envNs = when (doc.rootElement.namespace) {
             soap11EnvNamespace -> soap11EnvNamespace
@@ -81,7 +91,7 @@ object SoapUtil {
         return ParsedSoapMessage(soapBody, envNs)
     }
 
-    fun parseRawBody(body: Buffer): ParsedRawBody {
+    private fun parseRawBody(body: Buffer): ParsedRawBody {
         val doc = parseDoc(body)
         return ParsedRawBody(doc.rootElement)
     }

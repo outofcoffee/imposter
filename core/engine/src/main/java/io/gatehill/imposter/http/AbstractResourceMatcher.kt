@@ -45,6 +45,7 @@ package io.gatehill.imposter.http
 import com.google.common.base.Strings.isNullOrEmpty
 import com.google.common.cache.CacheBuilder
 import io.gatehill.imposter.config.ResolvedResourceConfig
+import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.resource.ResourceMatchOperator
 import io.gatehill.imposter.plugin.config.resource.reqbody.BaseRequestBodyConfig
@@ -66,10 +67,11 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
      * {@inheritDoc}
      */
     override fun matchResourceConfig(
+        pluginConfig: PluginConfig,
         resources: List<ResolvedResourceConfig>,
         httpExchange: HttpExchange,
     ): BasicResourceConfig? {
-        val resourceConfigs = filterResourceConfigs(resources, httpExchange)
+        val resourceConfigs = filterResourceConfigs(pluginConfig, resources, httpExchange)
         when (resourceConfigs.size) {
             0 -> {
                 LOGGER.trace("No matching resource config for {}", LogUtil.describeRequestShort(httpExchange))
@@ -111,20 +113,23 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
     }
 
     protected open fun filterResourceConfigs(
+        pluginConfig: PluginConfig,
         resources: List<ResolvedResourceConfig>,
         httpExchange: HttpExchange,
     ): List<MatchedResource> {
-        return resources.map { matchRequest(it, httpExchange) }.filter { it.matched }
+        return resources.map { matchRequest(pluginConfig, it, httpExchange) }.filter { it.matched }
     }
 
     /**
      * Determine if the resource configuration matches the current request.
      *
+     * @param pluginConfig
      * @param resource     the resource configuration
      * @param httpExchange the current exchange
      * @return `true` if the resource matches the request, otherwise `false`
      */
     protected abstract fun matchRequest(
+        pluginConfig: PluginConfig,
         resource: ResolvedResourceConfig,
         httpExchange: HttpExchange,
     ): MatchedResource

@@ -44,17 +44,20 @@
 package io.gatehill.imposter.http
 
 import io.gatehill.imposter.config.ResolvedResourceConfig
+import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 
 interface ResourceMatcher {
     /**
      * Search for a resource configuration matching the current request.
      *
+     * @param pluginConfig   the plugin configuration containing the resources
      * @param resources      the resources from the response configuration
      * @param httpExchange   the current exchange
      * @return a matching resource configuration or else empty
      */
     fun matchResourceConfig(
+        pluginConfig: PluginConfig,
         resources: List<ResolvedResourceConfig>,
         httpExchange: HttpExchange,
     ): BasicResourceConfig?

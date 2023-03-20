@@ -54,12 +54,7 @@ import io.gatehill.imposter.lifecycle.SecurityLifecycleHooks
 import io.gatehill.imposter.lifecycle.SecurityLifecycleListener
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.ResourcesHolder
-import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
-import io.gatehill.imposter.plugin.config.resource.PassthroughResourceConfig
-import io.gatehill.imposter.plugin.config.resource.PathParamsResourceConfig
-import io.gatehill.imposter.plugin.config.resource.QueryParamsResourceConfig
-import io.gatehill.imposter.plugin.config.resource.RequestHeadersResourceConfig
-import io.gatehill.imposter.plugin.config.resource.UpstreamsHolder
+import io.gatehill.imposter.plugin.config.resource.*
 import io.gatehill.imposter.server.RequestHandlingMode
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.LogUtil.describeRequest
@@ -69,7 +64,7 @@ import io.vertx.core.Promise
 import io.vertx.core.Vertx
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
-import java.util.UUID
+import java.util.*
 import java.util.regex.Pattern
 import javax.inject.Inject
 
@@ -238,7 +233,7 @@ class ResourceServiceImpl @Inject constructor(
 
         val rootResourceConfig = (pluginConfig as BasicResourceConfig?)!!
 
-        val resourceConfig = resourceMatcher.matchResourceConfig(resolvedResourceConfigs, httpExchange)
+        val resourceConfig = resourceMatcher.matchResourceConfig(pluginConfig, resolvedResourceConfigs, httpExchange)
             ?: rootResourceConfig
 
         // allows plugins to customise behaviour
