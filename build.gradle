@@ -5,7 +5,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.amazonaws:aws-java-sdk-core:1.12.419'
+        classpath 'com.amazonaws:aws-java-sdk-core:1.12.431'
     }
 }
 
