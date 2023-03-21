@@ -1,4 +1,4 @@
-plugin: "io.gatehill.imposter.plugin.test.TestPluginImpl"
+plugin: rest
 
 system:
   stores:
