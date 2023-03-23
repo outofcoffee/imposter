@@ -44,7 +44,6 @@ package io.gatehill.imposter.scripting.common.service
 
 import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.plugin.PluginManager
-import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.scripting.common.util.JavaScriptUtil
 import io.gatehill.imposter.service.ScriptService
@@ -53,7 +52,7 @@ import java.nio.file.Path
 import javax.inject.Inject
 
 /**
- * A delegating JavaScript script service that uses the environment variable named by [JavaScriptUtil.envJavaScriptPlugin]
+ * A delegating JavaScript script service that uses the environment variable named by [JavaScriptUtil.envJsPlugin]
  * to determine the [ScriptService] to use.
  *
  * @author Pete Cornish
@@ -87,8 +86,7 @@ class DelegatingJsScriptServiceImpl @Inject constructor(
     override fun initScript(scriptFile: Path) = impl.initScript(scriptFile)
 
     override fun executeScript(
-        pluginConfig: PluginConfig,
         scriptFile: Path,
         runtimeContext: RuntimeContext
-    ) = impl.executeScript(pluginConfig, scriptFile, runtimeContext)
+    ) = impl.executeScript(scriptFile, runtimeContext)
 }

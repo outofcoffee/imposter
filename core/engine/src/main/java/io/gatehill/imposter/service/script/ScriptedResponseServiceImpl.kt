@@ -189,7 +189,6 @@ class ScriptedResponseServiceImpl @Inject constructor(
             // execute the script and read response behaviour
             val scriptPath = ScriptUtil.resolveScriptPath(pluginConfig, scriptFile)
             val responseBehaviour = scriptServiceFactory.fetchScriptService(scriptFile).executeScript(
-                pluginConfig,
                 scriptPath,
                 runtimeContext
             )

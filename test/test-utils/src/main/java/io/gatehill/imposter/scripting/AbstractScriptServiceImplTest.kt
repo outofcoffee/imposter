@@ -63,7 +63,7 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
         )
         val runtimeContext = buildRuntimeContext(additionalBindings)
         val scriptPath = ScriptUtil.resolveScriptPath(pluginConfig, resourceConfig.responseConfig.scriptFile)
-        val actual = getService().executeScript(pluginConfig, scriptPath, runtimeContext)
+        val actual = getService().executeScript(scriptPath, runtimeContext)
 
         assertNotNull(actual)
         assertEquals(201, actual.statusCode)
@@ -83,7 +83,7 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
         )
         val runtimeContext = buildRuntimeContext(additionalBindings)
         val scriptPath = ScriptUtil.resolveScriptPath(pluginConfig, resourceConfig.responseConfig.scriptFile)
-        val actual = getService().executeScript(pluginConfig, scriptPath, runtimeContext)
+        val actual = getService().executeScript(scriptPath, runtimeContext)
 
         assertNotNull(actual)
         // zero as un-set by script
@@ -104,7 +104,7 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
 
         val runtimeContext = buildRuntimeContext(additionalBindings, emptyMap(), pathParams, emptyMap(), emptyMap())
         val scriptPath = ScriptUtil.resolveScriptPath(pluginConfig, resourceConfig.responseConfig.scriptFile)
-        val actual = getService().executeScript(pluginConfig, scriptPath, runtimeContext)
+        val actual = getService().executeScript(scriptPath, runtimeContext)
 
         assertNotNull(actual)
         assertEquals(203, actual.statusCode)
@@ -124,7 +124,7 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
 
         val runtimeContext = buildRuntimeContext(additionalBindings, emptyMap(), emptyMap(), queryParams, emptyMap())
         val scriptPath = ScriptUtil.resolveScriptPath(pluginConfig, resourceConfig.responseConfig.scriptFile)
-        val actual = getService().executeScript(pluginConfig, scriptPath, runtimeContext)
+        val actual = getService().executeScript(scriptPath, runtimeContext)
 
         assertNotNull(actual)
         assertEquals(200, actual.statusCode)
@@ -144,7 +144,7 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
 
         val runtimeContext = buildRuntimeContext(additionalBindings, headers, emptyMap(), emptyMap(), emptyMap())
         val scriptPath = ScriptUtil.resolveScriptPath(pluginConfig, resourceConfig.responseConfig.scriptFile)
-        val actual = getService().executeScript(pluginConfig, scriptPath, runtimeContext)
+        val actual = getService().executeScript(scriptPath, runtimeContext)
 
         assertNotNull(actual)
         assertEquals(202, actual.statusCode)
@@ -166,7 +166,7 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
 
         val runtimeContext = buildRuntimeContext(additionalBindings, headers, emptyMap(), emptyMap(), emptyMap())
         val scriptPath = ScriptUtil.resolveScriptPath(pluginConfig, resourceConfig.responseConfig.scriptFile)
-        val actual = getService().executeScript(pluginConfig, scriptPath, runtimeContext)
+        val actual = getService().executeScript(scriptPath, runtimeContext)
 
         assertNotNull(actual)
         assertEquals(202, actual.statusCode)
@@ -188,7 +188,7 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
         )
         val runtimeContext = buildRuntimeContext(additionalBindings, emptyMap(), emptyMap(), emptyMap(), env)
         val scriptPath = ScriptUtil.resolveScriptPath(pluginConfig, resourceConfig.responseConfig.scriptFile)
-        val actual = getService().executeScript(pluginConfig, scriptPath, runtimeContext)
+        val actual = getService().executeScript(scriptPath, runtimeContext)
 
         assertNotNull(actual)
         assertEquals(204, actual.statusCode)

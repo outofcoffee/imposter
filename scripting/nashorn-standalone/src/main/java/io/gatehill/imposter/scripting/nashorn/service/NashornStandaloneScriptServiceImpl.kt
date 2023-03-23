@@ -47,7 +47,6 @@ import io.gatehill.imposter.config.util.EnvVars.Companion.getEnv
 import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.RequireModules
-import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.ScriptUtil
@@ -107,7 +106,6 @@ class NashornStandaloneScriptServiceImpl : ScriptService, Plugin {
     }
 
     override fun executeScript(
-        pluginConfig: PluginConfig,
         scriptFile: Path,
         runtimeContext: RuntimeContext
     ): ReadWriteResponseBehaviour {

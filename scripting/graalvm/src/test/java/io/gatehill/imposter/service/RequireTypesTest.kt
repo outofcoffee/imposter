@@ -72,7 +72,7 @@ class RequireTypesTest : AbstractBaseScriptTest() {
             headers = mapOf("X-Example" to "foo")
         )
         val scriptPath = ScriptUtil.resolveScriptPath(pluginConfig, resourceConfig.responseConfig.scriptFile)
-        val actual = getService().executeScript(pluginConfig, scriptPath, runtimeContext)
+        val actual = getService().executeScript(scriptPath, runtimeContext)
 
         Assert.assertNotNull(actual)
         Assert.assertEquals(201, actual.statusCode)

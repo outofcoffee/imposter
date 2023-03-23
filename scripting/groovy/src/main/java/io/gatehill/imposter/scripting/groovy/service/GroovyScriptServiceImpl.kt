@@ -46,7 +46,6 @@ import com.google.common.cache.CacheBuilder
 import groovy.lang.Binding
 import groovy.lang.GroovyClassLoader
 import io.gatehill.imposter.config.util.EnvVars
-import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.ScriptUtil
@@ -93,7 +92,6 @@ class GroovyScriptServiceImpl : ScriptService {
     }
 
     override fun executeScript(
-        pluginConfig: PluginConfig,
         scriptFile: Path,
         runtimeContext: RuntimeContext
     ): ReadWriteResponseBehaviour {

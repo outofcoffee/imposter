@@ -47,7 +47,6 @@ import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine
 import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.RequireModules
-import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.scripting.common.util.JavaScriptUtil
@@ -80,7 +79,6 @@ class GraalvmScriptServiceImpl : ScriptService, Plugin {
     }
 
     override fun executeScript(
-        pluginConfig: PluginConfig,
         scriptFile: Path,
         runtimeContext: RuntimeContext
     ): ReadWriteResponseBehaviour {

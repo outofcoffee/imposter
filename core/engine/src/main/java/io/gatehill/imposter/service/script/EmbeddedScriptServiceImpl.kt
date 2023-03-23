@@ -42,7 +42,6 @@
  */
 package io.gatehill.imposter.service.script
 
-import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl
 import io.gatehill.imposter.script.RuntimeContext
@@ -56,7 +55,6 @@ class EmbeddedScriptServiceImpl : EmbeddedScriptService {
     private var listener: ScriptListener? = null
 
     override fun executeScript(
-        pluginConfig: PluginConfig,
         scriptFile: Path,
         runtimeContext: RuntimeContext
     ): ReadWriteResponseBehaviour {
