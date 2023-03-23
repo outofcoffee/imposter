@@ -112,7 +112,7 @@ class ResponseFileServiceImpl @Inject constructor(
                 }
             } else {
                 LOGGER.warn("Response file does not exist: $normalisedPath - returning 404 status code")
-                httpExchange.response.setStatusCode(HttpUtil.HTTP_NOT_FOUND).end()
+                response.setStatusCode(HttpUtil.HTTP_NOT_FOUND).end()
                 return
             }
         }

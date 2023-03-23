@@ -145,7 +145,12 @@ class ResponseServiceImpl @Inject constructor(
                 val response = httpExchange.response
                 response.setStatusCode(responseBehaviour.statusCode)
                 responseBehaviour.responseHeaders.forEach { (name: String?, value: String?) ->
-                    response.putHeader(name, value)
+                    val finalValue = if (responseBehaviour.isTemplate) {
+                        PlaceholderUtil.replace(value, httpExchange, PlaceholderUtil.templateEvaluators)
+                    } else {
+                        value
+                    }
+                    response.putHeader(name, finalValue)
                 }
                 if (!Strings.isNullOrEmpty(responseBehaviour.responseFile)) {
                     responseFileService.serveResponseFile(pluginConfig, resourceConfig, httpExchange, responseBehaviour)
