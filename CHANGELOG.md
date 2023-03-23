@@ -3,9 +3,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [3.13.0] - 2023-03-23
 ### Added
-- ...
+- feat: supports placeholders in response headers.
+- feat: supports reading request form attributes.
+
+### Changed
+- chore(deps): bump com.apurebase:kgraphql from 0.17.14 to 0.19.0 (#320)
 
 ## [3.12.2] - 2023-03-20
 ### Fixed
