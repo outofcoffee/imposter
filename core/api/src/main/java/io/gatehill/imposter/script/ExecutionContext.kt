@@ -84,6 +84,7 @@ class ExecutionContext(
         private val headersSupplier: Supplier<Map<String, String>>,
         private val pathParamsSupplier: Supplier<Map<String, String>>,
         private val queryParamsSupplier: Supplier<Map<String, String>>,
+        private val formParamsSupplier: Supplier<Map<String, String>>,
         private val bodySupplier: Supplier<String?>,
     ) {
         lateinit var path: String
@@ -106,6 +107,13 @@ class ExecutionContext(
          */
         val queryParams: Map<String, String> by lazy {
             queryParamsSupplier.get()
+        }
+
+        /**
+         * @return the request form parameters
+         */
+        val formParams: Map<String, String> by lazy {
+            formParamsSupplier.get()
         }
 
         /**

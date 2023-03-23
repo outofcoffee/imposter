@@ -37,6 +37,7 @@ dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter-api:$version_junit_jupiter"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$version_junit_jupiter"
     testImplementation "org.mockito:mockito-core:$version_mockito"
+    testImplementation "org.mockito.kotlin:mockito-kotlin:$version_mockito_kotlin"
 
     testImplementation "org.testcontainers:testcontainers:$version_testcontainers"
     testImplementation "com.adobe.testing:s3mock-testcontainers:$version_s3mock"

@@ -156,13 +156,13 @@ In this example, responses to both `/example1` and `/example2` will have the hea
 
 If unset by configuration or a script, the default values for response configuration fields are as follows:
 
-| Field                 | Plugin(s)     | Type                  | Default                                            | Example                             |
-|-----------------------|---------------|-----------------------|----------------------------------------------------|-------------------------------------|
-| `contentType`         | all           | String                | `application/json`, or determined from static file | `text/plain`                        |
-| `response.statusCode` | openapi, rest | Integer (HTTP status) | `200`                                              | `201`                               |
-| `response.content` | openapi, rest | String                | empty                                              | `hello world`                       |
-| `response.file`       | all           | String                | empty                                              | `data.json`                         |
-| `response.headers`    | openapi, rest | Map of String:String  | empty                                              | `{ "X-Custom-Header": "value" }`    |
+| Field                 | Plugin(s)     | Type                  | Default                                            | Example                          |
+|-----------------------|---------------|-----------------------|----------------------------------------------------|----------------------------------|
+| `contentType`         | all           | String                | `application/json`, or determined from static file | `text/plain`                     |
+| `response.statusCode` | openapi, rest | Integer (HTTP status) | `200`                                              | `201`                            |
+| `response.content`    | openapi, rest | String                | empty                                              | `hello world`                    |
+| `response.file`       | all           | String                | empty                                              | `data.json`                      |
+| `response.headers`    | openapi, rest | Map of String:String  | empty                                              | `{ "X-Custom-Header": "value" }` |
 
 ## Conditional responses
 
@@ -180,6 +180,7 @@ Using the configuration file approach, it is possible to configure different res
 | `method`         | openapi, rest | String (HTTP method)                | `POST`                                         |
 | `pathParams`     | openapi, rest | Map of String:String                | `{ "productCode": "abc" }`                     |
 | `queryParams`    | openapi, rest | Map of String:String                | `{ "limit": "10" }`                            |
+| `formParams`     | openapi, rest | Map of String:String                | `{ "user": "alice" }`                          |
 | `requestHeaders` | openapi, rest | Map of String:String                | `{ "User-Agent": "curl" }`                     |
 | `requestBody`    | openapi, rest | Request body matching configuration | See [advanced matching](./request_matching.md) |
 

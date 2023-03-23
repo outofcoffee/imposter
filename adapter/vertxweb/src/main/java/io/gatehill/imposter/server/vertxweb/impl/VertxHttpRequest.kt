@@ -58,6 +58,7 @@ class VertxHttpRequest(
 ) : HttpRequest {
     private val vertxRequest = routingContext.request()
     private val _queryParams by lazy { CollectionUtil.asMap(routingContext.queryParams()) }
+    private val _formParams by lazy { CollectionUtil.asMap(vertxRequest.formAttributes()) }
     private val _headers by lazy { CollectionUtil.asMap(vertxRequest.headers()) }
 
     override val path: String
@@ -88,6 +89,13 @@ class VertxHttpRequest(
 
     override fun getQueryParam(queryParam: String): String? {
         return routingContext.queryParam(queryParam)?.firstOrNull()
+    }
+
+    override val formParams: Map<String, String>
+        get() = _formParams
+
+    override fun getFormParam(formParam: String): String? {
+        return vertxRequest.getFormAttribute(formParam)
     }
 
     /**

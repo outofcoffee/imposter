@@ -117,16 +117,17 @@ plugin provides a `tableName` object, which you can use to determine the HBase t
 
 The request object is available on the `context`. It provides access to request parameters, method, URI etc.
 
-| Property            | Description                                                      | Example                                                         |
-|---------------------|------------------------------------------------------------------|-----------------------------------------------------------------|
-| `path`              | The path of the request.                                         | `"/example"`                                                    |
-| `method`            | The HTTP method of the request.                                  | `"GET"`                                                         |
-| `pathParams`        | A map containing the request path parameters.                    | `{ "productCode": "abc", "foo": "bar" }`                        |
-| `queryParams`       | A map containing the request query parameters.                   | `{ "limit": "10", "foo": "bar" }`                               |
-| `uri`               | The absolute URI of the request.                                 | `"http://example.com?foo=bar&baz=qux"`                          |
-| `headers`           | A map containing the request headers.                            | `{ "X-Example": "ABC123", "Content-Type": "text/plain" }`       |
-| `normalisedHeaders` | A map containing the request headers with all keys in lowercase. | `{ "x-example": "ABC123", "content-type": "text/plain" }`       |
-| `body`              | A string containing the request body.                            | `"Hello world."`                                                |
+| Property            | Description                                                      | Example                                                   |
+|---------------------|------------------------------------------------------------------|-----------------------------------------------------------|
+| `path`              | The path of the request.                                         | `"/example"`                                              |
+| `method`            | The HTTP method of the request.                                  | `"GET"`                                                   |
+| `pathParams`        | A map containing the request path parameters.                    | `{ "productCode": "abc", "foo": "bar" }`                  |
+| `queryParams`       | A map containing the request query parameters.                   | `{ "limit": "10", "foo": "bar" }`                         |
+| `formParams`        | A map containing the request form parameters.                    | `{ "foo": "bar" }`                                        |
+| `uri`               | The absolute URI of the request.                                 | `"http://example.com?foo=bar&baz=qux"`                    |
+| `headers`           | A map containing the request headers.                            | `{ "X-Example": "ABC123", "Content-Type": "text/plain" }` |
+| `normalisedHeaders` | A map containing the request headers with all keys in lowercase. | `{ "x-example": "ABC123", "content-type": "text/plain" }` |
+| `body`              | A string containing the request body.                            | `"Hello world."`                                          |
 
 > Note: keys are always lowercase in `normalisedHeaders`, regardless of the request header casing. This aids script portability, avoiding case-sensitivity for header keys.
 

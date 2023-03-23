@@ -51,5 +51,6 @@ class ResolvedResourceConfig(
     val config: BasicResourceConfig,
     val pathParams: Map<String, String>,
     val queryParams: Map<String, String>,
+    val formParams: Map<String, String>,
     val requestHeaders: Map<String, String>
 )

@@ -94,6 +94,7 @@ class ResourceServiceImpl @Inject constructor(
                 config = config,
                 pathParams = (config as? PathParamsResourceConfig)?.pathParams ?: emptyMap(),
                 queryParams = (config as? QueryParamsResourceConfig)?.queryParams ?: emptyMap(),
+                formParams = (config as? FormParamsResourceConfig)?.formParams ?: emptyMap(),
                 requestHeaders = (config as? RequestHeadersResourceConfig)?.requestHeaders ?: emptyMap()
             )
         } ?: emptyList()

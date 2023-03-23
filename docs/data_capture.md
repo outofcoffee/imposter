@@ -8,6 +8,7 @@ It is possible to capture the following elements into a store:
 - query parameter
 - request header
 - part or all of the request body (using JsonPath or XPath expression)
+- form parameters
 
 ## Capture example
 
@@ -58,6 +59,7 @@ The following configuration options are available for a capture:
 | `store`           | The name of the store in which to put the item.                                                                                                               |
 | `pathParam`       | The name of the path parameter to capture. Must reference the resource path, e.g. `userId` for a path of `/users/:userId`                                     |
 | `queryParam`      | The name of the query parameter to capture.                                                                                                                   |
+| `formParam`       | The name of the form parameter to capture.                                                                                                                    |
 | `requestHeader`   | The name of the request header to capture.                                                                                                                    |
 | `expression`      | A placeholder expression, e.g. `${context.request.queryParams.foo}` - see _Expressions_ section.                                                              |
 | `const`           | A constant value, e.g. `example`.                                                                                                                             |

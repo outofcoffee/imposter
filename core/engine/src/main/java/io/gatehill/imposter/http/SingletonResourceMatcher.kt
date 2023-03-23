@@ -66,6 +66,7 @@ class SingletonResourceMatcher : AbstractResourceMatcher() {
         // find the most specific, by filtering those that match by those that specify parameters
         resourceConfigs = filterByPairs(resourceConfigs, ResolvedResourceConfig::pathParams)
         resourceConfigs = filterByPairs(resourceConfigs, ResolvedResourceConfig::queryParams)
+        resourceConfigs = filterByPairs(resourceConfigs, ResolvedResourceConfig::formParams)
         resourceConfigs = filterByPairs(resourceConfigs, ResolvedResourceConfig::requestHeaders)
 
         return resourceConfigs
@@ -95,6 +96,7 @@ class SingletonResourceMatcher : AbstractResourceMatcher() {
             (pathMatch == PathMatchResult.EXACT_MATCH || pathMatch == PathMatchResult.WILDCARD_MATCH) &&
             matchPairs(request.pathParams, resource.pathParams, true) &&
             matchPairs(request.queryParams, resource.queryParams, true) &&
+            matchPairs(request.formParams, resource.formParams, true) &&
             matchPairs(request.headers, resource.requestHeaders, false) &&
             matchRequestBody(httpExchange, resource.config)
 

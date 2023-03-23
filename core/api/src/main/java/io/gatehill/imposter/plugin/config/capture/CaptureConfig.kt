@@ -58,6 +58,9 @@ open class CaptureConfig(
     @field:JsonProperty("queryParam")
     val queryParam: String? = null,
 
+    @field:JsonProperty("formParam")
+    val formParam: String? = null,
+
     @field:JsonProperty("requestHeader")
     val requestHeader: String? = null,
 
@@ -83,6 +86,6 @@ open class CaptureConfig(
     val requestBody: BodyCaptureConfig by lazy { BodyCaptureConfig.parse(_requestBody, jsonPath) }
 
     override fun toString(): String {
-        return "CaptureConfig(pathParam=$pathParam, queryParam=$queryParam, requestHeader=$requestHeader, jsonPath=$jsonPath, expression=$expression, constValue=$constValue)"
+        return "CaptureConfig(pathParam=$pathParam, queryParam=$queryParam, formParam=$formParam, requestHeader=$requestHeader, jsonPath=$jsonPath, expression=$expression, constValue=$constValue)"
     }
 }

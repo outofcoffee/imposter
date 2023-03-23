@@ -58,7 +58,7 @@ import io.gatehill.imposter.util.BodyQueryUtil
 import io.gatehill.imposter.util.PlaceholderUtil
 import io.gatehill.imposter.util.ResourceUtil
 import org.apache.logging.log4j.LogManager
-import java.util.Objects
+import java.util.*
 import javax.inject.Inject
 
 /**
@@ -217,6 +217,9 @@ class CaptureServiceImpl @Inject constructor(
 
         } else if (!Strings.isNullOrEmpty(captureConfig.queryParam)) {
             httpExchange.request.getQueryParam(captureConfig.queryParam!!) as T?
+
+        } else if (!Strings.isNullOrEmpty(captureConfig.formParam)) {
+            httpExchange.request.getFormParam(captureConfig.formParam!!) as T?
 
         } else if (!Strings.isNullOrEmpty(captureConfig.requestHeader)) {
             httpExchange.request.getHeader(captureConfig.requestHeader!!) as T?

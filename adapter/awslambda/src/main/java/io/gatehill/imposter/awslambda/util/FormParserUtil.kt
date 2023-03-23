@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023.
+ * Copyright (c) 2023.
  *
  * This file is part of Imposter.
  *
@@ -41,28 +41,36 @@
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.gatehill.imposter.http
+package io.gatehill.imposter.awslambda.util
 
-import io.vertx.core.buffer.Buffer
-import io.vertx.core.json.JsonObject
+import io.gatehill.imposter.http.HttpRequest
+import io.gatehill.imposter.util.HttpUtil
 
-/**
- * @author Pete Cornish
- */
-interface HttpRequest {
-    val path: String
-    val method: HttpMethod
-    val absoluteUri: String
-    val headers: Map<String, String>
-    fun getHeader(headerKey: String): String?
-    val pathParams: Map<String, String>
-    fun getPathParam(paramName: String): String?
-    val queryParams: Map<String, String>
-    fun getQueryParam(queryParam: String): String?
-    val formParams: Map<String, String>
-    fun getFormParam(formParam: String): String?
+object FormParserUtil {
+    fun getParam(request: HttpRequest, paramName: String): String? {
+        for (line in readAttributes(request)) {
+            val parts = line.split("=")
+            if (parts.size < 2) {
+                continue
+            }
+            if (parts[0] == paramName) {
+                return parts[1]
+            }
+        }
+        return null
+    }
 
-    val body: Buffer?
-    val bodyAsString: String?
-    val bodyAsJson: JsonObject?
+    fun getAll(request: HttpRequest): Map<String, String> = readAttributes(request).mapNotNull {
+        val parts = it.split("=")
+        return@mapNotNull if (parts.size < 2) null else parts[0] to parts[1]
+    }.toMap()
+
+    private fun readAttributes(request: HttpRequest): List<String> {
+        val contentType = request.getHeader(HttpUtil.CONTENT_TYPE)
+        if (contentType != "application/x-www-form-urlencoded") {
+            return emptyList()
+        }
+        return request.bodyAsString?.takeIf { it.isNotEmpty() }?.split("&")
+            ?: emptyList()
+    }
 }

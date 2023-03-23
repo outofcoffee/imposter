@@ -53,7 +53,7 @@ import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyResourceCo
  * @author Pete Cornish
  */
 open class RestResourceConfig : AbstractResourceConfig(), MethodResourceConfig, PathParamsResourceConfig,
-    QueryParamsResourceConfig, LegacyQueryParamsResourceConfig, RequestHeadersResourceConfig,
+    QueryParamsResourceConfig, LegacyQueryParamsResourceConfig, RequestHeadersResourceConfig, FormParamsResourceConfig,
     RequestBodyResourceConfig, PassthroughResourceConfig {
 
     @field:JsonProperty("method")
@@ -65,6 +65,9 @@ open class RestResourceConfig : AbstractResourceConfig(), MethodResourceConfig, 
     @field:JsonProperty("queryParams")
     @field:JsonAlias("params")
     override var queryParams: Map<String, String>? = null
+
+    @field:JsonProperty("formParams")
+    override var formParams: Map<String, String>? = null
 
     @field:JsonProperty("requestHeaders")
     override var requestHeaders: Map<String, String>? = null

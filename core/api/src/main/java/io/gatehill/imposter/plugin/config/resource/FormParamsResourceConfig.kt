@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023.
+ * Copyright (c) 2023.
  *
  * This file is part of Imposter.
  *
@@ -40,29 +40,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-
-package io.gatehill.imposter.http
-
-import io.vertx.core.buffer.Buffer
-import io.vertx.core.json.JsonObject
+package io.gatehill.imposter.plugin.config.resource
 
 /**
  * @author Pete Cornish
  */
-interface HttpRequest {
-    val path: String
-    val method: HttpMethod
-    val absoluteUri: String
-    val headers: Map<String, String>
-    fun getHeader(headerKey: String): String?
-    val pathParams: Map<String, String>
-    fun getPathParam(paramName: String): String?
-    val queryParams: Map<String, String>
-    fun getQueryParam(queryParam: String): String?
-    val formParams: Map<String, String>
-    fun getFormParam(formParam: String): String?
-
-    val body: Buffer?
-    val bodyAsString: String?
-    val bodyAsJson: JsonObject?
+interface FormParamsResourceConfig {
+    val formParams: Map<String, String>?
 }

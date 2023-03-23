@@ -45,6 +45,7 @@ package io.gatehill.imposter.awslambda.impl.model
 
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent
 import com.google.common.io.BaseEncoding
+import io.gatehill.imposter.awslambda.util.FormParserUtil
 import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.http.HttpRoute
@@ -96,6 +97,13 @@ class LambdaHttpRequestV2(
 
     override fun getQueryParam(queryParam: String): String? {
         return event.queryStringParameters?.get(queryParam)
+    }
+
+    override val formParams: Map<String, String>
+        get() = FormParserUtil.getAll(this)
+
+    override fun getFormParam(formParam: String): String? {
+        return FormParserUtil.getParam(this, formParam)
     }
 
     /**

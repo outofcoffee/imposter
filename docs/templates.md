@@ -150,6 +150,31 @@ Hello alice
 
 > Note: the use of curl's `--data` argument implies this is a `POST` request, with the value `alice` sent as the request body.
 
+### Request form parameters
+
+Syntax: `context.request.formParams.<param name>`
+
+Example config:
+
+```yaml
+# part of your configuration file
+
+resources:
+- path: /users
+  method: POST
+  response:
+    content: "Hello ${context.request.formParams.user}"
+    template: true
+```
+
+Example request:
+
+```
+$ curl http://localhost:8080/users --data-urlencode "user=alice"
+
+Hello alice
+```
+
 ### Date/time values
 
 Syntax: `datetime.now.<property>`

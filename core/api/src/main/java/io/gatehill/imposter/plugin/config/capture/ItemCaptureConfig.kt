@@ -54,6 +54,7 @@ import io.gatehill.imposter.plugin.config.flex.FlexibleTypeUtil.lazyParse
 class ItemCaptureConfig(
     pathParam: String? = null,
     queryParam: String? = null,
+    formParam: String? = null,
     requestHeader: String? = null,
     requestBody: BodyCaptureConfig? = null,
     expression: String? = null,
@@ -79,6 +80,7 @@ class ItemCaptureConfig(
 ) : CaptureConfig(
     pathParam,
     queryParam,
+    formParam,
     requestHeader,
     requestBody,
     expression,

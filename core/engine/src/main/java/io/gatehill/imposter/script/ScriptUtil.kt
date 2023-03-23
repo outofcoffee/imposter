@@ -89,12 +89,21 @@ object ScriptUtil {
         val queryParamsSupplier: () -> Map<String, String> = {
             internalRequest.queryParams
         }
+        val formParamsSupplier: () -> Map<String, String> = {
+            internalRequest.formParams
+        }
         val bodySupplier: () -> String? = {
             internalRequest.bodyAsString
         }
 
         // request information
-        val request = ExecutionContext.Request(headersSupplier, pathParamsSupplier, queryParamsSupplier, bodySupplier)
+        val request = ExecutionContext.Request(
+            headersSupplier,
+            pathParamsSupplier,
+            queryParamsSupplier,
+            formParamsSupplier,
+            bodySupplier
+        )
         request.path = internalRequest.path
         request.method = internalRequest.method.name
         request.uri = internalRequest.absoluteUri

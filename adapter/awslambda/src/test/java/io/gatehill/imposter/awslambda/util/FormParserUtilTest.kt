@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023.
+ * Copyright (c) 2023.
  *
  * This file is part of Imposter.
  *
@@ -41,28 +41,38 @@
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.gatehill.imposter.http
+package io.gatehill.imposter.awslambda.util
 
-import io.vertx.core.buffer.Buffer
-import io.vertx.core.json.JsonObject
+import io.gatehill.imposter.http.HttpRequest
+import io.gatehill.imposter.util.HttpUtil
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Test
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
 
-/**
- * @author Pete Cornish
- */
-interface HttpRequest {
-    val path: String
-    val method: HttpMethod
-    val absoluteUri: String
-    val headers: Map<String, String>
-    fun getHeader(headerKey: String): String?
-    val pathParams: Map<String, String>
-    fun getPathParam(paramName: String): String?
-    val queryParams: Map<String, String>
-    fun getQueryParam(queryParam: String): String?
-    val formParams: Map<String, String>
-    fun getFormParam(formParam: String): String?
+class FormParserUtilTest {
+    @Test
+    fun `parse form parameters`() {
+        val request = mock<HttpRequest> {
+            on { getHeader(eq(HttpUtil.CONTENT_TYPE)) } doReturn "application/x-www-form-urlencoded"
+            on { bodyAsString } doReturn "foo=bar&baz=qux"
+        }
+        assertEquals("bar", FormParserUtil.getParam(request, "foo"))
+        assertEquals("qux", FormParserUtil.getParam(request, "baz"))
+        assertNull(FormParserUtil.getParam(request, "corge"))
+    }
 
-    val body: Buffer?
-    val bodyAsString: String?
-    val bodyAsJson: JsonObject?
+    @Test
+    fun `read all form parameters`() {
+        val request = mock<HttpRequest> {
+            on { getHeader(eq(HttpUtil.CONTENT_TYPE)) } doReturn "application/x-www-form-urlencoded"
+            on { bodyAsString } doReturn "foo=bar&baz=qux"
+        }
+        val all = FormParserUtil.getAll(request)
+        assertEquals(2, all.size)
+        assertEquals("bar", all["foo"])
+        assertEquals("qux", all["baz"])
+    }
 }
