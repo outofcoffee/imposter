@@ -45,6 +45,8 @@ package io.gatehill.imposter.awslambda.util
 
 import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.util.HttpUtil
+import java.net.URLDecoder
+import java.nio.charset.Charset
 
 object FormParserUtil {
     fun getParam(request: HttpRequest, paramName: String): String? {
@@ -54,7 +56,7 @@ object FormParserUtil {
                 continue
             }
             if (parts[0] == paramName) {
-                return parts[1]
+                return parts[1].urlDecode()
             }
         }
         return null
@@ -62,15 +64,17 @@ object FormParserUtil {
 
     fun getAll(request: HttpRequest): Map<String, String> = readAttributes(request).mapNotNull {
         val parts = it.split("=")
-        return@mapNotNull if (parts.size < 2) null else parts[0] to parts[1]
+        return@mapNotNull if (parts.size < 2) null else parts[0] to parts[1].urlDecode()
     }.toMap()
 
     private fun readAttributes(request: HttpRequest): List<String> {
         val contentType = request.getHeader(HttpUtil.CONTENT_TYPE)
-        if (contentType != "application/x-www-form-urlencoded") {
+        if (contentType != HttpUtil.CONTENT_TYPE_FORM_URLENCODED) {
             return emptyList()
         }
         return request.bodyAsString?.takeIf { it.isNotEmpty() }?.split("&")
             ?: emptyList()
     }
+
+    private fun String.urlDecode() = URLDecoder.decode(this, Charset.defaultCharset())
 }

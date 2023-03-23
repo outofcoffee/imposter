@@ -56,23 +56,23 @@ class FormParserUtilTest {
     @Test
     fun `parse form parameters`() {
         val request = mock<HttpRequest> {
-            on { getHeader(eq(HttpUtil.CONTENT_TYPE)) } doReturn "application/x-www-form-urlencoded"
-            on { bodyAsString } doReturn "foo=bar&baz=qux"
+            on { getHeader(eq(HttpUtil.CONTENT_TYPE)) } doReturn HttpUtil.CONTENT_TYPE_FORM_URLENCODED
+            on { bodyAsString } doReturn "foo=bar&baz=qux%20corge"
         }
         assertEquals("bar", FormParserUtil.getParam(request, "foo"))
-        assertEquals("qux", FormParserUtil.getParam(request, "baz"))
-        assertNull(FormParserUtil.getParam(request, "corge"))
+        assertEquals("qux corge", FormParserUtil.getParam(request, "baz"))
+        assertNull(FormParserUtil.getParam(request, "grault"))
     }
 
     @Test
     fun `read all form parameters`() {
         val request = mock<HttpRequest> {
-            on { getHeader(eq(HttpUtil.CONTENT_TYPE)) } doReturn "application/x-www-form-urlencoded"
-            on { bodyAsString } doReturn "foo=bar&baz=qux"
+            on { getHeader(eq(HttpUtil.CONTENT_TYPE)) } doReturn HttpUtil.CONTENT_TYPE_FORM_URLENCODED
+            on { bodyAsString } doReturn "foo=bar&baz=qux%20corge"
         }
         val all = FormParserUtil.getAll(request)
         assertEquals(2, all.size)
         assertEquals("bar", all["foo"])
-        assertEquals("qux", all["baz"])
+        assertEquals("qux corge", all["baz"])
     }
 }

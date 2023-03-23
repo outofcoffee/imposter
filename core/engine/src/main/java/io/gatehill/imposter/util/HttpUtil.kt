@@ -59,6 +59,7 @@ object HttpUtil {
     const val CONTENT_TYPE_JSON = "application/json"
     const val CONTENT_TYPE_XML = "application/xml"
     const val CONTENT_TYPE_HTML = "text/html"
+    const val CONTENT_TYPE_FORM_URLENCODED = "application/x-www-form-urlencoded"
     const val CONTENT_TYPE_PLAIN_TEXT = "text/plain"
     const val BIND_ALL_HOSTS = "0.0.0.0"
     const val DEFAULT_HTTP_LISTEN_PORT = 8080
