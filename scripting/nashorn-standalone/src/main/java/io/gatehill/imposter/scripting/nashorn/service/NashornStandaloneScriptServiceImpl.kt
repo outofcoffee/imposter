@@ -82,7 +82,7 @@ class NashornStandaloneScriptServiceImpl : ScriptService, Plugin {
      */
     private val compiledScripts = CacheBuilder.newBuilder()
         .maximumSize(getEnv(ScriptUtil.ENV_SCRIPT_CACHE_ENTRIES)?.toLong() ?: ScriptUtil.DEFAULT_SCRIPT_CACHE_ENTRIES)
-        .build<Path, CompiledJsScript<CompiledScript>>()
+        .build<String, CompiledJsScript<CompiledScript>>()
 
     init {
         if (getJvmVersion() < 11) {
@@ -105,18 +105,28 @@ class NashornStandaloneScriptServiceImpl : ScriptService, Plugin {
         }
     }
 
+    override fun initInlineScript(scriptId: String, scriptCode: String) {
+        if (ScriptUtil.shouldPrecompile) {
+            LOGGER.debug("Precompiling inline script: $scriptId")
+            getCompiledInlineScript(scriptId, scriptCode)
+        }
+    }
+
     override fun executeScript(
         scriptFile: Path,
         runtimeContext: RuntimeContext
     ): ReadWriteResponseBehaviour {
         LOGGER.trace("Executing script file: {}", scriptFile)
 
-        return try {
-            val bindings = SimpleBindings(JavaScriptUtil.transformRuntimeMap(runtimeContext, true))
+        try {
+            val bindings = SimpleBindings(JavaScriptUtil.transformRuntimeMap(runtimeContext,
+                addDslPrefix = true,
+                addConsoleShim = true
+            ))
 
             val compiled = getCompiledScript(scriptFile)
             try {
-                compiled.code.eval(bindings) as ReadWriteResponseBehaviour
+                return compiled.code.eval(bindings) as ReadWriteResponseBehaviour
             } catch (e: ScriptException) {
                 throw JavaScriptUtil.unwrapScriptException(e, compiled)
             }
@@ -126,8 +136,30 @@ class NashornStandaloneScriptServiceImpl : ScriptService, Plugin {
         }
     }
 
-    private fun getCompiledScript(scriptFile: Path): CompiledJsScript<CompiledScript> {
-        return compiledScripts.get(scriptFile) {
+    override fun evalInlineScript(
+        scriptId: String,
+        scriptCode: String,
+        runtimeContext: RuntimeContext
+    ): Boolean {
+        LOGGER.trace("Executing inline script: {}", scriptId)
+
+        try {
+            val bindings = SimpleBindings(JavaScriptUtil.transformRuntimeMap(runtimeContext,
+                addDslPrefix = false,
+                addConsoleShim = false
+            ))
+
+            val compiled = getCompiledInlineScript(scriptId, scriptCode)
+            val result = compiled.code.eval(bindings)
+            return result is Boolean && result
+
+        } catch (e: Exception) {
+            throw RuntimeException("Inline script evaluation terminated abnormally", e)
+        }
+    }
+
+    private fun getCompiledScript(scriptFile: Path): CompiledJsScript<CompiledScript> =
+        compiledScripts.get(scriptFile.toString()) {
             try {
                 LOGGER.trace("Compiling script file: {}", scriptFile)
                 val compileStartMs = System.currentTimeMillis()
@@ -149,7 +181,19 @@ class NashornStandaloneScriptServiceImpl : ScriptService, Plugin {
                 throw RuntimeException("Failed to compile script: $scriptFile", e)
             }
         }
-    }
+
+    private fun getCompiledInlineScript(
+        scriptId: String,
+        scriptCode: String,
+    ): CompiledJsScript<CompiledScript> =
+        compiledScripts.get(scriptId) {
+            try {
+                LOGGER.trace("Compiling inline script: {}", scriptCode)
+                return@get CompiledJsScript(0, scriptEngine.compile(scriptCode))
+            } catch (e: Exception) {
+                throw RuntimeException("Failed to compile inline script: $scriptCode", e)
+            }
+        }
 
     companion object {
         private val LOGGER = LogManager.getLogger(NashornStandaloneScriptServiceImpl::class.java)

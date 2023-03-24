@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2023.
  *
  * This file is part of Imposter.
  *
@@ -42,50 +42,14 @@
  */
 package io.gatehill.imposter.plugin.config.resource
 
-import com.fasterxml.jackson.annotation.JsonAlias
-import com.fasterxml.jackson.annotation.JsonIgnore
-import com.fasterxml.jackson.annotation.JsonProperty
-import io.gatehill.imposter.http.HttpMethod
-import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyConfig
-import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyResourceConfig
-import java.util.*
-
 /**
  * @author Pete Cornish
  */
-open class RestResourceConfig : AbstractResourceConfig(), MethodResourceConfig, PathParamsResourceConfig,
-    QueryParamsResourceConfig, LegacyQueryParamsResourceConfig, RequestHeadersResourceConfig, FormParamsResourceConfig,
-    RequestBodyResourceConfig, EvalResourceConfig, PassthroughResourceConfig {
+interface EvalResourceConfig {
+    /**
+     * Must be unique.
+     */
+    val resourceId: String
 
-    @field:JsonProperty("method")
-    override var method: HttpMethod? = null
-
-    @field:JsonProperty("pathParams")
-    override var pathParams: Map<String, String>? = null
-
-    @field:JsonProperty("queryParams")
-    @field:JsonAlias("params")
-    override var queryParams: Map<String, String>? = null
-
-    @field:JsonProperty("formParams")
-    override var formParams: Map<String, String>? = null
-
-    @field:JsonProperty("requestHeaders")
-    override var requestHeaders: Map<String, String>? = null
-
-    @field:JsonProperty("requestBody")
-    override var requestBody: RequestBodyConfig? = null
-
-    @field:JsonProperty("eval")
-    override var eval: String? = null
-
-    @field:JsonProperty("passthrough")
-    override var passthrough: String? = null
-
-    @get:JsonIgnore
-    override val params: Map<String, String>?
-        get() = queryParams
-
-    @get:JsonIgnore
-    override val resourceId = UUID.randomUUID().toString()
+    val eval: String?
 }

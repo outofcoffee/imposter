@@ -54,6 +54,9 @@ interface ScriptService {
         // no op
     }
 
+    fun initInlineScript(scriptId: String, scriptCode: String): Unit =
+        throw NotImplementedError()
+
     /**
      * Execute the script and read response behaviour.
      *
@@ -62,4 +65,7 @@ interface ScriptService {
      * @return the response behaviour
      */
     fun executeScript(scriptFile: Path, runtimeContext: RuntimeContext): ReadWriteResponseBehaviour
+
+    fun evalInlineScript(scriptId: String, scriptCode: String, runtimeContext: RuntimeContext): Boolean =
+        throw NotImplementedError()
 }

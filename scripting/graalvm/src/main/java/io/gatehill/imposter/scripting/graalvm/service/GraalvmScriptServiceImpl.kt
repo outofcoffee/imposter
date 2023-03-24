@@ -88,7 +88,10 @@ class GraalvmScriptServiceImpl : ScriptService, Plugin {
         bindings["polyglot.js.allowAllAccess"] = true
 
         return try {
-            val globals = JavaScriptUtil.transformRuntimeMap(runtimeContext, false)
+            val globals = JavaScriptUtil.transformRuntimeMap(runtimeContext,
+                addDslPrefix = true,
+                addConsoleShim = false
+            )
             val wrapped = JavaScriptUtil.wrapScript(scriptFile)
             scriptEngine.eval(wrapped.script, SimpleBindings(globals)) as ReadWriteResponseBehaviour
 

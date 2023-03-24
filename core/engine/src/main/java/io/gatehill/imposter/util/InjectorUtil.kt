@@ -64,4 +64,8 @@ object InjectorUtil {
         injector = Guice.createInjector(*modules)
         return injector!!
     }
+
+    inline fun <reified T> getInstance(): T {
+        return injector!!.getInstance(T::class.java)
+    }
 }

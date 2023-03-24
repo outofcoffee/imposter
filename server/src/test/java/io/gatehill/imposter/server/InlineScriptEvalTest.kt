@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2023.
  *
  * This file is part of Imposter.
  *
@@ -42,89 +42,52 @@
  */
 package io.gatehill.imposter.server
 
-import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.plugin.PluginManager
 import io.gatehill.imposter.plugin.test.TestPluginImpl
-import io.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PASSWORD
-import io.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PATH
-import io.gatehill.imposter.util.CryptoUtil.getDefaultKeystore
-import io.gatehill.imposter.util.FileUtil.CLASSPATH_PREFIX
-import io.gatehill.imposter.util.HttpUtil
-import io.gatehill.imposter.util.InjectorUtil
 import io.restassured.RestAssured
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
-import org.hamcrest.Matchers
+import org.hamcrest.Matchers.equalTo
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
+ * Tests for matching requests using inline script evaluation.
+ *
  * @author Pete Cornish
  */
 @RunWith(VertxUnitRunner::class)
-class ImposterVerticleTest : BaseVerticleTest() {
+class InlineScriptEvalTest : BaseVerticleTest() {
     override val pluginClass = TestPluginImpl::class.java
 
     @Before
     @Throws(Exception::class)
     override fun setUp(testContext: TestContext) {
         super.setUp(testContext)
-
-        // set up trust store for TLS
-        RestAssured.trustStore(getDefaultKeystore(ImposterVerticleTest::class.java).toFile(), DEFAULT_KEYSTORE_PASSWORD)
-        RestAssured.baseURI = "https://$host:$listenPort"
+        RestAssured.baseURI = "http://$host:$listenPort"
+        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails()
     }
 
     override val testConfigDirs = listOf(
-        "/simple-config"
+        "/inline-script-eval"
     )
 
-    @Throws(Exception::class)
-    override fun configure(imposterConfig: ImposterConfig) {
-        super.configure(imposterConfig)
-
-        // enable TLS
-        imposterConfig.isTlsEnabled = true
-        imposterConfig.keystorePath = CLASSPATH_PREFIX + DEFAULT_KEYSTORE_PATH
-        imposterConfig.keystorePassword = DEFAULT_KEYSTORE_PASSWORD
-    }
-
     @Test
-    fun testPluginLoadAndConfig(testContext: TestContext) {
-        val pluginManager = InjectorUtil.getInstance<PluginManager>()
-        val plugin = pluginManager.getPlugin<TestPluginImpl>(TestPluginImpl::class.java.canonicalName)
-        testContext.assertNotNull(plugin)
-        testContext.assertNotNull(plugin!!.configs)
-        testContext.assertEquals(1, plugin.configs.size)
-
-        val pluginConfig = plugin.configs[0]
-        testContext.assertEquals("/example", pluginConfig.path)
-        testContext.assertEquals("test-plugin-data.json", pluginConfig.responseConfig.file)
-        testContext.assertEquals("testValue", pluginConfig.customProperty)
-    }
-
-    @Test
-    fun testRequestSuccess() {
+    fun `match using eval`() {
         RestAssured.given().`when`()
-            .get("/example")
+            .queryParam("foo", "bar")
+            .get("/")
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
+            .statusCode(equalTo(200))
+            .body(equalTo("Eval match"))
     }
 
     @Test
-    fun testRequestNotFound() {
+    fun `default match`() {
         RestAssured.given().`when`()
-            .get("/does_not_match")
+            .get("/")
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_NOT_FOUND))
-    }
-
-    @Test
-    fun testResponseFileNotFound() {
-        RestAssured.given().`when`()
-            .get("/static-file-example")
-            .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_NOT_FOUND))
+            .statusCode(equalTo(200))
+            .body(equalTo("Default match"))
     }
 }

@@ -46,7 +46,7 @@ import io.gatehill.imposter.plugin.PluginManager
 import io.gatehill.imposter.plugin.config.security.SecurityEffect
 import io.gatehill.imposter.plugin.test.TestPluginImpl
 import io.gatehill.imposter.util.HttpUtil
-import io.gatehill.imposter.util.InjectorUtil.injector
+import io.gatehill.imposter.util.InjectorUtil
 import io.restassured.RestAssured
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
@@ -75,9 +75,7 @@ class SecurityConfigTest : BaseVerticleTest() {
 
     @Test
     fun testPluginLoadAndConfig(testContext: TestContext) {
-        val pluginManager = injector!!.getInstance(
-            PluginManager::class.java
-        )
+        val pluginManager = InjectorUtil.getInstance<PluginManager>()
         val plugin = pluginManager.getPlugin<TestPluginImpl>(TestPluginImpl::class.java.canonicalName)
         testContext.assertNotNull(plugin)
         testContext.assertNotNull(plugin!!.configs)

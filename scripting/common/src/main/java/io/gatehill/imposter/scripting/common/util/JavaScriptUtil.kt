@@ -94,7 +94,7 @@ object JavaScriptUtil {
     val activePlugin: String
         get() = EnvVars.getEnv(envJsPlugin) ?: "js-nashorn-standalone"
 
-    fun transformRuntimeMap(runtimeContext: RuntimeContext, addConsoleShim: Boolean): Map<String, *> {
+    fun transformRuntimeMap(runtimeContext: RuntimeContext, addDslPrefix: Boolean, addConsoleShim: Boolean): Map<String, *> {
         val runtimeObjects = runtimeContext.asMap().toMutableMap()
         if (!runtimeObjects.containsKey("stores")) {
             runtimeObjects["stores"] = Any()
@@ -103,7 +103,7 @@ object JavaScriptUtil {
             runtimeObjects["console"] = ConsoleShim(runtimeObjects)
         }
         return runtimeObjects
-            .mapKeys { if (globals.contains(it.key)) DSL_OBJECT_PREFIX + it.key else it.key }
+            .mapKeys { if (addDslPrefix && globals.contains(it.key)) DSL_OBJECT_PREFIX + it.key else it.key }
     }
 
     fun wrapScript(scriptFile: Path): WrappedScript {

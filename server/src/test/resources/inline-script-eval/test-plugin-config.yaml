@@ -1,0 +1,16 @@
+plugin: "io.gatehill.imposter.plugin.test.TestPluginImpl"
+
+resources:
+# eval match
+- path: /
+  method: GET
+  eval: |
+    context.request.queryParams.foo == "bar"
+  response:
+    content: "Eval match"
+
+# default match
+- path: /
+  method: GET
+  response:
+    content: "Default match"

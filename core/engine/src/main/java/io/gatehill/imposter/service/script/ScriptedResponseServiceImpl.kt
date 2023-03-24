@@ -53,6 +53,7 @@ import io.gatehill.imposter.lifecycle.ScriptLifecycleHooks
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.ResourcesHolder
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
+import io.gatehill.imposter.plugin.config.resource.EvalResourceConfig
 import io.gatehill.imposter.plugin.config.resource.ResponseConfig
 import io.gatehill.imposter.script.ExecutionContext
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
@@ -75,6 +76,7 @@ class ScriptedResponseServiceImpl @Inject constructor(
     engineLifecycle: EngineLifecycleHooks,
     private val scriptLifecycle: ScriptLifecycleHooks,
     private val scriptServiceFactory: ScriptServiceFactory,
+    private val inlineScriptService: InlineScriptService,
 ) : ScriptedResponseService, EngineLifecycleListener {
 
     /**
@@ -104,20 +106,25 @@ class ScriptedResponseServiceImpl @Inject constructor(
     }
 
     private fun initScripts(allPluginConfigs: List<PluginConfig>) {
-        val allScripts = mutableListOf<Pair<PluginConfig, ResponseConfig>>()
+        val allScriptFiles = mutableListOf<Pair<PluginConfig, ResponseConfig>>()
 
         // root resource
         allPluginConfigs.filter { it is BasicResourceConfig }.forEach { config ->
-            allScripts += config to (config as BasicResourceConfig).responseConfig
+            allScriptFiles += config to (config as BasicResourceConfig).responseConfig
         }
         // child resources
         allPluginConfigs.filter { it is ResourcesHolder<*> }.forEach { config ->
             (config as ResourcesHolder<*>).resources?.forEach { resource ->
-                allScripts += config to resource.responseConfig
+                allScriptFiles += config to resource.responseConfig
+
+                // inline scripts
+                if (resource is EvalResourceConfig) {
+                    inlineScriptService.initScript(resource)
+                }
             }
         }
 
-        allScripts.distinctBy { (_, responseConfig) -> responseConfig.scriptFile }
+        allScriptFiles.distinctBy { (_, responseConfig) -> responseConfig.scriptFile }
             .forEach { (config, responseConfig) -> initScript(config, responseConfig) }
     }
 
@@ -246,7 +253,9 @@ class ScriptedResponseServiceImpl @Inject constructor(
             val listenerAdditionalBindings: MutableMap<String, Any> = mutableMapOf()
             scriptLifecycle.forEach { listener ->
                 listener.beforeBuildingRuntimeContext(
-                    httpExchange, listenerAdditionalBindings, executionContext
+                    httpExchange,
+                    listenerAdditionalBindings,
+                    executionContext
                 )
             }
             if (listenerAdditionalBindings.isNotEmpty()) {

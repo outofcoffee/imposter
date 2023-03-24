@@ -44,24 +44,8 @@ package io.gatehill.imposter.inject
 
 import com.google.inject.AbstractModule
 import com.google.inject.Singleton
-import io.gatehill.imposter.service.CharacteristicsService
-import io.gatehill.imposter.service.FileCacheService
-import io.gatehill.imposter.service.FileCacheServiceImpl
-import io.gatehill.imposter.service.ResourceService
-import io.gatehill.imposter.service.ResourceServiceImpl
-import io.gatehill.imposter.service.ResponseFileService
-import io.gatehill.imposter.service.ResponseFileServiceImpl
-import io.gatehill.imposter.service.ResponseRoutingService
-import io.gatehill.imposter.service.ResponseRoutingServiceImpl
-import io.gatehill.imposter.service.ResponseService
-import io.gatehill.imposter.service.ResponseServiceImpl
-import io.gatehill.imposter.service.ScriptedResponseService
-import io.gatehill.imposter.service.SecurityService
-import io.gatehill.imposter.service.UpstreamService
-import io.gatehill.imposter.service.script.EmbeddedScriptService
-import io.gatehill.imposter.service.script.EmbeddedScriptServiceImpl
-import io.gatehill.imposter.service.script.ScriptServiceFactory
-import io.gatehill.imposter.service.script.ScriptedResponseServiceImpl
+import io.gatehill.imposter.service.*
+import io.gatehill.imposter.service.script.*
 import io.gatehill.imposter.service.security.SecurityServiceImpl
 
 /**
@@ -83,6 +67,7 @@ internal class EngineModule : AbstractModule() {
             .asEagerSingleton()
 
         bind(EmbeddedScriptService::class.java).to(EmbeddedScriptServiceImpl::class.java).`in`(Singleton::class.java)
+        bind(InlineScriptService::class.java).`in`(Singleton::class.java)
 
         // needs to be eager to register lifecycle listener
         bind(SecurityService::class.java).to(SecurityServiceImpl::class.java).asEagerSingleton()
