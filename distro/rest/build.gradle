@@ -29,9 +29,9 @@ application {
 }
 
 shadowJar {
-    baseName = 'imposter-rest'
-    version = ''
-    classifier = ''
+    archiveBaseName = 'imposter-rest'
+    archiveVersion = ''
+    archiveClassifier = ''
 
     append 'META-INF/imposter.properties'
     append 'META-INF/plugin.properties'

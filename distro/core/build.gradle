@@ -31,9 +31,9 @@ application {
 }
 
 shadowJar {
-    baseName = 'imposter-core'
-    version = ''
-    classifier = ''
+    archiveBaseName = 'imposter-core'
+    archiveVersion = ''
+    archiveClassifier = ''
 
     append 'META-INF/imposter.properties'
     append 'META-INF/plugin.properties'
