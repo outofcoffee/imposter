@@ -98,5 +98,5 @@ object ClassLoaderUtil {
         return pluginClassLoader.loadClass(className) as Class<T>
     }
 
-    fun describePluginPath(): String = pluginDirPath?.let { "$it or " } + "program classpath"
+    fun describePluginPath(): String = (pluginDirPath?.let { "$it or " } ?: "") + "program classpath"
 }
