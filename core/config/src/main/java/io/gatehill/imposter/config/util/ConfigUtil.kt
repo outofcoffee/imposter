@@ -42,6 +42,7 @@
  */
 package io.gatehill.imposter.config.util
 
+import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.expression.EnvEvaluator
@@ -153,7 +154,7 @@ object ConfigUtil {
     fun loadPluginConfigs(
         imposterConfig: ImposterConfig,
         pluginManager: PluginManager,
-        configFiles: List<File>
+        configFiles: List<File>,
     ): Map<String, List<File>> {
         var configCount = 0
 
@@ -227,7 +228,7 @@ object ConfigUtil {
         configFile: File,
         configClass: Class<T>,
         substitutePlaceholders: Boolean,
-        convertPathParameters: Boolean
+        convertPathParameters: Boolean,
     ): T {
         try {
             val rawContents = configFile.readText()
@@ -254,6 +255,8 @@ object ConfigUtil {
             check(config.plugin != null) { "No plugin specified in configuration file: $configFile" }
             return config
 
+        } catch (e: JsonMappingException) {
+            throw RuntimeException("Error reading configuration file: " + configFile.absolutePath + ", reason: ${e.message}")
         } catch (e: IOException) {
             throw RuntimeException("Error reading configuration file: " + configFile.absolutePath, e)
         }
