@@ -3,9 +3,17 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [3.14.0] - 2023-03-30
 ### Added
-- ...
+- feat: adds inline scripted resource matcher.
+
+### Changed
+- chore: bumps Kotlin to 1.8.10.
+- chore: bumps Gradle to 7.6.1.
+- chore(deps): bump com.amazonaws:aws-java-sdk-core (#344)
+
+### Fixed
+- fix(lambda): URL decodes form parameters.
 
 ## [3.13.0] - 2023-03-23
 ### Added
