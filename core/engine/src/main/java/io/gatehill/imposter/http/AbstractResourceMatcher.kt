@@ -170,14 +170,22 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
         }
         return resourceConfig.requestBody?.allOf?.let { bodyConfigs ->
             if (LOGGER.isTraceEnabled) {
-                LOGGER.trace("Matching against ${bodyConfigs.size} request body configs for ${LogUtil.describeRequestShort(httpExchange)}: $bodyConfigs")
+                LOGGER.trace("Matching against all of ${bodyConfigs.size} request body configs for ${LogUtil.describeRequestShort(httpExchange)}: $bodyConfigs")
             }
             bodyConfigs.all { matchUsingBodyConfig(it, httpExchange) }
+
+        } ?: resourceConfig.requestBody?.anyOf?.let { bodyConfigs ->
+            if (LOGGER.isTraceEnabled) {
+                LOGGER.trace("Matching against any of ${bodyConfigs.size} request body configs for ${LogUtil.describeRequestShort(httpExchange)}: $bodyConfigs")
+            }
+            bodyConfigs.any { matchUsingBodyConfig(it, httpExchange) }
+
         } ?: resourceConfig.requestBody?.let { singleRequestBodyConfig ->
             if (LOGGER.isTraceEnabled) {
                 LOGGER.trace("Matching against a single request body config for ${LogUtil.describeRequestShort(httpExchange)}: $singleRequestBodyConfig")
             }
             matchUsingBodyConfig(singleRequestBodyConfig, httpExchange)
+
         } ?: run {
             if (LOGGER.isTraceEnabled) {
                 LOGGER.trace("No request body config to match for ${LogUtil.describeRequestShort(httpExchange)}")

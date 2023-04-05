@@ -97,3 +97,14 @@ resources:
       value: qux
   response:
     content: "AllOf"
+
+- method: POST
+  path: /example-anyof
+  requestBody:
+    anyOf:
+    - jsonPath: $.foo
+      value: bar
+    - jsonPath: $.baz
+      value: qux
+  response:
+    content: "AnyOf"

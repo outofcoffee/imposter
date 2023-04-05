@@ -229,4 +229,17 @@ class RequestBodyJsonPathTest : BaseVerticleTest() {
             .then()
             .body(hasLength(0))
     }
+
+    /**
+     * Match requiring any of an array of strings in the request body.
+     */
+    @Test
+    fun testAnyOfMatchInRequestBody() {
+        RestAssured.given().`when`()
+            .contentType(ContentType.JSON)
+            .body("""{ "foo": "bar" }""")
+            .post("/example-anyof")
+            .then()
+            .body(equalTo("AnyOf"))
+    }
 }

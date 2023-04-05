@@ -361,4 +361,27 @@ class RequestBodyXPathTest : BaseVerticleTest() {
             .then()
             .body(Matchers.hasLength(0))
     }
+
+    /**
+     * Match requiring any of an array strings in the request body.
+     */
+    @Test
+    fun testAnyOfMatchInRequestBody() {
+        RestAssured.given().`when`()
+            .contentType(ContentType.XML)
+            .body("""
+<?xml version="1.0" encoding="UTF-8"?>
+<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"> 
+  <env:Header/>
+  <env:Body>
+    <pets:animal xmlns:pets="urn:com:example:petstore">
+      <pets:id>3</pets:id>
+    </pets:animal>
+  </env:Body>
+</env:Envelope>
+""".trim())
+            .post("/example-anyof")
+            .then()
+            .body(equalTo("AnyOf"))
+    }
 }

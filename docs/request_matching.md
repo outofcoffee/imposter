@@ -119,6 +119,42 @@ resources:
 
 > Note: the YAML keyword `null` indicates a null value, not the string literal `"null"`
 
+## Using multiple request body matchers
+
+You can use multiple request body matchers for a resource. Using the `allOf` or `anyOf` conditions controls how the matchers are combined.
+
+### All matchers must match
+
+```yaml
+resources:
+- method: GET
+  path: /example1
+  requestBody:
+    allOf:
+    - jsonPath: $.foo
+      value: bar
+    - jsonPath: $.baz
+      value: qux
+  response:
+    statusCode: 204
+```
+
+### At least one matcher must match
+
+```yaml
+resources:
+- method: GET
+  path: /example1
+  requestBody:
+    anyOf:
+    - jsonPath: $.foo
+      value: bar
+    - jsonPath: $.baz
+      value: qux
+  response:
+    statusCode: 204
+```
+
 ## Resource matching performance
 
 [Resource matching](./configuration.md) is typically the fastest method of providing conditional responses. This is the case for request properties such as headers, query parameters, path parameters, path and HTTP method. In the case of using JsonPath or XPath to query the request body to conditionally match resources, however, the body must be parsed, which is computationally expensive and will result in lower performance.

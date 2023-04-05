@@ -77,4 +77,7 @@ open class BaseRequestBodyConfig {
 class RequestBodyConfig : BaseRequestBodyConfig() {
     @field:JsonProperty("allOf")
     var allOf: List<BaseRequestBodyConfig>? = null
+
+    @field:JsonProperty("anyOf")
+    var anyOf: List<BaseRequestBodyConfig>? = null
 }
