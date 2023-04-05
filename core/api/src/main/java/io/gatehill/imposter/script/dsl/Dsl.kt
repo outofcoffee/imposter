@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2023.
  *
  * This file is part of Imposter.
  *
@@ -40,29 +40,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.script
+package io.gatehill.imposter.script.dsl
 
-/**
- * @author Pete Cornish
- */
-interface MutableResponseBehaviour {
-    fun withHeader(header: String, value: String?): MutableResponseBehaviour
-    fun withStatusCode(statusCode: Int): MutableResponseBehaviour
-    fun withFile(responseFile: String): MutableResponseBehaviour
-    fun withEmpty(): MutableResponseBehaviour
-    fun withContent(content: String?): MutableResponseBehaviour
-    @Deprecated("Use withContent(String) instead", replaceWith = ReplaceWith("withContent"))
-    fun withData(responseData: String?) = withContent(responseData)
-    fun template(): MutableResponseBehaviour
-    fun withExampleName(exampleName: String): MutableResponseBehaviour
-    fun usingDefaultBehaviour(): MutableResponseBehaviour
-    fun skipDefaultBehaviour(): MutableResponseBehaviour
-    fun and(): MutableResponseBehaviour
-    fun withPerformance(performance: PerformanceSimulationConfig?): MutableResponseBehaviour
-    fun withDelay(exactDelayMs: Int): MutableResponseBehaviour
-    fun withDelayRange(minDelayMs: Int, maxDelayMs: Int): MutableResponseBehaviour
-    fun withFailure(failureType: FailureSimulationType?): MutableResponseBehaviour
+import io.gatehill.imposter.script.MutableResponseBehaviour
+import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 
-    @Deprecated("Use skipDefaultBehaviour() instead", ReplaceWith("skipDefaultBehaviour()"))
-    fun immediately(): MutableResponseBehaviour
+interface Dsl {
+    val responseBehaviour: ReadWriteResponseBehaviour
+    fun respond(): MutableResponseBehaviour
 }

@@ -40,29 +40,38 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.script
+package io.gatehill.imposter.service
+
+import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
+import io.gatehill.imposter.script.ScriptUtil
+import io.gatehill.imposter.scripting.AbstractBaseScriptTest
+import io.gatehill.imposter.scripting.groovy.service.GroovyScriptServiceImpl
+import org.junit.Assert
+import org.junit.Test
+import javax.inject.Inject
 
 /**
- * @author Pete Cornish
+ * Tests configuration of response behaviour using the closure syntax.
  */
-interface MutableResponseBehaviour {
-    fun withHeader(header: String, value: String?): MutableResponseBehaviour
-    fun withStatusCode(statusCode: Int): MutableResponseBehaviour
-    fun withFile(responseFile: String): MutableResponseBehaviour
-    fun withEmpty(): MutableResponseBehaviour
-    fun withContent(content: String?): MutableResponseBehaviour
-    @Deprecated("Use withContent(String) instead", replaceWith = ReplaceWith("withContent"))
-    fun withData(responseData: String?) = withContent(responseData)
-    fun template(): MutableResponseBehaviour
-    fun withExampleName(exampleName: String): MutableResponseBehaviour
-    fun usingDefaultBehaviour(): MutableResponseBehaviour
-    fun skipDefaultBehaviour(): MutableResponseBehaviour
-    fun and(): MutableResponseBehaviour
-    fun withPerformance(performance: PerformanceSimulationConfig?): MutableResponseBehaviour
-    fun withDelay(exactDelayMs: Int): MutableResponseBehaviour
-    fun withDelayRange(minDelayMs: Int, maxDelayMs: Int): MutableResponseBehaviour
-    fun withFailure(failureType: FailureSimulationType?): MutableResponseBehaviour
+class GroovyScriptClosureTest : AbstractBaseScriptTest() {
+    @Inject
+    private var service: GroovyScriptServiceImpl? = null
 
-    @Deprecated("Use skipDefaultBehaviour() instead", ReplaceWith("skipDefaultBehaviour()"))
-    fun immediately(): MutableResponseBehaviour
+    override fun getService() = service!!
+
+    override fun getScriptName() = "closure.groovy"
+
+    @Test
+    fun `execute closure`() {
+        val pluginConfig = configureScript()
+        val resourceConfig = pluginConfig as BasicResourceConfig
+
+        val runtimeContext = buildRuntimeContext(emptyMap())
+        val scriptPath = ScriptUtil.resolveScriptPath(pluginConfig, resourceConfig.responseConfig.scriptFile)
+        val actual = getService().executeScript(scriptPath, runtimeContext)
+
+        Assert.assertNotNull(actual)
+        Assert.assertEquals("closure", actual.content)
+        Assert.assertEquals(201, actual.statusCode)
+    }
 }

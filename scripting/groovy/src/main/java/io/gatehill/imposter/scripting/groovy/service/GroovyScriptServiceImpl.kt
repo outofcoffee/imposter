@@ -49,7 +49,7 @@ import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.ScriptUtil
-import io.gatehill.imposter.scripting.groovy.impl.GroovyResponseBehaviourImpl
+import io.gatehill.imposter.scripting.groovy.impl.GroovyDsl
 import io.gatehill.imposter.scripting.groovy.util.ScriptLoader
 import io.gatehill.imposter.service.ScriptService
 import io.gatehill.imposter.util.MetricsUtil
@@ -70,11 +70,11 @@ class GroovyScriptServiceImpl : ScriptService {
      */
     private val scriptClasses = CacheBuilder.newBuilder()
         .maximumSize(EnvVars.getEnv(ScriptUtil.ENV_SCRIPT_CACHE_ENTRIES)?.toLong() ?: ScriptUtil.DEFAULT_SCRIPT_CACHE_ENTRIES)
-        .build<Path, Class<GroovyResponseBehaviourImpl>>()
+        .build<Path, Class<GroovyDsl>>()
 
     init {
         val compilerConfig = CompilerConfiguration()
-        compilerConfig.scriptBaseClass = GroovyResponseBehaviourImpl::class.java.canonicalName
+        compilerConfig.scriptBaseClass = GroovyDsl::class.java.canonicalName
         groovyClassLoader = GroovyClassLoader(this::class.java.classLoader, compilerConfig)
 
         MetricsUtil.doIfMetricsEnabled(METRIC_SCRIPT_GROOVY_CACHE_ENTRIES) { registry ->
@@ -97,26 +97,26 @@ class GroovyScriptServiceImpl : ScriptService {
     ): ReadWriteResponseBehaviour {
         LOGGER.trace("Executing script file: {}", scriptFile)
 
-        return try {
+        try {
             val scriptClass = getCompiledScript(scriptFile)
-            val script = scriptClass.getDeclaredConstructor().newInstance()
-            script.apply {
+            val script = scriptClass.getDeclaredConstructor().newInstance().apply {
                 binding = convertBindings(runtimeContext, scriptFile)
                 run()
             }
+            return script.responseBehaviour
         } catch (e: Exception) {
             throw RuntimeException("Script execution terminated abnormally", e)
         }
     }
 
-    private fun getCompiledScript(scriptFile: Path): Class<GroovyResponseBehaviourImpl> {
+    private fun getCompiledScript(scriptFile: Path): Class<GroovyDsl> {
         return scriptClasses.get(scriptFile) {
             try {
                 LOGGER.trace("Compiling script file: {}", scriptFile)
                 val compileStartMs = System.currentTimeMillis()
 
                 @Suppress("UNCHECKED_CAST")
-                val compiled = groovyClassLoader.parseClass(scriptFile.toFile()) as Class<GroovyResponseBehaviourImpl>
+                val compiled = groovyClassLoader.parseClass(scriptFile.toFile()) as Class<GroovyDsl>
 
                 LOGGER.debug("Script: {} compiled in {}ms", scriptFile, System.currentTimeMillis() - compileStartMs)
                 return@get compiled

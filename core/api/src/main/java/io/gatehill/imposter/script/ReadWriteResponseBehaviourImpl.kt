@@ -156,25 +156,6 @@ open class ReadWriteResponseBehaviourImpl : ReadWriteResponseBehaviour {
      *
      * @return this
      */
-    override fun respond(): MutableResponseBehaviour {
-        return this
-    }
-
-    /**
-     * Syntactic sugar that executes the Runnable immediately.
-     *
-     * @return this
-     */
-    override fun respond(closure: Runnable): MutableResponseBehaviour {
-        closure.run()
-        return this
-    }
-
-    /**
-     * Syntactic sugar.
-     *
-     * @return this
-     */
     override fun and(): MutableResponseBehaviour {
         return this
     }

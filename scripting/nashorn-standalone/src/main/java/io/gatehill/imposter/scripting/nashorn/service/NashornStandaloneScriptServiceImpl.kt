@@ -50,6 +50,7 @@ import io.gatehill.imposter.plugin.RequireModules
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.ScriptUtil
+import io.gatehill.imposter.script.dsl.Dsl
 import io.gatehill.imposter.scripting.common.util.CompiledJsScript
 import io.gatehill.imposter.scripting.common.util.JavaScriptUtil
 import io.gatehill.imposter.scripting.nashorn.NashornStandaloneScriptingModule
@@ -126,7 +127,8 @@ class NashornStandaloneScriptServiceImpl : ScriptService, Plugin {
 
             val compiled = getCompiledScript(scriptFile)
             try {
-                return compiled.code.eval(bindings) as ReadWriteResponseBehaviour
+                val result = compiled.code.eval(bindings) as Dsl
+                return result.responseBehaviour
             } catch (e: ScriptException) {
                 throw JavaScriptUtil.unwrapScriptException(e, compiled)
             }
