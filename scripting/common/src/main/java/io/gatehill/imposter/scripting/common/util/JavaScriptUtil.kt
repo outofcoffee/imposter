@@ -45,7 +45,7 @@ package io.gatehill.imposter.scripting.common.util
 
 import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.script.RuntimeContext
-import io.gatehill.imposter.script.impl.RunnableResponseBehaviourImpl
+import io.gatehill.imposter.scripting.common.dsl.RunnableDsl
 import io.gatehill.imposter.scripting.common.shim.ConsoleShim
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -79,7 +79,7 @@ object JavaScriptUtil {
             "respond",
         )
         DSL_FUNCTIONS = dslMethods.distinct().joinToString("\r\n") { methodName ->
-            "${DSL_OBJECT_PREFIX}${methodName} = Java.super(responseBehaviour).${methodName};"
+            "${DSL_OBJECT_PREFIX}${methodName} = Java.super(__dsl).${methodName};"
         }
 
         // optionally expose as global objects
@@ -119,9 +119,9 @@ object JavaScriptUtil {
 
     private fun buildWrappedScript(script: String, setGlobalDslObjects: Boolean): WrappedScript {
         val preScript = """
-var RunnableResponseBehaviourImpl = Java.type('${RunnableResponseBehaviourImpl::class.java.canonicalName}');
+var RunnableDsl = Java.type('${RunnableDsl::class.java.canonicalName}');
 
-var responseBehaviour = new RunnableResponseBehaviourImpl() {
+var __dsl = new RunnableDsl() {
     run: function() {
 
 /* ------------------------------------------------------------------------- */
@@ -158,10 +158,8 @@ function require(moduleName) {
     }
 }
 
-responseBehaviour.run();
-
-/* return the configured behaviour */
-responseBehaviour;
+__dsl.run();
+__dsl;
 """
         return WrappedScript(preScript.lines().size, preScript + script + postScript)
     }

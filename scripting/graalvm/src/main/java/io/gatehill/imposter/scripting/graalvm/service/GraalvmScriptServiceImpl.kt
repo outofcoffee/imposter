@@ -49,6 +49,7 @@ import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.RequireModules
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
+import io.gatehill.imposter.script.dsl.Dsl
 import io.gatehill.imposter.scripting.common.util.JavaScriptUtil
 import io.gatehill.imposter.scripting.graalvm.GraalvmScriptingModule
 import io.gatehill.imposter.service.ScriptService
@@ -93,7 +94,8 @@ class GraalvmScriptServiceImpl : ScriptService, Plugin {
                 addConsoleShim = false
             )
             val wrapped = JavaScriptUtil.wrapScript(scriptFile)
-            scriptEngine.eval(wrapped.script, SimpleBindings(globals)) as ReadWriteResponseBehaviour
+            val result = scriptEngine.eval(wrapped.script, SimpleBindings(globals)) as Dsl
+            result.responseBehaviour
 
         } catch (e: Exception) {
             throw RuntimeException("Script execution terminated abnormally", e)

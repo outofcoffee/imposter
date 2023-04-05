@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2023.
  *
  * This file is part of Imposter.
  *
@@ -40,16 +40,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.script.impl
+package io.gatehill.imposter.scripting.common.dsl
 
-import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl
+import io.gatehill.imposter.script.dsl.DslImpl
 
-/**
- * @author Pete Cornish
- */
-abstract class RunnableResponseBehaviourImpl : ReadWriteResponseBehaviourImpl() {
+abstract class RunnableDsl : DslImpl() {
     /**
-     * The main instance method of a script.
+     * The main instance function of a script.
      */
     abstract fun run(): Any?
 }
