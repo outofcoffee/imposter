@@ -188,7 +188,8 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
                 LOGGER.trace("Matching against all of ${bodyConfigs.size} request body configs for ${LogUtil.describeRequestShort(httpExchange)}: $bodyConfigs")
             }
             if (bodyConfigs.all { matchUsingBodyConfig(it, pluginConfig, httpExchange) == ResourceMatchResult.EXACT_MATCH }) {
-                ResourceMatchResult.EXACT_MATCH
+                // each matched config contributes to the weight
+                ResourceMatchResult(MatchResultType.EXACT_MATCH, bodyConfigs.size)
             } else {
                 ResourceMatchResult.NOT_MATCHED
             }
@@ -274,10 +275,10 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
                 matchUsingEquality(bodyConfig.value, actualValue, operator)
 
             ResourceMatchOperator.Contains, ResourceMatchOperator.NotContains ->
-                matchUsingContains(actualValue, bodyConfig.value, operator)
+                matchUsingContains(bodyConfig.value, actualValue, operator)
 
             ResourceMatchOperator.Matches, ResourceMatchOperator.NotMatches ->
-                matchUsingRegex(actualValue, bodyConfig.value, operator)
+                matchUsingRegex(bodyConfig.value, actualValue, operator)
         }
         if (LOGGER.isTraceEnabled) {
             LOGGER.trace("Body match result for {} {}: {}", operator, bodyConfig.value, match)
@@ -312,8 +313,8 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
     }
 
     private fun matchUsingContains(
-        actualValue: Any?,
         configuredValue: String?,
+        actualValue: Any?,
         operator: ResourceMatchOperator,
     ): ResourceMatchResult {
         val valueMatch = if (actualValue != null && configuredValue != null) {
@@ -330,8 +331,8 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
     }
 
     private fun matchUsingRegex(
-        actualValue: Any?,
         configuredValue: String?,
+        actualValue: Any?,
         operator: ResourceMatchOperator,
     ): ResourceMatchResult {
         val valueMatch = if (actualValue != null && configuredValue != null) {
@@ -366,7 +367,8 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
         val exact = matched && results.none { it == ResourceMatchResult.WILDCARD_MATCH }
 
         // score is the number of exact or wildcard matches
-        val score = results.count { it == ResourceMatchResult.EXACT_MATCH || it == ResourceMatchResult.WILDCARD_MATCH }
+        val score = results.filter { it == ResourceMatchResult.EXACT_MATCH || it == ResourceMatchResult.WILDCARD_MATCH }
+            .sumOf { it.weight }
 
         val result = MatchedResource(resource, matched, score, exact)
         LOGGER.trace("Result of matching request {} to resource {}: {}", httpExchange, resource, result)

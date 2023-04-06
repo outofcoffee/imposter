@@ -43,7 +43,19 @@
 
 package io.gatehill.imposter.http
 
-enum class ResourceMatchResult {
+data class ResourceMatchResult(
+    val type: MatchResultType,
+    val weight: Int,
+) {
+    companion object {
+        val NO_CONFIG = ResourceMatchResult(MatchResultType.NO_CONFIG, 1)
+        val NOT_MATCHED = ResourceMatchResult(MatchResultType.NOT_MATCHED, 1)
+        val EXACT_MATCH = ResourceMatchResult(MatchResultType.EXACT_MATCH, 1)
+        val WILDCARD_MATCH = ResourceMatchResult(MatchResultType.WILDCARD_MATCH, 1)
+    }
+}
+
+enum class MatchResultType {
     NO_CONFIG,
     NOT_MATCHED,
     EXACT_MATCH,
