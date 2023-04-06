@@ -47,6 +47,7 @@ import io.gatehill.imposter.config.ResolvedResourceConfig
 import io.gatehill.imposter.http.AbstractResourceMatcher
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpRequest
+import io.gatehill.imposter.http.ResourceMatchResult
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.soap.config.SoapPluginConfig
 import io.gatehill.imposter.plugin.soap.config.SoapPluginResourceConfig
@@ -75,26 +76,60 @@ class SoapResourceMatcher(
         httpExchange: HttpExchange,
     ): MatchedResource {
         val resourceConfig = resource.config as SoapPluginResourceConfig
+        val soapAction = getSoapAction(httpExchange)
+
+        val pathMatch = matchPath(httpExchange, resourceConfig, httpExchange.request)
+        val soapActionMatch = matchSoapAction(resourceConfig, soapAction)
+        val bindingMatch = matchBinding(resourceConfig)
+        val operationMatch = matchOperation(resourceConfig, pluginConfig, httpExchange, soapAction)
+        val bodyMatch = matchRequestBody(httpExchange, pluginConfig, resource.config)
+
+        val matchResults = listOf(pathMatch, soapActionMatch, bindingMatch, operationMatch, bodyMatch)
+        return determineMatch(matchResults, resource, httpExchange)
+    }
+
+    fun getSoapAction(httpExchange: HttpExchange): String? {
         val request = httpExchange.request
 
-        val pathMatch = matchPath(httpExchange, resourceConfig, request)
-        val bindingMatch = resourceConfig.binding?.let { it == binding.name } ?: true
+        val soapAction: String? = getSoapActionHeader(request)
+            ?: getSoapActionFromContentType(request)
 
-        val soapAction = getSoapAction(httpExchange)
-        val soapActionMatch = resourceConfig.soapAction?.let { it == soapAction } ?: true
-
-        val operationMatch = resourceConfig.operation?.let {
-            isOperationMatch(pluginConfig, httpExchange, it, soapAction)
-        } ?: true
-
-        val matched = (pathMatch == PathMatchResult.EXACT_MATCH || pathMatch == PathMatchResult.WILDCARD_MATCH) &&
-                bindingMatch &&
-                operationMatch &&
-                soapActionMatch &&
-                matchRequestBody(httpExchange, pluginConfig, resource.config)
-
-        return MatchedResource(resource, matched, pathMatch == PathMatchResult.EXACT_MATCH)
+        soapAction ?: LOGGER.trace("No SOAPAction found")
+        return soapAction
     }
+
+    private fun matchSoapAction(
+        resourceConfig: SoapPluginResourceConfig,
+        soapAction: String?,
+    ) = resourceConfig.soapAction?.let {
+        if (it == soapAction) {
+            ResourceMatchResult.EXACT_MATCH
+        } else {
+            ResourceMatchResult.NOT_MATCHED
+        }
+    } ?: ResourceMatchResult.NO_CONFIG
+
+    private fun matchBinding(resourceConfig: SoapPluginResourceConfig) =
+        resourceConfig.binding?.let {
+            if (it == binding.name) {
+                ResourceMatchResult.EXACT_MATCH
+            } else {
+                ResourceMatchResult.NOT_MATCHED
+            }
+        } ?: ResourceMatchResult.NO_CONFIG
+
+    private fun matchOperation(
+        resourceConfig: SoapPluginResourceConfig,
+        pluginConfig: PluginConfig,
+        httpExchange: HttpExchange,
+        soapAction: String?,
+    ) = resourceConfig.operation?.let {
+        if (isOperationMatch(pluginConfig, httpExchange, it, soapAction)) {
+            ResourceMatchResult.EXACT_MATCH
+        } else {
+            ResourceMatchResult.NOT_MATCHED
+        }
+    } ?: ResourceMatchResult.NO_CONFIG
 
     private fun isOperationMatch(
         config: PluginConfig,
@@ -118,16 +153,6 @@ class SoapResourceMatcher(
             return binding.operations.firstOrNull { it.soapAction == soapAction }
         }
         return determineOperationFromRequestBody(bodyHolder)
-    }
-
-    fun getSoapAction(httpExchange: HttpExchange): String? {
-        val request = httpExchange.request
-
-        val soapAction: String? = getSoapActionHeader(request)
-            ?: getSoapActionFromContentType(request)
-
-        soapAction ?: LOGGER.trace("No SOAPAction found")
-        return soapAction
     }
 
     private fun getSoapActionHeader(request: HttpRequest): String? {

@@ -44,6 +44,7 @@ package io.gatehill.imposter.http
 
 import io.gatehill.imposter.config.ResolvedResourceConfig
 import io.gatehill.imposter.plugin.config.PluginConfig
+import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.resource.MethodResourceConfig
 import io.gatehill.imposter.service.script.InlineScriptService
 import io.gatehill.imposter.util.CollectionUtil.convertKeysToLowerCase
@@ -65,16 +66,16 @@ class SingletonResourceMatcher : AbstractResourceMatcher() {
         resources: List<ResolvedResourceConfig>,
         httpExchange: HttpExchange,
     ): List<MatchedResource> {
-        var resourceConfigs = super.filterResourceConfigs(pluginConfig, resources, httpExchange)
+        var matched = super.filterResourceConfigs(pluginConfig, resources, httpExchange)
 
         // find the most specific, by filtering those that match by those that specify parameters
-        resourceConfigs = filterByPairs(resourceConfigs, ResolvedResourceConfig::pathParams)
-        resourceConfigs = filterByPairs(resourceConfigs, ResolvedResourceConfig::queryParams)
-        resourceConfigs = filterByPairs(resourceConfigs, ResolvedResourceConfig::formParams)
-        resourceConfigs = filterByPairs(resourceConfigs, ResolvedResourceConfig::requestHeaders)
-        resourceConfigs = filterByEvalMatcher(resourceConfigs)
+        matched = filterByPairs(matched, ResolvedResourceConfig::pathParams)
+        matched = filterByPairs(matched, ResolvedResourceConfig::queryParams)
+        matched = filterByPairs(matched, ResolvedResourceConfig::formParams)
+        matched = filterByPairs(matched, ResolvedResourceConfig::requestHeaders)
+        matched = filterByEvalMatcher(matched)
 
-        return resourceConfigs
+        return matched
     }
 
     /**
@@ -89,24 +90,30 @@ class SingletonResourceMatcher : AbstractResourceMatcher() {
         val request = httpExchange.request
 
         val pathMatch = matchPath(httpExchange, resourceConfig, request)
+        val methodMatch = matchMethod(resourceConfig, request)
+        val pathParamsMatch = matchPairs(request.pathParams, resource.pathParams, true)
+        val queryParamsMatch = matchPairs(request.queryParams, resource.queryParams, true)
+        val formParamsMatch = matchPairs(request.formParams, resource.formParams, true)
+        val headersMatch = matchPairs(request.headers, resource.requestHeaders, false)
+        val bodyMatch = matchRequestBody(httpExchange, pluginConfig, resource.config)
+        val evalMatch = inlineScriptService.evalScript(httpExchange, pluginConfig, resource.config)
 
-        val methodMatch = if (resourceConfig is MethodResourceConfig && null != resourceConfig.method) {
-            request.method == resourceConfig.method
+        val matchResults = listOf(pathMatch, methodMatch, pathParamsMatch, queryParamsMatch, formParamsMatch, headersMatch, bodyMatch, evalMatch)
+        return determineMatch(matchResults, resource, httpExchange)
+    }
+
+    private fun matchMethod(
+        resourceConfig: BasicResourceConfig,
+        request: HttpRequest,
+    ) = if (resourceConfig is MethodResourceConfig && null != resourceConfig.method) {
+        if (request.method == resourceConfig.method) {
+            ResourceMatchResult.EXACT_MATCH
         } else {
-            // unspecified implies any match
-            true
+            ResourceMatchResult.NOT_MATCHED
         }
-
-        val matched = methodMatch &&
-                (pathMatch == PathMatchResult.EXACT_MATCH || pathMatch == PathMatchResult.WILDCARD_MATCH) &&
-                matchPairs(request.pathParams, resource.pathParams, true) &&
-                matchPairs(request.queryParams, resource.queryParams, true) &&
-                matchPairs(request.formParams, resource.formParams, true) &&
-                matchPairs(request.headers, resource.requestHeaders, false) &&
-                matchRequestBody(httpExchange, pluginConfig, resource.config) &&
-                inlineScriptService.evalScript(httpExchange, pluginConfig, resource.config)
-
-        return MatchedResource(resource, matched, pathMatch == PathMatchResult.EXACT_MATCH)
+    } else {
+        // unspecified
+        ResourceMatchResult.NO_CONFIG
     }
 
     private fun filterByPairs(
@@ -142,20 +149,21 @@ class SingletonResourceMatcher : AbstractResourceMatcher() {
         requestMap: Map<String, String>,
         resourceMap: Map<String, String>,
         caseSensitiveKeyMatch: Boolean,
-    ): Boolean {
-        // none configured - implies any match
+    ): ResourceMatchResult {
+        // none configured
         if (resourceMap.isEmpty()) {
-            return true
+            return ResourceMatchResult.NO_CONFIG
         }
 
         // optionally normalise request map
         val comparisonRequestMap = if (caseSensitiveKeyMatch) requestMap else convertKeysToLowerCase(requestMap)
 
         // all members of the config map must be present in the request for it to match
-        return resourceMap.all { (key, value) ->
+        val allEqual = resourceMap.all { (key, value) ->
             val configKey: String = if (caseSensitiveKeyMatch) key else key.lowercase(Locale.getDefault())
             safeEquals(comparisonRequestMap[configKey], value)
         }
+        return if (allEqual) ResourceMatchResult.EXACT_MATCH else ResourceMatchResult.NOT_MATCHED
     }
 
     companion object {

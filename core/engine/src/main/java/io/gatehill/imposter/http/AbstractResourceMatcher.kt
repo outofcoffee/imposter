@@ -139,20 +139,20 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
         httpExchange: HttpExchange,
         resourceConfig: BasicResourceConfig,
         request: HttpRequest,
-    ): PathMatchResult {
+    ): ResourceMatchResult {
         // note: path template can be null when a regex route is used
         val pathTemplate = httpExchange.currentRoutePath
 
         val pathMatch = resourceConfig.path?.let { resourceConfigPath ->
             if (request.path == resourceConfigPath || pathTemplate?.let { it == resourceConfigPath } == true) {
-                return@let PathMatchResult.EXACT_MATCH
+                return@let ResourceMatchResult.EXACT_MATCH
             } else if (resourceConfigPath.endsWith("*") && request.path.startsWith(resourceConfigPath.substring(0, resourceConfigPath.length - 1))) {
-                return@let PathMatchResult.WILDCARD_MATCH
+                return@let ResourceMatchResult.WILDCARD_MATCH
             } else {
-                return@let PathMatchResult.NOT_MATCHED
+                return@let ResourceMatchResult.NOT_MATCHED
             }
-            // if path is un-set, implies match all
-        } ?: PathMatchResult.EXACT_MATCH
+            // path is un-set
+        } ?: ResourceMatchResult.NO_CONFIG
 
         return pathMatch
     }
@@ -168,22 +168,30 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
         httpExchange: HttpExchange,
         pluginConfig: PluginConfig,
         resourceConfig: BasicResourceConfig
-    ): Boolean {
+    ): ResourceMatchResult {
         if (resourceConfig !is RequestBodyResourceConfig) {
-            // none configured - implies any match
-            return true
+            // none configured
+            return ResourceMatchResult.NO_CONFIG
         }
         return resourceConfig.requestBody?.allOf?.let { bodyConfigs ->
             if (LOGGER.isTraceEnabled) {
                 LOGGER.trace("Matching against all of ${bodyConfigs.size} request body configs for ${LogUtil.describeRequestShort(httpExchange)}: $bodyConfigs")
             }
-            bodyConfigs.all { matchUsingBodyConfig(it, pluginConfig, httpExchange) }
+            if (bodyConfigs.all { matchUsingBodyConfig(it, pluginConfig, httpExchange) == ResourceMatchResult.EXACT_MATCH }) {
+                ResourceMatchResult.EXACT_MATCH
+            } else {
+                ResourceMatchResult.NOT_MATCHED
+            }
 
         } ?: resourceConfig.requestBody?.anyOf?.let { bodyConfigs ->
             if (LOGGER.isTraceEnabled) {
                 LOGGER.trace("Matching against any of ${bodyConfigs.size} request body configs for ${LogUtil.describeRequestShort(httpExchange)}: $bodyConfigs")
             }
-            bodyConfigs.any { matchUsingBodyConfig(it, pluginConfig, httpExchange) }
+            if (bodyConfigs.any { matchUsingBodyConfig(it, pluginConfig, httpExchange) == ResourceMatchResult.EXACT_MATCH }) {
+                ResourceMatchResult.EXACT_MATCH
+            } else {
+                ResourceMatchResult.NOT_MATCHED
+            }
 
         } ?: resourceConfig.requestBody?.let { singleRequestBodyConfig ->
             if (LOGGER.isTraceEnabled) {
@@ -195,8 +203,8 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
             if (LOGGER.isTraceEnabled) {
                 LOGGER.trace("No request body config to match for ${LogUtil.describeRequestShort(httpExchange)}")
             }
-            // none configured - implies any match
-            true
+            // none configured
+            ResourceMatchResult.NO_CONFIG
         }
     }
 
@@ -204,21 +212,21 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
         bodyConfig: BaseRequestBodyConfig,
         pluginConfig: PluginConfig,
         httpExchange: HttpExchange,
-    ): Boolean {
-        if (!isNullOrEmpty(bodyConfig.jsonPath)) {
-            return matchRequestBodyJsonPath(bodyConfig, httpExchange)
+    ): ResourceMatchResult {
+        return if (!isNullOrEmpty(bodyConfig.jsonPath)) {
+            matchRequestBodyJsonPath(bodyConfig, httpExchange)
         } else if (!isNullOrEmpty(bodyConfig.xPath)) {
-            return matchRequestBodyXPath(bodyConfig, pluginConfig, httpExchange)
+            matchRequestBodyXPath(bodyConfig, pluginConfig, httpExchange)
         } else {
-            // none configured - implies any match
-            return true
+            // none configured
+            ResourceMatchResult.NO_CONFIG
         }
     }
 
     private fun matchRequestBodyJsonPath(
         bodyConfig: BaseRequestBodyConfig,
         httpExchange: HttpExchange,
-    ): Boolean {
+    ): ResourceMatchResult {
         val bodyValue = BodyQueryUtil.queryRequestBodyJsonPath(
             bodyConfig.jsonPath!!,
             httpExchange
@@ -231,7 +239,7 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
         bodyConfig: BaseRequestBodyConfig,
         pluginConfig: PluginConfig,
         httpExchange: HttpExchange,
-    ): Boolean {
+    ): ResourceMatchResult {
         val allNamespaces = bodyConfig.xmlNamespaces?.toMutableMap() ?: mutableMapOf()
         if (pluginConfig is SystemConfigHolder) {
             pluginConfig.systemConfig?.xmlNamespaces?.let { allNamespaces.putAll(it) }
@@ -244,15 +252,13 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
         return checkBodyMatch(bodyConfig, bodyValue)
     }
 
-    private fun checkBodyMatch(bodyConfig: BaseRequestBodyConfig, actualValue: Any?): Boolean {
+    private fun checkBodyMatch(bodyConfig: BaseRequestBodyConfig, actualValue: Any?): ResourceMatchResult {
         // defaults to equality check
         val operator = bodyConfig.operator ?: ResourceMatchOperator.EqualTo
 
-        val matched = when (operator) {
-            ResourceMatchOperator.Exists, ResourceMatchOperator.NotExists -> {
-                // the expression is checking for the existence of a value using the given query
-                return (actualValue != null) == (operator == ResourceMatchOperator.Exists)
-            }
+        val match = when (operator) {
+            ResourceMatchOperator.Exists, ResourceMatchOperator.NotExists ->
+                matchIfExists(actualValue, operator)
 
             ResourceMatchOperator.EqualTo, ResourceMatchOperator.NotEqualTo ->
                 matchUsingEquality(bodyConfig.value, actualValue, operator)
@@ -264,28 +270,42 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
                 matchUsingRegex(actualValue, bodyConfig.value, operator)
         }
         if (LOGGER.isTraceEnabled) {
-            LOGGER.trace("Body match result for {} {}: {}", bodyConfig.operator, bodyConfig.value, matched)
+            LOGGER.trace("Body match result for {} {}: {}", operator, bodyConfig.value, match)
         }
-        return matched
+        return match
+    }
+
+    /**
+     * The expression is checking for the existence of a value using the given query.
+     */
+    private fun matchIfExists(
+        actualValue: Any?,
+        operator: ResourceMatchOperator,
+    ) = if ((actualValue != null) == (operator == ResourceMatchOperator.Exists)) {
+        ResourceMatchResult.EXACT_MATCH
+    } else {
+        ResourceMatchResult.NOT_MATCHED
     }
 
     private fun matchUsingEquality(
         configuredValue: String?,
         actualValue: Any?,
         operator: ResourceMatchOperator,
-    ): Boolean {
+    ): ResourceMatchResult {
         val valueMatch = safeEquals(configuredValue, actualValue)
 
         // apply operator
-        return operator === ResourceMatchOperator.EqualTo && valueMatch ||
-            operator === ResourceMatchOperator.NotEqualTo && !valueMatch
+        val match = (operator === ResourceMatchOperator.EqualTo && valueMatch ||
+                operator === ResourceMatchOperator.NotEqualTo && !valueMatch)
+
+        return if (match) ResourceMatchResult.EXACT_MATCH else ResourceMatchResult.NOT_MATCHED
     }
 
     private fun matchUsingContains(
         actualValue: Any?,
         configuredValue: String?,
         operator: ResourceMatchOperator,
-    ): Boolean {
+    ): ResourceMatchResult {
         val valueMatch = if (actualValue != null && configuredValue != null) {
             actualValue.toString().contains(configuredValue)
         } else {
@@ -293,15 +313,17 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
         }
 
         // apply operator
-        return operator === ResourceMatchOperator.Contains && valueMatch ||
-            operator === ResourceMatchOperator.NotContains && !valueMatch
+        val match = (operator === ResourceMatchOperator.Contains && valueMatch ||
+            operator === ResourceMatchOperator.NotContains && !valueMatch)
+
+        return if (match) ResourceMatchResult.EXACT_MATCH else ResourceMatchResult.NOT_MATCHED
     }
 
     private fun matchUsingRegex(
         actualValue: Any?,
         configuredValue: String?,
         operator: ResourceMatchOperator,
-    ): Boolean {
+    ): ResourceMatchResult {
         val valueMatch = if (actualValue != null && configuredValue != null) {
             val pattern = patternCache.get(configuredValue) { Pattern.compile(configuredValue) }
             pattern.matcher(actualValue.toString()).matches()
@@ -310,21 +332,37 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
         }
 
         // apply operator
-        return operator === ResourceMatchOperator.Matches && valueMatch ||
-            operator === ResourceMatchOperator.NotMatches && !valueMatch
+        val match = (operator === ResourceMatchOperator.Matches && valueMatch ||
+            operator === ResourceMatchOperator.NotMatches && !valueMatch)
+
+        return if (match) ResourceMatchResult.EXACT_MATCH else ResourceMatchResult.NOT_MATCHED
+    }
+
+    protected fun determineMatch(
+        results: List<ResourceMatchResult>,
+        resource: ResolvedResourceConfig,
+        httpExchange: HttpExchange,
+    ): MatchedResource {
+        // true if exact match, wildcard match, or no config (implies match all)
+        val matched = results.none { it == ResourceMatchResult.NOT_MATCHED }
+
+        // all matched and none of type wildcard
+        val exact = matched && results.none { it == ResourceMatchResult.WILDCARD_MATCH }
+
+        // score is the number of exact or wildcard matches
+        val score = results.count { it == ResourceMatchResult.EXACT_MATCH || it == ResourceMatchResult.WILDCARD_MATCH }
+
+        val result = MatchedResource(resource, matched, score, exact)
+        LOGGER.trace("Result of matching request {} to resource {}: {}", httpExchange, resource, result)
+        return result
     }
 
     protected data class MatchedResource(
         val resource: ResolvedResourceConfig,
         val matched: Boolean,
+        val score: Int,
         val exact: Boolean,
     )
-
-    protected enum class PathMatchResult {
-        NOT_MATCHED,
-        EXACT_MATCH,
-        WILDCARD_MATCH,
-    }
 
     companion object {
         private val LOGGER = LogManager.getLogger(AbstractResourceMatcher::class.java)

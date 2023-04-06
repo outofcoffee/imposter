@@ -1,6 +1,7 @@
 package io.gatehill.imposter.service.script
 
 import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.http.ResourceMatchResult
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.resource.EvalResourceConfig
@@ -31,10 +32,10 @@ class InlineScriptService {
         httpExchange: HttpExchange,
         pluginConfig: PluginConfig,
         config: BasicResourceConfig
-    ): Boolean {
+    ): ResourceMatchResult {
         if (!hasInlineScript(config)) {
-            // none configured - implies any match
-            return true
+            // none configured
+            return ResourceMatchResult.NO_CONFIG
         }
         config as EvalResourceConfig
 
@@ -56,7 +57,7 @@ class InlineScriptService {
                     logger.debug("Inline script $scriptId evaluated to true for ${LogUtil.describeRequestShort(httpExchange)}")
                 }
             }
-            return result
+            return if (result) ResourceMatchResult.EXACT_MATCH else ResourceMatchResult.NOT_MATCHED
 
         } catch (e: Exception) {
             logger.warn(
@@ -65,7 +66,7 @@ class InlineScriptService {
                 config.eval,
                 e
             )
-            return false
+            return ResourceMatchResult.NOT_MATCHED
         }
     }
 
