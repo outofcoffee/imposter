@@ -68,16 +68,16 @@ class SingletonResourceMatcher : AbstractResourceMatcher() {
         val resourceConfig = resource.config
         val request = httpExchange.request
 
-        val pathMatch = matchPath(httpExchange, resourceConfig, request)
-        val methodMatch = matchMethod(resourceConfig, request)
-        val pathParamsMatch = matchPairs(request.pathParams, resource.pathParams, true)
-        val queryParamsMatch = matchPairs(request.queryParams, resource.queryParams, true)
-        val formParamsMatch = matchPairs(request.formParams, resource.formParams, true)
-        val headersMatch = matchPairs(request.headers, resource.requestHeaders, false)
-        val bodyMatch = matchRequestBody(httpExchange, pluginConfig, resource.config)
-        val evalMatch = matchEval(httpExchange, pluginConfig, resource)
-
-        val matchResults = listOf(pathMatch, methodMatch, pathParamsMatch, queryParamsMatch, formParamsMatch, headersMatch, bodyMatch, evalMatch)
+        val matchResults = listOf(
+            matchPath(httpExchange, resourceConfig, request),
+            matchMethod(resourceConfig, request),
+            matchPairs(request.pathParams, resource.pathParams, true),
+            matchPairs(request.queryParams, resource.queryParams, true),
+            matchPairs(request.formParams, resource.formParams, true),
+            matchPairs(request.headers, resource.requestHeaders, false),
+            matchRequestBody(httpExchange, pluginConfig, resource.config),
+            matchEval(httpExchange, pluginConfig, resource),
+        )
         return determineMatch(matchResults, resource, httpExchange)
     }
 

@@ -59,7 +59,7 @@ import io.gatehill.imposter.plugin.soap.util.SoapUtil
 import org.apache.logging.log4j.LogManager
 
 /**
- * SOAP specific matcher, for a particular binding.
+ * SOAP specific matcher, for a particular binding, operation or action.
  *
  * @author Pete Cornish
  */
@@ -78,14 +78,14 @@ class SoapResourceMatcher(
         val resourceConfig = resource.config as SoapPluginResourceConfig
         val soapAction = getSoapAction(httpExchange)
 
-        val pathMatch = matchPath(httpExchange, resourceConfig, httpExchange.request)
-        val soapActionMatch = matchSoapAction(resourceConfig, soapAction)
-        val bindingMatch = matchBinding(resourceConfig)
-        val operationMatch = matchOperation(resourceConfig, pluginConfig, httpExchange, soapAction)
-        val bodyMatch = matchRequestBody(httpExchange, pluginConfig, resource.config)
-        val evalMatch = matchEval(httpExchange, pluginConfig, resource)
-
-        val matchResults = listOf(pathMatch, soapActionMatch, bindingMatch, operationMatch, bodyMatch, evalMatch)
+        val matchResults = listOf(
+            matchPath(httpExchange, resourceConfig, httpExchange.request),
+            matchSoapAction(resourceConfig, soapAction),
+            matchBinding(resourceConfig),
+            matchOperation(resourceConfig, pluginConfig, httpExchange, soapAction),
+            matchRequestBody(httpExchange, pluginConfig, resource.config),
+            matchEval(httpExchange, pluginConfig, resource),
+        )
         return determineMatch(matchResults, resource, httpExchange)
     }
 
