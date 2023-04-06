@@ -103,7 +103,7 @@ class SingletonResourceMatcher : AbstractResourceMatcher() {
                 matchPairs(request.queryParams, resource.queryParams, true) &&
                 matchPairs(request.formParams, resource.formParams, true) &&
                 matchPairs(request.headers, resource.requestHeaders, false) &&
-                matchRequestBody(httpExchange, resource.config) &&
+                matchRequestBody(httpExchange, pluginConfig, resource.config) &&
                 inlineScriptService.evalScript(httpExchange, pluginConfig, resource.config)
 
         return MatchedResource(resource, matched, pathMatch == PathMatchResult.EXACT_MATCH)

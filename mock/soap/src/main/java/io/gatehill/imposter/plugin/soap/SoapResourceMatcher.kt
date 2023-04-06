@@ -91,7 +91,7 @@ class SoapResourceMatcher(
                 bindingMatch &&
                 operationMatch &&
                 soapActionMatch &&
-                matchRequestBody(httpExchange, resource.config)
+                matchRequestBody(httpExchange, pluginConfig, resource.config)
 
         return MatchedResource(resource, matched, pathMatch == PathMatchResult.EXACT_MATCH)
     }

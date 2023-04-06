@@ -384,4 +384,27 @@ class RequestBodyXPathTest : BaseVerticleTest() {
             .then()
             .body(equalTo("AnyOf"))
     }
+
+    /**
+     * Match using system defined namespaces.
+     */
+    @Test
+    fun testSystemDefinedNamespaces() {
+        RestAssured.given().`when`()
+            .contentType(ContentType.XML)
+            .body("""
+<?xml version="1.0" encoding="UTF-8"?>
+<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"> 
+  <env:Header/>
+  <env:Body>
+    <pets:animal xmlns:pets="urn:com:example:petstore">
+      <pets:name>Fluffy</pets:name>
+    </pets:animal>
+  </env:Body>
+</env:Envelope>
+""".trim())
+            .post("/example-system-namespaces")
+            .then()
+            .body(equalTo("System namespaces"))
+    }
 }

@@ -50,6 +50,7 @@ import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.resource.ResourceMatchOperator
 import io.gatehill.imposter.plugin.config.resource.reqbody.BaseRequestBodyConfig
 import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyResourceConfig
+import io.gatehill.imposter.plugin.config.system.SystemConfigHolder
 import io.gatehill.imposter.util.BodyQueryUtil
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.StringUtil.safeEquals
@@ -163,7 +164,11 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
      * @param resourceConfig the match configuration
      * @return `true` if the configuration is empty, or the request body matches the configuration, otherwise `false`
      */
-    protected fun matchRequestBody(httpExchange: HttpExchange, resourceConfig: BasicResourceConfig): Boolean {
+    protected fun matchRequestBody(
+        httpExchange: HttpExchange,
+        pluginConfig: PluginConfig,
+        resourceConfig: BasicResourceConfig
+    ): Boolean {
         if (resourceConfig !is RequestBodyResourceConfig) {
             // none configured - implies any match
             return true
@@ -172,19 +177,19 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
             if (LOGGER.isTraceEnabled) {
                 LOGGER.trace("Matching against all of ${bodyConfigs.size} request body configs for ${LogUtil.describeRequestShort(httpExchange)}: $bodyConfigs")
             }
-            bodyConfigs.all { matchUsingBodyConfig(it, httpExchange) }
+            bodyConfigs.all { matchUsingBodyConfig(it, pluginConfig, httpExchange) }
 
         } ?: resourceConfig.requestBody?.anyOf?.let { bodyConfigs ->
             if (LOGGER.isTraceEnabled) {
                 LOGGER.trace("Matching against any of ${bodyConfigs.size} request body configs for ${LogUtil.describeRequestShort(httpExchange)}: $bodyConfigs")
             }
-            bodyConfigs.any { matchUsingBodyConfig(it, httpExchange) }
+            bodyConfigs.any { matchUsingBodyConfig(it, pluginConfig, httpExchange) }
 
         } ?: resourceConfig.requestBody?.let { singleRequestBodyConfig ->
             if (LOGGER.isTraceEnabled) {
                 LOGGER.trace("Matching against a single request body config for ${LogUtil.describeRequestShort(httpExchange)}: $singleRequestBodyConfig")
             }
-            matchUsingBodyConfig(singleRequestBodyConfig, httpExchange)
+            matchUsingBodyConfig(singleRequestBodyConfig, pluginConfig, httpExchange)
 
         } ?: run {
             if (LOGGER.isTraceEnabled) {
@@ -197,12 +202,13 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
 
     private fun matchUsingBodyConfig(
         bodyConfig: BaseRequestBodyConfig,
+        pluginConfig: PluginConfig,
         httpExchange: HttpExchange,
     ): Boolean {
         if (!isNullOrEmpty(bodyConfig.jsonPath)) {
             return matchRequestBodyJsonPath(bodyConfig, httpExchange)
         } else if (!isNullOrEmpty(bodyConfig.xPath)) {
-            return matchRequestBodyXPath(bodyConfig, httpExchange)
+            return matchRequestBodyXPath(bodyConfig, pluginConfig, httpExchange)
         } else {
             // none configured - implies any match
             return true
@@ -223,11 +229,16 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
 
     private fun matchRequestBodyXPath(
         bodyConfig: BaseRequestBodyConfig,
+        pluginConfig: PluginConfig,
         httpExchange: HttpExchange,
     ): Boolean {
+        val allNamespaces = bodyConfig.xmlNamespaces?.toMutableMap() ?: mutableMapOf()
+        if (pluginConfig is SystemConfigHolder) {
+            pluginConfig.systemConfig?.xmlNamespaces?.let { allNamespaces.putAll(it) }
+        }
         val bodyValue = BodyQueryUtil.queryRequestBodyXPath(
             bodyConfig.xPath!!,
-            bodyConfig.xmlNamespaces,
+            allNamespaces,
             httpExchange
         )
         return checkBodyMatch(bodyConfig, bodyValue)

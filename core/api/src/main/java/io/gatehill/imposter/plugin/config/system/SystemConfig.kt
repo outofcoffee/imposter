@@ -50,4 +50,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 class SystemConfig {
     @JsonProperty("stores")
     val storeConfigs: Map<String, StoreConfig>? = null
+
+    @field:JsonProperty("xmlNamespaces")
+    var xmlNamespaces: Map<String, String>? = null
 }

@@ -150,3 +150,16 @@ resources:
         pets: "urn:com:example:petstore"
   response:
     content: "AnyOf"
+
+- method: POST
+  path: /example-system-namespaces
+  requestBody:
+    xPath: "/env2:Envelope/env2:Body/pets2:animal/pets2:name"
+    value: "Fluffy"
+  response:
+    content: "System namespaces"
+
+system:
+  xmlNamespaces:
+    env2: "http://schemas.xmlsoap.org/soap/envelope/"
+    pets2: "urn:com:example:petstore"

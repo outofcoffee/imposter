@@ -96,6 +96,37 @@ This example will match a request body like this:
 
 > Note: although this example uses a SOAP envelope, any valid XML body can be matched.
 
+### Reusing XML namespace definitions
+
+Instead of specifying the namespace definitions for each XPath expression, you can define them once at the top level of the configuration:
+
+```yaml
+plugin: rest
+
+resources:
+- method: GET
+  path: /example1
+  requestBody:
+    xPath: "/env:Envelope/env:Body/pets:animal/pets:name"
+    value: "Fluffy"
+  response:
+    statusCode: 204
+
+- method: GET
+  path: /example2
+  requestBody:
+    xPath: "/env:Envelope/env:Body/pets:animal/pets:name"
+    value: "Paws"
+  response:
+    statusCode: 400
+
+# XML namespaces shared by all XPath expressions
+system:
+  xmlNamespaces:
+    env: "http://schemas.xmlsoap.org/soap/envelope/"
+    pets: "urn:com:example:petstore"
+```
+
 ### Unmatched or null XPath expressions
 
 If the result of evaluating the XPath expression is `null` or if the path evaluates to non-existent property in the body, then it is considered `null`.
