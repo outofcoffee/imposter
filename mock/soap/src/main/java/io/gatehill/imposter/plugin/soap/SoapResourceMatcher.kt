@@ -83,8 +83,9 @@ class SoapResourceMatcher(
         val bindingMatch = matchBinding(resourceConfig)
         val operationMatch = matchOperation(resourceConfig, pluginConfig, httpExchange, soapAction)
         val bodyMatch = matchRequestBody(httpExchange, pluginConfig, resource.config)
+        val evalMatch = matchEval(httpExchange, pluginConfig, resource)
 
-        val matchResults = listOf(pathMatch, soapActionMatch, bindingMatch, operationMatch, bodyMatch)
+        val matchResults = listOf(pathMatch, soapActionMatch, bindingMatch, operationMatch, bodyMatch, evalMatch)
         return determineMatch(matchResults, resource, httpExchange)
     }
 

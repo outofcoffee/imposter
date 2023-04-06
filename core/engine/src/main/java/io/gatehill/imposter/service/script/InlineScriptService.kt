@@ -29,11 +29,10 @@ class InlineScriptService {
         pluginConfig: PluginConfig,
         config: BasicResourceConfig
     ): ResourceMatchResult {
-        if (!hasInlineScript(config)) {
+        if (config !is EvalResourceConfig || config.eval.isNullOrBlank()) {
             // none configured
             return ResourceMatchResult.NO_CONFIG
         }
-        config as EvalResourceConfig
 
         val scriptId = config.resourceId
         try {
@@ -64,10 +63,6 @@ class InlineScriptService {
             )
             return ResourceMatchResult.NOT_MATCHED
         }
-    }
-
-    private fun hasInlineScript(config: BasicResourceConfig): Boolean {
-        return config is EvalResourceConfig && !config.eval.isNullOrBlank()
     }
 
     companion object {

@@ -43,12 +43,15 @@
 
 package io.gatehill.imposter.plugin.soap.config
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.gatehill.imposter.plugin.config.resource.AbstractResourceConfig
+import io.gatehill.imposter.plugin.config.resource.EvalResourceConfig
 import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyConfig
 import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyResourceConfig
+import java.util.*
 
-class SoapPluginResourceConfig : AbstractResourceConfig(), RequestBodyResourceConfig {
+class SoapPluginResourceConfig : AbstractResourceConfig(), RequestBodyResourceConfig, EvalResourceConfig {
     @JsonProperty("binding")
     val binding: String? = null
 
@@ -60,4 +63,10 @@ class SoapPluginResourceConfig : AbstractResourceConfig(), RequestBodyResourceCo
 
     @JsonProperty("requestBody")
     override val requestBody: RequestBodyConfig? = null
+
+    @field:JsonProperty("eval")
+    override var eval: String? = null
+
+    @get:JsonIgnore
+    override val resourceId by lazy { UUID.randomUUID().toString() }
 }

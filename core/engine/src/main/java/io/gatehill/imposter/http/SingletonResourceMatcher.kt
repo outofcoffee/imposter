@@ -46,9 +46,7 @@ import io.gatehill.imposter.config.ResolvedResourceConfig
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.resource.MethodResourceConfig
-import io.gatehill.imposter.service.script.InlineScriptService
 import io.gatehill.imposter.util.CollectionUtil.convertKeysToLowerCase
-import io.gatehill.imposter.util.InjectorUtil
 import io.gatehill.imposter.util.StringUtil.safeEquals
 import java.util.*
 
@@ -59,8 +57,6 @@ import java.util.*
  * @author Pete Cornish
  */
 class SingletonResourceMatcher : AbstractResourceMatcher() {
-    private val inlineScriptService: InlineScriptService by lazy { InjectorUtil.getInstance() }
-
     /**
      * {@inheritDoc}
      */
@@ -79,7 +75,7 @@ class SingletonResourceMatcher : AbstractResourceMatcher() {
         val formParamsMatch = matchPairs(request.formParams, resource.formParams, true)
         val headersMatch = matchPairs(request.headers, resource.requestHeaders, false)
         val bodyMatch = matchRequestBody(httpExchange, pluginConfig, resource.config)
-        val evalMatch = inlineScriptService.evalScript(httpExchange, pluginConfig, resource.config)
+        val evalMatch = matchEval(httpExchange, pluginConfig, resource)
 
         val matchResults = listOf(pathMatch, methodMatch, pathParamsMatch, queryParamsMatch, formParamsMatch, headersMatch, bodyMatch, evalMatch)
         return determineMatch(matchResults, resource, httpExchange)

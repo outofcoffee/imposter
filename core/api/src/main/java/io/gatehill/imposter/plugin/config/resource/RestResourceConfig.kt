@@ -87,5 +87,5 @@ open class RestResourceConfig : AbstractResourceConfig(), MethodResourceConfig, 
         get() = queryParams
 
     @get:JsonIgnore
-    override val resourceId = UUID.randomUUID().toString()
+    override val resourceId by lazy { UUID.randomUUID().toString() }
 }

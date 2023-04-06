@@ -51,7 +51,9 @@ import io.gatehill.imposter.plugin.config.resource.ResourceMatchOperator
 import io.gatehill.imposter.plugin.config.resource.reqbody.BaseRequestBodyConfig
 import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyResourceConfig
 import io.gatehill.imposter.plugin.config.system.SystemConfigHolder
+import io.gatehill.imposter.service.script.InlineScriptService
 import io.gatehill.imposter.util.BodyQueryUtil
+import io.gatehill.imposter.util.InjectorUtil
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.StringUtil.safeEquals
 import org.apache.logging.log4j.LogManager
@@ -64,6 +66,8 @@ import java.util.regex.Pattern
  * @author Pete Cornish
  */
 abstract class AbstractResourceMatcher : ResourceMatcher {
+    private val inlineScriptService: InlineScriptService by lazy { InjectorUtil.getInstance() }
+
     /**
      * {@inheritDoc}
      */
@@ -343,6 +347,12 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
 
         return if (match) ResourceMatchResult.EXACT_MATCH else ResourceMatchResult.NOT_MATCHED
     }
+
+    protected fun matchEval(
+        httpExchange: HttpExchange,
+        pluginConfig: PluginConfig,
+        resource: ResolvedResourceConfig,
+    ) = inlineScriptService.evalScript(httpExchange, pluginConfig, resource.config)
 
     protected fun determineMatch(
         results: List<ResourceMatchResult>,
