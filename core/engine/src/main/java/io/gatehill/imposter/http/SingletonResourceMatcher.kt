@@ -61,23 +61,6 @@ import java.util.*
 class SingletonResourceMatcher : AbstractResourceMatcher() {
     private val inlineScriptService: InlineScriptService by lazy { InjectorUtil.getInstance() }
 
-    override fun filterResourceConfigs(
-        pluginConfig: PluginConfig,
-        resources: List<ResolvedResourceConfig>,
-        httpExchange: HttpExchange,
-    ): List<MatchedResource> {
-        var matched = super.filterResourceConfigs(pluginConfig, resources, httpExchange)
-
-        // find the most specific, by filtering those that match by those that specify parameters
-        matched = filterByPairs(matched, ResolvedResourceConfig::pathParams)
-        matched = filterByPairs(matched, ResolvedResourceConfig::queryParams)
-        matched = filterByPairs(matched, ResolvedResourceConfig::formParams)
-        matched = filterByPairs(matched, ResolvedResourceConfig::requestHeaders)
-        matched = filterByEvalMatcher(matched)
-
-        return matched
-    }
-
     /**
      * {@inheritDoc}
      */
@@ -114,25 +97,6 @@ class SingletonResourceMatcher : AbstractResourceMatcher() {
     } else {
         // unspecified
         ResourceMatchResult.NO_CONFIG
-    }
-
-    private fun filterByPairs(
-        resourceConfigs: List<MatchedResource>,
-        pairsSupplier: (ResolvedResourceConfig) -> Map<String, String>,
-    ): List<MatchedResource> {
-        val configsWithPairs = resourceConfigs.filter { res -> pairsSupplier(res.resource).isNotEmpty() }
-
-        return configsWithPairs.ifEmpty {
-            // no resource configs specified params - don't filter
-            resourceConfigs
-        }
-    }
-
-    private fun filterByEvalMatcher(resourceConfigs: List<MatchedResource>) = resourceConfigs.filter {
-        inlineScriptService.hasInlineScript(it.resource.config)
-    }.ifEmpty {
-        // no resource configs specified eval - don't filter
-        resourceConfigs
     }
 
     /**

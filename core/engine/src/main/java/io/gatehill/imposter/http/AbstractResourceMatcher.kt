@@ -102,18 +102,24 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
                     }
 
                     else -> {
-                        LOGGER.warn(
-                            "More than one resource config matched an exact path for {} - this is probably a configuration error. Guessing first resource configuration.",
-                            LogUtil.describeRequestShort(httpExchange)
-                        )
-                        return exactMatches[0].resource.config
+                        // find the most specific
+                        val sorted = exactMatches.sortedByDescending { it.score }
+                        if (sorted[0].score > sorted[1].score) {
+                            LOGGER.debug("Matched resource config for {}", LogUtil.describeRequestShort(httpExchange))
+                        } else {
+                            LOGGER.warn(
+                                "More than one resource config matched an exact path for {} - this is probably a configuration error. Guessing first resource configuration.",
+                                LogUtil.describeRequestShort(httpExchange)
+                            )
+                        }
+                        return sorted[0].resource.config
                     }
                 }
             }
         }
     }
 
-    protected open fun filterResourceConfigs(
+    private fun filterResourceConfigs(
         pluginConfig: PluginConfig,
         resources: List<ResolvedResourceConfig>,
         httpExchange: HttpExchange,

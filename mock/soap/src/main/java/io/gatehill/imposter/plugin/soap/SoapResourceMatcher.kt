@@ -109,8 +109,9 @@ class SoapResourceMatcher(
         }
     } ?: ResourceMatchResult.NO_CONFIG
 
-    private fun matchBinding(resourceConfig: SoapPluginResourceConfig) =
-        resourceConfig.binding?.let {
+    private fun matchBinding(
+        resourceConfig: SoapPluginResourceConfig
+    ) = resourceConfig.binding?.let {
             if (it == binding.name) {
                 ResourceMatchResult.EXACT_MATCH
             } else {

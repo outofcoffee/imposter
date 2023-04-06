@@ -17,10 +17,6 @@ class InlineScriptService {
         InjectorUtil.getInstance<ScriptServiceFactory>().fetchScriptService("inline.js")
     }
 
-    fun hasInlineScript(config: BasicResourceConfig): Boolean {
-        return config is EvalResourceConfig && !config.eval.isNullOrBlank()
-    }
-
     fun initScript(config: EvalResourceConfig) {
         if (config.eval.isNullOrBlank()) {
             return
@@ -68,6 +64,10 @@ class InlineScriptService {
             )
             return ResourceMatchResult.NOT_MATCHED
         }
+    }
+
+    private fun hasInlineScript(config: BasicResourceConfig): Boolean {
+        return config is EvalResourceConfig && !config.eval.isNullOrBlank()
     }
 
     companion object {
