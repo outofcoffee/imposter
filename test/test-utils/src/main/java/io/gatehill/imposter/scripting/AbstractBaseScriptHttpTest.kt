@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023.
+ * Copyright (c) 2016-2021.
  *
  * This file is part of Imposter.
  *
@@ -40,22 +40,56 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.script.dsl
 
-import io.gatehill.imposter.script.MutableResponseBehaviour
-import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl
+package io.gatehill.imposter.scripting
 
-open class DslImpl : Dsl {
-    override var responseBehaviour = ReadWriteResponseBehaviourImpl()
+import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
+import io.gatehill.imposter.script.ScriptUtil
+import io.gatehill.imposter.util.HttpServerUtil
+import io.vertx.core.AsyncResult
+import io.vertx.core.Vertx
+import org.junit.AfterClass
+import org.junit.Assert.*
+import org.junit.BeforeClass
+import org.junit.Test
 
-    /**
-     * @return `this`
-     */
-    override fun respond(): MutableResponseBehaviour {
-        return responseBehaviour
+/**
+ * @author Pete Cornish
+ */
+abstract class AbstractBaseScriptHttpTest : AbstractBaseScriptTest() {
+    @Test
+    fun `make HTTP request`() {
+        val listenPort = HttpServerUtil.listen(vertx!!) { request ->
+            request.response().end("Hello, world!")
+        }
+
+        val pluginConfig = configureScript()
+        val resourceConfig = pluginConfig as BasicResourceConfig
+
+        val additionalBindings = mapOf(
+            "url" to "http://localhost:$listenPort"
+        )
+        val runtimeContext = buildRuntimeContext(additionalBindings, emptyMap(), emptyMap(), emptyMap(), emptyMap())
+        val scriptPath = ScriptUtil.resolveScriptPath(pluginConfig, resourceConfig.responseConfig.scriptFile)
+        val actual = getService().executeScript(scriptPath, runtimeContext)
+
+        assertEquals("Hello, world!", actual.content)
     }
 
-    override fun newRequest(): ScriptHttpRequestBuilder {
-        return ScriptHttpRequestBuilderImpl()
+    companion object {
+        private var vertx: Vertx? = null
+
+        @JvmStatic
+        @BeforeClass
+        fun beforeClass() {
+            vertx = Vertx.vertx()
+        }
+
+        @JvmStatic
+        @AfterClass
+        @Throws(Exception::class)
+        fun afterClass() {
+            HttpServerUtil.blockWait<AsyncResult<Void>?> { completionHandler -> vertx!!.close(completionHandler) }
+        }
     }
 }

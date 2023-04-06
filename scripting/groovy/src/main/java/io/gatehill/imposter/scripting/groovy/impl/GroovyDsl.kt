@@ -16,8 +16,10 @@ abstract class GroovyDsl : Script(), Dsl {
 
     override fun respond() = dsl.respond()
 
+    override fun newRequest() = dsl.newRequest()
+
     /**
-     * Syntactic sugar that executes the Runnable immediately.
+     * Syntactic sugar that executes the closure immediately.
      *
      * @return `this`
      */

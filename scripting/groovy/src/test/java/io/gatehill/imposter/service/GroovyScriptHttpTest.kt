@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023.
+ * Copyright (c) 2016-2021.
  *
  * This file is part of Imposter.
  *
@@ -40,22 +40,20 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.script.dsl
+package io.gatehill.imposter.service
 
-import io.gatehill.imposter.script.MutableResponseBehaviour
-import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl
+import io.gatehill.imposter.scripting.AbstractBaseScriptHttpTest
+import io.gatehill.imposter.scripting.groovy.service.GroovyScriptServiceImpl
+import javax.inject.Inject
 
-open class DslImpl : Dsl {
-    override var responseBehaviour = ReadWriteResponseBehaviourImpl()
+/**
+ * @author Pete Cornish
+ */
+class GroovyScriptHttpTest : AbstractBaseScriptHttpTest() {
+    @Inject
+    private var service: GroovyScriptServiceImpl? = null
 
-    /**
-     * @return `this`
-     */
-    override fun respond(): MutableResponseBehaviour {
-        return responseBehaviour
-    }
+    override fun getService() = service!!
 
-    override fun newRequest(): ScriptHttpRequestBuilder {
-        return ScriptHttpRequestBuilderImpl()
-    }
+    override fun getScriptName() = "http-request.groovy"
 }

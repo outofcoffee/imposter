@@ -48,4 +48,5 @@ import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 interface Dsl {
     val responseBehaviour: ReadWriteResponseBehaviour
     fun respond(): MutableResponseBehaviour
+    fun newRequest(): ScriptHttpRequestBuilder
 }

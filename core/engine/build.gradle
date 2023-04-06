@@ -25,6 +25,7 @@ dependencies {
 
     api "org.jetbrains.kotlinx:kotlinx-coroutines-core:$version_coroutines"
     api "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$version_coroutines"
+    implementation "io.vertx:vertx-lang-kotlin-coroutines:$version_vertx"
 
     // metrics
     api "io.vertx:vertx-micrometer-metrics:$version_vertx"

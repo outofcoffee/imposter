@@ -50,19 +50,15 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import io.gatehill.imposter.config.S3FileDownloader
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig
 import io.gatehill.imposter.service.FileCacheService
+import io.gatehill.imposter.util.HttpServerUtil
+import io.gatehill.imposter.util.HttpServerUtil.blockWait
 import io.gatehill.imposter.util.TestEnvironmentUtil.assumeDockerAccessible
 import io.vertx.core.AsyncResult
-import io.vertx.core.Handler
 import io.vertx.core.Vertx
-import io.vertx.core.http.HttpServer
-import io.vertx.core.http.HttpServerOptions
 import io.vertx.core.http.HttpServerRequest
 import org.junit.*
-import java.net.ServerSocket
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.concurrent.CountDownLatch
-import java.util.function.Consumer
 
 /**
  * Verifies loading local and remote specifications.
@@ -113,15 +109,14 @@ class SpecificationLoaderServiceTest {
     @Test
     @Throws(Exception::class)
     fun testLoadSpecificationFromUrl() {
-        val listenPort = ServerSocket(0).use { it.localPort }
         val specFilePath =
             Paths.get(
                 SpecificationLoaderServiceTest::class.java.getResource("/util/spec-loader/order_service.yaml")!!.toURI()
             )
 
-        val httpServer = vertx!!.createHttpServer(HttpServerOptions().setPort(listenPort))
-        httpServer.requestHandler { request: HttpServerRequest -> request.response().sendFile(specFilePath.toString()) }
-        blockWait { listenHandler: Handler<AsyncResult<HttpServer?>?>? -> httpServer.listen(listenHandler) }
+        val listenPort = HttpServerUtil.listen(vertx!!) { request: HttpServerRequest ->
+            request.response().sendFile(specFilePath.toString())
+        }
 
         val pluginConfig = OpenApiPluginConfig()
         pluginConfig.parentDir = specFilePath.parent.toFile()
@@ -189,20 +184,6 @@ class SpecificationLoaderServiceTest {
         @Throws(Exception::class)
         fun afterClass() {
             blockWait<AsyncResult<Void>?> { completionHandler -> vertx!!.close(completionHandler) }
-        }
-
-        /**
-         * Block the consumer until the handler is called.
-         *
-         * @param handlerConsumer the consumer of the handler
-         * @param <T>             the type of the async result
-        </T> */
-        @Throws(Exception::class)
-        private fun <T> blockWait(handlerConsumer: Consumer<Handler<T>>) {
-            val latch = CountDownLatch(1)
-            val handler = Handler { _: T -> latch.countDown() }
-            handlerConsumer.accept(handler)
-            latch.await()
         }
     }
 }
