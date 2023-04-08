@@ -3,21 +3,35 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [3.15.0] - 2023-04-09
 ### Added
-- ...
+- feat: allows XPath XML namespaces to be configured at the system level.
+- feat: allows matching against one or more body matchers.
+- feat: adds eval resource matching to SOAP plugin.
+- feat: filter resource matches using score.
+
+### Fixed
+- fix: improves trapping of configuration file parsing exceptions.
+- fix: corrects plugin path logging on unsupported plugin.
+
+### Changed
+- refactor: separates script DSL from response behaviour.
+- chore(deps): bump version_jackson from 2.14.1 to 2.14.2 (#346)
+- chore(deps): bump version_vertx from 4.3.7 to 4.4.1 (#347)
+- ci: sets release to draft until all assets uploaded.
+- ci: switches to GITHUB_OUTPUT to set output parameter.
 
 ## [3.14.0] - 2023-03-30
 ### Added
 - feat: adds inline scripted resource matcher.
 
+### Fixed
+- fix(lambda): URL decodes form parameters.
+
 ### Changed
 - chore: bumps Kotlin to 1.8.10.
 - chore: bumps Gradle to 7.6.1.
 - chore(deps): bump com.amazonaws:aws-java-sdk-core (#344)
-
-### Fixed
-- fix(lambda): URL decodes form parameters.
 
 ## [3.13.0] - 2023-03-23
 ### Added
@@ -45,11 +59,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - feat: improves logging for request body matching.
 - docs: adds instructions for Lambda deployment using CLI.
 
-### Changed
-- chore: bumps CLI to 0.27.1.
-
 ### Fixed
 - fix: removes unnecessary non-null assertion.
+
+### Changed
+- chore: bumps CLI to 0.27.1.
 
 ## [3.11.3] - 2023-03-05
 ### Changed
@@ -71,12 +85,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - test: improves coverage for response service, response file transmission, failure simulation and performance simulation.
 - docs: adds CORS example.
 
+### Fixed
+- build: fixes target compatibility for nashorn plugin.
+
 ### Changed
 - build(deps): bump com.atlassian.oai:swagger-request-validator-core from 2.30.0 to 2.33.1 (#299)
 - build(deps): bump swagger-parser to 2.1.9 (#299)
-
-### Fixed
-- build: fixes target compatibility for nashorn plugin.
 
 ## [3.10.0] - 2023-02-18
 ### Added
@@ -135,12 +149,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - feat: adds syntax to normalise XPath expressions.
 - feat: adds random value expression evaluator.
 
+### Fixed
+- fix: improves error trapping in expression evaluator.
+
 ### Changed
 - refactor: moves performance delay to idiomatic Kotlin random generator.
 - chore: bumps hamcrest to 2.2.
-
-### Fixed
-- fix: improves error trapping in expression evaluator.
 
 ## [3.6.0] - 2023-01-07
 ### Added
@@ -156,14 +170,14 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - docs: adds example for SOAP request body matching with XPath.
 - docs: improves template store placeholder example.
 
-### Changed
-- build(deps): bump version_groovy from 4.0.6 to 4.0.7 (#276)
-- chore: bumps CLI to 0.24.1.
-
 ### Fixed
 - fix: improves error message when plugin cannot be found.
 - fix(soap): quietens logging for XSD element resolution.
 - fix: removes environment evaluator from default list.
+
+### Changed
+- build(deps): bump version_groovy from 4.0.6 to 4.0.7 (#276)
+- chore: bumps CLI to 0.24.1.
 
 ## [3.5.1] - 2023-01-01
 ### Fixed
@@ -239,12 +253,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - refactor: renames `withData` script function to `withContent`. Retains deprecated function name for backwards compatibility.
 
 ## [3.2.0] - 2022-09-13
+### Fixed
+- fix(rest): skips adding route for root resource if response configuration is blank.
+
 ### Changed
 - refactor: renames `staticData` to `content` in response config. Also adds an alias to ensure backwards compatibility.
 - refactor: renames `staticFile` to `file` in response config. Also adds an alias to ensure backwards compatibility.
-
-### Fixed
-- fix(rest): skips adding route for root resource if response configuration is blank.
 
 ## [3.1.0] - 2022-09-08
 ### Added
@@ -313,6 +327,14 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - test: sets region in DynamoDB test.
 - test: bumps S3Mock version to gain aarch64 support.
 
+### Fixed
+- fix(awslambda): handle base64 encoded request body.
+- fix(openapi): removes server base path from serving prefix.
+- fix(openapi): allows adding server entry with path only.
+- fix(openapi): separates serving prefix from specification path prefix.
+- fix: resource matching should require all config entries to be present in request.
+- fix: uses plugin classloader for meta-detector plugin classpath scan.
+
 ### Changed
 - BREAKING CHANGE: drops support for Java 8. Imposter no longer supports Java 8, due to the complexity of maintaining multiple codepaths depending on target JVMs. If Java 8 support is required, Imposter 2.x is still available, but may no longer be maintained.
 - BREAKING CHANGE: removes deprecated script context properties. As signalled in version 2.x, deprecated script context properties have been removed. Removal of legacy `context.params` map - use `context.request.queryParams` instead. Removal of legacy `context.request.params` map - use `context.request.queryParams` instead. Removal of legacy `context.uri` map - use `context.request.uri` instead.
@@ -332,14 +354,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - chore: bumps Groovy to 3.0.10.
 - ci: always build dev docker image and run integration tests.
 - ci: always publish test results, even on prior step failure.
-
-### Fixed
-- fix(awslambda): handle base64 encoded request body.
-- fix(openapi): removes server base path from serving prefix.
-- fix(openapi): allows adding server entry with path only.
-- fix(openapi): separates serving prefix from specification path prefix.
-- fix: resource matching should require all config entries to be present in request.
-- fix: uses plugin classloader for meta-detector plugin classpath scan.
 
 ## [2.14.3] - 2022-05-23
 ### Fixed
