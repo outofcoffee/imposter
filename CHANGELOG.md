@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Changed
+- ...
+
 ## [3.15.0] - 2023-04-09
 ### Added
 - feat: allows XPath XML namespaces to be configured at the system level.
