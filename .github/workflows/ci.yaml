@@ -47,7 +47,7 @@ jobs:
         id: git-meta
         run: |
           EFFECTIVE_BRANCH_NAME="$( ./scripts/get-effective-branch.sh )"
-          echo "::set-output name=branch::${EFFECTIVE_BRANCH_NAME}"
+          echo "EFFECTIVE_BRANCH=${EFFECTIVE_BRANCH_NAME}" >> $GITHUB_OUTPUT
 
       - name: Test
         run: ./gradlew test --info --stacktrace
@@ -69,16 +69,15 @@ jobs:
 
       - name: Build and push Docker images
         id: docker-build
-        if: ${{ (startsWith(github.ref, 'refs/tags/') || steps.git-meta.outputs.branch == 'develop') && matrix.java == '11' }}
+        if: ${{ (startsWith(github.ref, 'refs/tags/') || steps.git-meta.outputs.EFFECTIVE_BRANCH == 'develop') && matrix.java == '11' }}
         run: |
-          case ${{ steps.git-meta.outputs.branch }} in
+          case ${{ steps.git-meta.outputs.EFFECTIVE_BRANCH }} in
           develop)
             ./scripts/docker-build.sh -p true beta
             ;;
 
           main)
             CURRENT_VERSION="$( git describe --tags --exact-match )"
-            echo "::set-output name=tag::${CURRENT_VERSION}"
             if [[ "${CURRENT_VERSION:0:1}" == "v" ]]; then
                 CURRENT_VERSION="$( echo ${CURRENT_VERSION} | cut -c 2- )"
             fi
@@ -88,7 +87,6 @@ jobs:
 
           release/2.x)
             CURRENT_VERSION="$( git describe --tags --exact-match )"
-            echo "::set-output name=tag::${CURRENT_VERSION}"
             if [[ "${CURRENT_VERSION:0:1}" == "v" ]]; then
                 CURRENT_VERSION="$( echo ${CURRENT_VERSION} | cut -c 2- )"
             fi
