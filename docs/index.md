@@ -42,6 +42,7 @@ To begin, check out the [Getting started](getting_started.md) guide. See the _Us
 - [Metrics, logs and telemetry](metrics_logs_telemetry.md)
 - [Proxy an endpoint](proxy_endpoint.md)
 - [Scaffolding configuration](scaffold.md)
+- [CORS](cors.md)
 - [Performance tuning](./performance_tuning.md)
 - [Plugins](./plugins.md)
 - [Features](./features.md)
