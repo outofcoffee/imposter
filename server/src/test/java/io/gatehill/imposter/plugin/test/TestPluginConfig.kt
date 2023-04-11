@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -43,13 +43,13 @@
 package io.gatehill.imposter.plugin.test
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import io.gatehill.imposter.plugin.config.PluginConfigImpl
+import io.gatehill.imposter.plugin.config.CommonPluginConfig
 import io.gatehill.imposter.plugin.config.ResourcesHolder
 
 /**
  * @author Pete Cornish
  */
-class TestPluginConfig : PluginConfigImpl(), ResourcesHolder<TestPluginResourceConfig> {
+class TestPluginConfig : CommonPluginConfig(), ResourcesHolder<TestPluginResourceConfig> {
     @JsonProperty("resources")
     override val resources: List<TestPluginResourceConfig>? = null
 

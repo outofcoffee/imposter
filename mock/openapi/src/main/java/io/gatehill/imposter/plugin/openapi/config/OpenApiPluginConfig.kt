@@ -43,15 +43,13 @@
 package io.gatehill.imposter.plugin.openapi.config
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import io.gatehill.imposter.plugin.config.PluginConfigImpl
+import io.gatehill.imposter.plugin.config.CommonPluginConfig
 import io.gatehill.imposter.plugin.config.ResourcesHolder
-import io.gatehill.imposter.plugin.config.resource.UpstreamConfig
-import io.gatehill.imposter.plugin.config.resource.UpstreamsHolder
 
 /**
  * @author Pete Cornish
  */
-class OpenApiPluginConfig : PluginConfigImpl(), ResourcesHolder<OpenApiResourceConfig>, UpstreamsHolder {
+class OpenApiPluginConfig : CommonPluginConfig(), ResourcesHolder<OpenApiResourceConfig> {
     @JsonProperty("specFile")
     var specFile: String? = null
 
@@ -83,7 +81,4 @@ class OpenApiPluginConfig : PluginConfigImpl(), ResourcesHolder<OpenApiResourceC
 
     @JsonProperty("validation")
     val validation: OpenApiPluginValidationConfig? = null
-
-    @JsonProperty("upstreams")
-    override val upstreams: Map<String, UpstreamConfig>? = null
 }

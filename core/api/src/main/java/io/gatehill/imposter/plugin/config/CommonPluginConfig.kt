@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2023-2023.
  *
  * This file is part of Imposter.
  *
@@ -40,32 +40,18 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 package io.gatehill.imposter.plugin.config
 
-import com.fasterxml.jackson.annotation.JsonIgnore
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
-import io.gatehill.imposter.plugin.config.resource.AbstractResourceConfig
-import io.gatehill.imposter.plugin.config.system.SystemConfig
-import io.gatehill.imposter.plugin.config.system.SystemConfigHolder
-import java.io.File
+import io.gatehill.imposter.plugin.config.resource.UpstreamConfig
+import io.gatehill.imposter.plugin.config.resource.UpstreamsHolder
 
 /**
- * Base configuration for plugins.
- *
- * @author Pete Cornish
+ * Common configuration for some plugins with similar characteristics.
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
-open class PluginConfigImpl : AbstractResourceConfig(), SystemConfigHolder, PluginConfig {
-    @field:JsonProperty("plugin")
-    override var plugin: String? = null
+abstract class CommonPluginConfig : PluginConfigImpl(), UpstreamsHolder {
 
-    @field:JsonProperty("system")
-    override val systemConfig: SystemConfig? = null
-
-    /**
-     * Not set by configuration file.
-     */
-    @field:JsonIgnore
-    override lateinit var parentDir: File
+    @field:JsonProperty("upstreams")
+    override val upstreams: Map<String, UpstreamConfig>? = null
 }

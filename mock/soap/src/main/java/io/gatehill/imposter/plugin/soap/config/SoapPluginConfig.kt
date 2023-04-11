@@ -43,15 +43,13 @@
 package io.gatehill.imposter.plugin.soap.config
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import io.gatehill.imposter.plugin.config.PluginConfigImpl
+import io.gatehill.imposter.plugin.config.CommonPluginConfig
 import io.gatehill.imposter.plugin.config.ResourcesHolder
-import io.gatehill.imposter.plugin.config.resource.UpstreamConfig
-import io.gatehill.imposter.plugin.config.resource.UpstreamsHolder
 
 /**
  * @author Pete Cornish
  */
-class SoapPluginConfig : PluginConfigImpl(), ResourcesHolder<SoapPluginResourceConfig>, UpstreamsHolder {
+class SoapPluginConfig : CommonPluginConfig(), ResourcesHolder<SoapPluginResourceConfig> {
     @JsonProperty("wsdlFile")
     var wsdlFile: String? = null
 
@@ -60,9 +58,6 @@ class SoapPluginConfig : PluginConfigImpl(), ResourcesHolder<SoapPluginResourceC
 
     @JsonProperty("defaultsFromRootResponse")
     override val isDefaultsFromRootResponse = false
-
-    @JsonProperty("upstreams")
-    override val upstreams: Map<String, UpstreamConfig>? = null
 
     @JsonProperty("envelope")
     val envelope: Boolean = true

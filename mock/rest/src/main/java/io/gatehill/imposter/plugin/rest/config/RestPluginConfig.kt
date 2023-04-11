@@ -44,18 +44,16 @@ package io.gatehill.imposter.plugin.rest.config
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.gatehill.imposter.http.HttpMethod
+import io.gatehill.imposter.plugin.config.CommonPluginConfig
 import io.gatehill.imposter.plugin.config.ContentTypedConfig
-import io.gatehill.imposter.plugin.config.PluginConfigImpl
 import io.gatehill.imposter.plugin.config.ResourcesHolder
 import io.gatehill.imposter.plugin.config.resource.MethodResourceConfig
-import io.gatehill.imposter.plugin.config.resource.UpstreamConfig
-import io.gatehill.imposter.plugin.config.resource.UpstreamsHolder
 
 /**
  * @author Pete Cornish
  */
-class RestPluginConfig : PluginConfigImpl(), MethodResourceConfig,
-    ResourcesHolder<RestPluginResourceConfig>, ContentTypedConfig, UpstreamsHolder {
+class RestPluginConfig : CommonPluginConfig(), MethodResourceConfig,
+    ResourcesHolder<RestPluginResourceConfig>, ContentTypedConfig {
 
     override var contentType: String? = null
         protected set
@@ -68,7 +66,4 @@ class RestPluginConfig : PluginConfigImpl(), MethodResourceConfig,
 
     @JsonProperty("defaultsFromRootResponse")
     override val isDefaultsFromRootResponse = false
-
-    @JsonProperty("upstreams")
-    override val upstreams: Map<String, UpstreamConfig>? = null
 }
