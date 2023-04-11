@@ -63,9 +63,21 @@ interface HttpResponse {
     fun end()
     fun end(body: Buffer)
     fun end(body: String?) {
-        body?.let { end(Buffer.buffer(body)) } ?: end()
+        body?.apply { end(Buffer.buffer(body)) } ?: end()
     }
     fun close()
 
     val bodyBuffer: Buffer?
+
+    /**
+     * Whether the response has been ended or closed.
+     */
+    var finished: Boolean
+
+    fun markFinished() {
+        if (finished) {
+            throw IllegalStateException("Response already ended or closed")
+        }
+        finished = true
+    }
 }
