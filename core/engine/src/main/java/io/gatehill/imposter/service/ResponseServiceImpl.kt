@@ -274,22 +274,11 @@ class ResponseServiceImpl @Inject constructor(
         throw ResponseException("All attempts to send a response failed")
     }
 
-    /**
-     * Set the HTTP status code, headers and body, given the path and request method.
-     */
     override fun sendNotFoundResponse(httpExchange: HttpExchange) = finaliseExchange(null, httpExchange) {
-        sendNotFoundResponse(
-            httpExchange.request.path,
-            httpExchange.request.method.toString(),
-            httpExchange.response,
-            httpExchange.acceptsMimeType(HttpUtil.CONTENT_TYPE_HTML)
-        )
-    }
-
-    override fun sendNotFoundResponse(requestPath: String, requestMethod: String, response: HttpResponse, acceptsHtml: Boolean) {
+        val response = httpExchange.response
         response.setStatusCode(HttpUtil.HTTP_NOT_FOUND)
 
-        if (acceptsHtml) {
+        if (httpExchange.acceptsMimeType(HttpUtil.CONTENT_TYPE_HTML)) {
             response.putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_HTML).end(
                 """
                 |<html>
@@ -297,7 +286,7 @@ class ResponseServiceImpl @Inject constructor(
                 |<body>
                 |<h3>Resource not found</h3>
                 |<p>
-                |No resource exists for: <pre>$requestMethod $requestPath</pre>
+                |No resource exists for: <pre>${httpExchange.request.method} ${httpExchange.request.path}</pre>
                 |</p>
                 |${notFoundMessages.joinToString("</p>\n<p>", "<p>", "</p>")}
                 |<hr/>

@@ -131,6 +131,7 @@ class ResourceServiceImpl @Inject constructor(
                     handleFailure(httpExchange, e)
                 }
             }
+
             RequestHandlingMode.ASYNC -> { httpExchange: HttpExchange ->
                 val handler = Handler<Promise<Unit>> { promise ->
                     try {
@@ -149,13 +150,11 @@ class ResourceServiceImpl @Inject constructor(
                     }
                 }
             }
+
             else -> throw UnsupportedOperationException("Unsupported request handling mode: " + imposterConfig.requestHandlingMode)
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     override fun passthroughRoute(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>,
@@ -272,7 +271,7 @@ class ResourceServiceImpl @Inject constructor(
         rootResourceConfig: BasicResourceConfig,
         resourceConfig: BasicResourceConfig,
         resolvedResourceConfigs: List<ResolvedResourceConfig>,
-        httpExchange: HttpExchange
+        httpExchange: HttpExchange,
     ) = securityLifecycle.allMatch { listener: SecurityLifecycleListener ->
         listener.isRequestPermitted(rootResourceConfig, resourceConfig, resolvedResourceConfigs, httpExchange)
     }

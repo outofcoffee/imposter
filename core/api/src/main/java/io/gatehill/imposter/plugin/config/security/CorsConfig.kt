@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2023-2023.
  *
  * This file is part of Imposter.
  *
@@ -40,11 +40,42 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 package io.gatehill.imposter.plugin.config.security
 
-/**
- * @author Pete Cornish
- */
-interface SecurityConfigHolder {
-    val securityConfig: SecurityConfig?
+import com.fasterxml.jackson.annotation.JsonProperty
+
+class CorsConfig {
+    /**
+     * The list of origins that are allowed to access the resource.
+     * Sets the `Access-Control-Allow-Origin` header to the value of the `Origin` header if
+     * it is in the list.
+     */
+    @field:JsonProperty("allowOrigins")
+    val allowOrigins: Any? = null
+
+    /**
+     * The list of HTTP methods that are allowed to be used in the `Access-Control-Request-Method` header.
+     */
+    @field:JsonProperty("allowMethods")
+    val allowMethods: List<String>? = null
+
+    /**
+     * The list of headers that are allowed to be used in the `Access-Control-Request-Headers` header.
+     */
+    @field:JsonProperty("allowHeaders")
+    val allowHeaders: List<String>? = null
+
+    /**
+     * Sets the `Access-Control-Allow-Credentials` header.
+     */
+    @field:JsonProperty("allowCredentials")
+    val allowCredentials = true
+
+    /**
+     * The maximum age of the CORS preflight request, in seconds.
+     * Sets the `Access-Control-Max-Age` header.
+     */
+    @field:JsonProperty("maxAge")
+    val maxAge = 60L
 }

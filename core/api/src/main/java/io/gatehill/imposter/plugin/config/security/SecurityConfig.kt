@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -48,9 +48,9 @@ import com.fasterxml.jackson.annotation.JsonProperty
  * @author Pete Cornish
  */
 class SecurityConfig {
-    @JsonProperty("default")
+    @field:JsonProperty("default")
     val defaultEffect = SecurityEffect.Deny
 
-    @JsonProperty("conditions")
+    @field:JsonProperty("conditions")
     val conditions = emptyList<SecurityCondition>()
 }

@@ -46,6 +46,7 @@ import com.google.inject.AbstractModule
 import com.google.inject.Singleton
 import io.gatehill.imposter.service.*
 import io.gatehill.imposter.service.script.*
+import io.gatehill.imposter.service.security.CorsService
 import io.gatehill.imposter.service.security.SecurityServiceImpl
 
 /**
@@ -71,6 +72,8 @@ internal class EngineModule : AbstractModule() {
 
         // needs to be eager to register lifecycle listener
         bind(SecurityService::class.java).to(SecurityServiceImpl::class.java).asEagerSingleton()
+
+        bind(CorsService::class.java).`in`(Singleton::class.java)
 
         bind(UpstreamService::class.java).`in`(Singleton::class.java)
     }

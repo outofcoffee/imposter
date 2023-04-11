@@ -241,6 +241,8 @@ object HttpUtil {
      */
     const val HTTP_VERSION = 505
 
+    const val CORS_ALLOW_ORIGIN = "Access-Control-Allow-Origin"
+
     /**
      * Read the content types accepted by the requesting client, ordered by their weighting.
      *
