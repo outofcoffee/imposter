@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright (c) 2023.
+  ~ Copyright (c) 2023-2023.
   ~
   ~ This file is part of Imposter.
   ~
@@ -52,7 +52,7 @@
             const petName = document.getElementById('petName').value;
             try {
                 const req = new Request(`http://localhost:8080/pets?name=${petName}`);
-                const resp = await fetch(req, { method: "POST" });
+                const resp = await fetch(req, { method: "POST", headers: { "X-Custom-Header": "foo" } });
                 showResult(await resp.text());
             } catch (e) {
                 showError(e);

@@ -1,0 +1,11 @@
+plugin: "io.gatehill.imposter.plugin.test.TestPluginImpl"
+
+resources:
+- method: POST
+  path: /example
+  response:
+    statusCode: 200
+
+cors:
+  # permits all origins, echoing back the origin of the request
+  allowOrigins: all

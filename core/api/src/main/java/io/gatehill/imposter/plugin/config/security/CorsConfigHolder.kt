@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2023-2023.
  *
  * This file is part of Imposter.
  *
@@ -45,6 +45,6 @@ package io.gatehill.imposter.plugin.config.security
 /**
  * @author Pete Cornish
  */
-interface SecurityConfigHolder {
-    val securityConfig: SecurityConfig?
+interface CorsConfigHolder {
+    var corsConfig: CorsConfig?
 }

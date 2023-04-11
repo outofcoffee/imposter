@@ -62,11 +62,8 @@ import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.server.HttpServer
 import io.gatehill.imposter.server.ServerFactory
 import io.gatehill.imposter.service.ResourceService
-import io.gatehill.imposter.util.AsyncUtil
-import io.gatehill.imposter.util.HttpUtil
-import io.gatehill.imposter.util.InjectorUtil
-import io.gatehill.imposter.util.MetricsUtil
-import io.gatehill.imposter.util.supervisedDefaultCoroutineScope
+import io.gatehill.imposter.service.security.CorsService
+import io.gatehill.imposter.util.*
 import io.vertx.core.Promise
 import io.vertx.core.Vertx
 import kotlinx.coroutines.CoroutineScope
@@ -97,6 +94,9 @@ class Imposter(
 
     @Inject
     private lateinit var resourceService: ResourceService
+
+    @Inject
+    private lateinit var corsService: CorsService
 
     private var httpServer: HttpServer? = null
 
@@ -170,6 +170,7 @@ class Imposter(
 
     private fun configureRoutes(): HttpRouter {
         val router = HttpRouter.router(vertx)
+        val resourceMatcher = SingletonResourceMatcher.instance
 
         router.errorHandler(HttpUtil.HTTP_NOT_FOUND, resourceService.buildNotFoundExceptionHandler())
         router.errorHandler(HttpUtil.HTTP_INTERNAL_ERROR, resourceService.buildUnhandledExceptionHandler())
@@ -188,7 +189,7 @@ class Imposter(
                 resourceService.passthroughRoute(
                     imposterConfig,
                     allConfigs,
-                    SingletonResourceMatcher.instance,
+                    resourceMatcher,
                     serverFactory.createMetricsHandler()
                 )
             )
@@ -196,13 +197,16 @@ class Imposter(
 
         // status check to indicate when server is up
         router.get("/system/status").handler(
-            resourceService.handleRoute(imposterConfig, allConfigs, SingletonResourceMatcher.instance) { httpExchange ->
+            resourceService.handleRoute(imposterConfig, allConfigs, resourceMatcher) { httpExchange ->
                 httpExchange.response
                     .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_JSON)
                     .end(HttpUtil.buildStatusResponse())
             })
 
         plugins.filterIsInstance<RoutablePlugin>().forEach { it.configureRoutes(router) }
+
+        // configure CORS after all routes have been added
+        corsService.configure(imposterConfig, allConfigs, router, resourceMatcher)
 
         // fire post route config hooks
         engineLifecycle.forEach { listener: EngineLifecycleListener ->

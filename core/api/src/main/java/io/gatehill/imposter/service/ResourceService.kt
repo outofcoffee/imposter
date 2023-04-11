@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -119,26 +119,6 @@ interface ResourceService {
         httpExchangeHandler: HttpExchangeHandler,
     ): HttpExchangeHandler
 
-    /**
-     * Builds a handler that processes a request.
-     *
-     * If `requestHandlingMode` is [io.gatehill.imposter.server.RequestHandlingMode.SYNC], then the `httpExchangeHandler`
-     * is invoked on the calling thread.
-     *
-     * If it is [io.gatehill.imposter.server.RequestHandlingMode.ASYNC], then upon receiving a request,
-     * the `httpExchangeHandler` is invoked on a worker thread, passing the `httpExchange`.
-     *
-     * Example:
-     * ```
-     * router.get("/example").handler(handleRoute(imposterConfig, allPluginConfigs, vertx, httpExchangeHandler);
-     * ```
-     *
-     * @param imposterConfig      the Imposter configuration
-     * @param allPluginConfigs    all plugin configurations
-     * @param resourceMatcher     the [ResourceMatcher] to use
-     * @param httpExchangeHandler the handler of the [HttpExchange]
-     * @return the handler
-     */
     fun passthroughRoute(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>,

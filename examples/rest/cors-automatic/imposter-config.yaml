@@ -1,0 +1,12 @@
+plugin: rest
+
+resources:
+- path: "/pets"
+  method: "POST"
+  response:
+    content: Received name ${context.request.queryParams.name}
+    template: true
+
+cors:
+  # permits all origins, echoing back the origin of the request
+  allowOrigins: all
