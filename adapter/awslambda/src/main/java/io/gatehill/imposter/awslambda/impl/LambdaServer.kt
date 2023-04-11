@@ -51,6 +51,7 @@ import io.gatehill.imposter.http.HttpRoute
 import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.server.HttpServer
 import io.gatehill.imposter.service.ResponseService
+import io.gatehill.imposter.util.HttpUtil
 import io.vertx.core.AsyncResult
 import io.vertx.core.Handler
 import org.apache.logging.log4j.LogManager
@@ -81,9 +82,7 @@ abstract class LambdaServer<Request, Response>(
 
             if (matched.isEmpty() || matched.all { it.isCatchAll() }) {
                 logger.trace("No explicit routes matched for: ${describeRequestShort(event)}")
-                val request = buildRequest(event, null)
-                val exchange = LambdaHttpExchange(router, request, response, null)
-                responseService.sendNotFoundResponse(exchange)
+                response.setStatusCode(HttpUtil.HTTP_NOT_FOUND)
 
             } else {
                 matched.forEach { route ->
