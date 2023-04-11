@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -145,7 +145,7 @@ class VertxWebServerFactoryImpl : ServerFactory {
             val handler = httpRoute.handler ?: throw IllegalStateException("No route handler set for: $httpRoute")
             route.handler { rc ->
                 // current route can technically be null, so propagate null
-                handler(VertxHttpExchange(rc, rc.currentRoute()?.path))
+                handler(VertxHttpExchange(router, rc, rc.currentRoute()?.path))
             }
         }
 
@@ -157,7 +157,7 @@ class VertxWebServerFactoryImpl : ServerFactory {
                 } catch (e: NullPointerException) {
                     null
                 }
-                errorHandler(VertxHttpExchange(rc, currentRoute?.path))
+                errorHandler(VertxHttpExchange(router, rc, currentRoute?.path))
             }
         }
     }

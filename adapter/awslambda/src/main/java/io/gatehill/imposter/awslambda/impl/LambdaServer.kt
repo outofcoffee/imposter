@@ -62,7 +62,7 @@ import java.util.Collections.synchronizedMap
  */
 abstract class LambdaServer<Request, Response>(
     private val responseService: ResponseService,
-    router: HttpRouter,
+    private val router: HttpRouter,
 ) : HttpServer {
     protected val logger: Logger = LogManager.getLogger(LambdaServer::class.java)
     private val routes: Array<HttpRoute>
@@ -77,18 +77,28 @@ abstract class LambdaServer<Request, Response>(
         val response = LambdaHttpResponse()
         var failureCause: Throwable? = null
         try {
-            matchRoutes(getRequestPath(event), getRequestMethod(event), event, response).forEach { route ->
-                val handler = route.handler ?: throw IllegalStateException("No route handler set for: $route")
-                val request = buildRequest(event, route)
-                val exchange = LambdaHttpExchange(request, response, route)
-                try {
-                    handler(exchange)
-                } catch (e: Exception) {
-                    throw RuntimeException("Unhandled error in route: $route", e)
-                }
-                // check for route failure
-                exchange.failure()?.let { cause ->
-                    throw RuntimeException("Route failed: $route", cause)
+            val matched = matchRoutes(event)
+
+            if (matched.isEmpty() || matched.all { it.isCatchAll() }) {
+                logger.trace("No explicit routes matched for: ${describeRequestShort(event)}")
+                val request = buildRequest(event, null)
+                val exchange = LambdaHttpExchange(router, request, response, null)
+                responseService.sendNotFoundResponse(exchange)
+
+            } else {
+                matched.forEach { route ->
+                    val request = buildRequest(event, route)
+                    val exchange = LambdaHttpExchange(router, request, response, route)
+                    val handler = route.handler ?: throw IllegalStateException("No route handler set for: $route")
+                    try {
+                        handler(exchange)
+                    } catch (e: Exception) {
+                        throw RuntimeException("Unhandled error in route: $route", e)
+                    }
+                    // check for route failure
+                    exchange.failure()?.let { cause ->
+                        throw RuntimeException("Route failed: $route", cause)
+                    }
                 }
             }
 
@@ -120,26 +130,18 @@ abstract class LambdaServer<Request, Response>(
         errorHandler: (HttpExchange) -> Unit,
     ) {
         val request = buildRequest(event, null)
-        val exchange = LambdaHttpExchange(request, response, null)
+        val exchange = LambdaHttpExchange(router, request, response, null)
         exchange.fail(statusCode, failureCause)
         errorHandler(exchange)
     }
 
-    private fun matchRoutes(
-        requestPath: String,
-        requestMethod: String,
-        event: Request,
-        response: LambdaHttpResponse,
-    ): List<HttpRoute> {
+    private fun matchRoutes(event: Request): List<HttpRoute> {
+        val requestPath = getRequestPath(event)
+        val requestMethod = getRequestMethod(event)
+
         val matchedRoutes = routes.filter { route ->
             route.matches(requestPath) && (null == route.method || requestMethod == route.method.toString())
         }
-        if (matchedRoutes.isEmpty() || matchedRoutes.all { it.isCatchAll() }) {
-            logger.trace("No explicit routes matched for: ${describeRequestShort(event)}")
-            responseService.sendNotFoundResponse(requestPath, requestMethod, response, acceptsHtml(event))
-            return emptyList()
-        }
-
         if (logger.isTraceEnabled) {
             logger.trace("Routes matched for: ${describeRequestShort(event)}: $matchedRoutes")
         }

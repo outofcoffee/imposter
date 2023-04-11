@@ -52,6 +52,7 @@ import io.vertx.core.buffer.Buffer
 class LambdaHttpResponse : HttpResponse {
     override var statusCode: Int = 200
     override var bodyBuffer: Buffer? = null
+    override var finished = false
     val headers = mutableMapOf<String, String>()
 
     override fun setStatusCode(statusCode: Int): HttpResponse {
@@ -73,10 +74,12 @@ class LambdaHttpResponse : HttpResponse {
     }
 
     override fun end() {
+        markFinished()
         /* no op */
     }
 
     override fun end(body: Buffer) {
+        markFinished()
         bodyBuffer = body
         if (!headers.containsKey("Content-Length") && bodyLength > 0) {
             headers["Content-Length"] = bodyLength.toString()
@@ -84,6 +87,7 @@ class LambdaHttpResponse : HttpResponse {
     }
 
     override fun close() {
+        markFinished()
         statusCode = 0
         bodyBuffer = null
         headers.clear()

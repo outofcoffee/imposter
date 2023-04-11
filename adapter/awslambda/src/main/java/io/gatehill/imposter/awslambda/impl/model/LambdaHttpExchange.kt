@@ -44,24 +44,34 @@
 package io.gatehill.imposter.awslambda.impl.model
 
 import com.google.common.base.Strings
-import io.gatehill.imposter.http.ExchangePhase
-import io.gatehill.imposter.http.HttpExchange
-import io.gatehill.imposter.http.HttpRequest
-import io.gatehill.imposter.http.HttpResponse
-import io.gatehill.imposter.http.HttpRoute
+import io.gatehill.imposter.http.*
 import io.gatehill.imposter.util.HttpUtil
+import io.vertx.core.buffer.Buffer
 
 /**
  * @author Pete Cornish
  */
 class LambdaHttpExchange(
+    private val router: HttpRouter,
     override val request: HttpRequest,
-    override val response: HttpResponse,
+    response: HttpResponse,
     private val currentRoute: HttpRoute?,
 ) : HttpExchange {
     override var phase = ExchangePhase.REQUEST_RECEIVED
     private val attributes = mutableMapOf<String, Any>()
     private var failureCause: Throwable? = null
+
+    override val response: HttpResponse = object : HttpResponse by response {
+        override fun end() {
+            router.invokeBeforeEndHandlers(this@LambdaHttpExchange)
+            response.end()
+        }
+
+        override fun end(body: Buffer) {
+            router.invokeBeforeEndHandlers(this@LambdaHttpExchange)
+            response.end(body)
+        }
+    }
 
     private val acceptedMimeTypes: List<String> by lazy {
         HttpUtil.readAcceptedContentTypes(this@LambdaHttpExchange)

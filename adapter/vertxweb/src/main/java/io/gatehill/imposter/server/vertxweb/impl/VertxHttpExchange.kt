@@ -42,10 +42,7 @@
  */
 package io.gatehill.imposter.server.vertxweb.impl
 
-import io.gatehill.imposter.http.ExchangePhase
-import io.gatehill.imposter.http.HttpExchange
-import io.gatehill.imposter.http.HttpRequest
-import io.gatehill.imposter.http.HttpResponse
+import io.gatehill.imposter.http.*
 import io.vertx.ext.web.RoutingContext
 import io.vertx.ext.web.impl.ParsableMIMEValue
 
@@ -53,12 +50,13 @@ import io.vertx.ext.web.impl.ParsableMIMEValue
  * @author Pete Cornish
  */
 class VertxHttpExchange(
-    val routingContext: RoutingContext,
+    private val router: HttpRouter,
+    internal val routingContext: RoutingContext,
     override val currentRoutePath: String?,
 ) : HttpExchange {
     override var phase = ExchangePhase.REQUEST_RECEIVED
     private val _request by lazy { VertxHttpRequest(routingContext) }
-    private val _response by lazy { VertxHttpResponse(routingContext.response()) }
+    private val _response by lazy { VertxHttpResponse(router, this, routingContext.response()) }
 
     override val request: HttpRequest
         get() = _request

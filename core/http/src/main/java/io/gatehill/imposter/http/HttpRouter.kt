@@ -50,6 +50,7 @@ import io.vertx.core.Vertx
 class HttpRouter(val vertx: Vertx) {
     val routes = mutableListOf<HttpRoute>()
     val errorHandlers = mutableMapOf<Int, HttpExchangeHandler>()
+    private val beforeEndHandlers = mutableListOf<HttpExchangeHandler>()
 
     fun route(): HttpRoute {
         return HttpRoute().also(routes::add)
@@ -109,6 +110,14 @@ class HttpRouter(val vertx: Vertx) {
 
     fun errorHandler(statusCode: Int, handler: HttpExchangeHandler) {
         errorHandlers[statusCode] = handler
+    }
+
+    fun onBeforeEnd(handler: HttpExchangeHandler) {
+        beforeEndHandlers += handler
+    }
+
+    fun invokeBeforeEndHandlers(exchange: HttpExchange) {
+        beforeEndHandlers.forEach { it(exchange) }
     }
 
     companion object {

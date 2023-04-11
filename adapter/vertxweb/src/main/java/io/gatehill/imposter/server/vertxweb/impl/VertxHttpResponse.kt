@@ -42,15 +42,22 @@
  */
 package io.gatehill.imposter.server.vertxweb.impl
 
+import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpResponse
+import io.gatehill.imposter.http.HttpRouter
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.http.HttpServerResponse
 
 /**
  * @author Pete Cornish
  */
-class VertxHttpResponse(private val vertxResponse: HttpServerResponse) : HttpResponse {
+class VertxHttpResponse(
+    private val router: HttpRouter,
+    private val exchange: HttpExchange,
+    private val vertxResponse: HttpServerResponse
+) : HttpResponse {
     override var bodyBuffer: Buffer? = null
+    override var finished = false
 
     override fun setStatusCode(statusCode: Int): HttpResponse {
         vertxResponse.statusCode = statusCode
@@ -76,15 +83,20 @@ class VertxHttpResponse(private val vertxResponse: HttpServerResponse) : HttpRes
     }
 
     override fun end() {
+        markFinished()
+        router.invokeBeforeEndHandlers(exchange)
         vertxResponse.end()
     }
 
     override fun end(body: Buffer) {
+        markFinished()
+        router.invokeBeforeEndHandlers(exchange)
         bodyBuffer = body
         vertxResponse.end(body)
     }
 
     override fun close() {
+        markFinished()
         vertxResponse.close()
     }
 }
