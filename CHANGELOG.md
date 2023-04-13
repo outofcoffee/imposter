@@ -3,9 +3,17 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [3.16.0] - 2023-04-14
+### Added
+- feat: Adds CORS support. (#366)
+- feat: adds static directory response type.
+
+### Fixed
+- fix(lambda): don't send duplicate 'not found' response if no route matched.
+- fix: don't call response.end() twice if sending string body.
+
 ### Changed
-- ...
+- refactor: uses HTTP route to determine trailing wildcard matches.
 
 ## [3.15.0] - 2023-04-09
 ### Added
