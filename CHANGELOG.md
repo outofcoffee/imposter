@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- ...
+
 ## [3.16.0] - 2023-04-14
 ### Added
 - feat: Adds CORS support. (#366)
