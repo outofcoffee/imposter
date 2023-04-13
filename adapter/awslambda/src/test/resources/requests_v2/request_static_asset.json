@@ -1,0 +1,13 @@
+{
+  "headers": {},
+  "queryStringParameters": {},
+  "pathParameters": {},
+  "body": null,
+  "isBase64Encoded": false,
+  "requestContext": {
+    "http": {
+      "path": "/assets/styles.css",
+      "method":  "GET"
+    }
+  }
+}

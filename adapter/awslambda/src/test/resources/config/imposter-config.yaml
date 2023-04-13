@@ -8,3 +8,7 @@ resources:
       petId: 2
     response:
       file: subdir/response.json
+
+  - path: /assets/*
+    response:
+      dir: assets

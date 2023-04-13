@@ -84,7 +84,29 @@ class LambdaServerFactory @Inject constructor(
     override fun createBodyHttpHandler(): HttpExchangeHandler = {}
 
     override fun createStaticHttpHandler(root: String, relative: Boolean): HttpExchangeHandler {
-        return { exchange -> exchange.fail(UnsupportedOperationException("Static resources are not supported")) }
+        val pluginConfig = PluginConfigImpl().apply {
+            plugin = "rest"
+            parentDir = File(root)
+        }
+        return { exchange ->
+            var path = exchange.request.path.let { HttpUtils.removeDots(it) }
+            exchange.currentRoute?.let { currentRoute ->
+                val routePath = currentRoute.path
+                if (routePath != null && currentRoute.hasTrailingWildcard) {
+                    path = path.removePrefix(routePath.removeSuffix("*"))
+                }
+            }
+            if (path.endsWith('/')) {
+                path += indexFile
+            }
+            logger.debug("Serving static resource: $path")
+            responseService.finaliseExchange(null, exchange) {
+                val responseBehaviour = ReadWriteResponseBehaviourImpl().apply {
+                    responseFile = path
+                }
+                responseFileService.serveResponseFile(pluginConfig, null, exchange, responseBehaviour)
+            }
+        }
     }
 
     override fun createMetricsHandler(): HttpExchangeHandler = {}

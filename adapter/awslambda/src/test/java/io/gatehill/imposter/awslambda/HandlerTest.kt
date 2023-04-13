@@ -1,5 +1,5 @@
-package io.gatehill.imposter.awslambda/*
- * Copyright (c) 2016-2021.
+/*
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -41,9 +41,13 @@ package io.gatehill.imposter.awslambda/*
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+package io.gatehill.imposter.awslambda
+
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent
 import com.amazonaws.services.lambda.runtime.tests.annotations.Event
+import org.hamcrest.CoreMatchers
+import org.hamcrest.MatcherAssert.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
@@ -76,7 +80,7 @@ class HandlerTest : AbstractHandlerTest() {
     }
 
     @ParameterizedTest
-    @Event(value = "requests_v1/request_static_file.json", type = APIGatewayProxyRequestEvent::class)
+    @Event(value = "requests_v1/request_file.json", type = APIGatewayProxyRequestEvent::class)
     fun `get static file`(event: APIGatewayProxyRequestEvent) {
         val responseEvent = handler!!.handleRequest(event, context!!)
 
@@ -97,5 +101,15 @@ class HandlerTest : AbstractHandlerTest() {
         assertEquals("Resource not found", responseEvent.body)
         assertEquals(2, responseEvent.headers?.size)
         assertEquals("text/plain", responseEvent.headers["Content-Type"])
+    }
+
+    @ParameterizedTest
+    @Event(value = "requests_v1/request_static_asset.json", type = APIGatewayProxyRequestEvent::class)
+    fun `should load static files`(event: APIGatewayProxyRequestEvent) {
+        val responseEvent = handler!!.handleRequest(event, context!!)
+
+        assertNotNull(responseEvent, "Response event should be returned")
+        assertEquals(200, responseEvent.statusCode)
+        assertThat(responseEvent.body, CoreMatchers.containsString(".example"))
     }
 }

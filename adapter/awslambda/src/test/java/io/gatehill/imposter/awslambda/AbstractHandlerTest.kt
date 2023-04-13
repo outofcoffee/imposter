@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2022.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -77,9 +77,11 @@ abstract class AbstractHandlerTest {
             uploadFileToS3("/config", "imposter-config.yaml")
             uploadFileToS3("/config", "pet-api.yaml")
             uploadFileToS3("/config", "subdir/response.json")
+            uploadFileToS3("/config", "assets/styles.css")
 
             EnvVars.populate(
                 "IMPOSTER_S3_CONFIG_URL" to "s3://test/",
+                "IMPOSTER_LOG_LEVEL" to "trace",
             )
         }
 

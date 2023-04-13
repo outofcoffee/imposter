@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2022.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -46,6 +46,8 @@ package io.gatehill.imposter.awslambda
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent
 import com.amazonaws.services.lambda.runtime.tests.annotations.Event
+import org.hamcrest.CoreMatchers
+import org.hamcrest.MatcherAssert.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
@@ -78,7 +80,7 @@ class HandlerV2Test : AbstractHandlerTest() {
     }
 
     @ParameterizedTest
-    @Event(value = "requests_v2/request_static_file.json", type = APIGatewayV2HTTPEvent::class)
+    @Event(value = "requests_v2/request_file.json", type = APIGatewayV2HTTPEvent::class)
     fun `get static file`(event: APIGatewayV2HTTPEvent) {
         val responseEvent = handler!!.handleRequest(event, context!!)
 
@@ -99,5 +101,15 @@ class HandlerV2Test : AbstractHandlerTest() {
         assertEquals("Resource not found", responseEvent.body)
         assertEquals(2, responseEvent.headers?.size)
         assertEquals("text/plain", responseEvent.headers["Content-Type"])
+    }
+
+    @ParameterizedTest
+    @Event(value = "requests_v2/request_static_asset.json", type = APIGatewayV2HTTPEvent::class)
+    fun `should load static files`(event: APIGatewayV2HTTPEvent) {
+        val responseEvent = handler!!.handleRequest(event, context!!)
+
+        assertNotNull(responseEvent, "Response event should be returned")
+        assertEquals(200, responseEvent.statusCode)
+        assertThat(responseEvent.body, CoreMatchers.containsString(".example"))
     }
 }
