@@ -63,7 +63,11 @@ import io.gatehill.imposter.server.HttpServer
 import io.gatehill.imposter.server.ServerFactory
 import io.gatehill.imposter.service.ResourceService
 import io.gatehill.imposter.service.security.CorsService
-import io.gatehill.imposter.util.*
+import io.gatehill.imposter.util.AsyncUtil
+import io.gatehill.imposter.util.HttpUtil
+import io.gatehill.imposter.util.InjectorUtil
+import io.gatehill.imposter.util.MetricsUtil
+import io.gatehill.imposter.util.supervisedDefaultCoroutineScope
 import io.vertx.core.Promise
 import io.vertx.core.Vertx
 import kotlinx.coroutines.CoroutineScope
@@ -202,6 +206,8 @@ class Imposter(
                     .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_JSON)
                     .end(HttpUtil.buildStatusResponse())
             })
+
+        resourceService.handleStaticContent(serverFactory, allConfigs, router)
 
         plugins.filterIsInstance<RoutablePlugin>().forEach { it.configureRoutes(router) }
 

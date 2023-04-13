@@ -83,7 +83,9 @@ class LambdaServerFactory @Inject constructor(
 
     override fun createBodyHttpHandler(): HttpExchangeHandler = {}
 
-    override fun createStaticHttpHandler(root: String): HttpExchangeHandler = {}
+    override fun createStaticHttpHandler(root: String, relative: Boolean): HttpExchangeHandler {
+        return { exchange -> exchange.fail(UnsupportedOperationException("Static resources are not supported")) }
+    }
 
     override fun createMetricsHandler(): HttpExchangeHandler = {}
 

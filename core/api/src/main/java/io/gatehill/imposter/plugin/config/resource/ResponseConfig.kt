@@ -59,6 +59,9 @@ open class ResponseConfig {
     @JsonAlias("staticData")
     var content: String? = null
 
+    @JsonProperty("dir")
+    val dir: String? = null
+
     @JsonProperty("template")
     var isTemplate: Boolean? = null
 

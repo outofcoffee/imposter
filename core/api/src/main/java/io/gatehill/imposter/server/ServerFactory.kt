@@ -65,7 +65,7 @@ interface ServerFactory {
 
     fun createBodyHttpHandler(): HttpExchangeHandler
 
-    fun createStaticHttpHandler(root: String): HttpExchangeHandler
+    fun createStaticHttpHandler(root: String, relative: Boolean = true): HttpExchangeHandler
 
     fun createMetricsHandler(): HttpExchangeHandler
 }

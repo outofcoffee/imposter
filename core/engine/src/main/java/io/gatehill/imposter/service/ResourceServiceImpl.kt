@@ -49,13 +49,22 @@ import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.http.ExchangePhase
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpExchangeHandler
+import io.gatehill.imposter.http.HttpMethod
+import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.http.ResourceMatcher
 import io.gatehill.imposter.lifecycle.SecurityLifecycleHooks
 import io.gatehill.imposter.lifecycle.SecurityLifecycleListener
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.ResourcesHolder
-import io.gatehill.imposter.plugin.config.resource.*
+import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
+import io.gatehill.imposter.plugin.config.resource.FormParamsResourceConfig
+import io.gatehill.imposter.plugin.config.resource.PassthroughResourceConfig
+import io.gatehill.imposter.plugin.config.resource.PathParamsResourceConfig
+import io.gatehill.imposter.plugin.config.resource.QueryParamsResourceConfig
+import io.gatehill.imposter.plugin.config.resource.RequestHeadersResourceConfig
+import io.gatehill.imposter.plugin.config.resource.UpstreamsHolder
 import io.gatehill.imposter.server.RequestHandlingMode
+import io.gatehill.imposter.server.ServerFactory
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.LogUtil.describeRequest
 import io.gatehill.imposter.util.ResourceUtil
@@ -64,6 +73,7 @@ import io.vertx.core.Promise
 import io.vertx.core.Vertx
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
+import java.io.File
 import java.util.*
 import java.util.regex.Pattern
 import javax.inject.Inject
@@ -189,6 +199,45 @@ class ResourceServiceImpl @Inject constructor(
 
         // print summary
         LogUtil.logCompletion(httpExchange)
+    }
+
+    override fun handleStaticContent(
+        serverFactory: ServerFactory,
+        allConfigs: List<PluginConfig>,
+        router: HttpRouter,
+    ) {
+        for (config in allConfigs) {
+            if (config !is ResourcesHolder<*>) {
+                continue
+            }
+            for (resource in config.resources ?: emptyList()) {
+                if (resource.responseConfig.dir.isNullOrBlank() || resource.path.isNullOrBlank()) {
+                    continue
+                }
+                val path = resource.path!!
+                if (!path.endsWith("/*")) {
+                    throw IllegalStateException("Static content path [${path}] must end with a trailing slash")
+                }
+                if (resource.responseConfig.isTemplate == true) {
+                    throw IllegalStateException("Static directory [${path}] cannot be a template")
+                }
+                if (!resource.responseConfig.file.isNullOrBlank()) {
+                    throw IllegalStateException("Static directory [${path}] cannot specify a file")
+                }
+                if (!resource.responseConfig.content.isNullOrBlank()) {
+                    throw IllegalStateException("Static directory [${path}] cannot specify content")
+                }
+
+                val method = ResourceUtil.extractResourceMethod(resource, HttpMethod.GET)!!
+                val dir = resource.responseConfig.dir!!.let {
+                    if (it.endsWith('/')) it.substringBeforeLast('/') else it
+                }
+                val absoluteDirPath = File(config.parentDir, dir).absolutePath
+
+                LOGGER.debug("Adding static content handler for {} [{}] to directory [{}]", method, path, absoluteDirPath)
+                router.route(method, path).handler(serverFactory.createStaticHttpHandler(absoluteDirPath, false))
+            }
+        }
     }
 
     private fun logAppropriatelyForPath(httpExchange: HttpExchange, description: String) {

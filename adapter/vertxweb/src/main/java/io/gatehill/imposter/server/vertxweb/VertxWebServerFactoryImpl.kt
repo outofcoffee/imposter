@@ -56,6 +56,7 @@ import io.vertx.core.Vertx
 import io.vertx.core.http.HttpServerOptions
 import io.vertx.core.net.JksOptions
 import io.vertx.ext.web.Router
+import io.vertx.ext.web.handler.FileSystemAccess
 import io.vertx.ext.web.handler.StaticHandler
 import io.vertx.ext.web.handler.impl.BodyHandlerImpl
 import io.vertx.micrometer.PrometheusScrapingHandler
@@ -158,9 +159,13 @@ class VertxWebServerFactoryImpl : ServerFactory {
         return { he -> handler.handle((he as VertxHttpExchange).routingContext) }
     }
 
-    override fun createStaticHttpHandler(root: String): HttpExchangeHandler {
-        val handler = StaticHandler.create(root)
-        return { he -> handler.handle((he as VertxHttpExchange).routingContext) }
+    override fun createStaticHttpHandler(root: String, relative: Boolean): HttpExchangeHandler {
+        val handlerVisibility = if (relative) FileSystemAccess.RELATIVE else FileSystemAccess.ROOT
+        val handler = StaticHandler.create(handlerVisibility, root)
+        return { exchange ->
+            LOGGER.debug("Serving static resource: ${exchange.request.path}")
+            handler.handle((exchange as VertxHttpExchange).routingContext)
+        }
     }
 
     override fun createMetricsHandler(): HttpExchangeHandler {

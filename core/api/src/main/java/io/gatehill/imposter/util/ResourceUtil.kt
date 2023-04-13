@@ -91,9 +91,9 @@ object ResourceUtil {
     /**
      * Extracts the resource method.
      */
-    fun extractResourceMethod(resourceConfig: ResourceConfig): HttpMethod? {
+    fun extractResourceMethod(resourceConfig: ResourceConfig, default: HttpMethod? = null): HttpMethod? {
         return if (resourceConfig is MethodResourceConfig) {
-            return (resourceConfig as MethodResourceConfig).method
+            return (resourceConfig as MethodResourceConfig).method ?: default
         } else {
             HttpMethod.GET
         }

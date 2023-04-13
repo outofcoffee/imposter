@@ -46,8 +46,10 @@ import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.ResolvedResourceConfig
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpExchangeHandler
+import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.http.ResourceMatcher
 import io.gatehill.imposter.plugin.config.PluginConfig
+import io.gatehill.imposter.server.ServerFactory
 
 /**
  * @author Pete Cornish
@@ -137,4 +139,13 @@ interface ResourceService {
      * @return the exception handler
      */
     fun buildUnhandledExceptionHandler(): HttpExchangeHandler
+
+    /**
+     * Adds handlers for static content.
+     */
+    fun handleStaticContent(
+        serverFactory: ServerFactory,
+        allConfigs: List<PluginConfig>,
+        router: HttpRouter
+    )
 }
