@@ -53,6 +53,7 @@ data class HttpRoute(
     val regex: String? = null,
     val method: HttpMethod? = null
 ) {
+    val hasTrailingWildcard = path?.endsWith('*') ?: false
     var handler: HttpExchangeHandler? = null
 
     private data class ParsedPathParams(
@@ -103,11 +104,11 @@ data class HttpRoute(
     }
 
     private fun isTrailingWildcardMatch(requestPath: String): Boolean {
-        if (path?.endsWith('*') != true) {
-            // no wildcard
-            return false
+        if (hasTrailingWildcard) {
+            return requestPath.startsWith(path!!.substring(0, path.length - 1))
         }
-        return requestPath.startsWith(path.substring(0, path.length - 1))
+        // no wildcard
+        return false
     }
 
     fun extractPathParams(requestPath: String): Map<String, String> {

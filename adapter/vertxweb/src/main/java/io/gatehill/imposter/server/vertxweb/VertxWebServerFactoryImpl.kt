@@ -73,7 +73,7 @@ class VertxWebServerFactoryImpl : ServerFactory {
         injector: Injector,
         imposterConfig: ImposterConfig,
         vertx: Vertx,
-        router: HttpRouter
+        router: HttpRouter,
     ): CompletableFuture<HttpServer> {
         LOGGER.trace("Starting mock server on {}:{}", imposterConfig.host, imposterConfig.listenPort)
         val serverOptions = HttpServerOptions()
@@ -109,7 +109,7 @@ class VertxWebServerFactoryImpl : ServerFactory {
 
     private fun configureTls(
         imposterConfig: ImposterConfig,
-        serverOptions: HttpServerOptions
+        serverOptions: HttpServerOptions,
     ) {
         // locate keystore
         val keystorePath: Path = if (imposterConfig.keystorePath!!.startsWith(FileUtil.CLASSPATH_PREFIX)) {
@@ -132,7 +132,7 @@ class VertxWebServerFactoryImpl : ServerFactory {
 
     private fun convertRouterToVertx(router: HttpRouter) = Router.router(router.vertx).also { vertxRouter ->
         router.routes.forEach { httpRoute ->
-            val route = httpRoute.regex?.let { regex ->
+            val vertxRoute = httpRoute.regex?.let { regex ->
                 httpRoute.method?.let { method -> vertxRouter.routeWithRegex(convertMethodToVertx(method), regex) }
                     ?: vertxRouter.routeWithRegex(regex)
 
@@ -143,21 +143,12 @@ class VertxWebServerFactoryImpl : ServerFactory {
             } ?: vertxRouter.route()
 
             val handler = httpRoute.handler ?: throw IllegalStateException("No route handler set for: $httpRoute")
-            route.handler { rc ->
-                // current route can technically be null, so propagate null
-                handler(VertxHttpExchange(router, rc, rc.currentRoute()?.path))
-            }
+            vertxRoute.handler { rc -> handler(VertxHttpExchange(router, rc, httpRoute)) }
         }
 
         router.errorHandlers.forEach { (statusCode, errorHandler) ->
             vertxRouter.errorHandler(statusCode) { rc ->
-                // current route can trigger NPE
-                val currentRoute = try {
-                    rc.currentRoute()
-                } catch (e: NullPointerException) {
-                    null
-                }
-                errorHandler(VertxHttpExchange(router, rc, currentRoute?.path))
+                errorHandler(VertxHttpExchange(router, rc, null))
             }
         }
     }

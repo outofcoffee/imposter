@@ -151,13 +151,13 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
         request: HttpRequest,
     ): ResourceMatchResult {
         // note: path template can be null when a regex route is used
-        val pathTemplate = httpExchange.currentRoutePath
+        val routePathTemplate = httpExchange.currentRoute?.path
 
         val pathMatch = resourceConfig.path?.let { resourceConfigPath ->
-            if (request.path == resourceConfigPath || pathTemplate?.let { it == resourceConfigPath } == true) {
-                return@let ResourceMatchResult.EXACT_MATCH
-            } else if (resourceConfigPath.endsWith("*") && request.path.startsWith(resourceConfigPath.substring(0, resourceConfigPath.length - 1))) {
+            if (resourceConfigPath.endsWith("*") && request.path.startsWith(resourceConfigPath.substring(0, resourceConfigPath.length - 1))) {
                 return@let ResourceMatchResult.WILDCARD_MATCH
+            } else if (request.path == resourceConfigPath || routePathTemplate?.let { it == resourceConfigPath } == true) {
+                return@let ResourceMatchResult.EXACT_MATCH
             } else {
                 return@let ResourceMatchResult.NOT_MATCHED
             }
@@ -371,7 +371,9 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
             .sumOf { it.weight }
 
         val result = MatchedResource(resource, matched, score, exact)
-        LOGGER.trace("Result of matching request {} to resource {}: {}", httpExchange, resource, result)
+        if (LOGGER.isTraceEnabled) {
+            LOGGER.trace("Result of matching request {} to resource {}: {}", LogUtil.describeRequest(httpExchange), resource.config, result)
+        }
         return result
     }
 

@@ -44,7 +44,12 @@
 package io.gatehill.imposter.awslambda.impl.model
 
 import com.google.common.base.Strings
-import io.gatehill.imposter.http.*
+import io.gatehill.imposter.http.ExchangePhase
+import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.http.HttpRequest
+import io.gatehill.imposter.http.HttpResponse
+import io.gatehill.imposter.http.HttpRoute
+import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.util.HttpUtil
 import io.vertx.core.buffer.Buffer
 
@@ -53,9 +58,9 @@ import io.vertx.core.buffer.Buffer
  */
 class LambdaHttpExchange(
     private val router: HttpRouter,
+    override val currentRoute: HttpRoute?,
     override val request: HttpRequest,
     response: HttpResponse,
-    private val currentRoute: HttpRoute?,
 ) : HttpExchange {
     override var phase = ExchangePhase.REQUEST_RECEIVED
     private val attributes = mutableMapOf<String, Any>()
@@ -76,9 +81,6 @@ class LambdaHttpExchange(
     private val acceptedMimeTypes: List<String> by lazy {
         HttpUtil.readAcceptedContentTypes(this@LambdaHttpExchange)
     }
-
-    override val currentRoutePath: String?
-        get() = currentRoute?.path
 
     override fun isAcceptHeaderEmpty(): Boolean {
         return Strings.isNullOrEmpty(request.getHeader("Accept"))

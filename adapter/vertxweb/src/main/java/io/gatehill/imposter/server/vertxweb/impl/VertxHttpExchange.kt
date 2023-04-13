@@ -42,7 +42,12 @@
  */
 package io.gatehill.imposter.server.vertxweb.impl
 
-import io.gatehill.imposter.http.*
+import io.gatehill.imposter.http.ExchangePhase
+import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.http.HttpRequest
+import io.gatehill.imposter.http.HttpResponse
+import io.gatehill.imposter.http.HttpRoute
+import io.gatehill.imposter.http.HttpRouter
 import io.vertx.ext.web.RoutingContext
 import io.vertx.ext.web.impl.ParsableMIMEValue
 
@@ -52,17 +57,17 @@ import io.vertx.ext.web.impl.ParsableMIMEValue
 class VertxHttpExchange(
     private val router: HttpRouter,
     internal val routingContext: RoutingContext,
-    override val currentRoutePath: String?,
+    override val currentRoute: HttpRoute?,
 ) : HttpExchange {
     override var phase = ExchangePhase.REQUEST_RECEIVED
-    private val _request by lazy { VertxHttpRequest(routingContext) }
-    private val _response by lazy { VertxHttpResponse(router, this, routingContext.response()) }
 
-    override val request: HttpRequest
-        get() = _request
+    override val request: HttpRequest by lazy {
+        VertxHttpRequest(routingContext)
+    }
 
-    override val response: HttpResponse
-        get() = _response
+    override val response: HttpResponse by lazy {
+        VertxHttpResponse(router, this, routingContext.response())
+    }
 
     override fun isAcceptHeaderEmpty(): Boolean {
         return routingContext.parsedHeaders().accept().isEmpty()

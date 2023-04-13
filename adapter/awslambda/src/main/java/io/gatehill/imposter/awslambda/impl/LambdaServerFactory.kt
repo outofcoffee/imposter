@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2021.
+ * Copyright (c) 2021-2023.
  *
  * This file is part of Imposter.
  *
@@ -47,16 +47,28 @@ import com.google.inject.Injector
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.http.HttpExchangeHandler
 import io.gatehill.imposter.http.HttpRouter
+import io.gatehill.imposter.plugin.config.PluginConfigImpl
+import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl
 import io.gatehill.imposter.server.HttpServer
 import io.gatehill.imposter.server.ServerFactory
+import io.gatehill.imposter.service.ResponseFileService
 import io.gatehill.imposter.service.ResponseService
 import io.vertx.core.Vertx
+import io.vertx.core.http.impl.HttpUtils
+import org.apache.logging.log4j.LogManager
+import java.io.File
 import java.util.concurrent.CompletableFuture
+import javax.inject.Inject
 
 /**
  * @author Pete Cornish
  */
-class LambdaServerFactory : ServerFactory {
+class LambdaServerFactory @Inject constructor(
+    private val responseService: ResponseService,
+    private val responseFileService: ResponseFileService,
+) : ServerFactory {
+    private val logger = LogManager.getLogger(LambdaServerFactory::class.java)
+
     lateinit var activeServer: LambdaServer<*, *>
         private set
 
@@ -76,6 +88,7 @@ class LambdaServerFactory : ServerFactory {
     override fun createMetricsHandler(): HttpExchangeHandler = {}
 
     companion object {
+        private const val indexFile = "index.html"
         lateinit var eventType: EventType
     }
 

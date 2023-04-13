@@ -87,7 +87,7 @@ abstract class LambdaServer<Request, Response>(
             } else {
                 matched.forEach { route ->
                     val request = buildRequest(event, route)
-                    val exchange = LambdaHttpExchange(router, request, response, route)
+                    val exchange = LambdaHttpExchange(router, route, request, response)
                     val handler = route.handler ?: throw IllegalStateException("No route handler set for: $route")
                     try {
                         handler(exchange)
@@ -129,7 +129,7 @@ abstract class LambdaServer<Request, Response>(
         errorHandler: (HttpExchange) -> Unit,
     ) {
         val request = buildRequest(event, null)
-        val exchange = LambdaHttpExchange(router, request, response, null)
+        val exchange = LambdaHttpExchange(router, null, request, response)
         exchange.fail(statusCode, failureCause)
         errorHandler(exchange)
     }

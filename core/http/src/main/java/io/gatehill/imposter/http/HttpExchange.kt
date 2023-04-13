@@ -53,9 +53,9 @@ interface HttpExchange {
     fun acceptsMimeType(mimeType: String): Boolean
 
     /**
-     * Note: not all routes have a path.
+     * Current route can technically be `null`, such as when a request is made for an unknown path.
      */
-    val currentRoutePath: String?
+    val currentRoute: HttpRoute?
 
     fun fail(cause: Throwable?)
     fun fail(statusCode: Int)
