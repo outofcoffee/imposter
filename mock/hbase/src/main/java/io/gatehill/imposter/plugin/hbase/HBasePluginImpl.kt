@@ -270,7 +270,7 @@ class HBasePluginImpl @Inject constructor(
                 val scanner = scannerService.fetchScanner(Integer.valueOf(scannerId))
                 scanner ?: run {
                     LOGGER.error(
-                        "Received result request for non-existent scanner {} for table: {}",
+                        "Received result request for nonexistent scanner {} for table: {}",
                         scannerId,
                         tableName
                     )

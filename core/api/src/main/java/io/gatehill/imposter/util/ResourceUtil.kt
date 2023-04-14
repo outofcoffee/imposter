@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -54,6 +54,7 @@ import java.util.regex.Pattern
 object ResourceUtil {
     const val RESOURCE_CONFIG_KEY = "io.gatehill.imposter.resourceConfig"
     const val RC_REQUEST_ID_KEY = "request.id"
+    const val RC_SEND_NOT_FOUND_RESPONSE = "response.sendNotFoundResponse"
 
     private val PATH_PARAM_PLACEHOLDER = Pattern.compile("\\{([a-zA-Z0-9._\\-]+)}")
 

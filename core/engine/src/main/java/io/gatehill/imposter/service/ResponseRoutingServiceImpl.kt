@@ -42,7 +42,6 @@
  */
 package io.gatehill.imposter.service
 
-import com.google.common.base.Strings
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.exception.ResponseException
 import io.gatehill.imposter.http.HttpExchange
@@ -57,7 +56,6 @@ import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.ResponseBehaviour
 import io.gatehill.imposter.script.ResponseBehaviourType
 import io.gatehill.imposter.util.LogUtil
-import io.gatehill.imposter.util.LogUtil.describeRequest
 import org.apache.logging.log4j.LogManager
 import java.util.function.Consumer
 import javax.inject.Inject
@@ -107,7 +105,7 @@ class ResponseRoutingServiceImpl @Inject constructor(
                 defaultBehaviourHandler.accept(responseBehaviour)
             }
         } catch (e: Exception) {
-            val msg = "Error sending mock response for ${describeRequest(httpExchange)}"
+            val msg = "Error sending mock response for ${LogUtil.describeRequest(httpExchange)}"
             LOGGER.error(msg, e)
             httpExchange.fail(ResponseException(msg, e))
         }
@@ -135,7 +133,7 @@ class ResponseRoutingServiceImpl @Inject constructor(
             null
         }
 
-        if (!Strings.isNullOrEmpty(scriptFile) || imposterConfig.useEmbeddedScriptEngine) {
+        if (!scriptFile.isNullOrEmpty() || imposterConfig.useEmbeddedScriptEngine) {
             responseBehaviour = scriptedResponseService.determineResponseFromScript(
                 httpExchange,
                 pluginConfig,
@@ -149,10 +147,12 @@ class ResponseRoutingServiceImpl @Inject constructor(
                 responseBehaviourFactory.populate(statusCode, responseConfig, responseBehaviour)
             }
         } else {
-            LOGGER.debug(
-                "Using default HTTP {} response behaviour for request: {}",
-                statusCode, LogUtil.describeRequestShort(httpExchange)
-            )
+            if (LOGGER.isTraceEnabled) {
+                LOGGER.trace(
+                    "Using default HTTP {} response behaviour for request: {}",
+                    statusCode, LogUtil.describeRequestShort(httpExchange)
+                )
+            }
             responseBehaviour = responseBehaviourFactory.build(statusCode, responseConfig)
         }
 

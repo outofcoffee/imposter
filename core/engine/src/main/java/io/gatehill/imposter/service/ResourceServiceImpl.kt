@@ -74,7 +74,7 @@ import io.vertx.core.Vertx
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
 import java.io.File
-import java.util.*
+import java.util.UUID
 import java.util.regex.Pattern
 import javax.inject.Inject
 
@@ -181,7 +181,10 @@ class ResourceServiceImpl @Inject constructor(
      * {@inheritDoc}
      */
     override fun buildNotFoundExceptionHandler() = { httpExchange: HttpExchange ->
-        if (null == httpExchange.get(ResourceUtil.RC_REQUEST_ID_KEY)) {
+        if (
+            null == httpExchange.get(ResourceUtil.RC_REQUEST_ID_KEY) ||
+            httpExchange.get<Boolean>(ResourceUtil.RC_SEND_NOT_FOUND_RESPONSE) == true
+        ) {
             // only override response processing if the 404 did not originate from the mock engine
             logAppropriatelyForPath(httpExchange, "File not found")
             responseService.sendNotFoundResponse(httpExchange)
@@ -253,7 +256,7 @@ class ResourceServiceImpl @Inject constructor(
         return try {
             httpExchange.request.path.takeIf { path: String ->
                 IGNORED_ERROR_PATHS.any { p: Pattern -> p.matcher(path).matches() }
-            }?.let { Level.TRACE } ?: Level.ERROR
+            }?.let { Level.TRACE } ?: if (httpExchange.response.statusCode >= 500) Level.ERROR else Level.WARN
 
         } catch (ignored: Exception) {
             Level.ERROR

@@ -98,7 +98,13 @@ interface ResponseService {
     )
 
     /**
+     * Fails the [HttpExchange] with a 404, triggering the configured error handler.
+     */
+    fun failWithNotFoundResponse(httpExchange: HttpExchange, reason: String)
+
+    /**
      * Set the HTTP status code, headers and body, then calls [HttpResponse.end].
+     * This should only be called by the error handler. See [failWithNotFoundResponse].
      *
      * Note: this method calls [finaliseExchange].
      */

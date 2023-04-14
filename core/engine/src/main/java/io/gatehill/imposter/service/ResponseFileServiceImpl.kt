@@ -49,7 +49,6 @@ import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig
 import io.gatehill.imposter.script.ResponseBehaviour
-import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.MetricsUtil
 import io.micrometer.core.instrument.Gauge
@@ -111,8 +110,7 @@ class ResponseFileServiceImpl @Inject constructor(
                     responseFileCache.put(normalisedPath, it)
                 }
             } else {
-                LOGGER.warn("Response file does not exist: $normalisedPath - returning 404 status code")
-                response.setStatusCode(HttpUtil.HTTP_NOT_FOUND).end()
+                responseService.failWithNotFoundResponse(httpExchange, "Response file does not exist: $normalisedPath")
                 return
             }
         }

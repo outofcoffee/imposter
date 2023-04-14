@@ -42,7 +42,6 @@
  */
 package io.gatehill.imposter.service
 
-import com.google.common.base.Strings
 import io.gatehill.imposter.exception.ResponseException
 import io.gatehill.imposter.http.ExchangePhase
 import io.gatehill.imposter.http.HttpExchange
@@ -51,6 +50,7 @@ import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
 import io.gatehill.imposter.lifecycle.EngineLifecycleListener
 import io.gatehill.imposter.plugin.config.ContentTypedConfig
 import io.gatehill.imposter.plugin.config.PluginConfig
+import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig
 import io.gatehill.imposter.script.ResponseBehaviour
 import io.gatehill.imposter.service.ResponseService.ResponseSender
@@ -58,6 +58,7 @@ import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.LogUtil.describeRequest
 import io.gatehill.imposter.util.PlaceholderUtil
+import io.gatehill.imposter.util.ResourceUtil
 import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.http.impl.MimeMapping
@@ -78,14 +79,11 @@ class ResponseServiceImpl @Inject constructor(
 
     override fun sendEmptyResponse(httpExchange: HttpExchange, responseBehaviour: ResponseBehaviour): Boolean {
         return try {
-            LOGGER.warn(
-                "Response file and data are blank - returning empty response for {}",
-                describeRequest(httpExchange)
-            )
+            LOGGER.debug("Returning empty response for ${describeRequest(httpExchange)}")
             httpExchange.response.end()
             true
         } catch (e: Exception) {
-            LOGGER.warn("Error sending empty response for " + describeRequest(httpExchange), e)
+            LOGGER.error("Error sending empty response for ${describeRequest(httpExchange)}", e)
             false
         }
     }
@@ -152,11 +150,18 @@ class ResponseServiceImpl @Inject constructor(
                     }
                     response.putHeader(name, finalValue)
                 }
-                if (!Strings.isNullOrEmpty(responseBehaviour.responseFile)) {
+                if (!responseBehaviour.responseFile.isNullOrEmpty()) {
                     responseFileService.serveResponseFile(pluginConfig, resourceConfig, httpExchange, responseBehaviour)
-                } else if (!Strings.isNullOrEmpty(responseBehaviour.content)) {
+
+                } else if (!responseBehaviour.content.isNullOrEmpty()) {
                     serveResponseData(resourceConfig, httpExchange, responseBehaviour)
+
+                } else if (resourceConfig is BasicResourceConfig && !resourceConfig.responseConfig.dir.isNullOrEmpty()) {
+                    // this should have been caught by the static handler
+                    failWithNotFoundResponse(httpExchange, "Request for nonexistent static resource: ${LogUtil.describeRequestShort(httpExchange)}")
+
                 } else {
+                    LOGGER.warn("Response file and data are blank for ${describeRequest(httpExchange)}")
                     fallback(httpExchange, responseBehaviour, fallbackSenders)
                 }
             } catch (e: Exception) {
@@ -226,7 +231,7 @@ class ResponseServiceImpl @Inject constructor(
     ) {
         // explicit content type
         if (resourceConfig is ContentTypedConfig) {
-            if (!Strings.isNullOrEmpty(resourceConfig.contentType)) {
+            if (!resourceConfig.contentType.isNullOrEmpty()) {
                 response.putHeader(HttpUtil.CONTENT_TYPE, resourceConfig.contentType!!)
             }
         }
@@ -234,7 +239,7 @@ class ResponseServiceImpl @Inject constructor(
         // infer from filename hint
         if (response.getHeader(HttpUtil.CONTENT_TYPE).isNullOrBlank() && !filenameHintForContentType.isNullOrBlank()) {
             val contentType = MimeMapping.getMimeTypeForFilename(filenameHintForContentType)
-            if (!Strings.isNullOrEmpty(contentType)) {
+            if (!contentType.isNullOrEmpty()) {
                 LOGGER.debug("Inferred {} content type", contentType)
                 response.putHeader(HttpUtil.CONTENT_TYPE, contentType)
             } else {
@@ -272,6 +277,12 @@ class ResponseServiceImpl @Inject constructor(
             }
         }
         throw ResponseException("All attempts to send a response failed")
+    }
+
+    override fun failWithNotFoundResponse(httpExchange: HttpExchange, reason: String) {
+        LOGGER.debug("$reason - returning 404 status code")
+        httpExchange.put(ResourceUtil.RC_SEND_NOT_FOUND_RESPONSE, true)
+        httpExchange.fail(HttpUtil.HTTP_NOT_FOUND)
     }
 
     override fun sendNotFoundResponse(httpExchange: HttpExchange) = finaliseExchange(null, httpExchange) {
