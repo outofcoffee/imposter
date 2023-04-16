@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2022.
+ * Copyright (c) 2022-2023.
  *
  * This file is part of Imposter.
  *
@@ -91,8 +91,20 @@ abstract class AbstractWsdlParser(
             logger.warn("No embedded types schema found")
             return emptyList()
         }
-        return schemaNodes.map {
-            val schemaXml = XMLOutputter().outputString(it)
+        return schemaNodes.map { inlineSchemaElement ->
+            val allNamespacesInScope = inlineSchemaElement.namespacesInScope
+
+            // mutate a clone of the inline schema element
+            val clonedInlineSchema = inlineSchemaElement.clone()
+
+            // add parent namespaces to the inline schema
+            allNamespacesInScope.forEach { ns ->
+                if (clonedInlineSchema.namespacePrefix != ns.prefix && clonedInlineSchema.additionalNamespaces.none { it.prefix == ns.prefix }) {
+                    clonedInlineSchema.addNamespaceDeclaration(ns)
+                }
+            }
+
+            val schemaXml = XMLOutputter().outputString(clonedInlineSchema)
             logger.trace("Embedded types schema: {}", schemaXml)
             return@map SchemaDocument.Factory.parse(schemaXml)
         }
