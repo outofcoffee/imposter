@@ -3,9 +3,9 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [3.16.2] - 2023-04-16
 ### Fixed
-- ...
+- fix(soap): includes parent namespace declarations when parsing inline schemas.
 
 ## [3.16.1] - 2023-04-14
 ### Fixed
