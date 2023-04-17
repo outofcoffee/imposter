@@ -22,6 +22,8 @@ mainClassName = 'io.gatehill.imposter.cmd.ImposterLauncher'
 jar {
     manifest {
         attributes 'Main-Class': mainClassName
+
+        // duplicates attribute from core so it is present in the merged jar
         attributes 'Imposter-Version': project.version
     }
 }

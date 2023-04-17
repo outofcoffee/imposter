@@ -46,7 +46,8 @@ package io.gatehill.imposter.awslambda
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent
 import com.amazonaws.services.lambda.runtime.tests.annotations.Event
-import org.hamcrest.CoreMatchers
+import org.hamcrest.CoreMatchers.containsString
+import org.hamcrest.CoreMatchers.not
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -110,6 +111,16 @@ class HandlerTest : AbstractHandlerTest() {
 
         assertNotNull(responseEvent, "Response event should be returned")
         assertEquals(200, responseEvent.statusCode)
-        assertThat(responseEvent.body, CoreMatchers.containsString(".example"))
+        assertThat(responseEvent.body, containsString(".example"))
+    }
+
+    @ParameterizedTest
+    @Event(value = "requests_v1/request_status.json", type = APIGatewayProxyRequestEvent::class)
+    fun `should fetch version from status endpoint`(event: APIGatewayProxyRequestEvent) {
+        val responseEvent = handler!!.handleRequest(event, context!!)
+
+        assertNotNull(responseEvent, "Response event should be returned")
+        assertEquals(200, responseEvent.statusCode)
+        assertThat(responseEvent.body, not(containsString("unknown")))
     }
 }

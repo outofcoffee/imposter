@@ -85,3 +85,9 @@ compileTestKotlin {
         freeCompilerArgs = ["-Xjvm-default=all"]
     }
 }
+
+jar {
+    manifest {
+        attributes 'Imposter-Version': project.version
+    }
+}

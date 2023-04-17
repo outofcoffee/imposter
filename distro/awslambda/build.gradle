@@ -8,12 +8,6 @@ dependencies {
     implementation project (':adapter:adapter-awslambda')
 }
 
-jar {
-    manifest {
-        attributes 'Imposter-Version': project.version
-    }
-}
-
 task buildZip(type: Zip) {
     archiveName('imposter-awslambda.zip')
     from compileJava

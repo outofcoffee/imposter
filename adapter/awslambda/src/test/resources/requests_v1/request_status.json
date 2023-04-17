@@ -1,0 +1,9 @@
+{
+  "path": "/system/status",
+  "httpMethod":  "GET",
+  "headers": {},
+  "queryStringParameters": {},
+  "pathParameters": {},
+  "body": null,
+  "isBase64Encoded": false
+}
