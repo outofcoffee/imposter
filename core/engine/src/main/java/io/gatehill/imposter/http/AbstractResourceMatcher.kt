@@ -360,8 +360,9 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
         resource: ResolvedResourceConfig,
         httpExchange: HttpExchange,
     ): MatchedResource {
-        // true if exact match, wildcard match, or no config (implies match all)
-        val matched = results.none { it == ResourceMatchResult.NOT_MATCHED }
+        // true if exact match or wildcard match, or partial config (implies match all)
+        val matched = results.none { it == ResourceMatchResult.NOT_MATCHED } &&
+                !results.all { it == ResourceMatchResult.NO_CONFIG }
 
         // all matched and none of type wildcard
         val exact = matched && results.none { it == ResourceMatchResult.WILDCARD_MATCH }
