@@ -49,7 +49,7 @@ data class ResourceMatchResult(
 ) {
     companion object {
         val NO_CONFIG = ResourceMatchResult(MatchResultType.NO_CONFIG, 1)
-        val NOT_MATCHED = ResourceMatchResult(MatchResultType.NOT_MATCHED, 1)
+        val NOT_MATCHED = ResourceMatchResult(MatchResultType.NOT_MATCHED, 0)
         val EXACT_MATCH = ResourceMatchResult(MatchResultType.EXACT_MATCH, 1)
         val WILDCARD_MATCH = ResourceMatchResult(MatchResultType.WILDCARD_MATCH, 1)
     }

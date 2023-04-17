@@ -281,7 +281,7 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
                 matchUsingRegex(bodyConfig.value, actualValue, operator)
         }
         if (LOGGER.isTraceEnabled) {
-            LOGGER.trace("Body match result for {} {}: {}", operator, bodyConfig.value, match)
+            LOGGER.trace("Body match result for {} '{}': {}", operator, bodyConfig.value, match)
         }
         return match
     }
