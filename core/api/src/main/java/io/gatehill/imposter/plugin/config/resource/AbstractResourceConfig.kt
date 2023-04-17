@@ -65,4 +65,8 @@ abstract class AbstractResourceConfig : BasicResourceConfig, SecurityConfigHolde
 
     @JsonProperty("response")
     override val responseConfig = ResponseConfig()
+
+    override fun toString(): String {
+        return "AbstractResourceConfig(path=$path, securityConfig=$securityConfig, captureConfig=$captureConfig, responseConfig=$responseConfig)"
+    }
 }

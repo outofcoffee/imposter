@@ -66,4 +66,8 @@ class RestPluginConfig : CommonPluginConfig(), MethodResourceConfig,
 
     @JsonProperty("defaultsFromRootResponse")
     override val isDefaultsFromRootResponse = false
+
+    override fun toString(): String {
+        return "RestPluginConfig(parent=${super.toString()}, method=$method, resources=$resources, contentType=$contentType, isDefaultsFromRootResponse=$isDefaultsFromRootResponse)"
+    }
 }

@@ -57,4 +57,8 @@ class HBasePluginConfig(
 
     @JsonProperty("idField")
     val idField: String? = null
-) : PluginConfigImpl()
+) : PluginConfigImpl() {
+    override fun toString(): String {
+        return "HBasePluginConfig(parent=${super.toString()}, tableName='$tableName', prefix='$prefix', idField='$idField')"
+    }
+}

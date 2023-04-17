@@ -68,4 +68,8 @@ open class PluginConfigImpl : AbstractResourceConfig(), SystemConfigHolder, Plug
      */
     @field:JsonIgnore
     override lateinit var parentDir: File
+
+    override fun toString(): String {
+        return "PluginConfigImpl(parent=${super.toString()}, plugin=$plugin, systemConfig=$systemConfig, parentDir=$parentDir)"
+    }
 }

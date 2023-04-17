@@ -55,4 +55,8 @@ class OpenApiResponseConfig : ResponseConfig() {
 
     override fun hasConfiguration(): Boolean =
         super.hasConfiguration() || null != exampleName
+
+    override fun toString(): String {
+        return "OpenApiResponseConfig(parent=${super.toString()}, exampleName=$exampleName)"
+    }
 }

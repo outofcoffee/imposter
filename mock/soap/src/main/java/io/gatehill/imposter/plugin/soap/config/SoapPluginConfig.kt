@@ -61,4 +61,8 @@ class SoapPluginConfig : CommonPluginConfig(), ResourcesHolder<SoapPluginResourc
 
     @JsonProperty("envelope")
     val envelope: Boolean = true
+
+    override fun toString(): String {
+        return "SoapPluginConfig(parent=${super.toString()}, wsdlFile=$wsdlFile, resources=$resources, isDefaultsFromRootResponse=$isDefaultsFromRootResponse, envelope=$envelope)"
+    }
 }

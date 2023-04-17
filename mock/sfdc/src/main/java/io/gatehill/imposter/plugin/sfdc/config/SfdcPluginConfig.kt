@@ -53,4 +53,8 @@ class SfdcPluginConfig(
     @JsonProperty("sObjectName")
     @JsonAlias("SObjectName")
     val sObjectName: String
-) : PluginConfigImpl()
+) : PluginConfigImpl() {
+    override fun toString(): String {
+        return "SfdcPluginConfig(parent=${super.toString()}, sObjectName='$sObjectName')"
+    }
+}

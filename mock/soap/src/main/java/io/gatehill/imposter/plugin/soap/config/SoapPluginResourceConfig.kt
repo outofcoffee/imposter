@@ -69,4 +69,8 @@ class SoapPluginResourceConfig : AbstractResourceConfig(), RequestBodyResourceCo
 
     @get:JsonIgnore
     override val resourceId by lazy { UUID.randomUUID().toString() }
+
+    override fun toString(): String {
+        return "SoapPluginResourceConfig(parent=${super.toString()}, binding=$binding, operation=$operation, soapAction=$soapAction, requestBody=$requestBody, eval=$eval, resourceId=$resourceId)"
+    }
 }

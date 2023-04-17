@@ -53,4 +53,8 @@ import io.gatehill.imposter.plugin.config.resource.RestResourceConfig
 class OpenApiResourceConfig : RestResourceConfig() {
     @JsonProperty("response")
     override val responseConfig = OpenApiResponseConfig()
+
+    override fun toString(): String {
+        return "OpenApiResourceConfig(parent=${super.toString()}, path=$path, responseConfig=$responseConfig)"
+    }
 }

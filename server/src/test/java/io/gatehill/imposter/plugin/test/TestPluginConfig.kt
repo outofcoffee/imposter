@@ -58,4 +58,8 @@ class TestPluginConfig : CommonPluginConfig(), ResourcesHolder<TestPluginResourc
 
     @JsonProperty("customProperty")
     val customProperty: String? = null
+
+    override fun toString(): String {
+        return "TestPluginConfig(parent=${super.toString()}, resources=$resources, customProperty=$customProperty, isDefaultsFromRootResponse=$isDefaultsFromRootResponse)"
+    }
 }

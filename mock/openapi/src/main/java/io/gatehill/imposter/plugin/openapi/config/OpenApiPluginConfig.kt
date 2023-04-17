@@ -81,4 +81,8 @@ class OpenApiPluginConfig : CommonPluginConfig(), ResourcesHolder<OpenApiResourc
 
     @JsonProperty("validation")
     val validation: OpenApiPluginValidationConfig? = null
+
+    override fun toString(): String {
+        return "OpenApiPluginConfig(parent=${super.toString()}, specFile=$specFile, resources=$resources, isDefaultsFromRootResponse=$isDefaultsFromRootResponse, isPickFirstIfNoneMatch=$isPickFirstIfNoneMatch, isUseServerPathAsBaseUrl=$isUseServerPathAsBaseUrl, stripServerPath=$stripServerPath, responseConfig=$responseConfig, validation=$validation)"
+    }
 }

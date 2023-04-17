@@ -88,4 +88,8 @@ open class RestResourceConfig : AbstractResourceConfig(), MethodResourceConfig, 
 
     @get:JsonIgnore
     override val resourceId by lazy { UUID.randomUUID().toString() }
+
+    override fun toString(): String {
+        return "RestResourceConfig(parent=${super.toString()}, method=$method, pathParams=$pathParams, queryParams=$queryParams, formParams=$formParams, requestHeaders=$requestHeaders, requestBody=$requestBody, eval=$eval, passthrough=$passthrough)"
+    }
 }

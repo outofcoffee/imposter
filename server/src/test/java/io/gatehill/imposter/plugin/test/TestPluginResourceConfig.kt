@@ -50,4 +50,8 @@ import io.gatehill.imposter.plugin.config.resource.RestResourceConfig
  */
 class TestPluginResourceConfig : RestResourceConfig(), ContentTypedConfig {
     override val contentType: String? = null
+
+    override fun toString(): String {
+        return "TestPluginResourceConfig(parent=${super.toString()}, path=$path, contentType=$contentType)"
+    }
 }

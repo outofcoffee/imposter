@@ -58,4 +58,8 @@ abstract class CommonPluginConfig : PluginConfigImpl(), CorsConfigHolder, Upstre
 
     @field:JsonProperty("upstreams")
     override val upstreams: Map<String, UpstreamConfig>? = null
+
+    override fun toString(): String {
+        return "CommonPluginConfig(parent=${super.toString()}, corsConfig=$corsConfig, upstreams=$upstreams)"
+    }
 }
