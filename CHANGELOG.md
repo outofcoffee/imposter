@@ -3,13 +3,15 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
-### Added
-- ...
+## [3.16.3] - 2023-04-17
+### Fixed
+- fix: prevents resource match if all results have no config.
+- feat: adds meaningful toString() functions to resources.
+- fix: sets resource match result weight to zero if not matched. 
 
 ## [3.16.2] - 2023-04-16
 ### Fixed
-- fix(soap): includes parent namespace declarations when parsing inline schemas.
+- fix(soap): includes parent namespace declarations when parsing inline schemas. (#357)
 
 ## [3.16.1] - 2023-04-14
 ### Fixed
