@@ -48,10 +48,12 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.cfg.MapperBuilder
 import com.fasterxml.jackson.databind.json.JsonMapper
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.gatehill.imposter.config.util.EnvVars
+import org.yaml.snakeyaml.LoaderOptions
 
 /**
  * @author Pete Cornish
@@ -72,18 +74,29 @@ object MapUtil {
         }
     }.build()
 
+    /**
+     * The default code point limit is 3MB, which is too low for some YAML files.
+     * See [Jackson documentation](https://github.com/FasterXML/jackson-dataformats-text/tree/2.15/yaml#maximum-input-yaml-document-size-3-mb)
+     */
+    private val yamlCodePointLimit: Int by lazy {
+        EnvVars.getEnv("IMPOSTER_YAML_CODE_POINT_LIMIT")?.toInt() ?: (3 * 1024 * 1024)
+    }
+
     init {
-        JSON_MAPPER = configureMapper<ObjectMapper>(
-            JsonMapper.builder().enable(SerializationFeature.INDENT_OUTPUT)
+        JSON_MAPPER = configureBuilder<ObjectMapper>(
+                JsonMapper.builder().enable(SerializationFeature.INDENT_OUTPUT)
         ).apply {
             setSerializationInclusion(JsonInclude.Include.NON_NULL)
         }
 
-        YAML_MAPPER = configureMapper(YAMLMapper.builder())
+        val yamlBuilder = YAMLMapper.builder(YAMLFactory.builder()
+                .loaderOptions(LoaderOptions().apply { codePointLimit = yamlCodePointLimit })
+                .build())
+        YAML_MAPPER = configureBuilder(yamlBuilder)
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun <M : ObjectMapper> configureMapper(builder: MapperBuilder<*, *>): M {
+    private fun <M : ObjectMapper> configureBuilder(builder: MapperBuilder<*, *>): M {
         val mapper = builder.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS).build()
 
         addJavaTimeSupport(mapper)
