@@ -3,9 +3,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [3.17.0] - 2023-04-19
+### Added
+- feat: allows default YAML code point limit to be overridden using `IMPOSTER_YAML_CODE_POINT_LIMIT` environment variable.
+
 ### Fixed
-- ...
+- fix: returns engine version from Lambda status endpoint.
 
 ## [3.16.3] - 2023-04-17
 ### Fixed
