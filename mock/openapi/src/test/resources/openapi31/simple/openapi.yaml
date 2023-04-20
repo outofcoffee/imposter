@@ -1,0 +1,74 @@
+openapi: "3.1.0"
+info:
+  version: 1.0.0
+  title: Swagger Petstore
+  license:
+    name: MIT
+    identifier: MIT
+paths:
+  /pets/{petId}:
+    get:
+      summary: Get a pet by ID
+      operationId: getPetById
+      parameters:
+        - name: petId
+          in: path
+          description: ID of pet to return
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: pets response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pet"
+
+components:
+  schemas:
+    Pet:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int64
+        message:
+          type: string
+        token:
+          {
+            "type": "string",
+            "contentMediaType": "application/jwt",
+            "contentSchema": {
+              "type": "array",
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "required": [ "typ", "alg" ],
+                  "properties": {
+                    "typ": { "const": "JWT" },
+                    "alg": { "const": "HS256" }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [ "sub", "iat" ],
+                  "properties": {
+                    "sub": { "type": "string" },
+                    "iat": { "type": "integer" }
+                  }
+                }
+              ]
+            }
+          }
+      example:
+        {
+          "id": 3,
+          "name": "Fluffy",
+          "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaWF0IjoxNTE2MjM5MDIyfQ.L8i6g3PfcHlioHCCPURC9pmXT7gdJpx3kOoyAfNUwCc"
+        }
