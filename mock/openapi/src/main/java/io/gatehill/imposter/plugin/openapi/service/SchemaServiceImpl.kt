@@ -58,6 +58,7 @@ import io.swagger.v3.oas.models.media.Schema
 import org.apache.logging.log4j.LogManager
 import java.time.OffsetDateTime
 import java.util.*
+import java.util.Objects.nonNull
 
 /**
  * Collects examples from schema definitions.
@@ -67,62 +68,72 @@ import java.util.*
  */
 class SchemaServiceImpl : SchemaService {
     override fun collectExamples(
-        httpExchange: HttpExchange,
-        spec: OpenAPI,
-        schema: ContentTypedHolder<Schema<*>>
+            httpExchange: HttpExchange,
+            spec: OpenAPI,
+            schema: ContentTypedHolder<Schema<*>>
     ): ContentTypedHolder<*> {
         val example = collectSchemaExample(spec, schema.value)
         LOGGER.trace(
-            "Collected example from {} schema for {}: {}",
-            schema.contentType,
-            LogUtil.describeRequestShort(httpExchange),
-            example
+                "Collected example from {} schema for {}: {}",
+                schema.contentType,
+                LogUtil.describeRequestShort(httpExchange),
+                example
         )
         return ContentTypedHolder(schema.contentType, example)
     }
 
     private fun collectSchemaExample(spec: OpenAPI, schema: Schema<*>): Any? {
-        // $ref takes precedence, per spec:
-        //   "Any sibling elements of a $ref are ignored. This is because
-        //   $ref works by replacing itself and everything on its level
-        //   with the definition it is pointing at."
-        // See: https://swagger.io/docs/specification/using-ref/
-        val example: Any? = if (Objects.nonNull(schema.`$ref`)) {
-            val referent = RefUtil.lookupSchemaRef(spec, schema)
-            collectSchemaExample(spec, referent)
-        } else if (Objects.nonNull(schema.example)) {
-            if (schema is DateTimeSchema) {
-                DateTimeUtil.DATE_TIME_FORMATTER.format(schema.getExample() as OffsetDateTime)
-            } else if (schema is DateSchema) {
-                DateTimeUtil.DATE_FORMATTER.format((schema.getExample() as Date).toInstant())
+        try {
+            // $ref takes precedence, per spec:
+            //   "Any sibling elements of a $ref are ignored. This is because
+            //   $ref works by replacing itself and everything on its level
+            //   with the definition it is pointing at."
+            // See: https://swagger.io/docs/specification/using-ref/
+            val example: Any? = if (nonNull(schema.`$ref`)) {
+                val referent = RefUtil.lookupSchemaRef(spec, schema)
+                collectSchemaExample(spec, referent)
+            } else if (nonNull(schema.example)) {
+                when (schema) {
+                    is DateTimeSchema -> {
+                        DateTimeUtil.DATE_TIME_FORMATTER.format(schema.getExample() as OffsetDateTime)
+                    }
+
+                    is DateSchema -> {
+                        DateTimeUtil.DATE_FORMATTER.format((schema.getExample() as Date).toInstant())
+                    }
+
+                    else -> {
+                        schema.example
+                    }
+                }
+            } else if (nonNull(schema.properties)) {
+                buildFromProperties(spec, schema.properties)
             } else {
-                schema.example
+                when (schema) {
+                    is ObjectSchema -> buildFromProperties(spec, schema.properties)
+                    is ArraySchema -> buildFromArraySchema(spec, schema)
+                    is ComposedSchema -> buildFromComposedSchema(spec, schema)
+                    else -> getPropertyDefault(schema)
+                }
             }
-        } else if (Objects.nonNull(schema.properties)) {
-            buildFromProperties(spec, schema.properties)
-        } else if (ObjectSchema::class.java.isAssignableFrom(schema.javaClass)) {
-            val objectSchema = schema as ObjectSchema?
-            buildFromProperties(spec, objectSchema!!.properties)
-        } else if (ArraySchema::class.java.isAssignableFrom(schema.javaClass)) {
-            buildFromArraySchema(spec, schema as ArraySchema?)
-        } else if (ComposedSchema::class.java.isAssignableFrom(schema.javaClass)) {
-            buildFromComposedSchema(spec, schema as ComposedSchema?)
-        } else {
-            getPropertyDefault(schema)
+            return example
+        } catch (e: Exception) {
+            throw IllegalStateException("Failed to collect example from schema: $schema", e)
         }
-        return example
     }
 
-    private fun buildFromArraySchema(spec: OpenAPI, schema: ArraySchema?): List<Any?> {
+    private fun buildFromArraySchema(spec: OpenAPI, schema: ArraySchema): List<Any?> {
+        if (null == schema.items) {
+            return emptyList()
+        }
         // items may be a schema type with multiple children
-        val items = schema!!.items
-        val examples: MutableList<Any?> = mutableListOf()
-        examples.add(collectSchemaExample(spec, items))
-        return examples
+        return mutableListOf(
+                collectSchemaExample(spec, schema.items)
+        )
     }
 
-    private fun buildFromComposedSchema(spec: OpenAPI, schema: ComposedSchema?): Any? {
-        val example: Any? = if (Objects.nonNull(schema!!.allOf) && schema.allOf.isNotEmpty()) {
+    private fun buildFromComposedSchema(spec: OpenAPI, schema: ComposedSchema): Any? {
+        val example: Any? = if (nonNull(schema.allOf) && schema.allOf.isNotEmpty()) {
             val allOf = schema.allOf
 
             // Combine properties of 'allOf'
@@ -130,7 +141,7 @@ class SchemaServiceImpl : SchemaService {
             val combinedExampleProperties: MutableMap<String, Any> = mutableMapOf()
             allOf.forEach { s ->
                 val exampleMap = collectSchemaExample(spec, s)
-                if (Objects.nonNull(exampleMap) && exampleMap is Map<*, *>) {
+                if (nonNull(exampleMap) && exampleMap is Map<*, *>) {
                     // FIXME code defensively around this cast
                     @Suppress("UNCHECKED_CAST")
                     combinedExampleProperties.putAll((exampleMap as Map<String, Any>?)!!)
@@ -138,23 +149,23 @@ class SchemaServiceImpl : SchemaService {
             }
             combinedExampleProperties
 
-        } else if (Objects.nonNull(schema.oneOf) && schema.oneOf.isNotEmpty()) {
+        } else if (nonNull(schema.oneOf) && schema.oneOf.isNotEmpty()) {
             LOGGER.debug(
-                "Found 'oneOf' in schema {} - using first schema example", (schema.name ?: "")
+                    "Found 'oneOf' in schema {} - using first schema example", (schema.name ?: "")
             )
             val oneOf = schema.oneOf
             collectSchemaExample(spec, oneOf[0])
 
-        } else if (Objects.nonNull(schema.anyOf) && schema.anyOf.isNotEmpty()) {
+        } else if (nonNull(schema.anyOf) && schema.anyOf.isNotEmpty()) {
             LOGGER.debug(
-                "Found 'anyOf' in schema {} - using first schema example", (schema.name ?: "")
+                    "Found 'anyOf' in schema {} - using first schema example", (schema.name ?: "")
             )
             val anyOf = schema.anyOf
             collectSchemaExample(spec, anyOf[0])
 
-        } else if (Objects.nonNull(schema.not)) {
+        } else if (nonNull(schema.not)) {
             LOGGER.debug(
-                "Found 'not' in schema {} - using null for schema example", (schema.name ?: "")
+                    "Found 'not' in schema {} - using null for schema example", (schema.name ?: "")
             )
             null
 
@@ -164,30 +175,34 @@ class SchemaServiceImpl : SchemaService {
         return example
     }
 
-    private fun buildFromProperties(spec: OpenAPI, properties: Map<String, Schema<*>>): Map<String, Any?> {
-        return if (Objects.isNull(properties)) {
-            emptyMap<String, Any>()
-        } else {
-            properties.entries.associate { (k, v) -> k to collectSchemaExample(spec, v) }
-        }
+    /**
+     * @param properties must be nullable as the return type of [Schema.properties] can be `null`
+     */
+    private fun buildFromProperties(
+            spec: OpenAPI,
+            properties: Map<String, Schema<*>>?
+    ): Map<String, Any?> {
+        return properties?.entries?.associate { (k, v) ->
+            k to collectSchemaExample(spec, v)
+        } ?: emptyMap<String, Any>()
     }
 
     private fun getPropertyDefault(schema: Schema<*>?): Any? {
         // if a non-empty enum exists, choose the first value
-        if (Objects.nonNull(schema!!.enum) && !schema.enum.isEmpty()) {
+        if (nonNull(schema!!.enum) && schema.enum.isNotEmpty()) {
             return schema.enum[0]
         }
 
         // fall back to a default for the type
-        if (Objects.nonNull(schema.type)) {
+        if (nonNull(schema.type)) {
             val defaultValueProvider = DEFAULT_VALUE_PROVIDERS[schema.type]!!
-            return if (Objects.nonNull(defaultValueProvider)) {
+            return if (nonNull(defaultValueProvider)) {
                 defaultValueProvider.provide(schema)
             } else {
                 LOGGER.warn(
-                    "Unknown type: {} for schema: {} - returning null for example property",
-                    schema.type,
-                    schema.name
+                        "Unknown type: {} for schema: {} - returning null for example property",
+                        schema.type,
+                        schema.name
                 )
                 null
             }
