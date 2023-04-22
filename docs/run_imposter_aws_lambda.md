@@ -147,7 +147,7 @@ $ curl https://url-to-invoke-lambda-function/system/status
 > **Note**
 > If you receive the following error:
 > 
-> ```json
+> ```
 > {"Message":"Forbidden"}
 > ```
 > 
@@ -155,7 +155,7 @@ $ curl https://url-to-invoke-lambda-function/system/status
 > 
 > To enable anonymous access, run:
 > 
-> ```shell
+> ```
 > $ imposter remote config anonAccess=true
 > ```
 > 
