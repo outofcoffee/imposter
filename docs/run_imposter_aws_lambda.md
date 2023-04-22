@@ -86,20 +86,25 @@ $ imposter remote set-type awslambda
 set remote type to 'awslambda' for remote: example
 ```
 
-Once you have the remote type, you can further configure the remote using the `imposter remote config` command, including:
-
-- `functionName` - the name of the AWS Lambda function, which **must adhere** to the [AWS function naming rules](https://docs.aws.amazon.com/lambda/latest/dg/API_CreateFunction.html#SSS-CreateFunction-request-FunctionName)
-- `region` - the AWS Region in which to deploy the function, such as `eu-west-1`
-- `iamRoleName` - the name of a custom IAM Role for the Lambda's execution role
-- `engineVersion` - the version of the Imposter engine to use, such as `3.2.1`
-- `memory` - the amount of memory, in megabytes, for the function, such as `768`
-- `anonAccess` - whether to permit anonymous access to the Lambda function URL (`true`|`false`)
+Once you have the remote type, you can further configure the remote using the `imposter remote config` command.
 
 For example:
 
 ```shell
 $ imposter remote config region=eu-west-1
 ```
+
+Available configuration options are:
+
+| Property        | Meaning                                                                                                                                                                                                 | Default                                                                        |
+|-----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------|
+| `anonAccess`    | Whether to permit anonymous access to the Lambda function URL (`true` or `false`)                                                                                                                       | `false`                                                                        |
+| `architecture`  | The lambda architecture, which can be `x86_64` or `arm64`                                                                                                                                               | `x86_64`                                                                       |
+| `engineVersion` | The version of the Imposter engine to use, such as `3.2.1`                                                                                                                                              | `latest` unless set by CLI config file                                         |
+| `functionName`  | The name of the AWS Lambda function, which must adhere to the [AWS function naming rules](https://docs.aws.amazon.com/lambda/latest/dg/API_CreateFunction.html#SSS-CreateFunction-request-FunctionName) | `imposter-<dir name>` e.g. `imposter-example` if config dir name was `example` |
+| `iamRoleName`   | The name of a custom IAM Role for the Lambda's execution role. If it doesn't exist, it will be created with this name.                                                                                  | `ImposterLambdaExecutionRole`                                                  |
+| `memory`        | The amount of memory, in megabytes, for the function, such as `768`                                                                                                                                     | `768`                                                                          |
+| `region`        | The AWS Region in which to deploy the function, such as `eu-west-1`                                                                                                                                     | `us-east-1`                                                                    |
 
 #### Step 3: Deploy to Lambda
 
@@ -228,7 +233,7 @@ Open the [AWS Lambda Console](https://eu-west-1.console.aws.amazon.com/lambda/ho
 *Important:* Set the following:
 
 - runtime: `Java 11`
-- architecture: `x86_64`
+- architecture: `x86_64` or `arm64`
 
 ![Create Lambda function](./images/lambda_create.png)
 
