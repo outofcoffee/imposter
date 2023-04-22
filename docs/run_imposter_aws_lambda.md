@@ -139,6 +139,23 @@ $ curl https://url-to-invoke-lambda-function/system/status
 { "status": "ok" }
 ```
 
+> **Note**
+> If you receive the following error:
+> 
+> ```json
+> {"Message":"Forbidden"}
+> ```
+> 
+> ...then you may need to enable anonymous access to the Lambda function URL.
+> 
+> To enable anonymous access, run:
+> 
+> ```shell
+> $ imposter remote config anonAccess=true
+> ```
+> 
+> ...then redeploy with `imposter remote deploy`
+
 You should be able to call your mock endpoints, such as:
 
 ```shell
