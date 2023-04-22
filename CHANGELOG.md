@@ -3,9 +3,16 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [3.17.1] - 2023-04-22
 ### Added
-- ...
+- feat: adds test for OpenAPI 3.1 specification containing JWT contentMediaType.
+
+### Fixed
+- fix(openapi): improves null safety of schema example generator via idiomatic Kotlin.
+- docs(lambda): changes references from JAR file to ZIP.
+
+### Changed
+- refactor(openapi): inlines trivial default value providers.
 
 ## [3.17.0] - 2023-04-19
 ### Added
