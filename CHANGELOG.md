@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- ...
+
 ## [3.17.1] - 2023-04-22
 ### Added
 - feat: adds test for OpenAPI 3.1 specification containing JWT contentMediaType.
