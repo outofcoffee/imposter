@@ -3,9 +3,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [3.17.2] - 2023-04-23
 ### Added
-- ...
+- docs(lambda): documents support for ARM64 architecture.
+- docs(lambda): adds troubleshooting step for anonymous URL access.
+
+### Fixed
+- fix: lowercases Lambda request header keys.
 
 ## [3.17.1] - 2023-04-22
 ### Added
