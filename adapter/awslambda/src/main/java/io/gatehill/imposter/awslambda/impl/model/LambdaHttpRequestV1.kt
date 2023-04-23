@@ -49,6 +49,7 @@ import io.gatehill.imposter.awslambda.util.FormParserUtil
 import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.http.HttpRoute
+import io.gatehill.imposter.script.LowercaseKeysMap
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.json.JsonObject
 
@@ -65,6 +66,10 @@ class LambdaHttpRequestV1(
         currentRoute?.extractPathParams(path) ?: emptyMap()
     }
 
+    private val _headers by lazy {
+        event.headers?.let { LowercaseKeysMap(it) } ?: emptyMap()
+    }
+
     init {
         baseUrl = "http://" + (getHeader("Host") ?: "0.0.0.0")
     }
@@ -79,10 +84,10 @@ class LambdaHttpRequestV1(
         get() = "$baseUrl$path"
 
     override val headers: Map<String, String>
-        get() = event.headers ?: emptyMap()
+        get() = _headers
 
     override fun getHeader(headerKey: String): String? {
-        return event.headers?.get(headerKey)
+        return headers[headerKey]
     }
 
     override val pathParams: Map<String, String>

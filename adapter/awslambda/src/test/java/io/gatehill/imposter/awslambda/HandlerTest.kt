@@ -99,9 +99,19 @@ class HandlerTest : AbstractHandlerTest() {
 
         assertNotNull(responseEvent, "Response event should be returned")
         assertEquals(404, responseEvent.statusCode)
-        assertEquals("Resource not found", responseEvent.body)
-        assertEquals(2, responseEvent.headers?.size)
         assertEquals("text/plain", responseEvent.headers["Content-Type"])
+        assertEquals(2, responseEvent.headers?.size)
+        assertEquals("Resource not found", responseEvent.body)
+    }
+
+    @ParameterizedTest
+    @Event(value = "requests_v1/request_404_html.json", type = APIGatewayProxyRequestEvent::class)
+    fun `get HTML response for 404`(event: APIGatewayProxyRequestEvent) {
+        val responseEvent = handler!!.handleRequest(event, context!!)
+
+        assertNotNull(responseEvent, "Response event should be returned")
+        assertEquals(404, responseEvent.statusCode)
+        assertEquals("text/html", responseEvent.headers["Content-Type"])
     }
 
     @ParameterizedTest
