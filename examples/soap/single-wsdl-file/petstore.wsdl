@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright (c) 2023.
+  ~
+  ~ This file is part of Imposter.
+  ~
+  ~ "Commons Clause" License Condition v1.0
+  ~
+  ~ The Software is provided to you by the Licensor under the License, as
+  ~ defined below, subject to the following condition.
+  ~
+  ~ Without limiting other conditions in the License, the grant of rights
+  ~ under the License will not include, and the License does not grant to
+  ~ you, the right to Sell the Software.
+  ~
+  ~ For purposes of the foregoing, "Sell" means practicing any or all of
+  ~ the rights granted to you under the License to provide to third parties,
+  ~ for a fee or other consideration (including without limitation fees for
+  ~ hosting or consulting/support services related to the Software), a
+  ~ product or service whose value derives, entirely or substantially, from
+  ~ the functionality of the Software. Any license notice or attribution
+  ~ required by the License must also include this Commons Clause License
+  ~ Condition notice.
+  ~
+  ~ Software: Imposter
+  ~
+  ~ License: GNU Lesser General Public License version 3
+  ~
+  ~ Licensor: Peter Cornish
+  ~
+  ~ Imposter is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Lesser General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ Imposter is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public License
+  ~ along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<description xmlns="http://www.w3.org/ns/wsdl"
+             xmlns:tns="urn:com:example:petstore"
+             xmlns:wsoap="http://www.w3.org/ns/wsdl/soap"
+             targetNamespace="urn:com:example:petstore" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://www.w3.org/ns/wsdl/soap http://www.w3.org/2002/ws/desc/ns/soap.xsd">
+
+    <documentation>
+        This is a sample WSDL 2.0 document describing the pet service.
+    </documentation>
+
+    <types>
+        <xs:schema elementFormDefault="unqualified" targetNamespace="urn:com:example:petstore" version="1.0"
+                   xmlns:tns="urn:com:example:petstore"
+                   xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+            <xs:complexType name="petType">
+                <xs:all>
+                    <xs:element name="id" type="xs:int"/>
+                    <xs:element name="name" type="xs:string"/>
+                </xs:all>
+            </xs:complexType>
+
+            <xs:complexType name="getPetByIdRequest">
+                <xs:all>
+                    <xs:element name="id" type="xs:int"/>
+                </xs:all>
+            </xs:complexType>
+
+            <xs:element name="getPetByIdRequest" type="tns:getPetByIdRequest"/>
+            <xs:element name="getPetByIdResponse" type="tns:petType"/>
+
+            <xs:element name="fault" type="xs:string"/>
+        </xs:schema>
+    </types>
+
+    <interface name="PetInterface">
+        <fault name="Error1" element="tns:fault"/>
+
+        <operation name="getPetById" pattern="http://www.w3.org/ns/wsdl/in-out">
+            <wsoap:operation soapAction="getPetById" style="document"/>
+            <input messageLabel="In" element="tns:getPetByIdRequest"/>
+            <output messageLabel="Out" element="tns:getPetByIdResponse"/>
+        </operation>
+    </interface>
+
+    <binding name="SoapBinding" interface="tns:PetInterface"
+             type="http://www.w3.org/ns/wsdl/soap"
+             wsoap:protocol="http://www.w3.org/2003/05/soap/bindings/HTTP/"
+             wsoap:mepDefault="http://www.w3.org/2003/05/soap/mep/request-response">
+        <operation ref="tns:getPetById"/>
+    </binding>
+
+    <service name="PetService" interface="tns:PetInterface">
+        <endpoint name="SoapEndpoint"
+                  binding="tns:SoapBinding"
+                  address="http://www.example.com/pets/"/>
+    </service>
+</description>
