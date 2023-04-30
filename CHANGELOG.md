@@ -3,9 +3,14 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
-### Added
-- ...
+## [3.17.3] - 2023-04-30
+### Changed
+- chore(deps): bump actions/setup-python from 4.5.0 to 4.6.0 (#376)
+- chore(deps): bump maven-project-info-reports-plugin (#374)
+- ci: bumps version of since.
+- docs(examples): adds single WSDL file example.
+- docs: improves instructions for REST plugin.
+- docs: splits Lambda deployment approaches into separate files.
 
 ## [3.17.2] - 2023-04-23
 ### Added
