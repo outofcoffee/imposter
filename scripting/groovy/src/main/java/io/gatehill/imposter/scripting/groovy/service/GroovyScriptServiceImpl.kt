@@ -52,6 +52,7 @@ import io.gatehill.imposter.script.ScriptUtil
 import io.gatehill.imposter.scripting.groovy.impl.GroovyDsl
 import io.gatehill.imposter.scripting.groovy.util.ScriptLoader
 import io.gatehill.imposter.service.ScriptService
+import io.gatehill.imposter.util.ClassLoaderUtil
 import io.gatehill.imposter.util.MetricsUtil
 import io.micrometer.core.instrument.Gauge
 import org.apache.logging.log4j.LogManager
@@ -75,7 +76,7 @@ class GroovyScriptServiceImpl : ScriptService {
     init {
         val compilerConfig = CompilerConfiguration()
         compilerConfig.scriptBaseClass = GroovyDsl::class.java.canonicalName
-        groovyClassLoader = GroovyClassLoader(this::class.java.classLoader, compilerConfig)
+        groovyClassLoader = GroovyClassLoader(ClassLoaderUtil.pluginClassLoader, compilerConfig)
 
         MetricsUtil.doIfMetricsEnabled(METRIC_SCRIPT_GROOVY_CACHE_ENTRIES) { registry ->
             Gauge.builder(METRIC_SCRIPT_GROOVY_CACHE_ENTRIES) { scriptClasses.size() }
