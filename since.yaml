@@ -1,0 +1,13 @@
+requireBranch: main
+
+ignore:
+  - "prep for release"
+  - "next development version"
+
+before:
+  - command: bash
+    args: ["scripts/prerelease.sh"]
+
+after:
+  - command: bash
+    args: ["scripts/postrelease.sh"]
