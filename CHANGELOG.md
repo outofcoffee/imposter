@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.18.0] - 2023-05-04
+### Added
+- feat: inherits Groovy scripting classloader from plugin classloader.
+
+### Changed
+- build: adds since release config.
+
 ## [3.17.3] - 2023-04-30
 ### Changed
 - chore(deps): bump actions/setup-python from 4.5.0 to 4.6.0 (#376)
