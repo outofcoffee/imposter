@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -58,7 +58,7 @@ import io.swagger.v3.oas.models.media.MediaType
 import io.swagger.v3.oas.models.media.Schema
 import io.swagger.v3.oas.models.responses.ApiResponse
 import org.apache.logging.log4j.LogManager
-import java.util.*
+import java.util.Objects
 import javax.inject.Inject
 
 /**
@@ -166,11 +166,8 @@ class ExampleServiceImpl @Inject constructor(
         httpExchange: HttpExchange,
         responseContent: Content
     ): ContentTypedHolder<Schema<*>>? {
-        val schemas: MutableList<ResponseEntities<Schema<*>>> = mutableListOf()
-        responseContent.forEach { mimeTypeName: String, mediaType: MediaType ->
-            if (Objects.nonNull(mediaType.schema)) {
-                schemas.add(ResponseEntities.of("response schema", mimeTypeName, mediaType.schema))
-            }
+        val schemas = responseContent.filterValues { null != it.schema }.map { (mimeTypeName, mediaType) ->
+            ResponseEntities.of("response schema", mimeTypeName, mediaType.schema)
         }
         return matchByContentType(httpExchange, config, schemas)
     }
@@ -268,8 +265,8 @@ class ExampleServiceImpl @Inject constructor(
         schema: ContentTypedHolder<Schema<*>>
     ): Boolean {
         return try {
-            val dynamicExamples = schemaService.collectExamples(httpExchange, spec, schema)
-            responseTransmissionService.transmitExample(httpExchange, dynamicExamples)
+            val example = schemaService.buildExample(httpExchange, spec, schema)
+            responseTransmissionService.transmitExample(httpExchange, example)
             true
         } catch (e: Exception) {
             LOGGER.error("Error serving example from schema", e)

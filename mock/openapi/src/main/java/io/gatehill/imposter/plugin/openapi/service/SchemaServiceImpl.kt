@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -57,7 +57,7 @@ import io.swagger.v3.oas.models.media.ObjectSchema
 import io.swagger.v3.oas.models.media.Schema
 import org.apache.logging.log4j.LogManager
 import java.time.OffsetDateTime
-import java.util.*
+import java.util.Date
 import java.util.Objects.nonNull
 
 /**
@@ -67,7 +67,7 @@ import java.util.Objects.nonNull
  * @author Pete Cornish
  */
 class SchemaServiceImpl : SchemaService {
-    override fun collectExamples(
+    override fun buildExample(
             httpExchange: HttpExchange,
             spec: OpenAPI,
             schema: ContentTypedHolder<Schema<*>>
@@ -187,21 +187,20 @@ class SchemaServiceImpl : SchemaService {
         } ?: emptyMap<String, Any>()
     }
 
-    private fun getPropertyDefault(schema: Schema<*>?): Any? {
+    private fun getPropertyDefault(schema: Schema<*>): Any? {
         // if a non-empty enum exists, choose the first value
-        if (nonNull(schema!!.enum) && schema.enum.isNotEmpty()) {
+        if (schema.enum?.isNotEmpty() == true) {
             return schema.enum[0]
         }
 
         // fall back to a default for the type
-        if (nonNull(schema.type)) {
-            val defaultValueProvider = DEFAULT_VALUE_PROVIDERS[schema.type]!!
-            return if (nonNull(defaultValueProvider)) {
-                defaultValueProvider.provide(schema)
-            } else {
+        schema.type?.let { schemaType ->
+            DEFAULT_VALUE_PROVIDERS[schemaType]?.let { defaultValueProvider ->
+                return defaultValueProvider.provide(schema)
+            } ?: run {
                 LOGGER.warn(
                         "Unknown type: {} for schema: {} - returning null for example property",
-                        schema.type,
+                        schemaType,
                         schema.name
                 )
                 null

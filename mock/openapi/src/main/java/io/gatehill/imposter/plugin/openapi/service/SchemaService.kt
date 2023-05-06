@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -53,7 +53,7 @@ import io.swagger.v3.oas.models.media.Schema
  * @author benjvoigt
  */
 interface SchemaService {
-    fun collectExamples(
+    fun buildExample(
         httpExchange: HttpExchange,
         spec: OpenAPI,
         schema: ContentTypedHolder<Schema<*>>
