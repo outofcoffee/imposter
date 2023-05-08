@@ -44,7 +44,8 @@ package io.gatehill.imposter.plugin.openapi.service
 
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.plugin.openapi.model.ContentTypedHolder
-import io.gatehill.imposter.plugin.openapi.service.valueprovider.DEFAULT_VALUE_PROVIDERS
+import io.gatehill.imposter.plugin.openapi.service.valueprovider.DefaultExampleProviders
+import io.gatehill.imposter.plugin.openapi.service.valueprovider.ExampleProvider
 import io.gatehill.imposter.plugin.openapi.util.RefUtil
 import io.gatehill.imposter.util.DateTimeUtil
 import io.gatehill.imposter.util.LogUtil
@@ -67,6 +68,10 @@ import java.util.Objects.nonNull
  * @author Pete Cornish
  */
 class SchemaServiceImpl : SchemaService {
+    init {
+        DefaultExampleProviders.registerDefaults()
+    }
+
     override fun buildExample(
             httpExchange: HttpExchange,
             spec: OpenAPI,
@@ -82,7 +87,7 @@ class SchemaServiceImpl : SchemaService {
         return ContentTypedHolder(schema.contentType, example)
     }
 
-    private fun collectSchemaExample(spec: OpenAPI, schema: Schema<*>): Any? {
+    private fun collectSchemaExample(spec: OpenAPI, schema: Schema<*>, propNameHint: String? = null): Any? {
         try {
             // $ref takes precedence, per spec:
             //   "Any sibling elements of a $ref are ignored. This is because
@@ -113,7 +118,7 @@ class SchemaServiceImpl : SchemaService {
                     is ObjectSchema -> buildFromProperties(spec, schema.properties)
                     is ArraySchema -> buildFromArraySchema(spec, schema)
                     is ComposedSchema -> buildFromComposedSchema(spec, schema)
-                    else -> getPropertyDefault(schema)
+                    else -> getPropertyDefault(schema, propNameHint)
                 }
             }
             return example
@@ -182,12 +187,12 @@ class SchemaServiceImpl : SchemaService {
             spec: OpenAPI,
             properties: Map<String, Schema<*>>?
     ): Map<String, Any?> {
-        return properties?.entries?.associate { (k, v) ->
-            k to collectSchemaExample(spec, v)
-        } ?: emptyMap<String, Any>()
+        return properties?.entries?.associate { (propName, propDef) ->
+            propName to collectSchemaExample(spec, propDef, propName)
+        } ?: emptyMap()
     }
 
-    private fun getPropertyDefault(schema: Schema<*>): Any? {
+    private fun getPropertyDefault(schema: Schema<*>, propNameHint: String?): Any? {
         // if a non-empty enum exists, choose the first value
         if (schema.enum?.isNotEmpty() == true) {
             return schema.enum[0]
@@ -198,11 +203,12 @@ class SchemaServiceImpl : SchemaService {
 
         // fall back to a default for the type
         schemaType?.let {
-            return DEFAULT_VALUE_PROVIDERS[schemaType]?.provide(schema) ?: run {
+            return ExampleProvider.provide(schema, schemaType, propNameHint) ?: run {
                 LOGGER.warn(
-                        "Unknown type: {} for schema: {} - returning null for example property",
+                        "Unknown type: {} for schema: {} - returning null for example property {}",
                         schemaType,
                         schema.name,
+                        propNameHint,
                 )
                 null
             }
