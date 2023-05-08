@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.19.0] - 2023-05-08
+### Added
+- feat(openapi): support schema 'types' as well as 'type' for OAS 3.1 compatibility.
+- feat: adds Datafaker plugin.
+
+### Changed
+- chore(deps): bump jackson-databind in /examples/junit-sample
+- chore(deps-dev): bump imposter.version in /examples/junit-sample (#384)
+- ci: adds workflow to test example project.
+- docs: fixes JVM embedded dependencies.
+- refactor(openapi): more idiomatic example building.
+
 ## [3.18.0] - 2023-05-04
 ### Added
 - feat: inherits Groovy scripting classloader from plugin classloader.
