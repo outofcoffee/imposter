@@ -1,0 +1,85 @@
+apply plugin: 'java-library'
+apply plugin: 'kotlin'
+apply plugin: 'maven-publish'
+apply plugin: 'com.github.johnrengelman.shadow'
+
+ext {
+    version_swagger_models = '2.2.7'
+}
+
+compileJava {
+    sourceCompatibility = JavaVersion.VERSION_11
+}
+
+dependencies {
+    implementation project(':core:imposter-engine')
+    implementation project(':mock:mock-openapi')
+    implementation ("io.swagger.core.v3:swagger-models:$version_swagger_models")
+
+    pluginImplementation('net.datafaker:datafaker:1.9.0') {
+        exclude module: 'snakeyaml'
+    }
+
+    // test
+    testImplementation project(':test:test-utils')
+    testImplementation group: 'org.hamcrest', name: 'hamcrest', version: version_hamcrest
+}
+
+tasks.register('sourcesJar', Jar) {
+    dependsOn classes
+    archiveClassifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives sourcesJar
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+
+            repositories {
+                maven {
+                    url = version.endsWith('SNAPSHOT') ? mavenSnapshotRepository : mavenReleaseRepository
+                    credentials(AwsCredentials) {
+                        accessKey awsAccessKey
+                        secretKey awsSecretKey
+                    }
+                }
+            }
+        }
+    }
+}
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_11
+
+        // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
+        freeCompilerArgs = ["-Xjvm-default=all"]
+    }
+}
+
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_11
+
+        // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
+        freeCompilerArgs = ["-Xjvm-default=all"]
+    }
+}
+
+shadowJar {
+    // override plugin archive name
+    archiveBaseName.set("imposter-plugin-fake-data")
+    archiveVersion.set('')
+    archiveClassifier.set('')
+    configurations = [project.configurations.pluginImplementation]
+}
+
+tasks.register('dist') {
+    dependsOn shadowJar
+}

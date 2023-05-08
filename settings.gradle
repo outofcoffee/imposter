@@ -109,5 +109,8 @@ project(':distro:openapi').name = 'distro-openapi'
 include ':distro:rest'
 project(':distro:rest').name = 'distro-rest'
 
+// libraries
+include ':lib:fake-data'
+
 // observability
 include ':tools:perf-monitor'
