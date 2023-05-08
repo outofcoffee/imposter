@@ -18,11 +18,12 @@ Add the following Maven repository to your build tool:
 
 Add the following Maven dependencies in your build tool:
 
-| Component         | Group ID               | Artifact ID       | Version                                                                            |
-|-------------------|------------------------|-------------------|------------------------------------------------------------------------------------|
-| Unit test library | `io.gatehill.imposter` | `distro-embedded` | As per [Releases](https://github.com/outofcoffee/imposter/releases), e.g. `1.24.3` |
-| HTTP server       | `io.gatehill.imposter` | `imposter-server` | As per [Releases](https://github.com/outofcoffee/imposter/releases), e.g. `1.24.3` |
-| OpenAPI plugin    | `io.gatehill.imposter` | `mock-openapi`    | As per [Releases](https://github.com/outofcoffee/imposter/releases), e.g. `1.24.3` |
+| Component      | Group ID               | Artifact ID       | Version                                                                            |
+|----------------|------------------------|-------------------|------------------------------------------------------------------------------------|
+| Main library   | `io.gatehill.imposter` | `distro-embedded` | As per [Releases](https://github.com/outofcoffee/imposter/releases), e.g. `1.24.3` |
+| HTTP server    | `io.gatehill.imposter` | `imposter-server` | As per [Releases](https://github.com/outofcoffee/imposter/releases), e.g. `1.24.3` |
+| Config parser  | `io.gatehill.imposter` | `config-dynamic`  | As per [Releases](https://github.com/outofcoffee/imposter/releases), e.g. `1.24.3` |
+| OpenAPI plugin | `io.gatehill.imposter` | `mock-openapi`    | As per [Releases](https://github.com/outofcoffee/imposter/releases), e.g. `1.24.3` |
 
 > See the _Dependencies_ section for full Maven and Gradle examples.
 
@@ -99,6 +100,7 @@ repositories {
 dependencies {
     testImplementation "io.gatehill.imposter:distro-embedded:$imposter_version"
     testImplementation "io.gatehill.imposter:imposter-server:$imposter_version"
+    testImplementation "io.gatehill.imposter:config-dynamic:$imposter_version"
     testImplementation "io.gatehill.imposter:mock-openapi:$imposter_version"
     
     // ...
@@ -134,6 +136,12 @@ Using Maven, add the following to your POM:
         <dependency>
             <groupId>io.gatehill.imposter</groupId>
             <artifactId>imposter-server</artifactId>
+            <version>${imposter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.gatehill.imposter</groupId>
+            <artifactId>config-dynamic</artifactId>
             <version>${imposter.version}</version>
             <scope>test</scope>
         </dependency>
