@@ -193,15 +193,16 @@ class SchemaServiceImpl : SchemaService {
             return schema.enum[0]
         }
 
+        // support 'types' as well as 'type' for OAS 3.1 compatibility
+        val schemaType = schema.type ?: schema.types?.first()
+
         // fall back to a default for the type
-        schema.type?.let { schemaType ->
-            DEFAULT_VALUE_PROVIDERS[schemaType]?.let { defaultValueProvider ->
-                return defaultValueProvider.provide(schema)
-            } ?: run {
+        schemaType?.let {
+            return DEFAULT_VALUE_PROVIDERS[schemaType]?.provide(schema) ?: run {
                 LOGGER.warn(
                         "Unknown type: {} for schema: {} - returning null for example property",
                         schemaType,
-                        schema.name
+                        schema.name,
                 )
                 null
             }
