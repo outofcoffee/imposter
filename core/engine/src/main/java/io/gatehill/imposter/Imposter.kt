@@ -53,6 +53,7 @@ import io.gatehill.imposter.inject.BootstrapModule
 import io.gatehill.imposter.inject.EngineModule
 import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
 import io.gatehill.imposter.lifecycle.EngineLifecycleListener
+import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.plugin.PluginDiscoveryStrategy
 import io.gatehill.imposter.plugin.PluginManager
 import io.gatehill.imposter.plugin.PluginManagerImpl
@@ -128,6 +129,7 @@ class Imposter(
             injector.injectMembers(this@Imposter)
 
             pluginManager.startPlugins(injector, pluginConfigs)
+            registerLifecycleListeners(pluginManager.getPlugins())
 
             val router = configureRoutes()
             httpServer = serverFactory.provide(injector, imposterConfig, vertx, router).await()
@@ -169,6 +171,12 @@ class Imposter(
         }
         if (LOGGER.isTraceEnabled) {
             LOGGER.trace("Engine config: $imposterConfig")
+        }
+    }
+
+    private fun registerLifecycleListeners(plugins: Collection<Plugin>) {
+        plugins.filterIsInstance<EngineLifecycleListener>().forEach {
+            engineLifecycle.registerListener(it)
         }
     }
 
