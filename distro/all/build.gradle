@@ -26,6 +26,9 @@ dependencies {
 
     // config resolvers
     implementation project (':core:config-resolver-s3')
+
+    // libraries
+    implementation project (':lib:fake-data')
 }
 
 mainClassName = 'io.gatehill.imposter.cmd.ImposterLauncher'
