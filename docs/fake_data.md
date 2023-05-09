@@ -24,11 +24,11 @@ Alternatively, you can use the `all` distribution, which includes the `fake-data
 
 This is the `docker-all` engine type if you're using the CLI or the `imposter-all.jar` file if you're using the JAR file approach.
 
-## Using the `fake-data` plugin
+## Generating fake data
 
 ### Fake data expressions
 
-In the response, placeholders are replaced with fake data.
+You can use [template expressions](./templates.md) in responses to insert fake data. The expressions start with `fake.` followed by a type of fake data to generate.
 
 For example, to return a random first name, use the following expression:
 
@@ -63,7 +63,7 @@ curl http://localhost:8080/users/1
 > **Note**
 > This section applies to the [OpenAPI plugin](openapi_plugin.md).
 
-In an OpenAPI file, common property names, such as `firstName`, `email` etc. are replaced with fake data.
+In an OpenAPI file, common property names, such as `firstName`, `email` etc. are replaced with fake data when no matching example is found in the specification.
 
 #### Try it out
 
