@@ -3,6 +3,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.20.0] - 2023-05-09
+### Added
+- feat: adds expression support for fake data generator.
+- feat: automatically registers plugins that are lifecycle listeners.
+
 ## [3.19.0] - 2023-05-08
 ### Added
 - feat(openapi): support schema 'types' as well as 'type' for OAS 3.1 compatibility.
