@@ -40,7 +40,7 @@ This is done for the `favouriteColour` field in the example:
 ```yaml
 favouriteColour:
   type: string
-  x-fake-data: color.name
+  x-fake-data: Color.name
 ```
 
 Valid values are those supported by the [Datafaker](https://github.com/datafaker-net/datafaker) library.

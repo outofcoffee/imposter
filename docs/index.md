@@ -34,7 +34,6 @@ To begin, check out the [Getting started](getting_started.md) guide. See the _Us
 
 ### Advanced
 
-- [Usage (arguments and environment variables)](usage.md)
 - [Advanced request matching](request_matching.md)
 - [OpenAPI validation](openapi_validation.md)
 - [Template queries](template_queries.md)
@@ -42,9 +41,11 @@ To begin, check out the [Getting started](getting_started.md) guide. See the _Us
 - [Metrics, logs and telemetry](metrics_logs_telemetry.md)
 - [Proxy an endpoint](proxy_endpoint.md)
 - [Scaffolding configuration](scaffold.md)
+- [Fake data](fake_data.md)
 - [CORS](cors.md)
 - [Performance tuning](./performance_tuning.md)
 - [Plugins](./plugins.md)
+- [Usage (arguments and environment variables)](usage.md)
 - [Features](./features.md)
 - [Groovy scripting tips](groovy_tips.md)
 

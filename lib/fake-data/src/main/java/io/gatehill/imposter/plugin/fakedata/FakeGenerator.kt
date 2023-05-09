@@ -64,7 +64,7 @@ object FakeGenerator {
      * no fake value is available for the given property name.
      */
     fun fake(propNameHint: String): String? = when (propNameHint.lowercase()) {
-        "email" -> faker.internet().emailAddress()
+        "email", "emailaddress" -> faker.internet().emailAddress()
         "firstname" -> faker.name().firstName()
         "lastname", "surname" -> faker.name().lastName()
         "fullname", "name" -> faker.name().fullName()
@@ -73,7 +73,6 @@ object FakeGenerator {
         "address", "fulladdress" -> faker.address().fullAddress()
         "streetaddress", "street" -> faker.address().streetAddress()
         "city" -> faker.address().city()
-        "state" -> faker.address().state()
         "country" -> faker.address().country()
         "zipcode" -> faker.address().zipCode()
         "phonenumber" -> faker.phoneNumber().phoneNumber()
