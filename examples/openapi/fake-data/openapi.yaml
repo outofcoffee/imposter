@@ -54,7 +54,7 @@ components:
           $ref: "#/components/schemas/Address"
         favouriteColour:
           type: [string]
-          x-fake-data: "color.name"
+          x-fake-data: "Color.name"
     Address:
       type: [object]
       required:

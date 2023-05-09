@@ -1,0 +1,14 @@
+plugin: rest
+
+resources:
+  - path: /users/{userId}
+    method: GET
+    response:
+      template: true
+      content: |
+        {
+          "id": ${context.request.pathParams.userId}
+          "firstName": "${fake.Name.firstName}",
+          "lastName": "${fake.Name.lastName}",
+          "email": "${fake.Internet.emailAddress}"
+        }

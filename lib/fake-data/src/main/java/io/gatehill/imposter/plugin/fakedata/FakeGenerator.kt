@@ -43,10 +43,41 @@
 
 package io.gatehill.imposter.plugin.fakedata
 
-import com.google.inject.AbstractModule
+import net.datafaker.Faker
 
-class FakeDataModule : AbstractModule() {
-    override fun configure() {
-        bind(FakeDataExampleProvider::class.java).asEagerSingleton()
+/**
+ * Generates fake data.
+ */
+object FakeGenerator {
+    private val faker = Faker()
+
+    fun expression(expression: String): String? {
+        try {
+            return faker.expression("#{$expression}")
+        } catch (e: Exception) {
+            throw RuntimeException("Failed to evaluate fake data expression: $expression", e)
+        }
+    }
+
+    /**
+     * Generates a fake value for the given property name, or `null` if
+     * no fake value is available for the given property name.
+     */
+    fun fake(propNameHint: String): String? = when (propNameHint.lowercase()) {
+        "email" -> faker.internet().emailAddress()
+        "firstname" -> faker.name().firstName()
+        "lastname", "surname" -> faker.name().lastName()
+        "fullname", "name" -> faker.name().fullName()
+        "username" -> faker.name().username()
+        "password" -> faker.internet().password()
+        "address", "fulladdress" -> faker.address().fullAddress()
+        "streetaddress", "street" -> faker.address().streetAddress()
+        "city" -> faker.address().city()
+        "state" -> faker.address().state()
+        "country" -> faker.address().country()
+        "zipcode" -> faker.address().zipCode()
+        "phonenumber" -> faker.phoneNumber().phoneNumber()
+        "postcode" -> faker.address().postcode()
+        else -> null
     }
 }

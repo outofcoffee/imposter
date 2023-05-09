@@ -82,10 +82,10 @@ class StoreServiceImpl @Inject constructor(
 
         // resolve response template placeholders using stores
         val storeEvaluator = StoreEvaluator(storeFactory)
-        PlaceholderUtil.templateEvaluators["stores"] = storeEvaluator
+        PlaceholderUtil.register(storeEvaluator)
 
         // also add store evaluator as a wildcard for backwards compatibility
-        PlaceholderUtil.templateEvaluators["*"] = storeEvaluator
+        PlaceholderUtil.register(storeEvaluator, "*")
     }
 
     override fun afterRoutesConfigured(

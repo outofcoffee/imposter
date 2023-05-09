@@ -43,7 +43,6 @@
 
 package io.gatehill.imposter.plugin.fakedata
 
-import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
 import io.swagger.v3.oas.models.media.StringSchema
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.containsString
@@ -51,14 +50,14 @@ import org.hamcrest.Matchers.notNullValue
 import org.junit.Test
 
 /**
- * Tests for [FakeDataExampleProvider].
+ * Tests for [FakeExampleProvider].
  */
-class FakeDataExampleProviderTest {
+class FakeExampleProviderTest {
     @Test
     fun `fake using openapi extension`() {
-        val example = FakeDataExampleProvider(EngineLifecycleHooks()).provide(
+        val example = FakeExampleProvider().provide(
             schema = StringSchema().apply {
-                addExtension(FakeDataExampleProvider.EXTENSION_PROPERTY_NAME, "color.name")
+                addExtension(FakeExampleProvider.EXTENSION_PROPERTY_NAME, "Color.name")
             },
             propNameHint = null
         )
@@ -67,7 +66,7 @@ class FakeDataExampleProviderTest {
 
     @Test
     fun `fake using property name hint`() {
-        val example = FakeDataExampleProvider(EngineLifecycleHooks()).provide(
+        val example = FakeExampleProvider().provide(
             schema = StringSchema(),
             propNameHint = "email"
         )

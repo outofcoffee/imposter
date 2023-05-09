@@ -43,58 +43,17 @@
 
 package io.gatehill.imposter.plugin.fakedata
 
-import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.http.HttpRouter
-import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
-import io.gatehill.imposter.lifecycle.EngineLifecycleListener
-import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.openapi.service.valueprovider.ExampleProvider
 import io.gatehill.imposter.plugin.openapi.service.valueprovider.StringExampleProvider
 import io.swagger.v3.oas.models.media.Schema
-import net.datafaker.Faker
-import org.apache.logging.log4j.LogManager
-import javax.inject.Inject
 
 /**
- * Provides synthetic data examples.
+ * Provides fake example values for strings.
  */
-class FakeDataExampleProvider @Inject constructor(
-    engineLifecycleHooks: EngineLifecycleHooks,
-) : StringExampleProvider(), EngineLifecycleListener {
-    private val logger = LogManager.getLogger(FakeDataExampleProvider::class.java)
-    private val faker = Faker()
-
-    init {
-        engineLifecycleHooks.registerListener(this)
-    }
-
-    override fun afterRoutesConfigured(imposterConfig: ImposterConfig, allPluginConfigs: List<PluginConfig>, router: HttpRouter) {
-        logger.info("Registering fake data provider")
-        ExampleProvider.register("string", this)
-    }
-
+class FakeExampleProvider : StringExampleProvider() {
     override fun provide(schema: Schema<*>, propNameHint: String?): String {
-        return schema.extensions?.get(EXTENSION_PROPERTY_NAME)?.let { return faker.expression("#{$it}") }
-            ?: propNameHint?.let { fake(propNameHint) }
+        return schema.extensions?.get(EXTENSION_PROPERTY_NAME)?.let { if (it is String) FakeGenerator.expression(it) else null }
+            ?: propNameHint?.let { FakeGenerator.fake(propNameHint) }
             ?: super.provide(schema, null)
-    }
-
-    private fun fake(propNameHint: String): String? = when (propNameHint.lowercase()) {
-        "email" -> faker.internet().emailAddress()
-        "firstname" -> faker.name().firstName()
-        "lastname", "surname" -> faker.name().lastName()
-        "fullname", "name" -> faker.name().fullName()
-        "username" -> faker.name().username()
-        "password" -> faker.internet().password()
-        "address", "fulladdress" -> faker.address().fullAddress()
-        "streetaddress", "street" -> faker.address().streetAddress()
-        "city" -> faker.address().city()
-        "state" -> faker.address().state()
-        "country" -> faker.address().country()
-        "zipcode" -> faker.address().zipCode()
-        "phonenumber" -> faker.phoneNumber().phoneNumber()
-        "postcode" -> faker.address().postcode()
-        else -> null
     }
 
     companion object {

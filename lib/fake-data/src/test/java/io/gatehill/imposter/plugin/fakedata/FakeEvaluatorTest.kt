@@ -43,28 +43,18 @@
 
 package io.gatehill.imposter.plugin.fakedata
 
-import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.http.HttpRouter
-import io.gatehill.imposter.lifecycle.EngineLifecycleListener
-import io.gatehill.imposter.plugin.Plugin
-import io.gatehill.imposter.plugin.PluginInfo
-import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.openapi.service.valueprovider.ExampleProvider
-import io.gatehill.imposter.util.PlaceholderUtil
-import org.apache.logging.log4j.LogManager
+import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.Matchers.notNullValue
+import org.junit.Test
 
 /**
- * Synthetic data plugin.
+ * Tests for [FakeEvaluator].
  */
-@PluginInfo("fake-data")
-class FakeDataPlugin : Plugin, EngineLifecycleListener {
-    override fun afterRoutesConfigured(
-        imposterConfig: ImposterConfig,
-        allPluginConfigs: List<PluginConfig>,
-        router: HttpRouter,
-    ) {
-        LogManager.getLogger(FakeExampleProvider::class.java).info("Registering fake data provider")
-        ExampleProvider.register("string", FakeExampleProvider())
-        PlaceholderUtil.register(FakeEvaluator())
+class FakeEvaluatorTest {
+    @Test
+    fun eval() {
+        val evaluator = FakeEvaluator()
+        val result = evaluator.eval("fake.Name.firstName", emptyMap<String, Any>())
+        assertThat(result, notNullValue())
     }
 }

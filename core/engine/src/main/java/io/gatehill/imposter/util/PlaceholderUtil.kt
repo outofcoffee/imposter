@@ -55,6 +55,8 @@ import io.gatehill.imposter.placeholder.QueryProviderImpl
  * Replaces expression placeholders during the lifecycle of a request/response exchange.
  */
 object PlaceholderUtil {
+    private val queryProvider = QueryProviderImpl()
+
     /**
      * Evaluators that are always available.
      */
@@ -70,9 +72,14 @@ object PlaceholderUtil {
      *
      * Mutable to allow additional evaluators to be registered.
      */
-    val templateEvaluators: MutableMap<String, ExpressionEvaluator<*>> = defaultEvaluators.toMutableMap()
+    private val _templateEvaluators: MutableMap<String, ExpressionEvaluator<*>> = defaultEvaluators.toMutableMap()
 
-    private val queryProvider = QueryProviderImpl()
+    val templateEvaluators: Map<String, ExpressionEvaluator<*>>
+        get() = _templateEvaluators
+
+    fun register(evaluator: ExpressionEvaluator<*>, name: String = evaluator.name) {
+        _templateEvaluators[name] = evaluator
+    }
 
     /**
      * Convenience function that provides the [HttpExchange] in the context.

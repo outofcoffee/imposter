@@ -43,28 +43,38 @@
 
 package io.gatehill.imposter.plugin.fakedata
 
-import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.http.HttpRouter
-import io.gatehill.imposter.lifecycle.EngineLifecycleListener
-import io.gatehill.imposter.plugin.Plugin
-import io.gatehill.imposter.plugin.PluginInfo
-import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.openapi.service.valueprovider.ExampleProvider
-import io.gatehill.imposter.util.PlaceholderUtil
+import io.gatehill.imposter.expression.eval.ExpressionEvaluator
 import org.apache.logging.log4j.LogManager
 
 /**
- * Synthetic data plugin.
+ * Evaluates a fake data expression in the form:
+ * ```
+ * fake.<fake key>
+ * ```
+ * For example:
+ * ```
+ * fake.name.firstName
+ * ```
  */
-@PluginInfo("fake-data")
-class FakeDataPlugin : Plugin, EngineLifecycleListener {
-    override fun afterRoutesConfigured(
-        imposterConfig: ImposterConfig,
-        allPluginConfigs: List<PluginConfig>,
-        router: HttpRouter,
-    ) {
-        LogManager.getLogger(FakeExampleProvider::class.java).info("Registering fake data provider")
-        ExampleProvider.register("string", FakeExampleProvider())
-        PlaceholderUtil.register(FakeEvaluator())
+class FakeEvaluator : ExpressionEvaluator<String> {
+    override val name = "fake"
+
+    private val logger = LogManager.getLogger(FakeEvaluator::class.java)
+
+    override fun eval(expression: String, context: Map<String, *>): String? {
+        try {
+            val parts = expression.split(
+                delimiters = arrayOf("."),
+                ignoreCase = false,
+                limit = 2,
+            )
+            if (parts.size < 2) {
+                logger.warn("Could not parse fake expression: $expression")
+                return null
+            }
+            return FakeGenerator.expression(parts[1])
+        } catch (e: Exception) {
+            throw RuntimeException("Error evaluating fake expression: $expression", e)
+        }
     }
 }
