@@ -67,7 +67,7 @@ object FakeGenerator {
         "email", "emailaddress" -> faker.internet().emailAddress()
         "firstname" -> faker.name().firstName()
         "lastname", "surname" -> faker.name().lastName()
-        "fullname", "name" -> faker.name().fullName()
+        "fullname" -> faker.name().fullName()
         "username" -> faker.name().username()
         "password" -> faker.internet().password()
         "address", "fulladdress" -> faker.address().fullAddress()
