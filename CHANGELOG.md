@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.20.2] - 2023-05-11
+### Changed
+- docs: fixes paths to example projects.
+- docs: improves fake data examples.
+- docs: improves fake data plugin description.
+
+### Fixed
+- fix: removes ambiguous 'name' fake property replacement.
+
 ## [3.20.1] - 2023-05-09
 ### Changed
 - docs: describes fake data configuration.
