@@ -43,6 +43,8 @@ There are many placeholder types (see [placeholder types](#placeholder-types) se
 - properties of the request, such as path parameters, query parameters, headers or body
 - date/time values, such as timestamps, epoc time in millis, nanos etc.
 - data from [Stores](./stores.md), including data [captured](./data_capture.md) previously
+- generating random values, such as UUIDs, numbers, strings etc.
+- generating [fake data](fake_data.md), such as names, addresses, phone numbers etc.
 
 ## Placeholder types
 
