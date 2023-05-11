@@ -36,7 +36,20 @@ For example, to return a random first name, use the following expression:
 
 For an email address:
 
-    ${fake.Internet.email}
+    ${fake.Internet.emailAddress}
+
+Some common examples:
+
+| Fake data      | Expression                   |
+|----------------|------------------------------|
+| First name     | fake.Name.firstName          |
+| Last name      | fake.Name.lastName           |
+| Email address  | fake.Internet.emailAddress   |
+| Username       | fake.Name.username           |
+| Street address | fake.Address.streetAddress   |
+| City           | fake.Address.city            |
+| Country        | fake.Address.country         |
+| Phone number   | fake.PhoneNumber.phoneNumber |
 
 > **Note**
 > Valid values are those supported by the [Datafaker](https://github.com/datafaker-net/datafaker) library.
@@ -63,7 +76,7 @@ curl http://localhost:8080/users/1
 > **Note**
 > This section applies to the [OpenAPI plugin](openapi_plugin.md).
 
-In an OpenAPI file, common property names, such as `firstName`, `email` etc. are replaced with fake data when no matching example is found in the specification.
+When using the `fake-data` plugin with the OpenAPI plugin, common property names in the OpenAPI specification, such as `firstName`, `email` etc., are replaced with fake data. This happens when no matching example is found in the specification.
 
 #### Try it out
 
