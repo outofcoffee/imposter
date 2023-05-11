@@ -43,7 +43,7 @@ For an email address:
 
 #### Try it out
 
-See the [example directory](../examples/rest/fake-data) for a working example.
+See the [example directory](https://github.com/outofcoffee/imposter/blob/main/examples/rest/fake-data) for a working example.
 
 ```bash
 curl http://localhost:8080/users/1
@@ -67,7 +67,7 @@ In an OpenAPI file, common property names, such as `firstName`, `email` etc. are
 
 #### Try it out
 
-See the [example directory](../examples/openapi/fake-data) for a working example.
+See the [example directory](https://github.com/outofcoffee/imposter/blob/main/examples/openapi/fake-data) for a working example.
 
 For example:
 
