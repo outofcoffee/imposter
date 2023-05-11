@@ -10,6 +10,16 @@ The mock server exposes an endpoint at `/system/status` that will return HTTP 20
 
 You can use the `logger` object within your scripts, which supports levels such as `info`, `debug` etc.
 
+## Pinning a version
+
+You can pin the version of Imposter so you always get the same engine version.
+
+You can do this in a few ways using [the CLI](run_imposter_cli.md):
+
+1. Pass the `--version x.y.z` argument to `imposter up`, or
+2. Set `version: x.y.z` in an `.imposter.yaml` file in the config directory, or
+3. Set `version: x.y.z` in your `$HOME/imposter/config.yaml` file
+
 ## Standalone mocks
 
 You can make use of Imposter mocks as standalone Docker containers.
@@ -22,7 +32,7 @@ Here's a simple overview:
 
 Now, when you start a container from your image, your standalone mock container will start, load your configuration and mock data, and listen for connections.
 
-## JUnit integration
+## Testcontainers integration
 
 You can make use of Imposter mocks in your [JUnit](http://junit.org) tests using the excellent [testcontainers](http://testcontainers.org) library. This will enable your mocks to start/stop before/after your tests run.
 
