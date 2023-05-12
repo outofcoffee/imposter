@@ -20,6 +20,19 @@ You can do this in a few ways using [the CLI](run_imposter_cli.md):
 2. Set `version: x.y.z` in an `.imposter.yaml` file in the config directory, or
 3. Set `version: x.y.z` in your `$HOME/imposter/config.yaml` file
 
+## Using a local Imposter JAR with the CLI
+
+You can use a local Imposter JAR file with the CLI. 
+
+1. Download the JAR file from the [releases page](https://github.com/outofcoffee/imposter/releases).
+2. Set the `IMPOSTER_JVM_JARFILE` environment variable to the local path of the JAR file.
+3. Start Imposter using the CLI, specifying the `jvm` engine type.
+
+For example:
+
+    export IMPOSTER_JVM_JARFILE=/path/to/imposter.jar
+    imposter up -t jvm
+
 ## Standalone mocks
 
 You can make use of Imposter mocks as standalone Docker containers.
