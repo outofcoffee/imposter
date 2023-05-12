@@ -58,12 +58,3 @@ Here's a simple overview:
 5. Configure your `GenericContainer` to wait for the `/system/status` HTTP endpoint to be accessible so your tests don't start before the mock is ready.
 
 Now, when you run your test, your custom mock container will start, load your configuration and mock data, ready for your test methods to use it!
-
-## Adding a JAR file to the classpath for Groovy scripts
-
-You can add a JAR file to the classpath for Groovy scripts by adding it to the plugins directory. This will be added to the classpath when the Groovy script is executed.
-
-To do this, you could:
-
-1. create a directory containing the JAR file
-2. set the `IMPOSTER_PLUGIN_DIR` environment variable (or set `plugin.dir` in your .imposter.yaml file in the config directory) to the path above

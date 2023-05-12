@@ -90,3 +90,12 @@ Note that the result of calling the `loadDynamic(..)` method is a new Groovy scr
 This object does not share global state ('bindings') with the calling script, so it doesn't have access to DSL functions like `respond()` etc.
 
 A work-around is use the dynamically-loaded scripts to do computation/logic and return an object for your dispatcher to then use when it calls `respond()`.
+
+## Adding a JAR file to the classpath for Groovy scripts
+
+You can add a JAR file to the classpath for Groovy scripts by adding it to the plugins directory. This will be added to the classpath when the Groovy script is executed.
+
+To do this:
+
+1. create a directory containing the JAR file
+2. set the `IMPOSTER_PLUGIN_DIR` environment variable (or set `plugin.dir` in your `.imposter.yaml` file in the config directory) to the path above
