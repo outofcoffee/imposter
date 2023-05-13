@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.20.4] - 2023-05-13
+### Changed
+- build: bumps since to v0.13.0.
+- build: ignores junit-sample changes from changelog.
+- build: moves since hooks to config file.
+
 ## [3.20.3] - 2023-05-13
 ### Changed
 - docs: adds example showing how to get the directory containing the config in a script.
