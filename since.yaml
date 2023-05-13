@@ -6,9 +6,12 @@ ignore:
   - "/examples/junit-sample"
 
 before:
-  - command: bash
-    args: ["scripts/prerelease.sh"]
+  - script: |
+      echo "projectVersion=${SINCE_NEW_VERSION}" > gradle.properties
+      git add gradle.properties
 
 after:
-  - command: bash
-    args: ["scripts/postrelease.sh"]
+  - script: |
+      echo "projectVersion=0.0.0-SNAPSHOT" > gradle.properties
+      git add gradle.properties
+      git commit -m"build: next development version."

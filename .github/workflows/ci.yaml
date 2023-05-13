@@ -22,7 +22,7 @@ jobs:
           GOBIN: /usr/local/bin/
         run: |
           mkdir -p build
-          go install github.com/outofcoffee/since@v0.13.0
+          go install github.com/outofcoffee/since@v0.14.0
           since changelog extract -q > build/CHANGES.md
           cat build/CHANGES.md
 
