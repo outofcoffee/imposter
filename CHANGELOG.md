@@ -5,9 +5,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [3.20.3] - 2023-05-13
 ### Changed
-- chore(deps): bump maven-surefire-plugin in /examples/junit-sample
-- chore(deps): bump okhttp from 4.10.0 to 4.11.0 in /examples/junit-sample
-- chore(deps-dev): bump imposter.version in /examples/junit-sample
 - docs: adds example showing how to get the directory containing the config in a script.
 - docs: describes how to add a JAR to Groovy classpath.
 - docs: describes how to pin version.
@@ -44,8 +41,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - feat: adds Datafaker plugin.
 
 ### Changed
-- chore(deps): bump jackson-databind in /examples/junit-sample
-- chore(deps-dev): bump imposter.version in /examples/junit-sample (#384)
 - ci: adds workflow to test example project.
 - docs: fixes JVM embedded dependencies.
 - refactor(openapi): more idiomatic example building.
@@ -245,7 +240,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - build(deps): bump version_vertx from 4.3.6 to 4.3.7 (#290)
-- build(deps): bump jackson-databind in /examples/junit-sample (#292)
 
 ## [3.7.1] - 2023-01-22
 ### Changed
