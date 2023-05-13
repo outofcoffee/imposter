@@ -235,7 +235,7 @@ class ResourceServiceImpl @Inject constructor(
                 val dir = resource.responseConfig.dir!!.let {
                     if (it.endsWith('/')) it.substringBeforeLast('/') else it
                 }
-                val absoluteDirPath = File(config.parentDir, dir).absolutePath
+                val absoluteDirPath = File(config.dir, dir).absolutePath
 
                 LOGGER.debug("Adding static content handler for {} [{}] to directory [{}]", method, path, absoluteDirPath)
                 router.route(method, path).handler(serverFactory.createStaticHttpHandler(absoluteDirPath, false))

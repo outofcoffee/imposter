@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -99,7 +99,7 @@ class SpecificationLoaderServiceTest {
             )
 
         val pluginConfig = OpenApiPluginConfig()
-        pluginConfig.parentDir = specFilePath.parent.toFile()
+        pluginConfig.dir = specFilePath.parent.toFile()
         pluginConfig.specFile = specFilePath.fileName.toString()
 
         val spec = service.parseSpecification(pluginConfig)
@@ -124,7 +124,7 @@ class SpecificationLoaderServiceTest {
         blockWait { listenHandler: Handler<AsyncResult<HttpServer?>?>? -> httpServer.listen(listenHandler) }
 
         val pluginConfig = OpenApiPluginConfig()
-        pluginConfig.parentDir = specFilePath.parent.toFile()
+        pluginConfig.dir = specFilePath.parent.toFile()
         pluginConfig.specFile = "http://localhost:$listenPort"
 
         val spec = service.parseSpecification(pluginConfig)
@@ -170,7 +170,7 @@ class SpecificationLoaderServiceTest {
         s3.putObject("test", "order_service.yaml", specFilePath.toFile())
 
         val pluginConfig = OpenApiPluginConfig()
-        pluginConfig.parentDir = specFilePath.parent.toFile()
+        pluginConfig.dir = specFilePath.parent.toFile()
         pluginConfig.specFile = "s3://test/order_service.yaml"
         return pluginConfig
     }

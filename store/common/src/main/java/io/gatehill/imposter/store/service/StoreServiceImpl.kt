@@ -118,7 +118,7 @@ class StoreServiceImpl @Inject constructor(
 
         } ?: storeConfig.preloadFile?.let { preloadFile ->
             check(preloadFile.endsWith(".json")) { "Only JSON (.json) files containing a top-level object are supported for preloading" }
-            val preloadPath = Paths.get(pluginConfig.parentDir.path, preloadFile).toAbsolutePath()
+            val preloadPath = Paths.get(pluginConfig.dir.path, preloadFile).toAbsolutePath()
             LOGGER.trace("Preloading file {} into store: {}", preloadPath, storeName)
 
             try {

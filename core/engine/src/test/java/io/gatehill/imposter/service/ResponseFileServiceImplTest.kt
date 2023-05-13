@@ -76,7 +76,7 @@ class ResponseFileServiceImplTest {
         val service = ResponseFileServiceImpl(responseService)
 
         val pluginConfig = PluginConfigImpl().apply {
-            parentDir = File(ResponseFileServiceImplTest::class.java.getResource("/response-file.txt")!!.toURI()).parentFile
+            dir = File(ResponseFileServiceImplTest::class.java.getResource("/response-file.txt")!!.toURI()).parentFile
         }
         val resourceConfig = RestResourceConfig()
         val httpRequest = mock<HttpRequest> {
@@ -112,7 +112,7 @@ class ResponseFileServiceImplTest {
 
         val jsonFile = File(ResponseFileServiceImplTest::class.java.getResource("/test-array.json")!!.toURI())
         val pluginConfig = PluginConfigImpl().apply {
-            parentDir = jsonFile.parentFile
+            dir = jsonFile.parentFile
         }
         val responseBehaviour = ReadWriteResponseBehaviourImpl().apply {
             responseFile = "test-array.json"

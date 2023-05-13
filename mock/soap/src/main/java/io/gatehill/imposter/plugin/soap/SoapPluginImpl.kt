@@ -43,13 +43,22 @@
 package io.gatehill.imposter.plugin.soap
 
 import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.http.*
+import io.gatehill.imposter.http.DefaultResponseBehaviourFactory
+import io.gatehill.imposter.http.DefaultStatusCodeFactory
+import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.http.HttpMethod
+import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.RequireModules
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.soap.config.SoapPluginConfig
-import io.gatehill.imposter.plugin.soap.model.*
+import io.gatehill.imposter.plugin.soap.model.BindingType
+import io.gatehill.imposter.plugin.soap.model.MessageBodyHolder
+import io.gatehill.imposter.plugin.soap.model.ParsedRawBody
+import io.gatehill.imposter.plugin.soap.model.ParsedSoapMessage
+import io.gatehill.imposter.plugin.soap.model.WsdlBinding
+import io.gatehill.imposter.plugin.soap.model.WsdlOperation
 import io.gatehill.imposter.plugin.soap.parser.VersionAwareWsdlParser
 import io.gatehill.imposter.plugin.soap.parser.WsdlParser
 import io.gatehill.imposter.plugin.soap.service.SoapExampleService
@@ -101,7 +110,7 @@ class SoapPluginImpl @Inject constructor(
 
     private fun parseWsdls(router: HttpRouter) {
         configs.forEach { config: SoapPluginConfig ->
-            val fullWsdlPath = File(config.parentDir, config.wsdlFile!!)
+            val fullWsdlPath = File(config.dir, config.wsdlFile!!)
             check(fullWsdlPath.exists()) {
                 "WSDL file not found at path: $fullWsdlPath"
             }

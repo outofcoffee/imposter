@@ -239,7 +239,7 @@ object ConfigUtil {
             }
 
             val config = lookupMapper(configFile).readValue(parsedContents, configClass)!!
-            config.parentDir = configFile.parentFile
+            config.dir = configFile.parentFile
 
             // convert any OpenAPI format path parameters
             if (convertPathParameters && config is ResourcesHolder<*>) {

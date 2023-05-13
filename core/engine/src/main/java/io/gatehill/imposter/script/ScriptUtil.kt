@@ -118,5 +118,5 @@ object ScriptUtil {
     }
 
     fun resolveScriptPath(pluginConfig: PluginConfig, scriptFile: String?): Path =
-        Paths.get(pluginConfig.parentDir.absolutePath, scriptFile!!)
+        Paths.get(pluginConfig.dir.absolutePath, scriptFile!!)
 }

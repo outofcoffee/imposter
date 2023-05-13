@@ -126,7 +126,7 @@ class ResponseFileServiceImpl @Inject constructor(
     }
 
     private fun normalisePath(config: PluginConfig, responseFile: String): Path {
-        return Paths.get(config.parentDir.absolutePath, responseFile)
+        return Paths.get(config.dir.absolutePath, responseFile)
     }
 
     override fun loadResponseAsJsonArray(config: PluginConfig, behaviour: ResponseBehaviour): JsonArray {

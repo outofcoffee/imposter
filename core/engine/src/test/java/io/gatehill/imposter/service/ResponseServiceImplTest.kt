@@ -43,7 +43,11 @@
 
 package io.gatehill.imposter.service
 
-import io.gatehill.imposter.http.*
+import io.gatehill.imposter.http.ExchangePhase
+import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.http.HttpMethod
+import io.gatehill.imposter.http.HttpRequest
+import io.gatehill.imposter.http.HttpResponse
 import io.gatehill.imposter.plugin.config.PluginConfigImpl
 import io.gatehill.imposter.plugin.config.resource.RestResourceConfig
 import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl
@@ -52,7 +56,12 @@ import io.vertx.core.buffer.Buffer
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import org.mockito.kotlin.*
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doAnswer
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 import java.io.File
 
 /**
@@ -139,7 +148,7 @@ class ResponseServiceImplTest {
             responseHeaders[HttpUtil.CONTENT_TYPE] = HttpUtil.CONTENT_TYPE_PLAIN_TEXT
         }
         val pluginConfig = PluginConfigImpl().apply {
-            parentDir = File(ResponseFileServiceImplTest::class.java.getResource("/response-file.txt")!!.toURI()).parentFile
+            dir = File(ResponseFileServiceImplTest::class.java.getResource("/response-file.txt")!!.toURI()).parentFile
         }
         responseService.sendResponse(pluginConfig, RestResourceConfig(), httpExchange, responseBehaviour)
 

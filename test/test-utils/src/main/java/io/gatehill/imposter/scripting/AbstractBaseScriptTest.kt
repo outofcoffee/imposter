@@ -94,7 +94,7 @@ abstract class AbstractBaseScriptTest {
             Paths.get(AbstractBaseScriptTest::class.java.getResource("/script/${getScriptName()}").toURI())
 
         return PluginConfigImpl().apply {
-            parentDir = script.parent.toFile()
+            dir = script.parent.toFile()
             responseConfig.apply {
                 this.scriptFile = getScriptName()
             }

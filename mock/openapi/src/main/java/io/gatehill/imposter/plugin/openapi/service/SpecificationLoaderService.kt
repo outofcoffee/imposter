@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -168,7 +168,7 @@ class SpecificationLoaderService @Inject constructor(
     }
 
     private fun readSpecFromFile(config: OpenApiPluginConfig, specFile: String): String {
-        val specPath = Paths.get(config.parentDir.absolutePath, specFile)
+        val specPath = Paths.get(config.dir.absolutePath, specFile)
         return try {
             String(specPath.readBytes())
         } catch (e: IOException) {

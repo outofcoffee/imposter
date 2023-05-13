@@ -86,7 +86,7 @@ class LambdaServerFactory @Inject constructor(
     override fun createStaticHttpHandler(root: String, relative: Boolean): HttpExchangeHandler {
         val pluginConfig = PluginConfigImpl().apply {
             plugin = "rest"
-            parentDir = File(root)
+            dir = File(root)
         }
         return { exchange ->
             var path = exchange.request.path.let { HttpUtils.removeDots(it) }

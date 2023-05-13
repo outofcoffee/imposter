@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -49,5 +49,5 @@ import java.io.File
  */
 interface PluginConfig {
     val plugin: String?
-    val parentDir: File
+    val dir: File
 }
