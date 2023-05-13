@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.20.3] - 2023-05-13
+### Changed
+- chore(deps): bump maven-surefire-plugin in /examples/junit-sample
+- chore(deps): bump okhttp from 4.10.0 to 4.11.0 in /examples/junit-sample
+- chore(deps-dev): bump imposter.version in /examples/junit-sample
+- docs: adds example showing how to get the directory containing the config in a script.
+- docs: describes how to add a JAR to Groovy classpath.
+- docs: describes how to pin version.
+- docs: describes how to use a local JAR with the CLI.
+- docs: describes more expression types.
+- docs: improves usage instructions.
+- docs: moves Groovy classpath guidance to Groovy tips section.
+- refactor: renames internal config dir variable.
+
 ## [3.20.2] - 2023-05-11
 ### Changed
 - docs: fixes paths to example projects.
