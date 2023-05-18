@@ -102,6 +102,30 @@ In order to help you determine what action to take, Imposter makes certain objec
 | `env`     | A map of environment variables, such as `{ "MY_VAR": "abc", "VAR2": "def" }` |
 | `logger`  | Logger, supporting levels such as `info(String)`, `warn(String)` etc.        |
 
+For example, if you want to access the directory containing the configuration file, you can use `config.dir`.
+
+<details>
+<summary>JavaScript example</summary>
+
+```js
+console.log("Path to config dir: " + config.dir)
+
+var someFile = config.dir + "/example.txt"
+// use someFile...
+```
+</details>
+
+<details>
+<summary>Groovy example</summary>
+
+```groovy
+logger.info("Path to config dir: " + config.dir)
+
+def someFile = new java.io.File(config.dir, "example.txt")
+// use someFile...
+```
+</details>
+
 ## Context object
 
 The `context` object is available to your scripts. It holds things you might like to interrogate, like the request object.
