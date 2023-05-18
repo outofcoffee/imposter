@@ -11,6 +11,7 @@ dependencies {
 
     implementation "org.apache.groovy:groovy:$version_groovy"
     implementation "org.apache.groovy:groovy-json:$version_groovy"
+    implementation "org.apache.groovy:groovy-xml:$version_groovy"
 
     // test
     testImplementation project(':test:test-utils')
