@@ -1,0 +1,14 @@
+plugin: rest
+
+resources:
+- method: POST
+  path: /
+  response:
+    content: "not matched"
+
+- method: POST
+  path: /
+  requestHeaders:
+    X-Example: test
+  response:
+    content: "matched"
