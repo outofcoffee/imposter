@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<description xmlns="http://www.w3.org/ns/wsdl"
+             xmlns:tns="urn:com:example:petstore"
+             xmlns:wsoap="http://www.w3.org/ns/wsdl/soap"
+             targetNamespace="urn:com:example:petstore" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://www.w3.org/ns/wsdl/soap http://www.w3.org/2002/ws/desc/ns/soap.xsd">
+
+    <documentation>
+        This is a sample WSDL 2.0 document describing the pet service.
+    </documentation>
+
+    <types>
+        <xs:schema elementFormDefault="unqualified" targetNamespace="urn:com:example:petstore" version="1.0"
+                   xmlns:tns="urn:com:example:petstore"
+                   xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+            <xs:complexType name="petType">
+                <xs:all>
+                    <xs:element name="id" type="xs:int"/>
+                    <xs:element name="name" type="xs:string"/>
+                </xs:all>
+            </xs:complexType>
+
+            <xs:complexType name="getPetByIdRequest">
+                <xs:all>
+                    <xs:element name="id" type="xs:int"/>
+                </xs:all>
+            </xs:complexType>
+
+            <xs:complexType name="getPetByNameRequest">
+                <xs:all>
+                    <xs:element name="name" type="xs:string"/>
+                </xs:all>
+            </xs:complexType>
+
+            <xs:element name="getPetByIdRequest" type="tns:getPetByIdRequest"/>
+            <xs:element name="getPetByIdResponse" type="tns:petType"/>
+
+            <xs:element name="getPetByNameRequest" type="tns:getPetByIdRequest"/>
+            <xs:element name="getPetByNameResponse" type="tns:petType"/>
+
+            <xs:element name="fault" type="xs:string"/>
+        </xs:schema>
+    </types>
+
+    <interface name="PetInterface">
+        <fault name="Error1" element="tns:fault"/>
+
+        <operation name="getPetById" pattern="http://www.w3.org/ns/wsdl/in-out">
+            <wsoap:operation soapAction="getPetById" style="document"/>
+            <input messageLabel="In" element="tns:getPetByIdRequest"/>
+            <output messageLabel="Out" element="tns:getPetByIdResponse"/>
+        </operation>
+        <operation name="getPetByName" pattern="http://www.w3.org/ns/wsdl/in-out">
+            <wsoap:operation soapAction="getPetByName" style="document"/>
+            <input message="tns:getPetByNameRequest" element="getPetByNameRequest"/>
+            <output message="tns:getPetByNameResponse" element="getPetByNameResponse"/>
+        </operation>
+    </interface>
+
+    <binding name="SoapBinding" interface="tns:PetInterface"
+             type="http://www.w3.org/ns/wsdl/soap"
+             wsoap:protocol="http://www.w3.org/2003/05/soap/bindings/HTTP/"
+             wsoap:mepDefault="http://www.w3.org/2003/05/soap/mep/request-response">
+        <operation ref="tns:getPetById"/>
+        <operation ref="tns:getPetByName"/>
+    </binding>
+
+    <service name="PetService" interface="tns:PetInterface">
+        <endpoint name="SoapEndpoint"
+                  binding="tns:SoapBinding"
+                  address="http://www.example.com/pets/"/>
+    </service>
+</description>

@@ -1,0 +1,71 @@
+plugin: soap
+wsdlFile: petstore.wsdl
+
+resources:
+  # pet by ID: specific response
+  - operation: getPetById
+    requestBody:
+      xPath: //pets:getPetByIdRequest/pets:id
+      value: 100
+    response:
+      statusCode: 200
+      headers:
+        Content-Type: application/xml
+      content: |
+        <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope">
+          <soap:Body>
+            <pets:getPetByIdResponse xmlns:pets="urn:com:example:petstore">
+              <pets:id>100</pets:id>
+              <pets:name>dog</pets:name>
+            </pets:getPetByIdResponse>
+          </soap:Body>
+        </soap:Envelope>
+
+  # pet by ID: default response
+  - operation: getPetById
+    response:
+      statusCode: 500
+      headers:
+        Content-Type: application/xml
+      content: |
+        <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope">
+          <soap:Body>
+            <soap:Fault>Invalid operation</soap:Fault>
+          </soap:Body>
+        </soap:Envelope>
+
+  # pet by name: specific response
+  - operation: getPetByName
+    requestBody:
+      xPath: //pets:getPetByNameRequest/pets:name
+      value: dog
+    response:
+      statusCode: 200
+      headers:
+        Content-Type: application/xml
+      content: |
+        <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope">
+          <soap:Body>
+            <pets:getPetByNameResponse xmlns:pets="urn:com:example:petstore">
+              <pets:id>100</pets:id>
+              <pets:name>dog</pets:name>
+            </pets:getPetByNameResponse>
+          </soap:Body>
+        </soap:Envelope>
+
+  # pet by name: default response
+  - operation: getPetByName
+    response:
+      statusCode: 500
+      headers:
+        Content-Type: application/xml
+      content: |
+        <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope">
+          <soap:Body>
+            <soap:Fault>Invalid operation</soap:Fault>
+          </soap:Body>
+        </soap:Envelope>
+
+system:
+  xmlNamespaces:
+    pets: urn:com:example:petstore
