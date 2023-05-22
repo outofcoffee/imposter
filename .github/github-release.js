@@ -75,8 +75,9 @@ module.exports = async ({github, context}, assetPaths) => {
         assetPaths = [assetPaths];
     }
     for (const assetPath of assetPaths) {
-        if (assetPath === MainDistroAlias) {
-            await releaseMainDistro(github, releaseId, releaseVersion);
+        if (assetPath.startsWith(MainDistroAlias + ":")) {
+            const mainAssetPath = assetPath.split(':')[1];
+            await releaseMainDistro(github, releaseId, mainAssetPath, releaseVersion);
         } else {
             await releaseJar(github, releaseId, assetPath)
         }
@@ -134,8 +135,7 @@ async function createRelease(releaseVersion, github) {
     return release.data.id;
 }
 
-async function releaseMainDistro(github, releaseId, releaseVersion) {
-    const localFilePath = './distro/core/build/libs/imposter-core.jar';
+async function releaseMainDistro(github, releaseId, localFilePath, releaseVersion) {
     await uploadAsset(github, releaseId, 'imposter.jar', localFilePath);
 
     // upload with version suffix, for compatibility with cli < 0.7.0
