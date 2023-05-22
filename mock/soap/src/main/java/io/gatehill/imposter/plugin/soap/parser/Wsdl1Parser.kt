@@ -43,12 +43,7 @@
 
 package io.gatehill.imposter.plugin.soap.parser
 
-import io.gatehill.imposter.plugin.soap.model.BindingType
-import io.gatehill.imposter.plugin.soap.model.WsdlBinding
-import io.gatehill.imposter.plugin.soap.model.WsdlEndpoint
-import io.gatehill.imposter.plugin.soap.model.WsdlInterface
-import io.gatehill.imposter.plugin.soap.model.WsdlOperation
-import io.gatehill.imposter.plugin.soap.model.WsdlService
+import io.gatehill.imposter.plugin.soap.model.*
 import io.gatehill.imposter.plugin.soap.util.SoapUtil
 import io.gatehill.imposter.util.BodyQueryUtil
 import org.jdom2.Document
@@ -87,17 +82,18 @@ class Wsdl1Parser(
             ?: return null
 
         val operations = selectNodes(binding, "./wsdl:operation").map { op ->
-            getOperation(bindingName, op.getAttributeValue("name"), binding)!!
+            getOperation(bindingName, op.getAttributeValue("name"), binding)
+                    ?: throw IllegalStateException("No operation found for binding: $bindingName")
         }
+
+        // binding type=portType name
+        val interfaceRef = (binding.getAttributeValue("type")
+                ?: throw IllegalStateException("No type found for binding: $bindingName"))
 
         return WsdlBinding(
             name = binding.getAttributeValue("name"),
-
             type = parseBindingType(binding),
-
-            // binding type=portType name
-            interfaceRef = binding.getAttributeValue("type")!!,
-
+            interfaceRef = interfaceRef,
             operations = operations,
         )
     }
@@ -150,21 +146,28 @@ class Wsdl1Parser(
             context = binding,
             expressionTemplate = "./wsdl:operation[@name='%s']",
             name = operationName
-        )!!
+        ) ?: throw IllegalStateException("No binding operation found for binding: $bindingName and operation: $operationName")
+
         val soapOperation = selectSingleNode(bindingOperation, "./soap:operation")
             ?: selectSingleNode(bindingOperation, "./soap12:operation")
             ?: throw IllegalStateException("No SOAP operation element found for binding operation: ${describeNode(bindingOperation)}")
 
         // binding type=portType name
         val portTypeName = binding.getAttributeValue("type")
-        val portType = getPortTypeNode(portTypeName)!!
+        val portType = getPortTypeNode(portTypeName)
+            ?: throw IllegalStateException("No portType found for binding: $bindingName and portTypeName: $portTypeName")
+
         val portTypeOperation = selectSingleNodeWithName(
             context = portType,
             expressionTemplate = "./wsdl:operation[@name='%s']",
             name = operationName
-        )!!
-        val input = getMessagePartElementName(portTypeOperation, "./wsdl:input")!!
-        val output = getMessagePartElementName(portTypeOperation, "./wsdl:output")!!
+        ) ?: throw IllegalStateException("No portType operation found for portType: $portTypeName and operation: $operationName")
+
+        val input = getMessagePartElementName(portTypeOperation, "./wsdl:input")
+                ?: throw IllegalStateException("No input found for portType operation: $operationName")
+
+        val output = getMessagePartElementName(portTypeOperation, "./wsdl:output")
+                ?: throw IllegalStateException("No output found for portType operation: $operationName")
 
         val style = soapOperation.getAttributeValue("style") ?: run {
             // fall back to soap:binding
@@ -202,8 +205,12 @@ class Wsdl1Parser(
      * to resolve it from within the XSD.
      */
     private fun getMessagePartElementName(context: Element, expression: String): QName? {
-        val inputOrOutputNode = selectSingleNode(context, expression)!!
-        val msgAttr = inputOrOutputNode.getAttributeValue("message")!!
+        val inputOrOutputNode = selectSingleNode(context, expression)
+            ?: throw IllegalStateException("No input or output found for: $expression")
+
+        val msgAttr = inputOrOutputNode.getAttributeValue("message")
+            ?: throw IllegalStateException("No message attribute found for: ${describeNode(inputOrOutputNode)}")
+
         val messageName = msgAttr.let { SoapUtil.getLocalPart(msgAttr) }
 
         // look up message

@@ -43,12 +43,7 @@
 
 package io.gatehill.imposter.plugin.soap.parser
 
-import io.gatehill.imposter.plugin.soap.model.BindingType
-import io.gatehill.imposter.plugin.soap.model.WsdlBinding
-import io.gatehill.imposter.plugin.soap.model.WsdlEndpoint
-import io.gatehill.imposter.plugin.soap.model.WsdlInterface
-import io.gatehill.imposter.plugin.soap.model.WsdlOperation
-import io.gatehill.imposter.plugin.soap.model.WsdlService
+import io.gatehill.imposter.plugin.soap.model.*
 import io.gatehill.imposter.util.BodyQueryUtil
 import org.jdom2.Document
 import org.jdom2.Element
@@ -88,9 +83,13 @@ class Wsdl2Parser(
             name = bindingName
         ) ?: return null
 
-        val interfaceName = binding.getAttributeValue("interface")!!
+        val interfaceName = binding.getAttributeValue("interface") ?: throw IllegalStateException(
+            "Unable to find interface for binding $bindingName"
+        )
         val operations = selectNodes(binding, "./wsdl:operation").map { op ->
-            getOperation(interfaceName, op.getAttributeValue("ref"))!!
+            getOperation(interfaceName, op.getAttributeValue("ref")) ?: throw IllegalStateException(
+                "Unable to find operation ${op.getAttributeValue("ref")} on interface $interfaceName"
+            )
         }
 
         return WsdlBinding(
@@ -131,7 +130,9 @@ class Wsdl2Parser(
     }
 
     private fun getOperation(interfaceName: String, operationName: String): WsdlOperation? {
-        val interfaceNode: Element = getInterfaceNode(interfaceName)!!
+        val interfaceNode: Element = getInterfaceNode(interfaceName) ?: throw IllegalStateException(
+            "Unable to find interface $interfaceName"
+        )
         val operation = selectSingleNodeWithName(
             context = interfaceNode,
             expressionTemplate = "./wsdl:operation[@name='%s']",
@@ -149,7 +150,9 @@ class Wsdl2Parser(
     }
 
     private fun parseOperation(operation: Element): WsdlOperation {
-        val soapOperation = selectSingleNode(operation, "./soap:operation")!!
+        val soapOperation = selectSingleNode(operation, "./soap:operation") ?: throw IllegalStateException(
+            "Unable to find soap:operation for operation ${operation.getAttributeValue("name")}"
+        )
         val input = getMessagePartElementName(operation, "./wsdl:input")
         val output = getMessagePartElementName(operation, "./wsdl:output")
 
@@ -167,7 +170,9 @@ class Wsdl2Parser(
      * to resolve it from within the XSD.
      */
     private fun getMessagePartElementName(context: Element, expression: String): QName? {
-        val inputOrOutputNode = selectSingleNode(context, expression)!!
+        val inputOrOutputNode = selectSingleNode(context, expression) ?: throw IllegalStateException(
+            "Unable to find message part: $expression"
+        )
         val elementName = inputOrOutputNode.getAttributeValue("element")
         return resolveElementFromXsd(elementName)
     }
