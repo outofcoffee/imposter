@@ -43,7 +43,6 @@
 
 package io.gatehill.imposter.awslambda
 
-import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent
 import com.amazonaws.services.lambda.runtime.tests.annotations.Event
 import org.hamcrest.CoreMatchers.containsString
@@ -53,23 +52,23 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.params.ParameterizedTest
-import org.mockito.Mockito.mock
 
 /**
  * Test event handling for V1 events.
  */
 class HandlerTest : AbstractHandlerTest() {
     private var handler: Handler? = null
-    private var context: Context? = null
+
+    override val configDir = "/simple/config"
 
     @BeforeEach
     fun setUp() {
+        configure()
         handler = Handler()
-        context = mock(Context::class.java)
     }
 
     @ParameterizedTest
-    @Event(value = "requests_v1/request_spec_example.json", type = APIGatewayProxyRequestEvent::class)
+    @Event(value = "simple/requests_v1/request_spec_example.json", type = APIGatewayProxyRequestEvent::class)
     fun `get example from spec`(event: APIGatewayProxyRequestEvent) {
         val responseEvent = handler!!.handleRequest(event, context!!)
 
@@ -81,7 +80,7 @@ class HandlerTest : AbstractHandlerTest() {
     }
 
     @ParameterizedTest
-    @Event(value = "requests_v1/request_file.json", type = APIGatewayProxyRequestEvent::class)
+    @Event(value = "simple/requests_v1/request_file.json", type = APIGatewayProxyRequestEvent::class)
     fun `get static file`(event: APIGatewayProxyRequestEvent) {
         val responseEvent = handler!!.handleRequest(event, context!!)
 
@@ -93,7 +92,7 @@ class HandlerTest : AbstractHandlerTest() {
     }
 
     @ParameterizedTest
-    @Event(value = "requests_v1/request_no_route.json", type = APIGatewayProxyRequestEvent::class)
+    @Event(value = "simple/requests_v1/request_no_route.json", type = APIGatewayProxyRequestEvent::class)
     fun `no matching route`(event: APIGatewayProxyRequestEvent) {
         val responseEvent = handler!!.handleRequest(event, context!!)
 
@@ -105,7 +104,7 @@ class HandlerTest : AbstractHandlerTest() {
     }
 
     @ParameterizedTest
-    @Event(value = "requests_v1/request_404_html.json", type = APIGatewayProxyRequestEvent::class)
+    @Event(value = "simple/requests_v1/request_404_html.json", type = APIGatewayProxyRequestEvent::class)
     fun `get HTML response for 404`(event: APIGatewayProxyRequestEvent) {
         val responseEvent = handler!!.handleRequest(event, context!!)
 
@@ -115,7 +114,7 @@ class HandlerTest : AbstractHandlerTest() {
     }
 
     @ParameterizedTest
-    @Event(value = "requests_v1/request_static_asset.json", type = APIGatewayProxyRequestEvent::class)
+    @Event(value = "simple/requests_v1/request_static_asset.json", type = APIGatewayProxyRequestEvent::class)
     fun `should load static files`(event: APIGatewayProxyRequestEvent) {
         val responseEvent = handler!!.handleRequest(event, context!!)
 
@@ -125,7 +124,7 @@ class HandlerTest : AbstractHandlerTest() {
     }
 
     @ParameterizedTest
-    @Event(value = "requests_v1/request_status.json", type = APIGatewayProxyRequestEvent::class)
+    @Event(value = "simple/requests_v1/request_status.json", type = APIGatewayProxyRequestEvent::class)
     fun `should fetch version from status endpoint`(event: APIGatewayProxyRequestEvent) {
         val responseEvent = handler!!.handleRequest(event, context!!)
 

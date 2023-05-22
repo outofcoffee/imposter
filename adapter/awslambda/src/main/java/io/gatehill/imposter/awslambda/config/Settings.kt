@@ -52,6 +52,7 @@ object Settings {
     val configDir: String? by lazy {
         EnvVars.getEnv("IMPOSTER_CONFIG_DIR")
     }
+
     /**
      * FQCN of [io.gatehill.imposter.plugin.PluginDiscoveryStrategy] implementation.
      */

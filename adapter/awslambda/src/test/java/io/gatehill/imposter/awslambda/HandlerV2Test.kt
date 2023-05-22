@@ -43,7 +43,6 @@
 
 package io.gatehill.imposter.awslambda
 
-import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent
 import com.amazonaws.services.lambda.runtime.tests.annotations.Event
 import org.hamcrest.CoreMatchers.containsString
@@ -53,23 +52,23 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.params.ParameterizedTest
-import org.mockito.Mockito.mock
 
 /**
  * Test event handling for V2 events.
  */
 class HandlerV2Test : AbstractHandlerTest() {
     private var handler: HandlerV2? = null
-    private var context: Context? = null
+
+    override val configDir = "/simple/config"
 
     @BeforeEach
     fun setUp() {
+        configure()
         handler = HandlerV2()
-        context = mock(Context::class.java)
     }
 
     @ParameterizedTest
-    @Event(value = "requests_v2/request_spec_example.json", type = APIGatewayV2HTTPEvent::class)
+    @Event(value = "simple/requests_v2/request_spec_example.json", type = APIGatewayV2HTTPEvent::class)
     fun `get example from spec`(event: APIGatewayV2HTTPEvent) {
         val responseEvent = handler!!.handleRequest(event, context!!)
 
@@ -81,7 +80,7 @@ class HandlerV2Test : AbstractHandlerTest() {
     }
 
     @ParameterizedTest
-    @Event(value = "requests_v2/request_file.json", type = APIGatewayV2HTTPEvent::class)
+    @Event(value = "simple/requests_v2/request_file.json", type = APIGatewayV2HTTPEvent::class)
     fun `get static file`(event: APIGatewayV2HTTPEvent) {
         val responseEvent = handler!!.handleRequest(event, context!!)
 
@@ -93,7 +92,7 @@ class HandlerV2Test : AbstractHandlerTest() {
     }
 
     @ParameterizedTest
-    @Event(value = "requests_v2/request_no_route.json", type = APIGatewayV2HTTPEvent::class)
+    @Event(value = "simple/requests_v2/request_no_route.json", type = APIGatewayV2HTTPEvent::class)
     fun `no matching route`(event: APIGatewayV2HTTPEvent) {
         val responseEvent = handler!!.handleRequest(event, context!!)
 
@@ -105,7 +104,7 @@ class HandlerV2Test : AbstractHandlerTest() {
     }
 
     @ParameterizedTest
-    @Event(value = "requests_v2/request_404_html.json", type = APIGatewayV2HTTPEvent::class)
+    @Event(value = "simple/requests_v2/request_404_html.json", type = APIGatewayV2HTTPEvent::class)
     fun `get HTML response for 404`(event: APIGatewayV2HTTPEvent) {
         val responseEvent = handler!!.handleRequest(event, context!!)
 
@@ -115,7 +114,7 @@ class HandlerV2Test : AbstractHandlerTest() {
     }
 
     @ParameterizedTest
-    @Event(value = "requests_v2/request_static_asset.json", type = APIGatewayV2HTTPEvent::class)
+    @Event(value = "simple/requests_v2/request_static_asset.json", type = APIGatewayV2HTTPEvent::class)
     fun `should load static files`(event: APIGatewayV2HTTPEvent) {
         val responseEvent = handler!!.handleRequest(event, context!!)
 
@@ -125,7 +124,7 @@ class HandlerV2Test : AbstractHandlerTest() {
     }
 
     @ParameterizedTest
-    @Event(value = "requests_v2/request_status.json", type = APIGatewayV2HTTPEvent::class)
+    @Event(value = "simple/requests_v2/request_status.json", type = APIGatewayV2HTTPEvent::class)
     fun `should fetch version from status endpoint`(event: APIGatewayV2HTTPEvent) {
         val responseEvent = handler!!.handleRequest(event, context!!)
 
