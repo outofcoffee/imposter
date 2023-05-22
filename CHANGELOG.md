@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.22.0] - 2023-05-22
+### Added
+- feat(soap): improves error detection for missing WSDL elements/attributes.
+
+### Changed
+- test(lambda): adds test for duplicate SOAP endpoints.
+- test(lambda): improves coverage for using SOAP plugin with Lambda adapter.
+- test(lambda): removes dependency on mock S3 for most tests.
+
+### Fixed
+- fix(lambda): removes lazy delegates from single use properties.
+- fix: don't initialise DynamoDB client until first use.
+- fix: duplicate HTTP routes should replace existing ones.
+
 ## [3.21.1] - 2023-05-22
 ### Changed
 - build: adds Docker ecosystem to Dependabot config.
