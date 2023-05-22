@@ -53,19 +53,32 @@ class HttpRouter(val vertx: Vertx) {
     private val beforeEndHandlers = mutableListOf<HttpExchangeHandler>()
 
     fun route(): HttpRoute {
-        return HttpRoute().also(routes::add)
+        return HttpRoute().also(::addOrReplaceRoute)
     }
 
     fun route(path: String): HttpRoute {
-        return HttpRoute(path = path).also(routes::add)
+        return HttpRoute(path = path).also(::addOrReplaceRoute)
     }
 
     fun route(method: HttpMethod, path: String): HttpRoute {
-        return HttpRoute(path = path, method = method).also(routes::add)
+        return HttpRoute(path = path, method = method).also(::addOrReplaceRoute)
     }
 
     fun routeWithRegex(method: HttpMethod, regex: String): HttpRoute {
-        return HttpRoute(regex = regex, method = method).also(routes::add)
+        return HttpRoute(regex = regex, method = method).also(::addOrReplaceRoute)
+    }
+
+    /**
+     * Adds the route to the router, replacing any existing route with the same path/regex and method.
+     */
+    private fun addOrReplaceRoute(route: HttpRoute) {
+        val existingRoute = routes.filterNot { it.isCatchAll() }
+                .find { it.path == route.path && it.method == route.method && it.regex == route.regex }
+
+        if (existingRoute != null) {
+            routes.remove(existingRoute)
+        }
+        routes.add(route)
     }
 
     fun get(path: String): HttpRoute {
