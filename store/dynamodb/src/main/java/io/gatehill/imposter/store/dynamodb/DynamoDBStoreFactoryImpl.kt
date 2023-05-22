@@ -64,10 +64,14 @@ import org.apache.logging.log4j.LogManager
 class DynamoDBStoreFactoryImpl @Inject constructor(
     private val deferredOperationService: DeferredOperationService,
 ) : AbstractStoreFactory(deferredOperationService), Plugin {
-    private val ddb: AmazonDynamoDB
     private val logger = LogManager.getLogger(DynamoDBStore::class.java)
 
-    init {
+    /**
+     * Don't initialize until first use.
+     */
+    private val ddb: AmazonDynamoDB by lazy { buildClient() }
+
+    private fun buildClient(): AmazonDynamoDB {
         val builder = AmazonDynamoDBClientBuilder.standard()
         Settings.dynamoDbApiEndpoint?.let {
             val endpointConfig = AwsClientBuilder.EndpointConfiguration(Settings.dynamoDbApiEndpoint, Settings.dynamoDbRegion)
@@ -78,7 +82,7 @@ class DynamoDBStoreFactoryImpl @Inject constructor(
         Settings.awsCredentials?.let {
             builder.withCredentials(AWSStaticCredentialsProvider(it))
         }
-        ddb = builder.build()
+        return builder.build()
     }
 
     override fun buildNewStore(storeName: String): Store {
