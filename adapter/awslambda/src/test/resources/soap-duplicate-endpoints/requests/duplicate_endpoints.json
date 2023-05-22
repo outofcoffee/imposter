@@ -1,0 +1,16 @@
+{
+  "headers": {
+    "content-type": "application/xml",
+    "soapaction": "getPetById"
+  },
+  "queryStringParameters": {},
+  "pathParameters": {},
+  "body": "<s:Envelope xmlns:s=\"http://www.w3.org/2003/05/soap-envelope\">\n <s:Body>\n\t <getPetByIdRequest xmlns=\"urn:com:example:petstore\">\n  <id>100</id>\n</getPetByIdRequest>\n  </s:Body>\n</s:Envelope>",
+  "isBase64Encoded": false,
+  "requestContext": {
+    "http": {
+      "path": "/pets/",
+      "method":  "POST"
+    }
+  }
+}
