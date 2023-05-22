@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.21.1] - 2023-05-22
+### Changed
+- build: adds Docker ecosystem to Dependabot config.
+
+### Fixed
+- fix: sets Vert.x base cache directory on Windows.
+
 ## [3.21.0] - 2023-05-18
 ### Added
 - feat: bundles groovy-xml dependency.
