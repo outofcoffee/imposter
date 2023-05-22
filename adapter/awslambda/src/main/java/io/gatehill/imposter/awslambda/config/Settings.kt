@@ -49,25 +49,20 @@ import io.gatehill.imposter.config.util.EnvVars
  * @author Pete Cornish
  */
 object Settings {
-    val configDir: String? by lazy {
-        EnvVars.getEnv("IMPOSTER_CONFIG_DIR")
-    }
+    val configDir: String? get() = EnvVars.getEnv("IMPOSTER_CONFIG_DIR")
 
     /**
      * FQCN of [io.gatehill.imposter.plugin.PluginDiscoveryStrategy] implementation.
      */
-    val pluginDiscoveryStrategyClass: String? by lazy {
+    val pluginDiscoveryStrategyClass: String? get() =
         EnvVars.getEnv("IMPOSTER_PLUGIN_DISCOVERY_STRATEGY")
-    }
 
-    val s3ConfigUrl: String by lazy {
+    val s3ConfigUrl: String get() =
         EnvVars.getEnv("IMPOSTER_S3_CONFIG_URL")
             ?: throw IllegalStateException("Missing S3 configuration URL")
-    }
 
-    val metaInfScan: Boolean by lazy {
+    val metaInfScan: Boolean get() =
         EnvVars.getEnv("IMPOSTER_METAINF_SCAN")?.toBoolean() ?: false
-    }
 
     /**
      * Example:
