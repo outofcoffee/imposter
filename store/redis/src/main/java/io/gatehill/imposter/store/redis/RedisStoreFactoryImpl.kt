@@ -66,9 +66,12 @@ class RedisStoreFactoryImpl @Inject constructor(
     private val deferredOperationService: DeferredOperationService,
     imposterConfig: ImposterConfig
 ) : AbstractStoreFactory(deferredOperationService), Plugin {
-    private val redisson: RedissonClient
+    /**
+     * Don't initialize until first use.
+     */
+    private val redisson: RedissonClient by lazy { buildRedissonClient(imposterConfig) }
 
-    init {
+    private fun buildRedissonClient(imposterConfig: ImposterConfig): RedissonClient {
         val config: Config = try {
             val configFile = discoverConfigFile(imposterConfig)
             LOGGER.debug("Loading Redisson configuration from: {}", configFile)
@@ -76,7 +79,7 @@ class RedisStoreFactoryImpl @Inject constructor(
         } catch (e: IOException) {
             throw IllegalStateException("Unable to load Redisson configuration file", e)
         }
-        redisson = Redisson.create(config)
+        return Redisson.create(config)
     }
 
     private fun discoverConfigFile(imposterConfig: ImposterConfig): File {
