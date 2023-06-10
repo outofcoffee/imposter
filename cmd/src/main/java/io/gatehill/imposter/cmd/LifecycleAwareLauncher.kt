@@ -48,25 +48,11 @@ import io.gatehill.imposter.util.MetricsUtil
 import io.gatehill.imposter.util.MetricsUtil.configureMetrics
 import io.vertx.core.Launcher
 import io.vertx.core.VertxOptions
-import io.vertx.core.impl.Utils
-import java.nio.file.Files
-import kotlin.io.path.absolutePathString
-import kotlin.io.path.deleteExisting
 
 /**
  * @author Pete Cornish
  */
 class LifecycleAwareLauncher : Launcher() {
-    init {
-        if (Utils.isWindows()) {
-            // workaround for https://github.com/outofcoffee/imposter/issues/397
-            val cacheDir = Files.createTempDirectory("vertx-cache").apply {
-                deleteExisting()
-            }
-            System.setProperty("vertx.cacheDirBase", cacheDir.absolutePathString())
-        }
-    }
-
     override fun dispatch(args: Array<out String>) {
         super.dispatch(arrayOf("run", ImposterVerticle::class.java.canonicalName, *args))
     }
