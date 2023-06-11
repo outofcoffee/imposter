@@ -180,7 +180,10 @@ object ConfigUtil {
                     shouldApplyBasePath = false,
                 )
 
-                val pluginClass = pluginManager.determinePluginClass(config.plugin!!)
+                val plugin = config.plugin
+                    ?: throw IllegalStateException("No plugin specified in configuration file: $configFile")
+
+                val pluginClass = pluginManager.determinePluginClass(plugin)
                 val pluginConfigs = allPluginConfigs.getOrPut(pluginClass) { mutableListOf() }
                 pluginConfigs.add(configFile)
             }
