@@ -43,6 +43,7 @@
 package io.gatehill.imposter.plugin.wiremock
 
 import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.config.ConfigReference
 import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.plugin.PluginInfo
@@ -92,7 +93,7 @@ class WiremockPluginImpl @Inject constructor(
     private val logger = LogManager.getLogger(WiremockPluginImpl::class.java)
     private val separateConfigFiles = EnvVars.getEnv("IMPOSTER_WIREMOCK_SEPARATE_CONFIG").toBoolean()
 
-    override fun loadConfiguration(configFiles: List<File>) {
+    override fun loadConfiguration(configFiles: List<ConfigReference>) {
         super.loadConfiguration(configFiles.flatMap { convert(it) })
     }
 
@@ -100,8 +101,8 @@ class WiremockPluginImpl @Inject constructor(
      * Converts wiremock mappings to Imposter format in a temporary directory,
      * then returns the path to the generated config file.
      */
-    internal fun convert(mappingsFile: File): List<File> {
-        val sourceDir = mappingsFile.parentFile
+    internal fun convert(mappingsFile: ConfigReference): List<ConfigReference> {
+        val sourceDir = mappingsFile.file.parentFile
         val localConfigDir = Files.createTempDirectory("wiremock").toFile()
 
         val mappings = loadMappings(sourceDir)
@@ -124,7 +125,7 @@ class WiremockPluginImpl @Inject constructor(
                     configFiles += writeConfig(localConfigDir, 0, converted.flatten())
                 }
                 logger.debug("Wrote converted wiremock mapping file(s) to $localConfigDir")
-                return configFiles
+                return configFiles.map { ConfigReference(it, mappingsFile.configRoot) }
             }
         }
         logger.warn("No wiremock mapping files found in $sourceDir")

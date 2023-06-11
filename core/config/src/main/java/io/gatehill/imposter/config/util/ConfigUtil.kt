@@ -45,6 +45,7 @@ package io.gatehill.imposter.config.util
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.config.ConfigReference
 import io.gatehill.imposter.config.expression.EnvEvaluator
 import io.gatehill.imposter.config.resolver.ConfigResolver
 import io.gatehill.imposter.expression.eval.ExpressionEvaluator
@@ -52,6 +53,7 @@ import io.gatehill.imposter.expression.util.ExpressionUtil
 import io.gatehill.imposter.plugin.PluginManager
 import io.gatehill.imposter.plugin.config.PluginConfigImpl
 import io.gatehill.imposter.plugin.config.ResourcesHolder
+import io.gatehill.imposter.plugin.config.resource.BasePathHolder
 import io.gatehill.imposter.util.MapUtil
 import io.gatehill.imposter.util.ResourceUtil
 import org.apache.logging.log4j.LogManager
@@ -77,6 +79,9 @@ object ConfigUtil {
 
     private val scanRecursiveConfig
         get() = EnvVars.getEnv("IMPOSTER_CONFIG_SCAN_RECURSIVE")?.toBoolean() == true
+
+    private val autoBasePath
+        get() = EnvVars.getEnv("IMPOSTER_AUTO_BASE_PATH")?.toBoolean() == true
 
     private var expressionEvaluators: Map<String, ExpressionEvaluator<*>> = emptyMap()
 
@@ -119,11 +124,11 @@ object ConfigUtil {
      * discovers configuration files. File discovery is optionally
      * recursive, defaulting to the value of [scanRecursiveConfig].
      */
-    fun discoverConfigFiles(rawConfigDirs: Array<String>, scanRecursive: Boolean = scanRecursiveConfig): List<File> {
+    fun discoverConfigFiles(rawConfigDirs: Array<String>, scanRecursive: Boolean = scanRecursiveConfig): List<ConfigReference> {
         val configDirs = resolveToLocal(rawConfigDirs)
         val exclusions = buildExclusions(configDirs)
 
-        val configFiles = mutableListOf<File>()
+        val configFiles = mutableListOf<ConfigReference>()
         for (configDir in configDirs) {
             try {
                 configFiles += listConfigFiles(configDir, scanRecursive, exclusions)
@@ -154,12 +159,12 @@ object ConfigUtil {
     fun loadPluginConfigs(
         imposterConfig: ImposterConfig,
         pluginManager: PluginManager,
-        configFiles: List<File>,
-    ): Map<String, List<File>> {
+        configFiles: List<ConfigReference>,
+    ): Map<String, List<ConfigReference>> {
         var configCount = 0
 
         // read all config files
-        val allPluginConfigs = mutableMapOf<String, MutableList<File>>()
+        val allPluginConfigs = mutableMapOf<String, MutableList<ConfigReference>>()
         try {
             for (configFile in configFiles) {
                 LOGGER.debug("Loading configuration file: {}", configFile)
@@ -171,7 +176,8 @@ object ConfigUtil {
                     configFile,
                     PluginConfigImpl::class.java,
                     substitutePlaceholders = true,
-                    convertPathParameters = false
+                    convertPathParameters = false,
+                    shouldApplyBasePath = false,
                 )
 
                 val pluginClass = pluginManager.determinePluginClass(config.plugin!!)
@@ -185,15 +191,19 @@ object ConfigUtil {
         return allPluginConfigs
     }
 
-    fun listConfigFiles(configDir: File, scanRecursive: Boolean, exclusions: List<String>): List<File> {
-        val configFiles = mutableListOf<File>()
+    fun listConfigFiles(configRoot: File, scanRecursive: Boolean, exclusions: List<String>): List<ConfigReference> {
+        return listConfigFiles(configRoot, configRoot, scanRecursive, exclusions)
+    }
+
+    private fun listConfigFiles(configRoot: File, configDir: File, scanRecursive: Boolean, exclusions: List<String>): List<ConfigReference> {
+        val configFiles = mutableListOf<ConfigReference>()
 
         configDir.listFiles { _, filename -> !exclusions.contains(filename) }?.forEach { file ->
             if (isConfigFile(file.name)) {
-                configFiles += file
+                configFiles += ConfigReference(file, configRoot)
             } else {
                 if (scanRecursive && file.isDirectory) {
-                    configFiles += listConfigFiles(file, scanRecursive, exclusions)
+                    configFiles += listConfigFiles(configRoot, file, scanRecursive, exclusions)
                 }
             }
         }
@@ -221,31 +231,46 @@ object ConfigUtil {
      * @param configClass            the configuration class
      * @param substitutePlaceholders whether to substitute placeholders in the configuration
      * @param convertPathParameters  whether to convert path parameters from OpenAPI format to Vert.x format
+     * @param shouldApplyBasePath  whether to apply the base path to the configuration
      * @return the configuration
      */
     fun <T : PluginConfigImpl> loadPluginConfig(
         imposterConfig: ImposterConfig,
-        configFile: File,
+        configFile: ConfigReference,
         configClass: Class<T>,
         substitutePlaceholders: Boolean,
         convertPathParameters: Boolean,
+        shouldApplyBasePath: Boolean,
     ): T {
         try {
-            val rawContents = configFile.readText()
+            val rawContents = configFile.file.readText()
             val parsedContents = if (substitutePlaceholders) {
                 ExpressionUtil.eval(rawContents, expressionEvaluators, nullifyUnsupported = false)
             } else {
                 rawContents
             }
 
-            val config = lookupMapper(configFile).readValue(parsedContents, configClass)!!
-            config.dir = configFile.parentFile
+            val config = lookupMapper(configFile.file).readValue(parsedContents, configClass)!!
+            config.dir = configFile.file.parentFile
 
             // convert any OpenAPI format path parameters
             if (convertPathParameters && config is ResourcesHolder<*>) {
                 (config as ResourcesHolder<*>).resources?.forEach { resource ->
                     resource.path = ResourceUtil.convertPathFromOpenApi(resource.path)
                 }
+            }
+
+            if (shouldApplyBasePath && config is BasePathHolder) {
+                val basePath = if (autoBasePath) {
+                    // Use the relative path from the config root to the config file's directory.
+                    // Normalise the path separators to forward slashes.
+                    configFile.file.canonicalPath.substring(configFile.configRoot.canonicalPath.length)
+                        .substringBeforeLast(File.separator)
+                        .replace('\\', '/')
+                } else {
+                    config.basePath
+                }
+                applyBasePath<T>(basePath, configFile, config)
             }
 
             if (imposterConfig.useEmbeddedScriptEngine) {
@@ -256,9 +281,9 @@ object ConfigUtil {
             return config
 
         } catch (e: JsonMappingException) {
-            throw RuntimeException("Error reading configuration file: " + configFile.absolutePath + ", reason: ${e.message}")
+            throw RuntimeException("Error reading configuration file: " + configFile.file.absolutePath + ", reason: ${e.message}")
         } catch (e: IOException) {
-            throw RuntimeException("Error reading configuration file: " + configFile.absolutePath, e)
+            throw RuntimeException("Error reading configuration file: " + configFile.file.absolutePath, e)
         }
     }
 
@@ -272,5 +297,20 @@ object ConfigUtil {
         val extension = configFile.name.substringAfterLast(".")
         return CONFIG_FILE_MAPPERS[extension]
             ?: throw IllegalStateException("Unable to locate mapper for config file: $configFile")
+    }
+
+    private fun <T : PluginConfigImpl> applyBasePath(basePath: String?, configFile: ConfigReference, config: T) {
+        basePath?.let {
+            LOGGER.trace("Using base path '{}' for config file {}", basePath, configFile.file)
+            if (config.responseConfig.hasConfiguration()) {
+                config.path = basePath + (config.path ?: "")
+            }
+
+            if (config is ResourcesHolder<*>) {
+                config.resources?.forEach { resource ->
+                    resource.path = basePath + (resource.path ?: "")
+                }
+            }
+        }
     }
 }

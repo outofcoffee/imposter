@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -43,11 +43,11 @@
 package io.gatehill.imposter.plugin.internal
 
 import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.config.ConfigReference
 import io.gatehill.imposter.config.util.MetaUtil
 import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.PluginProvider
-import java.io.File
 
 /**
  * Provides the plugin class names present in the metadata information ('META-INF') files.
@@ -58,7 +58,7 @@ import java.io.File
  */
 @PluginInfo("meta-detector")
 class MetaInfPluginDetectorImpl : Plugin, PluginProvider {
-    override fun providePlugins(imposterConfig: ImposterConfig, pluginConfigs: Map<String, List<File>>): List<String> {
+    override fun providePlugins(imposterConfig: ImposterConfig, pluginConfigs: Map<String, List<ConfigReference>>): List<String> {
         return MetaUtil.readAllMetaEnabledPlugins()
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2023-2023.
  *
  * This file is part of Imposter.
  *
@@ -41,36 +41,8 @@
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.gatehill.imposter.plugin
+package io.gatehill.imposter.plugin.config.resource
 
-import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.config.ConfigReference
-
-interface PluginDiscoveryStrategy {
-    /**
-     * Registers plugin providers and discovers dependencies from configuration.
-     *
-     * @param imposterConfig the Imposter engine configuration
-     * @param initialPlugins the initially configured plugins, some of which may be plugin providers
-     * @param pluginConfigs  plugin configurations
-     * @return list of dependencies
-     */
-    fun preparePluginsFromConfig(
-        imposterConfig: ImposterConfig,
-        initialPlugins: List<String>,
-        pluginConfigs: Map<String, List<ConfigReference>>
-    ): List<PluginDependencies>
-
-    /**
-     * Determines the plugin class if it matches its short name, otherwise assumes
-     * the plugin is a fully qualified class name.
-     *
-     * @param plugin the plugin short name or fully qualified class name
-     * @return the fully qualified plugin class name
-     */
-    fun determinePluginClass(plugin: String): String
-
-    fun getPluginClasses(): Collection<Class<out Plugin>>
-
-    fun getPluginName(clazz: Class<in Plugin>): String
+interface BasePathHolder {
+    val basePath: String?
 }

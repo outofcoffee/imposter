@@ -109,7 +109,7 @@ class CharacteristicsServiceTest {
     private fun sendFailureType(failureType: FailureSimulationType): HttpResponse {
         val responseService = mock<ResponseService> {
             on { finaliseExchange(any(), any(), any()) } doAnswer {
-                val block = it.arguments[2] as () -> Unit
+                @Suppress("UNCHECKED_CAST") val block = it.arguments[2] as () -> Unit
                 block()
             }
         }

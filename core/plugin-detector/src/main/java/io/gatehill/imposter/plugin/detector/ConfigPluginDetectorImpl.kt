@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -43,10 +43,10 @@
 package io.gatehill.imposter.plugin.detector
 
 import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.config.ConfigReference
 import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.PluginProvider
-import java.io.File
 
 /**
  * Provides the plugin class names present in the configuration files.
@@ -57,6 +57,6 @@ import java.io.File
 class ConfigPluginDetectorImpl : Plugin, PluginProvider {
     override fun providePlugins(
         imposterConfig: ImposterConfig,
-        pluginConfigs: Map<String, List<File>>
+        pluginConfigs: Map<String, List<ConfigReference>>
     ) = pluginConfigs.keys.distinct()
 }

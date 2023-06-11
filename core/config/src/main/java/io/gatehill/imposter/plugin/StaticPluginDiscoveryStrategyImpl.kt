@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2021.
+ * Copyright (c) 2021-2023.
  *
  * This file is part of Imposter.
  *
@@ -44,8 +44,8 @@
 package io.gatehill.imposter.plugin
 
 import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.config.ConfigReference
 import org.apache.logging.log4j.LogManager
-import java.io.File
 
 /**
  * A static plugin discovery implementation that does not scan the classpath
@@ -81,7 +81,7 @@ class StaticPluginDiscoveryStrategyImpl(
     override fun preparePluginsFromConfig(
         imposterConfig: ImposterConfig,
         initialPlugins: List<String>,
-        pluginConfigs: Map<String, List<File>>
+        pluginConfigs: Map<String, List<ConfigReference>>
     ): List<PluginDependencies> {
         return listOf(PluginDependencies(pluginDependencies))
     }

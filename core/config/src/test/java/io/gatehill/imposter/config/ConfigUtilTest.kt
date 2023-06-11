@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -43,9 +43,12 @@
 package io.gatehill.imposter.config
 
 import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.config.support.BasePathSupportingPluginConfig
 import io.gatehill.imposter.config.util.ConfigUtil
-import io.gatehill.imposter.config.util.ConfigUtil.loadPluginConfig
+import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.plugin.config.PluginConfigImpl
+import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.Matchers
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -64,8 +67,13 @@ class ConfigUtilTest {
             "EXAMPLE_PATH" to "/test"
         )
         ConfigUtil.initInterpolators(environment)
+
         val configFile = File(ConfigUtilTest::class.java.getResource("/interpolated/test-config.yaml").toURI())
-        val config = loadPluginConfig(ImposterConfig(), configFile, PluginConfigImpl::class.java, true, true)
+        val configRef = ConfigReference(
+            file = configFile,
+            configRoot = configFile.parentFile,
+        )
+        val config = ConfigUtil.loadPluginConfig(ImposterConfig(), configRef, PluginConfigImpl::class.java, true, true, true)
         assertEquals("/test", config.path)
     }
 
@@ -80,15 +88,15 @@ class ConfigUtilTest {
         assertEquals(3, configFiles.size)
         assertTrue(
             "discovered files should include top level dir config",
-            configFiles.map { it.toString() }.any { it.endsWith("/recursive/test-config.yaml") }
+            configFiles.map { it.file.toString() }.any { it.endsWith("/recursive/test-config.yaml") }
         )
         assertTrue(
             "discovered files should include subdir1 config",
-            configFiles.map { it.toString() }.any { it.endsWith("/recursive/subdir1/test-config.yaml") }
+            configFiles.map { it.file.toString() }.any { it.endsWith("/recursive/subdir1/test-config.yaml") }
         )
         assertTrue(
             "discovered files should include subdir2 config",
-            configFiles.map { it.toString() }.any { it.endsWith("/recursive/subdir2/test-config.yaml") }
+            configFiles.map { it.file.toString() }.any { it.endsWith("/recursive/subdir2/test-config.yaml") }
         )
     }
 
@@ -104,11 +112,11 @@ class ConfigUtilTest {
         assertEquals(2, configFiles.size)
         assertTrue(
             "discovered files should include top level dir config",
-            configFiles.map { it.toString() }.any { it.endsWith("/recursive/test-config.yaml") }
+            configFiles.map { it.file.toString() }.any { it.endsWith("/recursive/test-config.yaml") }
         )
         assertTrue(
             "discovered files should include subdir1 config",
-            configFiles.map { it.toString() }.any { it.endsWith("/recursive/subdir1/test-config.yaml") }
+            configFiles.map { it.file.toString() }.any { it.endsWith("/recursive/subdir1/test-config.yaml") }
         )
     }
 
@@ -123,7 +131,33 @@ class ConfigUtilTest {
         assertEquals(1, configFiles.size)
         assertTrue(
             "discovered files should include top level dir config",
-            configFiles.map { it.toString() }.any { it.endsWith("/recursive/test-config.yaml") }
+            configFiles.map { it.file.toString() }.any { it.endsWith("/recursive/test-config.yaml") }
         )
+    }
+
+    /**
+     * All config files within the config dir and its subdirectories should be returned.
+     */
+    @Test
+    fun testAutoBasePath() {
+        EnvVars.populate("IMPOSTER_AUTO_BASE_PATH" to "true")
+        val configDir = File(ConfigUtilTest::class.java.getResource("/recursive").toURI())
+        val configFiles = ConfigUtil.listConfigFiles(configDir, true, emptyList())
+
+        assertEquals(3, configFiles.size)
+
+        for (configFile in configFiles) {
+            val config = ConfigUtil.loadPluginConfig(
+                ImposterConfig(),
+                configFile,
+                BasePathSupportingPluginConfig::class.java,
+                true,
+                true,
+                true
+            )
+
+            val expectedBasePath = configFile.file.canonicalPath.substring(configFile.configRoot.canonicalPath.length).substringBeforeLast(File.separator)
+            assertThat("config file should have base path set", config.path, Matchers.startsWith(expectedBasePath))
+        }
     }
 }

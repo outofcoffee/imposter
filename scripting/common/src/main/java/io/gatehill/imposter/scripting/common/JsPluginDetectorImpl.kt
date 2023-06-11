@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -43,11 +43,11 @@
 package io.gatehill.imposter.scripting.common
 
 import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.config.ConfigReference
 import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.PluginProvider
 import io.gatehill.imposter.scripting.common.util.JavaScriptUtil
-import java.io.File
 
 /**
  * Provides the JavaScript plugin based on configuration.
@@ -56,7 +56,7 @@ import java.io.File
  */
 @PluginInfo("js-detector")
 class JsPluginDetectorImpl : Plugin, PluginProvider {
-    override fun providePlugins(imposterConfig: ImposterConfig, pluginConfigs: Map<String, List<File>>): List<String> {
+    override fun providePlugins(imposterConfig: ImposterConfig, pluginConfigs: Map<String, List<ConfigReference>>): List<String> {
         return listOf(JavaScriptUtil.activePlugin)
     }
 }

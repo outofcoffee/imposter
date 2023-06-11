@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023.
+ * Copyright (c) 2023-2023.
  *
  * This file is part of Imposter.
  *
@@ -44,6 +44,7 @@
 package io.gatehill.imposter.plugin.wiremock
 
 import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.config.ConfigReference
 import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.service.ResourceService
 import io.gatehill.imposter.service.ResponseFileService
@@ -152,10 +153,15 @@ class WiremockPluginTest {
             mock<ResponseService>(),
             mock<ResponseRoutingService>()
         )
-        val configFiles = wiremock.convert(File(mappingsDir, "imposter-config.yaml"))
+
+        val configRef = ConfigReference(
+            file = File(mappingsDir, "imposter-config.yaml"),
+            configRoot = mappingsDir
+        )
+        val configFiles = wiremock.convert(configRef)
         assertThat(configFiles, hasSize(expectedConfigFiles))
 
-        val configDir = configFiles.first().parentFile
+        val configDir = configFiles.first().file.parentFile
 
         Assert.assertTrue("Config dir should exist", configDir.exists())
         assertThat(

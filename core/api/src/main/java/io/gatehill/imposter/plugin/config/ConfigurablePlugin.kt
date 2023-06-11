@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -42,12 +42,12 @@
  */
 package io.gatehill.imposter.plugin.config
 
-import java.io.File
+import io.gatehill.imposter.config.ConfigReference
 
 /**
  * @author Pete Cornish
  */
 interface ConfigurablePlugin<C : PluginConfig> {
-    fun loadConfiguration(configFiles: List<File>)
+    fun loadConfiguration(configFiles: List<ConfigReference>)
     val configs: List<C>
 }

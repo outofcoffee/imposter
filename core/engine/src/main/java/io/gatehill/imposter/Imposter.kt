@@ -43,6 +43,7 @@
 package io.gatehill.imposter
 
 import com.google.inject.Module
+import io.gatehill.imposter.config.ConfigReference
 import io.gatehill.imposter.config.util.ConfigUtil
 import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.config.util.MetaUtil
@@ -75,7 +76,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
 import org.apache.logging.log4j.LogManager
-import java.io.File
 import java.nio.file.Paths
 import java.util.concurrent.CompletableFuture
 import javax.inject.Inject
@@ -142,11 +142,11 @@ class Imposter(
         }
     }
 
-    private fun processConfiguration(): Map<String, List<File>> {
+    private fun processConfiguration(): Map<String, List<ConfigReference>> {
         val configFiles = ConfigUtil.discoverConfigFiles(imposterConfig.configDirs)
 
         if (EnvVars.discoverEnvFiles) {
-            val envFiles = configFiles.map { Paths.get(it.parent, ".env") }.filter { it.exists() }
+            val envFiles = configFiles.map { Paths.get(it.file.parent, ".env") }.filter { it.exists() }
             if (envFiles.isNotEmpty()) {
                 EnvVars.reset(envFiles)
             }

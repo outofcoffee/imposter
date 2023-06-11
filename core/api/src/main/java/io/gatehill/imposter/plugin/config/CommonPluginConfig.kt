@@ -44,6 +44,7 @@
 package io.gatehill.imposter.plugin.config
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import io.gatehill.imposter.plugin.config.resource.BasePathHolder
 import io.gatehill.imposter.plugin.config.resource.UpstreamConfig
 import io.gatehill.imposter.plugin.config.resource.UpstreamsHolder
 import io.gatehill.imposter.plugin.config.security.CorsConfig
@@ -52,7 +53,10 @@ import io.gatehill.imposter.plugin.config.security.CorsConfigHolder
 /**
  * Common configuration for some plugins with similar characteristics.
  */
-abstract class CommonPluginConfig : PluginConfigImpl(), CorsConfigHolder, UpstreamsHolder {
+abstract class CommonPluginConfig : PluginConfigImpl(), BasePathHolder, CorsConfigHolder, UpstreamsHolder {
+    @field:JsonProperty("basePath")
+    override val basePath: String? = null
+
     @field:JsonProperty("cors")
     override var corsConfig: CorsConfig? = null
 

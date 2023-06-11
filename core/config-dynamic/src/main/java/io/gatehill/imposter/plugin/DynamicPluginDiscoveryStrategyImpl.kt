@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -45,13 +45,13 @@ package io.gatehill.imposter.plugin
 
 import com.google.inject.Module
 import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.config.ConfigReference
 import io.gatehill.imposter.config.util.ConfigUtil
 import io.gatehill.imposter.util.ClassLoaderUtil
 import io.github.classgraph.ClassGraph
 import io.github.classgraph.ClassInfo
 import org.apache.logging.log4j.LogManager
-import java.io.File
-import java.util.*
+import java.util.Collections
 
 /**
  * Scans the classpath to find classes implementing [Plugin] and [PluginProvider],
@@ -72,7 +72,7 @@ class DynamicPluginDiscoveryStrategyImpl : PluginDiscoveryStrategy {
     override fun preparePluginsFromConfig(
         imposterConfig: ImposterConfig,
         initialPlugins: List<String>,
-        pluginConfigs: Map<String, List<File>>
+        pluginConfigs: Map<String, List<ConfigReference>>
     ): List<PluginDependencies> {
         val plugins = initialPlugins.toMutableList()
         val providers = mutableListOf<Class<PluginProvider>>()
@@ -143,7 +143,7 @@ class DynamicPluginDiscoveryStrategyImpl : PluginDiscoveryStrategy {
     private fun processProvider(
         imposterConfig: ImposterConfig,
         plugins: MutableList<String>,
-        pluginConfigs: Map<String, List<File>>,
+        pluginConfigs: Map<String, List<ConfigReference>>,
         registeredProviders: MutableSet<Class<out PluginProvider>>,
         providerClass: Class<PluginProvider>,
     ) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -43,7 +43,7 @@
 package io.gatehill.imposter.plugin
 
 import io.gatehill.imposter.ImposterConfig
-import java.io.File
+import io.gatehill.imposter.config.ConfigReference
 
 /**
  * Provides class names of plugins to load.
@@ -61,5 +61,5 @@ interface PluginProvider {
      * @param pluginConfigs  plugin configurations
      * @return plugins
      */
-    fun providePlugins(imposterConfig: ImposterConfig, pluginConfigs: Map<String, List<File>>): List<String>
+    fun providePlugins(imposterConfig: ImposterConfig, pluginConfigs: Map<String, List<ConfigReference>>): List<String>
 }

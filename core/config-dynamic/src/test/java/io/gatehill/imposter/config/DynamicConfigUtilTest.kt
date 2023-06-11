@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -44,7 +44,6 @@ package io.gatehill.imposter.config
 
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.util.ConfigUtil
-import io.gatehill.imposter.config.util.ConfigUtil.loadPluginConfigs
 import io.gatehill.imposter.plugin.DynamicPluginDiscoveryStrategyImpl
 import io.gatehill.imposter.plugin.PluginManager
 import io.gatehill.imposter.plugin.PluginManagerImpl
@@ -72,7 +71,7 @@ class DynamicConfigUtilTest {
         val configDir = File(DynamicConfigUtilTest::class.java.getResource("/config").toURI()).path
         val configFiles = ConfigUtil.discoverConfigFiles(arrayOf(configDir), false)
 
-        val configs: Map<String, List<File>> = loadPluginConfigs(ImposterConfig(), pluginManager!!, configFiles)
+        val configs: Map<String, List<ConfigReference>> = ConfigUtil.loadPluginConfigs(ImposterConfig(), pluginManager!!, configFiles)
         assertEquals(1, configs.size)
 
         val pluginConfigs = configs["io.gatehill.imposter.core.test.ExamplePluginImpl"]!!
