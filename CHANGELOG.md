@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.22.1] - 2023-06-11
+### Fixed
+- fix: Revert "fix: sets Vert.x base cache directory on Windows."
+
 ## [3.22.0] - 2023-05-22
 ### Added
 - feat(soap): improves error detection for missing WSDL elements/attributes.
