@@ -39,6 +39,10 @@ jar {
 
         // duplicates attribute from core so it is present in the merged jar
         attributes 'Imposter-Version': project.version
+
+        // workaround for 'getCallerClass' warning due to log4j repackaging
+        // see https://stackoverflow.com/questions/52953483/logmanager-getlogger-is-unable-to-determine-class-name-on-java-11
+        attributes 'Multi-Release': 'true'
     }
 }
 
