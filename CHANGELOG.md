@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.23.0] - 2023-06-12
+### Added
+- feat: adds basePath property to OpenAPI, REST and SOAP configuration.
+- feat: reads config file from disk once.
+
+### Changed
+- chore(deps): bump actions/setup-python from 4.6.0 to 4.6.1
+- chore(deps): bump io.github.classgraph:classgraph
+- chore(deps): bump maven-project-info-reports-plugin
+- chore(deps): bump version_junit_jupiter from 5.9.2 to 5.9.3
+- docs: describes configuration discovery and basePath.
+
+### Fixed
+- fix: do not require a root response configuration when applying base path.
+- fix: don't initialise Redis client until first use.
+- fix: improves error message when plugin is missing from configuration.
+
 ## [3.22.1] - 2023-06-11
 ### Fixed
 - fix: Revert "fix: sets Vert.x base cache directory on Windows."
