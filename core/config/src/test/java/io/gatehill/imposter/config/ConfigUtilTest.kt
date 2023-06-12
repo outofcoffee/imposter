@@ -46,7 +46,6 @@ import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.support.BasePathSupportingPluginConfig
 import io.gatehill.imposter.config.util.ConfigUtil
 import io.gatehill.imposter.config.util.EnvVars
-import io.gatehill.imposter.plugin.config.PluginConfigImpl
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers
 import org.junit.Assert.assertEquals
@@ -61,10 +60,10 @@ import java.io.File
  */
 class ConfigUtilTest {
     @Test
-    fun testLoadInterpolatedPluginConfig() {
+    fun testReadInterpolatedPluginConfig() {
         // override environment variables in string interpolators
         val environment: Map<String, String> = mapOf(
-            "EXAMPLE_PATH" to "/test"
+            "EXAMPLE_PLUGIN" to "example-plugin"
         )
         ConfigUtil.initInterpolators(environment)
 
@@ -73,8 +72,8 @@ class ConfigUtilTest {
             file = configFile,
             configRoot = configFile.parentFile,
         )
-        val config = ConfigUtil.loadPluginConfig(ImposterConfig(), configRef, PluginConfigImpl::class.java, true, true, true)
-        assertEquals("/test", config.path)
+        val loadedConfig = ConfigUtil.readPluginConfig(configRef)
+        assertEquals("example-plugin", loadedConfig.plugin)
     }
 
     /**
@@ -147,17 +146,18 @@ class ConfigUtilTest {
         assertEquals(3, configFiles.size)
 
         for (configFile in configFiles) {
+            val loadedConfig = buildLoadedConfig(configFile, configFile.file)
             val config = ConfigUtil.loadPluginConfig(
                 ImposterConfig(),
-                configFile,
+                loadedConfig,
                 BasePathSupportingPluginConfig::class.java,
-                true,
-                true,
-                true
             )
 
             val expectedBasePath = configFile.file.canonicalPath.substring(configFile.configRoot.canonicalPath.length).substringBeforeLast(File.separator)
             assertThat("config file should have base path set", config.path, Matchers.startsWith(expectedBasePath))
         }
     }
+
+    private fun buildLoadedConfig(configRef: ConfigReference, configFile: File) =
+        LoadedConfig(configRef, configFile.readText(), "io.gatehill.imposter.core.test.ExamplePluginImpl")
 }

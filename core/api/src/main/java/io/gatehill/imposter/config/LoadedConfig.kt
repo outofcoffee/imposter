@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2023-2023.
  *
  * This file is part of Imposter.
  *
@@ -40,14 +40,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.plugin.config
 
-import io.gatehill.imposter.config.LoadedConfig
+package io.gatehill.imposter.config
 
 /**
- * @author Pete Cornish
+ * Holds a loaded configuration and its reference.
  */
-interface ConfigurablePlugin<C : PluginConfig> {
-    fun loadConfiguration(loadedConfigs: List<LoadedConfig>)
-    val configs: List<C>
-}
+data class LoadedConfig(
+    val ref: ConfigReference,
+    val serialised: String,
+    val plugin: String,
+)

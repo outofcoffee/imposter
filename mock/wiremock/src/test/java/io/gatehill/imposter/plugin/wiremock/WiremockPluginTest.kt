@@ -45,6 +45,7 @@ package io.gatehill.imposter.plugin.wiremock
 
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.ConfigReference
+import io.gatehill.imposter.config.LoadedConfig
 import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.service.ResourceService
 import io.gatehill.imposter.service.ResponseFileService
@@ -158,10 +159,11 @@ class WiremockPluginTest {
             file = File(mappingsDir, "imposter-config.yaml"),
             configRoot = mappingsDir
         )
-        val configFiles = wiremock.convert(configRef)
-        assertThat(configFiles, hasSize(expectedConfigFiles))
+        val loadedConfig = LoadedConfig(configRef, configRef.file.readText(), "wiremock")
+        val loadedConfigs = wiremock.convert(loadedConfig)
+        assertThat(loadedConfigs, hasSize(expectedConfigFiles))
 
-        val configDir = configFiles.first().file.parentFile
+        val configDir = loadedConfigs.first().ref.file.parentFile
 
         Assert.assertTrue("Config dir should exist", configDir.exists())
         assertThat(

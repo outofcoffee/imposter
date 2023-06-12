@@ -44,7 +44,7 @@ package io.gatehill.imposter.plugin
 
 import com.google.inject.Injector
 import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.config.ConfigReference
+import io.gatehill.imposter.config.LoadedConfig
 import io.gatehill.imposter.plugin.config.ConfigurablePlugin
 import org.apache.logging.log4j.LogManager
 import java.util.Collections
@@ -62,7 +62,7 @@ class PluginManagerImpl(
     override fun preparePluginsFromConfig(
         imposterConfig: ImposterConfig,
         plugins: List<String>,
-        pluginConfigs: Map<String, List<ConfigReference>>
+        pluginConfigs: Map<String, List<LoadedConfig>>
     ): List<PluginDependencies> {
         return discoveryStrategy.preparePluginsFromConfig(imposterConfig, plugins, pluginConfigs)
     }
@@ -85,7 +85,7 @@ class PluginManagerImpl(
      * @param injector the injector from which the plugins can be instantiated
      * @param pluginConfigs configurations keyed by plugin
      */
-    override fun startPlugins(injector: Injector, pluginConfigs: Map<String, List<ConfigReference>>) {
+    override fun startPlugins(injector: Injector, pluginConfigs: Map<String, List<LoadedConfig>>) {
         LOGGER.trace("Starting plugins with {} configs", pluginConfigs.size)
         createPlugins(injector)
         configurePlugins(pluginConfigs)
@@ -123,11 +123,11 @@ class PluginManagerImpl(
      *
      * @param pluginConfigs configurations keyed by plugin
      */
-    private fun configurePlugins(pluginConfigs: Map<String, List<ConfigReference>>) {
+    private fun configurePlugins(pluginConfigs: Map<String, List<LoadedConfig>>) {
         getPlugins().filterIsInstance<ConfigurablePlugin<*>>().forEach { plugin ->
                 try {
-                    val configFiles = pluginConfigs[plugin.javaClass.canonicalName] ?: emptyList()
-                    plugin.loadConfiguration(configFiles)
+                    val loadedConfigs = pluginConfigs[plugin.javaClass.canonicalName] ?: emptyList()
+                    plugin.loadConfiguration(loadedConfigs)
                 } catch (e: Exception) {
                     val pluginName = discoveryStrategy.getPluginName(plugin.javaClass)
                     throw RuntimeException("Error configuring plugin: $pluginName", e)

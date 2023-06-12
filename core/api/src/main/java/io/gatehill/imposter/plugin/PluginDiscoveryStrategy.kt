@@ -44,7 +44,7 @@
 package io.gatehill.imposter.plugin
 
 import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.config.ConfigReference
+import io.gatehill.imposter.config.LoadedConfig
 
 interface PluginDiscoveryStrategy {
     /**
@@ -58,7 +58,7 @@ interface PluginDiscoveryStrategy {
     fun preparePluginsFromConfig(
         imposterConfig: ImposterConfig,
         initialPlugins: List<String>,
-        pluginConfigs: Map<String, List<ConfigReference>>
+        pluginConfigs: Map<String, List<LoadedConfig>>
     ): List<PluginDependencies>
 
     /**

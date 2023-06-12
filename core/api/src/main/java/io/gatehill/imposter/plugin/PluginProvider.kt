@@ -43,7 +43,7 @@
 package io.gatehill.imposter.plugin
 
 import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.config.ConfigReference
+import io.gatehill.imposter.config.LoadedConfig
 
 /**
  * Provides class names of plugins to load.
@@ -61,5 +61,5 @@ interface PluginProvider {
      * @param pluginConfigs  plugin configurations
      * @return plugins
      */
-    fun providePlugins(imposterConfig: ImposterConfig, pluginConfigs: Map<String, List<ConfigReference>>): List<String>
+    fun providePlugins(imposterConfig: ImposterConfig, pluginConfigs: Map<String, List<LoadedConfig>>): List<String>
 }

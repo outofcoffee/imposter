@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2023-2023.
  *
  * This file is part of Imposter.
  *
@@ -40,14 +40,17 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.plugin.config
 
-import io.gatehill.imposter.config.LoadedConfig
+package io.gatehill.imposter.config.model
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonProperty
 
 /**
- * @author Pete Cornish
+ * Convenience class for lightweight configuration deserialisation.
  */
-interface ConfigurablePlugin<C : PluginConfig> {
-    fun loadConfiguration(loadedConfigs: List<LoadedConfig>)
-    val configs: List<C>
-}
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class LightweightConfig(
+    @JsonProperty("plugin")
+    val plugin: String?,
+)

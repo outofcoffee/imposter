@@ -42,7 +42,6 @@
  */
 package io.gatehill.imposter.config
 
-import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.util.ConfigUtil
 import io.gatehill.imposter.plugin.DynamicPluginDiscoveryStrategyImpl
 import io.gatehill.imposter.plugin.PluginManager
@@ -59,7 +58,7 @@ import java.io.File
  * @author Pete Cornish
  */
 class DynamicConfigUtilTest {
-    var pluginManager: PluginManager? = null
+    private var pluginManager: PluginManager? = null
 
     @Before
     fun setUp() {
@@ -71,11 +70,11 @@ class DynamicConfigUtilTest {
         val configDir = File(DynamicConfigUtilTest::class.java.getResource("/config").toURI()).path
         val configFiles = ConfigUtil.discoverConfigFiles(arrayOf(configDir), false)
 
-        val configs: Map<String, List<ConfigReference>> = ConfigUtil.loadPluginConfigs(ImposterConfig(), pluginManager!!, configFiles)
+        val configs: Map<String, List<LoadedConfig>> = ConfigUtil.readPluginConfigs(pluginManager!!, configFiles)
         assertEquals(1, configs.size)
 
-        val pluginConfigs = configs["io.gatehill.imposter.core.test.ExamplePluginImpl"]!!
+        val pluginConfigs = configs["io.gatehill.imposter.core.test.ExamplePluginImpl"]
         Assert.assertNotNull("Config files should be discovered", pluginConfigs)
-        assertEquals(2, pluginConfigs.size)
+        assertEquals(2, pluginConfigs?.size)
     }
 }

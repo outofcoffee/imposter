@@ -1,7 +1,7 @@
 # A plugin configuration using an interpolated environment variable.
 ---
-plugin: io.gatehill.imposter.core.test.ExamplePluginImpl
-path: "${env.EXAMPLE_PATH}"
+plugin: "${env.EXAMPLE_PLUGIN}"
+path: "/test"
 contentType: text/plain
 response:
   content: Hello, world!

@@ -43,7 +43,7 @@
 package io.gatehill.imposter
 
 import com.google.inject.Module
-import io.gatehill.imposter.config.ConfigReference
+import io.gatehill.imposter.config.LoadedConfig
 import io.gatehill.imposter.config.util.ConfigUtil
 import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.config.util.MetaUtil
@@ -142,7 +142,7 @@ class Imposter(
         }
     }
 
-    private fun processConfiguration(): Map<String, List<ConfigReference>> {
+    private fun processConfiguration(): Map<String, List<LoadedConfig>> {
         val configFiles = ConfigUtil.discoverConfigFiles(imposterConfig.configDirs)
 
         if (EnvVars.discoverEnvFiles) {
@@ -154,7 +154,7 @@ class Imposter(
 
         finaliseEngineConfig()
 
-        return ConfigUtil.loadPluginConfigs(imposterConfig, pluginManager, configFiles)
+        return ConfigUtil.readPluginConfigs(pluginManager, configFiles)
     }
 
     private fun finaliseEngineConfig() {

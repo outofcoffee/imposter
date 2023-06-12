@@ -44,7 +44,7 @@
 package io.gatehill.imposter.plugin
 
 import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.config.ConfigReference
+import io.gatehill.imposter.config.LoadedConfig
 import org.apache.logging.log4j.LogManager
 
 /**
@@ -81,7 +81,7 @@ class StaticPluginDiscoveryStrategyImpl(
     override fun preparePluginsFromConfig(
         imposterConfig: ImposterConfig,
         initialPlugins: List<String>,
-        pluginConfigs: Map<String, List<ConfigReference>>
+        pluginConfigs: Map<String, List<LoadedConfig>>
     ): List<PluginDependencies> {
         return listOf(PluginDependencies(pluginDependencies))
     }

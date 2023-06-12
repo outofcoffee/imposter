@@ -70,6 +70,7 @@ open class PluginConfigImpl : AbstractResourceConfig(), SystemConfigHolder, Plug
     override lateinit var dir: File
 
     override fun toString(): String {
-        return "PluginConfigImpl(parent=${super.toString()}, plugin=$plugin, systemConfig=$systemConfig, parentDir=$dir)"
+        // don't include dir in toString() as it's late-init
+        return "PluginConfigImpl(parent=${super.toString()}, plugin=$plugin, systemConfig=$systemConfig)"
     }
 }

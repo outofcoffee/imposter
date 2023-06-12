@@ -44,7 +44,7 @@ package io.gatehill.imposter.plugin
 
 import com.google.inject.Injector
 import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.config.ConfigReference
+import io.gatehill.imposter.config.LoadedConfig
 
 /**
  * @author Pete Cornish
@@ -53,7 +53,7 @@ interface PluginManager {
     fun preparePluginsFromConfig(
         imposterConfig: ImposterConfig,
         plugins: List<String>,
-        pluginConfigs: Map<String, List<ConfigReference>>
+        pluginConfigs: Map<String, List<LoadedConfig>>
     ): List<PluginDependencies>
 
     fun determinePluginClass(plugin: String): String
@@ -65,7 +65,7 @@ interface PluginManager {
      * @param injector the injector from which the plugins can be instantiated
      * @param pluginConfigs configurations keyed by plugin
      */
-    fun startPlugins(injector: Injector, pluginConfigs: Map<String, List<ConfigReference>>)
+    fun startPlugins(injector: Injector, pluginConfigs: Map<String, List<LoadedConfig>>)
 
     fun <P : Plugin?> getPlugin(pluginClassName: String): P?
     fun getPlugins(): Collection<Plugin>

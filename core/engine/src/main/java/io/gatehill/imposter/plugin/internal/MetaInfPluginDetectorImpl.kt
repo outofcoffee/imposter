@@ -43,7 +43,7 @@
 package io.gatehill.imposter.plugin.internal
 
 import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.config.ConfigReference
+import io.gatehill.imposter.config.LoadedConfig
 import io.gatehill.imposter.config.util.MetaUtil
 import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.plugin.PluginInfo
@@ -58,7 +58,7 @@ import io.gatehill.imposter.plugin.PluginProvider
  */
 @PluginInfo("meta-detector")
 class MetaInfPluginDetectorImpl : Plugin, PluginProvider {
-    override fun providePlugins(imposterConfig: ImposterConfig, pluginConfigs: Map<String, List<ConfigReference>>): List<String> {
+    override fun providePlugins(imposterConfig: ImposterConfig, pluginConfigs: Map<String, List<LoadedConfig>>): List<String> {
         return MetaUtil.readAllMetaEnabledPlugins()
     }
 }

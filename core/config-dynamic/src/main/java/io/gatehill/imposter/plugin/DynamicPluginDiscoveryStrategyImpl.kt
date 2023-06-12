@@ -45,7 +45,7 @@ package io.gatehill.imposter.plugin
 
 import com.google.inject.Module
 import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.config.ConfigReference
+import io.gatehill.imposter.config.LoadedConfig
 import io.gatehill.imposter.config.util.ConfigUtil
 import io.gatehill.imposter.util.ClassLoaderUtil
 import io.github.classgraph.ClassGraph
@@ -72,7 +72,7 @@ class DynamicPluginDiscoveryStrategyImpl : PluginDiscoveryStrategy {
     override fun preparePluginsFromConfig(
         imposterConfig: ImposterConfig,
         initialPlugins: List<String>,
-        pluginConfigs: Map<String, List<ConfigReference>>
+        pluginConfigs: Map<String, List<LoadedConfig>>
     ): List<PluginDependencies> {
         val plugins = initialPlugins.toMutableList()
         val providers = mutableListOf<Class<PluginProvider>>()
@@ -143,7 +143,7 @@ class DynamicPluginDiscoveryStrategyImpl : PluginDiscoveryStrategy {
     private fun processProvider(
         imposterConfig: ImposterConfig,
         plugins: MutableList<String>,
-        pluginConfigs: Map<String, List<ConfigReference>>,
+        pluginConfigs: Map<String, List<LoadedConfig>>,
         registeredProviders: MutableSet<Class<out PluginProvider>>,
         providerClass: Class<PluginProvider>,
     ) {

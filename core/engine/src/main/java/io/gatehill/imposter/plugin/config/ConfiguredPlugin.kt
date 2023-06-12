@@ -43,7 +43,7 @@
 package io.gatehill.imposter.plugin.config
 
 import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.config.ConfigReference
+import io.gatehill.imposter.config.LoadedConfig
 import io.gatehill.imposter.config.util.ConfigUtil
 import io.gatehill.imposter.http.UniqueRoute
 import io.gatehill.imposter.plugin.RoutablePlugin
@@ -64,17 +64,10 @@ abstract class ConfiguredPlugin<T : PluginConfigImpl> @Inject constructor(
 
     protected abstract val configClass: Class<T>
 
-    override fun loadConfiguration(configFiles: List<ConfigReference>) {
-        configs = configFiles.map { file ->
-            val config = ConfigUtil.loadPluginConfig(
-                imposterConfig,
-                file,
-                configClass,
-                substitutePlaceholders = true,
-                convertPathParameters = true,
-                shouldApplyBasePath = true,
-            )
-            validateConfig(file.file, config)
+    override fun loadConfiguration(loadedConfigs: List<LoadedConfig>) {
+        configs = loadedConfigs.map { loadedConfig ->
+            val config = ConfigUtil.loadPluginConfig(imposterConfig, loadedConfig, configClass)
+            validateConfig(loadedConfig.ref.file, config)
             config
         }
         configurePlugin(configs)

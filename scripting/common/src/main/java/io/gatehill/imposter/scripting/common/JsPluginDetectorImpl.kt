@@ -43,7 +43,7 @@
 package io.gatehill.imposter.scripting.common
 
 import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.config.ConfigReference
+import io.gatehill.imposter.config.LoadedConfig
 import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.PluginProvider
@@ -56,7 +56,7 @@ import io.gatehill.imposter.scripting.common.util.JavaScriptUtil
  */
 @PluginInfo("js-detector")
 class JsPluginDetectorImpl : Plugin, PluginProvider {
-    override fun providePlugins(imposterConfig: ImposterConfig, pluginConfigs: Map<String, List<ConfigReference>>): List<String> {
+    override fun providePlugins(imposterConfig: ImposterConfig, pluginConfigs: Map<String, List<LoadedConfig>>): List<String> {
         return listOf(JavaScriptUtil.activePlugin)
     }
 }

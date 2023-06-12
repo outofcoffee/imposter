@@ -46,7 +46,9 @@ import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.ConfigReference
+import io.gatehill.imposter.config.LoadedConfig
 import io.gatehill.imposter.config.expression.EnvEvaluator
+import io.gatehill.imposter.config.model.LightweightConfig
 import io.gatehill.imposter.config.resolver.ConfigResolver
 import io.gatehill.imposter.expression.eval.ExpressionEvaluator
 import io.gatehill.imposter.expression.util.ExpressionUtil
@@ -156,36 +158,22 @@ object ConfigUtil {
     private fun parseExclusionsFile(rawEntries: List<String>) =
         rawEntries.filter { it.isNotBlank() && !it.startsWith("#") }
 
-    fun loadPluginConfigs(
-        imposterConfig: ImposterConfig,
-        pluginManager: PluginManager,
-        configFiles: List<ConfigReference>,
-    ): Map<String, List<ConfigReference>> {
+    fun readPluginConfigs(pluginManager: PluginManager, configFiles: List<ConfigReference>): Map<String, List<LoadedConfig>> {
         var configCount = 0
 
         // read all config files
-        val allPluginConfigs = mutableMapOf<String, MutableList<ConfigReference>>()
+        val allPluginConfigs = mutableMapOf<String, MutableList<LoadedConfig>>()
         try {
             for (configFile in configFiles) {
                 LOGGER.debug("Loading configuration file: {}", configFile)
                 configCount++
 
                 // load to determine plugin
-                val config = loadPluginConfig(
-                    imposterConfig,
-                    configFile,
-                    PluginConfigImpl::class.java,
-                    substitutePlaceholders = true,
-                    convertPathParameters = false,
-                    shouldApplyBasePath = false,
-                )
+                val config = readPluginConfig(configFile)
 
-                val plugin = config.plugin
-                    ?: throw IllegalStateException("No plugin specified in configuration file: $configFile")
-
-                val pluginClass = pluginManager.determinePluginClass(plugin)
+                val pluginClass = pluginManager.determinePluginClass(config.plugin)
                 val pluginConfigs = allPluginConfigs.getOrPut(pluginClass) { mutableListOf() }
-                pluginConfigs.add(configFile)
+                pluginConfigs.add(config)
             }
         } catch (e: Exception) {
             throw RuntimeException(e)
@@ -230,63 +218,77 @@ object ConfigUtil {
     /**
      * Reads the contents of the configuration file, performing necessary string substitutions.
      *
-     * @param configFile             the configuration file
+     * @param configRef             the configuration reference
+     * @return the loaded configuration
+     */
+    internal fun readPluginConfig(configRef: ConfigReference): LoadedConfig {
+        val configFile = configRef.file
+        try {
+            val rawContents = configFile.readText()
+            val parsedContents = ExpressionUtil.eval(rawContents, expressionEvaluators, nullifyUnsupported = false)
+
+            val config = lookupMapper(configFile).readValue(parsedContents, LightweightConfig::class.java)
+            config.plugin
+                ?: throw IllegalStateException("No plugin specified in configuration file: $configFile")
+
+            return LoadedConfig(configRef, parsedContents, config.plugin)
+
+        } catch (e: JsonMappingException) {
+            throw RuntimeException("Error reading configuration file: " + configFile.absolutePath + ", reason: ${e.message}")
+        } catch (e: IOException) {
+            throw RuntimeException("Error reading configuration file: " + configFile.absolutePath, e)
+        }
+    }
+
+    /**
+     * Converts the raw configuration into a typed configuration object.
+     *
+     * @param imposterConfig             the imposter configuration
+     * @param loadedConfig             the loaded configuration
      * @param configClass            the configuration class
-     * @param substitutePlaceholders whether to substitute placeholders in the configuration
-     * @param convertPathParameters  whether to convert path parameters from OpenAPI format to Vert.x format
-     * @param shouldApplyBasePath  whether to apply the base path to the configuration
      * @return the configuration
      */
     fun <T : PluginConfigImpl> loadPluginConfig(
         imposterConfig: ImposterConfig,
-        configFile: ConfigReference,
+        loadedConfig: LoadedConfig,
         configClass: Class<T>,
-        substitutePlaceholders: Boolean,
-        convertPathParameters: Boolean,
-        shouldApplyBasePath: Boolean,
     ): T {
+        val configFile = loadedConfig.ref.file
         try {
-            val rawContents = configFile.file.readText()
-            val parsedContents = if (substitutePlaceholders) {
-                ExpressionUtil.eval(rawContents, expressionEvaluators, nullifyUnsupported = false)
-            } else {
-                rawContents
-            }
-
-            val config = lookupMapper(configFile.file).readValue(parsedContents, configClass)!!
-            config.dir = configFile.file.parentFile
+            val config = lookupMapper(configFile).readValue(loadedConfig.serialised, configClass)!!
+            check(config.plugin != null) { "No plugin specified in configuration file: $configFile" }
+            config.dir = configFile.parentFile
 
             // convert any OpenAPI format path parameters
-            if (convertPathParameters && config is ResourcesHolder<*>) {
+            if (config is ResourcesHolder<*>) {
                 (config as ResourcesHolder<*>).resources?.forEach { resource ->
                     resource.path = ResourceUtil.convertPathFromOpenApi(resource.path)
                 }
             }
 
-            if (shouldApplyBasePath && config is BasePathHolder) {
+            if (config is BasePathHolder) {
                 val basePath = if (autoBasePath) {
                     // Use the relative path from the config root to the config file's directory.
                     // Normalise the path separators to forward slashes.
-                    configFile.file.canonicalPath.substring(configFile.configRoot.canonicalPath.length)
+                    configFile.canonicalPath.substring(loadedConfig.ref.configRoot.canonicalPath.length)
                         .substringBeforeLast(File.separator)
                         .replace('\\', '/')
                 } else {
                     config.basePath
                 }
-                applyBasePath<T>(basePath, configFile, config)
+                basePath?.let { applyBasePath<T>(basePath, configFile, config) }
             }
 
             if (imposterConfig.useEmbeddedScriptEngine) {
                 config.responseConfig.scriptFile = "embedded"
             }
 
-            check(config.plugin != null) { "No plugin specified in configuration file: $configFile" }
             return config
 
         } catch (e: JsonMappingException) {
-            throw RuntimeException("Error reading configuration file: " + configFile.file.absolutePath + ", reason: ${e.message}")
+            throw RuntimeException("Error loading configuration file: " + configFile.absolutePath + ", reason: ${e.message}")
         } catch (e: IOException) {
-            throw RuntimeException("Error reading configuration file: " + configFile.file.absolutePath, e)
+            throw RuntimeException("Error loading configuration file: " + configFile.absolutePath, e)
         }
     }
 
@@ -302,17 +304,15 @@ object ConfigUtil {
             ?: throw IllegalStateException("Unable to locate mapper for config file: $configFile")
     }
 
-    private fun <T : PluginConfigImpl> applyBasePath(basePath: String?, configFile: ConfigReference, config: T) {
-        basePath?.let {
-            LOGGER.trace("Using base path '{}' for config file {}", basePath, configFile.file)
-            if (config.responseConfig.hasConfiguration()) {
-                config.path = basePath + (config.path ?: "")
-            }
+    private fun <T : PluginConfigImpl> applyBasePath(basePath: String, configFile: File, config: T) {
+        LOGGER.trace("Using base path '{}' for config file {}", basePath, configFile)
+        if (config.responseConfig.hasConfiguration()) {
+            config.path = basePath + (config.path ?: "")
+        }
 
-            if (config is ResourcesHolder<*>) {
-                config.resources?.forEach { resource ->
-                    resource.path = basePath + (resource.path ?: "")
-                }
+        if (config is ResourcesHolder<*>) {
+            config.resources?.forEach { resource ->
+                resource.path = basePath + (resource.path ?: "")
             }
         }
     }
