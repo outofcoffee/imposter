@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.23.2] - 2023-06-17
+### Fixed
+- fix: don't set basepath for root path if empty or no response config.
+
 ## [3.23.1] - 2023-06-17
 ### Changed
 - chore(deps): bump version_groovy from 4.0.8 to 4.0.12
