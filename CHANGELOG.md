@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.23.1] - 2023-06-17
+### Changed
+- chore(deps): bump version_groovy from 4.0.8 to 4.0.12
+- docs: describes body match operators.
+
+### Fixed
+- fix: workaround for 'getCallerClass' warning due to log4j repackaging.
+
 ## [3.23.0] - 2023-06-12
 ### Added
 - feat: adds basePath property to OpenAPI, REST and SOAP configuration.
