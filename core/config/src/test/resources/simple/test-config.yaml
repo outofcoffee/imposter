@@ -1,0 +1,13 @@
+plugin: "io.gatehill.imposter.config.support.BasePathSupportingPluginConfig"
+
+resources:
+- path: /example
+  method: GET
+  response:
+    statusCode: 200
+    content: "example"
+
+- path: /openapi-style/{param1}
+  method: GET
+  response:
+    statusCode: 200

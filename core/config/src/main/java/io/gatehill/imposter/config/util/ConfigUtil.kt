@@ -306,8 +306,9 @@ object ConfigUtil {
 
     private fun <T : PluginConfigImpl> applyBasePath(basePath: String, configFile: File, config: T) {
         LOGGER.trace("Using base path '{}' for config file {}", basePath, configFile)
-        config.path = basePath + (config.path ?: "")
-
+        if (!config.path.isNullOrEmpty() || config.responseConfig.hasConfiguration()) {
+            config.path = basePath + (config.path ?: "")
+        }
         if (config is ResourcesHolder<*>) {
             config.resources?.forEach { resource ->
                 resource.path = basePath + (resource.path ?: "")

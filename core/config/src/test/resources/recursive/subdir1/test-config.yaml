@@ -1,4 +1,4 @@
-plugin: "io.gatehill.imposter.core.test.ExamplePluginImpl"
+plugin: "io.gatehill.imposter.config.support.BasePathSupportingPluginConfig"
 path: /example1
 response:
   statusCode: 200

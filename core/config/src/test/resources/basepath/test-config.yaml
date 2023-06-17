@@ -1,0 +1,11 @@
+plugin: "io.gatehill.imposter.config.support.BasePathSupportingPluginConfig"
+basePath: /base
+
+# explicitly do not set path
+# path: /
+
+resources:
+- path: /example
+  response:
+    statusCode: 200
+    content: "example"

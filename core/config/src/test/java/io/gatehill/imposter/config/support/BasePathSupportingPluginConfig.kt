@@ -43,10 +43,18 @@
 
 package io.gatehill.imposter.config.support
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import io.gatehill.imposter.plugin.config.CommonPluginConfig
+import io.gatehill.imposter.plugin.config.ResourcesHolder
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
+import io.gatehill.imposter.plugin.config.resource.RestResourceConfig
 
 /**
  * A plugin config that supports a base path.
  */
-class BasePathSupportingPluginConfig : CommonPluginConfig(), ResponseConfigHolder
+class BasePathSupportingPluginConfig : CommonPluginConfig(), ResponseConfigHolder, ResourcesHolder<RestResourceConfig> {
+    override val isDefaultsFromRootResponse: Boolean? = null
+
+    @JsonProperty("resources")
+    override var resources: List<RestResourceConfig>? = null
+}

@@ -46,9 +46,14 @@ import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.support.BasePathSupportingPluginConfig
 import io.gatehill.imposter.config.util.ConfigUtil
 import io.gatehill.imposter.config.util.EnvVars
+import io.gatehill.imposter.http.HttpMethod
 import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.Matchers
+import org.hamcrest.Matchers.equalTo
+import org.hamcrest.Matchers.not
+import org.hamcrest.Matchers.nullValue
+import org.hamcrest.Matchers.startsWith
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
@@ -135,7 +140,62 @@ class ConfigUtilTest {
     }
 
     /**
-     * All config files within the config dir and its subdirectories should be returned.
+     * The configuration should be parsed correctly.
+     */
+    @Test
+    fun testLoadConfig() {
+        EnvVars.populate("IMPOSTER_AUTO_BASE_PATH" to "false")
+        val configFile = File(ConfigUtilTest::class.java.getResource("/simple/test-config.yaml").toURI())
+        val configRef = ConfigReference(
+            file = configFile,
+            configRoot = configFile.parentFile,
+        )
+        val loadedConfig = ConfigUtil.readPluginConfig(configRef)
+        val config = ConfigUtil.loadPluginConfig(
+            ImposterConfig(),
+            loadedConfig,
+            BasePathSupportingPluginConfig::class.java,
+        )
+        assertThat("plugin should be set", config.plugin, not(nullValue()))
+        assertThat("empty root path should be null", config.path, nullValue())
+        assertThat("empty root response config should be empty", config.responseConfig.hasConfiguration(), equalTo(false))
+
+        val exampleResource = config.resources?.find { it.path == "/example" }
+        assertNotNull("example resource should be set", exampleResource)
+        assertThat("resource path should be set", exampleResource?.path, equalTo("/example"))
+        assertThat("resource method should be set", exampleResource?.method, equalTo(HttpMethod.GET))
+        assertThat("resource response config should not be empty", exampleResource?.responseConfig?.hasConfiguration(), equalTo(true))
+        assertThat("resource response status code should be set", exampleResource?.responseConfig?.statusCode, equalTo(200))
+        assertThat("resource response content should be set", exampleResource?.responseConfig?.content, equalTo("example"))
+
+        val openApiStyleResource = config.resources?.find { it.path?.startsWith("/openapi-style") == true }
+        assertNotNull("openapi style resource should be set", openApiStyleResource)
+        assertThat("openapi style resource path should be converted to vertx style", openApiStyleResource?.path, equalTo("/openapi-style/:param1"))
+    }
+
+    /**
+     * The base path should be applied to the resource path, but not the empty root path.
+     */
+    @Test
+    fun testApplyBasePath() {
+        EnvVars.populate("IMPOSTER_AUTO_BASE_PATH" to "false")
+        val configFile = File(ConfigUtilTest::class.java.getResource("/basepath/test-config.yaml").toURI())
+        val configRef = ConfigReference(
+            file = configFile,
+            configRoot = configFile.parentFile,
+        )
+        val loadedConfig = ConfigUtil.readPluginConfig(configRef)
+        val config = ConfigUtil.loadPluginConfig(
+            ImposterConfig(),
+            loadedConfig,
+            BasePathSupportingPluginConfig::class.java,
+        )
+        assertThat("empty root path should be prefixed with base path", config.path, not(startsWith("/base/")))
+        assertThat("resource path should be prefixed with base path", config.resources?.first()?.path, startsWith("/base/"))
+    }
+
+    /**
+     * The `basePath` should be set on the relative directory from the config root.
      */
     @Test
     fun testAutoBasePath() {
@@ -154,7 +214,7 @@ class ConfigUtilTest {
             )
 
             val expectedBasePath = configFile.file.canonicalPath.substring(configFile.configRoot.canonicalPath.length).substringBeforeLast(File.separator)
-            assertThat("config file should have base path set", config.path, Matchers.startsWith(expectedBasePath))
+            assertThat("config file should have base path set", config.path, startsWith(expectedBasePath))
         }
     }
 
