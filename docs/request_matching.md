@@ -186,6 +186,40 @@ resources:
     statusCode: 204
 ```
 
+## Body match operators
+
+Body matchers support a number of operators to control how the match is performed.
+
+For example:
+
+```yaml
+resources:
+- method: GET
+  path: /example1
+  requestBody:
+    jsonPath: $.foo
+    value: bar
+    operator: NotEqualTo
+  response:
+    statusCode: 400
+```
+
+> **Note**
+> If no `operator` is specified, then `EqualTo` is used.
+
+The following operators are supported:
+
+| Operator      | Description                                                                                           |
+|---------------|-------------------------------------------------------------------------------------------------------|
+| `EqualTo`     | Checks if the expression result equals the `value`.                                                   |
+| `NotEqualTo`  | Checks if the expression result does not equal the `value`.                                           |
+| `Exists`      | Checks if the expression result is not `null` or empty.                                               |
+| `NotExists`   | Checks if the expression result is `null` or empty.                                                   |
+| `Contains`    | Checks if the expression result contains the `value`.                                                 |
+| `NotContains` | Checks if the expression result does not contain the `value`.                                         |
+| `Matches`     | Checks if the expression result matches the regular expression specified in the `value` field.        |
+| `NotMatches`  | Checks if the expression result does not match the regular expression specified in the `value` field. |
+
 ## Resource matching performance
 
 [Resource matching](./configuration.md) is typically the fastest method of providing conditional responses. This is the case for request properties such as headers, query parameters, path parameters, path and HTTP method. In the case of using JsonPath or XPath to query the request body to conditionally match resources, however, the body must be parsed, which is computationally expensive and will result in lower performance.
