@@ -50,6 +50,7 @@ import io.gatehill.imposter.util.InjectorUtil
 import io.restassured.RestAssured
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
+import org.apache.commons.lang3.RandomStringUtils
 import org.hamcrest.Matchers
 import org.junit.Before
 import org.junit.Test
@@ -193,4 +194,27 @@ class SecurityConfigTest : BaseVerticleTest() {
             .then()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
     }
+
+    /**
+     * Permit - oauth endpoint is permitted via regex.
+     */
+    @Test
+    fun testRegexpRequestPermitted() {
+        RestAssured.given().`when`()
+                .header("Authorization", "Bearer " + RandomStringUtils.random(50, "ABCDEFGHIJKLMNOPRSTUVXYZabcdefghijklmnoprstuvxyz1234567890"))["/oauth"]
+                .then()
+                .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
+    }
+
+    /**
+     * Deny - oauth endpoint is denied because of not matching regex
+     */
+    @Test
+    fun testRegexRequestDenyMatch() {
+        RestAssured.given().`when`()
+                .header("Authorization", "Token ")["/oauth"]
+                .then()
+                .statusCode(Matchers.equalTo(HttpUtil.HTTP_UNAUTHORIZED))
+    }
+
 }

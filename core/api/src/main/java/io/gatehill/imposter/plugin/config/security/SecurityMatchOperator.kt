@@ -46,5 +46,5 @@ package io.gatehill.imposter.plugin.config.security
  * @author Pete Cornish
  */
 enum class SecurityMatchOperator {
-    EqualTo, NotEqualTo
+    EqualTo, NotEqualTo, Regex
 }
