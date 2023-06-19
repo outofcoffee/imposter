@@ -26,3 +26,13 @@ resources:
     path: /system/status
     security:
       default: Permit
+
+  - method: GET
+    path: /oauth
+    security:
+      conditions:
+        - effect: Permit
+          requestHeaders:
+            Authorization:
+              value: Bearer .*
+              operator: Regex

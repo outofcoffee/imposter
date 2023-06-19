@@ -180,12 +180,16 @@ class SecurityServiceImpl @Inject constructor(
     ): List<SecurityEffect> {
         val comparisonMap = if (caseSensitiveKeyMatch) requestMap else convertKeysToLowerCase(requestMap)
         return conditionMap.values.map { conditionValue: ConditionalNameValuePair ->
+            val requestConditionValue = comparisonMap[if (caseSensitiveKeyMatch) conditionValue.name else conditionValue.name.lowercase(Locale.getDefault())];
             val valueMatch = safeEquals(
-                comparisonMap[if (caseSensitiveKeyMatch) conditionValue.name else conditionValue.name.lowercase(Locale.getDefault())],
+                requestConditionValue,
                 conditionValue.value
             )
+
+            val regexMatch : Boolean = conditionValue.value?.toRegex()?.matches(requestConditionValue.toString()) ?: false;
             val matched = conditionValue.operator === SecurityMatchOperator.EqualTo && valueMatch ||
                     conditionValue.operator === SecurityMatchOperator.NotEqualTo && !valueMatch
+                    || conditionValue.operator === SecurityMatchOperator.Regex && regexMatch
 
             val finalEffect: SecurityEffect = if (matched) {
                 conditionEffect
