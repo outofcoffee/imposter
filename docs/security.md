@@ -42,11 +42,11 @@ security:
 
 Authentication configuration uses the following terms:
 
-| Term      | Meaning                                                                     | Examples                           |
-|-----------|-----------------------------------------------------------------------------|------------------------------------|
-| Condition | A property of the request, such as the presence of a specific header value. | `Authorization` header value `foo` |
-| Operator  | How the condition is matched.                                               | `EqualTo`, `NotEqualTo`            |
-| Effect    | The impact of the condition on the request, such as it being denied.        | `Permit`, `Deny`                   |
+| Term      | Meaning                                                                     | Examples                                         |
+|-----------|-----------------------------------------------------------------------------|--------------------------------------------------|
+| Condition | A property of the request, such as the presence of a specific header value. | `Authorization` header value `foo`               |
+| Operator  | How the condition is matched.                                               | `EqualTo`, `NotEqualTo`, `Matches`, `NotMatches` |
+| Effect    | The impact of the condition on the request, such as it being denied.        | `Permit`, `Deny`                                 |
 
 The first important concept is the _Default Effect_. This is the effect that applies to all requests in the absence of a more specific condition. It is good practice to adhere the principle of least privilege. You can achieve this by setting the default effect to `Deny`, and then adding specific conditions that permit access.
 
@@ -118,6 +118,18 @@ conditions:
       value: opensesame
       operator: EqualTo
 
+- effect: Permit
+  requestHeaders:
+    Authorization:
+      value: Bearer .*
+      operator: Matches
+
+- effect: Deny
+  requestHeaders:
+    Authorization:
+      value: Bearer sometoken
+      operator: NotMatches
+
 - effect: Deny
   queryParams:
     apiKey: someblockedkey
@@ -145,9 +157,19 @@ If you want to control the logical operator you can use the extended form as fol
       operator: NotEqualTo
 ```
 
-By default, conditions are matched using the `EqualTo` operator.
-
 Here, the value of the `example` query parameter is specified as a child property named `value`. The `operator` is also specified in this form, such as `EqualTo` or `NotEqualTo`.
+
+> **Note**
+> If no `operator` is specified, then `EqualTo` is used.
+
+The following operators are supported:
+
+| Operator      | Description                                                                                   |
+|---------------|-----------------------------------------------------------------------------------------------|
+| `EqualTo`     | Checks if the condition equals the `value`.                                                   |
+| `NotEqualTo`  | Checks if the condition does not equal the `value`.                                           |
+| `Matches`     | Checks if the condition matches the regular expression specified in the `value` field.        |
+| `NotMatches`  | Checks if the condition does not match the regular expression specified in the `value` field. |
 
 ### Combining conditions
 
