@@ -19,8 +19,8 @@ The following sections describe the available and built-in plugins.
 | Store          | `store-dynamodb`        | DynamoDB store implementation.         | [DynamoDB store](https://github.com/outofcoffee/imposter/tree/main/store/dynamodb) |
 | Store          | `store-redis`           | Redis store implementation.            | [Redis store](https://github.com/outofcoffee/imposter/tree/main/store/redis)       |
 | Store          | `store-graphql`         | GraphQL store queries.                 | [GraphQL](stores_graphql.md)                                                       |
-| Configuration  | `config-detector`       | Detects plugins from `META-INF`.       | Built-in                                                                           |
-| Configuration  | `meta-detector`         | Detects plugins from `*-config` files. | Built-in                                                                           |
+| Configuration  | `config-detector`       | Detects plugins from `*-config` files. | Built-in                                                                           |
+| Configuration  | `meta-detector`         | Detects plugins from `META-INF`.       | Built-in                                                                           |
 | Data generator | `fake-data`             | Generates fake data.                   | [Fake data generator](fake_data.md)                                                |
 
 ## Plugin loading
