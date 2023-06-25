@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.24.0] - 2023-06-25
+### Added
+- feat: security request header regex operator
+- feat: supports Matches and NotMatches operators in security conditions.
+
+### Changed
+- chore(deps): bump version_jackson from 2.14.2 to 2.15.2
+
 ## [3.23.2] - 2023-06-17
 ### Fixed
 - fix: don't set basepath for root path if empty or no response config.
