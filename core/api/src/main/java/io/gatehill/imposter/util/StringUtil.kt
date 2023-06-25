@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -42,7 +42,7 @@
  */
 package io.gatehill.imposter.util
 
-import java.util.*
+import java.util.Objects
 
 /**
  * @author Pete Cornish
@@ -63,4 +63,10 @@ object StringUtil {
             Objects.isNull(b)
         }
     }
+
+    /**
+     * Checks if the actual value matches the given regular expression.
+     */
+    fun safeRegexMatch(actualValue: String?, expression: String?) =
+        expression?.toRegex()?.matches(actualValue ?: "") ?: false
 }

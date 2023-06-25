@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -46,5 +46,5 @@ package io.gatehill.imposter.plugin.config.security
  * @author Pete Cornish
  */
 enum class SecurityMatchOperator {
-    EqualTo, NotEqualTo, Regex
+    EqualTo, NotEqualTo, Matches, NotMatches
 }

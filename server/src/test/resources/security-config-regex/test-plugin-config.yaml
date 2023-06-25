@@ -1,0 +1,26 @@
+plugin: "io.gatehill.imposter.plugin.test.TestPluginImpl"
+
+security:
+  # no requests permitted by default
+  default: Deny
+
+resources:
+  - method: GET
+    path: /match
+    security:
+      conditions:
+        - effect: Permit
+          requestHeaders:
+            Authorization:
+              value: Bearer .*
+              operator: Matches
+
+  - method: GET
+    path: /does-not-match
+    security:
+      conditions:
+        - effect: Deny
+          requestHeaders:
+            Authorization:
+              value: Bearer magic.*
+              operator: NotMatches
