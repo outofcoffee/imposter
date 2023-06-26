@@ -14,7 +14,7 @@ plugins {
 }
 
 ext {
-    kotlin_version = '1.8.10'
+    kotlin_version = '1.8.22'
 
     try {
         awsCredentials = new ProfileCredentialsProvider().credentials
