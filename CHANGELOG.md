@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.24.1] - 2023-07-01
+### Changed
+- docs: fixes transposed rows in plugins documentation.
+
+### Fixed
+- fix: [#430] swagger-parser update to v2.1.15 in line with jackson v2.15.2 update
+
 ## [3.24.0] - 2023-06-25
 ### Added
 - feat: security request header regex operator
