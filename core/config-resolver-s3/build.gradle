@@ -12,6 +12,7 @@ dependencies {
 
     implementation platform("com.amazonaws:aws-java-sdk-bom:$version_aws_sdk")
     implementation 'com.amazonaws:aws-java-sdk-s3'
+    implementation 'com.amazonaws:aws-java-sdk-sts'
 
     // test
     testImplementation project(':test:test-utils')
