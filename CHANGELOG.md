@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.25.0] - 2023-07-05
+### Added
+- feat: adds support for AWS temporary credentials via STS.
+
 ## [3.24.1] - 2023-07-01
 ### Changed
 - docs: fixes transposed rows in plugins documentation.
