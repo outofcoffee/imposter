@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -45,9 +45,11 @@ package io.gatehill.imposter.config.util
 import io.gatehill.imposter.config.model.PluginMetadata
 import io.gatehill.imposter.config.resolver.ConfigResolver
 import io.gatehill.imposter.util.ClassLoaderUtil
+import io.gatehill.imposter.util.splitOnCommaAndTrim
 import org.apache.logging.log4j.LogManager
 import java.io.IOException
-import java.util.*
+import java.util.Objects
+import java.util.Properties
 import java.util.jar.Manifest
 
 /**
@@ -86,7 +88,7 @@ object MetaUtil {
     fun readAllMetaEnabledPlugins(): List<String> {
         // plugin names set in imposter.properties
         val defaultEnabled = readMetaDefaultProperties()
-            .getProperty("plugins")?.split(",")
+            .getProperty("plugins")?.splitOnCommaAndTrim()
             ?: emptyList()
 
         // files provided by individual plugins

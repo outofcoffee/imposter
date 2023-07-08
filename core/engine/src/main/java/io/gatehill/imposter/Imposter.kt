@@ -69,6 +69,7 @@ import io.gatehill.imposter.util.AsyncUtil
 import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.InjectorUtil
 import io.gatehill.imposter.util.MetricsUtil
+import io.gatehill.imposter.util.splitOnCommaAndTrim
 import io.gatehill.imposter.util.supervisedDefaultCoroutineScope
 import io.vertx.core.Promise
 import io.vertx.core.Vertx
@@ -161,7 +162,7 @@ class Imposter(
         imposterConfig.serverUrl = HttpUtil.buildServerUrl(imposterConfig).toString()
 
         EnvVars.getEnv("IMPOSTER_PLUGIN_ARGS")?.let {
-            imposterConfig.pluginArgs = it.split(",").map(String::trim).associate { pluginArg ->
+            imposterConfig.pluginArgs = it.splitOnCommaAndTrim().associate { pluginArg ->
                 val parts = pluginArg.split("=")
                 parts[0] to parts[1].removeSurrounding("\"")
             }

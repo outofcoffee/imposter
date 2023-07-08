@@ -46,7 +46,7 @@ import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.util.MetaUtil
 import io.gatehill.imposter.http.HttpExchange
 import java.net.URI
-import java.util.*
+import java.util.Locale
 import java.util.regex.Pattern
 
 /**
@@ -263,7 +263,7 @@ object HttpUtil {
     @JvmStatic
     fun readAcceptedContentTypes(acceptHeader: String?): List<String> {
         val acceptEntries = acceptHeader?.let { whitespacePattern.matcher(it).replaceAll("") }
-            ?.split(",")?.toTypedArray()
+            ?.splitOnCommaAndTrim()?.toTypedArray()
             ?: emptyArray()
 
         val accepts = acceptEntries.map { weightAndContentType: String ->

@@ -85,7 +85,7 @@ object LogUtil {
      */
     private val requestHeaderNames: Array<String> by lazy {
         EnvVars.getEnv("IMPOSTER_LOG_REQUEST_HEADERS")
-            ?.split(",")?.map(String::lowercase)?.toTypedArray()
+            ?.splitOnCommaAndTrim()?.map(String::lowercase)?.toTypedArray()
             ?: emptyArray()
     }
 
@@ -94,7 +94,7 @@ object LogUtil {
      */
     private val responseHeaderNames: Array<String> by lazy {
         EnvVars.getEnv("IMPOSTER_LOG_RESPONSE_HEADERS")
-            ?.split(",")?.map(String::lowercase)?.toTypedArray()
+            ?.splitOnCommaAndTrim()?.map(String::lowercase)?.toTypedArray()
             ?: emptyArray()
     }
 

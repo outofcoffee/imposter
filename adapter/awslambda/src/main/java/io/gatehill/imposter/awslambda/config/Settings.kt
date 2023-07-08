@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021.
+ * Copyright (c) 2021-2023.
  *
  * This file is part of Imposter.
  *
@@ -44,6 +44,7 @@
 package io.gatehill.imposter.awslambda.config
 
 import io.gatehill.imposter.config.util.EnvVars
+import io.gatehill.imposter.util.splitOnCommaAndTrim
 
 /**
  * @author Pete Cornish
@@ -70,7 +71,7 @@ object Settings {
      *     plugin1=io.gatehill.imposter.plugin.Plugin1,plugin2=io.gatehill.imposter.plugin.Plugin2
      */
     val additionalPlugins: Map<String, String>? get() =
-        EnvVars.getEnv("IMPOSTER_STATIC_PLUGINS")?.split(",")?.map {
+        EnvVars.getEnv("IMPOSTER_STATIC_PLUGINS")?.splitOnCommaAndTrim()?.map {
             val entry = it.split("=")
             return@map entry[0].trim() to entry[1].trim()
         }?.toMap()
@@ -81,5 +82,5 @@ object Settings {
      *     io.gatehill.imposter.plugin.Module1,io.gatehill.imposter.plugin.Module2
      */
     val additionalModules: List<String>? get() =
-        EnvVars.getEnv("IMPOSTER_STATIC_MODULES")?.split(",")?.map { it.trim() }
+        EnvVars.getEnv("IMPOSTER_STATIC_MODULES")?.splitOnCommaAndTrim()
 }

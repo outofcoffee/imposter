@@ -9,6 +9,7 @@ compileJava {
 dependencies {
     implementation "org.apache.logging.log4j:log4j-api:$version_log4j"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation project(':core:imposter-api')
 
     // test
     testImplementation "junit:junit:$version_junit"

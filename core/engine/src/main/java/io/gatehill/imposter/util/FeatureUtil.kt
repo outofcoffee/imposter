@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -105,7 +105,7 @@ object FeatureUtil {
      */
     private fun listOverrides(): Map<String, Boolean> {
         val features = System.getProperty(SYS_PROP_IMPOSTER_FEATURES, EnvVars.getEnv(ENV_IMPOSTER_FEATURES))
-            ?.split(",") ?: emptyList()
+            ?.splitOnCommaAndTrim() ?: emptyList()
 
         return features.filter { entry: String -> entry.contains("=") }
             .map { entry: String -> entry.trim { it <= ' ' }.split("=").toTypedArray() }
