@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.25.1] - 2023-07-08
+### Changed
+- chore: bumps Kotlin to 1.8.22.
+- test: work-around for Mockito generic bounds issue with Kotlin 1.9.
+
+### Fixed
+- fix: trims entries when splitting comma-delimited config.
+
 ## [3.25.0] - 2023-07-05
 ### Added
 - feat: adds support for AWS temporary credentials via STS.
