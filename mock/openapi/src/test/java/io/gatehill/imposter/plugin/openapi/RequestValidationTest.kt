@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -210,13 +210,8 @@ class RequestValidationTest : BaseVerticleTest() {
             .then()
             .log().ifValidationFails()
             .statusCode(200)
-            .body(
-                "$",
-                Matchers.allOf(
-                    Matchers.hasEntry("id", 0),
-                    Matchers.hasEntry("valid", false)
-                )
-            )
+            .body("$", Matchers.hasEntry("id", 0))
+            .body("$", Matchers.hasEntry("valid", false))
     }
 
     /**
