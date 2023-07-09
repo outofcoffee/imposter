@@ -13,6 +13,10 @@ dependencies {
     api "io.vertx:vertx-core:$version_vertx"
     api "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     api "com.fasterxml.jackson.core:jackson-databind:$version_jackson_databind"
+
+    // test
+    testImplementation "junit:junit:$version_junit"
+    testImplementation group: 'org.hamcrest', name: 'hamcrest', version: version_hamcrest
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

@@ -71,6 +71,10 @@ object ResourceUtil {
      * /example/:foo
      * ```
      *
+     * This function will also normalise placeholders that are valid in OpenAPI, but not in Vert.x Web.
+     * Vert.x supports: 'Parameter names consist of any alphabetic character, numeric character or underscore.'
+     * See: [Vert.x Web documentation](https://vertx.io/docs/vertx-web/java/#_capturing_path_parameters).
+     *
      * @param openapiPath the OpenAPI path
      * @return the converted path
      */
@@ -82,11 +86,16 @@ object ResourceUtil {
                 val matcher = PATH_PARAM_PLACEHOLDER.matcher(path!!)
                 matchFound = matcher.find()
                 if (matchFound) {
-                    path = matcher.replaceFirst(":" + matcher.group(1))
+                    val normalisedParamName = normaliseParameterName(matcher.group(1))
+                    path = matcher.replaceFirst(":$normalisedParamName")
                 }
             } while (matchFound)
         }
         return path
+    }
+
+    fun normaliseParameterName(parameterName: String): String {
+        return parameterName.replace(Regex("[^a-zA-Z0-9_]"), "_")
     }
 
     /**

@@ -44,6 +44,7 @@
 package io.gatehill.imposter.placeholder
 
 import io.gatehill.imposter.http.ExchangePhase
+import io.gatehill.imposter.util.ResourceUtil.normaliseParameterName
 import org.apache.logging.log4j.LogManager
 
 /**
@@ -76,7 +77,9 @@ object ContextEvaluator : HttpExpressionEvaluator<String>() {
                                 httpExchange.request.getHeader(parts[3])
                             }
                             "pathParams" -> checkExpression(expression, 4, parts) {
-                                httpExchange.request.getPathParam(parts[3])
+                                // path params are normalised
+                                val normalisedParamName = normaliseParameterName(parts[3])
+                                httpExchange.request.getPathParam(normalisedParamName)
                             }
                             "queryParams" -> checkExpression(expression, 4, parts) {
                                 httpExchange.request.getQueryParam(parts[3])

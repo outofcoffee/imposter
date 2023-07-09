@@ -46,6 +46,7 @@ package io.gatehill.imposter.script
 import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.plugin.config.PluginConfig
+import io.gatehill.imposter.util.ResourceUtil.normaliseParameterName
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -84,8 +85,12 @@ object ScriptUtil {
         }
 
         val pathParamsSupplier: () -> Map<String, String> = {
-            internalRequest.pathParams
+            internalRequest.pathParams.map { (key, value) ->
+                // path params are normalised
+                normaliseParameterName(key) to value
+            }.toMap()
         }
+
         val queryParamsSupplier: () -> Map<String, String> = {
             internalRequest.queryParams
         }
