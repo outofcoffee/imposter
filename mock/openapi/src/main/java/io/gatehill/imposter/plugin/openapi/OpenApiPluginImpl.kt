@@ -44,12 +44,7 @@ package io.gatehill.imposter.plugin.openapi
 
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.util.EnvVars
-import io.gatehill.imposter.http.HttpExchange
-import io.gatehill.imposter.http.HttpExchangeHandler
-import io.gatehill.imposter.http.HttpMethod
-import io.gatehill.imposter.http.HttpRouter
-import io.gatehill.imposter.http.SingletonResourceMatcher
-import io.gatehill.imposter.http.StatusCodeFactory
+import io.gatehill.imposter.http.*
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.RequireModules
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin
@@ -387,6 +382,7 @@ class OpenApiPluginImpl @Inject constructor(
         val status = statusCode.toString()
 
         // look for a specification response based on the status code
+        // allow for absent 'responses' block
         val optionalResponse = operation.responses?.filter { it.key == status }?.values?.firstOrNull()
 
         return optionalResponse ?: run {
@@ -395,7 +391,8 @@ class OpenApiPluginImpl @Inject constructor(
                 "No response found for status code {}; falling back to default response if present",
                 statusCode
             )
-            operation.responses.default
+            // allow for absent 'responses' block
+            operation.responses?.default
         }
     }
 
