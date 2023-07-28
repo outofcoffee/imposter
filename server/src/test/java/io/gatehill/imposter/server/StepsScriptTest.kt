@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -40,70 +40,49 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.plugin.config.resource
+package io.gatehill.imposter.server
 
-import com.fasterxml.jackson.annotation.JsonAlias
-import com.fasterxml.jackson.annotation.JsonProperty
-import io.gatehill.imposter.script.FailureSimulationType
-import io.gatehill.imposter.script.PerformanceSimulationConfig
+import io.gatehill.imposter.plugin.test.TestPluginImpl
+import io.gatehill.imposter.util.HttpUtil
+import io.restassured.RestAssured
+import io.vertx.ext.unit.TestContext
+import io.vertx.ext.unit.junit.VertxUnitRunner
+import org.hamcrest.Matchers
+import org.hamcrest.Matchers.containsString
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
 
 /**
+ * Tests for script steps.
+ *
  * @author Pete Cornish
  */
-open class ResponseConfig {
-    @JsonProperty("file")
-    @JsonAlias("staticFile")
-    var file: String? = null
+@RunWith(VertxUnitRunner::class)
+class StepsScriptTest : BaseVerticleTest() {
+    override val pluginClass = TestPluginImpl::class.java
 
-    @JsonProperty("content")
-    @JsonAlias("staticData")
-    var content: String? = null
+    @Before
+    @Throws(Exception::class)
+    override fun setUp(testContext: TestContext) {
+        super.setUp(testContext)
+        RestAssured.baseURI = "http://$host:$listenPort"
+        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails()
+    }
 
-    @JsonProperty("dir")
-    val dir: String? = null
-
-    @JsonProperty("template")
-    var isTemplate: Boolean? = null
-
-    /**
-     * Shorthand for a processing step of type 'script'.
-     */
-    @JsonProperty("scriptFile")
-    var scriptFile: String? = null
-
-    @JsonProperty("statusCode")
-    var statusCode: Int? = null
-
-    @JsonProperty("headers")
-    var headers: Map<String, String>? = null
-
-    @JsonProperty("delay")
-    var performanceDelay: PerformanceSimulationConfig? = null
-
-    @JsonProperty("fail")
-    var failureType: FailureSimulationType? = null
+    override val testConfigDirs = listOf(
+        "/steps-script"
+    )
 
     /**
-     * @return `true` if properties of the response configuration have been set
+     * Execute a script step.
      */
-    open fun hasConfiguration(): Boolean = arrayOf(
-        this.content,
-        this.failureType,
-        this.file,
-        this.headers,
-        this.performanceDelay,
-        this.scriptFile,
-        this.statusCode,
-        this.isTemplate,
-    ).any { it != null }
-
-    /**
-     * Sets a response header. If the [headers] map is `null`, it
-     * is first initialised.
-     */
-    fun setHeader(name: String, value: String) {
-        val h = headers?.toMutableMap() ?: mutableMapOf()
-        h[name] = value
-        headers = h
+    @Test
+    fun `execute script step`() {
+        RestAssured.given().`when`()
+                .get("/example")
+                .then()
+                .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
+                .body(containsString("bar"))
     }
 }

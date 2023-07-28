@@ -1,0 +1,11 @@
+plugin: "io.gatehill.imposter.plugin.test.TestPluginImpl"
+
+resources:
+  - path: /example
+    method: GET
+    steps:
+      - type: script
+        scriptFile: test.js
+    response:
+      content: "${stores.request.foo}"
+      template: true

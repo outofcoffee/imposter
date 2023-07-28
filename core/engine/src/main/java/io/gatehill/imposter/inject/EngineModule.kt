@@ -74,7 +74,7 @@ internal class EngineModule : AbstractModule() {
         bind(SecurityService::class.java).to(SecurityServiceImpl::class.java).asEagerSingleton()
 
         bind(CorsService::class.java).`in`(Singleton::class.java)
-
+        bind(StepService::class.java).`in`(Singleton::class.java)
         bind(UpstreamService::class.java).`in`(Singleton::class.java)
     }
 }

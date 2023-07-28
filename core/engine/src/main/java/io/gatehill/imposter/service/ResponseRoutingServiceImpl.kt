@@ -42,7 +42,6 @@
  */
 package io.gatehill.imposter.service
 
-import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.exception.ResponseException
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.ResponseBehaviourFactory
@@ -67,8 +66,7 @@ import javax.inject.Inject
  */
 class ResponseRoutingServiceImpl @Inject constructor(
     private val engineLifecycle: EngineLifecycleHooks,
-    private val scriptedResponseService: ScriptedResponseService,
-    private val imposterConfig: ImposterConfig,
+    private val stepService: StepService,
 ) : ResponseRoutingService {
 
     /**
@@ -126,27 +124,11 @@ class ResponseRoutingServiceImpl @Inject constructor(
         val statusCode = statusCodeFactory.calculateStatus(resourceConfig)
         val responseBehaviour: ReadWriteResponseBehaviour
 
-        val scriptFile: String? = responseConfig.scriptFile ?: if (pluginConfig is ResourcesHolder<*> && pluginConfig.isDefaultsFromRootResponse == true && pluginConfig is BasicResourceConfig) {
-            LOGGER.trace("Inheriting root script file configuration as defaults")
-            pluginConfig.responseConfig.scriptFile
-        } else {
-            null
+        val steps = stepService.determineSteps(pluginConfig, resourceConfig)
+        if (LOGGER.isTraceEnabled) {
+            LOGGER.trace("{} processing steps for request: {}", steps.size, LogUtil.describeRequestShort(httpExchange))
         }
-
-        if (!scriptFile.isNullOrEmpty() || imposterConfig.useEmbeddedScriptEngine) {
-            responseBehaviour = scriptedResponseService.determineResponseFromScript(
-                httpExchange,
-                pluginConfig,
-                scriptFile,
-                additionalContext,
-                additionalBindings
-            )
-
-            // use defaults if not set
-            if (ResponseBehaviourType.DEFAULT_BEHAVIOUR == responseBehaviour.behaviourType) {
-                responseBehaviourFactory.populate(statusCode, responseConfig, responseBehaviour)
-            }
-        } else {
+        if (steps.isEmpty()) {
             if (LOGGER.isTraceEnabled) {
                 LOGGER.trace(
                     "Using default HTTP {} response behaviour for request: {}",
@@ -154,6 +136,12 @@ class ResponseRoutingServiceImpl @Inject constructor(
                 )
             }
             responseBehaviour = responseBehaviourFactory.build(statusCode, responseConfig)
+        } else {
+            val responseBehaviours = steps.map {
+                it.execute(statusCode, httpExchange, pluginConfig, resourceConfig, additionalContext, additionalBindings, responseBehaviourFactory)
+            }
+            // only the last response behaviour is used
+            responseBehaviour = responseBehaviours[responseBehaviours.size - 1]
         }
 
         // explicitly check if the root resource should have its response config used as defaults for its child resources
