@@ -67,6 +67,9 @@ class StepService @Inject constructor(
 ) {
     private val logger = LogManager.getLogger(StepService::class.java)
 
+    private val remoteStepImpl by lazy { RemoteProcessingStep(remoteService, captureService) }
+    private val scriptStepImpl by lazy { ScriptProcessingStep(scriptedResponseService) }
+
     /**
      * Parses the steps for the given resource.
      */
@@ -116,7 +119,7 @@ class StepService @Inject constructor(
             }
         }
         return PreparedStep(
-            step = RemoteProcessingStep(remoteService, captureService),
+            step = remoteStepImpl,
             context = RemoteStepContext(
                 step["url"] as String,
                 HttpMethod.valueOf(step["method"] as String),
@@ -131,7 +134,7 @@ class StepService @Inject constructor(
         scriptFile: String,
         additionalContext: Map<String, Any>?,
     ) = PreparedStep(
-        step = ScriptProcessingStep(scriptedResponseService),
+        step = scriptStepImpl,
         context = ScriptStepContext(
             pluginConfig,
             scriptFile,
