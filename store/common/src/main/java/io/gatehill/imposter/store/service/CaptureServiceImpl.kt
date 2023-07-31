@@ -51,6 +51,7 @@ import io.gatehill.imposter.plugin.config.capture.CaptureConfig
 import io.gatehill.imposter.plugin.config.capture.CaptureConfigHolder
 import io.gatehill.imposter.plugin.config.capture.ItemCaptureConfig
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig
+import io.gatehill.imposter.service.CaptureService
 import io.gatehill.imposter.store.core.Store
 import io.gatehill.imposter.store.factory.StoreFactory
 import io.gatehill.imposter.store.util.StoreUtil
@@ -69,7 +70,7 @@ import javax.inject.Inject
 class CaptureServiceImpl @Inject constructor(
     private val storeFactory: StoreFactory,
     engineLifecycle: EngineLifecycleHooks,
-) : EngineLifecycleListener {
+) : CaptureService, EngineLifecycleListener {
 
     init {
         engineLifecycle.registerListener(this)
@@ -101,7 +102,7 @@ class CaptureServiceImpl @Inject constructor(
         }
     }
 
-    fun captureItem(
+    override fun captureItem(
         captureConfigKey: String,
         itemConfig: ItemCaptureConfig,
         httpExchange: HttpExchange

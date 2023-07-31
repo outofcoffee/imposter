@@ -125,6 +125,7 @@ class S3ConfigResolverTest {
         @Throws(Exception::class)
         fun afterClass() {
             blockWait<AsyncResult<Void>?> { completionHandler -> vertx!!.close(completionHandler) }
+            vertx?.close()
         }
     }
 }

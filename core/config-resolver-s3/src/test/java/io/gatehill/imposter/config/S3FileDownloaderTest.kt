@@ -131,6 +131,7 @@ class S3FileDownloaderTest {
         @Throws(Exception::class)
         fun afterClass() {
             blockWait<AsyncResult<Void>?> { completionHandler -> vertx!!.close(completionHandler) }
+            vertx?.close()
         }
     }
 }

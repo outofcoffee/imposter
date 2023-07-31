@@ -1,0 +1,17 @@
+plugin: "io.gatehill.imposter.plugin.test.TestPluginImpl"
+
+resources:
+  - path: /example
+    method: GET
+    steps:
+      - type: remote
+        url: http://localhost:8081
+        method: POST
+        content: "petId=${context.request.queryParams.petId}"
+        capture:
+          petName:
+            store: request
+            expression: "${context.response.body}"
+    response:
+      content: "${stores.request.petName}"
+      template: true

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023.
+ * Copyright (c) 2023-2023.
  *
  * This file is part of Imposter.
  *
@@ -43,48 +43,81 @@
 
 package io.gatehill.imposter.service
 
-import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.model.steps.ProcessingStep
+import io.gatehill.imposter.model.steps.RemoteProcessingStep
 import io.gatehill.imposter.model.steps.ScriptProcessingStep
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.ResourcesHolder
+import io.gatehill.imposter.plugin.config.capture.ItemCaptureConfig
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.steps.StepsConfigHolder
 import org.apache.logging.log4j.LogManager
 import javax.inject.Inject
 
 class StepService @Inject constructor(
-        private val scriptedResponseService: ScriptedResponseService,
-        private val imposterConfig: ImposterConfig
+    private val scriptedResponseService: ScriptedResponseService,
+    private val remoteService: RemoteService,
+    private val captureService: CaptureService,
 ) {
     private val logger = LogManager.getLogger(StepService::class.java)
 
     fun determineSteps(
-            pluginConfig: PluginConfig,
-            resourceConfig: BasicResourceConfig,
+        pluginConfig: PluginConfig,
+        resourceConfig: BasicResourceConfig,
     ): List<ProcessingStep> {
         val steps = mutableListOf<ProcessingStep>()
 
         if (resourceConfig is StepsConfigHolder) {
             resourceConfig.steps?.forEach { step ->
                 steps += when (val stepType = step["type"]) {
-                    "script" -> ScriptProcessingStep(step["scriptFile"] as String, scriptedResponseService)
+                    "remote" -> parseRemoteStep(step)
+
+                    "script" -> ScriptProcessingStep(
+                        step["scriptFile"] as String,
+                        scriptedResponseService,
+                    )
+
                     else -> throw IllegalStateException("Unsupported step type: $stepType")
                 }
             }
         }
 
         // convert explicit script file to step
-        val scriptFile: String? = resourceConfig.responseConfig.scriptFile ?: if (pluginConfig is ResourcesHolder<*> && pluginConfig.isDefaultsFromRootResponse == true && pluginConfig is BasicResourceConfig) {
-            logger.trace("Inheriting root script file configuration as defaults")
-            pluginConfig.responseConfig.scriptFile
-        } else {
-            null
-        }
-        if (!scriptFile.isNullOrEmpty() || imposterConfig.useEmbeddedScriptEngine) {
+        val scriptFile: String? = resourceConfig.responseConfig.scriptFile
+            ?: if (pluginConfig is ResourcesHolder<*> && pluginConfig.isDefaultsFromRootResponse == true && pluginConfig is BasicResourceConfig) {
+                logger.trace("Inheriting root script file configuration as defaults")
+                pluginConfig.responseConfig.scriptFile
+            } else {
+                null
+            }
+        if (!scriptFile.isNullOrEmpty()) {
             steps += ScriptProcessingStep(scriptFile, scriptedResponseService)
         }
 
         return steps
+    }
+
+    private fun parseRemoteStep(step: Map<String, *>): RemoteProcessingStep {
+        val captureConfig: Map<String, ItemCaptureConfig>? = (step["capture"] as Map<String, Map<String, *>>?)?.let { configs ->
+            configs.mapValues { (_, config) ->
+                ItemCaptureConfig(
+                    _store = config["store"],
+                    pathParam = config["pathParam"] as String?,
+                    queryParam = config["queryParam"] as String?,
+                    formParam = config["formParam"] as String?,
+                    requestHeader = config["requestHeader"] as String?,
+                    expression = config["expression"] as String?,
+                )
+            }
+        }
+        return RemoteProcessingStep(
+            step["url"] as String,
+            HttpMethod.valueOf(step["method"] as String),
+            step["content"] as String,
+            captureConfig,
+            remoteService,
+            captureService,
+        )
     }
 }

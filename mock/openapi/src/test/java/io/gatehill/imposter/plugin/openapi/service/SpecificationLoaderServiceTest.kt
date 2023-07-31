@@ -189,6 +189,7 @@ class SpecificationLoaderServiceTest {
         @Throws(Exception::class)
         fun afterClass() {
             blockWait<AsyncResult<Void>?> { completionHandler -> vertx!!.close(completionHandler) }
+            vertx?.close()
         }
 
         /**
@@ -196,7 +197,7 @@ class SpecificationLoaderServiceTest {
          *
          * @param handlerConsumer the consumer of the handler
          * @param <T>             the type of the async result
-        </T> */
+         */
         @Throws(Exception::class)
         private fun <T> blockWait(handlerConsumer: Consumer<Handler<T>>) {
             val latch = CountDownLatch(1)

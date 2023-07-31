@@ -44,6 +44,7 @@ package io.gatehill.imposter.store
 
 import com.google.inject.AbstractModule
 import com.google.inject.Singleton
+import io.gatehill.imposter.service.CaptureService
 import io.gatehill.imposter.service.DeferredOperationService
 import io.gatehill.imposter.store.factory.DelegatingStoreFactoryImpl
 import io.gatehill.imposter.store.factory.StoreFactory
@@ -66,7 +67,7 @@ class StoreModule : AbstractModule() {
         bind(StoreRestApiServiceImpl::class.java).asEagerSingleton()
 
         // needs to be eager to register lifecycle listener
-        bind(CaptureServiceImpl::class.java).asEagerSingleton()
+        bind(CaptureService::class.java).to(CaptureServiceImpl::class.java).asEagerSingleton()
 
         // determines driver
         bind(StoreFactory::class.java).to(DelegatingStoreFactoryImpl::class.java).`in`(Singleton::class.java)

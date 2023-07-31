@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2023.
+ * Copyright (c) 2023.
  *
  * This file is part of Imposter.
  *
@@ -44,17 +44,28 @@
 package io.gatehill.imposter.model.steps
 
 import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.http.ResponseBehaviourFactory
 import io.gatehill.imposter.plugin.config.PluginConfig
+import io.gatehill.imposter.plugin.config.capture.ItemCaptureConfig
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
+import io.gatehill.imposter.plugin.config.resource.ResponseConfig
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
-import io.gatehill.imposter.script.ResponseBehaviourType
-import io.gatehill.imposter.service.ScriptedResponseService
+import io.gatehill.imposter.service.CaptureService
+import io.gatehill.imposter.service.RemoteService
+import io.gatehill.imposter.util.HttpUtil
+import org.apache.logging.log4j.LogManager
 
-class ScriptProcessingStep(
-    private val scriptFile: String,
-    private val scriptedResponseService: ScriptedResponseService,
+class RemoteProcessingStep(
+    private val url: String,
+    private val method: HttpMethod,
+    private val content: String?,
+    private val capture: Map<String, ItemCaptureConfig>?,
+    private val remoteService: RemoteService,
+    private val captureService: CaptureService,
 ) : ProcessingStep {
+    private val logger = LogManager.getLogger(javaClass)
+
     override fun execute(
         statusCode: Int,
         httpExchange: HttpExchange,
@@ -64,19 +75,17 @@ class ScriptProcessingStep(
         additionalBindings: Map<String, Any>?,
         responseBehaviourFactory: ResponseBehaviourFactory,
     ): ReadWriteResponseBehaviour {
-        val responseBehaviour = scriptedResponseService.determineResponseFromScript(
-            httpExchange,
-            pluginConfig,
-            scriptFile,
-            additionalContext,
-            additionalBindings
-        )
-
-        // use defaults if not set
-        if (ResponseBehaviourType.DEFAULT_BEHAVIOUR == responseBehaviour.behaviourType) {
-            responseBehaviourFactory.populate(statusCode, resourceConfig.responseConfig, responseBehaviour)
+        return try {
+            val remoteHttpExchange = remoteService.sendRequest(url, method, content, httpExchange)
+            capture?.let {
+                capture.forEach { (key, config) ->
+                    captureService.captureItem(key, config, remoteHttpExchange)
+                }
+            }
+            responseBehaviourFactory.build(HttpUtil.HTTP_OK, resourceConfig.responseConfig)
+        } catch (e: Exception) {
+            logger.error("Error sending remote request: {} {}", method, url, e)
+            responseBehaviourFactory.build(HttpUtil.HTTP_INTERNAL_ERROR, ResponseConfig())
         }
-
-        return responseBehaviour
     }
 }

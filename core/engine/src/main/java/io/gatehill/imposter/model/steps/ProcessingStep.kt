@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023.
+ * Copyright (c) 2023-2023.
  *
  * This file is part of Imposter.
  *
@@ -51,12 +51,12 @@ import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 
 interface ProcessingStep {
     fun execute(
-            statusCode: Int,
-            httpExchange: HttpExchange,
-            pluginConfig: PluginConfig,
-            resourceConfig: BasicResourceConfig,
-            additionalContext: Map<String, Any>?,
-            additionalBindings: Map<String, Any>?,
-            responseBehaviourFactory: ResponseBehaviourFactory,
+        statusCode: Int,
+        httpExchange: HttpExchange,
+        pluginConfig: PluginConfig,
+        resourceConfig: BasicResourceConfig,
+        additionalContext: Map<String, Any>?,
+        additionalBindings: Map<String, Any>?,
+        responseBehaviourFactory: ResponseBehaviourFactory,
     ): ReadWriteResponseBehaviour
 }
