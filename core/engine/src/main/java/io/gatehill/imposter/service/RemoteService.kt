@@ -72,7 +72,6 @@ class RemoteService {
         content: String?,
         httpExchange: HttpExchange,
     ): RemoteHttpExchange {
-        logger.info("Sending request ${LogUtil.describeRequest(httpExchange)} to remote URL $url")
         val call = buildCall(url, method, headers, content, httpExchange)
         if (logger.isTraceEnabled) {
             logger.trace("Request to remote: ${call.request()}")
@@ -86,13 +85,16 @@ class RemoteService {
     }
 
     private fun buildCall(
-        url: String,
+        rawUrl: String,
         method: HttpMethod,
         headers: Map<String, String>?,
         content: String?,
         httpExchange: HttpExchange,
     ): Call {
         try {
+            val url = PlaceholderUtil.replace(rawUrl, httpExchange, PlaceholderUtil.templateEvaluators)
+            logger.info("Sending remote request $method $url")
+
             val body = content?.let {
                 PlaceholderUtil.replace(it, httpExchange, PlaceholderUtil.templateEvaluators)
             }?.toRequestBody()
