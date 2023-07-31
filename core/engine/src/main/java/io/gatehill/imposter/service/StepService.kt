@@ -109,10 +109,12 @@ class StepService @Inject constructor(
         val captureConfig: Map<String, ItemCaptureConfig>? = capture?.let { configs ->
             configs.mapValues { (_, config) ->
                 // only a subset of the capture config is supported for remote steps
+                val expression = config["expression"] as String?
                 ItemCaptureConfig(
                     // assumes store is a string
                     _store = config["store"],
-                    expression = config["expression"] as String?,
+                    // syntactic sugar for remote context steps
+                    expression = expression?.replace("\${remote.", "\${context."),
                 )
             }
         }

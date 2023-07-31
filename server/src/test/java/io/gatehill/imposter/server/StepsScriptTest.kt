@@ -47,8 +47,7 @@ import io.gatehill.imposter.util.HttpUtil
 import io.restassured.RestAssured
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
-import org.hamcrest.Matchers
-import org.hamcrest.Matchers.containsString
+import org.hamcrest.Matchers.equalTo
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -82,7 +81,7 @@ class StepsScriptTest : BaseVerticleTest() {
         RestAssured.given().`when`()
                 .get("/example")
                 .then()
-                .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
-                .body(containsString("bar"))
+                .statusCode(equalTo(HttpUtil.HTTP_OK))
+                .body(equalTo("bar"))
     }
 }

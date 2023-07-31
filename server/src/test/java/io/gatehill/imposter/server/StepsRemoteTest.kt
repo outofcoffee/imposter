@@ -54,7 +54,7 @@ import io.vertx.core.http.HttpServerRequest
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
 import org.hamcrest.Matchers
-import org.hamcrest.Matchers.containsString
+import org.hamcrest.Matchers.equalTo
 import org.junit.AfterClass
 import org.junit.Before
 import org.junit.BeforeClass
@@ -97,7 +97,7 @@ class StepsRemoteTest : BaseVerticleTest() {
                 .get("/example")
                 .then()
                 .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
-                .body(containsString("Fluffy"))
+                .body(equalTo("Fluffy"))
     }
 
     companion object {

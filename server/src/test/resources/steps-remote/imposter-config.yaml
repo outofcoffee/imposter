@@ -11,7 +11,7 @@ resources:
         capture:
           petName:
             store: request
-            expression: "${context.response.body}"
+            expression: "${remote.response.body}"
     response:
       content: "${stores.request.petName}"
       template: true
