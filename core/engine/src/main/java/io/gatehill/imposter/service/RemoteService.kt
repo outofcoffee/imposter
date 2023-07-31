@@ -47,6 +47,7 @@ import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.model.steps.http.RemoteHttpExchange
 import io.gatehill.imposter.util.LogUtil
+import io.gatehill.imposter.util.PlaceholderUtil
 import okhttp3.Call
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -67,11 +68,12 @@ class RemoteService {
     fun sendRequest(
         url: String,
         method: HttpMethod,
+        headers: Map<String, String>?,
         content: String?,
         httpExchange: HttpExchange,
     ): RemoteHttpExchange {
         logger.info("Sending request ${LogUtil.describeRequest(httpExchange)} to remote URL $url")
-        val call = buildCall(url, method, content, httpExchange)
+        val call = buildCall(url, method, headers, content, httpExchange)
         if (logger.isTraceEnabled) {
             logger.trace("Request to remote: ${call.request()}")
         }
@@ -86,16 +88,24 @@ class RemoteService {
     private fun buildCall(
         url: String,
         method: HttpMethod,
+        headers: Map<String, String>?,
         content: String?,
         httpExchange: HttpExchange,
     ): Call {
         try {
-            val request = Request.Builder()
-                .url(URI(url).toURL())
-                .method(method.name, content?.toRequestBody())
-                .build()
+            val body = content?.let {
+                PlaceholderUtil.replace(it, httpExchange, PlaceholderUtil.templateEvaluators)
+            }?.toRequestBody()
 
-            return httpClient.newCall(request)
+            val requestBuilder = Request.Builder()
+                .url(URI(url).toURL())
+                .method(method.name, body)
+
+            headers?.forEach { (key, value) ->
+                requestBuilder.header(key, value)
+            }
+
+            return httpClient.newCall(requestBuilder.build())
 
         } catch (e: Exception) {
             throw RuntimeException("Failed to build remote call for ${LogUtil.describeRequest(httpExchange)}", e)

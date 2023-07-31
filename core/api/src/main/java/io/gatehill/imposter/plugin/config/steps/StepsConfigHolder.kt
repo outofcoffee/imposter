@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023.
+ * Copyright (c) 2023-2023.
  *
  * This file is part of Imposter.
  *
@@ -44,5 +44,9 @@
 package io.gatehill.imposter.plugin.config.steps
 
 interface StepsConfigHolder {
-    val steps: List<Map<String, *>>?
+    val steps: List<StepConfig>?
 }
+
+class StepConfig(
+    val type: String
+) : HashMap<String, Any>()

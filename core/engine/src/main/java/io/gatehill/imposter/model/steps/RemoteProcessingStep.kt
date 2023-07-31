@@ -70,7 +70,7 @@ class RemoteProcessingStep(
     ): ReadWriteResponseBehaviour {
         val ctx = context as RemoteStepContext
         return try {
-            val remoteExchange = remoteService.sendRequest(ctx.url, ctx.method, ctx.content, httpExchange)
+            val remoteExchange = remoteService.sendRequest(ctx.url, ctx.method, ctx.headers, ctx.content, httpExchange)
             ctx.capture?.forEach { (key, config) ->
                 captureService.captureItem(key, config, remoteExchange)
             }
@@ -85,6 +85,7 @@ class RemoteProcessingStep(
 data class RemoteStepContext(
     val url: String,
     val method: HttpMethod,
+    val headers: Map<String, String>?,
     val content: String?,
     val capture: Map<String, ItemCaptureConfig>?,
 ) : StepContext

@@ -53,6 +53,7 @@ import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.ResourcesHolder
 import io.gatehill.imposter.plugin.config.capture.ItemCaptureConfig
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
+import io.gatehill.imposter.plugin.config.steps.StepConfig
 import io.gatehill.imposter.plugin.config.steps.StepsConfigHolder
 import org.apache.logging.log4j.LogManager
 import javax.inject.Inject
@@ -90,15 +91,15 @@ class StepService @Inject constructor(
     }
 
     private fun parseSteps(
-        steps: List<Map<String, *>>,
+        steps: List<StepConfig>,
         pluginConfig: PluginConfig,
         additionalContext: Map<String, Any>?,
     ): List<PreparedStep> {
         return steps.map { step ->
-            when (val stepType = step["type"]) {
+            when (step.type) {
                 "remote" -> parseRemoteStep(step)
                 "script" -> parseScriptStep(pluginConfig, step["scriptFile"] as String, additionalContext)
-                else -> throw IllegalStateException("Unsupported step type: $stepType")
+                else -> throw IllegalStateException("Unsupported step type: ${step.type}")
             }
         }
     }
@@ -121,10 +122,11 @@ class StepService @Inject constructor(
         return PreparedStep(
             step = remoteStepImpl,
             context = RemoteStepContext(
-                step["url"] as String,
-                HttpMethod.valueOf(step["method"] as String),
-                step["content"] as String,
-                captureConfig,
+                url = step["url"] as String,
+                method = HttpMethod.valueOf(step["method"] as String),
+                headers = step["headers"] as Map<String, String>?,
+                content = step["content"] as String?,
+                capture = captureConfig,
             ),
         )
     }

@@ -7,6 +7,8 @@ resources:
       - type: remote
         url: http://localhost:8081
         method: POST
+        headers:
+          X-Test-Header: "test"
         content: "petId=${context.request.queryParams.petId}"
         capture:
           petName:

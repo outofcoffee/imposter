@@ -48,6 +48,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyConfig
 import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyResourceConfig
+import io.gatehill.imposter.plugin.config.steps.StepConfig
 import io.gatehill.imposter.plugin.config.steps.StepsConfigHolder
 import java.util.*
 
@@ -88,7 +89,7 @@ open class RestResourceConfig : AbstractResourceConfig(), MethodResourceConfig, 
         get() = queryParams
 
     @field:JsonProperty("steps")
-    override val steps: List<Map<String, *>>? = null
+    override val steps: List<StepConfig>? = null
 
     @get:JsonIgnore
     override val resourceId by lazy { UUID.randomUUID().toString() }

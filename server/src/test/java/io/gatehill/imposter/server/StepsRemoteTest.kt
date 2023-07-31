@@ -45,14 +45,16 @@ package io.gatehill.imposter.server
 import io.gatehill.imposter.plugin.test.TestPluginImpl
 import io.gatehill.imposter.util.HttpUtil
 import io.restassured.RestAssured
-import io.vertx.core.AsyncResult
+import io.restassured.RestAssured.given
 import io.vertx.core.Handler
 import io.vertx.core.Vertx
-import io.vertx.core.http.HttpServer
+import io.vertx.core.http.HttpMethod
 import io.vertx.core.http.HttpServerOptions
 import io.vertx.core.http.HttpServerRequest
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
+import org.hamcrest.Matcher
+import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers
 import org.hamcrest.Matchers.equalTo
 import org.junit.AfterClass
@@ -90,14 +92,35 @@ class StepsRemoteTest : BaseVerticleTest() {
     @Test
     fun `execute remote step`() {
         val httpServer = vertx!!.createHttpServer(HttpServerOptions().setPort(8081))
-        httpServer.requestHandler { request: HttpServerRequest -> request.response().end("Fluffy") }
-        blockWait { listenHandler: Handler<AsyncResult<HttpServer?>?>? -> httpServer.listen(listenHandler) }
+        httpServer.requestHandler { request ->
+            request.failOnAssertionError(request.method(), equalTo(HttpMethod.POST))
+            request.failOnAssertionError(request.path(), equalTo("/"))
+            request.failOnAssertionError(request.getHeader("X-Test-Header"), equalTo("test"))
+            request.body { body ->
+                request.failOnAssertionError(body.result().toString(), equalTo("petId=123"))
+                request.response().end("Fluffy")
+            }
+        }
+        blockWait { listenHandler -> httpServer.listen(listenHandler) }
 
-        RestAssured.given().`when`()
-                .get("/example")
-                .then()
-                .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
-                .body(equalTo("Fluffy"))
+        given().`when`()
+            .queryParam("petId", "123")
+            .get("/example")
+            .then()
+            .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
+            .body(equalTo("Fluffy"))
+    }
+
+    private fun <T> HttpServerRequest.failOnAssertionError(
+        actual: T,
+        assertion: Matcher<in T>,
+    ) {
+        try {
+            assertThat(actual, assertion)
+        } catch (e: AssertionError) {
+            response().setStatusCode(400).end(e.message)
+            throw e
+        }
     }
 
     companion object {
