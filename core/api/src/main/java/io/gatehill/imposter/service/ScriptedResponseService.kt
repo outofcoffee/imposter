@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -55,6 +55,5 @@ interface ScriptedResponseService {
         pluginConfig: PluginConfig,
         scriptFile: String?,
         additionalContext: Map<String, Any>?,
-        additionalBindings: Map<String, Any>?
     ): ReadWriteResponseBehaviour
 }

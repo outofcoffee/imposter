@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2023-2023.
  *
  * This file is part of Imposter.
  *
@@ -40,34 +40,57 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.script
 
-import io.gatehill.imposter.plugin.config.PluginConfig
-import org.apache.logging.log4j.Logger
+package io.gatehill.imposter.model.steps.http
+
+import io.gatehill.imposter.http.HttpResponse
+import io.vertx.core.buffer.Buffer
+import okhttp3.Response
 
 /**
- * @author Pete Cornish
+ * Adapts an OkHttp response to an Imposter response.
  */
-class RuntimeContext(
-    private val env: Map<String, String>,
-    private val logger: Logger,
-    private val pluginConfig: PluginConfig,
-    private val additionalBindings: Map<String, Any>?,
-    val executionContext: ExecutionContext
-) {
-
-    /**
-     * @return a representation of the runtime context as a [Map] of bindings
-     */
-    fun asMap(): Map<String, Any> {
-        val bindings: MutableMap<String, Any> = mutableMapOf()
-        bindings["config"] = pluginConfig
-        bindings["context"] = executionContext
-        bindings["env"] = env
-        bindings["logger"] = logger
-
-        // add custom bindings
-        additionalBindings?.let(bindings::putAll)
-        return bindings
+class RemoteHttpResponse(
+    private val remoteResp: Response,
+    private val remoteRespBody: String?,
+) : HttpResponse {
+    override fun setStatusCode(statusCode: Int): HttpResponse {
+        throw UnsupportedOperationException()
     }
+
+    override val statusCode: Int
+        get() = remoteResp.code
+
+    override fun putHeader(headerKey: String, headerValue: String): HttpResponse {
+        throw UnsupportedOperationException()
+    }
+
+    override fun getHeader(headerKey: String): String? {
+        return remoteResp.header(headerKey)
+    }
+
+    override fun getHeadersIgnoreCase(headerKeys: Array<String>): Map<String, String> {
+        return remoteResp.headers.toMap().mapKeys { (key, _) -> key.lowercase() }
+    }
+
+    override fun end() {
+        throw UnsupportedOperationException()
+    }
+
+    override fun end(body: Buffer) {
+        throw UnsupportedOperationException()
+    }
+
+    override fun close() {
+        throw UnsupportedOperationException()
+    }
+
+    override val bodyBuffer: Buffer?
+        get() = remoteRespBody?.let { Buffer.buffer(remoteRespBody) }
+
+    override var finished: Boolean
+        get() = true
+        set(_) {
+            throw UnsupportedOperationException()
+        }
 }

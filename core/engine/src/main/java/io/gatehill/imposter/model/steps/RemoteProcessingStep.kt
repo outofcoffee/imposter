@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023.
+ * Copyright (c) 2023-2023.
  *
  * This file is part of Imposter.
  *
@@ -46,7 +46,6 @@ package io.gatehill.imposter.model.steps
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.http.ResponseBehaviourFactory
-import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.capture.ItemCaptureConfig
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.resource.ResponseConfig
@@ -57,35 +56,35 @@ import io.gatehill.imposter.util.HttpUtil
 import org.apache.logging.log4j.LogManager
 
 class RemoteProcessingStep(
-    private val url: String,
-    private val method: HttpMethod,
-    private val content: String?,
-    private val capture: Map<String, ItemCaptureConfig>?,
     private val remoteService: RemoteService,
     private val captureService: CaptureService,
 ) : ProcessingStep {
     private val logger = LogManager.getLogger(javaClass)
 
     override fun execute(
-        statusCode: Int,
-        httpExchange: HttpExchange,
-        pluginConfig: PluginConfig,
-        resourceConfig: BasicResourceConfig,
-        additionalContext: Map<String, Any>?,
-        additionalBindings: Map<String, Any>?,
         responseBehaviourFactory: ResponseBehaviourFactory,
+        resourceConfig: BasicResourceConfig,
+        httpExchange: HttpExchange,
+        statusCode: Int,
+        context: StepContext,
     ): ReadWriteResponseBehaviour {
+        val ctx = context as RemoteStepContext
         return try {
-            val remoteHttpExchange = remoteService.sendRequest(url, method, content, httpExchange)
-            capture?.let {
-                capture.forEach { (key, config) ->
-                    captureService.captureItem(key, config, remoteHttpExchange)
-                }
+            val remoteExchange = remoteService.sendRequest(ctx.url, ctx.method, ctx.content, httpExchange)
+            ctx.capture?.forEach { (key, config) ->
+                captureService.captureItem(key, config, remoteExchange)
             }
-            responseBehaviourFactory.build(HttpUtil.HTTP_OK, resourceConfig.responseConfig)
+            responseBehaviourFactory.build(statusCode, resourceConfig.responseConfig)
         } catch (e: Exception) {
-            logger.error("Error sending remote request: {} {}", method, url, e)
+            logger.error("Error sending remote request: {} {}", ctx.method, ctx.url, e)
             responseBehaviourFactory.build(HttpUtil.HTTP_INTERNAL_ERROR, ResponseConfig())
         }
     }
 }
+
+data class RemoteStepContext(
+    val url: String,
+    val method: HttpMethod,
+    val content: String?,
+    val capture: Map<String, ItemCaptureConfig>?,
+) : StepContext

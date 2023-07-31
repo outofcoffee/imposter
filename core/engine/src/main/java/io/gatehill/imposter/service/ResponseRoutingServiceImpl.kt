@@ -68,6 +68,7 @@ class ResponseRoutingServiceImpl @Inject constructor(
     private val engineLifecycle: EngineLifecycleHooks,
     private val stepService: StepService,
 ) : ResponseRoutingService {
+    private val logger = LogManager.getLogger(ResponseRoutingServiceImpl::class.java)
 
     /**
      * {@inheritDoc}
@@ -90,7 +91,6 @@ class ResponseRoutingServiceImpl @Inject constructor(
                 pluginConfig,
                 resourceConfig,
                 additionalContext,
-                emptyMap(),
                 statusCodeFactory,
                 responseBehaviourFactory
             )
@@ -104,7 +104,7 @@ class ResponseRoutingServiceImpl @Inject constructor(
             }
         } catch (e: Exception) {
             val msg = "Error sending mock response for ${LogUtil.describeRequest(httpExchange)}"
-            LOGGER.error(msg, e)
+            logger.error(msg, e)
             httpExchange.fail(ResponseException(msg, e))
         }
     }
@@ -114,7 +114,6 @@ class ResponseRoutingServiceImpl @Inject constructor(
         pluginConfig: PluginConfig,
         resourceConfig: BasicResourceConfig?,
         additionalContext: Map<String, Any>?,
-        additionalBindings: Map<String, Any>?,
         statusCodeFactory: StatusCodeFactory,
         responseBehaviourFactory: ResponseBehaviourFactory,
     ): ResponseBehaviour {
@@ -124,31 +123,38 @@ class ResponseRoutingServiceImpl @Inject constructor(
         val statusCode = statusCodeFactory.calculateStatus(resourceConfig)
         val responseBehaviour: ReadWriteResponseBehaviour
 
-        val steps = stepService.determineSteps(pluginConfig, resourceConfig)
-        if (LOGGER.isTraceEnabled) {
-            LOGGER.trace("{} processing steps for request: {}", steps.size, LogUtil.describeRequestShort(httpExchange))
+        val steps = stepService.determineSteps(pluginConfig, resourceConfig, additionalContext)
+        if (logger.isTraceEnabled) {
+            logger.trace("{} processing steps for request: {}", steps.size, LogUtil.describeRequestShort(httpExchange))
         }
         if (steps.isEmpty()) {
-            if (LOGGER.isTraceEnabled) {
-                LOGGER.trace(
+            if (logger.isTraceEnabled) {
+                logger.trace(
                     "Using default HTTP {} response behaviour for request: {}",
-                    statusCode, LogUtil.describeRequestShort(httpExchange)
+                    statusCode,
+                    LogUtil.describeRequestShort(httpExchange),
                 )
             }
             responseBehaviour = responseBehaviourFactory.build(statusCode, responseConfig)
         } else {
             val responseBehaviours = steps.map {
-                it.execute(statusCode, httpExchange, pluginConfig, resourceConfig, additionalContext, additionalBindings, responseBehaviourFactory)
+                it.step.execute(
+                    responseBehaviourFactory,
+                    resourceConfig,
+                    httpExchange,
+                    statusCode,
+                    it.context,
+                )
             }
             // only the last response behaviour is used
-            responseBehaviour = responseBehaviours[responseBehaviours.size - 1]
+            responseBehaviour = responseBehaviours.last()
         }
 
         // explicitly check if the root resource should have its response config used as defaults for its child resources
         when {
             pluginConfig is ResourcesHolder<*> && pluginConfig.isDefaultsFromRootResponse == true -> {
                 if (pluginConfig is BasicResourceConfig) {
-                    LOGGER.trace("Inheriting root response configuration as defaults")
+                    logger.trace("Inheriting root response configuration as defaults")
                     responseBehaviourFactory.populate(
                         statusCode,
                         (pluginConfig as BasicResourceConfig).responseConfig,
@@ -158,9 +164,5 @@ class ResponseRoutingServiceImpl @Inject constructor(
             }
         }
         return responseBehaviour
-    }
-
-    companion object {
-        private val LOGGER = LogManager.getLogger(ResponseRoutingServiceImpl::class.java)
     }
 }

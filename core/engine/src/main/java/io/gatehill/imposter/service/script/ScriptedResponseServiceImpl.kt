@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -139,8 +139,7 @@ class ScriptedResponseServiceImpl @Inject constructor(
         httpExchange: HttpExchange,
         pluginConfig: PluginConfig,
         scriptFile: String?,
-        additionalContext: Map<String, Any>?,
-        additionalBindings: Map<String, Any>?
+        additionalContext: Map<String, Any>?
     ): ReadWriteResponseBehaviour {
         return try {
             val scriptExecutor = {
@@ -148,8 +147,7 @@ class ScriptedResponseServiceImpl @Inject constructor(
                     httpExchange,
                     pluginConfig,
                     scriptFile,
-                    additionalContext,
-                    additionalBindings
+                    additionalContext
                 )
             }
             executionTimer?.recordCallable(scriptExecutor) ?: scriptExecutor()
@@ -163,8 +161,7 @@ class ScriptedResponseServiceImpl @Inject constructor(
         httpExchange: HttpExchange,
         pluginConfig: PluginConfig,
         scriptFile: String?,
-        additionalContext: Map<String, Any>?,
-        additionalBindings: Map<String, Any>?
+        additionalContext: Map<String, Any>?
     ): ReadWriteResponseBehaviour {
         checkNotNull(scriptFile) { "Script file not set" }
 
@@ -178,18 +175,14 @@ class ScriptedResponseServiceImpl @Inject constructor(
             val executionContext = ScriptUtil.buildContext(httpExchange, additionalContext)
             LOGGER.trace("Context for request: {}", Supplier<Any> { executionContext })
 
-            val finalAdditionalBindings = finaliseAdditionalBindings(
-                httpExchange,
-                additionalBindings ?: emptyMap(),
-                executionContext
-            )
-
+            val additionalBindings = getAdditionalBindings(httpExchange, executionContext)
             val scriptLogger = buildScriptLogger(scriptFile)
+
             val runtimeContext = RuntimeContext(
                 EnvVars.getEnv(),
                 scriptLogger,
                 pluginConfig,
-                finalAdditionalBindings,
+                additionalBindings,
                 executionContext
             )
 
@@ -202,7 +195,7 @@ class ScriptedResponseServiceImpl @Inject constructor(
 
             // fire post execution hooks
             scriptLifecycle.forEach { listener ->
-                listener.afterSuccessfulScriptExecution(finalAdditionalBindings, responseBehaviour)
+                listener.afterSuccessfulScriptExecution(additionalBindings, responseBehaviour)
             }
 
             val scriptDuration = (System.nanoTime() - executionStart) / 1000000f
@@ -241,29 +234,25 @@ class ScriptedResponseServiceImpl @Inject constructor(
         return loggerCache[loggerName, { LogManager.getLogger(loggerName) }]
     }
 
-    private fun finaliseAdditionalBindings(
+    private fun getAdditionalBindings(
         httpExchange: HttpExchange,
-        additionalBindings: Map<String, Any>,
         executionContext: ExecutionContext
     ): Map<String, Any> {
-        var finalAdditionalBindings = additionalBindings
-
         // fire pre-context build hooks
         if (!scriptLifecycle.isEmpty) {
-            val listenerAdditionalBindings: MutableMap<String, Any> = mutableMapOf()
+            val additionalBindings = mutableMapOf<String, Any>()
             scriptLifecycle.forEach { listener ->
                 listener.beforeBuildingRuntimeContext(
                     httpExchange,
-                    listenerAdditionalBindings,
+                    additionalBindings,
                     executionContext
                 )
             }
-            if (listenerAdditionalBindings.isNotEmpty()) {
-                listenerAdditionalBindings.putAll(additionalBindings)
-                finalAdditionalBindings = listenerAdditionalBindings
+            if (additionalBindings.isNotEmpty()) {
+                return additionalBindings
             }
         }
-        return finalAdditionalBindings
+        return emptyMap()
     }
 
     companion object {

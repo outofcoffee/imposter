@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2023-2023.
  *
  * This file is part of Imposter.
  *
@@ -40,34 +40,64 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.script
 
-import io.gatehill.imposter.plugin.config.PluginConfig
-import org.apache.logging.log4j.Logger
+package io.gatehill.imposter.model.steps.http
+
+import io.gatehill.imposter.http.ExchangePhase
+import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.http.HttpRoute
+import okhttp3.Request
+import okhttp3.Response
 
 /**
- * @author Pete Cornish
+ * Adapts an OkHttp HTTP request and response to an Imposter HTTP exchange.
  */
-class RuntimeContext(
-    private val env: Map<String, String>,
-    private val logger: Logger,
-    private val pluginConfig: PluginConfig,
-    private val additionalBindings: Map<String, Any>?,
-    val executionContext: ExecutionContext
-) {
+class RemoteHttpExchange(
+    private val initiatingExchange: HttpExchange,
+    private val remoteReq: Request,
+    private val remoteResp: Response,
+    private val remoteRespBody: String?,
+) : HttpExchange {
+    override var phase = ExchangePhase.RESPONSE_SENT
 
-    /**
-     * @return a representation of the runtime context as a [Map] of bindings
-     */
-    fun asMap(): Map<String, Any> {
-        val bindings: MutableMap<String, Any> = mutableMapOf()
-        bindings["config"] = pluginConfig
-        bindings["context"] = executionContext
-        bindings["env"] = env
-        bindings["logger"] = logger
+    override val request
+        get() = RemoteHttpRequest(remoteReq)
 
-        // add custom bindings
-        additionalBindings?.let(bindings::putAll)
-        return bindings
+    override val response
+        get() = RemoteHttpResponse(remoteResp, remoteRespBody)
+
+    override fun isAcceptHeaderEmpty(): Boolean {
+        throw UnsupportedOperationException()
+    }
+
+    override fun acceptsMimeType(mimeType: String): Boolean {
+        throw UnsupportedOperationException()
+    }
+
+    override val currentRoute: HttpRoute?
+        get() = throw UnsupportedOperationException()
+
+    override fun fail(cause: Throwable?) {
+        throw UnsupportedOperationException()
+    }
+
+    override fun fail(statusCode: Int) {
+        throw UnsupportedOperationException()
+    }
+
+    override fun fail(statusCode: Int, cause: Throwable?) {
+        throw UnsupportedOperationException()
+    }
+
+    override fun failure(): Throwable? {
+        throw UnsupportedOperationException()
+    }
+
+    override fun <T> get(key: String): T? {
+        return initiatingExchange.get<T>(key)
+    }
+
+    override fun put(key: String, value: Any) {
+        initiatingExchange.put(key, value)
     }
 }

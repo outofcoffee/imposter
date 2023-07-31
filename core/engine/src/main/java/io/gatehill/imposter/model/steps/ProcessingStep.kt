@@ -45,18 +45,22 @@ package io.gatehill.imposter.model.steps
 
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.ResponseBehaviourFactory
-import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 
+interface StepContext
+
 interface ProcessingStep {
     fun execute(
-        statusCode: Int,
-        httpExchange: HttpExchange,
-        pluginConfig: PluginConfig,
-        resourceConfig: BasicResourceConfig,
-        additionalContext: Map<String, Any>?,
-        additionalBindings: Map<String, Any>?,
         responseBehaviourFactory: ResponseBehaviourFactory,
+        resourceConfig: BasicResourceConfig,
+        httpExchange: HttpExchange,
+        statusCode: Int,
+        context: StepContext,
     ): ReadWriteResponseBehaviour
 }
+
+data class PreparedStep(
+    val step: ProcessingStep,
+    val context: StepContext,
+)

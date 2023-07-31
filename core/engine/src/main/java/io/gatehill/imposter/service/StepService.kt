@@ -44,9 +44,11 @@
 package io.gatehill.imposter.service
 
 import io.gatehill.imposter.http.HttpMethod
-import io.gatehill.imposter.model.steps.ProcessingStep
+import io.gatehill.imposter.model.steps.PreparedStep
 import io.gatehill.imposter.model.steps.RemoteProcessingStep
+import io.gatehill.imposter.model.steps.RemoteStepContext
 import io.gatehill.imposter.model.steps.ScriptProcessingStep
+import io.gatehill.imposter.model.steps.ScriptStepContext
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.ResourcesHolder
 import io.gatehill.imposter.plugin.config.capture.ItemCaptureConfig
@@ -55,6 +57,9 @@ import io.gatehill.imposter.plugin.config.steps.StepsConfigHolder
 import org.apache.logging.log4j.LogManager
 import javax.inject.Inject
 
+/**
+ * Parses processing steps.
+ */
 class StepService @Inject constructor(
     private val scriptedResponseService: ScriptedResponseService,
     private val remoteService: RemoteService,
@@ -62,44 +67,43 @@ class StepService @Inject constructor(
 ) {
     private val logger = LogManager.getLogger(StepService::class.java)
 
+    /**
+     * Parses the steps for the given resource.
+     */
     fun determineSteps(
         pluginConfig: PluginConfig,
         resourceConfig: BasicResourceConfig,
-    ): List<ProcessingStep> {
-        val steps = mutableListOf<ProcessingStep>()
-
+        additionalContext: Map<String, Any>?,
+    ): List<PreparedStep> {
+        val steps = mutableListOf<PreparedStep>()
         if (resourceConfig is StepsConfigHolder) {
-            resourceConfig.steps?.forEach { step ->
-                steps += when (val stepType = step["type"]) {
-                    "remote" -> parseRemoteStep(step)
-
-                    "script" -> ScriptProcessingStep(
-                        step["scriptFile"] as String,
-                        scriptedResponseService,
-                    )
-
-                    else -> throw IllegalStateException("Unsupported step type: $stepType")
-                }
-            }
+            resourceConfig.steps?.let { steps += parseSteps(it, pluginConfig, additionalContext) }
         }
-
         // convert explicit script file to step
-        val scriptFile: String? = resourceConfig.responseConfig.scriptFile
-            ?: if (pluginConfig is ResourcesHolder<*> && pluginConfig.isDefaultsFromRootResponse == true && pluginConfig is BasicResourceConfig) {
-                logger.trace("Inheriting root script file configuration as defaults")
-                pluginConfig.responseConfig.scriptFile
-            } else {
-                null
-            }
-        if (!scriptFile.isNullOrEmpty()) {
-            steps += ScriptProcessingStep(scriptFile, scriptedResponseService)
+        getExplicitScriptFile(resourceConfig, pluginConfig)?.let { scriptFile ->
+            steps += parseScriptStep(pluginConfig, scriptFile, additionalContext)
         }
-
         return steps
     }
 
-    private fun parseRemoteStep(step: Map<String, *>): RemoteProcessingStep {
-        val captureConfig: Map<String, ItemCaptureConfig>? = (step["capture"] as Map<String, Map<String, *>>?)?.let { configs ->
+    private fun parseSteps(
+        steps: List<Map<String, *>>,
+        pluginConfig: PluginConfig,
+        additionalContext: Map<String, Any>?,
+    ): List<PreparedStep> {
+        return steps.map { step ->
+            when (val stepType = step["type"]) {
+                "remote" -> parseRemoteStep(step)
+                "script" -> parseScriptStep(pluginConfig, step["scriptFile"] as String, additionalContext)
+                else -> throw IllegalStateException("Unsupported step type: $stepType")
+            }
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun parseRemoteStep(step: Map<String, *>): PreparedStep {
+        val capture = step["capture"] as Map<String, Map<String, *>>?
+        val captureConfig: Map<String, ItemCaptureConfig>? = capture?.let { configs ->
             configs.mapValues { (_, config) ->
                 ItemCaptureConfig(
                     _store = config["store"],
@@ -111,13 +115,43 @@ class StepService @Inject constructor(
                 )
             }
         }
-        return RemoteProcessingStep(
-            step["url"] as String,
-            HttpMethod.valueOf(step["method"] as String),
-            step["content"] as String,
-            captureConfig,
-            remoteService,
-            captureService,
+        return PreparedStep(
+            step = RemoteProcessingStep(remoteService, captureService),
+            context = RemoteStepContext(
+                step["url"] as String,
+                HttpMethod.valueOf(step["method"] as String),
+                step["content"] as String,
+                captureConfig,
+            ),
         )
+    }
+
+    private fun parseScriptStep(
+        pluginConfig: PluginConfig,
+        scriptFile: String,
+        additionalContext: Map<String, Any>?,
+    ) = PreparedStep(
+        step = ScriptProcessingStep(scriptedResponseService),
+        context = ScriptStepContext(
+            pluginConfig,
+            scriptFile,
+            additionalContext,
+        )
+    )
+
+    private fun getExplicitScriptFile(
+        resourceConfig: BasicResourceConfig,
+        pluginConfig: PluginConfig,
+    ): String? {
+        val scriptFile: String? = resourceConfig.responseConfig.scriptFile ?: run {
+            val inheritScriptFile = pluginConfig is ResourcesHolder<*> && pluginConfig.isDefaultsFromRootResponse == true
+            if (inheritScriptFile && pluginConfig is BasicResourceConfig) {
+                logger.trace("Inheriting root script file configuration as defaults")
+                pluginConfig.responseConfig.scriptFile
+            } else {
+                null
+            }
+        }
+        return scriptFile?.takeIf { it.isNotEmpty() }
     }
 }

@@ -41,46 +41,56 @@
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.gatehill.imposter.model.steps
+package io.gatehill.imposter.model.steps.http
 
-import io.gatehill.imposter.http.HttpExchange
-import io.gatehill.imposter.http.ResponseBehaviourFactory
-import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
-import io.gatehill.imposter.script.ReadWriteResponseBehaviour
-import io.gatehill.imposter.script.ResponseBehaviourType
-import io.gatehill.imposter.service.ScriptedResponseService
+import io.gatehill.imposter.http.HttpMethod
+import io.gatehill.imposter.http.HttpRequest
+import io.vertx.core.buffer.Buffer
+import io.vertx.core.json.JsonObject
+import okhttp3.Request
 
-class ScriptProcessingStep(
-    private val scriptedResponseService: ScriptedResponseService,
-) : ProcessingStep {
-    override fun execute(
-        responseBehaviourFactory: ResponseBehaviourFactory,
-        resourceConfig: BasicResourceConfig,
-        httpExchange: HttpExchange,
-        statusCode: Int,
-        context: StepContext,
-    ): ReadWriteResponseBehaviour {
-        val ctx = context as ScriptStepContext
+/**
+ * Adapts an OkHttp request to an Imposter request.
+ */
+class RemoteHttpRequest(private val remoteReq: Request) : HttpRequest {
+    override val path: String
+        get() = remoteReq.url.encodedPath
+    override val method: HttpMethod
+        get() = HttpMethod.valueOf(remoteReq.method)
+    override val absoluteUri: String
+        get() = remoteReq.url.toUri().toString()
+    override val headers: Map<String, String>
+        get() = remoteReq.headers.toMap()
 
-        val responseBehaviour = scriptedResponseService.determineResponseFromScript(
-            httpExchange,
-            ctx.pluginConfig,
-            ctx.scriptFile,
-            ctx.additionalContext
-        )
-
-        // use defaults if not set
-        if (ResponseBehaviourType.DEFAULT_BEHAVIOUR == responseBehaviour.behaviourType) {
-            responseBehaviourFactory.populate(statusCode, resourceConfig.responseConfig, responseBehaviour)
-        }
-
-        return responseBehaviour
+    override fun getHeader(headerKey: String): String? {
+        return remoteReq.header(headerKey)
     }
-}
 
-data class ScriptStepContext(
-    val pluginConfig: PluginConfig,
-    val scriptFile: String,
-    val additionalContext: Map<String, Any>?,
-) : StepContext
+    override val pathParams: Map<String, String>
+        get() = throw UnsupportedOperationException()
+
+    override fun getPathParam(paramName: String): String? {
+        throw UnsupportedOperationException()
+    }
+
+    override val queryParams: Map<String, String>
+        get() = throw UnsupportedOperationException()
+
+    override fun getQueryParam(queryParam: String): String? {
+        throw UnsupportedOperationException()
+    }
+
+    override val formParams: Map<String, String>
+        get() = throw UnsupportedOperationException()
+
+    override fun getFormParam(formParam: String): String? {
+        throw UnsupportedOperationException()
+    }
+
+    override val body: Buffer?
+        get() = throw UnsupportedOperationException()
+    override val bodyAsString: String?
+        get() = throw UnsupportedOperationException()
+    override val bodyAsJson: JsonObject?
+        get() = throw UnsupportedOperationException()
+}
