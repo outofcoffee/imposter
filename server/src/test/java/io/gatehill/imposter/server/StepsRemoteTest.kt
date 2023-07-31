@@ -43,7 +43,6 @@
 package io.gatehill.imposter.server
 
 import io.gatehill.imposter.plugin.test.TestPluginImpl
-import io.gatehill.imposter.util.HttpUtil
 import io.restassured.RestAssured
 import io.restassured.RestAssured.given
 import io.vertx.core.Handler
@@ -55,7 +54,6 @@ import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
 import org.hamcrest.Matcher
 import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.Matchers
 import org.hamcrest.Matchers.equalTo
 import org.junit.AfterClass
 import org.junit.Before
@@ -107,7 +105,7 @@ class StepsRemoteTest : BaseVerticleTest() {
             .queryParam("petId", "123")
             .get("/example")
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
+            .statusCode(201)
             .body(equalTo("Fluffy"))
     }
 

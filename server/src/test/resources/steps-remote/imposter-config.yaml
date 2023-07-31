@@ -14,6 +14,11 @@ resources:
           petName:
             store: request
             expression: "${remote.response.body}"
+          statusCode:
+            store: request
+            expression: "${remote.response.statusCode}"
+      - type: script
+        scriptFile: status.js
     response:
       content: "${stores.request.petName}"
       template: true

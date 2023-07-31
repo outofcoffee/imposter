@@ -101,6 +101,9 @@ object ContextEvaluator : HttpExpressionEvaluator<String>() {
                             "headers" -> checkExpression(expression, 4, parts) {
                                 httpExchange.response.getHeader(parts[3])
                             }
+                            "statusCode" -> checkExpression(expression, 3, parts) {
+                                httpExchange.response.statusCode.toString()
+                            }
                             else -> {
                                 LOGGER.warn("Could not parse response context expression: $expression")
                                 null
