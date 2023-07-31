@@ -108,12 +108,10 @@ class StepService @Inject constructor(
         val capture = step["capture"] as Map<String, Map<String, *>>?
         val captureConfig: Map<String, ItemCaptureConfig>? = capture?.let { configs ->
             configs.mapValues { (_, config) ->
+                // only a subset of the capture config is supported for remote steps
                 ItemCaptureConfig(
+                    // assumes store is a string
                     _store = config["store"],
-                    pathParam = config["pathParam"] as String?,
-                    queryParam = config["queryParam"] as String?,
-                    formParam = config["formParam"] as String?,
-                    requestHeader = config["requestHeader"] as String?,
                     expression = config["expression"] as String?,
                 )
             }
