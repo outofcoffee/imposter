@@ -43,6 +43,7 @@
 
 package io.gatehill.imposter.service
 
+import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.model.steps.http.RemoteHttpExchange
@@ -58,13 +59,16 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import org.apache.logging.log4j.LogManager
 import java.net.URI
+import javax.inject.Inject
 
 /**
  * Handles remote steps.
  *
  * @author Pete Cornish
  */
-class RemoteService {
+class RemoteService @Inject constructor(
+    private val imposterConfig: ImposterConfig,
+) {
     private val logger = LogManager.getLogger(javaClass)
     private val httpClient = OkHttpClient()
 
@@ -99,20 +103,7 @@ class RemoteService {
         httpExchange: HttpExchange,
     ): Call {
         try {
-            val uri = URI(PlaceholderUtil.replace(rawUrl, httpExchange, PlaceholderUtil.templateEvaluators))
-            val urlBuilder = HttpUrl.Builder()
-                .scheme(uri.scheme)
-                .host(uri.host)
-                .port(uri.port)
-                .addPathSegments(uri.path)
-                .query(uri.query)
-
-            queryParams?.forEach { (key, rawValue) ->
-                val value = PlaceholderUtil.replace(rawValue, httpExchange, PlaceholderUtil.templateEvaluators)
-                urlBuilder.addQueryParameter(key, value)
-            }
-
-            val url = urlBuilder.build()
+            val url = buildUrl(rawUrl, httpExchange, queryParams)
             logger.info("Sending remote request $method $url")
 
             val body: RequestBody? = content?.let {
@@ -137,6 +128,27 @@ class RemoteService {
         } catch (e: Exception) {
             throw RuntimeException("Failed to build remote call for ${LogUtil.describeRequest(httpExchange)}", e)
         }
+    }
+
+    private fun buildUrl(rawUrl: String, httpExchange: HttpExchange, queryParams: Map<String, String>?): HttpUrl {
+        val rawUri = PlaceholderUtil.replace(rawUrl, httpExchange, PlaceholderUtil.templateEvaluators)
+
+        // prefix server URL if URI is relative
+        val uri = if (rawUri.startsWith("/")) URI(imposterConfig.serverUrl + rawUri) else URI(rawUri)
+
+        val urlBuilder = HttpUrl.Builder()
+                .scheme(uri.scheme)
+                .host(uri.host)
+                .port(uri.port)
+                .addPathSegments(uri.path)
+                .query(uri.query)
+
+        queryParams?.forEach { (key, rawValue) ->
+            val value = PlaceholderUtil.replace(rawValue, httpExchange, PlaceholderUtil.templateEvaluators)
+            urlBuilder.addQueryParameter(key, value)
+        }
+
+        return urlBuilder.build()
     }
 
     private fun handleResponse(
