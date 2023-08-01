@@ -100,6 +100,8 @@ abstract class ConfiguredPlugin<T : PluginConfigImpl> @Inject constructor(
      * Iterates over [configs] and subresources to find unique route combinations
      * of path and HTTP method. For each combination found, only
      * the _first_ plugin configuration is returned.
+     *
+     * **Note:** paths with trailing wildcards are not returned.
      */
     protected fun findUniqueRoutes(): Map<UniqueRoute, T> {
         val unique = mutableMapOf<UniqueRoute, T>()
@@ -120,6 +122,9 @@ abstract class ConfiguredPlugin<T : PluginConfigImpl> @Inject constructor(
                 }
             }
         }
-        return unique
+        // wildcard routes are not treated as 'unique'
+        return unique.filterNot { (route, _) ->
+            route.path.endsWith("/*")
+        }
     }
 }
