@@ -49,6 +49,7 @@ import io.gatehill.imposter.model.steps.http.RemoteHttpExchange
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.PlaceholderUtil
 import okhttp3.Call
+import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -68,11 +69,12 @@ class RemoteService {
     fun sendRequest(
         url: String,
         method: HttpMethod,
+        queryParams: Map<String, String>?,
         headers: Map<String, String>?,
         content: String?,
         httpExchange: HttpExchange,
     ): RemoteHttpExchange {
-        val call = buildCall(url, method, headers, content, httpExchange)
+        val call = buildCall(url, method, queryParams, headers, content, httpExchange)
         if (logger.isTraceEnabled) {
             logger.trace("Request to remote: ${call.request()}")
         }
@@ -87,23 +89,36 @@ class RemoteService {
     private fun buildCall(
         rawUrl: String,
         method: HttpMethod,
+        queryParams: Map<String, String>?,
         headers: Map<String, String>?,
         content: String?,
         httpExchange: HttpExchange,
     ): Call {
         try {
-            val url = PlaceholderUtil.replace(rawUrl, httpExchange, PlaceholderUtil.templateEvaluators)
+            val uri = URI(PlaceholderUtil.replace(rawUrl, httpExchange, PlaceholderUtil.templateEvaluators))
+            val urlBuilder = HttpUrl.Builder()
+                .scheme(uri.scheme)
+                .host(uri.host)
+                .port(uri.port)
+                .addPathSegments(uri.path)
+                .query(uri.query)
+
+            queryParams?.forEach { (key, rawValue) ->
+                val value = PlaceholderUtil.replace(rawValue, httpExchange, PlaceholderUtil.templateEvaluators)
+                urlBuilder.addQueryParameter(key, value)
+            }
+
+            val url = urlBuilder.build()
             logger.info("Sending remote request $method $url")
 
             val body = content?.let {
                 PlaceholderUtil.replace(it, httpExchange, PlaceholderUtil.templateEvaluators)
             }?.toRequestBody()
 
-            val requestBuilder = Request.Builder()
-                .url(URI(url).toURL())
-                .method(method.name, body)
+            val requestBuilder = Request.Builder().url(url).method(method.name, body)
 
-            headers?.forEach { (key, value) ->
+            headers?.forEach { (key, rawValue) ->
+                val value = PlaceholderUtil.replace(rawValue, httpExchange, PlaceholderUtil.templateEvaluators)
                 requestBuilder.header(key, value)
             }
 

@@ -93,9 +93,13 @@ class StepsRemoteTest : BaseVerticleTest() {
         httpServer.requestHandler { request ->
             request.failOnAssertionError(request.method(), equalTo(HttpMethod.POST))
             request.failOnAssertionError(request.path(), equalTo("/"))
+            request.failOnAssertionError(request.query(), equalTo("petId=123"))
             request.failOnAssertionError(request.getHeader("X-Test-Header"), equalTo("test"))
             request.body { body ->
-                request.failOnAssertionError(body.result().toString(), equalTo("petId=123"))
+                request.failOnAssertionError(
+                    body.result().toString(),
+                    equalTo("""{ "type": "cat" }"""),
+                )
                 request.response().end("Fluffy")
             }
         }

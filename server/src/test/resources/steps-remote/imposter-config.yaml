@@ -7,9 +7,11 @@ resources:
       - type: remote
         url: http://localhost:8081
         method: POST
+        queryParams:
+          petId: "${context.request.queryParams.petId}"
         headers:
           X-Test-Header: "test"
-        content: "petId=${context.request.queryParams.petId}"
+        content: '{ "type": "cat" }'
         capture:
           petName:
             store: request
