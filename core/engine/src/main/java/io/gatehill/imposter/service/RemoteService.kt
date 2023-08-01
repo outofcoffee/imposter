@@ -49,7 +49,6 @@ import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.model.steps.http.RemoteHttpExchange
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.PlaceholderUtil
-import okhttp3.Call
 import okhttp3.FormBody
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
@@ -73,7 +72,7 @@ class RemoteService @Inject constructor(
     private val httpClient = OkHttpClient()
 
     fun sendRequest(
-        url: String,
+        rawUrl: String,
         method: HttpMethod,
         queryParams: Map<String, String>?,
         formParams: Map<String, String>?,
@@ -81,7 +80,22 @@ class RemoteService @Inject constructor(
         content: String?,
         httpExchange: HttpExchange,
     ): RemoteHttpExchange {
-        val call = buildCall(url, method, queryParams, formParams, headers, content, httpExchange)
+        val call = try {
+            val url = buildUrl(rawUrl, httpExchange, queryParams)
+            logger.info("Sending remote request $method $url")
+
+            val body = buildBody(content, httpExchange, formParams)
+            val requestBuilder = Request.Builder().url(url).method(method.name, body)
+
+            headers?.forEach { (key, rawValue) ->
+                requestBuilder.header(key, replacePlaceholders(rawValue, httpExchange))
+            }
+
+            httpClient.newCall(requestBuilder.build())
+
+        } catch (e: Exception) {
+            throw RuntimeException("Failed to build remote call for ${LogUtil.describeRequest(httpExchange)}", e)
+        }
         if (logger.isTraceEnabled) {
             logger.trace("Request to remote: ${call.request()}")
         }
@@ -93,62 +107,43 @@ class RemoteService @Inject constructor(
         }
     }
 
-    private fun buildCall(
-        rawUrl: String,
-        method: HttpMethod,
-        queryParams: Map<String, String>?,
-        formParams: Map<String, String>?,
-        headers: Map<String, String>?,
-        content: String?,
-        httpExchange: HttpExchange,
-    ): Call {
-        try {
-            val url = buildUrl(rawUrl, httpExchange, queryParams)
-            logger.info("Sending remote request $method $url")
-
-            val body: RequestBody? = content?.let {
-                PlaceholderUtil.replace(it, httpExchange, PlaceholderUtil.templateEvaluators)
-            }?.toRequestBody() ?: formParams?.let {
-                val formBuilder = FormBody.Builder()
-                formParams.forEach { (key, value) ->
-                    formBuilder.add(key, value)
-                }
-                formBuilder.build()
-            }
-
-            val requestBuilder = Request.Builder().url(url).method(method.name, body)
-
-            headers?.forEach { (key, rawValue) ->
-                val value = PlaceholderUtil.replace(rawValue, httpExchange, PlaceholderUtil.templateEvaluators)
-                requestBuilder.header(key, value)
-            }
-
-            return httpClient.newCall(requestBuilder.build())
-
-        } catch (e: Exception) {
-            throw RuntimeException("Failed to build remote call for ${LogUtil.describeRequest(httpExchange)}", e)
-        }
-    }
-
     private fun buildUrl(rawUrl: String, httpExchange: HttpExchange, queryParams: Map<String, String>?): HttpUrl {
-        val rawUri = PlaceholderUtil.replace(rawUrl, httpExchange, PlaceholderUtil.templateEvaluators)
+        val rawUri = replacePlaceholders(rawUrl, httpExchange)
 
         // prefix server URL if URI is relative
-        val uri = if (rawUri.startsWith("/")) URI(imposterConfig.serverUrl + rawUri) else URI(rawUri)
+        val uri = if (rawUri.startsWith("/")) {
+            URI(imposterConfig.serverUrl!! + rawUri)
+        } else {
+            URI(rawUri)
+        }
 
         val urlBuilder = HttpUrl.Builder()
                 .scheme(uri.scheme)
                 .host(uri.host)
                 .port(uri.port)
-                .addPathSegments(uri.path)
+                .addPathSegments(uri.path.removePrefix("/"))
                 .query(uri.query)
 
         queryParams?.forEach { (key, rawValue) ->
-            val value = PlaceholderUtil.replace(rawValue, httpExchange, PlaceholderUtil.templateEvaluators)
-            urlBuilder.addQueryParameter(key, value)
+            urlBuilder.addQueryParameter(key, replacePlaceholders(rawValue, httpExchange))
         }
 
         return urlBuilder.build()
+    }
+
+    private fun buildBody(
+        content: String?,
+        httpExchange: HttpExchange,
+        formParams: Map<String, String>?
+    ): RequestBody? = content?.let {
+        // literal content takes precedence over form params
+        replacePlaceholders(it, httpExchange)
+    }?.toRequestBody() ?: formParams?.let {
+        val formBuilder = FormBody.Builder()
+        formParams.forEach { (key, rawValue) ->
+            formBuilder.add(key, replacePlaceholders(rawValue, httpExchange))
+        }
+        formBuilder.build()
     }
 
     private fun handleResponse(
@@ -165,7 +160,6 @@ class RemoteService @Inject constructor(
             logger.debug(
                 "Received response from remote URL ${request.url} with status ${response.code} [body: ${body?.length} bytes] for ${LogUtil.describeRequest(httpExchange)}"
             )
-
             return RemoteHttpExchange(httpExchange, request, response, body)
 
         } catch (e: Exception) {
@@ -174,4 +168,7 @@ class RemoteService @Inject constructor(
             )
         }
     }
+
+    private fun replacePlaceholders(input: String, httpExchange: HttpExchange): String =
+        PlaceholderUtil.replace(input, httpExchange, PlaceholderUtil.templateEvaluators)
 }
