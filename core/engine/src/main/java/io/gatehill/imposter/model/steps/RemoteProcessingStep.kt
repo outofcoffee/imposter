@@ -74,6 +74,7 @@ class RemoteProcessingStep(
                 ctx.url,
                 ctx.method,
                 ctx.queryParams,
+                ctx.formParams,
                 ctx.headers,
                 ctx.content,
                 httpExchange
@@ -93,6 +94,7 @@ data class RemoteStepContext(
     val url: String,
     val method: HttpMethod,
     val queryParams: Map<String, String>?,
+    val formParams: Map<String, String>?,
     val headers: Map<String, String>?,
     val content: String?,
     val capture: Map<String, ItemCaptureConfig>?,

@@ -125,6 +125,7 @@ class StepService @Inject constructor(
                 url = step["url"] as String,
                 method = HttpMethod.valueOf(step["method"] as String),
                 queryParams = step["queryParams"] as Map<String, String>?,
+                formParams = step["formParams"] as Map<String, String>?,
                 headers = step["headers"] as Map<String, String>?,
                 content = step["content"] as String?,
                 capture = captureConfig,

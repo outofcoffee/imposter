@@ -49,9 +49,11 @@ import io.gatehill.imposter.model.steps.http.RemoteHttpExchange
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.PlaceholderUtil
 import okhttp3.Call
+import okhttp3.FormBody
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import org.apache.logging.log4j.LogManager
@@ -70,11 +72,12 @@ class RemoteService {
         url: String,
         method: HttpMethod,
         queryParams: Map<String, String>?,
+        formParams: Map<String, String>?,
         headers: Map<String, String>?,
         content: String?,
         httpExchange: HttpExchange,
     ): RemoteHttpExchange {
-        val call = buildCall(url, method, queryParams, headers, content, httpExchange)
+        val call = buildCall(url, method, queryParams, formParams, headers, content, httpExchange)
         if (logger.isTraceEnabled) {
             logger.trace("Request to remote: ${call.request()}")
         }
@@ -90,6 +93,7 @@ class RemoteService {
         rawUrl: String,
         method: HttpMethod,
         queryParams: Map<String, String>?,
+        formParams: Map<String, String>?,
         headers: Map<String, String>?,
         content: String?,
         httpExchange: HttpExchange,
@@ -111,9 +115,15 @@ class RemoteService {
             val url = urlBuilder.build()
             logger.info("Sending remote request $method $url")
 
-            val body = content?.let {
+            val body: RequestBody? = content?.let {
                 PlaceholderUtil.replace(it, httpExchange, PlaceholderUtil.templateEvaluators)
-            }?.toRequestBody()
+            }?.toRequestBody() ?: formParams?.let {
+                val formBuilder = FormBody.Builder()
+                formParams.forEach { (key, value) ->
+                    formBuilder.add(key, value)
+                }
+                formBuilder.build()
+            }
 
             val requestBuilder = Request.Builder().url(url).method(method.name, body)
 
