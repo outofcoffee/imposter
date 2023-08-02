@@ -39,21 +39,25 @@ To begin, check out the [Getting started](getting_started.md) guide. See the _Us
 - [Template queries](template_queries.md)
 - [Performance simulation](performance_simulation.md)
 - [Failure simulation](./failure_simulation.md)
-- [Metrics, logs and telemetry](metrics_logs_telemetry.md)
-- [Proxy an endpoint](proxy_endpoint.md)
+- [Proxy an existing endpoint](proxy_endpoint.md)
 - [Scaffolding configuration](scaffold.md)
 - [Fake data](fake_data.md)
 - [CORS](cors.md)
-- [Performance tuning](./performance_tuning.md)
-- [Plugins](./plugins.md)
-- [Usage (arguments and environment variables)](usage.md)
-- [Features](./features.md)
 - [Groovy scripting tips](groovy_tips.md)
+
+### Operational topics
+
+- [Metrics, logs and telemetry](metrics_logs_telemetry.md)
+- [Performance tuning](./performance_tuning.md)
+- [Benchmarks](./benchmarks.md)
+- [TLS/SSL](./tls_ssl.md)
+- [Usage (arguments and environment variables)](usage.md)
 
 ### Other
 
+- [Plugins](./plugins.md)
+- [Features](./features.md)
 - [Tips and tricks](tips_tricks.md)
-- [Benchmarks](./benchmarks.md)
 
 ## Mock types
 
@@ -70,9 +74,9 @@ Imposter provides specialised mocks for the following scenarios:
 
 ## Developers
 
-- [Build](build.md)
+- [GitHub](https://github.com/outofcoffee/imposter)
 - [Roadmap](roadmap.md)
-- [Github](https://github.com/outofcoffee/imposter)
+- [Build](build.md)
 
 ## Tutorials
 

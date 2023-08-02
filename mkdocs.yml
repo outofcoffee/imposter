@@ -31,32 +31,34 @@ nav:
     - Stores: 'stores.md'
     - GraphQL: 'stores_graphql.md'
 
+  - Operational topics:
+    - Metrics, logs and telemetry: 'metrics_logs_telemetry.md'
+    - Performance tuning: 'performance_tuning.md'
+    - Benchmarks: 'benchmarks.md'
+    - TLS/SSL: 'tls_ssl.md'
+    - Usage (arguments and environment variables): 'usage.md'
+
   - Advanced:
     - Advanced request matching: 'request_matching.md'
     - OpenAPI validation: 'openapi_validation.md'
     - Template queries: 'template_queries.md'
     - Performance simulation: 'performance_simulation.md'
     - Failure simulation: 'failure_simulation.md'
-    - Metrics, logs and telemetry: 'metrics_logs_telemetry.md'
-    - Proxy an endpoint: 'proxy_endpoint.md'
+    - Proxy an existing endpoint: 'proxy_endpoint.md'
     - Scaffolding configuration: 'scaffold.md'
     - Fake data: 'fake_data.md'
     - CORS: 'cors.md'
-    - Performance tuning: 'performance_tuning.md'
-    - TLS/SSL: 'tls_ssl.md'
-    - Plugins: 'plugins.md'
-    - Usage (arguments and environment variables): 'usage.md'
-    - Features: 'features.md'
     - Groovy scripting tips: 'groovy_tips.md'
 
   - Other:
+    - Plugins: 'plugins.md'
+    - Features: 'features.md'
     - Tips and tricks: 'tips_tricks.md'
-    - Benchmarks: 'benchmarks.md'
 
   - Developers:
     - GitHub: 'https://github.com/outofcoffee/imposter'
-    - Build: 'build.md'
     - Roadmap: 'roadmap.md'
+    - Build: 'build.md'
 
   - Tutorials:
     - Mocking APIs with OpenAPI and Imposter: 'https://medium.com/@outofcoffee/mocking-apis-with-swagger-and-imposter-3694bd1733c0'
