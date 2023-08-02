@@ -180,7 +180,16 @@ open class ReadWriteResponseBehaviourImpl : ReadWriteResponseBehaviour {
         return this
     }
 
-    override fun withFailure(failureType: FailureSimulationType?): MutableResponseBehaviour {
+    override fun withFailure(failureType: String): MutableResponseBehaviour {
+        val failure = try {
+            FailureSimulationType.valueOf(failureType)
+        } catch (e: Exception) {
+            throw IllegalStateException("Unsupported failure type: $failureType")
+        }
+        return withFailureType(failure)
+    }
+
+    override fun withFailureType(failureType: FailureSimulationType?): MutableResponseBehaviour {
         this.failureType = failureType
         return this
     }

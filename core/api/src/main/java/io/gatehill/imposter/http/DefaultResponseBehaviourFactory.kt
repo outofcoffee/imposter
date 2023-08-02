@@ -78,7 +78,7 @@ open class DefaultResponseBehaviourFactory protected constructor() : ResponseBeh
             responseBehaviour.withPerformance(responseConfig.performanceDelay)
         }
         if (null == responseBehaviour.failureType) {
-            responseBehaviour.withFailure(responseConfig.failureType)
+            responseBehaviour.withFailureType(responseConfig.failureType)
         }
         responseConfig.headers?.let { headers -> responseBehaviour.responseHeaders.putAll(headers) }
     }
