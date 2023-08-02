@@ -1,0 +1,17 @@
+plugin: rest
+
+resources:
+- method: GET
+  path: /exact-delay
+  response:
+    # exactly 1000ms delay
+    delay:
+      exact: 1000
+
+- method: GET
+  path: /range-delay
+  response:
+    # delay in range of 500ms-1500ms
+    delay:
+      min: 500
+      max: 1500

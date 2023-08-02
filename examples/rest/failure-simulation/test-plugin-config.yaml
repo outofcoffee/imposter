@@ -1,0 +1,14 @@
+plugin: rest
+
+resources:
+- method: GET
+  path: /failure-empty
+  response:
+    # send an empty HTTP response
+    fail: EmptyResponse
+
+- method: GET
+  path: /failure-close
+  response:
+    # close the connection before sending a response
+    fail: CloseConnection

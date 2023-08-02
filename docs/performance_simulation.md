@@ -4,11 +4,14 @@ Characteristics like response latency can be simulated.
 
 ## Injecting delays
 
-Delays can be injected via a configuration driven approach or a script driven approach. Delays are specified in milliseconds.
+Delays can be injected via configuration or using a script driven approach. Delays are specified in milliseconds.
 
 The delay controls the time added _after_ any request processing has completed (scripts, plugins etc.). So, if a normal un-delayed request takes 0.05 seconds and a delay of 100ms is added, then the response will be transmitted to the client after 105ms.
 
 Delays can be specified as an exact value, or a range. If a range is specified, then a random value (roughly uniformly distributed) will be selected between the minimum and maximum range values.
+
+> **Note**
+> Delays can also be combined with [failure simulation](./failure_simulation.md) effects. For example to simulate a delay followed by a closed connection.
 
 ### Configuration driven
 
@@ -48,7 +51,7 @@ resources:
 
 ### Script driven
 
-If using [Scripting](./scripting.md), use the `withDelay(exactDelay)` and `withDelayRange(minDelay, maxDelay)` methods:
+If using [Scripting](./scripting.md), use the `withDelay(exactDelay)` and `withDelayRange(minDelay, maxDelay)` methods.
 
 For an exact delay:
 

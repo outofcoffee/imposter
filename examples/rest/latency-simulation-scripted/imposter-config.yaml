@@ -2,11 +2,11 @@ plugin: rest
 
 resources:
 - method: GET
-  path: /scripted-exact-delay
+  path: /exact-delay
   response:
     scriptFile: delay.js
 
 - method: GET
-  path: /scripted-range-delay
+  path: /range-delay
   response:
     scriptFile: delay.js

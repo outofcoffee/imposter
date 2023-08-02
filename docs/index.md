@@ -38,6 +38,7 @@ To begin, check out the [Getting started](getting_started.md) guide. See the _Us
 - [OpenAPI validation](openapi_validation.md)
 - [Template queries](template_queries.md)
 - [Performance simulation](performance_simulation.md)
+- [Failure simulation](./failure_simulation.md)
 - [Metrics, logs and telemetry](metrics_logs_telemetry.md)
 - [Proxy an endpoint](proxy_endpoint.md)
 - [Scaffolding configuration](scaffold.md)
