@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.27.0] - 2023-08-02
+### Added
+- feat: adds request.path and request.uri template placeholders.
+
+### Changed
+- docs: organises table of contents.
+
 ## [3.26.0] - 2023-08-02
 ### Added
 - feat: adds remote processing step.
