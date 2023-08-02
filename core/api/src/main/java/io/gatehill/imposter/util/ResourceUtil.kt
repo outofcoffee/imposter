@@ -46,6 +46,7 @@ import com.google.common.base.Strings
 import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.plugin.config.resource.MethodResourceConfig
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig
+import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import java.util.regex.Pattern
 
 /**
@@ -99,4 +100,10 @@ object ResourceUtil {
             HttpMethod.GET
         }
     }
+
+    /**
+     * @return `true` if the [resource] represents a static content route, otherwise `false`
+     */
+    fun isStaticContentRoute(resource: ResourceConfig): Boolean =
+            resource is ResponseConfigHolder && !resource.responseConfig.dir.isNullOrBlank()
 }

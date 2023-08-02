@@ -74,7 +74,7 @@ import io.vertx.core.Vertx
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
 import java.io.File
-import java.util.UUID
+import java.util.*
 import java.util.regex.Pattern
 import javax.inject.Inject
 
@@ -213,11 +213,15 @@ class ResourceServiceImpl @Inject constructor(
             if (config !is ResourcesHolder<*>) {
                 continue
             }
-            for (resource in config.resources ?: emptyList()) {
-                if (resource.responseConfig.dir.isNullOrBlank() || resource.path.isNullOrBlank()) {
-                    continue
+            val resources = config.resources?.filter { ResourceUtil.isStaticContentRoute(it) } ?: emptyList()
+            for (resource in resources) {
+                if (resource.path.isNullOrBlank()) {
+                    throw IllegalStateException("Static content dir [${resource.responseConfig.dir}] must specify path")
                 }
                 val path = resource.path!!
+                if (resource.responseConfig.dir.isNullOrBlank()) {
+                    throw IllegalStateException("Static content path [${path}] must specify dir")
+                }
                 if (!path.endsWith("/*")) {
                     throw IllegalStateException("Static content path [${path}] must end with a trailing slash")
                 }

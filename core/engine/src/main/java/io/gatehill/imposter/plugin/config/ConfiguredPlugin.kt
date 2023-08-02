@@ -48,6 +48,7 @@ import io.gatehill.imposter.config.util.ConfigUtil
 import io.gatehill.imposter.http.UniqueRoute
 import io.gatehill.imposter.plugin.RoutablePlugin
 import io.gatehill.imposter.plugin.config.resource.PassthroughResourceConfig
+import io.gatehill.imposter.util.ResourceUtil
 import io.vertx.core.Vertx
 import java.io.File
 import javax.inject.Inject
@@ -101,20 +102,20 @@ abstract class ConfiguredPlugin<T : PluginConfigImpl> @Inject constructor(
      * of path and HTTP method. For each combination found, only
      * the _first_ plugin configuration is returned.
      *
-     * **Note:** paths with trailing wildcards are not returned.
+     * **Note:** static content routes are not returned.
      */
     protected fun findUniqueRoutes(): Map<UniqueRoute, T> {
         val unique = mutableMapOf<UniqueRoute, T>()
         configs.forEach { config ->
             // root resource
-            config.path?.let {
+            config.takeUnless { ResourceUtil.isStaticContentRoute(config) }?.path?.let {
                 val uniqueRoute = UniqueRoute.fromResourceConfig(config)
                 unique[uniqueRoute] = config
             }
 
             // subresources
             if (config is ResourcesHolder<*>) {
-                config.resources?.forEach { resource ->
+                config.resources?.filterNot { ResourceUtil.isStaticContentRoute(it) }?.forEach { resource ->
                     val uniqueRoute = UniqueRoute.fromResourceConfig(resource)
                     if (!unique.containsKey(uniqueRoute)) {
                         unique[uniqueRoute] = config
@@ -122,9 +123,6 @@ abstract class ConfiguredPlugin<T : PluginConfigImpl> @Inject constructor(
                 }
             }
         }
-        // wildcard routes are not treated as 'unique'
-        return unique.filterNot { (route, _) ->
-            route.path.endsWith("/*")
-        }
+        return unique
     }
 }

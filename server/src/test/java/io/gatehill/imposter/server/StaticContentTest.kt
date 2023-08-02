@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2022.
+ * Copyright (c) 2023-2023.
  *
  * This file is part of Imposter.
  *
@@ -40,25 +40,54 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.server
 
-package io.gatehill.imposter.http
-
-import io.gatehill.imposter.plugin.config.resource.ResourceConfig
-import io.gatehill.imposter.util.ResourceUtil
+import io.gatehill.imposter.plugin.test.TestPluginImpl
+import io.restassured.RestAssured
+import io.vertx.ext.unit.TestContext
+import io.vertx.ext.unit.junit.VertxUnitRunner
+import org.hamcrest.Matchers.containsString
+import org.hamcrest.Matchers.equalTo
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
 
 /**
- * Represents a unique, routable, combination of HTTP method and path.
+ * Tests for returning static content.
+ *
+ * @author Pete Cornish
  */
-data class UniqueRoute(
-    val path: String,
-    val method: HttpMethod? = null,
-) {
-    companion object {
-        fun fromResourceConfig(resourceConfig: ResourceConfig): UniqueRoute {
-            return UniqueRoute(
-                path = resourceConfig.path ?: "",
-                method = ResourceUtil.extractResourceMethod(resourceConfig),
-            )
-        }
+@RunWith(VertxUnitRunner::class)
+class StaticContentTest : BaseVerticleTest() {
+    override val pluginClass = TestPluginImpl::class.java
+
+    @Before
+    @Throws(Exception::class)
+    override fun setUp(testContext: TestContext) {
+        super.setUp(testContext)
+        RestAssured.baseURI = "http://$host:$listenPort"
+        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails()
+    }
+
+    override val testConfigDirs = listOf(
+        "/static-content"
+    )
+
+    @Test
+    fun `fetch static content root`() {
+        RestAssured.given().`when`()
+            .get("/")
+            .then()
+            .statusCode(equalTo(200))
+            .body(containsString("Hello world"))
+    }
+
+    @Test
+    fun `fetch static content file by name`() {
+        RestAssured.given().`when`()
+            .get("/styles.css")
+            .then()
+            .statusCode(equalTo(200))
+            .body(containsString(".example"))
     }
 }

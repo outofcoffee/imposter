@@ -53,6 +53,8 @@ import io.gatehill.imposter.service.ResponseRoutingService
 import io.gatehill.imposter.service.ResponseService
 import io.gatehill.imposter.util.ResourceUtil
 import io.vertx.core.Vertx
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 import javax.inject.Inject
 
 /**
@@ -65,7 +67,7 @@ class TestPluginImpl @Inject constructor(
     private val responseService: ResponseService,
     private val responseRoutingService: ResponseRoutingService,
 ) : ConfiguredPlugin<TestPluginConfig>(vertx, imposterConfig) {
-
+    private val logger: Logger = LogManager.getLogger(TestPluginImpl::class.java)
     override val configClass = TestPluginConfig::class.java
 
     private val resourceMatcher = SingletonResourceMatcher.instance
@@ -79,6 +81,7 @@ class TestPluginImpl @Inject constructor(
         router: HttpRouter,
         uniqueRoute: UniqueRoute,
     ) {
+        logger.info("Configuring route: $uniqueRoute")
         val handler = resourceService.handleRoute(imposterConfig, pluginConfig, resourceMatcher) { httpExchange ->
             val resourceConfig = httpExchange.get<BasicResourceConfig>(ResourceUtil.RESOURCE_CONFIG_KEY)!!
 
