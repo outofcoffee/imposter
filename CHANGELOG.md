@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.26.0] - 2023-08-02
+### Added
+- feat: adds remote processing step.
+- feat: adds response.statusCode expression.
+- feat: adds script processing step.
+- feat: adds syntactic sugar for scripted failure simulation.
+- feat: allows remote URL to be templated.
+- feat: passes through form params in remote step.
+- feat: passes through remote query params.
+- feat: passes through remote request headers and templates body content.
+- feat: supports relative URLs in remote steps.
+
+### Changed
+- chore(deps): bump actions/setup-python from 4.6.1 to 4.7.0
+- docs: describes failure simulation effects and improves examples.
+- refactor: adds syntactic sugar for remote context steps.
+- refactor: narrows interface for step processor.
+- refactor: removes unneeded step allocations.
+- refactor: supports subset of capture config in remote steps.
+- refactor: tidies remote request builder.
+
 ## [3.25.4] - 2023-08-02
 ### Fixed
 - fix: improves reliability of static content route detection.
