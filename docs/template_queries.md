@@ -1,6 +1,6 @@
 # Response template queries
 
-Imposter allows you to respond with a template - that is, a file containing placeholders, which are replaced with values at runtime. See the [templates](./templates.md) page for more information.
+Imposter allows you to respond with a template - that is, a file or content containing placeholders, which are replaced with values at runtime. See the [templates](./templates.md) page for more information.
 
 You can also use a JsonPath expression to query an object when using a placeholder.
 

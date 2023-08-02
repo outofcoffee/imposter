@@ -1,6 +1,6 @@
 # Response templates
 
-Imposter allows you to respond with a template - that is, a file containing placeholders, which are replaced with values at runtime.
+Imposter allows you to respond with a template - that is, a file or content containing placeholders, which are replaced with values at runtime.
 
 Templates can be useful when you are [capturing data](./data_capture.md), using [stores](./stores.md) or generating data from [a script](./scripting.md).
 
@@ -176,6 +176,15 @@ $ curl http://localhost:8080/users --data-urlencode "user=alice"
 
 Hello alice
 ```
+
+### Other request attributes
+
+Other request attributes are available:
+
+| Attribute              | Meaning                           | Example                         |
+|------------------------|-----------------------------------|---------------------------------|
+| `context.request.path` | The HTTP request path.            | `/example`                      |
+| `context.request.uri`  | The full URI of the HTTP request. | `http://localhost:8080/example` |
 
 ### Date/time values
 

@@ -75,6 +75,9 @@ object ContextEvaluator : HttpExpressionEvaluator<String>() {
                             "headers" -> checkExpression(expression, 4, parts) {
                                 httpExchange.request.getHeader(parts[3])
                             }
+                            "path" -> checkExpression(expression, 3, parts) {
+                                httpExchange.request.path
+                            }
                             "pathParams" -> checkExpression(expression, 4, parts) {
                                 httpExchange.request.getPathParam(parts[3])
                             }
@@ -83,6 +86,9 @@ object ContextEvaluator : HttpExpressionEvaluator<String>() {
                             }
                             "formParams" -> checkExpression(expression, 4, parts) {
                                 httpExchange.request.getFormParam(parts[3])
+                            }
+                            "uri" -> checkExpression(expression, 3, parts) {
+                                httpExchange.request.absoluteUri
                             }
                             else -> {
                                 LOGGER.warn("Could not parse request context expression: $expression")
