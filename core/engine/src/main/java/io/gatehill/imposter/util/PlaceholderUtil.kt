@@ -50,6 +50,7 @@ import io.gatehill.imposter.placeholder.ContextEvaluator
 import io.gatehill.imposter.placeholder.DateTimeEvaluator
 import io.gatehill.imposter.placeholder.HttpExpressionEvaluator
 import io.gatehill.imposter.placeholder.QueryProviderImpl
+import io.gatehill.imposter.placeholder.SystemEvaluator
 
 /**
  * Replaces expression placeholders during the lifecycle of a request/response exchange.
@@ -64,6 +65,7 @@ object PlaceholderUtil {
         "context" to ContextEvaluator,
         "datetime" to DateTimeEvaluator,
         "random" to RandomEvaluator,
+        "system" to SystemEvaluator,
     )
 
     /**
