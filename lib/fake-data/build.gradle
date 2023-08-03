@@ -16,7 +16,7 @@ dependencies {
     implementation project(':mock:mock-openapi')
     implementation ("io.swagger.core.v3:swagger-models:$version_swagger_models")
 
-    pluginImplementation('net.datafaker:datafaker:1.9.0') {
+    pluginImplementation('net.datafaker:datafaker:2.0.1') {
         exclude module: 'snakeyaml'
     }
 
