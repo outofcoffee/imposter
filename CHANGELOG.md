@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.28.0] - 2023-08-04
+### Added
+- feat: adds system template placeholders.
+
+### Changed
+- build: removes separate Nashorn plugin.
+- chore(deps): bumps swagger-models to 2.2.14, swagger-parser to 2.1.16 and swagger-request-validator to 2.35.2.
+
+### Fixed
+- fix(openapi): explicitly set parseOptions.resolveFully
+
 ## [3.27.0] - 2023-08-02
 ### Added
 - feat: adds request.path and request.uri template placeholders.
