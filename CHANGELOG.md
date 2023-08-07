@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.28.1] - 2023-08-07
+### Changed
+- chore(deps): bump version_vertx from 4.4.1 to 4.4.4
+
+### Fixed
+- fix: body matching score should include weight of allOf/anyOf clauses.
+- fix: don't propagate null through request body match branches
+- fix: improves resource matching logging.
+- fix: operator matching should use equality check not identity.
+
 ## [3.28.0] - 2023-08-04
 ### Added
 - feat: adds system template placeholders.
