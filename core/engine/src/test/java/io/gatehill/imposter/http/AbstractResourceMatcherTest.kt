@@ -34,8 +34,8 @@ class AbstractResourceMatcherTest {
     @Test
     fun determineMatch() {
         val results = listOf(
-            ResourceMatchResult.exactMatch(),
-            ResourceMatchResult.exactMatch(2),
+            ResourceMatchResult.exactMatch("condition 1"),
+            ResourceMatchResult.exactMatch("condition 2", 2),
         )
         val resource = ResolvedResourceConfig(PluginConfigImpl(), emptyMap(), emptyMap(), emptyMap(), emptyMap())
         val outcome = determineMatch(results, resource)
@@ -53,8 +53,8 @@ class AbstractResourceMatcherTest {
     @Test
     fun `sum of weights should include wildcard and exact`() {
         val results = listOf(
-            ResourceMatchResult.wildcardMatch(),
-            ResourceMatchResult.exactMatch(2),
+            ResourceMatchResult.wildcardMatch("condition 1"),
+            ResourceMatchResult.exactMatch("condition 2", 2),
         )
         val resource = ResolvedResourceConfig(PluginConfigImpl(), emptyMap(), emptyMap(), emptyMap(), emptyMap())
         val outcome = determineMatch(results, resource)
@@ -72,9 +72,9 @@ class AbstractResourceMatcherTest {
     @Test
     fun `results should not match`() {
         val results = listOf(
-            ResourceMatchResult.exactMatch(),
-            ResourceMatchResult.exactMatch(2),
-            ResourceMatchResult.notMatched(),
+            ResourceMatchResult.exactMatch("condition 1"),
+            ResourceMatchResult.exactMatch("condition 2", 2),
+            ResourceMatchResult.notMatched("condition 3"),
         )
         val resource = ResolvedResourceConfig(PluginConfigImpl(), emptyMap(), emptyMap(), emptyMap(), emptyMap())
         val outcome = determineMatch(results, resource)
@@ -85,8 +85,8 @@ class AbstractResourceMatcherTest {
     @Test
     fun `no match if all have no config`() {
         val results = listOf(
-            ResourceMatchResult.noConfig(),
-            ResourceMatchResult.noConfig(),
+            ResourceMatchResult.noConfig("condition 1"),
+            ResourceMatchResult.noConfig("condition 2"),
         )
         val resource = ResolvedResourceConfig(PluginConfigImpl(), emptyMap(), emptyMap(), emptyMap(), emptyMap())
         val outcome = determineMatch(results, resource)

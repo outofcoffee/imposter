@@ -29,9 +29,10 @@ class InlineScriptService {
         pluginConfig: PluginConfig,
         config: BasicResourceConfig
     ): ResourceMatchResult {
+        val matchDescription = "eval"
         if (config !is EvalResourceConfig || config.eval.isNullOrBlank()) {
             // none configured
-            return ResourceMatchResult.noConfig()
+            return ResourceMatchResult.noConfig(matchDescription)
         }
 
         val scriptId = config.resourceId
@@ -52,7 +53,11 @@ class InlineScriptService {
                     logger.debug("Inline script $scriptId evaluated to true for ${LogUtil.describeRequestShort(httpExchange)}")
                 }
             }
-            return if (result) ResourceMatchResult.exactMatch() else ResourceMatchResult.notMatched()
+            return if (result) {
+                ResourceMatchResult.exactMatch(matchDescription)
+            } else {
+                ResourceMatchResult.notMatched(matchDescription)
+            }
 
         } catch (e: Exception) {
             logger.warn(
@@ -61,7 +66,7 @@ class InlineScriptService {
                 config.eval,
                 e
             )
-            return ResourceMatchResult.notMatched()
+            return ResourceMatchResult.notMatched(matchDescription)
         }
     }
 

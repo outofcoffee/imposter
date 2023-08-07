@@ -102,36 +102,45 @@ class SoapResourceMatcher(
     private fun matchSoapAction(
         resourceConfig: SoapPluginResourceConfig,
         soapAction: String?,
-    ) = resourceConfig.soapAction?.let {
-        if (it == soapAction) {
-            ResourceMatchResult.exactMatch()
-        } else {
-            ResourceMatchResult.notMatched()
-        }
-    } ?: ResourceMatchResult.noConfig()
+    ): ResourceMatchResult {
+        val matchDescription = "SOAP action"
+        return resourceConfig.soapAction?.let {
+            if (it == soapAction) {
+                ResourceMatchResult.exactMatch(matchDescription)
+            } else {
+                ResourceMatchResult.notMatched(matchDescription)
+            }
+        } ?: ResourceMatchResult.noConfig(matchDescription)
+    }
 
     private fun matchBinding(
         resourceConfig: SoapPluginResourceConfig
-    ) = resourceConfig.binding?.let {
+    ): ResourceMatchResult {
+        val matchDescription = "SOAP binding"
+        return resourceConfig.binding?.let {
             if (it == binding.name) {
-                ResourceMatchResult.exactMatch()
+                ResourceMatchResult.exactMatch(matchDescription)
             } else {
-                ResourceMatchResult.notMatched()
+                ResourceMatchResult.notMatched(matchDescription)
             }
-        } ?: ResourceMatchResult.noConfig()
+        } ?: ResourceMatchResult.noConfig(matchDescription)
+    }
 
     private fun matchOperation(
         resourceConfig: SoapPluginResourceConfig,
         pluginConfig: PluginConfig,
         httpExchange: HttpExchange,
         soapAction: String?,
-    ) = resourceConfig.operation?.let {
-        if (isOperationMatch(pluginConfig, httpExchange, it, soapAction)) {
-            ResourceMatchResult.exactMatch()
-        } else {
-            ResourceMatchResult.notMatched()
-        }
-    } ?: ResourceMatchResult.noConfig()
+    ): ResourceMatchResult {
+        val matchDescription = "SOAP operation"
+        return resourceConfig.operation?.let {
+            if (isOperationMatch(pluginConfig, httpExchange, it, soapAction)) {
+                ResourceMatchResult.exactMatch(matchDescription)
+            } else {
+                ResourceMatchResult.notMatched(matchDescription)
+            }
+        } ?: ResourceMatchResult.noConfig(matchDescription)
+    }
 
     private fun isOperationMatch(
         config: PluginConfig,

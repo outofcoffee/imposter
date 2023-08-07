@@ -44,14 +44,19 @@
 package io.gatehill.imposter.http
 
 data class ResourceMatchResult(
+    val description: String,
     val type: MatchResultType,
     val weight: Int,
 ) {
     companion object {
-        fun noConfig() = ResourceMatchResult(MatchResultType.NO_CONFIG, 1)
-        fun notMatched() = ResourceMatchResult(MatchResultType.NOT_MATCHED, 0)
-        fun exactMatch(weight: Int = 1) = ResourceMatchResult(MatchResultType.EXACT_MATCH, weight)
-        fun wildcardMatch() = ResourceMatchResult(MatchResultType.WILDCARD_MATCH, 1)
+        fun noConfig(description: String) =
+            ResourceMatchResult(description, MatchResultType.NO_CONFIG, 1)
+        fun notMatched(description: String) =
+            ResourceMatchResult(description, MatchResultType.NOT_MATCHED, 0)
+        fun exactMatch(description: String, weight: Int = 1) =
+            ResourceMatchResult(description, MatchResultType.EXACT_MATCH, weight)
+        fun wildcardMatch(description: String) =
+            ResourceMatchResult(description, MatchResultType.WILDCARD_MATCH, 1)
     }
 }
 

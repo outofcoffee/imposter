@@ -71,10 +71,10 @@ class SingletonResourceMatcher : AbstractResourceMatcher() {
         val matchResults = listOf(
             matchPath(httpExchange, resourceConfig, request),
             matchMethod(resourceConfig, request),
-            matchPairs(request.pathParams, resource.pathParams, true),
-            matchPairs(request.queryParams, resource.queryParams, true),
-            matchPairs(request.formParams, resource.formParams, true),
-            matchPairs(request.headers, resource.requestHeaders, false),
+            matchPairs("path params", request.pathParams, resource.pathParams, true),
+            matchPairs("query params", request.queryParams, resource.queryParams, true),
+            matchPairs("form params", request.formParams, resource.formParams, true),
+            matchPairs("headers", request.headers, resource.requestHeaders, false),
             matchRequestBody(httpExchange, pluginConfig, resource.config),
             matchEval(httpExchange, pluginConfig, resource),
         )
@@ -84,15 +84,18 @@ class SingletonResourceMatcher : AbstractResourceMatcher() {
     private fun matchMethod(
         resourceConfig: BasicResourceConfig,
         request: HttpRequest,
-    ) = if (resourceConfig is MethodResourceConfig && null != resourceConfig.method) {
-        if (request.method == resourceConfig.method) {
-            ResourceMatchResult.exactMatch()
+    ): ResourceMatchResult {
+        val matchDescription = "method"
+        return if (resourceConfig is MethodResourceConfig && null != resourceConfig.method) {
+            if (request.method == resourceConfig.method) {
+                ResourceMatchResult.exactMatch(matchDescription)
+            } else {
+                ResourceMatchResult.notMatched(matchDescription)
+            }
         } else {
-            ResourceMatchResult.notMatched()
+            // unspecified
+            ResourceMatchResult.noConfig(matchDescription)
         }
-    } else {
-        // unspecified
-        ResourceMatchResult.noConfig()
     }
 
     /**
@@ -106,13 +109,14 @@ class SingletonResourceMatcher : AbstractResourceMatcher() {
      * @return `true` if the configured parameters match the request, otherwise `false`
      */
     private fun matchPairs(
+        matchDescription: String,
         requestMap: Map<String, String>,
         resourceMap: Map<String, String>,
         caseSensitiveKeyMatch: Boolean,
     ): ResourceMatchResult {
         // none configured
         if (resourceMap.isEmpty()) {
-            return ResourceMatchResult.noConfig()
+            return ResourceMatchResult.noConfig(matchDescription)
         }
 
         // optionally normalise request map
@@ -123,7 +127,11 @@ class SingletonResourceMatcher : AbstractResourceMatcher() {
             val configKey: String = if (caseSensitiveKeyMatch) key else key.lowercase(Locale.getDefault())
             safeEquals(comparisonRequestMap[configKey], value)
         }
-        return if (allEqual) ResourceMatchResult.exactMatch() else ResourceMatchResult.notMatched()
+        return if (allEqual) {
+            ResourceMatchResult.exactMatch(matchDescription)
+        } else {
+            ResourceMatchResult.notMatched(matchDescription)
+        }
     }
 
     companion object {
