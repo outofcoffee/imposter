@@ -44,7 +44,12 @@ package io.gatehill.imposter.plugin.openapi
 
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.util.EnvVars
-import io.gatehill.imposter.http.*
+import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.http.HttpExchangeHandler
+import io.gatehill.imposter.http.HttpMethod
+import io.gatehill.imposter.http.HttpRouter
+import io.gatehill.imposter.http.SingletonResourceMatcher
+import io.gatehill.imposter.http.StatusCodeFactory
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.RequireModules
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin
@@ -129,25 +134,8 @@ class OpenApiPluginImpl @Inject constructor(
         }
 
         parseSpecs(router)
-
         if (shouldExposeSpec) {
-            // serve specification and UI
-            LOGGER.debug("Adding specification UI at: {}{}", imposterConfig.serverUrl, SPECIFICATION_PATH)
-            router.get(COMBINED_SPECIFICATION_PATH).handler(
-                resourceService.handleRoute(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
-                    handleCombinedSpec(httpExchange)
-                }
-            )
-            router.getWithRegex("$SPECIFICATION_PATH$").handler(
-                resourceService.handleRoute(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
-                    httpExchange.response
-                        .putHeader("Location", "$SPECIFICATION_PATH/")
-                        .setStatusCode(HttpUtil.HTTP_MOVED_PERM)
-                        .end()
-                }
-            )
-            router.get("$SPECIFICATION_PATH/*").handler(serverFactory.createStaticHttpHandler(UI_WEB_ROOT))
-            responseService.addNotFoundMessage("""View the <a href="$SPECIFICATION_PATH/">available OpenAPI resources</a>.""")
+            exposeSpec(router)
         } else {
             LOGGER.trace("Skipped exposing OpenAPI specification")
         }
@@ -189,6 +177,28 @@ class OpenApiPluginImpl @Inject constructor(
         }
 
         allSpecs = parsedSpecs
+    }
+
+    /**
+     * Serve specification and UI.
+     */
+    private fun exposeSpec(router: HttpRouter) {
+        LOGGER.debug("Adding specification UI at: {}{}", imposterConfig.serverUrl, SPECIFICATION_PATH)
+        router.get(COMBINED_SPECIFICATION_PATH).handler(
+                resourceService.handleRoute(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
+                    handleCombinedSpec(httpExchange)
+                }
+        )
+        router.getWithRegex("$SPECIFICATION_PATH$").handler(
+                resourceService.handleRoute(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
+                    httpExchange.response
+                            .putHeader("Location", "$SPECIFICATION_PATH/")
+                            .setStatusCode(HttpUtil.HTTP_MOVED_PERM)
+                            .end()
+                }
+        )
+        router.get("$SPECIFICATION_PATH/*").handler(serverFactory.createStaticHttpHandler(UI_WEB_ROOT))
+        responseService.addNotFoundMessage("""View the <a href="$SPECIFICATION_PATH/">available OpenAPI resources</a>.""")
     }
 
     /**

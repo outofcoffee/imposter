@@ -47,7 +47,7 @@ import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.LoadedConfig
 import io.gatehill.imposter.plugin.config.ConfigurablePlugin
 import org.apache.logging.log4j.LogManager
-import java.util.Collections
+import java.util.*
 
 /**
  * Registers plugins with the injector and triggers configuration.
@@ -125,14 +125,14 @@ class PluginManagerImpl(
      */
     private fun configurePlugins(pluginConfigs: Map<String, List<LoadedConfig>>) {
         getPlugins().filterIsInstance<ConfigurablePlugin<*>>().forEach { plugin ->
-                try {
-                    val loadedConfigs = pluginConfigs[plugin.javaClass.canonicalName] ?: emptyList()
-                    plugin.loadConfiguration(loadedConfigs)
-                } catch (e: Exception) {
-                    val pluginName = discoveryStrategy.getPluginName(plugin.javaClass)
-                    throw RuntimeException("Error configuring plugin: $pluginName", e)
-                }
+            try {
+                val loadedConfigs = pluginConfigs[plugin.javaClass.canonicalName] ?: emptyList()
+                plugin.loadConfiguration(loadedConfigs)
+            } catch (e: Exception) {
+                val pluginName = discoveryStrategy.getPluginName(plugin.javaClass)
+                throw RuntimeException("Error configuring plugin: $pluginName", e)
             }
+        }
     }
 
     override fun getPlugins(): Collection<Plugin> {

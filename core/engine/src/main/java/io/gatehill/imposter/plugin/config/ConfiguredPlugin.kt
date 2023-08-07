@@ -50,6 +50,8 @@ import io.gatehill.imposter.plugin.RoutablePlugin
 import io.gatehill.imposter.plugin.config.resource.PassthroughResourceConfig
 import io.gatehill.imposter.util.ResourceUtil
 import io.vertx.core.Vertx
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 import java.io.File
 import javax.inject.Inject
 
@@ -61,15 +63,27 @@ abstract class ConfiguredPlugin<T : PluginConfigImpl> @Inject constructor(
     protected val imposterConfig: ImposterConfig
 ) : RoutablePlugin, ConfigurablePlugin<T> {
 
+    private val logger: Logger = LogManager.getLogger(ConfiguredPlugin::class.java)
     override var configs: List<T> = emptyList()
 
     protected abstract val configClass: Class<T>
 
     override fun loadConfiguration(loadedConfigs: List<LoadedConfig>) {
-        configs = loadedConfigs.map { loadedConfig ->
-            val config = ConfigUtil.loadPluginConfig(imposterConfig, loadedConfig, configClass)
-            validateConfig(loadedConfig.ref.file, config)
-            config
+        configs = loadedConfigs.mapNotNull { loadedConfig ->
+            try {
+                val config = ConfigUtil.loadPluginConfig(imposterConfig, loadedConfig, configClass)
+                validateConfig(loadedConfig.ref.file, config)
+                return@mapNotNull config
+
+            } catch (e: Exception) {
+                val configEx = RuntimeException("Error loading plugin config: $loadedConfig", e)
+                if (ConfigUtil.ignoreConfigErrors) {
+                    logger.warn("Skipping plugin configuration with error", e)
+                    return@mapNotNull null
+                } else {
+                    throw configEx
+                }
+            }
         }
         configurePlugin(configs)
     }

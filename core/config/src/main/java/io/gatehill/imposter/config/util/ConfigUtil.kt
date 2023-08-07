@@ -98,6 +98,17 @@ object ConfigUtil {
 
     val configResolvers: Set<ConfigResolver>
 
+    /**
+     * Controls whether errors encountered during configuration parsing
+     * or plugin configuration should be logged instead of thrown.
+     * If set to `false` then configuration errors will be thrown instead.
+     *
+     * Defaults to `false`, as skipping a configuration might also skip
+     * the security conditions it contains.
+     */
+    val ignoreConfigErrors: Boolean
+        get() = EnvVars.getEnv("IMPOSTER_IGNORE_CONFIG_ERRORS").toBoolean()
+
     init {
         configResolvers = registerResolvers()
         initInterpolators(EnvVars.getEnv())
@@ -135,7 +146,7 @@ object ConfigUtil {
             try {
                 configFiles += listConfigFiles(configDir, scanRecursive, exclusions)
             } catch (e: Exception) {
-                throw RuntimeException(e)
+                throw RuntimeException("Failed to list config files in: ${configDir}", e)
             }
         }
         return configFiles
@@ -163,8 +174,10 @@ object ConfigUtil {
 
         // read all config files
         val allPluginConfigs = mutableMapOf<String, MutableList<LoadedConfig>>()
-        try {
-            for (configFile in configFiles) {
+        var errorCount = 0
+
+        for (configFile in configFiles) {
+            try {
                 LOGGER.debug("Loading configuration file: {}", configFile)
                 configCount++
 
@@ -174,11 +187,18 @@ object ConfigUtil {
                 val pluginClass = pluginManager.determinePluginClass(config.plugin)
                 val pluginConfigs = allPluginConfigs.getOrPut(pluginClass) { mutableListOf() }
                 pluginConfigs.add(config)
+
+            } catch (e: Exception) {
+                errorCount++
+                val configEx = RuntimeException("Failed to read plugin config: $configFile", e)
+                if (ignoreConfigErrors) {
+                    LOGGER.warn("Skipping configuration with error", e)
+                } else {
+                    throw configEx
+                }
             }
-        } catch (e: Exception) {
-            throw RuntimeException(e)
         }
-        LOGGER.trace("Loaded $configCount plugin configuration file(s): $configFiles")
+        LOGGER.trace("Loaded $configCount plugin configuration file(s) with $errorCount error(s): $configFiles")
         return allPluginConfigs
     }
 
