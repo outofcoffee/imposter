@@ -80,4 +80,8 @@ class RequestBodyConfig : BaseRequestBodyConfig() {
 
     @field:JsonProperty("anyOf")
     var anyOf: List<BaseRequestBodyConfig>? = null
+
+    override fun toString(): String {
+        return "RequestBodyConfig(parent=${super.toString()}, allOf=$allOf, anyOf=$anyOf)"
+    }
 }
