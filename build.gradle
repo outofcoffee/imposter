@@ -44,7 +44,7 @@ ext {
     version_mockito_kotlin = '4.1.0'
     version_s3mock = '2.8.0'
     version_testcontainers = '1.17.6'
-    version_vertx = '4.4.1'
+    version_vertx = '4.4.4'
 }
 
 allprojects {
