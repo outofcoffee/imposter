@@ -64,6 +64,6 @@ abstract class CommonPluginConfig : PluginConfigImpl(), BasePathHolder, CorsConf
     override val upstreams: Map<String, UpstreamConfig>? = null
 
     override fun toString(): String {
-        return "CommonPluginConfig(parent=${super.toString()}, corsConfig=$corsConfig, upstreams=$upstreams)"
+        return "CommonPluginConfig(parent=${super.toString()}, basePath=$basePath, corsConfig=$corsConfig, upstreams=$upstreams)"
     }
 }
