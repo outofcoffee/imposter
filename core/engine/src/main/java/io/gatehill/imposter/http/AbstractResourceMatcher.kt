@@ -371,11 +371,17 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
         val score = results.filter { it == ResourceMatchResult.EXACT_MATCH || it == ResourceMatchResult.WILDCARD_MATCH }
             .sumOf { it.weight }
 
-        val result = MatchedResource(resource, matched, score, exact)
+        val outcome = MatchedResource(resource, matched, score, exact)
         if (LOGGER.isTraceEnabled) {
-            LOGGER.trace("Result of matching request {} to resource {}: {}", LogUtil.describeRequest(httpExchange), resource.config, result)
+            LOGGER.trace(
+                "Request match evaluation for '{}' to resource {}, from results: {}, outcome: {}",
+                LogUtil.describeRequest(httpExchange),
+                resource.config,
+                results,
+                outcome,
+            )
         }
-        return result
+        return outcome
     }
 
     protected data class MatchedResource(

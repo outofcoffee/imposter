@@ -106,4 +106,8 @@ open class ResponseConfig {
         h[name] = value
         headers = h
     }
+
+    override fun toString(): String {
+        return "ResponseConfig(file=$file, content=$content, dir=$dir, isTemplate=$isTemplate, scriptFile=$scriptFile, statusCode=$statusCode, headers=$headers, performanceDelay=$performanceDelay, failureType=$failureType)"
+    }
 }
