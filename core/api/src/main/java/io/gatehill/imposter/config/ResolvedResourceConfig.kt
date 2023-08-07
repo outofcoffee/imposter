@@ -47,7 +47,7 @@ import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 /**
  * @author Pete Cornish
  */
-class ResolvedResourceConfig(
+data class ResolvedResourceConfig(
     val config: BasicResourceConfig,
     val pathParams: Map<String, String>,
     val queryParams: Map<String, String>,

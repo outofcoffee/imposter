@@ -104,21 +104,21 @@ class SoapResourceMatcher(
         soapAction: String?,
     ) = resourceConfig.soapAction?.let {
         if (it == soapAction) {
-            ResourceMatchResult.EXACT_MATCH
+            ResourceMatchResult.exactMatch()
         } else {
-            ResourceMatchResult.NOT_MATCHED
+            ResourceMatchResult.notMatched()
         }
-    } ?: ResourceMatchResult.NO_CONFIG
+    } ?: ResourceMatchResult.noConfig()
 
     private fun matchBinding(
         resourceConfig: SoapPluginResourceConfig
     ) = resourceConfig.binding?.let {
             if (it == binding.name) {
-                ResourceMatchResult.EXACT_MATCH
+                ResourceMatchResult.exactMatch()
             } else {
-                ResourceMatchResult.NOT_MATCHED
+                ResourceMatchResult.notMatched()
             }
-        } ?: ResourceMatchResult.NO_CONFIG
+        } ?: ResourceMatchResult.noConfig()
 
     private fun matchOperation(
         resourceConfig: SoapPluginResourceConfig,
@@ -127,11 +127,11 @@ class SoapResourceMatcher(
         soapAction: String?,
     ) = resourceConfig.operation?.let {
         if (isOperationMatch(pluginConfig, httpExchange, it, soapAction)) {
-            ResourceMatchResult.EXACT_MATCH
+            ResourceMatchResult.exactMatch()
         } else {
-            ResourceMatchResult.NOT_MATCHED
+            ResourceMatchResult.notMatched()
         }
-    } ?: ResourceMatchResult.NO_CONFIG
+    } ?: ResourceMatchResult.noConfig()
 
     private fun isOperationMatch(
         config: PluginConfig,

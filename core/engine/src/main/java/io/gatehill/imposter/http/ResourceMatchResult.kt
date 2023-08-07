@@ -48,10 +48,10 @@ data class ResourceMatchResult(
     val weight: Int,
 ) {
     companion object {
-        val NO_CONFIG = ResourceMatchResult(MatchResultType.NO_CONFIG, 1)
-        val NOT_MATCHED = ResourceMatchResult(MatchResultType.NOT_MATCHED, 0)
-        val EXACT_MATCH = ResourceMatchResult(MatchResultType.EXACT_MATCH, 1)
-        val WILDCARD_MATCH = ResourceMatchResult(MatchResultType.WILDCARD_MATCH, 1)
+        fun noConfig() = ResourceMatchResult(MatchResultType.NO_CONFIG, 1)
+        fun notMatched() = ResourceMatchResult(MatchResultType.NOT_MATCHED, 0)
+        fun exactMatch(weight: Int = 1) = ResourceMatchResult(MatchResultType.EXACT_MATCH, weight)
+        fun wildcardMatch() = ResourceMatchResult(MatchResultType.WILDCARD_MATCH, 1)
     }
 }
 

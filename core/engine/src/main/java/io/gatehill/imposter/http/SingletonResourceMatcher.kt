@@ -86,13 +86,13 @@ class SingletonResourceMatcher : AbstractResourceMatcher() {
         request: HttpRequest,
     ) = if (resourceConfig is MethodResourceConfig && null != resourceConfig.method) {
         if (request.method == resourceConfig.method) {
-            ResourceMatchResult.EXACT_MATCH
+            ResourceMatchResult.exactMatch()
         } else {
-            ResourceMatchResult.NOT_MATCHED
+            ResourceMatchResult.notMatched()
         }
     } else {
         // unspecified
-        ResourceMatchResult.NO_CONFIG
+        ResourceMatchResult.noConfig()
     }
 
     /**
@@ -112,7 +112,7 @@ class SingletonResourceMatcher : AbstractResourceMatcher() {
     ): ResourceMatchResult {
         // none configured
         if (resourceMap.isEmpty()) {
-            return ResourceMatchResult.NO_CONFIG
+            return ResourceMatchResult.noConfig()
         }
 
         // optionally normalise request map
@@ -123,7 +123,7 @@ class SingletonResourceMatcher : AbstractResourceMatcher() {
             val configKey: String = if (caseSensitiveKeyMatch) key else key.lowercase(Locale.getDefault())
             safeEquals(comparisonRequestMap[configKey], value)
         }
-        return if (allEqual) ResourceMatchResult.EXACT_MATCH else ResourceMatchResult.NOT_MATCHED
+        return if (allEqual) ResourceMatchResult.exactMatch() else ResourceMatchResult.notMatched()
     }
 
     companion object {
