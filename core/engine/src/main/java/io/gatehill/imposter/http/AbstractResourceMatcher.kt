@@ -183,11 +183,11 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
             // none configured
             return ResourceMatchResult.NO_CONFIG
         }
-        return resourceConfig.requestBody?.allOf?.let { bodyConfigs ->
+        resourceConfig.requestBody?.allOf?.let { bodyConfigs ->
             if (LOGGER.isTraceEnabled) {
                 LOGGER.trace("Matching against all of ${bodyConfigs.size} request body configs for ${LogUtil.describeRequestShort(httpExchange)}: $bodyConfigs")
             }
-            if (bodyConfigs.all { matchUsingBodyConfig(it, pluginConfig, httpExchange) == ResourceMatchResult.EXACT_MATCH }) {
+            return if (bodyConfigs.all { matchUsingBodyConfig(it, pluginConfig, httpExchange) == ResourceMatchResult.EXACT_MATCH }) {
                 // each matched config contributes to the weight
                 ResourceMatchResult(MatchResultType.EXACT_MATCH, bodyConfigs.size)
             } else {
@@ -198,7 +198,7 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
             if (LOGGER.isTraceEnabled) {
                 LOGGER.trace("Matching against any of ${bodyConfigs.size} request body configs for ${LogUtil.describeRequestShort(httpExchange)}: $bodyConfigs")
             }
-            if (bodyConfigs.any { matchUsingBodyConfig(it, pluginConfig, httpExchange) == ResourceMatchResult.EXACT_MATCH }) {
+            return if (bodyConfigs.any { matchUsingBodyConfig(it, pluginConfig, httpExchange) == ResourceMatchResult.EXACT_MATCH }) {
                 ResourceMatchResult.EXACT_MATCH
             } else {
                 ResourceMatchResult.NOT_MATCHED
@@ -208,14 +208,14 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
             if (LOGGER.isTraceEnabled) {
                 LOGGER.trace("Matching against a single request body config for ${LogUtil.describeRequestShort(httpExchange)}: $singleRequestBodyConfig")
             }
-            matchUsingBodyConfig(singleRequestBodyConfig, pluginConfig, httpExchange)
+            return matchUsingBodyConfig(singleRequestBodyConfig, pluginConfig, httpExchange)
 
         } ?: run {
             if (LOGGER.isTraceEnabled) {
                 LOGGER.trace("No request body config to match for ${LogUtil.describeRequestShort(httpExchange)}")
             }
             // none configured
-            ResourceMatchResult.NO_CONFIG
+            return ResourceMatchResult.NO_CONFIG
         }
     }
 
