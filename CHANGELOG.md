@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.28.3] - 2023-08-07
+### Changed
+- docs: describes interaction between OpenAPI server path and basePath.
+
+### Fixed
+- fix: improves logging of plugin config.
+
 ## [3.28.2] - 2023-08-07
 ### Changed
 - refactor: adds description to match result.
