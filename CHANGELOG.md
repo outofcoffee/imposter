@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.28.2] - 2023-08-07
+### Changed
+- refactor: adds description to match result.
+
+### Fixed
+- fix: improves logging of request body config.
+
 ## [3.28.1] - 2023-08-07
 ### Changed
 - chore(deps): bump version_vertx from 4.4.1 to 4.4.4
