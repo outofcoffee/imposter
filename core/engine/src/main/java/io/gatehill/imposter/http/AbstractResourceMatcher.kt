@@ -306,8 +306,8 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
         val valueMatch = safeEquals(configuredValue, actualValue)
 
         // apply operator
-        val match = (operator === ResourceMatchOperator.EqualTo && valueMatch ||
-                operator === ResourceMatchOperator.NotEqualTo && !valueMatch)
+        val match = (operator == ResourceMatchOperator.EqualTo && valueMatch ||
+                operator == ResourceMatchOperator.NotEqualTo && !valueMatch)
 
         return if (match) ResourceMatchResult.EXACT_MATCH else ResourceMatchResult.NOT_MATCHED
     }
@@ -324,8 +324,8 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
         }
 
         // apply operator
-        val match = (operator === ResourceMatchOperator.Contains && valueMatch ||
-            operator === ResourceMatchOperator.NotContains && !valueMatch)
+        val match = (operator == ResourceMatchOperator.Contains && valueMatch ||
+            operator == ResourceMatchOperator.NotContains && !valueMatch)
 
         return if (match) ResourceMatchResult.EXACT_MATCH else ResourceMatchResult.NOT_MATCHED
     }
@@ -343,8 +343,8 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
         }
 
         // apply operator
-        val match = (operator === ResourceMatchOperator.Matches && valueMatch ||
-            operator === ResourceMatchOperator.NotMatches && !valueMatch)
+        val match = (operator == ResourceMatchOperator.Matches && valueMatch ||
+            operator == ResourceMatchOperator.NotMatches && !valueMatch)
 
         return if (match) ResourceMatchResult.EXACT_MATCH else ResourceMatchResult.NOT_MATCHED
     }
