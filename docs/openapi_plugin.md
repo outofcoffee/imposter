@@ -369,6 +369,18 @@ paths:
 /example/pets/{petId}
 ```
 
+### Interaction of OpenAPI `servers` and Imposter `basePath`
+
+If an OpenAPI specification lists `servers` with URLs containing a path, then matching of resources in the Imposter configuration file relies upon setting the Imposter `basePath` property.
+
+For example, if the first server entry in the OpenAPI specification had a URL set to `https://example.com/api`, then the Imposter `basePath` should be `/api`.
+
+Similarly, if the OpenAPI server URL were set to `/api`, then the Imposter `basePath` should be `/api`.
+
+>  Note that only the first server entry in the OpenAPI `servers` array is examined for its path.
+
+---
+
 ## Scripted responses (advanced)
 
 For more advanced scenarios, you can also control Imposter's responses using JavaScript or Groovy scripts.
