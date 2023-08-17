@@ -8,21 +8,21 @@ Examples include, but are not limited to:
 * Email addresses
 * Addresses
 
-## Returning fake data
+## Setup
 
 ### Option 1: Using the `fake-data` plugin
 
 To use it, install the `fake-data` plugin:
 
 ```bash
-imposter plugin install fake-data
+imposter plugin install -d fake-data
 ```
 
 ### Option 2: Using the 'all' distribution
 
 Alternatively, you can use the `all` distribution, which includes the `fake-data` plugin.
 
-This is the `docker-all` engine type if you're using the CLI or the `imposter-all.jar` file if you're using the JAR file approach.
+This is the `docker-all` engine type if you're using [the CLI](./run_imposter_cli.md) or the `imposter-all.jar` file if you're using the [JAR file](./run_imposter_jar.md) approach.
 
 ## Generating fake data
 
@@ -40,16 +40,16 @@ For an email address:
 
 Some common examples:
 
-| Fake data      | Expression                   |
-|----------------|------------------------------|
-| First name     | fake.Name.firstName          |
-| Last name      | fake.Name.lastName           |
-| Email address  | fake.Internet.emailAddress   |
-| Username       | fake.Name.username           |
-| Street address | fake.Address.streetAddress   |
-| City           | fake.Address.city            |
-| Country        | fake.Address.country         |
-| Phone number   | fake.PhoneNumber.phoneNumber |
+| Fake data      | Expression                     |
+|----------------|--------------------------------|
+| First name     | `fake.Name.firstName`          |
+| Last name      | `fake.Name.lastName`           |
+| Email address  | `fake.Internet.emailAddress`   |
+| Username       | `fake.Name.username`           |
+| Street address | `fake.Address.streetAddress`   |
+| City           | `fake.Address.city`            |
+| Country        | `fake.Address.country`         |
+| Phone number   | `fake.PhoneNumber.phoneNumber` |
 
 > **Note**
 > Valid values are those supported by the [Datafaker](https://github.com/datafaker-net/datafaker) library.
