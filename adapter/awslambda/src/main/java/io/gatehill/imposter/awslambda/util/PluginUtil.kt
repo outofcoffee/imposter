@@ -51,8 +51,8 @@ import io.gatehill.imposter.plugin.openapi.OpenApiPluginImpl
 import io.gatehill.imposter.plugin.rest.RestPluginImpl
 import io.gatehill.imposter.plugin.soap.SoapModule
 import io.gatehill.imposter.plugin.soap.SoapPluginImpl
-import io.gatehill.imposter.scripting.nashorn.NashornStandaloneScriptingModule
-import io.gatehill.imposter.scripting.nashorn.service.NashornStandaloneScriptServiceImpl
+import io.gatehill.imposter.scripting.nashorn.NashornScriptingModule
+import io.gatehill.imposter.scripting.nashorn.service.NashornScriptServiceImpl
 import io.gatehill.imposter.store.dynamodb.DynamoDBStoreFactoryImpl
 import io.gatehill.imposter.store.dynamodb.DynamoDBStoreModule
 import io.gatehill.imposter.store.inmem.InMemoryStoreFactoryImpl
@@ -64,7 +64,7 @@ object PluginUtil {
         "openapi" to OpenApiPluginImpl::class.java,
         "rest" to RestPluginImpl::class.java,
         "soap" to SoapPluginImpl::class.java,
-        "js-nashorn-standalone" to NashornStandaloneScriptServiceImpl::class.java,
+        "js-nashorn" to NashornScriptServiceImpl::class.java,
         "store-inmem" to InMemoryStoreFactoryImpl::class.java,
         "store-dynamodb" to DynamoDBStoreFactoryImpl::class.java,
     )
@@ -73,7 +73,7 @@ object PluginUtil {
         LambdaModule(),
         OpenApiModule(),
         SoapModule(),
-        NashornStandaloneScriptingModule(),
+        NashornScriptingModule(),
         DynamoDBStoreModule(),
         InMemoryStoreModule(),
     )

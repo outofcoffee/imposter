@@ -6,22 +6,22 @@ Imposter uses plugins to control its behaviour and provide specialised mocks.
 
 The following sections describe the available and built-in plugins.
 
-| Category       | Plugin name             | Description                            | Details                                                                            |
-|----------------|-------------------------|----------------------------------------|------------------------------------------------------------------------------------|
-| Mock           | `hbase`                 | HBase mocks.                           | [HBase plugin](hbase_plugin.md)                                                    |
-| Mock           | `openapi`               | OpenAPI (and Swagger) mocks.           | Built-in - see [OpenAPI (and Swagger) plugin](openapi_plugin.md)                   |
-| Mock           | `rest`                  | REST mocks.                            | Built-in - see [REST plugin](rest_plugin.md)                                       |
-| Mock           | `sfdc`                  | SFDC (Salesforce) mocks.               | [SFDC (Salesforce) plugin](sfdc_plugin.md)                                         |
-| Mock           | `soap`                  | SOAP (and WSDL) mocks.                 | Built-in - see [SOAP plugin](soap_plugin.md)                                       |
-| Mock           | `wiremock`              | WireMock mappings support.             | [WireMock plugin](wiremock_plugin.md)                                              |
-| Scripting      | `js-graal`              | Graal.js scripting.                    | Graal.js JavaScript scripting support                                              |
-| Scripting      | `js-nashorn-standalone` | Nashorn standalone scripting.          | Nashorn JavaScript scripting support for Java 11+                                  |
-| Store          | `store-dynamodb`        | DynamoDB store implementation.         | [DynamoDB store](https://github.com/outofcoffee/imposter/tree/main/store/dynamodb) |
-| Store          | `store-redis`           | Redis store implementation.            | [Redis store](https://github.com/outofcoffee/imposter/tree/main/store/redis)       |
-| Store          | `store-graphql`         | GraphQL store queries.                 | [GraphQL](stores_graphql.md)                                                       |
-| Configuration  | `config-detector`       | Detects plugins from `*-config` files. | Built-in                                                                           |
-| Configuration  | `meta-detector`         | Detects plugins from `META-INF`.       | Built-in                                                                           |
-| Data generator | `fake-data`             | Generates fake data.                   | [Fake data generator](fake_data.md)                                                |
+| Category       | Plugin name       | Description                            | Details                                                                            |
+|----------------|-------------------|----------------------------------------|------------------------------------------------------------------------------------|
+| Mock           | `hbase`           | HBase mocks.                           | [HBase plugin](hbase_plugin.md)                                                    |
+| Mock           | `openapi`         | OpenAPI (and Swagger) mocks.           | Built-in - see [OpenAPI (and Swagger) plugin](openapi_plugin.md)                   |
+| Mock           | `rest`            | REST mocks.                            | Built-in - see [REST plugin](rest_plugin.md)                                       |
+| Mock           | `sfdc`            | SFDC (Salesforce) mocks.               | [SFDC (Salesforce) plugin](sfdc_plugin.md)                                         |
+| Mock           | `soap`            | SOAP (and WSDL) mocks.                 | Built-in - see [SOAP plugin](soap_plugin.md)                                       |
+| Mock           | `wiremock`        | WireMock mappings support.             | [WireMock plugin](wiremock_plugin.md)                                              |
+| Scripting      | `js-graal`        | Graal.js scripting.                    | Graal.js JavaScript scripting support                                              |
+| Scripting      | `js-nashorn`      | Nashorn scripting.                     | This is the default JavaScript script engine                                       |
+| Store          | `store-dynamodb`  | DynamoDB store implementation.         | [DynamoDB store](https://github.com/outofcoffee/imposter/tree/main/store/dynamodb) |
+| Store          | `store-redis`     | Redis store implementation.            | [Redis store](https://github.com/outofcoffee/imposter/tree/main/store/redis)       |
+| Store          | `store-graphql`   | GraphQL store queries.                 | [GraphQL](stores_graphql.md)                                                       |
+| Configuration  | `config-detector` | Detects plugins from `*-config` files. | Built-in                                                                           |
+| Configuration  | `meta-detector`   | Detects plugins from `META-INF`.       | Built-in                                                                           |
+| Data generator | `fake-data`       | Generates fake data.                   | [Fake data generator](fake_data.md)                                                |
 
 ## Plugin loading
 

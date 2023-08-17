@@ -53,7 +53,7 @@ import io.gatehill.imposter.script.ScriptUtil
 import io.gatehill.imposter.script.dsl.Dsl
 import io.gatehill.imposter.scripting.common.util.CompiledJsScript
 import io.gatehill.imposter.scripting.common.util.JavaScriptUtil
-import io.gatehill.imposter.scripting.nashorn.NashornStandaloneScriptingModule
+import io.gatehill.imposter.scripting.nashorn.NashornScriptingModule
 import io.gatehill.imposter.service.ScriptService
 import io.gatehill.imposter.util.MetricsUtil.doIfMetricsEnabled
 import io.gatehill.imposter.util.getJvmVersion
@@ -72,9 +72,9 @@ import javax.script.SimpleBindings
  *
  * @author Pete Cornish
  */
-@PluginInfo("js-nashorn-standalone")
-@RequireModules(NashornStandaloneScriptingModule::class)
-class NashornStandaloneScriptServiceImpl : ScriptService, Plugin {
+@PluginInfo("js-nashorn")
+@RequireModules(NashornScriptingModule::class)
+class NashornScriptServiceImpl : ScriptService, Plugin {
     private val scriptEngine: NashornScriptEngine
 
     /**
@@ -198,7 +198,7 @@ class NashornStandaloneScriptServiceImpl : ScriptService, Plugin {
         }
 
     companion object {
-        private val LOGGER = LogManager.getLogger(NashornStandaloneScriptServiceImpl::class.java)
+        private val LOGGER = LogManager.getLogger(NashornScriptServiceImpl::class.java)
         const val METRIC_SCRIPT_JS_CACHE_ENTRIES = "script.js.cache.entries"
     }
 }

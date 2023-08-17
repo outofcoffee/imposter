@@ -92,7 +92,7 @@ object JavaScriptUtil {
      * @return the plugin name of the active JavaScript implementation
      */
     val activePlugin: String
-        get() = EnvVars.getEnv(envJsPlugin) ?: "js-nashorn-standalone"
+        get() = EnvVars.getEnv(envJsPlugin) ?: "js-nashorn"
 
     fun transformRuntimeMap(runtimeContext: RuntimeContext, addDslPrefix: Boolean, addConsoleShim: Boolean): Map<String, *> {
         val runtimeObjects = runtimeContext.asMap().toMutableMap()

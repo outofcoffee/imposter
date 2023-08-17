@@ -43,15 +43,15 @@
 package io.gatehill.imposter.service
 
 import io.gatehill.imposter.scripting.AbstractScriptServiceImplTest
-import io.gatehill.imposter.scripting.nashorn.service.NashornStandaloneScriptServiceImpl
+import io.gatehill.imposter.scripting.nashorn.service.NashornScriptServiceImpl
 import javax.inject.Inject
 
 /**
  * @author Pete Cornish
  */
-class NashornStandaloneScriptServiceImplTest : AbstractScriptServiceImplTest() {
+class NashornScriptServiceImplTest : AbstractScriptServiceImplTest() {
     @Inject
-    private var service: NashornStandaloneScriptServiceImpl? = null
+    private var service: NashornScriptServiceImpl? = null
 
     override fun getService() = service!!
 

@@ -42,8 +42,8 @@ project(':scripting:graalvm').name = 'scripting-graalvm'
 include ':scripting:groovy'
 project(':scripting:groovy').name = 'scripting-groovy'
 
-include ':scripting:nashorn-standalone'
-project(':scripting:nashorn-standalone').name = 'scripting-nashorn-standalone'
+include ':scripting:nashorn'
+project(':scripting:nashorn').name = 'scripting-nashorn'
 
 // stores
 include ':store:common'
