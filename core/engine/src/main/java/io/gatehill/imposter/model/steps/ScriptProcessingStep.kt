@@ -49,6 +49,7 @@ import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.ResponseBehaviourType
+import io.gatehill.imposter.service.ScriptSource
 import io.gatehill.imposter.service.ScriptedResponseService
 
 class ScriptProcessingStep(
@@ -62,12 +63,11 @@ class ScriptProcessingStep(
         context: StepContext,
     ): ReadWriteResponseBehaviour {
         val ctx = context as ScriptStepContext
-
         val responseBehaviour = scriptedResponseService.determineResponseFromScript(
             httpExchange,
             ctx.pluginConfig,
-            ctx.scriptFile,
-            ctx.additionalContext
+            ctx.script,
+            ctx.additionalContext,
         )
 
         // use defaults if not set
@@ -81,6 +81,6 @@ class ScriptProcessingStep(
 
 data class ScriptStepContext(
     val pluginConfig: PluginConfig,
-    val scriptFile: String,
+    val script: ScriptSource,
     val additionalContext: Map<String, Any>?,
 ) : StepContext

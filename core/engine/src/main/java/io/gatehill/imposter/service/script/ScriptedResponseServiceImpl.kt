@@ -59,6 +59,7 @@ import io.gatehill.imposter.script.ExecutionContext
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.ScriptUtil
+import io.gatehill.imposter.service.ScriptSource
 import io.gatehill.imposter.service.ScriptedResponseService
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.MetricsUtil
@@ -138,7 +139,7 @@ class ScriptedResponseServiceImpl @Inject constructor(
     override fun determineResponseFromScript(
         httpExchange: HttpExchange,
         pluginConfig: PluginConfig,
-        scriptFile: String?,
+        script: ScriptSource,
         additionalContext: Map<String, Any>?
     ): ReadWriteResponseBehaviour {
         return try {
@@ -146,7 +147,7 @@ class ScriptedResponseServiceImpl @Inject constructor(
                 determineResponseFromScriptInternal(
                     httpExchange,
                     pluginConfig,
-                    scriptFile,
+                    script,
                     additionalContext
                 )
             }
@@ -160,11 +161,32 @@ class ScriptedResponseServiceImpl @Inject constructor(
     private fun determineResponseFromScriptInternal(
         httpExchange: HttpExchange,
         pluginConfig: PluginConfig,
-        scriptFile: String?,
+        script: ScriptSource,
         additionalContext: Map<String, Any>?
     ): ReadWriteResponseBehaviour {
-        checkNotNull(scriptFile) { "Script file not set" }
+        check(script.valid) { "Script file or code not set" }
+        return script.code?.let {
+            determineResponseFromScriptCode(httpExchange, pluginConfig, script.code!!, additionalContext)
+        } ?: run {
+            determineResponseFromScriptFile(httpExchange, pluginConfig, script.file!!, additionalContext)
+        }
+    }
 
+    private fun determineResponseFromScriptCode(
+        httpExchange: HttpExchange,
+        pluginConfig: PluginConfig,
+        scriptFile: String,
+        additionalContext: Map<String, Any>?
+    ): ReadWriteResponseBehaviour {
+        TODO()
+    }
+
+    private fun determineResponseFromScriptFile(
+        httpExchange: HttpExchange,
+        pluginConfig: PluginConfig,
+        scriptFile: String,
+        additionalContext: Map<String, Any>?
+    ): ReadWriteResponseBehaviour {
         try {
             val executionStart = System.nanoTime()
             LOGGER.trace(
