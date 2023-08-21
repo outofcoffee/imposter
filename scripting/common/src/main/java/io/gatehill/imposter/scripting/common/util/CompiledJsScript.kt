@@ -43,6 +43,13 @@
 package io.gatehill.imposter.scripting.common.util
 
 data class CompiledJsScript<T>(
+    /**
+     * Number of lines of preamble before the original script code.
+     */
     override val preScriptLength : Int,
+
+    /**
+     * The source code including the preamble and the original script code.
+     */
     val code: T,
 ) : ScriptMetadata

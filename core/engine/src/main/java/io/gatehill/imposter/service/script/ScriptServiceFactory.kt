@@ -69,23 +69,23 @@ class ScriptServiceFactory {
     @Inject
     private lateinit var imposterConfig: ImposterConfig
 
-    fun fetchScriptService(scriptFile: String): ScriptService {
+    fun fetchScriptService(scriptSource: String): ScriptService {
         if (imposterConfig.useEmbeddedScriptEngine) {
             LOGGER.debug("Using embedded script engine")
             return embeddedScriptService
         }
 
         val scriptExtension: String
-        val dotIndex = scriptFile.lastIndexOf('.')
-        scriptExtension = if (dotIndex >= 1 && dotIndex < scriptFile.length - 1) {
-            scriptFile.substring(dotIndex + 1)
+        val dotIndex = scriptSource.lastIndexOf('.')
+        scriptExtension = if (dotIndex >= 1 && dotIndex < scriptSource.length - 1) {
+            scriptSource.substring(dotIndex + 1)
         } else {
             ""
         }
         return when (scriptExtension.lowercase(Locale.getDefault())) {
             "groovy" -> groovyScriptService
             "js" -> javascriptScriptService
-            else -> throw RuntimeException("Unable to determine script engine from script file name: $scriptFile")
+            else -> throw RuntimeException("Unable to determine script engine from script file name: $scriptSource")
         }
     }
 

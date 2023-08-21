@@ -53,7 +53,8 @@ interface ScriptedResponseService {
     fun determineResponseFromScript(
         httpExchange: HttpExchange,
         pluginConfig: PluginConfig,
-        script: ScriptSource,
+        scriptCode: String?,
+        scriptFile: String?,
         additionalContext: Map<String, Any>?,
     ): ReadWriteResponseBehaviour
 }

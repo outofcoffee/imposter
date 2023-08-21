@@ -55,13 +55,13 @@ import io.gatehill.imposter.scripting.common.util.CompiledJsScript
 import io.gatehill.imposter.scripting.common.util.JavaScriptUtil
 import io.gatehill.imposter.scripting.nashorn.NashornScriptingModule
 import io.gatehill.imposter.service.ScriptService
+import io.gatehill.imposter.service.ScriptSource
 import io.gatehill.imposter.util.MetricsUtil.doIfMetricsEnabled
 import io.gatehill.imposter.util.getJvmVersion
 import io.micrometer.core.instrument.Gauge
 import org.apache.logging.log4j.LogManager
 import org.openjdk.nashorn.api.scripting.NashornScriptEngine
 import org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory
-import java.nio.file.Path
 import javax.script.CompiledScript
 import javax.script.ScriptException
 import javax.script.SimpleBindings
@@ -99,10 +99,10 @@ class NashornScriptServiceImpl : ScriptService, Plugin {
         }
     }
 
-    override fun initScript(scriptFile: Path) {
+    override fun initScript(script: ScriptSource) {
         if (ScriptUtil.shouldPrecompile) {
-            LOGGER.debug("Precompiling script: $scriptFile")
-            getCompiledScript(scriptFile)
+            LOGGER.debug("Precompiling script: $script")
+            getCompiledScript(script)
         }
     }
 
@@ -114,18 +114,22 @@ class NashornScriptServiceImpl : ScriptService, Plugin {
     }
 
     override fun executeScript(
-        scriptFile: Path,
+        script: ScriptSource,
         runtimeContext: RuntimeContext
     ): ReadWriteResponseBehaviour {
-        LOGGER.trace("Executing script file: {}", scriptFile)
+        LOGGER.trace("Executing script: {}", script)
+        check(script.valid) { "Invalid script: $script" }
 
         try {
-            val bindings = SimpleBindings(JavaScriptUtil.transformRuntimeMap(runtimeContext,
-                addDslPrefix = true,
-                addConsoleShim = true
-            ))
+            val bindings = SimpleBindings(
+                JavaScriptUtil.transformRuntimeMap(
+                    runtimeContext,
+                    addDslPrefix = true,
+                    addConsoleShim = true
+                )
+            )
 
-            val compiled = getCompiledScript(scriptFile)
+            val compiled = getCompiledScript(script)
             try {
                 val result = compiled.code.eval(bindings) as Dsl
                 return result.responseBehaviour
@@ -146,10 +150,13 @@ class NashornScriptServiceImpl : ScriptService, Plugin {
         LOGGER.trace("Executing inline script: {}", scriptId)
 
         try {
-            val bindings = SimpleBindings(JavaScriptUtil.transformRuntimeMap(runtimeContext,
-                addDslPrefix = false,
-                addConsoleShim = false
-            ))
+            val bindings = SimpleBindings(
+                JavaScriptUtil.transformRuntimeMap(
+                    runtimeContext,
+                    addDslPrefix = false,
+                    addConsoleShim = false
+                )
+            )
 
             val compiled = getCompiledInlineScript(scriptId, scriptCode)
             val result = compiled.code.eval(bindings)
@@ -160,27 +167,27 @@ class NashornScriptServiceImpl : ScriptService, Plugin {
         }
     }
 
-    private fun getCompiledScript(scriptFile: Path): CompiledJsScript<CompiledScript> =
-        compiledScripts.get(scriptFile.toString()) {
+    private fun getCompiledScript(script: ScriptSource): CompiledJsScript<CompiledScript> =
+        compiledScripts.get(script.source) {
             try {
-                LOGGER.trace("Compiling script file: {}", scriptFile)
+                LOGGER.trace("Compiling script file: {}", script)
                 val compileStartMs = System.currentTimeMillis()
-                val wrapped = JavaScriptUtil.wrapScript(scriptFile)
 
+                val wrapped = JavaScriptUtil.wrapScript(script)
                 val compiled = try {
                     CompiledJsScript<CompiledScript>(
                         preScriptLength = wrapped.preScriptLength,
-                        code = scriptEngine.compile(wrapped.script),
+                        code = scriptEngine.compile(wrapped.code),
                     )
                 } catch (e: ScriptException) {
                     throw JavaScriptUtil.unwrapScriptException(e, wrapped)
                 }
 
-                LOGGER.debug("Script: {} compiled in {}ms", scriptFile, System.currentTimeMillis() - compileStartMs)
+                LOGGER.debug("Script: {} compiled in {}ms", script, System.currentTimeMillis() - compileStartMs)
                 return@get compiled
 
             } catch (e: Exception) {
-                throw RuntimeException("Failed to compile script: $scriptFile", e)
+                throw RuntimeException("Failed to compile script: $script", e)
             }
         }
 

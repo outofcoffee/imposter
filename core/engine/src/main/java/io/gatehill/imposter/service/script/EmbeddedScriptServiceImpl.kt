@@ -46,7 +46,7 @@ import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.listener.ScriptListener
-import java.nio.file.Path
+import io.gatehill.imposter.service.ScriptSource
 
 /**
  * @author Pete Cornish
@@ -55,7 +55,7 @@ class EmbeddedScriptServiceImpl : EmbeddedScriptService {
     private var listener: ScriptListener? = null
 
     override fun executeScript(
-        scriptFile: Path,
+        script: ScriptSource,
         runtimeContext: RuntimeContext
     ): ReadWriteResponseBehaviour {
         check(listener != null) { "ScriptListener is not set" }

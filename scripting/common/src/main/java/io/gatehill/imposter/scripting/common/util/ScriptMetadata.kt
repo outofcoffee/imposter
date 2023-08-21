@@ -43,5 +43,8 @@
 package io.gatehill.imposter.scripting.common.util
 
 interface ScriptMetadata {
+    /**
+     * Number of lines of preamble before the original script code.
+     */
     val preScriptLength: Int
 }

@@ -44,15 +44,25 @@
 package io.gatehill.imposter.scripting
 
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
+import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.ResponseBehaviourType
-import io.gatehill.imposter.script.ScriptUtil
-import org.junit.Assert.*
+import io.gatehill.imposter.service.ScriptSource
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Test
+import kotlin.io.path.readText
 
 /**
  * @author Pete Cornish
  */
 abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
+    /**
+     * Reuse the script as inline code.
+     */
+    private val scriptCode: String
+        get() = fullScriptPath.readText()
+
     @Test
     fun testExecuteScript_Immediate() {
         val pluginConfig = configureScript()
@@ -62,15 +72,10 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
             "hello" to "world"
         )
         val runtimeContext = buildRuntimeContext(additionalBindings)
-        val scriptPath = ScriptUtil.resolveScriptPath(pluginConfig, resourceConfig.responseConfig.scriptFile)
-        val actual = getService().executeScript(scriptPath, runtimeContext)
+        val script = resolveScriptFile(pluginConfig, resourceConfig)
+        val actual = getService().executeScript(script, runtimeContext)
 
-        assertNotNull(actual)
-        assertEquals(201, actual.statusCode)
-        assertEquals("foo.bar", actual.responseFile)
-        assertEquals(ResponseBehaviourType.SHORT_CIRCUIT, actual.behaviourType)
-        assertEquals(1, actual.responseHeaders.size)
-        assertEquals("AwesomeHeader", actual.responseHeaders.get("MyHeader"))
+        assertSuccessfulExecution(actual)
     }
 
     @Test
@@ -82,8 +87,8 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
             "hello" to "should not match"
         )
         val runtimeContext = buildRuntimeContext(additionalBindings)
-        val scriptPath = ScriptUtil.resolveScriptPath(pluginConfig, resourceConfig.responseConfig.scriptFile)
-        val actual = getService().executeScript(scriptPath, runtimeContext)
+        val script = resolveScriptFile(pluginConfig, resourceConfig)
+        val actual = getService().executeScript(script, runtimeContext)
 
         assertNotNull(actual)
         // zero as un-set by script
@@ -103,8 +108,8 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
         val pathParams = mapOf("qux" to "quux")
 
         val runtimeContext = buildRuntimeContext(additionalBindings, emptyMap(), pathParams, emptyMap(), emptyMap())
-        val scriptPath = ScriptUtil.resolveScriptPath(pluginConfig, resourceConfig.responseConfig.scriptFile)
-        val actual = getService().executeScript(scriptPath, runtimeContext)
+        val script = resolveScriptFile(pluginConfig, resourceConfig)
+        val actual = getService().executeScript(script, runtimeContext)
 
         assertNotNull(actual)
         assertEquals(203, actual.statusCode)
@@ -123,8 +128,8 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
         val queryParams = mapOf("foo" to "bar")
 
         val runtimeContext = buildRuntimeContext(additionalBindings, emptyMap(), emptyMap(), queryParams, emptyMap())
-        val scriptPath = ScriptUtil.resolveScriptPath(pluginConfig, resourceConfig.responseConfig.scriptFile)
-        val actual = getService().executeScript(scriptPath, runtimeContext)
+        val script = resolveScriptFile(pluginConfig, resourceConfig)
+        val actual = getService().executeScript(script, runtimeContext)
 
         assertNotNull(actual)
         assertEquals(200, actual.statusCode)
@@ -143,8 +148,8 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
         val headers = mapOf("baz" to "qux")
 
         val runtimeContext = buildRuntimeContext(additionalBindings, headers, emptyMap(), emptyMap(), emptyMap())
-        val scriptPath = ScriptUtil.resolveScriptPath(pluginConfig, resourceConfig.responseConfig.scriptFile)
-        val actual = getService().executeScript(scriptPath, runtimeContext)
+        val script = resolveScriptFile(pluginConfig, resourceConfig)
+        val actual = getService().executeScript(script, runtimeContext)
 
         assertNotNull(actual)
         assertEquals(202, actual.statusCode)
@@ -165,8 +170,8 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
         val headers = mapOf("CORGE" to "grault")
 
         val runtimeContext = buildRuntimeContext(additionalBindings, headers, emptyMap(), emptyMap(), emptyMap())
-        val scriptPath = ScriptUtil.resolveScriptPath(pluginConfig, resourceConfig.responseConfig.scriptFile)
-        val actual = getService().executeScript(scriptPath, runtimeContext)
+        val script = resolveScriptFile(pluginConfig, resourceConfig)
+        val actual = getService().executeScript(script, runtimeContext)
 
         assertNotNull(actual)
         assertEquals(202, actual.statusCode)
@@ -187,12 +192,33 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
             "example" to "foo"
         )
         val runtimeContext = buildRuntimeContext(additionalBindings, emptyMap(), emptyMap(), emptyMap(), env)
-        val scriptPath = ScriptUtil.resolveScriptPath(pluginConfig, resourceConfig.responseConfig.scriptFile)
-        val actual = getService().executeScript(scriptPath, runtimeContext)
+        val script = resolveScriptFile(pluginConfig, resourceConfig)
+        val actual = getService().executeScript(script, runtimeContext)
 
         assertNotNull(actual)
         assertEquals(204, actual.statusCode)
         assertEquals(ResponseBehaviourType.DEFAULT_BEHAVIOUR, actual.behaviourType)
         assertEquals("foo", actual.responseHeaders.get("X-Echo-Env-Var"))
+    }
+
+    @Test
+    fun testExecuteInlineScript() {
+        val additionalBindings = mapOf(
+            "hello" to "world"
+        )
+        val runtimeContext = buildRuntimeContext(additionalBindings)
+        val script = ScriptSource(code = scriptCode)
+        val actual = getService().executeScript(script, runtimeContext)
+
+        assertSuccessfulExecution(actual)
+    }
+
+    private fun assertSuccessfulExecution(actual: ReadWriteResponseBehaviour) {
+        assertNotNull(actual)
+        assertEquals(201, actual.statusCode)
+        assertEquals("foo.bar", actual.responseFile)
+        assertEquals(ResponseBehaviourType.SHORT_CIRCUIT, actual.behaviourType)
+        assertEquals(1, actual.responseHeaders.size)
+        assertEquals("AwesomeHeader", actual.responseHeaders.get("MyHeader"))
     }
 }

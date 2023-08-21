@@ -122,6 +122,8 @@ class ScriptedResponseServiceImpl @Inject constructor(
                 if (resource is EvalResourceConfig) {
                     inlineScriptService.initScript(resource)
                 }
+
+                // TODO precache inline script steps as well as evals
             }
         }
 
@@ -132,14 +134,17 @@ class ScriptedResponseServiceImpl @Inject constructor(
     private fun initScript(pluginConfig: PluginConfig, responseConfig: ResponseConfig) {
         responseConfig.scriptFile?.let { scriptFile ->
             val scriptPath = ScriptUtil.resolveScriptPath(pluginConfig, scriptFile)
-            scriptServiceFactory.fetchScriptService(scriptFile).initScript(scriptPath)
+            scriptServiceFactory.fetchScriptService(scriptFile).initScript(
+                ScriptSource(file = scriptPath)
+            )
         }
     }
 
     override fun determineResponseFromScript(
         httpExchange: HttpExchange,
         pluginConfig: PluginConfig,
-        script: ScriptSource,
+        scriptCode: String?,
+        scriptFile: String?,
         additionalContext: Map<String, Any>?
     ): ReadWriteResponseBehaviour {
         return try {
@@ -147,7 +152,8 @@ class ScriptedResponseServiceImpl @Inject constructor(
                 determineResponseFromScriptInternal(
                     httpExchange,
                     pluginConfig,
-                    script,
+                    scriptCode,
+                    scriptFile,
                     additionalContext
                 )
             }
@@ -161,44 +167,37 @@ class ScriptedResponseServiceImpl @Inject constructor(
     private fun determineResponseFromScriptInternal(
         httpExchange: HttpExchange,
         pluginConfig: PluginConfig,
+        scriptCode: String?,
+        scriptFile: String?,
+        additionalContext: Map<String, Any>?
+    ): ReadWriteResponseBehaviour {
+        val script = scriptCode?.let {
+            ScriptSource(code = scriptCode)
+        } ?: scriptFile?.let {
+            ScriptSource(file = ScriptUtil.resolveScriptPath(pluginConfig, scriptFile))
+        } ?: throw IllegalStateException("Script file or code not set")
+
+        return execute(httpExchange, pluginConfig, script, additionalContext)
+    }
+
+    private fun execute(
+        httpExchange: HttpExchange,
+        pluginConfig: PluginConfig,
         script: ScriptSource,
-        additionalContext: Map<String, Any>?
-    ): ReadWriteResponseBehaviour {
-        check(script.valid) { "Script file or code not set" }
-        return script.code?.let {
-            determineResponseFromScriptCode(httpExchange, pluginConfig, script.code!!, additionalContext)
-        } ?: run {
-            determineResponseFromScriptFile(httpExchange, pluginConfig, script.file!!, additionalContext)
-        }
-    }
-
-    private fun determineResponseFromScriptCode(
-        httpExchange: HttpExchange,
-        pluginConfig: PluginConfig,
-        scriptFile: String,
-        additionalContext: Map<String, Any>?
-    ): ReadWriteResponseBehaviour {
-        TODO()
-    }
-
-    private fun determineResponseFromScriptFile(
-        httpExchange: HttpExchange,
-        pluginConfig: PluginConfig,
-        scriptFile: String,
         additionalContext: Map<String, Any>?
     ): ReadWriteResponseBehaviour {
         try {
             val executionStart = System.nanoTime()
             LOGGER.trace(
                 "Executing script '{}' for request: {}",
-                scriptFile,
+                script,
                 LogUtil.describeRequestShort(httpExchange)
             )
             val executionContext = ScriptUtil.buildContext(httpExchange, additionalContext)
             LOGGER.trace("Context for request: {}", Supplier<Any> { executionContext })
 
             val additionalBindings = getAdditionalBindings(httpExchange, executionContext)
-            val scriptLogger = buildScriptLogger(scriptFile)
+            val scriptLogger = buildScriptLogger(script.source)
 
             val runtimeContext = RuntimeContext(
                 EnvVars.getEnv(),
@@ -208,12 +207,9 @@ class ScriptedResponseServiceImpl @Inject constructor(
                 executionContext
             )
 
-            // execute the script and read response behaviour
-            val scriptPath = ScriptUtil.resolveScriptPath(pluginConfig, scriptFile)
-            val responseBehaviour = scriptServiceFactory.fetchScriptService(scriptFile).executeScript(
-                scriptPath,
-                runtimeContext
-            )
+            // execute the script using an appropriate implementation and read response behaviour
+            val scriptService = scriptServiceFactory.fetchScriptService(script.source)
+            val responseBehaviour = scriptService.executeScript(script, runtimeContext)
 
             // fire post execution hooks
             scriptLifecycle.forEach { listener ->
@@ -228,7 +224,7 @@ class ScriptedResponseServiceImpl @Inject constructor(
             LOGGER.debug(
                 String.format(
                     "Executed script '%s' for request: %s in %.2fms",
-                    scriptFile,
+                    script,
                     LogUtil.describeRequestShort(httpExchange),
                     scriptDuration
                 )
@@ -237,20 +233,20 @@ class ScriptedResponseServiceImpl @Inject constructor(
 
         } catch (e: Exception) {
             throw RuntimeException(
-                "Error executing script: '$scriptFile' for request: " +
+                "Error executing script: '$script' for request: " +
                         LogUtil.describeRequestShort(httpExchange), e
             )
         }
     }
 
     @Throws(ExecutionException::class)
-    private fun buildScriptLogger(scriptFile: String): Logger {
+    private fun buildScriptLogger(scriptSource: String): Logger {
         val name: String?
-        val dotIndex = scriptFile.lastIndexOf('.')
-        name = if (dotIndex >= 1 && dotIndex < scriptFile.length - 1) {
-            scriptFile.substring(0, dotIndex)
+        val dotIndex = scriptSource.lastIndexOf('.')
+        name = if (dotIndex >= 1 && dotIndex < scriptSource.length - 1) {
+            scriptSource.substring(0, dotIndex)
         } else {
-            scriptFile
+            scriptSource
         }
         val loggerName = LogUtil.LOGGER_SCRIPT_PACKAGE + "." + name
         return loggerCache[loggerName, { LogManager.getLogger(loggerName) }]

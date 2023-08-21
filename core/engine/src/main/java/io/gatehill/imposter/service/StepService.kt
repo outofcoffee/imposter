@@ -85,7 +85,7 @@ class StepService @Inject constructor(
         }
         // convert explicit script file to step
         getExplicitScriptFile(resourceConfig, pluginConfig)?.let { scriptFile ->
-            steps += parseScriptStep(pluginConfig, scriptFile, null, additionalContext)
+            steps += parseScriptStep(null, scriptFile, pluginConfig, additionalContext)
         }
         return steps
     }
@@ -98,7 +98,7 @@ class StepService @Inject constructor(
         return steps.map { step ->
             when (step.type) {
                 "remote" -> parseRemoteStep(step)
-                "script" -> parseScriptStep(pluginConfig, step["scriptFile"] as String?, step["code"] as String?, additionalContext)
+                "script" -> parseScriptStep(step, pluginConfig, additionalContext)
                 else -> throw IllegalStateException("Unsupported step type: ${step.type}")
             }
         }
@@ -134,18 +134,27 @@ class StepService @Inject constructor(
     }
 
     private fun parseScriptStep(
+        step: Map<String, *>,
         pluginConfig: PluginConfig,
-        scriptFile: String?,
+        additionalContext: Map<String, Any>?,
+    ) = parseScriptStep(
+        step["code"] as String?,
+        step["scriptFile"] as String?,
+        pluginConfig,
+        additionalContext,
+    )
+
+    private fun parseScriptStep(
         scriptCode: String?,
+        scriptFile: String?,
+        pluginConfig: PluginConfig,
         additionalContext: Map<String, Any>?,
     ) = PreparedStep(
         step = scriptStepImpl,
         context = ScriptStepContext(
             pluginConfig,
-            ScriptSource(
-                code = scriptCode,
-                file = scriptFile,
-            ),
+            scriptCode,
+            scriptFile,
             additionalContext,
         )
     )

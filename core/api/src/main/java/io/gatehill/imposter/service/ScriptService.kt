@@ -44,13 +44,12 @@ package io.gatehill.imposter.service
 
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
-import java.nio.file.Path
 
 /**
  * @author Pete Cornish
  */
 interface ScriptService {
-    fun initScript(scriptFile: Path) {
+    fun initScript(script: ScriptSource) {
         // no op
     }
 
@@ -60,11 +59,11 @@ interface ScriptService {
     /**
      * Execute the script and read response behaviour.
      *
-     * @param scriptFile     the path to the script file
+     * @param script         the source of the script
      * @param runtimeContext the script engine runtime context
      * @return the response behaviour
      */
-    fun executeScript(scriptFile: Path, runtimeContext: RuntimeContext): ReadWriteResponseBehaviour
+    fun executeScript(script: ScriptSource, runtimeContext: RuntimeContext): ReadWriteResponseBehaviour
 
     fun evalInlineScript(scriptId: String, scriptCode: String, runtimeContext: RuntimeContext): Boolean =
         throw NotImplementedError()

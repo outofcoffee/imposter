@@ -43,6 +43,13 @@
 package io.gatehill.imposter.scripting.common.util
 
 data class WrappedScript(
+    /**
+     * Number of lines of preamble before the original script code.
+     */
     override val preScriptLength : Int,
-    val script : String,
+
+    /**
+     * The source code including the preamble and the original script code.
+     */
+    val code : String,
 ) : ScriptMetadata

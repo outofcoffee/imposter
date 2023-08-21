@@ -47,9 +47,9 @@ import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.scripting.common.dsl.RunnableDsl
 import io.gatehill.imposter.scripting.common.shim.ConsoleShim
+import io.gatehill.imposter.service.ScriptSource
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
-import java.nio.file.Path
 import javax.script.ScriptException
 import kotlin.io.path.readText
 
@@ -106,10 +106,15 @@ object JavaScriptUtil {
             .mapKeys { if (addDslPrefix && globals.contains(it.key)) DSL_OBJECT_PREFIX + it.key else it.key }
     }
 
-    fun wrapScript(scriptFile: Path): WrappedScript {
-        val script = scriptFile.readText()
-        val setGlobalDslObjects = !script.contains("@imposter-js/types")
-        val wrappedScript = buildWrappedScript(script, setGlobalDslObjects)
+    fun wrapScript(script: ScriptSource): WrappedScript {
+        val scriptCode = when(script.type) {
+            ScriptSource.ScriptType.File -> script.file?.readText()!!
+            ScriptSource.ScriptType.Inline -> script.code!!
+            else -> throw UnsupportedOperationException("Unsupported script type: $script")
+        }
+
+        val setGlobalDslObjects = !scriptCode.contains("@imposter-js/types")
+        val wrappedScript = buildWrappedScript(scriptCode, setGlobalDslObjects)
 
         if (LOGGER.isTraceEnabled) {
             LOGGER.trace("Wrapped script: $wrappedScript")

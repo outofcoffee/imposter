@@ -53,8 +53,8 @@ import io.gatehill.imposter.script.dsl.Dsl
 import io.gatehill.imposter.scripting.common.util.JavaScriptUtil
 import io.gatehill.imposter.scripting.graalvm.GraalvmScriptingModule
 import io.gatehill.imposter.service.ScriptService
+import io.gatehill.imposter.service.ScriptSource
 import org.apache.logging.log4j.LogManager
-import java.nio.file.Path
 import javax.script.ScriptContext
 import javax.script.SimpleBindings
 
@@ -80,21 +80,22 @@ class GraalvmScriptServiceImpl : ScriptService, Plugin {
     }
 
     override fun executeScript(
-        scriptFile: Path,
+        script: ScriptSource,
         runtimeContext: RuntimeContext
     ): ReadWriteResponseBehaviour {
-        LOGGER.trace("Executing script file: {}", scriptFile)
+        LOGGER.trace("Executing script: {}", script)
 
         val bindings = scriptEngine.getBindings(ScriptContext.ENGINE_SCOPE)
         bindings["polyglot.js.allowAllAccess"] = true
 
         return try {
-            val globals = JavaScriptUtil.transformRuntimeMap(runtimeContext,
+            val globals = JavaScriptUtil.transformRuntimeMap(
+                runtimeContext,
                 addDslPrefix = true,
                 addConsoleShim = false
             )
-            val wrapped = JavaScriptUtil.wrapScript(scriptFile)
-            val result = scriptEngine.eval(wrapped.script, SimpleBindings(globals)) as Dsl
+            val wrapped = JavaScriptUtil.wrapScript(script)
+            val result = scriptEngine.eval(wrapped.code, SimpleBindings(globals)) as Dsl
             result.responseBehaviour
 
         } catch (e: Exception) {

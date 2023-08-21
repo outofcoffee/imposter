@@ -49,9 +49,11 @@ import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.PluginConfigImpl
+import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.ScriptUtil
 import io.gatehill.imposter.service.ScriptService
+import io.gatehill.imposter.service.ScriptSource
 import io.gatehill.imposter.util.FeatureUtil
 import io.gatehill.imposter.util.MetricsUtil
 import org.apache.logging.log4j.LogManager
@@ -59,6 +61,7 @@ import org.junit.AfterClass
 import org.junit.Before
 import org.junit.BeforeClass
 import org.mockito.Mockito.mock
+import java.nio.file.Path
 import java.nio.file.Paths
 import org.mockito.Mockito.`when` as When
 
@@ -89,12 +92,19 @@ abstract class AbstractBaseScriptTest {
 
     protected abstract fun getScriptName(): String
 
-    protected fun configureScript(): PluginConfig {
-        val script =
-            Paths.get(AbstractBaseScriptTest::class.java.getResource("/script/${getScriptName()}").toURI())
+    protected val fullScriptPath: Path
+        get() {
+            val relativePath = "/script/${getScriptName()}"
+            try {
+                return Paths.get(AbstractBaseScriptTest::class.java.getResource(relativePath).toURI())
+            } catch (e: Exception) {
+                throw RuntimeException("Failed to resolve path to script resource: $relativePath")
+            }
+        }
 
+    protected fun configureScript(): PluginConfig {
         return PluginConfigImpl().apply {
-            dir = script.parent.toFile()
+            dir = fullScriptPath.parent.toFile()
             responseConfig.apply {
                 this.scriptFile = getScriptName()
             }
@@ -126,5 +136,10 @@ abstract class AbstractBaseScriptTest {
         val pluginConfig = mock(PluginConfig::class.java)
         val executionContext = ScriptUtil.buildContext(mockHttpExchange, null)
         return RuntimeContext(env, logger, pluginConfig, additionalBindings, executionContext)
+    }
+
+    protected fun resolveScriptFile(pluginConfig: PluginConfig, resourceConfig: BasicResourceConfig): ScriptSource {
+        val scriptPath = ScriptUtil.resolveScriptPath(pluginConfig, resourceConfig.responseConfig.scriptFile)
+        return ScriptSource(file = scriptPath)
     }
 }

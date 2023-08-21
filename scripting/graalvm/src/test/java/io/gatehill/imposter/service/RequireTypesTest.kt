@@ -44,7 +44,6 @@ package io.gatehill.imposter.service
 
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.script.ResponseBehaviourType
-import io.gatehill.imposter.script.ScriptUtil
 import io.gatehill.imposter.scripting.AbstractBaseScriptTest
 import io.gatehill.imposter.scripting.graalvm.service.GraalvmScriptServiceImpl
 import org.junit.Assert
@@ -71,8 +70,8 @@ class RequireTypesTest : AbstractBaseScriptTest() {
             additionalBindings = emptyMap(),
             headers = mapOf("X-Example" to "foo")
         )
-        val scriptPath = ScriptUtil.resolveScriptPath(pluginConfig, resourceConfig.responseConfig.scriptFile)
-        val actual = getService().executeScript(scriptPath, runtimeContext)
+        val script = resolveScriptFile(pluginConfig, resourceConfig)
+        val actual = getService().executeScript(script, runtimeContext)
 
         Assert.assertNotNull(actual)
         Assert.assertEquals(201, actual.statusCode)

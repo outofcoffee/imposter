@@ -52,12 +52,12 @@ import io.gatehill.imposter.script.ScriptUtil
 import io.gatehill.imposter.scripting.groovy.impl.GroovyDsl
 import io.gatehill.imposter.scripting.groovy.util.ScriptLoader
 import io.gatehill.imposter.service.ScriptService
+import io.gatehill.imposter.service.ScriptSource
 import io.gatehill.imposter.util.ClassLoaderUtil
 import io.gatehill.imposter.util.MetricsUtil
 import io.micrometer.core.instrument.Gauge
 import org.apache.logging.log4j.LogManager
 import org.codehaus.groovy.control.CompilerConfiguration
-import java.nio.file.Path
 
 /**
  * @author Pete Cornish
@@ -71,7 +71,7 @@ class GroovyScriptServiceImpl : ScriptService {
      */
     private val scriptClasses = CacheBuilder.newBuilder()
         .maximumSize(EnvVars.getEnv(ScriptUtil.ENV_SCRIPT_CACHE_ENTRIES)?.toLong() ?: ScriptUtil.DEFAULT_SCRIPT_CACHE_ENTRIES)
-        .build<Path, Class<GroovyDsl>>()
+        .build<String, Class<GroovyDsl>>()
 
     init {
         val compilerConfig = CompilerConfiguration()
@@ -85,54 +85,58 @@ class GroovyScriptServiceImpl : ScriptService {
         }
     }
 
-    override fun initScript(scriptFile: Path) {
+    override fun initScript(script: ScriptSource) {
         if (ScriptUtil.shouldPrecompile) {
-            LOGGER.debug("Precompiling script: $scriptFile")
-            getCompiledScript(scriptFile)
+            LOGGER.debug("Precompiling script: $script")
+            getCompiledScript(script)
         }
     }
 
     override fun executeScript(
-        scriptFile: Path,
+        script: ScriptSource,
         runtimeContext: RuntimeContext
     ): ReadWriteResponseBehaviour {
-        LOGGER.trace("Executing script file: {}", scriptFile)
+        LOGGER.trace("Executing script: {}", script)
 
         try {
-            val scriptClass = getCompiledScript(scriptFile)
-            val script = scriptClass.getDeclaredConstructor().newInstance().apply {
-                binding = convertBindings(runtimeContext, scriptFile)
+            val scriptClass = getCompiledScript(script)
+            val result = scriptClass.getDeclaredConstructor().newInstance().apply {
+                binding = convertBindings(runtimeContext, script)
                 run()
             }
-            return script.responseBehaviour
+            return result.responseBehaviour
         } catch (e: Exception) {
             throw RuntimeException("Script execution terminated abnormally", e)
         }
     }
 
-    private fun getCompiledScript(scriptFile: Path): Class<GroovyDsl> {
-        return scriptClasses.get(scriptFile) {
+    private fun getCompiledScript(script: ScriptSource): Class<GroovyDsl> {
+        return scriptClasses.get(script.source) {
             try {
-                LOGGER.trace("Compiling script file: {}", scriptFile)
+                LOGGER.trace("Compiling script: {}", script)
                 val compileStartMs = System.currentTimeMillis()
 
                 @Suppress("UNCHECKED_CAST")
-                val compiled = groovyClassLoader.parseClass(scriptFile.toFile()) as Class<GroovyDsl>
+                val compiled: Class<GroovyDsl> = when (script.type) {
+                    ScriptSource.ScriptType.File -> groovyClassLoader.parseClass(script.file?.toFile()!!) as Class<GroovyDsl>
+                    ScriptSource.ScriptType.Inline -> groovyClassLoader.parseClass(script.code) as Class<GroovyDsl>
+                    else -> throw UnsupportedOperationException("Unsupported script type: $script")
+                }
 
-                LOGGER.debug("Script: {} compiled in {}ms", scriptFile, System.currentTimeMillis() - compileStartMs)
+                LOGGER.debug("Script: {} compiled in {}ms", script, System.currentTimeMillis() - compileStartMs)
                 return@get compiled
 
             } catch (e: Exception) {
-                throw RuntimeException("Failed to load Groovy script: $scriptFile", e)
+                throw RuntimeException("Failed to load Groovy script: $script", e)
             }
         }
     }
 
-    private fun convertBindings(runtimeContext: RuntimeContext, scriptFile: Path) = Binding().apply {
+    private fun convertBindings(runtimeContext: RuntimeContext, script: ScriptSource) = Binding().apply {
         runtimeContext.asMap().forEach { (name: String, value: Any?) -> setVariable(name, value) }
 
         // resolved path to the script
-        setVariable(ScriptLoader.contextKeyScriptPath, scriptFile)
+        setVariable(ScriptLoader.contextKeyScriptPath, script.file)
     }
 
     companion object {

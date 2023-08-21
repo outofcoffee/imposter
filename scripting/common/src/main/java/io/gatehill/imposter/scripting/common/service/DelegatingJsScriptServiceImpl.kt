@@ -47,8 +47,8 @@ import io.gatehill.imposter.plugin.PluginManager
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.scripting.common.util.JavaScriptUtil
 import io.gatehill.imposter.service.ScriptService
+import io.gatehill.imposter.service.ScriptSource
 import org.apache.logging.log4j.LogManager
-import java.nio.file.Path
 import javax.inject.Inject
 
 /**
@@ -83,14 +83,14 @@ class DelegatingJsScriptServiceImpl @Inject constructor(
         }
     }
 
-    override fun initScript(scriptFile: Path) = impl.initScript(scriptFile)
+    override fun initScript(script: ScriptSource) = impl.initScript(script)
 
     override fun initInlineScript(scriptId: String, scriptCode: String) = impl.initInlineScript(scriptId, scriptCode)
 
     override fun executeScript(
-        scriptFile: Path,
+        script: ScriptSource,
         runtimeContext: RuntimeContext
-    ) = impl.executeScript(scriptFile, runtimeContext)
+    ) = impl.executeScript(script, runtimeContext)
 
     override fun evalInlineScript(
         scriptId: String,
