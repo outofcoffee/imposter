@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.29.0] - 2023-08-21
+### Added
+- feat: adds support for inline script steps.
+
+### Changed
+- chore(deps): bump version_groovy from 4.0.12 to 4.0.13
+- chore(deps): bump version_junit_jupiter from 5.9.3 to 5.10.0
+- docs: improves setup instructions for fake-data plugin.
+- refactor: adds plumbing for inline script steps.
+- refactor: renames nashorn-standalone module to nashorn.
+
+### Fixed
+- fix: adds option to improve robustness when encountering configuration errors.
+
 ## [3.28.3] - 2023-08-07
 ### Changed
 - docs: describes interaction between OpenAPI server path and basePath.
