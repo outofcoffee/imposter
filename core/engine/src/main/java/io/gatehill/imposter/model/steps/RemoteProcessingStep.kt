@@ -92,6 +92,7 @@ class RemoteProcessingStep(
 }
 
 data class RemoteStepContext(
+    override val stepId: String,
     val url: String,
     val method: HttpMethod,
     val queryParams: Map<String, String>?,

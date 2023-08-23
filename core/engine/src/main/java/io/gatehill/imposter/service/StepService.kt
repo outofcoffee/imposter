@@ -94,11 +94,12 @@ class StepService @Inject constructor(
     ): List<PreparedStep> {
         val steps = mutableListOf<PreparedStep>()
         if (resourceConfig is StepsConfigHolder) {
-            resourceConfig.steps?.let { steps += parseSteps(it, pluginConfig) }
+            resourceConfig.steps?.let { steps += parseSteps(it, pluginConfig, resourceConfig) }
         }
         // convert explicit script file to step
         getExplicitScriptFile(resourceConfig, pluginConfig)?.let { scriptFile ->
-            steps += parseScriptStep(null, scriptFile, pluginConfig)
+            val stepId = "${resourceConfig.resourceId}_scriptFile"
+            steps += parseScriptStep(stepId, null, scriptFile, pluginConfig)
         }
         return steps
     }
@@ -106,18 +107,21 @@ class StepService @Inject constructor(
     private fun parseSteps(
         steps: List<StepConfig>,
         pluginConfig: PluginConfig,
+        resourceConfig: StepsConfigHolder,
     ): List<PreparedStep> {
-        return steps.map { step ->
+        return steps.mapIndexed { index, step ->
+            // unique combination of resource ID and step index
+            val stepId = "${resourceConfig.resourceId}_step$index"
             when (step.type) {
-                "remote" -> parseRemoteStep(step)
-                "script" -> parseScriptStep(step, pluginConfig)
+                "remote" -> parseRemoteStep(stepId, step)
+                "script" -> parseScriptStep(stepId, step, pluginConfig)
                 else -> throw IllegalStateException("Unsupported step type: ${step.type}")
             }
         }
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun parseRemoteStep(step: Map<String, *>): PreparedStep {
+    private fun parseRemoteStep(stepId: String, step: Map<String, *>): PreparedStep {
         val capture = step["capture"] as Map<String, Map<String, *>>?
         val captureConfig: Map<String, ItemCaptureConfig>? = capture?.let { configs ->
             configs.mapValues { (_, config) ->
@@ -134,6 +138,7 @@ class StepService @Inject constructor(
         return PreparedStep(
             step = remoteStepImpl,
             context = RemoteStepContext(
+                stepId = stepId,
                 url = step["url"] as String,
                 method = HttpMethod.valueOf(step["method"] as String),
                 queryParams = step["queryParams"] as Map<String, String>?,
@@ -146,21 +151,25 @@ class StepService @Inject constructor(
     }
 
     private fun parseScriptStep(
+        stepId: String,
         step: Map<String, *>,
         pluginConfig: PluginConfig,
     ) = parseScriptStep(
+        stepId,
         step["code"] as String?,
         step["scriptFile"] as String?,
         pluginConfig,
     )
 
     private fun parseScriptStep(
+        stepId: String,
         scriptCode: String?,
         scriptFile: String?,
         pluginConfig: PluginConfig,
     ) = PreparedStep(
         step = scriptStepImpl,
         context = ScriptStepContext(
+            stepId,
             pluginConfig,
             scriptCode,
             scriptFile,

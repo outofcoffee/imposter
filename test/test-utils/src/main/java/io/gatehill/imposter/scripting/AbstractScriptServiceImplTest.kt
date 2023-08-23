@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -51,6 +51,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Test
+import java.util.UUID
 import kotlin.io.path.readText
 
 /**
@@ -207,7 +208,10 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
             "hello" to "world"
         )
         val runtimeContext = buildRuntimeContext(additionalBindings)
-        val script = ScriptSource(code = scriptCode)
+        val script = ScriptSource(
+            source = "${UUID.randomUUID()}_inline.js",
+            code = scriptCode,
+        )
         val actual = getService().executeScript(script, runtimeContext)
 
         assertSuccessfulExecution(actual)

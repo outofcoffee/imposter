@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023.
+ * Copyright (c) 2023-2023.
  *
  * This file is part of Imposter.
  *
@@ -44,26 +44,24 @@
 package io.gatehill.imposter.service
 
 import java.nio.file.Path
-import java.util.*
 import kotlin.io.path.pathString
 
 data class ScriptSource(
+    /**
+     * Source for scripts **must be unique and stable** between
+     * different instances of code (both inline and file). It can,
+     * however, have identical values for the same script file.
+     *
+     * This enables [source] to be used as an identifier for
+     * operations like caching.
+     */
+    val source: String,
+
     val code: String? = null,
     val file: Path? = null,
 ) {
     val type: ScriptType = file?.let { ScriptType.File } ?: code?.let { ScriptType.Inline } ?: ScriptType.Unknown
-
     val valid get() = type != ScriptType.Unknown
-
-    /**
-     * Source for inline scripts **must be unique and stable** between
-     * different instances of inline code. This enables [source] to be
-     * used as an identifier for operations like caching.
-     */
-    val source: String by lazy {
-        file?.pathString ?: code?.let { "inline${UUID.randomUUID()}.js" }
-            ?: throw IllegalStateException("No script source set")
-    }
 
     override fun toString() = file?.pathString ?: code?.let { source } ?: "null"
 

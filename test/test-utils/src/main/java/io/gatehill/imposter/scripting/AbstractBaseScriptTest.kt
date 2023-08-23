@@ -63,6 +63,7 @@ import org.junit.BeforeClass
 import org.mockito.Mockito.mock
 import java.nio.file.Path
 import java.nio.file.Paths
+import kotlin.io.path.pathString
 import org.mockito.Mockito.`when` as When
 
 /**
@@ -140,6 +141,9 @@ abstract class AbstractBaseScriptTest {
 
     protected fun resolveScriptFile(pluginConfig: PluginConfig, resourceConfig: BasicResourceConfig): ScriptSource {
         val scriptPath = ScriptUtil.resolveScriptPath(pluginConfig, resourceConfig.responseConfig.scriptFile)
-        return ScriptSource(file = scriptPath)
+        return ScriptSource(
+            source = scriptPath.pathString,
+            file = scriptPath,
+        )
     }
 }

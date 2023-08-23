@@ -69,6 +69,7 @@ import org.apache.logging.log4j.Logger
 import org.apache.logging.log4j.util.Supplier
 import java.util.concurrent.ExecutionException
 import javax.inject.Inject
+import kotlin.io.path.pathString
 
 /**
  * @author Pete Cornish
@@ -135,7 +136,11 @@ class ScriptedResponseServiceImpl @Inject constructor(
         responseConfig.scriptFile?.let { scriptFile ->
             val scriptPath = ScriptUtil.resolveScriptPath(pluginConfig, scriptFile)
             scriptServiceFactory.fetchScriptService(scriptFile).initScript(
-                ScriptSource(file = scriptPath)
+                ScriptSource(
+                    // use path as source to allow reuse of script cache (see ScriptProcessingStep)
+                    source = scriptPath.pathString,
+                    file = scriptPath
+                )
             )
         }
     }
@@ -143,17 +148,15 @@ class ScriptedResponseServiceImpl @Inject constructor(
     override fun determineResponseFromScript(
         httpExchange: HttpExchange,
         pluginConfig: PluginConfig,
-        scriptCode: String?,
-        scriptFile: String?,
+        script: ScriptSource,
         additionalContext: Map<String, Any>?
     ): ReadWriteResponseBehaviour {
         return try {
             val scriptExecutor = {
-                determineResponseFromScriptInternal(
+                execute(
                     httpExchange,
                     pluginConfig,
-                    scriptCode,
-                    scriptFile,
+                    script,
                     additionalContext
                 )
             }
@@ -162,22 +165,6 @@ class ScriptedResponseServiceImpl @Inject constructor(
         } catch (e: Exception) {
             throw RuntimeException(e)
         }
-    }
-
-    private fun determineResponseFromScriptInternal(
-        httpExchange: HttpExchange,
-        pluginConfig: PluginConfig,
-        scriptCode: String?,
-        scriptFile: String?,
-        additionalContext: Map<String, Any>?
-    ): ReadWriteResponseBehaviour {
-        val script = scriptCode?.let {
-            ScriptSource(code = scriptCode)
-        } ?: scriptFile?.let {
-            ScriptSource(file = ScriptUtil.resolveScriptPath(pluginConfig, scriptFile))
-        } ?: throw IllegalStateException("Script file or code not set")
-
-        return execute(httpExchange, pluginConfig, script, additionalContext)
     }
 
     private fun execute(

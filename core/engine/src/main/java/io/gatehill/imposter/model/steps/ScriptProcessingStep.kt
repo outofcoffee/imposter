@@ -49,7 +49,10 @@ import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.ResponseBehaviourType
+import io.gatehill.imposter.script.ScriptUtil
+import io.gatehill.imposter.service.ScriptSource
 import io.gatehill.imposter.service.ScriptedResponseService
+import kotlin.io.path.pathString
 
 class ScriptProcessingStep(
     private val scriptedResponseService: ScriptedResponseService,
@@ -63,11 +66,25 @@ class ScriptProcessingStep(
         additionalContext: Map<String, Any>?,
     ): ReadWriteResponseBehaviour {
         val ctx = context as ScriptStepContext
+
+        val script = ctx.scriptCode?.let {
+            ScriptSource(
+                source = "${ctx.stepId}_inline.js",
+                code = ctx.scriptCode
+            )
+        } ?: ctx.scriptFile?.let {
+            val resolvedPath = ScriptUtil.resolveScriptPath(ctx.pluginConfig, ctx.scriptFile)
+            ScriptSource(
+                // use path as source to allow reuse of script cache
+                source = resolvedPath.pathString,
+                file = resolvedPath,
+            )
+        } ?: throw IllegalStateException("Script file or code not set")
+
         val responseBehaviour = scriptedResponseService.determineResponseFromScript(
             httpExchange,
             ctx.pluginConfig,
-            ctx.scriptCode,
-            ctx.scriptFile,
+            script,
             additionalContext,
         )
 
@@ -81,6 +98,7 @@ class ScriptProcessingStep(
 }
 
 data class ScriptStepContext(
+    override val stepId: String,
     val pluginConfig: PluginConfig,
     val scriptCode: String?,
     val scriptFile: String?,

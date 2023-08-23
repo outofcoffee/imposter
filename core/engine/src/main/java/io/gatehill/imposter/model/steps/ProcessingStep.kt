@@ -48,7 +48,22 @@ import io.gatehill.imposter.http.ResponseBehaviourFactory
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 
-interface StepContext
+interface StepContext {
+    /**
+     * Step ID **must be unique** between different steps
+     * in the same resource, as well as unique between resources.
+     *
+     * It must also be **stable** for the same step, for the
+     * duration of the application lifecycle. This enables it
+     * to be used as an identifier for operations like caching.
+     *
+     * Note: this is subtly different from `ScriptSource.source`,
+     * which can be identical when referring to the same
+     * script file. Step IDs, on the other hand, must
+     * be unique, even for steps that use the same script file.
+     */
+    val stepId: String
+}
 
 interface ProcessingStep {
     fun execute(
