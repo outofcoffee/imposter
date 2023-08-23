@@ -43,7 +43,9 @@
 
 package io.gatehill.imposter.plugin.config.steps
 
-interface StepsConfigHolder {
+import io.gatehill.imposter.plugin.config.resource.StableResourceIdHolder
+
+interface StepsConfigHolder : StableResourceIdHolder {
     val steps: List<StepConfig>?
 }
 

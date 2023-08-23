@@ -43,6 +43,7 @@
 
 package io.gatehill.imposter.service
 
+import com.google.common.cache.CacheBuilder
 import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.model.steps.PreparedStep
 import io.gatehill.imposter.model.steps.RemoteProcessingStep
@@ -71,21 +72,33 @@ class StepService @Inject constructor(
     private val remoteStepImpl by lazy { RemoteProcessingStep(remoteService, captureService) }
     private val scriptStepImpl by lazy { ScriptProcessingStep(scriptedResponseService) }
 
+    private val stepCache = CacheBuilder.newBuilder().maximumSize(40).build<String, List<PreparedStep>>()
+
     /**
      * Parses the steps for the given resource.
      */
     fun determineSteps(
         pluginConfig: PluginConfig,
         resourceConfig: BasicResourceConfig,
-        additionalContext: Map<String, Any>?,
+    ): List<PreparedStep> {
+        val steps = stepCache.get(resourceConfig.resourceId) {
+            prepareSteps(pluginConfig, resourceConfig)
+        }
+        logger.trace("Prepared {} step(s) for resource with ID: {}: {}", steps.size, resourceConfig.resourceId, resourceConfig)
+        return steps
+    }
+
+    private fun prepareSteps(
+        pluginConfig: PluginConfig,
+        resourceConfig: BasicResourceConfig,
     ): List<PreparedStep> {
         val steps = mutableListOf<PreparedStep>()
         if (resourceConfig is StepsConfigHolder) {
-            resourceConfig.steps?.let { steps += parseSteps(it, pluginConfig, additionalContext) }
+            resourceConfig.steps?.let { steps += parseSteps(it, pluginConfig) }
         }
         // convert explicit script file to step
         getExplicitScriptFile(resourceConfig, pluginConfig)?.let { scriptFile ->
-            steps += parseScriptStep(null, scriptFile, pluginConfig, additionalContext)
+            steps += parseScriptStep(null, scriptFile, pluginConfig)
         }
         return steps
     }
@@ -93,12 +106,11 @@ class StepService @Inject constructor(
     private fun parseSteps(
         steps: List<StepConfig>,
         pluginConfig: PluginConfig,
-        additionalContext: Map<String, Any>?,
     ): List<PreparedStep> {
         return steps.map { step ->
             when (step.type) {
                 "remote" -> parseRemoteStep(step)
-                "script" -> parseScriptStep(step, pluginConfig, additionalContext)
+                "script" -> parseScriptStep(step, pluginConfig)
                 else -> throw IllegalStateException("Unsupported step type: ${step.type}")
             }
         }
@@ -136,26 +148,22 @@ class StepService @Inject constructor(
     private fun parseScriptStep(
         step: Map<String, *>,
         pluginConfig: PluginConfig,
-        additionalContext: Map<String, Any>?,
     ) = parseScriptStep(
         step["code"] as String?,
         step["scriptFile"] as String?,
         pluginConfig,
-        additionalContext,
     )
 
     private fun parseScriptStep(
         scriptCode: String?,
         scriptFile: String?,
         pluginConfig: PluginConfig,
-        additionalContext: Map<String, Any>?,
     ) = PreparedStep(
         step = scriptStepImpl,
         context = ScriptStepContext(
             pluginConfig,
             scriptCode,
             scriptFile,
-            additionalContext,
         )
     )
 

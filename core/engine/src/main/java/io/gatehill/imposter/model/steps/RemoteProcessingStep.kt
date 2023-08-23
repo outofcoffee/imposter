@@ -67,6 +67,7 @@ class RemoteProcessingStep(
         httpExchange: HttpExchange,
         statusCode: Int,
         context: StepContext,
+        additionalContext: Map<String, Any>?,
     ): ReadWriteResponseBehaviour {
         val ctx = context as RemoteStepContext
         return try {

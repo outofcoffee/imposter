@@ -57,6 +57,7 @@ interface ProcessingStep {
         httpExchange: HttpExchange,
         statusCode: Int,
         context: StepContext,
+        additionalContext: Map<String, Any>?,
     ): ReadWriteResponseBehaviour
 }
 

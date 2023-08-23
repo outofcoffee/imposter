@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023.
+ * Copyright (c) 2023-2023.
  *
  * This file is part of Imposter.
  *
@@ -45,11 +45,6 @@ package io.gatehill.imposter.plugin.config.resource
 /**
  * @author Pete Cornish
  */
-interface EvalResourceConfig {
-    /**
-     * Must be unique.
-     */
-    val resourceId: String
-
+interface EvalResourceConfig : StableResourceIdHolder {
     val eval: String?
 }

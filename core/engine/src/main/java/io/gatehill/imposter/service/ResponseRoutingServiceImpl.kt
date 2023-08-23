@@ -123,7 +123,7 @@ class ResponseRoutingServiceImpl @Inject constructor(
         val statusCode = statusCodeFactory.calculateStatus(resourceConfig)
         val responseBehaviour: ReadWriteResponseBehaviour
 
-        val steps = stepService.determineSteps(pluginConfig, resourceConfig, additionalContext)
+        val steps = stepService.determineSteps(pluginConfig, resourceConfig)
         if (logger.isTraceEnabled) {
             logger.trace("{} processing steps for request: {}", steps.size, LogUtil.describeRequestShort(httpExchange))
         }
@@ -144,6 +144,7 @@ class ResponseRoutingServiceImpl @Inject constructor(
                     httpExchange,
                     statusCode,
                     it.context,
+                    additionalContext,
                 )
             }
             // only the last response behaviour is used

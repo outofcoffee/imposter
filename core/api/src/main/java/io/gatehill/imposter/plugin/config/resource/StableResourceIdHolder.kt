@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023.
+ * Copyright (c) 2023-2023.
  *
  * This file is part of Imposter.
  *
@@ -40,12 +40,16 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 package io.gatehill.imposter.plugin.config.resource
 
 /**
- * Combines a [ResourceConfig] with a [ResponseConfigHolder] for
- * basic resource configuration. Requires a stable resource ID.
- *
- * @author Pete Cornish
+ * Holds a stable resource ID.
  */
-interface BasicResourceConfig : ResourceConfig, ResponseConfigHolder, StableResourceIdHolder
+interface StableResourceIdHolder {
+    /**
+     * Must be unique for each resource, and stable for the
+     * lifetime of the application process.
+     */
+    val resourceId: String
+}

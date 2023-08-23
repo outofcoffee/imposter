@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -42,11 +42,13 @@
  */
 package io.gatehill.imposter.plugin.config.resource
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.gatehill.imposter.plugin.config.capture.CaptureConfigHolder
 import io.gatehill.imposter.plugin.config.capture.ItemCaptureConfig
 import io.gatehill.imposter.plugin.config.security.SecurityConfig
 import io.gatehill.imposter.plugin.config.security.SecurityConfigHolder
+import java.util.UUID
 
 /**
  * Base configuration for plugins and sub-resources.
@@ -65,6 +67,9 @@ abstract class AbstractResourceConfig : BasicResourceConfig, SecurityConfigHolde
 
     @JsonProperty("response")
     override val responseConfig = ResponseConfig()
+
+    @get:JsonIgnore
+    override val resourceId by lazy { UUID.randomUUID().toString() }
 
     override fun toString(): String {
         return "AbstractResourceConfig(path=$path, securityConfig=$securityConfig, captureConfig=$captureConfig, responseConfig=$responseConfig)"

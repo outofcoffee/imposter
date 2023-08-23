@@ -60,6 +60,7 @@ class ScriptProcessingStep(
         httpExchange: HttpExchange,
         statusCode: Int,
         context: StepContext,
+        additionalContext: Map<String, Any>?,
     ): ReadWriteResponseBehaviour {
         val ctx = context as ScriptStepContext
         val responseBehaviour = scriptedResponseService.determineResponseFromScript(
@@ -67,7 +68,7 @@ class ScriptProcessingStep(
             ctx.pluginConfig,
             ctx.scriptCode,
             ctx.scriptFile,
-            ctx.additionalContext,
+            additionalContext,
         )
 
         // use defaults if not set
@@ -83,5 +84,4 @@ data class ScriptStepContext(
     val pluginConfig: PluginConfig,
     val scriptCode: String?,
     val scriptFile: String?,
-    val additionalContext: Map<String, Any>?,
 ) : StepContext
