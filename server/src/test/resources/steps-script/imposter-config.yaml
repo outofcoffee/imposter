@@ -1,7 +1,7 @@
 plugin: "io.gatehill.imposter.plugin.test.TestPluginImpl"
 
 resources:
-  - path: /example
+  - path: /example-file
     method: GET
     steps:
       - type: script
@@ -9,3 +9,10 @@ resources:
     response:
       content: "${stores.request.foo}"
       template: true
+
+  - path: /example-inline
+    method: GET
+    steps:
+      - type: script
+        code: |
+          respond().withContent('baz')

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2023-2023.
  *
  * This file is part of Imposter.
  *
@@ -74,14 +74,26 @@ class StepsScriptTest : BaseVerticleTest() {
     )
 
     /**
-     * Execute a script step.
+     * Execute a script file step.
      */
     @Test
-    fun `execute script step`() {
+    fun `execute script file step`() {
         RestAssured.given().`when`()
-                .get("/example")
-                .then()
-                .statusCode(equalTo(HttpUtil.HTTP_OK))
-                .body(equalTo("bar"))
+            .get("/example-file")
+            .then()
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .body(equalTo("bar"))
+    }
+
+    /**
+     * Execute an inline script step.
+     */
+    @Test
+    fun `execute inline script step`() {
+        RestAssured.given().`when`()
+            .get("/example-inline")
+            .then()
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .body(equalTo("baz"))
     }
 }
