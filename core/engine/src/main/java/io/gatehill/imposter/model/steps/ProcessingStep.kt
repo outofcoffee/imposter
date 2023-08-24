@@ -46,6 +46,7 @@ package io.gatehill.imposter.model.steps
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.ResponseBehaviourFactory
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
+import io.gatehill.imposter.plugin.config.steps.StepType
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 
 interface StepContext {
@@ -77,6 +78,7 @@ interface ProcessingStep {
 }
 
 data class PreparedStep(
+    val type: StepType,
     val step: ProcessingStep,
     val context: StepContext,
 )

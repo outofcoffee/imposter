@@ -55,6 +55,7 @@ import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.ResourcesHolder
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.steps.StepConfig
+import io.gatehill.imposter.plugin.config.steps.StepType
 import io.gatehill.imposter.plugin.config.steps.StepsConfigHolder
 import io.gatehill.imposter.util.MapUtil
 import org.apache.logging.log4j.LogManager
@@ -94,10 +95,13 @@ class StepService @Inject constructor(
         resourceConfig: BasicResourceConfig,
     ): List<PreparedStep> {
         val steps = mutableListOf<PreparedStep>()
+
         if (resourceConfig is StepsConfigHolder) {
             resourceConfig.steps?.let { steps += parseSteps(it, pluginConfig, resourceConfig) }
         }
+
         // convert explicit script file to step
+        // this covers a 'scriptFile` set on the root plugin config
         getExplicitScriptFile(resourceConfig, pluginConfig)?.let { scriptFile ->
             val stepId = "${resourceConfig.resourceId}_scriptFile"
             steps += parseScriptStep(stepId, ScriptStepConfig(scriptFile = scriptFile), pluginConfig)
@@ -114,16 +118,17 @@ class StepService @Inject constructor(
             // unique combination of resource ID and step index
             val stepId = "${resourceConfig.resourceId}_step$index"
             when (step.type) {
-                "remote" -> parseRemoteStep(stepId, step)
-                "script" -> parseScriptStep(stepId, step, pluginConfig)
+                StepType.Remote -> parseRemoteStep(stepId, step)
+                StepType.Script -> parseScriptStep(stepId, step, pluginConfig)
                 else -> throw IllegalStateException("Unsupported step type: ${step.type}")
             }
         }
     }
 
-    private fun parseRemoteStep(stepId: String, step: Map<String, *>): PreparedStep {
+    private fun parseRemoteStep(stepId: String, step: StepConfig): PreparedStep {
         val config = MapUtil.converter.convertValue(step, RemoteStepConfig::class.java)
         return PreparedStep(
+            type = StepType.Remote,
             step = remoteStepImpl,
             context = RemoteStepContext(stepId, config),
         )
@@ -131,7 +136,7 @@ class StepService @Inject constructor(
 
     private fun parseScriptStep(
         stepId: String,
-        step: Map<String, *>,
+        step: StepConfig,
         pluginConfig: PluginConfig,
     ): PreparedStep {
         val config = MapUtil.converter.convertValue(step, ScriptStepConfig::class.java)
@@ -143,6 +148,7 @@ class StepService @Inject constructor(
         config: ScriptStepConfig,
         pluginConfig: PluginConfig,
     ) = PreparedStep(
+        type = StepType.Script,
         step = scriptStepImpl,
         context = ScriptStepContext(stepId, config, pluginConfig)
     )

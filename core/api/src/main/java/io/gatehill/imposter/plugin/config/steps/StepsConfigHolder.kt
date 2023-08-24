@@ -49,6 +49,11 @@ interface StepsConfigHolder : StableResourceIdHolder {
     val steps: List<StepConfig>?
 }
 
+enum class StepType {
+    Script,
+    Remote,
+}
+
 class StepConfig(
-    val type: String
+    val type: StepType
 ) : HashMap<String, Any>()

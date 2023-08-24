@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -107,17 +107,21 @@ object JavaScriptUtil {
     }
 
     fun wrapScript(script: ScriptSource): WrappedScript {
-        val scriptCode = when(script.type) {
-            ScriptSource.ScriptType.File -> script.file?.readText()!!
-            ScriptSource.ScriptType.Inline -> script.code!!
-            else -> throw UnsupportedOperationException("Unsupported script type: $script")
+        val scriptCode = try {
+            when (script.type) {
+                ScriptSource.ScriptType.File -> script.file?.readText()!!
+                ScriptSource.ScriptType.Inline -> script.code!!
+                else -> throw UnsupportedOperationException("Unsupported script type: $script")
+            }
+        } catch (e: Exception) {
+            throw RuntimeException("Failed to read script: $script", e)
         }
 
         val setGlobalDslObjects = !scriptCode.contains("@imposter-js/types")
         val wrappedScript = buildWrappedScript(scriptCode, setGlobalDslObjects)
 
         if (LOGGER.isTraceEnabled) {
-            LOGGER.trace("Wrapped script: $wrappedScript")
+            LOGGER.trace("Wrapped script: {}", wrappedScript)
         }
         return wrappedScript
     }

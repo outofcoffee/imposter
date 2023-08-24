@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2021.
+ * Copyright (c) 2021-2023.
  *
  * This file is part of Imposter.
  *
@@ -48,7 +48,7 @@ import io.gatehill.imposter.script.annotation.GroovyImpl
 import io.gatehill.imposter.script.annotation.JavascriptImpl
 import io.gatehill.imposter.service.ScriptService
 import org.apache.logging.log4j.LogManager
-import java.util.*
+import java.util.Locale
 import javax.inject.Inject
 
 /**
@@ -85,7 +85,7 @@ class ScriptServiceFactory {
         return when (scriptExtension.lowercase(Locale.getDefault())) {
             "groovy" -> groovyScriptService
             "js" -> javascriptScriptService
-            else -> throw RuntimeException("Unable to determine script engine from script file name: $scriptSource")
+            else -> throw RuntimeException("Unable to determine script engine from script source: $scriptSource")
         }
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -170,7 +170,7 @@ class NashornScriptServiceImpl : ScriptService, Plugin {
     private fun getCompiledScript(script: ScriptSource): CompiledJsScript<CompiledScript> =
         compiledScripts.get(script.source) {
             try {
-                LOGGER.trace("Compiling script file: {}", script)
+                LOGGER.trace("Compiling script: {}", script)
                 val compileStartMs = System.currentTimeMillis()
 
                 val wrapped = JavaScriptUtil.wrapScript(script)

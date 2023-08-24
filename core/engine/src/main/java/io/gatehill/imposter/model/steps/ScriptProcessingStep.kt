@@ -68,20 +68,7 @@ class ScriptProcessingStep(
         additionalContext: Map<String, Any>?,
     ): ReadWriteResponseBehaviour {
         val ctx = context as ScriptStepContext
-
-        val script = ctx.config.scriptCode?.let {
-            ScriptSource(
-                source = "${ctx.stepId}_inline.js",
-                code = ctx.config.scriptCode
-            )
-        } ?: ctx.config.scriptFile?.let {
-            val resolvedPath = ScriptUtil.resolveScriptPath(ctx.pluginConfig, ctx.config.scriptFile)
-            ScriptSource(
-                // use path as source to allow reuse of script cache
-                source = resolvedPath.pathString,
-                file = resolvedPath,
-            )
-        } ?: throw IllegalStateException("Script file or code not set")
+        val script = parseScriptSource(ctx)
 
         val responseBehaviour = scriptedResponseService.determineResponseFromScript(
             httpExchange,
@@ -96,6 +83,23 @@ class ScriptProcessingStep(
         }
 
         return responseBehaviour
+    }
+
+    companion object {
+        fun parseScriptSource(ctx: ScriptStepContext) = ctx.config.scriptCode?.let {
+            ScriptSource(
+                // stable ID for script cache key
+                source = "${ctx.stepId}_inline.js",
+                code = ctx.config.scriptCode
+            )
+        } ?: ctx.config.scriptFile?.let {
+            val resolvedPath = ScriptUtil.resolveScriptPath(ctx.pluginConfig, ctx.config.scriptFile)
+            ScriptSource(
+                // use path as source to allow reuse of script cache
+                source = resolvedPath.pathString,
+                file = resolvedPath,
+            )
+        } ?: throw IllegalStateException("Script file or code not set")
     }
 }
 

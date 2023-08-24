@@ -50,17 +50,20 @@ import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
 import io.gatehill.imposter.lifecycle.EngineLifecycleListener
 import io.gatehill.imposter.lifecycle.ScriptLifecycleHooks
+import io.gatehill.imposter.model.steps.ScriptProcessingStep
+import io.gatehill.imposter.model.steps.ScriptStepContext
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.ResourcesHolder
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.resource.EvalResourceConfig
-import io.gatehill.imposter.plugin.config.resource.ResponseConfig
+import io.gatehill.imposter.plugin.config.steps.StepType
 import io.gatehill.imposter.script.ExecutionContext
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.ScriptUtil
 import io.gatehill.imposter.service.ScriptSource
 import io.gatehill.imposter.service.ScriptedResponseService
+import io.gatehill.imposter.service.StepService
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.MetricsUtil
 import io.micrometer.core.instrument.Timer
@@ -69,7 +72,6 @@ import org.apache.logging.log4j.Logger
 import org.apache.logging.log4j.util.Supplier
 import java.util.concurrent.ExecutionException
 import javax.inject.Inject
-import kotlin.io.path.pathString
 
 /**
  * @author Pete Cornish
@@ -79,6 +81,7 @@ class ScriptedResponseServiceImpl @Inject constructor(
     private val scriptLifecycle: ScriptLifecycleHooks,
     private val scriptServiceFactory: ScriptServiceFactory,
     private val inlineScriptService: InlineScriptService,
+    private val stepService: StepService,
 ) : ScriptedResponseService, EngineLifecycleListener {
 
     /**
@@ -108,40 +111,42 @@ class ScriptedResponseServiceImpl @Inject constructor(
     }
 
     private fun initScripts(allPluginConfigs: List<PluginConfig>) {
-        val allScriptFiles = mutableListOf<Pair<PluginConfig, ResponseConfig>>()
-
         // root resource
-        allPluginConfigs.filter { it is BasicResourceConfig }.forEach { config ->
-            allScriptFiles += config to (config as BasicResourceConfig).responseConfig
-        }
-        // child resources
-        allPluginConfigs.filter { it is ResourcesHolder<*> }.forEach { config ->
-            (config as ResourcesHolder<*>).resources?.forEach { resource ->
-                allScriptFiles += config to resource.responseConfig
-
-                // inline scripts
-                if (resource is EvalResourceConfig) {
-                    inlineScriptService.initScript(resource)
-                }
-
-                // TODO precache inline script steps as well as evals
+        allPluginConfigs.forEach { config ->
+            if (config is BasicResourceConfig) {
+                initScriptFilesAndSteps(config, config)
             }
         }
 
-        allScriptFiles.distinctBy { (_, responseConfig) -> responseConfig.scriptFile }
-            .forEach { (config, responseConfig) -> initScript(config, responseConfig) }
+        // child resources
+        allPluginConfigs.forEach { config ->
+            if (config is ResourcesHolder<*>) {
+                config.resources?.forEach { resource ->
+                    initScriptFilesAndSteps(config, resource)
+
+                    // inline eval scripts
+                    if (resource is EvalResourceConfig) {
+                        inlineScriptService.initScript(resource)
+                    }
+                }
+            }
+        }
     }
 
-    private fun initScript(pluginConfig: PluginConfig, responseConfig: ResponseConfig) {
-        responseConfig.scriptFile?.let { scriptFile ->
-            val scriptPath = ScriptUtil.resolveScriptPath(pluginConfig, scriptFile)
-            scriptServiceFactory.fetchScriptService(scriptFile).initScript(
-                ScriptSource(
-                    // use path as source to allow reuse of script cache (see ScriptProcessingStep)
-                    source = scriptPath.pathString,
-                    file = scriptPath
-                )
-            )
+    /**
+     * Covers `scriptFile` on response config and script steps.
+     */
+    private fun initScriptFilesAndSteps(config: PluginConfig, resource: BasicResourceConfig) {
+        val steps = stepService.determineSteps(config, resource)
+        steps.filter { it.type == StepType.Script }.forEach { step ->
+            val context = step.context as ScriptStepContext
+            val script = ScriptProcessingStep.parseScriptSource(context)
+
+            val scriptService = scriptServiceFactory.fetchScriptService(script.source)
+            if (LOGGER.isTraceEnabled) {
+                LOGGER.trace("Initialising script: {} using: {}", script.source, scriptService::class.qualifiedName)
+            }
+            scriptService.initScript(script)
         }
     }
 
