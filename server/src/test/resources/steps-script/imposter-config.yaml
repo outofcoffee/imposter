@@ -5,7 +5,7 @@ resources:
     method: GET
     steps:
       - type: script
-        scriptFile: test.js
+        file: test.js
     response:
       content: "${stores.request.foo}"
       template: true

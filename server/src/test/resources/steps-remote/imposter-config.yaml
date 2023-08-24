@@ -20,7 +20,16 @@ resources:
             store: request
             expression: "${remote.response.statusCode}"
       - type: script
-        scriptFile: status.js
+        code: |
+          var requestStore = stores.open('request');
+          var statusCode = requestStore.load('statusCode');
+
+          // note: store value is a string
+          if (statusCode === '200') {
+              respond().withStatusCode(201);
+          } else {
+              respond().withStatusCode(500);
+          }
     response:
       content: "${stores.request.petName}"
       template: true

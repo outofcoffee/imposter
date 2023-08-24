@@ -157,7 +157,7 @@ class StepService @Inject constructor(
     ) = parseScriptStep(
         stepId,
         step["code"] as String?,
-        step["scriptFile"] as String?,
+        step["file"] as String? ?: step["scriptFile"] as String?,
         pluginConfig,
     )
 
