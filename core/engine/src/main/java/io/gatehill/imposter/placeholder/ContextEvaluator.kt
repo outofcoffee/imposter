@@ -43,6 +43,7 @@
 
 package io.gatehill.imposter.placeholder
 
+import io.gatehill.imposter.expression.eval.ExpressionEvaluator
 import io.gatehill.imposter.http.ExchangePhase
 import org.apache.logging.log4j.LogManager
 
@@ -52,10 +53,29 @@ import org.apache.logging.log4j.LogManager
  * context.a.b.c
  * ```
  */
-object ContextEvaluator : HttpExpressionEvaluator<String>() {
-    private val LOGGER = LogManager.getLogger(ContextEvaluator::class.java)
-
+object ContextEvaluator : ExpressionEvaluator<String> {
     override val name = "context"
+    private val impl by lazy { ContextEvaluatorImpl(name) }
+
+    override fun eval(expression: String, context: Map<String, *>) =
+        impl.eval(expression, context)
+}
+
+/**
+ * Same as [ContextEvaluator] but for remote context.
+ */
+object RemoteEvaluator : ExpressionEvaluator<String> {
+    override val name = "remote"
+    private val impl by lazy { ContextEvaluatorImpl(name) }
+
+    override fun eval(expression: String, context: Map<String, *>) =
+        impl.eval(expression, context)
+}
+
+class ContextEvaluatorImpl(
+    override val name: String,
+) : HttpExpressionEvaluator<String>() {
+    private val logger = LogManager.getLogger(ContextEvaluatorImpl::class.java)
 
     override fun eval(expression: String, context: Map<String, *>): String? {
         try {
@@ -66,7 +86,7 @@ object ContextEvaluator : HttpExpressionEvaluator<String>() {
             )
             val httpExchange = getHttpExchange(context)
             val parsed: String? = when (parts[0]) {
-                "context" -> when (parts[1]) {
+                name -> when (parts[1]) {
                     "request" -> {
                         when (parts[2]) {
                             "body" -> checkExpression(expression, 3, parts) {
@@ -91,7 +111,7 @@ object ContextEvaluator : HttpExpressionEvaluator<String>() {
                                 httpExchange.request.absoluteUri
                             }
                             else -> {
-                                LOGGER.warn("Could not parse request context expression: $expression")
+                                logger.warn("Could not parse request context expression: $expression")
                                 null
                             }
                         }
@@ -111,18 +131,18 @@ object ContextEvaluator : HttpExpressionEvaluator<String>() {
                                 httpExchange.response.statusCode.toString()
                             }
                             else -> {
-                                LOGGER.warn("Could not parse response context expression: $expression")
+                                logger.warn("Could not parse response context expression: $expression")
                                 null
                             }
                         }
                     }
                     else -> {
-                        LOGGER.warn("Could not parse context expression: $expression")
+                        logger.warn("Could not parse context expression: $expression")
                         null
                     }
                 }
                 else -> {
-                    LOGGER.warn("Could not parse context expression: $expression")
+                    logger.warn("Could not parse context expression: $expression")
                     null
                 }
             }
@@ -140,7 +160,7 @@ object ContextEvaluator : HttpExpressionEvaluator<String>() {
         valueSupplier: () -> String?,
     ): String? {
         if (parts.size < minParts) {
-            LOGGER.warn("Could not parse context expression: $expression - expected $minParts parts, but was ${parts.size}")
+            logger.warn("Could not parse context expression: $expression - expected $minParts parts, but was ${parts.size}")
             return null
         }
         return valueSupplier()

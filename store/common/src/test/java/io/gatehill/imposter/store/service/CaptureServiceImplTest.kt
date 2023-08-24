@@ -51,6 +51,7 @@ import io.gatehill.imposter.plugin.config.capture.ItemCaptureConfig
 import io.gatehill.imposter.store.core.Store
 import io.gatehill.imposter.store.factory.StoreFactory
 import io.gatehill.imposter.util.DateTimeUtil
+import io.gatehill.imposter.util.PlaceholderUtil
 import org.junit.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
@@ -86,6 +87,7 @@ class CaptureServiceImplTest {
                 _store = "test",
             ),
             httpExchange = httpExchange,
+            evaluators = PlaceholderUtil.defaultEvaluators,
         )
 
         verify(store).save(eq("foo"), eq("test-id"), any())
@@ -115,6 +117,7 @@ class CaptureServiceImplTest {
                 _store = "test",
             ),
             httpExchange = httpExchange,
+            evaluators = PlaceholderUtil.defaultEvaluators,
         )
 
         // check key name calculated correctly
@@ -148,6 +151,7 @@ class CaptureServiceImplTest {
                 _store = "store_\${datetime.now.iso8601_date}",
             ),
             httpExchange = httpExchange,
+            evaluators = PlaceholderUtil.defaultEvaluators,
         )
 
         verify(store).save(eq("foo"), eq("bar"), any())

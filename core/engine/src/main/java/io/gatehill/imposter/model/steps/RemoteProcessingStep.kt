@@ -46,6 +46,7 @@ package io.gatehill.imposter.model.steps
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.http.ResponseBehaviourFactory
+import io.gatehill.imposter.placeholder.RemoteEvaluator
 import io.gatehill.imposter.plugin.config.capture.ItemCaptureConfig
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.resource.ResponseConfig
@@ -53,6 +54,7 @@ import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.service.CaptureService
 import io.gatehill.imposter.service.RemoteService
 import io.gatehill.imposter.util.HttpUtil
+import io.gatehill.imposter.util.PlaceholderUtil
 import org.apache.logging.log4j.LogManager
 
 class RemoteProcessingStep(
@@ -60,6 +62,11 @@ class RemoteProcessingStep(
     private val captureService: CaptureService,
 ) : ProcessingStep {
     private val logger = LogManager.getLogger(javaClass)
+
+    private val evaluators = PlaceholderUtil.defaultEvaluators.toMutableMap().apply {
+        // allows queries of the remote context using '${remote.response...}' etc.
+        put("remote", RemoteEvaluator)
+    }
 
     override fun execute(
         responseBehaviourFactory: ResponseBehaviourFactory,
@@ -81,7 +88,7 @@ class RemoteProcessingStep(
                 httpExchange
             )
             ctx.capture?.forEach { (key, config) ->
-                captureService.captureItem(key, config, remoteExchange)
+                captureService.captureItem(key, config, remoteExchange, evaluators)
             }
             responseBehaviourFactory.build(statusCode, resourceConfig.responseConfig)
         } catch (e: Exception) {

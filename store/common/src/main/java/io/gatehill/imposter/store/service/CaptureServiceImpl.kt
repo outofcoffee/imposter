@@ -43,6 +43,7 @@
 package io.gatehill.imposter.store.service
 
 import com.google.common.base.Strings
+import io.gatehill.imposter.expression.eval.ExpressionEvaluator
 import io.gatehill.imposter.http.ExchangePhase
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
@@ -89,14 +90,14 @@ class CaptureServiceImpl @Inject constructor(
     private fun captureItems(
         resourceConfig: ResourceConfig?,
         httpExchange: HttpExchange,
-        phaseFilter: ExchangePhase
+        phaseFilter: ExchangePhase,
     ) {
         if (resourceConfig is CaptureConfigHolder) {
             val captureConfig = (resourceConfig as CaptureConfigHolder).captureConfig
             captureConfig?.let {
                 captureConfig.filterValues { it.enabled && it.phase == phaseFilter }
                     .forEach { (captureConfigKey: String, itemConfig: ItemCaptureConfig) ->
-                        captureItem(captureConfigKey, itemConfig, httpExchange)
+                        captureItem(captureConfigKey, itemConfig, httpExchange, PlaceholderUtil.defaultEvaluators)
                     }
             }
         }
@@ -105,7 +106,8 @@ class CaptureServiceImpl @Inject constructor(
     override fun captureItem(
         captureConfigKey: String,
         itemConfig: ItemCaptureConfig,
-        httpExchange: HttpExchange
+        httpExchange: HttpExchange,
+        evaluators: Map<String, ExpressionEvaluator<*>>,
     ) {
         val storeName = determineStoreName(itemConfig, httpExchange)
 
@@ -114,7 +116,7 @@ class CaptureServiceImpl @Inject constructor(
 
         // item name may not be set, if dynamic value was null
         itemName?.let {
-            val itemValue = captureItemValue(itemConfig, httpExchange, captureConfigKey)
+            val itemValue = captureItemValue(itemConfig, httpExchange, captureConfigKey, evaluators)
             val store = openCaptureStore(httpExchange, storeName)
             store.save(itemName, itemValue, itemConfig.phase)
 
@@ -132,7 +134,7 @@ class CaptureServiceImpl @Inject constructor(
         httpExchange: HttpExchange
     ): String {
         try {
-            return (itemConfig.store?.let { capture<String>(httpExchange, it) }
+            return (itemConfig.store?.let { capture<String>(httpExchange, it, PlaceholderUtil.defaultEvaluators) }
                 ?: StoreService.DEFAULT_CAPTURE_STORE_NAME)
 
         } catch (e: Exception) {
@@ -156,7 +158,7 @@ class CaptureServiceImpl @Inject constructor(
 
         } else {
             try {
-                capture<String?>(httpExchange, itemConfig.key)?.let { itemName ->
+                capture<String?>(httpExchange, itemConfig.key, PlaceholderUtil.defaultEvaluators)?.let { itemName ->
                     LOGGER.debug(
                         "Capturing item: $captureConfigKey into store: $storeName with name: $itemName"
                     )
@@ -178,10 +180,11 @@ class CaptureServiceImpl @Inject constructor(
     private fun captureItemValue(
         itemConfig: ItemCaptureConfig,
         httpExchange: HttpExchange,
-        captureConfigKey: String
+        captureConfigKey: String,
+        evaluators: Map<String, ExpressionEvaluator<*>>,
     ): Any? {
         try {
-            return capture(httpExchange, itemConfig)
+            return capture(httpExchange, itemConfig, evaluators)
         } catch (e: Exception) {
             throw RuntimeException("Error capturing item value: $captureConfigKey", e)
         }
@@ -205,6 +208,7 @@ class CaptureServiceImpl @Inject constructor(
     private fun <T> capture(
         httpExchange: HttpExchange,
         captureConfig: CaptureConfig?,
+        evaluators: Map<String, ExpressionEvaluator<*>>,
     ): T? {
         if (null == captureConfig) {
             return null
@@ -239,7 +243,7 @@ class CaptureServiceImpl @Inject constructor(
             ) as T?
 
         } else if (!Strings.isNullOrEmpty(captureConfig.expression)) {
-            PlaceholderUtil.replace(captureConfig.expression!!, httpExchange, PlaceholderUtil.defaultEvaluators) as T?
+            PlaceholderUtil.replace(captureConfig.expression!!, httpExchange, evaluators) as T?
 
         } else {
             null
