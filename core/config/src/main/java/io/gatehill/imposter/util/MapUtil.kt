@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -64,6 +64,13 @@ object MapUtil {
 
     @JvmField
     val YAML_MAPPER: YAMLMapper
+
+    /**
+     * Optimised for object to object conversion.
+     */
+    val converter = configureBuilder<ObjectMapper>(
+        JsonMapper.builder()
+    )
 
     /**
      * Don't apply standard configuration to this mapper.

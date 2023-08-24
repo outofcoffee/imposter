@@ -44,18 +44,19 @@
 package io.gatehill.imposter.service
 
 import com.google.common.cache.CacheBuilder
-import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.model.steps.PreparedStep
 import io.gatehill.imposter.model.steps.RemoteProcessingStep
+import io.gatehill.imposter.model.steps.RemoteStepConfig
 import io.gatehill.imposter.model.steps.RemoteStepContext
 import io.gatehill.imposter.model.steps.ScriptProcessingStep
+import io.gatehill.imposter.model.steps.ScriptStepConfig
 import io.gatehill.imposter.model.steps.ScriptStepContext
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.ResourcesHolder
-import io.gatehill.imposter.plugin.config.capture.ItemCaptureConfig
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.steps.StepConfig
 import io.gatehill.imposter.plugin.config.steps.StepsConfigHolder
+import io.gatehill.imposter.util.MapUtil
 import org.apache.logging.log4j.LogManager
 import javax.inject.Inject
 
@@ -99,7 +100,7 @@ class StepService @Inject constructor(
         // convert explicit script file to step
         getExplicitScriptFile(resourceConfig, pluginConfig)?.let { scriptFile ->
             val stepId = "${resourceConfig.resourceId}_scriptFile"
-            steps += parseScriptStep(stepId, null, scriptFile, pluginConfig)
+            steps += parseScriptStep(stepId, ScriptStepConfig(scriptFile = scriptFile), pluginConfig)
         }
         return steps
     }
@@ -120,32 +121,11 @@ class StepService @Inject constructor(
         }
     }
 
-    @Suppress("UNCHECKED_CAST")
     private fun parseRemoteStep(stepId: String, step: Map<String, *>): PreparedStep {
-        val capture = step["capture"] as Map<String, Map<String, *>>?
-        val captureConfig: Map<String, ItemCaptureConfig>? = capture?.let { configs ->
-            configs.mapValues { (_, config) ->
-                // note: only a subset of the capture config is supported for remote steps
-                ItemCaptureConfig(
-                    expression = config["expression"] as String?,
-
-                    // assumes store is a string
-                    _store = config["store"],
-                )
-            }
-        }
+        val config = MapUtil.converter.convertValue(step, RemoteStepConfig::class.java)
         return PreparedStep(
             step = remoteStepImpl,
-            context = RemoteStepContext(
-                stepId = stepId,
-                url = step["url"] as String,
-                method = HttpMethod.valueOf(step["method"] as String),
-                queryParams = step["queryParams"] as Map<String, String>?,
-                formParams = step["formParams"] as Map<String, String>?,
-                headers = step["headers"] as Map<String, String>?,
-                content = step["content"] as String?,
-                capture = captureConfig,
-            ),
+            context = RemoteStepContext(stepId, config),
         )
     }
 
@@ -153,26 +133,18 @@ class StepService @Inject constructor(
         stepId: String,
         step: Map<String, *>,
         pluginConfig: PluginConfig,
-    ) = parseScriptStep(
-        stepId,
-        step["code"] as String?,
-        step["file"] as String? ?: step["scriptFile"] as String?,
-        pluginConfig,
-    )
+    ): PreparedStep {
+        val config = MapUtil.converter.convertValue(step, ScriptStepConfig::class.java)
+        return parseScriptStep(stepId, config, pluginConfig)
+    }
 
     private fun parseScriptStep(
         stepId: String,
-        scriptCode: String?,
-        scriptFile: String?,
+        config: ScriptStepConfig,
         pluginConfig: PluginConfig,
     ) = PreparedStep(
         step = scriptStepImpl,
-        context = ScriptStepContext(
-            stepId,
-            pluginConfig,
-            scriptCode,
-            scriptFile,
-        )
+        context = ScriptStepContext(stepId, config, pluginConfig)
     )
 
     private fun getExplicitScriptFile(

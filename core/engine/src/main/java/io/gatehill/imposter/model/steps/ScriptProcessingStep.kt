@@ -43,6 +43,8 @@
 
 package io.gatehill.imposter.model.steps
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonProperty
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.ResponseBehaviourFactory
 import io.gatehill.imposter.plugin.config.PluginConfig
@@ -67,13 +69,13 @@ class ScriptProcessingStep(
     ): ReadWriteResponseBehaviour {
         val ctx = context as ScriptStepContext
 
-        val script = ctx.scriptCode?.let {
+        val script = ctx.config.scriptCode?.let {
             ScriptSource(
                 source = "${ctx.stepId}_inline.js",
-                code = ctx.scriptCode
+                code = ctx.config.scriptCode
             )
-        } ?: ctx.scriptFile?.let {
-            val resolvedPath = ScriptUtil.resolveScriptPath(ctx.pluginConfig, ctx.scriptFile)
+        } ?: ctx.config.scriptFile?.let {
+            val resolvedPath = ScriptUtil.resolveScriptPath(ctx.pluginConfig, ctx.config.scriptFile)
             ScriptSource(
                 // use path as source to allow reuse of script cache
                 source = resolvedPath.pathString,
@@ -97,9 +99,17 @@ class ScriptProcessingStep(
     }
 }
 
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class ScriptStepConfig(
+    @JsonProperty("code")
+    val scriptCode: String? = null,
+
+    @JsonProperty("file")
+    val scriptFile: String? = null,
+)
+
 data class ScriptStepContext(
     override val stepId: String,
+    val config: ScriptStepConfig,
     val pluginConfig: PluginConfig,
-    val scriptCode: String?,
-    val scriptFile: String?,
 ) : StepContext

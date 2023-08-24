@@ -43,6 +43,8 @@
 
 package io.gatehill.imposter.model.steps
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonProperty
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.http.ResponseBehaviourFactory
@@ -79,32 +81,50 @@ class RemoteProcessingStep(
         val ctx = context as RemoteStepContext
         return try {
             val remoteExchange = remoteService.sendRequest(
-                ctx.url,
-                ctx.method,
-                ctx.queryParams,
-                ctx.formParams,
-                ctx.headers,
-                ctx.content,
+                ctx.config.url,
+                ctx.config.method,
+                ctx.config.queryParams,
+                ctx.config.formParams,
+                ctx.config.headers,
+                ctx.config.content,
                 httpExchange
             )
-            ctx.capture?.forEach { (key, config) ->
+            ctx.config.capture?.forEach { (key, config) ->
                 captureService.captureItem(key, config, remoteExchange, evaluators)
             }
             responseBehaviourFactory.build(statusCode, resourceConfig.responseConfig)
         } catch (e: Exception) {
-            logger.error("Error sending remote request: {} {}", ctx.method, ctx.url, e)
+            logger.error("Error sending remote request: {} {}", ctx.config.method, ctx.config.url, e)
             responseBehaviourFactory.build(HttpUtil.HTTP_INTERNAL_ERROR, ResponseConfig())
         }
     }
 }
 
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class RemoteStepConfig(
+    @JsonProperty("url")
+    val url: String,
+
+    @JsonProperty("method")
+    val method: HttpMethod,
+
+    @JsonProperty("queryParams")
+    val queryParams: Map<String, String>?,
+
+    @JsonProperty("formParams")
+    val formParams: Map<String, String>?,
+
+    @JsonProperty("headers")
+    val headers: Map<String, String>?,
+
+    @JsonProperty("content")
+    val content: String?,
+
+    @JsonProperty("capture")
+    val capture: Map<String, ItemCaptureConfig>?,
+)
+
 data class RemoteStepContext(
     override val stepId: String,
-    val url: String,
-    val method: HttpMethod,
-    val queryParams: Map<String, String>?,
-    val formParams: Map<String, String>?,
-    val headers: Map<String, String>?,
-    val content: String?,
-    val capture: Map<String, ItemCaptureConfig>?,
+    val config: RemoteStepConfig,
 ) : StepContext
