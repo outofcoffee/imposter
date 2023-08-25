@@ -139,11 +139,10 @@ class ResponseRoutingServiceImpl @Inject constructor(
         } else {
             val responseBehaviours = steps.map {
                 it.step.execute(
-                    responseBehaviourFactory,
-                    resourceConfig,
+                    it.context,
                     httpExchange,
                     statusCode,
-                    it.context,
+                    responseBehaviourFactory,
                     additionalContext,
                 )
             }

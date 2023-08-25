@@ -104,7 +104,7 @@ class StepService @Inject constructor(
         // this covers a 'scriptFile` set on the root plugin config
         getExplicitScriptFile(resourceConfig, pluginConfig)?.let { scriptFile ->
             val stepId = "${resourceConfig.resourceId}_scriptFile"
-            steps += parseScriptStep(stepId, ScriptStepConfig(scriptFile = scriptFile), pluginConfig)
+            steps += parseScriptStep(resourceConfig, stepId, ScriptStepConfig(scriptFile = scriptFile), pluginConfig)
         }
         return steps
     }
@@ -112,45 +112,47 @@ class StepService @Inject constructor(
     private fun parseSteps(
         steps: List<StepConfig>,
         pluginConfig: PluginConfig,
-        resourceConfig: StepsConfigHolder,
+        resourceConfig: BasicResourceConfig,
     ): List<PreparedStep> {
         return steps.mapIndexed { index, step ->
             // unique combination of resource ID and step index
             val stepId = "${resourceConfig.resourceId}_step$index"
             when (step.type) {
-                StepType.Remote -> parseRemoteStep(stepId, step)
-                StepType.Script -> parseScriptStep(stepId, step, pluginConfig)
+                StepType.Remote -> parseRemoteStep(resourceConfig, stepId, step)
+                StepType.Script -> parseScriptStep(resourceConfig, stepId, step, pluginConfig)
                 else -> throw IllegalStateException("Unsupported step type: ${step.type}")
             }
         }
     }
 
-    private fun parseRemoteStep(stepId: String, step: StepConfig): PreparedStep {
+    private fun parseRemoteStep(resourceConfig: BasicResourceConfig, stepId: String, step: StepConfig): PreparedStep {
         val config = MapUtil.converter.convertValue(step, RemoteStepConfig::class.java)
         return PreparedStep(
             type = StepType.Remote,
             step = remoteStepImpl,
-            context = RemoteStepContext(stepId, config),
+            context = RemoteStepContext(stepId, resourceConfig, config),
         )
     }
 
     private fun parseScriptStep(
+        resourceConfig: BasicResourceConfig,
         stepId: String,
         step: StepConfig,
         pluginConfig: PluginConfig,
     ): PreparedStep {
         val config = MapUtil.converter.convertValue(step, ScriptStepConfig::class.java)
-        return parseScriptStep(stepId, config, pluginConfig)
+        return parseScriptStep(resourceConfig, stepId, config, pluginConfig)
     }
 
     private fun parseScriptStep(
+        resourceConfig: BasicResourceConfig,
         stepId: String,
         config: ScriptStepConfig,
         pluginConfig: PluginConfig,
     ) = PreparedStep(
         type = StepType.Script,
         step = scriptStepImpl,
-        context = ScriptStepContext(stepId, config, pluginConfig)
+        context = ScriptStepContext(stepId, resourceConfig, config, pluginConfig)
     )
 
     private fun getExplicitScriptFile(

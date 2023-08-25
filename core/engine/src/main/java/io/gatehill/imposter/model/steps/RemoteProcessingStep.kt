@@ -71,11 +71,10 @@ class RemoteProcessingStep(
     }
 
     override fun execute(
-        responseBehaviourFactory: ResponseBehaviourFactory,
-        resourceConfig: BasicResourceConfig,
+        context: StepContext,
         httpExchange: HttpExchange,
         statusCode: Int,
-        context: StepContext,
+        responseBehaviourFactory: ResponseBehaviourFactory,
         additionalContext: Map<String, Any>?,
     ): ReadWriteResponseBehaviour {
         val ctx = context as RemoteStepContext
@@ -92,7 +91,7 @@ class RemoteProcessingStep(
             ctx.config.capture?.forEach { (key, config) ->
                 captureService.captureItem(key, config, remoteExchange, evaluators)
             }
-            responseBehaviourFactory.build(statusCode, resourceConfig.responseConfig)
+            responseBehaviourFactory.build(statusCode, ctx.resourceConfig.responseConfig)
         } catch (e: Exception) {
             logger.error("Error sending remote request: {} {}", ctx.config.method, ctx.config.url, e)
             responseBehaviourFactory.build(HttpUtil.HTTP_INTERNAL_ERROR, ResponseConfig())
@@ -126,5 +125,6 @@ data class RemoteStepConfig(
 
 data class RemoteStepContext(
     override val stepId: String,
+    override val resourceConfig: BasicResourceConfig,
     val config: RemoteStepConfig,
 ) : StepContext

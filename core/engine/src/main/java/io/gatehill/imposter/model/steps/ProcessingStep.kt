@@ -64,15 +64,16 @@ interface StepContext {
      * be unique, even for steps that use the same script file.
      */
     val stepId: String
+
+    val resourceConfig: BasicResourceConfig
 }
 
 interface ProcessingStep {
     fun execute(
-        responseBehaviourFactory: ResponseBehaviourFactory,
-        resourceConfig: BasicResourceConfig,
+        context: StepContext,
         httpExchange: HttpExchange,
         statusCode: Int,
-        context: StepContext,
+        responseBehaviourFactory: ResponseBehaviourFactory,
         additionalContext: Map<String, Any>?,
     ): ReadWriteResponseBehaviour
 }

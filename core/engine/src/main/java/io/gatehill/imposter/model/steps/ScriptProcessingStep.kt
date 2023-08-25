@@ -60,11 +60,10 @@ class ScriptProcessingStep(
     private val scriptedResponseService: ScriptedResponseService,
 ) : ProcessingStep {
     override fun execute(
-        responseBehaviourFactory: ResponseBehaviourFactory,
-        resourceConfig: BasicResourceConfig,
+        context: StepContext,
         httpExchange: HttpExchange,
         statusCode: Int,
-        context: StepContext,
+        responseBehaviourFactory: ResponseBehaviourFactory,
         additionalContext: Map<String, Any>?,
     ): ReadWriteResponseBehaviour {
         val ctx = context as ScriptStepContext
@@ -79,7 +78,7 @@ class ScriptProcessingStep(
 
         // use defaults if not set
         if (ResponseBehaviourType.DEFAULT_BEHAVIOUR == responseBehaviour.behaviourType) {
-            responseBehaviourFactory.populate(statusCode, resourceConfig.responseConfig, responseBehaviour)
+            responseBehaviourFactory.populate(statusCode, ctx.resourceConfig.responseConfig, responseBehaviour)
         }
 
         return responseBehaviour
@@ -114,6 +113,7 @@ data class ScriptStepConfig(
 
 data class ScriptStepContext(
     override val stepId: String,
+    override val resourceConfig: BasicResourceConfig,
     val config: ScriptStepConfig,
     val pluginConfig: PluginConfig,
 ) : StepContext
