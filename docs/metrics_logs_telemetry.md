@@ -1,4 +1,4 @@
-# Metrics, logs and telemetry
+# Metrics, health, logs and telemetry
 
 ## Status endpoint
 

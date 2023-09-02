@@ -47,7 +47,7 @@ To begin, check out the [Getting started](getting_started.md) guide. See the _Us
 
 ### Operational topics
 
-- [Metrics, logs and telemetry](metrics_logs_telemetry.md)
+- [Metrics, health, logs and telemetry](metrics_logs_telemetry.md)
 - [Performance tuning](./performance_tuning.md)
 - [Benchmarks](./benchmarks.md)
 - [TLS/SSL](./tls_ssl.md)
