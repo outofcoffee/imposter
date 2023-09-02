@@ -100,7 +100,7 @@ class LambdaServerFactory @Inject constructor(
                 path += indexFile
             }
             logger.debug("Serving static resource: $path")
-            responseService.finaliseExchange(null, exchange) {
+            responseService.sendThenFinaliseExchange(null, exchange) {
                 val responseBehaviour = ReadWriteResponseBehaviourImpl().apply {
                     responseFile = path
                 }

@@ -53,12 +53,7 @@ import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import org.mockito.kotlin.any
-import org.mockito.kotlin.doAnswer
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.eq
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
+import org.mockito.kotlin.*
 
 /**
  * Tests for [CharacteristicsService].
@@ -108,7 +103,7 @@ class CharacteristicsServiceTest {
 
     private fun sendFailureType(failureType: FailureSimulationType): HttpResponse {
         val responseService = mock<ResponseService> {
-            on { finaliseExchange(any(), any(), any()) } doAnswer {
+            on { sendThenFinaliseExchange(any(), any(), any()) } doAnswer {
                 @Suppress("UNCHECKED_CAST") val block = it.arguments[2] as () -> Unit
                 block()
             }
@@ -126,7 +121,7 @@ class CharacteristicsServiceTest {
         val service = CharacteristicsService(responseService)
         service.sendFailure(mock(), httpExchange, failureType)
 
-        verify(responseService).finaliseExchange(any(), eq(httpExchange), any())
+        verify(responseService).sendThenFinaliseExchange(any(), eq(httpExchange), any())
         return httpResponse
     }
 }

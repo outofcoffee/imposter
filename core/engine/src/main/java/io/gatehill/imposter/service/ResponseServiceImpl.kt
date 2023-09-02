@@ -138,7 +138,7 @@ class ResponseServiceImpl @Inject constructor(
             LogUtil.describeRequestShort(httpExchange),
             responseBehaviour.statusCode
         )
-        finaliseExchange(resourceConfig, httpExchange) {
+        sendThenFinaliseExchange(resourceConfig, httpExchange) {
             try {
                 val response = httpExchange.response
                 response.setStatusCode(responseBehaviour.statusCode)
@@ -285,7 +285,7 @@ class ResponseServiceImpl @Inject constructor(
         httpExchange.fail(HttpUtil.HTTP_NOT_FOUND)
     }
 
-    override fun sendNotFoundResponse(httpExchange: HttpExchange) = finaliseExchange(null, httpExchange) {
+    override fun sendNotFoundResponse(httpExchange: HttpExchange) = sendThenFinaliseExchange(null, httpExchange) {
         val response = httpExchange.response
         response.setStatusCode(HttpUtil.HTTP_NOT_FOUND)
 
@@ -317,7 +317,7 @@ class ResponseServiceImpl @Inject constructor(
         notFoundMessages += message
     }
 
-    override fun finaliseExchange(
+    override fun sendThenFinaliseExchange(
         resourceConfig: ResourceConfig?,
         httpExchange: HttpExchange,
         block: () -> Unit,

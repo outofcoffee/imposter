@@ -153,7 +153,7 @@ class UpstreamService @Inject constructor(
                     }
                 }
             }
-            responseService.finaliseExchange(resourceConfig, httpExchange) {
+            responseService.sendThenFinaliseExchange(resourceConfig, httpExchange) {
                 try {
                     responseService.writeResponseData(
                         resourceConfig,

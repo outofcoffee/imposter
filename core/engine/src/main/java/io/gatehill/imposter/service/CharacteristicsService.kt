@@ -86,7 +86,7 @@ class CharacteristicsService @Inject constructor(
             failureType,
             LogUtil.describeRequestShort(httpExchange),
         )
-        responseService.finaliseExchange(resourceConfig, httpExchange) {
+        responseService.sendThenFinaliseExchange(resourceConfig, httpExchange) {
             try {
                 when (failureType) {
                     FailureSimulationType.EmptyResponse -> httpExchange.response.end()

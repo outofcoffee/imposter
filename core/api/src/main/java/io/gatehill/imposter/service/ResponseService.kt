@@ -106,7 +106,7 @@ interface ResponseService {
      * Set the HTTP status code, headers and body, then calls [HttpResponse.end].
      * This should only be called by the error handler. See [failWithNotFoundResponse].
      *
-     * Note: this method calls [finaliseExchange].
+     * Note: this method calls [sendThenFinaliseExchange].
      */
     fun sendNotFoundResponse(httpExchange: HttpExchange)
 
@@ -131,9 +131,12 @@ interface ResponseService {
     )
 
     /**
-     * Invoke after the exchange has been handled.
+     * Invoke the `block`, then finalise the exchange by setting the phase, and
+     * calling any configured listeners.
+     * Typically, the block sends the data after the exchange has been handled
+     * by an appropriate handler.
      */
-    fun finaliseExchange(resourceConfig: ResourceConfig?, httpExchange: HttpExchange, block: () -> Unit)
+    fun sendThenFinaliseExchange(resourceConfig: ResourceConfig?, httpExchange: HttpExchange, block: () -> Unit)
 
     fun interface ResponseSender {
         @Throws(Exception::class)
