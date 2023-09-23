@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.31.0] - 2023-09-23
+### Added
+- feat(lambda): falls back to default Lambda bundle config dir if no config dir set.
+- feat: supports IMPOSTER_CONFIG_DIR environment variable in all distributions.
+
+### Changed
+- docs: improves configuration location instructions.
+- refactor: deprecates IMPOSTER_S3_CONFIG_URL env var in favour of IMPOSTER_CONFIG_DIR.
+
 ## [3.30.0] - 2023-09-23
 ### Added
 - feat: precompiles inline script steps.
