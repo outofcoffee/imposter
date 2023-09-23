@@ -86,10 +86,10 @@ functions:
     package:
       artifact: "./imposter-awslambda.zip"
     environment:
-      IMPOSTER_S3_CONFIG_URL: "s3://imposter-lambda-example/config/"
+      IMPOSTER_CONFIG_DIR: "s3://imposter-lambda-example/config/"
 ```
 
-> Note: `IMPOSTER_S3_CONFIG_URL` is not the path to the YAML _file_ - it is the directory ('prefix') under which the file exists in the bucket.
+> Note: `IMPOSTER_CONFIG_DIR` is not the path to the YAML _file_ - it is the directory ('prefix') under which the file exists in the bucket.
 
 *Important:* Ensure the Lambda execution role has permission to access the S3 bucket containing your configuration.
 

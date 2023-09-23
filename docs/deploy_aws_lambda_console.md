@@ -76,7 +76,7 @@ Under **Runtime settings** set the handler to: `io.gatehill.imposter.awslambda.H
 Under **Configuration**, add the following environment variable:
 
 ```
-IMPOSTER_S3_CONFIG_URL="s3://example-imposter-bucket/config/"
+IMPOSTER_CONFIG_DIR="s3://example-imposter-bucket/config/"
 ```
 
 Set the environment variable to point to the path holding the configuration files:

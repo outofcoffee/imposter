@@ -24,7 +24,7 @@ functions:
     package:
       artifact: "../../build/distributions/imposter-awslambda.zip"
     environment:
-      IMPOSTER_S3_CONFIG_URL: "s3://imposter-lambda-example/config/"
+      IMPOSTER_CONFIG_DIR: "s3://imposter-lambda-example/config/"
     events:
       - http:
           method: any

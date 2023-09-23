@@ -117,7 +117,7 @@ class S3DownloadTest {
             }
 
             EnvVars.populate(
-                "IMPOSTER_S3_CONFIG_URL" to "s3://test/",
+                "IMPOSTER_CONFIG_DIR" to "s3://test/",
                 "IMPOSTER_LOG_LEVEL" to "trace",
             )
         }
