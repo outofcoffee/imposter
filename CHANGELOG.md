@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.30.0] - 2023-09-23
+### Added
+- feat: precompiles inline script steps.
+- feat: shortens script step file property name.
+
+### Changed
+- docs: adds example Dockerfile and Compose config.
+- docs: adds instructions for custom Docker images.
+- docs: better signposts healthcheck endpoint.
+- refactor: caches inline scripts.
+- refactor: caches processing steps for all resources.
+- refactor: moves resource config into step context.
+- refactor: renames exchange finalisation logic.
+- refactor: replaces custom step deserialisation with Jackson.
+- refactor: uses dedicated remote expression evaluator.
+- test: improves coverage for inline script steps.
+
 ## [3.29.0] - 2023-08-21
 ### Added
 - feat: adds support for inline script steps.
