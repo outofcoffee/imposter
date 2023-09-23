@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2021.
+ * Copyright (c) 2021-2023.
  *
  * This file is part of Imposter.
  *
@@ -63,10 +63,12 @@ import org.apache.logging.log4j.Logger
  * @author Pete Cornish
  */
 abstract class AbstractHandler<Request, Response>(
-    eventType: LambdaServerFactory.EventType
+    eventType: LambdaServerFactory.EventType,
 ) {
     protected val logger: Logger = LogManager.getLogger(AbstractHandler::class.java)
     protected val server: LambdaServer<Request, Response>
+
+    private val defaultLambdaBundleConfigDir = "/var/task/config"
 
     init {
         // lambda functions are only allowed write access to /tmp
@@ -78,11 +80,14 @@ abstract class AbstractHandler<Request, Response>(
 
         LambdaServerFactory.eventType = eventType
 
+        @Suppress("DEPRECATION")
+        val configDir = Settings.configDir ?: Settings.s3ConfigUrl ?: defaultLambdaBundleConfigDir
+
         ImposterBuilderKt()
             .withPluginClass(OpenApiPluginImpl::class.java)
             .withPluginClass(RestPluginImpl::class.java)
             .apply { if (Settings.metaInfScan) withPluginClass(MetaInfPluginDetectorImpl::class.java) }
-            .withConfigurationDir(Settings.configDir ?: Settings.s3ConfigUrl)
+            .withConfigurationDir(configDir)
             .withEngineOptions { options ->
                 options.serverFactory = LambdaServerFactory::class.qualifiedName
                 options.requestHandlingMode = RequestHandlingMode.SYNC

@@ -58,9 +58,9 @@ object Settings {
     val pluginDiscoveryStrategyClass: String? get() =
         EnvVars.getEnv("IMPOSTER_PLUGIN_DISCOVERY_STRATEGY")
 
-    val s3ConfigUrl: String get() =
+    @Deprecated("Use configDir instead", ReplaceWith("Settings.configDir", "io.gatehill.imposter.awslambda.config.Settings"))
+    val s3ConfigUrl: String? get() =
         EnvVars.getEnv("IMPOSTER_S3_CONFIG_URL")
-            ?: throw IllegalStateException("Missing S3 configuration URL")
 
     val metaInfScan: Boolean get() =
         EnvVars.getEnv("IMPOSTER_METAINF_SCAN")?.toBoolean() ?: false
