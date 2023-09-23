@@ -32,15 +32,21 @@ To begin, check out the [Getting started](getting_started.md) guide. See the _Us
 - [Stores](stores.md)
 - [GraphQL](stores_graphql.md)
 
-### Advanced
+### Advanced configuration
+
+- [Configuration location](config_location.md)
+- [Scaffolding configuration](scaffold.md)
+- [Environment variables](environment_variables.md)
+- [Proxy an existing endpoint](proxy_endpoint.md)
+- [Configuration discovery](config_discovery.md)
+
+### Developing mocks
 
 - [Advanced request matching](request_matching.md)
 - [OpenAPI validation](openapi_validation.md)
 - [Template queries](template_queries.md)
 - [Performance simulation](performance_simulation.md)
 - [Failure simulation](./failure_simulation.md)
-- [Proxy an existing endpoint](proxy_endpoint.md)
-- [Scaffolding configuration](scaffold.md)
 - [Fake data](fake_data.md)
 - [CORS](cors.md)
 - [Groovy scripting tips](groovy_tips.md)
@@ -51,13 +57,13 @@ To begin, check out the [Getting started](getting_started.md) guide. See the _Us
 - [Performance tuning](./performance_tuning.md)
 - [Benchmarks](./benchmarks.md)
 - [TLS/SSL](./tls_ssl.md)
-- [Usage (arguments and environment variables)](usage.md)
 
 ### Other
 
 - [Plugins](./plugins.md)
 - [Features](./features.md)
 - [Tips and tricks](tips_tricks.md)
+- [Usage](usage.md)
 
 ## Mock types
 
