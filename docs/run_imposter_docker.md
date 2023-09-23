@@ -126,6 +126,20 @@ Mock engine up and running on http://localhost:8080
 
 The mock server is running at [http://localhost:8080](http://localhost:8080)
 
+## Custom Docker images
+
+The default container images are stripped back and do not have any binaries under `/usr/bin`. This is to reduce their size and attack surface.
+
+One consequence is that shell commands in custom Dockerfiles don't work with the default Docker images when simply extending `FROM` them as the base image.
+
+However, it is possible to build container images and use shell commands in a Dockerfile, if you build a container image using [multi-stage builds](https://docs.docker.com/build/building/multi-stage/).
+
+> **An example**
+> 
+> Here is an example of a custom Docker image: https://github.com/outofcoffee/imposter/blob/main/examples/docker/Dockerfile
+>
+> This example extends from the Java base image so has its various userspace tools available (and more you can install with the package manager).
+
 ---
 
 ## What's next
