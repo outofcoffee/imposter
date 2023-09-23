@@ -58,6 +58,7 @@ import io.gatehill.imposter.plugin.config.ResourcesHolder
 import io.gatehill.imposter.plugin.config.resource.BasePathHolder
 import io.gatehill.imposter.util.MapUtil
 import io.gatehill.imposter.util.ResourceUtil
+import io.gatehill.imposter.util.splitOnCommaAndTrim
 import org.apache.logging.log4j.LogManager
 import java.io.File
 import java.io.IOException
@@ -126,6 +127,12 @@ object ConfigUtil {
             }
         }.toSet()
     }
+
+    /**
+     * Parses the `IMPOSTER_CONFIG_DIR` environment variable for a list of configuration directories.
+     */
+    fun parseConfigDirEnvVar(): Array<String> =
+        EnvVars.getEnv("IMPOSTER_CONFIG_DIR")?.splitOnCommaAndTrim()?.toTypedArray() ?: emptyArray()
 
     fun initInterpolators(environment: Map<String, String>) {
         // reset the environment used by the expression evaluator

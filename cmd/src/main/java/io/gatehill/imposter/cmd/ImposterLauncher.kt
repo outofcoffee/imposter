@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -42,6 +42,7 @@
  */
 package io.gatehill.imposter.cmd
 
+import io.gatehill.imposter.config.util.ConfigUtil
 import io.gatehill.imposter.config.util.MetaUtil.readVersion
 import io.gatehill.imposter.plugin.DynamicPluginDiscoveryStrategyImpl
 import io.gatehill.imposter.plugin.internal.MetaInfPluginDetectorImpl
@@ -74,7 +75,11 @@ class ImposterLauncher(args: Array<String>) {
         name = "--configDir",
         aliases = ["-c"],
         usage = "Directory containing mock configuration files",
-        required = true
+
+        /**
+         * If not provided, [ConfigUtil.parseConfigDirEnvVar] will be used.
+         */
+        required = false
     )
     private var configDirs = arrayOf<String>()
 
@@ -179,6 +184,8 @@ class ImposterLauncher(args: Array<String>) {
         val port = listenPort ?: run {
             if (tlsEnabled) DEFAULT_HTTPS_LISTEN_PORT else DEFAULT_HTTP_LISTEN_PORT
         }
+
+        configDirs += ConfigUtil.parseConfigDirEnvVar()
 
         if (configDirs.isEmpty()) {
             LOGGER.error("No configuration directories were provided")

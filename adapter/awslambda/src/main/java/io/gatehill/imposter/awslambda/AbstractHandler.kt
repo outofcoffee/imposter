@@ -68,8 +68,6 @@ abstract class AbstractHandler<Request, Response>(
     protected val logger: Logger = LogManager.getLogger(AbstractHandler::class.java)
     protected val server: LambdaServer<Request, Response>
 
-    private val defaultLambdaBundleConfigDir = "/var/task/config"
-
     init {
         // lambda functions are only allowed write access to /tmp
         System.setProperty("vertx.cacheDirBase", "/tmp/.vertx")
@@ -80,14 +78,15 @@ abstract class AbstractHandler<Request, Response>(
 
         LambdaServerFactory.eventType = eventType
 
-        @Suppress("DEPRECATION")
-        val configDir = Settings.configDir ?: Settings.s3ConfigUrl ?: defaultLambdaBundleConfigDir
-
         ImposterBuilderKt()
             .withPluginClass(OpenApiPluginImpl::class.java)
             .withPluginClass(RestPluginImpl::class.java)
-            .apply { if (Settings.metaInfScan) withPluginClass(MetaInfPluginDetectorImpl::class.java) }
-            .withConfigurationDir(configDir)
+            .apply {
+                if (Settings.metaInfScan) {
+                    withPluginClass(MetaInfPluginDetectorImpl::class.java)
+                }
+                Settings.configDirs.forEach { withConfigurationDir(it) }
+            }
             .withEngineOptions { options ->
                 options.serverFactory = LambdaServerFactory::class.qualifiedName
                 options.requestHandlingMode = RequestHandlingMode.SYNC

@@ -43,6 +43,7 @@
 
 package io.gatehill.imposter.awslambda.config
 
+import io.gatehill.imposter.config.util.ConfigUtil
 import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.util.splitOnCommaAndTrim
 
@@ -50,17 +51,25 @@ import io.gatehill.imposter.util.splitOnCommaAndTrim
  * @author Pete Cornish
  */
 object Settings {
-    val configDir: String? get() = EnvVars.getEnv("IMPOSTER_CONFIG_DIR")
+    private const val DEFAULT_BUNDLE_CONFIG_DIR = "/var/task/config"
+
+    val configDirs: Array<String>
+        get() {
+            ConfigUtil.parseConfigDirEnvVar().takeIf { it.isNotEmpty() }?.let {
+                return it
+            }
+            // deprecated environment variable
+            EnvVars.getEnv("IMPOSTER_S3_CONFIG_URL")?.let {
+                return arrayOf(it)
+            }
+            return arrayOf(DEFAULT_BUNDLE_CONFIG_DIR)
+        }
 
     /**
      * FQCN of [io.gatehill.imposter.plugin.PluginDiscoveryStrategy] implementation.
      */
     val pluginDiscoveryStrategyClass: String? get() =
         EnvVars.getEnv("IMPOSTER_PLUGIN_DISCOVERY_STRATEGY")
-
-    @Deprecated("Use configDir instead", ReplaceWith("Settings.configDir", "io.gatehill.imposter.awslambda.config.Settings"))
-    val s3ConfigUrl: String? get() =
-        EnvVars.getEnv("IMPOSTER_S3_CONFIG_URL")
 
     val metaInfScan: Boolean get() =
         EnvVars.getEnv("IMPOSTER_METAINF_SCAN")?.toBoolean() ?: false
