@@ -77,7 +77,7 @@ This will create a ZIP file in the current working directory, which can be [depl
 
 ### Directory
 
-To load configuration files from a directory, pass the path to the directory in the `--config-dir` argument:
+To load configuration files from a directory, pass the path to the directory in the `--configDir` flag:
 
 ```bash
 java -jar imposter.jar --configDir=/path/to/config/dir
@@ -85,7 +85,7 @@ java -jar imposter.jar --configDir=/path/to/config/dir
 
 ### S3
 
-You can load configuration from an S3 bucket by passing the S3 URL in the `--config-dir` argument:
+You can load configuration from an S3 bucket by passing the S3 URL in the `--configDir` flag:
 
 ```bash
 java -jar imposter.jar --configDir=s3://my-bucket/path/to/config/dir
