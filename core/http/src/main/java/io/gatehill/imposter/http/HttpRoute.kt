@@ -61,10 +61,11 @@ data class HttpRoute(
         val pathPattern: Pattern
     )
 
-    private val parsedPathParams by lazy {
-        val paramNames = mutableListOf<String>()
+    private val parsedPathParams: ParsedPathParams? by lazy {
+        path ?: return@lazy null
 
-        val matcher = placeholderPattern.matcher(path!!)
+        val paramNames = mutableListOf<String>()
+        val matcher = placeholderPattern.matcher(path)
         val sb = StringBuffer()
         while (matcher.find()) {
             val paramName: String = matcher.group().substring(1)
@@ -78,7 +79,7 @@ data class HttpRoute(
         return@lazy ParsedPathParams(paramNames, Pattern.compile(sb.toString()))
     }
 
-    val regexPattern: Pattern by lazy { Pattern.compile(regex!!) }
+    private val regexPattern: Pattern by lazy { Pattern.compile(regex!!) }
 
     fun handler(requestHandler: HttpExchangeHandler): HttpRoute {
         handler = requestHandler
@@ -96,25 +97,33 @@ data class HttpRoute(
     }
 
     private fun isPathPlaceholderMatch(requestPath: String): Boolean {
-        if (path?.contains(':') != true) {
-            // no placeholders
-            return false
+        parsedPathParams?.let { pathParams ->
+            if (path?.contains(':') == true) {
+                val matcher = pathParams.pathPattern.matcher(requestPath)
+                if (matcher.matches()) {
+                    return true
+                }
+            }
         }
-        return parsedPathParams.pathPattern.matcher(requestPath).matches()
+        return false
     }
 
     private fun isTrailingWildcardMatch(requestPath: String): Boolean {
         if (hasTrailingWildcard) {
-            return requestPath.startsWith(path!!.substring(0, path.length - 1))
+            path?.let {
+                return requestPath.startsWith(path.substring(0, path.length - 1))
+            }
         }
         // no wildcard
         return false
     }
 
     fun extractPathParams(requestPath: String): Map<String, String> {
-        val matcher = parsedPathParams.pathPattern.matcher(requestPath)
-        if (matcher.matches()) {
-            return parsedPathParams.paramNames.associateWith { matcher.group(it) }
+        parsedPathParams?.let { pathParams ->
+            val matcher = pathParams.pathPattern.matcher(requestPath)
+            if (matcher.matches()) {
+                return pathParams.paramNames.associateWith { matcher.group(it) }
+            }
         }
         return emptyMap()
     }
