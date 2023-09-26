@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.31.1] - 2023-09-26
+### Changed
+- docs: updates roadmap.
+
+### Fixed
+- fix: path parameter extraction shouldn't throw NPE for regex routes.
+
 ## [3.31.0] - 2023-09-23
 ### Added
 - feat(lambda): falls back to default Lambda bundle config dir if no config dir set.
