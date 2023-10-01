@@ -124,6 +124,16 @@ class HandlerTest : AbstractHandlerTest() {
     }
 
     @ParameterizedTest
+    @Event(value = "simple/requests_v1/request_static_index.json", type = APIGatewayProxyRequestEvent::class)
+    fun `should load static index file`(event: APIGatewayProxyRequestEvent) {
+        val responseEvent = handler!!.handleRequest(event, context!!)
+
+        assertNotNull(responseEvent, "Response event should be returned")
+        assertEquals(200, responseEvent.statusCode)
+        assertThat(responseEvent.body, containsString("<!doctype html>"))
+    }
+
+    @ParameterizedTest
     @Event(value = "simple/requests_v1/request_status.json", type = APIGatewayProxyRequestEvent::class)
     fun `should fetch version from status endpoint`(event: APIGatewayProxyRequestEvent) {
         val responseEvent = handler!!.handleRequest(event, context!!)

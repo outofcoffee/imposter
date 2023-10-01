@@ -96,7 +96,7 @@ class LambdaServerFactory @Inject constructor(
                     path = path.removePrefix(routePath.removeSuffix("*"))
                 }
             }
-            if (path.endsWith('/')) {
+            if (path.endsWith('/') || path.isEmpty()) {
                 path += indexFile
             }
             logger.debug("Serving static resource: $path")

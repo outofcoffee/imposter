@@ -12,3 +12,7 @@ resources:
   - path: /assets/*
     response:
       dir: assets
+
+  - path: /www/*
+    response:
+      dir: www
