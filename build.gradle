@@ -10,11 +10,11 @@ buildscript {
 }
 
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.8.22' apply false
+    id 'org.jetbrains.kotlin.jvm' version '1.9.10' apply false
 }
 
 ext {
-    kotlin_version = '1.8.22'
+    kotlin_version = '1.9.10'
 
     try {
         awsCredentials = new ProfileCredentialsProvider().credentials
