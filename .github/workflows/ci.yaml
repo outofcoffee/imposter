@@ -58,6 +58,7 @@ jobs:
         with:
           files: "**/test-results/**/*.xml"
           comment_mode: off
+          check_name: Unit Tests (Java ${{ matrix.java }})
 
       - name: Build distributions
         run: ./gradlew dist --info --stacktrace
