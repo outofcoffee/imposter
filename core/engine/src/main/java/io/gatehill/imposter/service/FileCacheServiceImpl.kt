@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -61,20 +61,28 @@ import kotlin.io.path.writeText
 class FileCacheServiceImpl : FileCacheService {
     private val logger = LogManager.getLogger(ResourceServiceImpl::class.java)
 
+    private val mutex = Any()
+
     override fun readFromCache(cacheKey: String): FileCacheService.CacheResult {
         val cachedPath = generateCachedPath(cacheKey)
         if (!cachedPath.exists()) {
             return FileCacheService.CacheResult(false)
         }
-        val content = cachedPath.readBytes()
-        logger.trace("Read cached file: $cachedPath [${content.size} bytes] with key: $cacheKey")
+        val content = synchronized(mutex) {
+            // avoid race condition of multiple writes or partial write and concurrent read
+            cachedPath.readBytes()
+        }
+        logger.trace("Read cached file: {} [{} bytes] with key: {}", cachedPath, content.size, cacheKey)
         return FileCacheService.CacheResult(true, content)
     }
 
     override fun writeToCache(cacheKey: String, content: String) {
         val cachedPath = generateCachedPath(cacheKey)
-        logger.trace("Writing cached file [${content.length} bytes]: $cachedPath with key: $cacheKey")
-        cachedPath.writeText(content)
+        logger.trace("Writing cached file [{} bytes]: {} with key: {}", content.length, cachedPath, cacheKey)
+        synchronized(mutex) {
+            // avoid race condition of multiple writes or partial write and concurrent read
+            cachedPath.writeText(content)
+        }
     }
 
     private fun generateCachedPath(cacheKey: String): Path =
