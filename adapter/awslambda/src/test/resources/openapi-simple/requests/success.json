@@ -1,0 +1,14 @@
+{
+  "headers": {
+    "Accept": "application/json"
+  },
+  "queryStringParameters": {},
+  "pathParameters": {},
+  "isBase64Encoded": false,
+  "requestContext": {
+    "http": {
+      "path": "/pets",
+      "method":  "GET"
+    }
+  }
+}

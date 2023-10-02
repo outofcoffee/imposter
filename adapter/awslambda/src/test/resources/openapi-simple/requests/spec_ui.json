@@ -1,0 +1,12 @@
+{
+  "headers": {},
+  "queryStringParameters": {},
+  "pathParameters": {},
+  "isBase64Encoded": false,
+  "requestContext": {
+    "http": {
+      "path": "/_spec/",
+      "method":  "GET"
+    }
+  }
+}
