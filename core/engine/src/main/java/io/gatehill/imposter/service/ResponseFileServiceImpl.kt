@@ -52,21 +52,23 @@ import io.gatehill.imposter.script.ResponseBehaviour
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.MetricsUtil
 import io.micrometer.core.instrument.Gauge
+import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.json.JsonArray
 import org.apache.logging.log4j.LogManager
 import java.io.IOException
+import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 import java.nio.file.Paths
 import javax.inject.Inject
 import kotlin.io.path.exists
-import kotlin.io.path.readBytes
 
 /**
  * @author Pete Cornish
  */
 class ResponseFileServiceImpl @Inject constructor(
     private val responseService: ResponseService,
+    private val vertx: Vertx,
 ) : ResponseFileService {
 
     /**
@@ -75,7 +77,7 @@ class ResponseFileServiceImpl @Inject constructor(
      */
     private val responseFileCache = CacheBuilder.newBuilder()
         .maximumSize(getEnv(ENV_RESPONSE_FILE_CACHE_ENTRIES)?.toLong() ?: DEFAULT_RESPONSE_FILE_CACHE_ENTRIES)
-        .build<Path, Buffer>()
+        .build<String, Buffer>()
 
     init {
         MetricsUtil.doIfMetricsEnabled(
@@ -102,27 +104,44 @@ class ResponseFileServiceImpl @Inject constructor(
         )
 
         val responseFile = responseBehaviour.responseFile ?: throw IllegalStateException("Response file not set")
-        val normalisedPath = normalisePath(pluginConfig, responseFile)
+        val fsPath = resolvePath(pluginConfig, responseFile)
 
-        val responseData = responseFileCache.getIfPresent(normalisedPath) ?: run {
-            if (normalisedPath.exists()) {
-                Buffer.buffer(normalisedPath.readBytes()).also {
-                    responseFileCache.put(normalisedPath, it)
+        val responseData = responseFileCache.getIfPresent(fsPath) ?: run {
+            try {
+                val buf = vertx.fileSystem().readFileBlocking(fsPath)
+                buf.also { responseFileCache.put(fsPath, it) }
+            } catch (e: Exception) {
+                if (e.cause is NoSuchFileException) {
+                    responseService.failWithNotFoundResponse(httpExchange, "Response file does not exist: $fsPath")
+                } else {
+                    httpExchange.fail(RuntimeException("Failed to read response file: $fsPath", e))
                 }
-            } else {
-                responseService.failWithNotFoundResponse(httpExchange, "Response file does not exist: $normalisedPath")
                 return
             }
         }
 
+        val filename = fsPath.substringAfterLast("/")
+
         responseService.writeResponseData(
             resourceConfig = resourceConfig,
             httpExchange = httpExchange,
-            filenameHintForContentType = normalisedPath.fileName.toString(),
+            filenameHintForContentType = filename,
             origResponseData = responseData,
             template = responseBehaviour.isTemplate,
             trustedData = false
         )
+    }
+
+    private fun resolvePath(pluginConfig: PluginConfig, responseFile: String): String {
+        val normalisedPath = normalisePath(pluginConfig, responseFile)
+
+        val fsPath = if (normalisedPath.exists()) {
+            normalisedPath.toString()
+        } else {
+            // fall back to relative path, in case its in the working directory or on the classpath
+            "${pluginConfig.dir}/$responseFile"
+        }
+        return fsPath
     }
 
     private fun normalisePath(config: PluginConfig, responseFile: String): Path {

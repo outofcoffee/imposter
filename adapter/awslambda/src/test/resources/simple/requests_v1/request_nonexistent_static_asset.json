@@ -1,0 +1,9 @@
+{
+  "path": "/assets/nonexistent",
+  "httpMethod":  "GET",
+  "headers": {},
+  "queryStringParameters": {},
+  "pathParameters": {},
+  "body": null,
+  "isBase64Encoded": false
+}

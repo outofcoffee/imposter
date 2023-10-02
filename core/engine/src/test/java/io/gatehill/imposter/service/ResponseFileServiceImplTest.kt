@@ -50,7 +50,9 @@ import io.gatehill.imposter.http.HttpResponse
 import io.gatehill.imposter.plugin.config.PluginConfigImpl
 import io.gatehill.imposter.plugin.config.resource.RestResourceConfig
 import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl
+import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
+import io.vertx.core.file.FileSystem
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.mockito.kotlin.any
@@ -73,7 +75,17 @@ class ResponseFileServiceImplTest {
                 assertEquals("Hello, world!", buffer.toString())
             }
         }
-        val service = ResponseFileServiceImpl(responseService)
+
+        val fileSystem = mock<FileSystem> {
+            on { readFileBlocking(any()) } doAnswer {
+                val path = it.arguments[0] as String
+                Buffer.buffer(File(path).readBytes())
+            }
+        }
+        val vertx = mock<Vertx> {
+            on { fileSystem() } doReturn fileSystem
+        }
+        val service = ResponseFileServiceImpl(responseService, vertx)
 
         val pluginConfig = PluginConfigImpl().apply {
             dir = File(ResponseFileServiceImplTest::class.java.getResource("/response-file.txt")!!.toURI()).parentFile
@@ -108,7 +120,7 @@ class ResponseFileServiceImplTest {
 
     @Test
     fun `should load file as JSON array`() {
-        val service = ResponseFileServiceImpl(mock())
+        val service = ResponseFileServiceImpl(mock(), mock())
 
         val jsonFile = File(ResponseFileServiceImplTest::class.java.getResource("/test-array.json")!!.toURI())
         val pluginConfig = PluginConfigImpl().apply {

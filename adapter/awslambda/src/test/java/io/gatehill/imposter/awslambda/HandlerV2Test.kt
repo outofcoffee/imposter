@@ -124,6 +124,15 @@ class HandlerV2Test : AbstractHandlerTest() {
     }
 
     @ParameterizedTest
+    @Event(value = "simple/requests_v2/request_nonexistent_static_asset.json", type = APIGatewayV2HTTPEvent::class)
+    fun `should receive 404 for nonexistent file`(event: APIGatewayV2HTTPEvent) {
+        val responseEvent = handler!!.handleRequest(event, context!!)
+
+        assertNotNull(responseEvent, "Response event should be returned")
+        assertEquals(404, responseEvent.statusCode)
+    }
+
+    @ParameterizedTest
     @Event(value = "simple/requests_v2/request_static_index.json", type = APIGatewayV2HTTPEvent::class)
     fun `should load static index file`(event: APIGatewayV2HTTPEvent) {
         val responseEvent = handler!!.handleRequest(event, context!!)
