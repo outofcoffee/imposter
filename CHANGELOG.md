@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.31.2] - 2023-10-02
+### Changed
+- chore(deps): bump actions/checkout from 3 to 4
+- chore(deps): bump docker/setup-qemu-action from 2 to 3
+- chore(deps): bumps coroutines to 1.7.3.
+- chore(deps): bumps kotlin to 1.9.10.
+- docs: fixes configDir flag name for JAR mode.
+- refactor: switches response file serving to use Vert.x filesystem.
+- test(lambda): improves coverage for openapi spec and examples.
+
+### Fixed
+- fix(lambda): resolves static index pages.
+- fix: uses critical section for file cache I/O.
+
 ## [3.31.1] - 2023-09-26
 ### Changed
 - docs: updates roadmap.
