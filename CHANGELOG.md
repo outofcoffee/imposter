@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.31.3] - 2023-10-19
+### Changed
+- chore(deps): bump actions/setup-python from 4.7.0 to 4.7.1
+- chore(deps): bump com.fasterxml.jackson.core:jackson-databind
+- chore(deps): bump io.github.classgraph:classgraph
+- chore(deps): bump version_vertx from 4.4.4 to 4.4.5
+- docs: improves description of default and example values for IMPOSTER_CONFIG_DIR.
+
+### Fixed
+- fix: examples/junit-sample/pom.xml to reduce vulnerabilities
+
 ## [3.31.2] - 2023-10-02
 ### Changed
 - chore(deps): bump actions/checkout from 3 to 4
