@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.31.5] - 2023-10-26
+### Fixed
+- fix: updates CLI release URL.
+
 ## [3.31.4] - 2023-10-26
 ### Changed
 - chore(deps): bumps CLI to v0.33.0.
