@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.31.6] - 2023-10-26
+### Changed
+- chore(deps): bump com.amazonaws:aws-lambda-java-core from 1.2.2 to 1.2.3
+- chore(deps): bump io.rest-assured:rest-assured from 5.3.0 to 5.3.2
+- chore(deps): bumps CLI to v0.34.1.
+
 ## [3.31.5] - 2023-10-26
 ### Fixed
 - fix: updates CLI release URL.
