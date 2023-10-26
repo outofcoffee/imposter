@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.31.4] - 2023-10-26
+### Changed
+- chore(deps): bumps CLI to v0.33.0.
+
 ## [3.31.3] - 2023-10-19
 ### Changed
 - chore(deps): bump actions/setup-python from 4.7.0 to 4.7.1
