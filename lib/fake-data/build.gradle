@@ -5,7 +5,7 @@ apply plugin: 'com.github.johnrengelman.shadow'
 
 ext {
     // same as swagger-core version
-    version_swagger_models = '2.2.14'
+    version_swagger_models = '2.2.18'
 }
 
 compileJava {
