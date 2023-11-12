@@ -50,6 +50,7 @@ To begin, check out the [Getting started](getting_started.md) guide. See the _Us
 - [Fake data](fake_data.md)
 - [CORS](cors.md)
 - [Groovy scripting tips](groovy_tips.md)
+- [Examples](https://github.com/outofcoffee/imposter/tree/main/examples)
 
 ### Operational topics
 
