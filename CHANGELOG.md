@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.32.0] - 2023-11-12
+### Added
+- feat(openapi): allows the specification path prefix to be set.
+
+### Changed
+- chore(deps): bump com.amazonaws:aws-java-sdk-bom
+- chore(deps): bump com.amazonaws:aws-lambda-java-events
+- chore(deps): bump org.apache.maven.plugins:maven-clean-plugin
+- chore(deps): bumps shadow plugin to 7.1.2.
+- ci: makes test check name unique.
+- docs(openapi): improves instructions for OpenAPI responses.
+- docs: adds Docker healthcheck example.
+- refactor(openapi): moves plugin-specific env var config to Settings object.
+- refactor: uses OpenApiPluginImpl in embedded builder instead of hard-coded paths.
+- test: bumps Jakarta dep and adds jaxrs runtime dep.
+- test: uses RestAssured get method instead of Kotlin shorthand.
+
+### Other
+- spike: adds Java 17 LTS CI build.
+
 ## [3.31.6] - 2023-10-26
 ### Changed
 - chore(deps): bump com.amazonaws:aws-lambda-java-core from 1.2.2 to 1.2.3
