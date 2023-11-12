@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2023-2023.
  *
  * This file is part of Imposter.
  *
@@ -42,48 +42,72 @@
  */
 package io.gatehill.imposter.plugin.openapi
 
+import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.server.BaseVerticleTest
 import io.gatehill.imposter.util.HttpUtil
 import io.restassured.RestAssured
 import io.restassured.http.ContentType
 import io.vertx.ext.unit.TestContext
-import org.hamcrest.Matchers.equalTo
-import org.hamcrest.Matchers.notNullValue
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Test
 
 /**
- * Tests that security schemes are serialised correctly.
+ * Tests for the specification endpoint.
  *
  * @author Pete Cornish
  */
-class SecuritySchemesTest : BaseVerticleTest() {
+class CustomSpecPathTest : BaseVerticleTest() {
     override val pluginClass = OpenApiPluginImpl::class.java
+
+    companion object {
+        @JvmStatic
+        @BeforeClass
+        fun beforeClass() {
+            EnvVars.populate(
+                "IMPOSTER_OPENAPI_SPEC_PATH_PREFIX" to "/custom-spec-path"
+            )
+        }
+    }
 
     @Before
     @Throws(Exception::class)
     override fun setUp(testContext: TestContext) {
         super.setUp(testContext)
         RestAssured.baseURI = "http://$host:$listenPort"
+        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails()
     }
 
     override val testConfigDirs = listOf(
-        "/openapi3/security-schemes"
+        "/openapi3/spec-endpoint"
     )
 
-    /**
-     * Expects that securityScheme type is serialised correctly.
-     */
     @Test
-    fun testExampleRefReturned() {
+    fun `custom spec endpoint redirect`() {
         RestAssured.given()
-            .log().ifValidationFails()
-            .accept(ContentType.JSON)
-            .`when`().get("/_spec/combined.json")
+            .redirects().follow(false)
+            .`when`().get("/custom-spec-path")
             .then()
-            .log().ifValidationFails()
+            .statusCode(HttpUtil.HTTP_MOVED_PERM)
+    }
+
+    @Test
+    fun `custom spec endpoint JSON`() {
+        RestAssured.given()
+            .accept(ContentType.JSON)
+            .`when`().get("/custom-spec-path/combined.json")
+            .then()
             .statusCode(HttpUtil.HTTP_OK)
-            .body("components.securitySchemes.httpBasic", notNullValue())
-            .body("components.securitySchemes.httpBasic.type", equalTo("http"))
+            .contentType(ContentType.JSON)
+    }
+
+    @Test
+    fun `custom spec endpoint UI`() {
+        RestAssured.given()
+            .accept(ContentType.HTML)
+            .`when`().get("/custom-spec-path/")
+            .then()
+            .statusCode(HttpUtil.HTTP_OK)
+            .contentType(ContentType.HTML)
     }
 }

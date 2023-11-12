@@ -75,8 +75,8 @@ import java.util.concurrent.CompletableFuture;
  */
 public class OpenApiImposterBuilder<M extends OpenApiMockEngine, SELF extends OpenApiImposterBuilder<M, SELF>> extends ImposterBuilder<M, SELF> {
     private static final String PLUGIN_FQCN = OpenApiPluginImpl.class.getCanonicalName();
-    static final String COMBINED_SPECIFICATION_URL = OpenApiPluginImpl.COMBINED_SPECIFICATION_PATH;
-    static final String SPECIFICATION_UI_URL = OpenApiPluginImpl.SPECIFICATION_PATH + "/";
+    static final String COMBINED_SPECIFICATION_URL = OpenApiPluginImpl.getCombinedSpecPath();
+    static final String SPECIFICATION_UI_URL = OpenApiPluginImpl.getSpecPathPrefix() + "/";
 
     private final List<Path> specificationFiles = new ArrayList<>();
 

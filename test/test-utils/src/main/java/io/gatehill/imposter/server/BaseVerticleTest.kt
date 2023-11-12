@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -43,6 +43,7 @@
 package io.gatehill.imposter.server
 
 import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.plugin.DynamicPluginDiscoveryStrategyImpl
 import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.server.vertxweb.VertxWebServerFactoryImpl
@@ -52,6 +53,7 @@ import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.RunTestOnContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.runner.RunWith
 import java.io.IOException
@@ -117,5 +119,11 @@ abstract class BaseVerticleTest {
     companion object {
         @JvmStatic
         protected val host = "localhost"
+
+        @JvmStatic
+        @BeforeClass
+        fun beforeClass() {
+            EnvVars.reset(emptyList())
+        }
     }
 }

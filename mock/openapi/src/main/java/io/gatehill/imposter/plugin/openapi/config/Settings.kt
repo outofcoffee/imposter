@@ -60,4 +60,9 @@ object Settings {
             EnvVars.getEnv("IMPOSTER_OPENAPI_VALIDATION_DEFAULT_BEHAVIOUR"),
             OpenApiPluginValidationConfig.ValidationIssueBehaviour.IGNORE
         )
+
+    private const val DEFAULT_SPEC_PATH_PREFIX = "/_spec"
+
+    val specPathPrefix: String
+        get() = EnvVars.getEnv("IMPOSTER_OPENAPI_SPEC_PATH_PREFIX") ?: DEFAULT_SPEC_PATH_PREFIX
 }

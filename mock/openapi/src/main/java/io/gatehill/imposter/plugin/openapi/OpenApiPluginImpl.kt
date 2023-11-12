@@ -116,8 +116,14 @@ class OpenApiPluginImpl @Inject constructor(
          * 'default' is a special case in OpenAPI that does not have a status code.
          */
         private const val DEFAULT_RESPONSE_KEY = "default"
-        const val SPECIFICATION_PATH = "/_spec"
-        const val COMBINED_SPECIFICATION_PATH = "$SPECIFICATION_PATH/combined.json"
+
+        @JvmStatic
+        val specPathPrefix
+            get() = Settings.specPathPrefix
+
+        @JvmStatic
+        val combinedSpecPath
+            get() = "$specPathPrefix/combined.json"
 
         init {
             addJavaTimeSupport(Json.mapper())
@@ -183,22 +189,22 @@ class OpenApiPluginImpl @Inject constructor(
      * Serve specification and UI.
      */
     private fun exposeSpec(router: HttpRouter) {
-        LOGGER.debug("Adding specification UI at: {}{}", imposterConfig.serverUrl, SPECIFICATION_PATH)
-        router.get(COMBINED_SPECIFICATION_PATH).handler(
+        LOGGER.debug("Adding specification UI at: {}{}", imposterConfig.serverUrl, specPathPrefix)
+        router.get(combinedSpecPath).handler(
                 resourceService.handleRoute(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
                     handleCombinedSpec(httpExchange)
                 }
         )
-        router.getWithRegex("$SPECIFICATION_PATH$").handler(
+        router.getWithRegex("$specPathPrefix$").handler(
                 resourceService.handleRoute(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
                     httpExchange.response
-                            .putHeader("Location", "$SPECIFICATION_PATH/")
+                            .putHeader("Location", "$specPathPrefix/")
                             .setStatusCode(HttpUtil.HTTP_MOVED_PERM)
                             .end()
                 }
         )
-        router.get("$SPECIFICATION_PATH/*").handler(serverFactory.createStaticHttpHandler(UI_WEB_ROOT))
-        responseService.addNotFoundMessage("""View the <a href="$SPECIFICATION_PATH/">available OpenAPI resources</a>.""")
+        router.get("$specPathPrefix/*").handler(serverFactory.createStaticHttpHandler(UI_WEB_ROOT))
+        responseService.addNotFoundMessage("""View the <a href="$specPathPrefix/">available OpenAPI resources</a>.""")
     }
 
     /**
