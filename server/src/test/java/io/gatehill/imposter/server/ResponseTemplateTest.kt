@@ -91,7 +91,7 @@ class ResponseTemplateTest : BaseVerticleTest() {
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_CREATED))
 
         // read interpolated response
-        RestAssured.given().`when`()["/example"]
+        RestAssured.given().`when`().get("/example")
             .then()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
             .body(Matchers.equalTo("Hello bar!")) // content type inferred from response file name
@@ -114,7 +114,7 @@ class ResponseTemplateTest : BaseVerticleTest() {
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_CREATED))
 
         // read interpolated response
-        RestAssured.given().`when`()["/example-inline"]
+        RestAssured.given().`when`().get("/example-inline")
             .then()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
             .body(Matchers.equalTo("Inline bar")) // content type inferred from response file name

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -79,7 +79,7 @@ class SecuritySchemesTest : BaseVerticleTest() {
         RestAssured.given()
             .log().ifValidationFails()
             .accept(ContentType.JSON)
-            .`when`()[OpenApiPluginImpl.COMBINED_SPECIFICATION_PATH]
+            .`when`().get(OpenApiPluginImpl.COMBINED_SPECIFICATION_PATH)
             .then()
             .log().ifValidationFails()
             .statusCode(HttpUtil.HTTP_OK)

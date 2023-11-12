@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -76,7 +76,7 @@ internal class SchemaExamplesTest : BaseVerticleTest() {
         val body = RestAssured.given()
             .log().ifValidationFails()
             .accept(ContentType.JSON) // JSON content type in 'Accept' header matches specification example
-            .`when`()["/api/pets"]
+            .`when`().get("/api/pets")
             .then()
             .log().ifValidationFails()
             .statusCode(HttpUtil.HTTP_OK)
@@ -110,7 +110,7 @@ internal class SchemaExamplesTest : BaseVerticleTest() {
         val rawBody = RestAssured.given()
             .log().ifValidationFails()
             .accept("application/x-yaml") // YAML content type in 'Accept' header matches specification example
-            .`when`()["/api/pets"]
+            .`when`().get("/api/pets")
             .then()
             .log().ifValidationFails()
             .statusCode(HttpUtil.HTTP_OK)

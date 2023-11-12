@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -79,7 +79,7 @@ class ComplexPathParamsTest : BaseVerticleTest() {
         val body = RestAssured.given()
             .log().ifValidationFails()
             .accept(ContentType.ANY)
-            .`when`()["/apis/v1beta1/runs/1/nodes/2/artifacts/3:read"]
+            .`when`().get("/apis/v1beta1/runs/1/nodes/2/artifacts/3:read")
             .then()
             .log().ifValidationFails()
             .statusCode(HttpUtil.HTTP_OK)

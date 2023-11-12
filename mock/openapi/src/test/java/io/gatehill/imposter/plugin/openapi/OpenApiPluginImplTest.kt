@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -97,7 +97,7 @@ class OpenApiPluginImplTest : BaseVerticleTest() {
         val body = RestAssured.given()
             .log().ifValidationFails() // JSON content type in 'Accept' header matches specification example
             .accept(ContentType.JSON)
-            .`when`()["/simple/apis"]
+            .`when`().get("/simple/apis")
             .then()
             .log().ifValidationFails()
             .statusCode(HttpUtil.HTTP_OK)
@@ -118,7 +118,7 @@ class OpenApiPluginImplTest : BaseVerticleTest() {
         val body = RestAssured.given()
             .log().ifValidationFails() // do not set JSON content type in 'Accept' header, to force mismatch against specification example
             .accept(ContentType.TEXT)
-            .`when`()["/simple/apis"]
+            .`when`().get("/simple/apis")
             .then()
             .log().ifValidationFails()
             .statusCode(HttpUtil.HTTP_OK)
@@ -137,7 +137,7 @@ class OpenApiPluginImplTest : BaseVerticleTest() {
         val body = RestAssured.given()
             .log().ifValidationFails()
             .accept(ContentType.TEXT)
-            .`when`()[OpenApiPluginImpl.SPECIFICATION_PATH + "/"]
+            .`when`().get(OpenApiPluginImpl.SPECIFICATION_PATH + "/")
             .then()
             .log().ifValidationFails()
             .statusCode(HttpUtil.HTTP_OK)
@@ -156,7 +156,7 @@ class OpenApiPluginImplTest : BaseVerticleTest() {
         val body = RestAssured.given()
             .log().ifValidationFails()
             .accept(ContentType.JSON)
-            .`when`()[OpenApiPluginImpl.COMBINED_SPECIFICATION_PATH]
+            .`when`().get(OpenApiPluginImpl.COMBINED_SPECIFICATION_PATH)
             .then()
             .log().ifValidationFails()
             .statusCode(HttpUtil.HTTP_OK)
@@ -222,7 +222,7 @@ class OpenApiPluginImplTest : BaseVerticleTest() {
         val body = RestAssured.given()
             .log().ifValidationFails()
             .accept(ContentType.JSON)
-            .`when`()[url]
+            .`when`().get(url)
             .then()
             .log().ifValidationFails()
             .statusCode(HttpUtil.HTTP_OK)

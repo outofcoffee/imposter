@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -93,7 +93,7 @@ class OverrideStatusCodeTest : BaseVerticleTest() {
         RestAssured.given()
             .log().ifValidationFails()
             .accept(ContentType.JSON)
-            .`when`()["/pets/{petId}", "99"]
+            .`when`().get("/pets/{petId}", "99")
             .then()
             .log().ifValidationFails()
             .statusCode(203)
@@ -107,7 +107,7 @@ class OverrideStatusCodeTest : BaseVerticleTest() {
         RestAssured.given()
             .log().ifValidationFails()
             .accept(ContentType.JSON)
-            .`when`()["/pets?foo=bar"]
+            .`when`().get("/pets?foo=bar")
             .then()
             .log().ifValidationFails()
             .statusCode(204)

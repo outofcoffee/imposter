@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -78,7 +78,7 @@ class ObjectExamplesTest : BaseVerticleTest() {
         val body = RestAssured.given()
             .log().ifValidationFails()
             .accept(ContentType.JSON)
-            .`when`()["/objects/team"]
+            .`when`().get("/objects/team")
             .then()
             .log().ifValidationFails()
             .statusCode(HttpUtil.HTTP_OK)
@@ -96,7 +96,7 @@ class ObjectExamplesTest : BaseVerticleTest() {
         val rawBody = RestAssured.given()
             .log().ifValidationFails()
             .accept("application/x-yaml")
-            .`when`()["/objects/team"]
+            .`when`().get("/objects/team")
             .then()
             .log().ifValidationFails()
             .statusCode(HttpUtil.HTTP_OK)

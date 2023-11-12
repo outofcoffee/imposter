@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -79,7 +79,7 @@ class DefaultResponseTest : BaseVerticleTest() {
         val body = RestAssured.given()
             .log().ifValidationFails()
             .accept(ContentType.JSON)
-            .`when`()["/v1/pets"]
+            .`when`().get("/v1/pets")
             .then()
             .log().ifValidationFails()
             .statusCode(HttpUtil.HTTP_OK)

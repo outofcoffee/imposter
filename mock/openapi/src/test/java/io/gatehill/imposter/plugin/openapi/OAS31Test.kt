@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -76,7 +76,7 @@ class OAS31Test : BaseVerticleTest() {
         // the server path ('/petstore') in the spec should be stripped
         RestAssured.given()
                 .accept(ContentType.JSON)
-                .`when`()["/pets/1"]
+                .`when`().get("/pets/1")
                 .then()
                 .statusCode(HttpUtil.HTTP_OK)
                 .body("id", equalTo(3))

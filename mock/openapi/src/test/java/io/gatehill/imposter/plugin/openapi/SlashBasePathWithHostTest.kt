@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -79,7 +79,7 @@ class SlashBasePathWithHostTest : BaseVerticleTest() {
         val paths = RestAssured.given()
             .log().ifValidationFails()
             .accept(ContentType.JSON)
-            .`when`()["/_spec/combined.json"]
+            .`when`().get("/_spec/combined.json")
             .then()
             .log().ifValidationFails()
             .statusCode(HttpUtil.HTTP_OK)
@@ -99,7 +99,7 @@ class SlashBasePathWithHostTest : BaseVerticleTest() {
         val body = RestAssured.given()
             .log().ifValidationFails()
             .accept(ContentType.ANY)
-            .`when`()["/pets"]
+            .`when`().get("/pets")
             .then()
             .log().ifValidationFails()
             .statusCode(HttpUtil.HTTP_OK)

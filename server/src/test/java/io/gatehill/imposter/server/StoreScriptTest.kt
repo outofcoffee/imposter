@@ -86,7 +86,7 @@ class StoreScriptTest : BaseVerticleTest() {
             .statusCode(equalTo(HttpUtil.HTTP_CREATED))
 
         // load via script
-        RestAssured.given().`when`()["/load"]
+        RestAssured.given().`when`().get("/load")
             .then()
             .statusCode(equalTo(HttpUtil.HTTP_OK))
             .body(equalTo("qux"))

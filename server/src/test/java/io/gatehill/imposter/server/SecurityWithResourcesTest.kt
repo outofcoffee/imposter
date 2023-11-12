@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -79,7 +79,7 @@ class SecurityWithResourcesTest : BaseVerticleTest() {
      */
     @Test
     fun testRequestDenied_NoAuth() {
-        RestAssured.given().`when`()["/example"]
+        RestAssured.given().`when`().get("/example")
             .then()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_UNAUTHORIZED))
     }

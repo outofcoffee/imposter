@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -205,7 +205,7 @@ class RestPluginTest : BaseVerticleTest() {
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_MOVED_TEMP))
             .body(Matchers.emptyOrNullString())
 
-        RestAssured.given().`when`()["/static-multi"]
+        RestAssured.given().`when`().get("/static-multi")
             .then()
             .log().ifValidationFails()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))

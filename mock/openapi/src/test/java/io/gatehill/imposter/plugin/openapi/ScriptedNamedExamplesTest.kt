@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -79,7 +79,7 @@ class ScriptedNamedExamplesTest : BaseVerticleTest() {
         RestAssured.given()
             .log().ifValidationFails()
             .accept(ContentType.JSON)
-            .`when`()["/pets/1"]
+            .`when`().get("/pets/1")
             .then()
             .log().ifValidationFails()
             .statusCode(HttpUtil.HTTP_OK)
@@ -90,7 +90,7 @@ class ScriptedNamedExamplesTest : BaseVerticleTest() {
         RestAssured.given()
             .log().ifValidationFails()
             .accept(ContentType.JSON)
-            .`when`()["/pets/2"]
+            .`when`().get("/pets/2")
             .then()
             .log().ifValidationFails()
             .statusCode(HttpUtil.HTTP_OK)

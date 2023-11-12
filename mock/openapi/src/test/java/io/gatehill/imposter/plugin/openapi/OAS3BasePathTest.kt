@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -81,7 +81,7 @@ class OAS3BasePathTest : BaseVerticleTest() {
         // the server path ('/petstore') in the spec should be stripped
         RestAssured.given()
             .accept(ContentType.JSON)
-            .`when`()["/animals/pets/1"]
+            .`when`().get("/animals/pets/1")
             .then()
             .statusCode(HttpUtil.HTTP_OK)
             .body("id", equalTo(1))
@@ -89,7 +89,7 @@ class OAS3BasePathTest : BaseVerticleTest() {
 
         RestAssured.given()
             .accept(ContentType.JSON)
-            .`when`()["/shop/supplies"]
+            .`when`().get("/shop/supplies")
             .then()
             .statusCode(HttpUtil.HTTP_OK)
             .body("$", hasSize<Any>(2))
@@ -105,7 +105,7 @@ class OAS3BasePathTest : BaseVerticleTest() {
     fun `paths rewritten in spec`() {
         RestAssured.given()
             .accept(ContentType.JSON)
-            .`when`()["/_spec/combined.json"]
+            .`when`().get("/_spec/combined.json")
             .then()
             .statusCode(HttpUtil.HTTP_OK)
             .body("paths.'/animals/pets/{petId}'", notNullValue())
