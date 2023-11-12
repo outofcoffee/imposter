@@ -44,8 +44,8 @@ package io.gatehill.imposter.plugin.openapi.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.gatehill.imposter.config.S3FileDownloader
-import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig
+import io.gatehill.imposter.plugin.openapi.config.Settings
 import io.gatehill.imposter.service.FileCacheService
 import io.gatehill.imposter.util.MapUtil.JSON_MAPPER
 import io.gatehill.imposter.util.MapUtil.YAML_MAPPER
@@ -70,9 +70,6 @@ class SpecificationLoaderService @Inject constructor(
     private val fileCacheService: FileCacheService
 ) {
     private val logger = LogManager.getLogger(SpecificationLoaderService::class.java)
-
-    private val useFileCacheForRemoteSpecs: Boolean =
-        EnvVars.getEnv("IMPOSTER_OPENAPI_REMOTE_FILE_CACHE")?.toBoolean() == true
 
     fun parseSpecification(config: OpenApiPluginConfig): OpenAPI {
         val specFile = config.specFile ?: throw IllegalStateException("No specification file configured")
@@ -118,7 +115,7 @@ class SpecificationLoaderService @Inject constructor(
      */
     private fun loadSpecFromSourceOrCache(specFile: String, config: OpenApiPluginConfig): String {
         try {
-            val cacheEnabled = useFileCacheForRemoteSpecs && isRemoteLocation(specFile)
+            val cacheEnabled = Settings.useFileCacheForRemoteSpecs && isRemoteLocation(specFile)
 
             if (cacheEnabled) {
                 val cacheResult = fileCacheService.readFromCache(specFile)

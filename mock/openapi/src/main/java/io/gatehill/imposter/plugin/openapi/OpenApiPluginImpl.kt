@@ -43,7 +43,6 @@
 package io.gatehill.imposter.plugin.openapi
 
 import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpExchangeHandler
 import io.gatehill.imposter.http.HttpMethod
@@ -55,6 +54,7 @@ import io.gatehill.imposter.plugin.RequireModules
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig
+import io.gatehill.imposter.plugin.openapi.config.Settings
 import io.gatehill.imposter.plugin.openapi.http.OpenApiResponseBehaviourFactory
 import io.gatehill.imposter.plugin.openapi.model.ParsedSpec
 import io.gatehill.imposter.plugin.openapi.service.ExampleService
@@ -125,7 +125,6 @@ class OpenApiPluginImpl @Inject constructor(
     }
 
     private val resourceMatcher = SingletonResourceMatcher.instance
-    private val shouldExposeSpec = EnvVars.getEnv("IMPOSTER_OPENAPI_EXPOSE_SPEC")?.toBoolean() != false
 
     override fun configureRoutes(router: HttpRouter) {
         if (configs.isEmpty()) {
@@ -134,7 +133,7 @@ class OpenApiPluginImpl @Inject constructor(
         }
 
         parseSpecs(router)
-        if (shouldExposeSpec) {
+        if (Settings.shouldExposeSpec) {
             exposeSpec(router)
         } else {
             LOGGER.trace("Skipped exposing OpenAPI specification")
@@ -149,8 +148,9 @@ class OpenApiPluginImpl @Inject constructor(
             val spec = specificationLoaderService.parseSpecification(config)
 
             // The *path prefix* includes the plugin configuration root path,
-            // but not the server 'basePath', as this is required only for
-            // the list of server entries added to the combined spec.
+            // but not the OpenAPI server entry 'basePath', as this is
+            // required only for the list of server entries added to
+            // the combined spec.
             // This, the path prefix, is incorporated into each of the
             // operation paths within the spec.
             val pathPrefix = (config.path ?: "")

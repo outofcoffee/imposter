@@ -41,15 +41,23 @@
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.gatehill.imposter.plugin.config.resource
+package io.gatehill.imposter.plugin.openapi.config
 
-interface BasePathHolder {
-    /**
-     * The base path for this resource.
-     * Note: this is applied to all paths defined in the resource at
-     * the time of config parsing.
-     *
-     * @see io.gatehill.imposter.config.util.ConfigUtil.applyBasePath
-     */
-    val basePath: String?
+import io.gatehill.imposter.config.util.EnvVars
+
+/**
+ * OpenAPI plugin settings.
+ */
+object Settings {
+    val shouldExposeSpec: Boolean =
+        EnvVars.getEnv("IMPOSTER_OPENAPI_EXPOSE_SPEC")?.toBoolean() != false
+
+    val useFileCacheForRemoteSpecs: Boolean =
+        EnvVars.getEnv("IMPOSTER_OPENAPI_REMOTE_FILE_CACHE")?.toBoolean() == true
+
+    val defaultValidationIssueBehaviour: OpenApiPluginValidationConfig.ValidationIssueBehaviour =
+        OpenApiPluginValidationConfig.ValidationIssueBehaviour.from(
+            EnvVars.getEnv("IMPOSTER_OPENAPI_VALIDATION_DEFAULT_BEHAVIOUR"),
+            OpenApiPluginValidationConfig.ValidationIssueBehaviour.IGNORE
+        )
 }

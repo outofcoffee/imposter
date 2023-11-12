@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -43,26 +43,14 @@
 package io.gatehill.imposter.plugin.openapi.config
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import io.gatehill.imposter.config.util.EnvVars.Companion.getEnv
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginValidationConfig.ValidationIssueBehaviour.FAIL
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginValidationConfig.ValidationIssueBehaviour.IGNORE
-import java.util.*
+import java.util.Locale
 
 /**
  * @author Pete Cornish
  */
 class OpenApiPluginValidationConfig {
-    companion object {
-        private val DEFAULT_ISSUE_BEHAVIOUR: ValidationIssueBehaviour
-
-        init {
-            DEFAULT_ISSUE_BEHAVIOUR = ValidationIssueBehaviour.from(
-                getEnv("IMPOSTER_OPENAPI_VALIDATION_DEFAULT_BEHAVIOUR"),
-                ValidationIssueBehaviour.IGNORE
-            )
-        }
-    }
-
     /**
      * Could be [Boolean] or [ValidationIssueBehaviour]
      */
@@ -70,7 +58,7 @@ class OpenApiPluginValidationConfig {
     private val rawRequest: String? = null
 
     val request: ValidationIssueBehaviour by lazy {
-        ValidationIssueBehaviour.from(rawRequest, DEFAULT_ISSUE_BEHAVIOUR)
+        ValidationIssueBehaviour.from(rawRequest, Settings.defaultValidationIssueBehaviour)
     }
 
     /**

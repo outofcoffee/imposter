@@ -331,6 +331,9 @@ object ConfigUtil {
             ?: throw IllegalStateException("Unable to locate mapper for config file: $configFile")
     }
 
+    /**
+     * Applies the base path to the root path and resource paths.
+     */
     private fun <T : PluginConfigImpl> applyBasePath(basePath: String, configFile: File, config: T) {
         LOGGER.trace("Using base path '{}' for config file {}", basePath, configFile)
         if (!config.path.isNullOrEmpty() || config.responseConfig.hasConfiguration()) {
