@@ -234,7 +234,7 @@ Here, POST requests to the `/pets` endpoint will default to the HTTP 201 status 
 
 The `path` property supports placeholders, using the Vert.x Web colon format, so in the second example above, PUT requests to the endpoint `/pets/<some ID>` will return a 202 status. 
 
-## Overriding examples
+## Return a specific example
 
 You can make Imposter select a specific example to use as the response body.
 
@@ -256,7 +256,9 @@ resources:
       exampleName: dogExample
 ```
 
-As with the standard [scripting functionality](./scripting.md), you can also specify a static response file to use instead of an example:
+## Return a custom response
+
+You can also specify a static response file to use instead of an example:
 
 ```yaml
 # ... as above ...
@@ -267,6 +269,19 @@ As with the standard [scripting functionality](./scripting.md), you can also spe
       file: tortoise.json
       statusCode: 200
 ```
+
+## Return a literal string
+
+You can also specify a literal string to return as the response body:
+
+```yaml
+# ... as above ...
+
+  - path: /pets/4
+    method: get
+    response:
+      content: '{ "foo": "bar" }'
+``` 
 
 ## Conditional responses
 
