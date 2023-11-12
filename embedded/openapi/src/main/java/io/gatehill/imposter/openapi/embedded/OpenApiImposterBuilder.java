@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -46,6 +46,7 @@ package io.gatehill.imposter.openapi.embedded;
 import io.gatehill.imposter.ImposterConfig;
 import io.gatehill.imposter.embedded.ImposterBuilder;
 import io.gatehill.imposter.embedded.ImposterLaunchException;
+import io.gatehill.imposter.plugin.openapi.OpenApiPluginImpl;
 import io.gatehill.imposter.util.ClassLoaderUtil;
 
 import java.nio.file.Path;
@@ -63,7 +64,7 @@ import java.util.concurrent.CompletableFuture;
  *             .withSpecificationFile(specFile)
  *             .startBlocking();
  *
- * // mockEndpoint will look like http://localhost:5234/v1/pets
+ * // mockEndpoint will look like <a href="http://localhost:5234/v1/pets">...</a>
  * String mockEndpoint = imposter.getBaseUrl() + "/v1/pets";
  *
  * // Your component under test can interact with this endpoint to get
@@ -73,9 +74,9 @@ import java.util.concurrent.CompletableFuture;
  * @author Pete Cornish
  */
 public class OpenApiImposterBuilder<M extends OpenApiMockEngine, SELF extends OpenApiImposterBuilder<M, SELF>> extends ImposterBuilder<M, SELF> {
-    private static final String PLUGIN_FQCN = "io.gatehill.imposter.plugin.openapi.OpenApiPluginImpl";
-    static final String COMBINED_SPECIFICATION_URL = "/_spec/combined.json";
-    static final String SPECIFICATION_UI_URL = "/_spec/";
+    private static final String PLUGIN_FQCN = OpenApiPluginImpl.class.getCanonicalName();
+    static final String COMBINED_SPECIFICATION_URL = OpenApiPluginImpl.COMBINED_SPECIFICATION_PATH;
+    static final String SPECIFICATION_UI_URL = OpenApiPluginImpl.SPECIFICATION_PATH + "/";
 
     private final List<Path> specificationFiles = new ArrayList<>();
 
