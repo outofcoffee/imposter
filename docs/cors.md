@@ -2,7 +2,7 @@
 
 Imposter supports CORS ([Cross-Origin Resource Sharing](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)), which is a mechanism that allows a web page to make a request to a server in a different domain. This is useful for web applications that are hosted on a different domain to the mock endpoint they are consuming.
 
-To configure CORS, add the following to your [configuration](/docs/configuration.md):
+To configure CORS, add the following to your [configuration](./configuration.md):
 
 ```yaml
 cors:
