@@ -1,0 +1,8 @@
+services:
+  mock-server:
+    image: mock-server
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./config:/opt/imposter/config:ro

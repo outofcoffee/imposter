@@ -114,6 +114,35 @@ $ zip -ur imposter-awslambda.zip config
 
 The `imposter-bundle.zip` file can be [deployed to AWS Lambda](./run_imposter_aws_lambda.md) as normal.
 
+#### Creating a container image bundle
+
+When [deploying using containers](./run_imposter_docker.md), you can add the configuration files into the container image itself.
+
+Let's assume your configuration sits in a directory called `config`.
+
+Here is an example Dockerfile:
+
+```dockerfile
+FROM outofcoffee/imposter as imposter
+
+# your custom config
+COPY config /opt/imposter/config
+```
+
+Build it:
+
+```shell
+$ docker build --tag example/mocks .
+```
+
+The container image (`example/mocks` in this example), can be [run with Docker](./run_imposter_docker.md) as normal.
+
+```shell
+$ docker run --rm -it example/mocks
+```
+
+> See [the Docker example project](https://github.com/outofcoffee/imposter/tree/main/examples/docker) for a working example.
+
 ## Further reading
 
 - See [Benchmarks](./benchmarks.md) for representative performance tests, including test set up and configuration.

@@ -1,0 +1,20 @@
+plugin: rest
+
+resources:
+  - path: "/users"
+    method: "GET"
+    response:
+      statusCode: 200
+      headers:
+        Content-Type: "application/json"
+      content: |
+        [
+          {
+            "id": 1,
+            "name": "Ada"
+          },
+          {
+            "id": 2,
+            "name": "Grace"
+          }
+        ]
