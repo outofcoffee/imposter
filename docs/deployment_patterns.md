@@ -138,7 +138,7 @@ $ docker build --tag example/mocks .
 The container image (`example/mocks` in this example), can be [run with Docker](./run_imposter_docker.md) as normal.
 
 ```shell
-$ docker run --rm -it example/mocks
+$ docker run --rm -it -p 8080:8080 example/mocks
 ```
 
 > See [the Docker example project](https://github.com/outofcoffee/imposter/tree/main/examples/docker) for a working example.
