@@ -123,7 +123,7 @@ Let's assume your configuration sits in a directory called `config`.
 Here is an example Dockerfile:
 
 ```dockerfile
-FROM outofcoffee/imposter as imposter
+FROM outofcoffee/imposter
 
 # your custom config
 COPY config /opt/imposter/config
@@ -142,7 +142,3 @@ $ docker run --rm -it -p 8080:8080 example/mocks
 ```
 
 > See [the Docker example project](https://github.com/outofcoffee/imposter/tree/main/examples/docker) for a working example.
-
-## Further reading
-
-- See [Benchmarks](./benchmarks.md) for representative performance tests, including test set up and configuration.
