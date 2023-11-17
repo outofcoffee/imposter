@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.32.1] - 2023-11-17
+### Changed
+- ci: splits out static site build step.
+- docs: adds examples link.
+- docs: adds mermaid plugin to static site generator.
+- docs: improves description of Docker bundle steps.
+- docs: improves description of deployment patterns and bundle steps.
+- docs: switches config store C4 node to DB.
+- test: adds dockerfile to preview docs.
+
+### Fixed
+- fix: use relative link to configuration documentation in CORS section.
+
 ## [3.32.0] - 2023-11-12
 ### Added
 - feat(openapi): allows the specification path prefix to be set.
