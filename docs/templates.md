@@ -45,6 +45,7 @@ There are many placeholder types (see [placeholder types](#placeholder-types) se
 - data from [Stores](./stores.md), including data [captured](./data_capture.md) previously
 - generating random values, such as UUIDs, numbers, strings etc.
 - generating [fake data](fake_data.md), such as names, addresses, phone numbers etc.
+- properties of the Imposter system, such as the server port or server URL
 
 ## Placeholder types
 
@@ -273,6 +274,17 @@ For example, a template file might look like this:
 The placeholder `${stores.testStore.person}` refers to an item named 'person' in the store named 'testStore'.
 
 > Learn more about [stores](./stores.md).
+
+### System and server values
+
+These expressions provide access to Imposter system values, such as the listen port or the server URL.
+
+Valid system/server properties:
+
+| Syntax               | Example                 | Example value             |
+|----------------------|-------------------------|---------------------------|
+| `system.server.port` | `${system.server.port}` | `"8080"`                  |
+| `system.server.url`  | `${system.server.url}`  | `"http://localhost:8080"` |
 
 ---
 
