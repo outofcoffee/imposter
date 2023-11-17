@@ -30,7 +30,7 @@ The easiest way to get started is to use an Imposter Docker container, such as:
 
 ## Docker images
 
-Most users should choose the 'core' image available at: [outofcoffee/imposter](https://hub.docker.com/r/outofcoffee/imposter). This is the primary Imposter Docker image supporting both OpenAPI and plain REST APIs.
+Most users should choose the 'core' image available at: [outofcoffee/imposter](https://hub.docker.com/r/outofcoffee/imposter). This is the primary Imposter Docker image supporting both OpenAPI plain REST APIs and SOAP web services.
 
 The following images are available:
 
