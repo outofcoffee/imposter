@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.33.0] - 2023-11-17
+### Added
+- feat: adds system expression evaluator to config evaluator list.
+
+### Changed
+- docs: describes system placeholders.
+- docs: improves bundled Docker instructions.
+
 ## [3.32.2] - 2023-11-17
 ### Changed
 - chore(deps): bump com.fasterxml.jackson.core:jackson-databind
