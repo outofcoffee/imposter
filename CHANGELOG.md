@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.33.3] - 2023-11-17
+### Changed
+- build: fix shadow JAR publication for modules with Maven publications.
+- ci: switch to prebuilt since binary.
+- refactor: replaces openapi and rest distributions with core distribution.
+
 ## [3.33.2] - 2023-11-17
 ### Changed
 - build: fix shadow JAR publication for mock-hbase module.
