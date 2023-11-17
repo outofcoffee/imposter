@@ -16,7 +16,7 @@ title External configuration
 Person(client, "Person", "Client accessing the mock")
 Person(developer, "Developer", "Develops the mock")
 System(mock, "Mock", "Imposter mock engine")
-System(config_store, "S3", "Configuration store")
+SystemDb(config_store, "S3", "Configuration store")
 
 Rel(developer, mock, "Deploys the mock engine")
 Rel(developer, config_store, "Deploys the mock configuration")
