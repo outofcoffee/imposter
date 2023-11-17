@@ -4,6 +4,10 @@ theme:
   favicon: images/favicon.ico
 site_name: Imposter Mocks
 
+plugins:
+  - search
+  - mermaid2
+
 extra:
   analytics:
     provider: google
