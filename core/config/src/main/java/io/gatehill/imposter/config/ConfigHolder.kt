@@ -40,7 +40,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.server
+package io.gatehill.imposter.config
 
 import io.gatehill.imposter.ImposterConfig
 

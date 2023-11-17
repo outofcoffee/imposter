@@ -48,10 +48,12 @@ import io.gatehill.imposter.config.util.ConfigUtil
 import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.http.HttpMethod
 import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.Matchers.containsString
 import org.hamcrest.Matchers.equalTo
 import org.hamcrest.Matchers.not
 import org.hamcrest.Matchers.nullValue
 import org.hamcrest.Matchers.startsWith
+import org.junit.AfterClass
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -64,8 +66,18 @@ import java.io.File
  * @author Pete Cornish
  */
 class ConfigUtilTest {
+    companion object {
+        @AfterClass
+        @JvmStatic
+        fun afterClass() {
+            ConfigHolder.config.listenPort = 0
+        }
+    }
+
     @Test
     fun testReadInterpolatedPluginConfig() {
+        ConfigHolder.config.listenPort = 9090
+
         // override environment variables in string interpolators
         val environment: Map<String, String> = mapOf(
             "EXAMPLE_PLUGIN" to "example-plugin"
@@ -79,6 +91,7 @@ class ConfigUtilTest {
         )
         val loadedConfig = ConfigUtil.readPluginConfig(configRef)
         assertEquals("example-plugin", loadedConfig.plugin)
+        assertThat(loadedConfig.serialised, containsString("port 9090"))
     }
 
     /**

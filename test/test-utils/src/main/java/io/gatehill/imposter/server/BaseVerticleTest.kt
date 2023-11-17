@@ -43,6 +43,7 @@
 package io.gatehill.imposter.server
 
 import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.config.ConfigHolder
 import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.plugin.DynamicPluginDiscoveryStrategyImpl
 import io.gatehill.imposter.plugin.Plugin

@@ -42,6 +42,7 @@
  */
 package io.gatehill.imposter.util
 
+import io.gatehill.imposter.config.expression.SystemEvaluator
 import io.gatehill.imposter.expression.eval.ExpressionEvaluator
 import io.gatehill.imposter.expression.eval.RandomEvaluator
 import io.gatehill.imposter.expression.util.ExpressionUtil
@@ -50,7 +51,6 @@ import io.gatehill.imposter.placeholder.ContextEvaluator
 import io.gatehill.imposter.placeholder.DateTimeEvaluator
 import io.gatehill.imposter.placeholder.HttpExpressionEvaluator
 import io.gatehill.imposter.placeholder.QueryProviderImpl
-import io.gatehill.imposter.placeholder.SystemEvaluator
 
 /**
  * Replaces expression placeholders during the lifecycle of a request/response exchange.

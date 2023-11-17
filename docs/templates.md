@@ -257,6 +257,22 @@ Valid random functions:
 
 > Note: the syntax for `random` is slightly different to the other placeholder types. These are functions, not properties, so are called with parentheses.
 
+#### Customise length
+
+Customise the length of the generated value by passing `length=NUM` argument into the function.
+
+For example: `${random.alphabetic(length=5)}`
+
+This applies to the following functions:
+
+- alphabetic
+- alphanumeric
+- numeric
+
+#### Uppercase
+
+Convert the generated value to uppercase by passing `uppercase=true` argument 
+
 ### Items in a Store
 
 You can use items from a [Store](./stores.md), including data [captured](./data_capture.md) previously, or set by a script.

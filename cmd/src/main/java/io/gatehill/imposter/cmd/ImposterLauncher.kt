@@ -42,11 +42,11 @@
  */
 package io.gatehill.imposter.cmd
 
+import io.gatehill.imposter.config.ConfigHolder
 import io.gatehill.imposter.config.util.ConfigUtil
 import io.gatehill.imposter.config.util.MetaUtil.readVersion
 import io.gatehill.imposter.plugin.DynamicPluginDiscoveryStrategyImpl
 import io.gatehill.imposter.plugin.internal.MetaInfPluginDetectorImpl
-import io.gatehill.imposter.server.ConfigHolder
 import io.gatehill.imposter.server.vertxweb.VertxWebServerFactoryImpl
 import io.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PASSWORD
 import io.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PATH

@@ -48,6 +48,7 @@ import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.ConfigReference
 import io.gatehill.imposter.config.LoadedConfig
 import io.gatehill.imposter.config.expression.EnvEvaluator
+import io.gatehill.imposter.config.expression.SystemEvaluator
 import io.gatehill.imposter.config.model.LightweightConfig
 import io.gatehill.imposter.config.resolver.ConfigResolver
 import io.gatehill.imposter.expression.eval.ExpressionEvaluator
@@ -136,7 +137,10 @@ object ConfigUtil {
 
     fun initInterpolators(environment: Map<String, String>) {
         // reset the environment used by the expression evaluator
-        expressionEvaluators = mapOf("env" to EnvEvaluator(environment))
+        expressionEvaluators = mapOf(
+            "env" to EnvEvaluator(environment),
+            "system" to SystemEvaluator,
+        )
     }
 
     /**

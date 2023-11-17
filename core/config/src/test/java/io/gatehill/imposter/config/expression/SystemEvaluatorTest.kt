@@ -1,4 +1,4 @@
-package io.gatehill.imposter.placeholder
+package io.gatehill.imposter.config.expression
 
 import io.gatehill.imposter.ImposterConfig
 import org.hamcrest.MatcherAssert.assertThat

@@ -44,9 +44,9 @@
 package io.gatehill.imposter.embedded;
 
 import io.gatehill.imposter.ImposterConfig;
+import io.gatehill.imposter.config.ConfigHolder;
 import io.gatehill.imposter.plugin.Plugin;
 import io.gatehill.imposter.script.listener.ScriptListener;
-import io.gatehill.imposter.server.ConfigHolder;
 import io.gatehill.imposter.server.ImposterVerticle;
 import io.gatehill.imposter.service.script.EmbeddedScriptService;
 import io.gatehill.imposter.util.FeatureUtil;

@@ -45,6 +45,7 @@ package io.gatehill.imposter.server
 import com.google.inject.Module
 import io.gatehill.imposter.EngineBuilder
 import io.gatehill.imposter.Imposter
+import io.gatehill.imposter.config.ConfigHolder
 import io.gatehill.imposter.scripting.common.CommonScriptingModule
 import io.gatehill.imposter.scripting.groovy.GroovyScriptingModule
 import io.gatehill.imposter.store.StoreModule

@@ -41,11 +41,11 @@
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.gatehill.imposter.placeholder
+package io.gatehill.imposter.config.expression
 
 import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.config.ConfigHolder
 import io.gatehill.imposter.expression.eval.ExpressionEvaluator
-import io.gatehill.imposter.util.InjectorUtil
 import org.apache.logging.log4j.LogManager
 
 /**
@@ -55,7 +55,7 @@ import org.apache.logging.log4j.LogManager
  * ```
  */
 object SystemEvaluator : ExpressionEvaluator<String> {
-    private val impl by lazy { SystemEvaluatorImpl(InjectorUtil.getInstance()) }
+    private val impl by lazy { SystemEvaluatorImpl(ConfigHolder.config) }
 
     override val name: String
         get() = impl.name
