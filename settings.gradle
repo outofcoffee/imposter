@@ -103,12 +103,6 @@ project(':distro:core').name = 'distro-core'
 include ':distro:embedded'
 project(':distro:embedded').name = 'distro-embedded'
 
-include ':distro:openapi'
-project(':distro:openapi').name = 'distro-openapi'
-
-include ':distro:rest'
-project(':distro:rest').name = 'distro-rest'
-
 // libraries
 include ':lib:fake-data'
 

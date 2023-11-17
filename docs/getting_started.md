@@ -34,7 +34,7 @@ CLI example:
 
 Docker example:
 
-    docker run -ti -p 8080:8080 -v $PWD/config:/opt/imposter/config outofcoffee/imposter-rest
+    docker run -ti -p 8080:8080 -v $PWD/config:/opt/imposter/config outofcoffee/imposter
 
 Standalone Java example:
 

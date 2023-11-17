@@ -44,11 +44,11 @@ Docker example:
 
     docker run --rm -ti -p 8080:8080 \
         -v $PWD/examples/rest/simple:/opt/imposter/config \
-        outofcoffee/imposter-rest
+        outofcoffee/imposter
 
 Standalone Java example:
 
-    java -jar distro/rest/build/libs/imposter-rest.jar \
+    java -jar distro/rest/build/libs/imposter.jar \
         --configDir ./examples/rest/simple
 
 Send an HTTP request to the `/example` path defined in the configuration file to see the example response:
@@ -121,7 +121,7 @@ Start the server:
 
     docker run --rm -ti -p 8080:8080 \
         -v $PWD/examples/rest/multiple:/opt/imposter/config \
-        outofcoffee/imposter-rest
+        outofcoffee/imposter
 
 Send an HTTP request to the `/cats/1` path defined in the configuration file to see the first item in the array:
 

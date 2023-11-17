@@ -26,7 +26,7 @@ You must have [Docker](https://docs.docker.com/get-docker/) installed.
 
 The easiest way to get started is to use an Imposter Docker container, such as:
 
-    docker run -ti -p 8080:8080 outofcoffee/imposter-rest [args]
+    docker run -ti -p 8080:8080 outofcoffee/imposter [args]
 
 ## Docker images
 
@@ -37,8 +37,6 @@ The following images are available:
 | Image       | Docker Hub link                                                                       | Plugins             | Notes                                                                                                                             |
 |-------------|---------------------------------------------------------------------------------------|---------------------|-----------------------------------------------------------------------------------------------------------------------------------|
 | **core**    | [outofcoffee/imposter](https://hub.docker.com/r/outofcoffee/imposter)                 | openapi, rest, soap | This is the primary Imposter Docker image supporting OpenAPI, plain REST APIs and SOAP/WSDL mocks. Most users should choose this. |
-| **openapi** | [outofcoffee/imposter-openapi](https://hub.docker.com/r/outofcoffee/imposter-openapi) | openapi             | Only contains the [OpenAPI mock plugin](./openapi_plugin.md).                                                                     |
-| **rest**    | [outofcoffee/imposter-rest](https://hub.docker.com/r/outofcoffee/imposter-rest)       | rest                | Only contains the [REST mock plugin](./rest_plugin.md).                                                                           |
 | **all**     | [outofcoffee/imposter-all](https://hub.docker.com/r/outofcoffee/imposter-all)         | All plugins         | Contains all mock plugins, and is the largest and has the most dependencies.                                                      |
 
 > You can also use the these images to create your own custom images with embedded configuration.

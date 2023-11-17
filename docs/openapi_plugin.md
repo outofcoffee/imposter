@@ -116,11 +116,11 @@ Docker example:
 
     docker run --rm -ti -p 8080:8080 \
         -v $PWD/examples/openapi/simple:/opt/imposter/config \
-        outofcoffee/imposter-openapi
+        outofcoffee/imposter
 
 Java JAR example:
 
-    java -jar distro/openapi/build/libs/imposter-openapi.jar \
+    java -jar distro/openapi/build/libs/imposter.jar \
         --configDir ./examples/openapi/simple
 
 This starts a mock server using the OpenAPI plugin. Responses are served based on the OpenAPI specification `petstore.yaml`.
