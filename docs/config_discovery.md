@@ -1,4 +1,4 @@
-# Configuration discovery
+# Recursive configuration discovery
 
 By default, configuration files with the suffix `-config.json`, `-config.yaml` or `-config.yml` are loaded from the configuration directory.
 

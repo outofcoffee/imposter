@@ -38,7 +38,7 @@ To begin, check out the [Getting started](getting_started.md) guide. See the _Us
 - [Scaffolding configuration](scaffold.md)
 - [Environment variables](environment_variables.md)
 - [Proxy an existing endpoint](proxy_endpoint.md)
-- [Configuration discovery](config_discovery.md)
+- [Recursive configuration discovery](config_discovery.md)
 
 ### Developing mocks
 
@@ -54,6 +54,7 @@ To begin, check out the [Getting started](getting_started.md) guide. See the _Us
 
 ### Operational topics
 
+- [Deployment patterns](./deployment_patterns.md)
 - [Metrics, health, logs and telemetry](metrics_logs_telemetry.md)
 - [Performance tuning](./performance_tuning.md)
 - [Benchmarks](./benchmarks.md)

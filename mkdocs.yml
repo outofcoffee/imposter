@@ -31,18 +31,12 @@ nav:
     - Stores: 'stores.md'
     - GraphQL: 'stores_graphql.md'
 
-  - Operational topics:
-    - Metrics, health, logs and telemetry: 'metrics_logs_telemetry.md'
-    - Performance tuning: 'performance_tuning.md'
-    - Benchmarks: 'benchmarks.md'
-    - TLS/SSL: 'tls_ssl.md'
-
   - Advanced configuration:
     - Configuration location: 'config_location.md'
     - Scaffolding configuration: 'scaffold.md'
     - Environment variables: 'environment_variables.md'
     - Proxy an existing endpoint: 'proxy_endpoint.md'
-    - Configuration discovery: 'config_discovery.md'
+    - Recursive configuration discovery: 'config_discovery.md'
 
   - Developing mocks:
     - Advanced request matching: 'request_matching.md'
@@ -54,6 +48,13 @@ nav:
     - CORS: 'cors.md'
     - Groovy scripting tips: 'groovy_tips.md'
     - Examples: 'https://github.com/outofcoffee/imposter/tree/main/examples'
+
+  - Operational topics:
+    - Deployment patterns: 'deployment_patterns.md'
+    - Metrics, health, logs and telemetry: 'metrics_logs_telemetry.md'
+    - Performance tuning: 'performance_tuning.md'
+    - Benchmarks: 'benchmarks.md'
+    - TLS/SSL: 'tls_ssl.md'
 
   - Other:
     - Plugins: 'plugins.md'

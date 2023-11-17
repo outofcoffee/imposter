@@ -39,6 +39,17 @@ You might consider using deferred capture, which has the advantage of improving 
 
 Using JsonPath to capture the request body is computationally expensive, as it requires parsing and querying of the request body item rather than just copying a reference.
 
+### Bundle your configuration
+
+When deploying Imposter, a [common pattern](./deployment_patterns.md) is to store configuration in an external store, such as a storage bucket. Whilst this model has some deployment benefits, retrieving external configuration can cause slower startup times.
+
+In a serverless environment, where compute instances are short-lived, this can cause scaling challenges due to longer cold start times. Therefore, in highly dynamic environments, such as containers or serverless functions, startup time can be improved by avoiding configuration retrieval whenever an instance of the mock engine is started.
+
+Imposter supports a deployment model called 'Bundled Configuration'. In this model, the mock configuration is included alongside the mock engine in the same package. When the engine starts, configuration is local to the instance of the engine, avoiding the time taken for retrieval. 
+
+> See the Bundled Configuration section of the [Deployment patterns](./deployment_patterns.md#bundled-configuration) documentation.
+
 ## Benchmarks
 
 See [Benchmarks](./benchmarks.md) for representative performance tests, including test set up and configuration.
+
