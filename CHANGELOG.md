@@ -3,6 +3,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.32.2] - 2023-11-17
+### Changed
+- chore(deps): bump com.fasterxml.jackson.core:jackson-databind
+- chore(deps): bump org.apache.maven.plugins:maven-surefire-plugin
+
 ## [3.32.1] - 2023-11-17
 ### Changed
 - ci: splits out static site build step.
