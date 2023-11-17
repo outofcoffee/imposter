@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.33.2] - 2023-11-17
+### Changed
+- build: fix shadow JAR publication for mock-hbase module.
+
 ## [3.33.1] - 2023-11-17
 ### Changed
 - build: fix shadow JAR publication for fake-data module.
