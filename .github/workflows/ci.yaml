@@ -11,18 +11,24 @@ jobs:
       contents: write
     env:
       AWS_REGION: "eu-west-1"
-      TESTCONTAINERS_RYUK_DISABLED: "true"
       CONTAINER_BUILDER: "buildx"
+      SINCE_VERSION: "0.14.2"
+      TESTCONTAINERS_RYUK_DISABLED: "true"
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install since
+        if: ${{ (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop') && matrix.java == '11' }}
+        run: |
+          cd "$( mktemp -d )"
+          curl --fail -L -o since.tar.gz https://github.com/release-tools/since/releases/download/v${SINCE_VERSION}/since_${SINCE_VERSION}_linux_amd64.tar.gz
+          tar xvf since.tar.gz
+          cp since /usr/local/bin
+
       - name: Write changelog
         if: ${{ (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop') && matrix.java == '11' }}
-        env:
-          GOBIN: /usr/local/bin/
         run: |
           mkdir -p build
-          go install github.com/outofcoffee/since@v0.14.0
           since changelog extract -q > build/CHANGES.md
           cat build/CHANGES.md
 
