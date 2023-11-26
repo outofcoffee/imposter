@@ -58,3 +58,13 @@ Here's a simple overview:
 5. Configure your `GenericContainer` to wait for the `/system/status` HTTP endpoint to be accessible so your tests don't start before the mock is ready.
 
 Now, when you run your test, your custom mock container will start, load your configuration and mock data, ready for your test methods to use it!
+
+## Set OpenAPI spec base path
+
+Set the environment variable `IMPOSTER_OPENAPI_SPEC_PATH_PREFIX`, to override the default `/_spec` prefix.
+
+For example:
+
+    IMPOSTER_OPENAPI_SPEC_PATH_PREFIX="/api/core-mock/v1/_spec"
+
+...will make the spec UI accessible at http://localhost:8080/api/core-mock/v1/_spec/
