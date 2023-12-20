@@ -11,7 +11,7 @@ For example, when [deploying Imposter on AWS Lambda](./run_imposter_aws_lambda.m
 ```mermaid
 C4Context
 
-title External configuration
+title External configuration pattern
 
 Person(client, "Person", "Client accessing the mock")
 Person(developer, "Developer", "Develops the mock")
@@ -39,12 +39,12 @@ UpdateLayoutConfig($c4ShapeInRow="2", $c4BoundaryInRow="1")
 
 ## Bundled configuration
 
-When deploying Imposter as a container or serverless function, it is possible to bundle the configuration and engine in the same deployment unit (e.g. container image or Lambda ZIP file). This avoids the need for an external store.
+When deploying Imposter as a container or serverless function, it is possible to bundle the configuration and engine in the same deployment unit (e.g. container image or Lambda ZIP file). This avoids the need for an external configuration store.
 
 ```mermaid
 C4Context
 
-title Bundled configuration
+title Bundled configuration pattern
 
 Person(client, "Person", "Client accessing the mock")
 Person(developer, "Developer", "Develops the mock")
@@ -69,76 +69,6 @@ UpdateLayoutConfig($c4ShapeInRow="2", $c4BoundaryInRow="1")
 
 ### How to bundle configuration
 
-Bundling is the inclusion of mock configuration alongside the Imposter binaries in a deployment package, such as a container image or Lambda ZIP file.
+Bundling keeps all elements of the mock in a single package, simplifying deployment and distribution of your mocks.
 
-#### Creating a bundle for Lambda (automated)
-
-You can create a bundle using [the CLI](./run_imposter_cli.md) using the `imposter bundle` command.
-
-```shell
-$ imposter bundle -t awslambda -o bundle.zip
-
-creating awslambda bundle /users/person/mock using version 3.32.0
-downloading https://github.com/outofcoffee/imposter/releases/download/v3.32.0/imposter-awslambda.zip
-bundling 3 files from workspace
-created deployment package
-created awslambda bundle: /users/person/mock/bundle.zip
-```
-
-The bundle file (`bundle.zip` in this example), can be [deployed to AWS Lambda](./run_imposter_aws_lambda.md) as normal. 
-
-#### Creating a bundle for Lambda (manual)
-
-If you do not want to use the CLI, you can create a bundle using standard `zip` tools.
-
-Download the latest `imposter-awslambda.zip` distribution from the [Releases page](https://github.com/outofcoffee/imposter/releases).
-
-Let's assume your configuration sits in a directory called `config`.
-
-```shell
-$ ls -l
-drwxr-xr-x  5 person  wheel  160B 16 Nov 13:12 config
--rw-r--r--  1 person  staff  20M  16 Nov 13:12 imposter-awslambda.zip
-```
-
-Add the config to the ZIP file:
-
-```shell
-$ zip -ur imposter-awslambda.zip config
-
-  adding: config/ (stored 0%)
-  adding: config/mock-config.yaml (deflated 19%)
-  adding: config/response.json (stored 0%)
-  adding: config/mock.txt (deflated 22%)
-```
-
-The `imposter-bundle.zip` file can be [deployed to AWS Lambda](./run_imposter_aws_lambda.md) as normal.
-
-#### Creating a container image bundle
-
-When [deploying using containers](./run_imposter_docker.md), you can add the configuration files into the container image itself.
-
-Let's assume your configuration sits in a directory called `config`.
-
-Here is an example Dockerfile:
-
-```dockerfile
-FROM outofcoffee/imposter
-
-# your custom config
-COPY config /opt/imposter/config
-```
-
-Build it:
-
-```shell
-$ docker build --tag example/mocks .
-```
-
-The container image (`example/mocks` in this example), can be [run with Docker](./run_imposter_docker.md) as normal.
-
-```shell
-$ docker run --rm -it -p 8080:8080 example/mocks
-```
-
-> See [the Docker example project](https://github.com/outofcoffee/imposter/tree/main/examples/docker) for a working example.
+See the [Bundle configuration](./bundle.md) section for instructions on how to bundle configuration for different deployment targets.

@@ -39,6 +39,7 @@ To begin, check out the [Getting started](getting_started.md) guide. See the _Us
 - [Environment variables](environment_variables.md)
 - [Proxy an existing endpoint](proxy_endpoint.md)
 - [Recursive configuration discovery](config_discovery.md)
+- [Bundling configuration](bundle.md)
 
 ### Developing mocks
 
