@@ -93,6 +93,7 @@ Imposter provides specialised mocks for the following scenarios:
 ### Product
 
 - [Summary](summary.md)
+- [Blog](blog/index.md)
 - [Product home](https://www.imposter.sh)
 
 ### Tutorials

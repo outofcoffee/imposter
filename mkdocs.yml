@@ -5,6 +5,7 @@ theme:
 site_name: Imposter Mocks
 
 plugins:
+  - blog
   - search
   - mermaid2
 
@@ -74,6 +75,9 @@ nav:
     - Features: 'features.md'
     - Tips and tricks: 'tips_tricks.md'
     - Usage: 'usage.md'
+
+  - Blog:
+    - blog/index.md
 
   - Product:
     - Summary: 'summary.md'
