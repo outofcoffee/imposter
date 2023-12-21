@@ -37,4 +37,3 @@ Imposter provides specialised mocks for the following scenarios:
 - **[HBase](hbase_plugin.md)** - Basic HBase mock implementation.
 - **[SFDC (Salesforce)](sfdc_plugin.md)** - Basic Salesforce mock implementation.
 - **[WireMock](wiremock_plugin.md)** - Support for WireMock mappings files.
-- 
