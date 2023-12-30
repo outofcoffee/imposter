@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.33.4] - 2023-12-30
+### Changed
+- ci: adds js-graal plugin to release binaries.
+- docs: adds links to bundled config steps from config description.
+- docs: adds usage example for IMPOSTER_OPENAPI_SPEC_PATH_PREFIX.
+- docs: clarifies included plugins in imposter-core Docker image.
+- docs: improves fake data section title.
+- docs: improves nav.
+- docs: links to recursive discovery from env vars table.
+- docs: simplifies deployment patterns.
+- docs: splits out and expands bundle documentation.
+- test: adds local docs test script.
+
 ## [3.33.3] - 2023-11-17
 ### Changed
 - build: fix shadow JAR publication for modules with Maven publications.
