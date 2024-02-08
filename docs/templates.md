@@ -198,7 +198,7 @@ Example config:
 
 resources:
 - path: /now
-  method: POST
+  method: GET
   response:
     content: "The date is ${datetime.now.iso8601_date}"
     template: true
@@ -232,13 +232,13 @@ Example config:
 
 resources:
 - path: /number
-  method: POST
+  method: GET
   response:
     content: "An integer is ${random.numeric()}"
     template: true
 
 - path: /chars
-  method: POST
+  method: GET
   response:
     content: "A random string is ${random.alphabetic(length=5)}"
     template: true
