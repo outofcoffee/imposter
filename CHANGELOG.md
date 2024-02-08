@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.34.0] - 2024-02-08
+### Added
+- feat: adds random.any() expression function.
+
+### Changed
+- chore(deps): bump actions/github-script from 6 to 7
+- chore(deps): bump actions/setup-java from 3 to 4
+- chore(deps): bump actions/setup-python from 4.7.1 to 5.0.0
+- chore(deps): bump org.apache.maven.plugins:maven-compiler-plugin
+- chore(deps): bump org.apache.maven.plugins:maven-project-info-reports-plugin
+- chore(deps): bump org.apache.maven.plugins:maven-surefire-plugin
+
+### Fixed
+- fix: upgrade com.fasterxml.jackson.core:jackson-databind from 2.16.0 to 2.16.1
+
 ## [3.33.4] - 2023-12-30
 ### Changed
 - ci: adds js-graal plugin to release binaries.
