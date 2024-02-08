@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023.
+ * Copyright (c) 2023-2024.
  *
  * This file is part of Imposter.
  *
@@ -80,15 +80,31 @@ object RandomEvaluator : ExpressionEvaluator<String> {
             it.split("=").let { parts -> parts[0] to parts[1] }
         }
         val type = randomConfig.substringBefore("(")
-        val length = args["length"]?.toInt()
+        val length = args["length"]?.toInt() ?: 1
         val uppercase = args["uppercase"].toBoolean()
 
+        // the chars string must be enclosed in double quotes
+        val chars = args["chars"]?.let {
+            if (!it.startsWith("\"") || !it.endsWith("\"")) {
+                LOGGER.warn("chars string must be enclosed in double quotes")
+                return null
+            }
+            it.substring(1, it.length - 1)
+        }
+
         val random = when (type) {
-            "alphabetic" -> getRandomString(length!!, alphabetUpper + alphabetLower)
-            "alphanumeric" -> getRandomString(length!!, alphabetUpper + alphabetLower + numbers)
-            "numeric" -> getRandomString(length!!, numbers.toList())
+            "alphabetic" -> getRandomString(length, alphabetUpper + alphabetLower)
+            "alphanumeric" -> getRandomString(length, alphabetUpper + alphabetLower + numbers)
+            "any" -> {
+                if (chars == null) {
+                    LOGGER.warn("chars string must be provided for random type 'any'")
+                    return null
+                }
+                getRandomString(length, chars.toList())
+            }
+            "numeric" -> getRandomString(length, numbers.toList())
             "uuid" -> UUID.randomUUID().toString()
-            else -> run {
+            else -> {
                 LOGGER.warn("Could not parse random expression: $randomConfig")
                 return null
             }
@@ -97,6 +113,6 @@ object RandomEvaluator : ExpressionEvaluator<String> {
     }
 
     private fun getRandomString(length: Int, allowedChars: List<Char>) = (1..length)
-        .map { allowedChars.random() }
-        .joinToString("")
+            .map { allowedChars.random() }
+            .joinToString("")
 }

@@ -231,29 +231,38 @@ Example config:
 # part of your configuration file
 
 resources:
-- path: /now
+- path: /number
   method: POST
   response:
-    content: "An integer is ${random.numeric}"
+    content: "An integer is ${random.numeric()}"
+    template: true
+
+- path: /chars
+  method: POST
+  response:
+    content: "A random string is ${random.alphabetic(length=5)}"
     template: true
 ```
 
-Example request:
+Example requests:
 
 ```
-$ curl http://localhost:8080/now
+$ curl http://localhost:8080/number
+An integer is 4
 
-An integer is 42
+$ curl http://localhost:8080/chars
+A random string is abcde
 ```
 
 Valid random functions:
 
-| Syntax                  | Example                    | Example value                            |
-|-------------------------|----------------------------|------------------------------------------|
-| `random.alphabetic()`   | `${random.alphabetic()}`   | `"i"`                                    |
-| `random.alphanumeric()` | `${random.alphanumeric()}` | `"i"` or `"42"`                          |
-| `random.numeric()`      | `${random.numeric()}`      | `"42"`                                   |
-| `random.uuid()`         | `${random.uuid()}`         | `"e1a4fba9-33eb-4241-84cf-472f90639c37"` |
+| Syntax                    | Example                         | Example value                            |
+|---------------------------|---------------------------------|------------------------------------------|
+| `random.alphabetic()`     | `${random.alphabetic()}`        | `"i"`                                    |
+| `random.alphanumeric()`   | `${random.alphanumeric()}`      | `"i"` or `"42"`                          |
+| `random.any(chars="...")` | `${random.any(chars="abc123")}` | `"a"` or `"1"`                           |
+| `random.numeric()`        | `${random.numeric()}`           | `"42"`                                   |
+| `random.uuid()`           | `${random.uuid()}`              | `"e1a4fba9-33eb-4241-84cf-472f90639c37"` |
 
 > Note: the syntax for `random` is slightly different to the other placeholder types. These are functions, not properties, so are called with parentheses.
 
@@ -261,17 +270,36 @@ Valid random functions:
 
 Customise the length of the generated value by passing `length=NUM` argument into the function.
 
-For example: `${random.alphabetic(length=5)}`
+For example: `${random.alphabetic(length=5)}` will generate a 5-character alphabetic string.
+
+> The default length is 1.
 
 This applies to the following functions:
 
 - alphabetic
 - alphanumeric
+- any
 - numeric
 
 #### Uppercase
 
-Convert the generated value to uppercase by passing `uppercase=true` argument 
+Convert the generated value to uppercase by passing `uppercase=true` argument into the function.
+
+For example: `${random.alphabetic(uppercase=true)}` will generate an uppercase alphabetic character.
+
+> You can combine `length` and `uppercase` arguments.
+> 
+> For example: `${random.alphabetic(length=5, uppercase=true)}` will generate a 5-character uppercase alphabetic string.
+
+#### Generate from a set of characters
+
+Generate a value from a set of characters by passing `chars="..."` argument into the `random.any()` function.
+
+For example: `${random.any(chars="abc123")}` will generate a value from the set of characters `a`, `b`, `c`, `1`, `2`, `3`.
+
+> You can also use the `length` and `uppercase` arguments with `random.any()`.
+>
+> For example: `${random.any(chars="xyz", length=5, uppercase=true)}` will generate a 5-character uppercase value from the set of characters `x`, `y`, `z`.
 
 ### Items in a Store
 
