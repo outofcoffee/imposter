@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2024.
  *
  * This file is part of Imposter.
  *
@@ -43,7 +43,6 @@
 package io.gatehill.imposter.scripting.graalvm.service
 
 import com.oracle.truffle.js.scriptengine.GraalJSEngineFactory
-import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine
 import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.RequireModules
@@ -56,6 +55,7 @@ import io.gatehill.imposter.service.ScriptService
 import io.gatehill.imposter.service.ScriptSource
 import org.apache.logging.log4j.LogManager
 import javax.script.ScriptContext
+import javax.script.ScriptEngine
 import javax.script.SimpleBindings
 
 /**
@@ -66,7 +66,7 @@ import javax.script.SimpleBindings
 @PluginInfo("js-graal")
 @RequireModules(GraalvmScriptingModule::class)
 class GraalvmScriptServiceImpl : ScriptService, Plugin {
-    private var scriptEngine: GraalJSScriptEngine
+    private var scriptEngine: ScriptEngine
 
     init {
         // see https://www.graalvm.org/reference-manual/js/NashornMigrationGuide/#nashorn-compatibility-mode
