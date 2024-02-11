@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.35.0] - 2024-02-11
+### Added
+- feat: adds support for archive plugin files.
+- feat: upgrades Graal to 22.3.5.
+
+### Changed
+- build: switches graal plugin to archive format.
+- docs: fixes example methods.
+
 ## [3.34.0] - 2024-02-08
 ### Added
 - feat: adds random.any() expression function.
