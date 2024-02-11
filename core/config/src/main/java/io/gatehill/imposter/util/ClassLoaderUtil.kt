@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2024.
  *
  * This file is part of Imposter.
  *
@@ -47,6 +47,8 @@ import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.plugin.PluginClassLoader
 import org.apache.logging.log4j.LogManager
 import java.io.File
+import java.io.IOException
+import java.net.URL
 import java.net.URLClassLoader
 
 object ClassLoaderUtil {
@@ -55,8 +57,12 @@ object ClassLoaderUtil {
     private val pluginDirPath: String?
         get() = EnvVars.getEnv("IMPOSTER_PLUGIN_DIR")?.trim()?.takeIf { it.isNotEmpty() }
 
+    private val archiveExtractDir: File?
+        get() = EnvVars.getEnv("IMPOSTER_PLUGIN_EXTRACT_DIR")?.trim()?.takeIf { it.isNotEmpty() }?.let { File(it) }
+
     private val logger = LogManager.getLogger(ClassLoaderUtil::class.java)
     private const val pluginFileExtension = ".jar"
+    private const val archiveFileExtension = ".zip"
     private const val childClassloaderStrategy = "child"
 
     init {
@@ -64,26 +70,14 @@ object ClassLoaderUtil {
     }
 
     private fun determineClassLoader(): ClassLoader {
-        val jarUrls = pluginDirPath?.let { dir ->
-            val pluginDir = File(dir).also {
-                if (!it.exists() || !it.isDirectory) {
-                    logger.warn("Path $dir is not a valid directory")
-                    return@let null
-                }
-            }
-            return@let pluginDir.listFiles()
-                ?.filter { !it.isDirectory && it.name.endsWith(pluginFileExtension) }
-                ?.map { it.toURI().toURL() }
-        }
-
         val thisClassloader = ClassLoaderUtil::class.java.classLoader
 
-        return jarUrls?.let {
+        return listJars()?.let { jarUrls ->
             if (EnvVars.getEnv("IMPOSTER_PLUGIN_CLASSLOADER_STRATEGY") == childClassloaderStrategy) {
-                logger.trace("Plugins will use child-first classloader with plugin directory: $pluginDirPath and files: $jarUrls")
+                logger.trace("Plugins will use child-first classloader with plugin directory: {} and files: {}", pluginDirPath, jarUrls)
                 return@let PluginClassLoader(jarUrls.toTypedArray(), thisClassloader)
             } else {
-                logger.trace("Plugins will use URL classloader with plugin directory: $pluginDirPath and files: $jarUrls")
+                logger.trace("Plugins will use URL classloader with plugin directory: {} and files: {}", pluginDirPath, jarUrls)
                 return@let URLClassLoader(jarUrls.toTypedArray(), thisClassloader)
             }
 
@@ -92,6 +86,63 @@ object ClassLoaderUtil {
             thisClassloader
         }
     }
+
+    /**
+     * Lists all plugin JARs, first extracting any archives.
+     */
+    private fun listJars(): List<URL>? {
+        val pluginDir = pluginDirPath?.let { File(it) }?.also { dir ->
+            if (!dir.exists() || !dir.isDirectory) {
+                logger.warn("Path $dir is not a valid directory")
+                return null
+            }
+        } ?: run {
+            logger.trace("Plugin directory not set")
+            return null
+        }
+
+        val pluginFiles = pluginDir.listFiles()
+            ?.takeIf { it.isNotEmpty() }
+            ?: run {
+                logger.trace("No plugin files found in {}", pluginDir)
+                return null
+            }
+        logger.trace("Found plugin files in {}: {}", pluginDir, pluginFiles)
+
+        val jars = pluginFiles.filter { it.isPluginJar() }.toMutableList()
+
+        val archives = pluginFiles.filter { it.isFile && it.name.endsWith(archiveFileExtension) }
+        val extractBaseDir = archiveExtractDir ?: pluginDir
+        jars += archives.flatMap { listJarsFromArchive(extractBaseDir, it) }
+
+        return jars.map { it.toURI().toURL() }
+    }
+
+    /**
+     * Lists the JARs in the archive's `lib` folder, first extracting the archive to a
+     * subdirectory of `extractBaseDir`, if necessary.
+     */
+    private fun listJarsFromArchive(extractBaseDir: File, archive: File): List<File> {
+        try {
+            val archiveDir = File(extractBaseDir, archive.nameWithoutExtension)
+            if (archiveDir.exists() && archiveDir.isDirectory) {
+                logger.trace("Skipping extraction of plugin archive {} as directory {} already exists", archive, archiveDir)
+            } else {
+                logger.trace("Extracting plugin archive {} to {}", archive, archiveDir)
+                archiveDir.mkdirs()
+                ArchiveUtil.extractZipFileToDir(archive, archiveDir)
+            }
+            return File(archiveDir, "lib").listFiles()?.filter { it.isPluginJar() } ?: emptyList()
+
+        } catch (e: Exception) {
+            throw IOException("Failed to list JARs in plugin archive $archive", e)
+        }
+    }
+
+    /**
+     * Determines if the file is a plugin JAR.
+     */
+    private fun File.isPluginJar(): Boolean = isFile && name.endsWith(pluginFileExtension)
 
     @Suppress("UNCHECKED_CAST")
     fun <T> loadClass(className: String): Class<T> {
