@@ -41,14 +41,32 @@
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-const req = context.request;
+class Greeter {
+    constructor(request) {
+        this.request = request;
+    }
 
-if (req.queryParams.name) {
-    respond()
-        .withStatusCode(200)
-        .withContent(`Hello ${req.queryParams.name}`);
-} else {
-    respond()
-        .withStatusCode(400)
-        .withContent('No name query parameter found');
+    generateGreeting() {
+        return `Hello ${this.request.queryParams.name}`;
+    }
 }
+
+const calculateResponse = () => {
+    const { request } = context;
+    if (request.queryParams.name) {
+        const greeter = new Greeter(request);
+        return {
+            statusCode: 200,
+            content: greeter.generateGreeting(),
+        };
+    } else {
+        return {
+            statusCode: 400,
+            content: 'No name query parameter found',
+        };
+    }
+}
+
+const {statusCode, content} = calculateResponse();
+
+respond().withStatusCode(statusCode).withContent(content);

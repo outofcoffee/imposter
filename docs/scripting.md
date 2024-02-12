@@ -266,3 +266,4 @@ This selects the example from the OpenAPI `examples` section for the API respons
 ## Further reading
 
 * [Tips and tricks for Groovy users](./groovy_tips.md)
+* [Using modern JavaScript in scripts](./scripting_modern_js.md)
