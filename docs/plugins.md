@@ -4,24 +4,24 @@ Imposter uses plugins to control its behaviour and provide specialised mocks.
 
 > You can also write your own plugins, if you want to customise behaviour further.
 
-The following sections describe the available and built-in plugins.
+The following table describes the available plugins.
 
-| Category       | Plugin name       | Description                            | Details                                                                            |
-|----------------|-------------------|----------------------------------------|------------------------------------------------------------------------------------|
-| Mock           | `hbase`           | HBase mocks.                           | [HBase plugin](hbase_plugin.md)                                                    |
-| Mock           | `openapi`         | OpenAPI (and Swagger) mocks.           | Built-in - see [OpenAPI (and Swagger) plugin](openapi_plugin.md)                   |
-| Mock           | `rest`            | REST mocks.                            | Built-in - see [REST plugin](rest_plugin.md)                                       |
-| Mock           | `sfdc`            | SFDC (Salesforce) mocks.               | [SFDC (Salesforce) plugin](sfdc_plugin.md)                                         |
-| Mock           | `soap`            | SOAP (and WSDL) mocks.                 | Built-in - see [SOAP plugin](soap_plugin.md)                                       |
-| Mock           | `wiremock`        | WireMock mappings support.             | [WireMock plugin](wiremock_plugin.md)                                              |
-| Scripting      | `js-graal`        | Graal.js scripting.                    | Graal.js JavaScript scripting support                                              |
-| Scripting      | `js-nashorn`      | Nashorn scripting.                     | This is the default JavaScript script engine                                       |
-| Store          | `store-dynamodb`  | DynamoDB store implementation.         | [DynamoDB store](https://github.com/outofcoffee/imposter/tree/main/store/dynamodb) |
-| Store          | `store-redis`     | Redis store implementation.            | [Redis store](https://github.com/outofcoffee/imposter/tree/main/store/redis)       |
-| Store          | `store-graphql`   | GraphQL store queries.                 | [GraphQL](stores_graphql.md)                                                       |
-| Configuration  | `config-detector` | Detects plugins from `*-config` files. | Built-in                                                                           |
-| Configuration  | `meta-detector`   | Detects plugins from `META-INF`.       | Built-in                                                                           |
-| Data generator | `fake-data`       | Generates fake data.                   | [Fake data generator](fake_data.md)                                                |
+| Category       | Plugin name       | Description                            | Details                                                                                            |
+|----------------|-------------------|----------------------------------------|----------------------------------------------------------------------------------------------------|
+| Mock           | `hbase`           | HBase mocks.                           | See [HBase plugin](hbase_plugin.md).                                                               |
+| Mock           | `openapi`         | OpenAPI (and Swagger) mocks.           | Built-in. See [OpenAPI (and Swagger) plugin](openapi_plugin.md).                                   |
+| Mock           | `rest`            | REST mocks.                            | Built-in. See [REST plugin](rest_plugin.md).                                                       |
+| Mock           | `sfdc`            | SFDC (Salesforce) mocks.               | See [SFDC (Salesforce) plugin](sfdc_plugin.md).                                                    |
+| Mock           | `soap`            | SOAP (and WSDL) mocks.                 | Built-in. See [SOAP plugin](soap_plugin.md).                                                       |
+| Mock           | `wiremock`        | WireMock mappings support.             | See [WireMock plugin](wiremock_plugin.md).                                                         |
+| Scripting      | `js-graal`        | Graal.js scripting.                    | Graal.js JavaScript scripting support. See [Modern JavaScript features](./scripting_modern_js.md). |
+| Scripting      | `js-nashorn`      | Nashorn scripting.                     | This is the default JavaScript script engine                                                       |
+| Store          | `store-dynamodb`  | DynamoDB store implementation.         | See [DynamoDB store](https://github.com/outofcoffee/imposter/tree/main/store/dynamodb).            |
+| Store          | `store-redis`     | Redis store implementation.            | See [Redis store](https://github.com/outofcoffee/imposter/tree/main/store/redis).                  |
+| Store          | `store-graphql`   | GraphQL store queries.                 | See [GraphQL](stores_graphql.md).                                                                  |
+| Configuration  | `config-detector` | Detects plugins from `*-config` files. | Built-in                                                                                           |
+| Configuration  | `meta-detector`   | Detects plugins from `META-INF`.       | Built-in                                                                                           |
+| Data generator | `fake-data`       | Generates fake data.                   | See [Fake data generator](fake_data.md).                                                           |
 
 ## Plugin loading
 
@@ -57,4 +57,4 @@ For example:
         -p 8080:8080 \
         outofcoffee/imposter
 
-The Docker container sets the environment variable `IMPOSTER_PLUGIN_DIR=/opt/imposter/config`, so you do not have to set it explicitly.
+The Docker container sets the environment variable `IMPOSTER_PLUGIN_DIR=/opt/imposter/plugins`, so you do not have to set it explicitly.
