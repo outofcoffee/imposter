@@ -25,8 +25,6 @@ There are many ways to run Imposter. This section describes using the command li
 
 ## Installation
 
-> See the full [Installation](https://github.com/gatehill/imposter-cli/blob/main/docs/install.md) instructions for your system.
-
 ### Prerequisites
 
 You must have [Docker](https://docs.docker.com/get-docker/) or a JVM installed.
@@ -45,6 +43,10 @@ Or, use this one liner (macOS and Linux only):
 ```shell
 curl -L https://raw.githubusercontent.com/gatehill/imposter-cli/main/install/install_imposter.sh | bash -
 ```
+
+### Other installation options
+
+See the full [Installation](https://github.com/gatehill/imposter-cli/blob/main/docs/install.md) instructions for your system.
 
 ## Example
 
