@@ -1,6 +1,6 @@
-# Using modern JavaScript in scripts
+# Using modern JavaScript features in scripts
 
-The default JavaScript engine is Nashorn, which is based on ECMAScript 5.1. However, you can use modern JavaScript features by using the GraalVM JavaScript engine.
+The default JavaScript engine is Nashorn, which is based on ECMAScript 5.1. However, you can use modern JavaScript features by switching to the GraalVM JavaScript engine.
 
 ### Features
 
@@ -12,7 +12,7 @@ GraalVM enables you to use modern JavaScript features such as:
 - Destructuring
 - Classes
 
-To use the GraalVM JavaScript engine, you need to install the `js-graal` plugin.
+To use the GraalVM JavaScript engine, you need to be running Imposter v3.35.0 or later, and install the `js-graal` plugin.
 
 ## Install plugin
 
@@ -70,4 +70,4 @@ Hello Ada
 
 ### Advanced example
 
-See the `examples/graal/es6` directory for an example of using modern JavaScript features in a script.
+See the `examples/graal/es6` [directory](https://github.com/outofcoffee/imposter/blob/main/examples/graal) for an example of using modern JavaScript features in a script.
