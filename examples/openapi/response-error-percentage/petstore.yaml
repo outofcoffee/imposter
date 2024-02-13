@@ -1,0 +1,40 @@
+openapi: "3.0.1"
+
+info:
+  title: Sample Petstore service
+  version: "1.0.0"
+
+paths:
+  /pets:
+    get:
+      responses:
+        '200':
+          description: Returns all pets from the system
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - id
+                    - name
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+              examples:
+                itemsExample:
+                  value:
+                    [
+                      { "id": 101, "name": "Cat" },
+                      { "id": 102, "name": "Dog" }
+                    ]
+        '500':
+          description: Server error
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: An error occurred

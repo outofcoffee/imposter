@@ -1,0 +1,14 @@
+---
+plugin: openapi
+specFile: petstore.yaml
+
+resources:
+  - path: /pets
+    steps:
+      - type: script
+        code: |
+          if (Math.random() < 0.5) {
+            respond().withStatusCode(500);
+          } else {
+            respond().withStatusCode(200);
+          }
