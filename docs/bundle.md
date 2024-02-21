@@ -64,7 +64,10 @@ $ zip -ur imposter-awslambda.zip config
   adding: config/mock.txt (deflated 22%)
 ```
 
-The `imposter-bundle.zip` file can be [deployed to AWS Lambda](./run_imposter_aws_lambda.md) as normal.
+> **Note**
+> This command updates the existing ZIP file.
+
+The `imposter-awslambda.zip` file can be [deployed to AWS Lambda](./run_imposter_aws_lambda.md) as normal.
 
 ---
 
