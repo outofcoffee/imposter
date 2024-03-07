@@ -72,6 +72,8 @@ import io.gatehill.imposter.util.LogUtil.describeRequestShort
 import io.gatehill.imposter.util.MapUtil.addJavaTimeSupport
 import io.gatehill.imposter.util.ResourceUtil
 import io.gatehill.imposter.util.ResourceUtil.convertPathFromOpenApi
+import io.gatehill.imposter.util.completedUnitFuture
+import io.gatehill.imposter.util.makeFuture
 import io.swagger.util.Json
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.Operation
@@ -80,6 +82,7 @@ import io.swagger.v3.oas.models.media.Content
 import io.swagger.v3.oas.models.responses.ApiResponse
 import io.vertx.core.Vertx
 import org.apache.logging.log4j.LogManager
+import java.util.concurrent.CompletableFuture
 import javax.inject.Inject
 import kotlin.collections.component1
 import kotlin.collections.component2
@@ -197,7 +200,7 @@ class OpenApiPluginImpl @Inject constructor(
                 }
         )
         router.getWithRegex("$specPathPrefix$").handler(
-                resourceService.handleRoute(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
+                resourceService.handleRouteAndWrap(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
                     httpExchange.response
                             .putHeader("Location", "$specPathPrefix/")
                             .setStatusCode(HttpUtil.HTTP_MOVED_PERM)
@@ -266,7 +269,7 @@ class OpenApiPluginImpl @Inject constructor(
      *
      * @param httpExchange the HTTP exchange
      */
-    private fun handleCombinedSpec(httpExchange: HttpExchange) {
+    private fun handleCombinedSpec(httpExchange: HttpExchange): CompletableFuture<Unit> = makeFuture {
         try {
             httpExchange.response
                 .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_JSON)
@@ -295,7 +298,7 @@ class OpenApiPluginImpl @Inject constructor(
             LOGGER.trace("Operation ${operation.operationId} matched for request: ${describeRequestShort(httpExchange)}")
 
             if (!specificationService.isValidRequest(pluginConfig, httpExchange, allSpecs)) {
-                return@handleRoute
+                return@handleRoute completedUnitFuture()
             }
 
             val context = mutableMapOf<String, Any>()
@@ -326,7 +329,7 @@ class OpenApiPluginImpl @Inject constructor(
                         }
 
                     // attempt to serve an example from the specification, falling back if not present
-                    responseService.sendResponse(
+                    return@let responseService.sendResponse(
                         pluginConfig,
                         resourceConfig,
                         httpExchange,
@@ -340,7 +343,7 @@ class OpenApiPluginImpl @Inject constructor(
                         describeRequestShort(httpExchange),
                         responseBehaviour.statusCode
                     )
-                    response.end()
+                    makeFuture { response.end() }
                 }
             }
 

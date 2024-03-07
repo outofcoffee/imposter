@@ -58,6 +58,7 @@ import io.gatehill.imposter.util.FileUtil.findRow
 import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.HttpUtil.CONTENT_TYPE
 import io.gatehill.imposter.util.HttpUtil.CONTENT_TYPE_JSON
+import io.gatehill.imposter.util.makeFuture
 import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.json.JsonObject
@@ -89,7 +90,7 @@ class SfdcPluginImpl @Inject constructor(
     override fun configureRoutes(router: HttpRouter) {
         // oauth handler
         router.post("/services/oauth2/token").handler(
-            resourceService.handleRoute(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
+            resourceService.handleRouteAndWrap(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
                 LOGGER.info("Handling oauth request: {}", httpExchange.request.bodyAsString)
                 val authResponse = JsonObject()
                 authResponse.put("access_token", "dummyAccessToken")
@@ -116,22 +117,24 @@ class SfdcPluginImpl @Inject constructor(
 
                 // script should fire first
                 responseRoutingService.route(config, httpExchange) { responseBehaviour ->
-                    // enrich records
-                    val records = responseFileService.loadResponseAsJsonArray(config, responseBehaviour)
-                    for (i in 0 until records.size()) {
-                        addRecordAttributes(records.getJsonObject(i), apiVersion, config.sObjectName)
+                    makeFuture {
+                        // enrich records
+                        val records = responseFileService.loadResponseAsJsonArray(config, responseBehaviour)
+                        for (i in 0 until records.size()) {
+                            addRecordAttributes(records.getJsonObject(i), apiVersion, config.sObjectName)
+                        }
+
+                        val responseWrapper = JsonObject()
+                        responseWrapper.put("done", true)
+                        responseWrapper.put("records", records)
+                        responseWrapper.put("totalSize", records.size())
+                        LOGGER.info("Sending {} SObjects in response to query: {}", records.size(), query)
+
+                        httpExchange.response
+                            .putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON)
+                            .setStatusCode(HttpUtil.HTTP_OK)
+                            .end(Buffer.buffer(responseWrapper.encodePrettily()))
                     }
-
-                    val responseWrapper = JsonObject()
-                    responseWrapper.put("done", true)
-                    responseWrapper.put("records", records)
-                    responseWrapper.put("totalSize", records.size())
-                    LOGGER.info("Sending {} SObjects in response to query: {}", records.size(), query)
-
-                    httpExchange.response
-                        .putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON)
-                        .setStatusCode(HttpUtil.HTTP_OK)
-                        .end(Buffer.buffer(responseWrapper.encodePrettily()))
                 }
             }
         )
@@ -141,28 +144,30 @@ class SfdcPluginImpl @Inject constructor(
             val handler = resourceService.handleRoute(imposterConfig, config, resourceMatcher) { httpExchange: HttpExchange ->
                 // script should fire first
                 responseRoutingService.route(config, httpExchange) { responseBehaviour ->
-                    val request = httpExchange.request
-                    val apiVersion = request.getPathParam("apiVersion")!!
-                    val sObjectId = request.getPathParam("sObjectId")
+                    makeFuture {
+                        val request = httpExchange.request
+                        val apiVersion = request.getPathParam("apiVersion")!!
+                        val sObjectId = request.getPathParam("sObjectId")
 
-                    // find and enrich record
-                    val result = findRow(
-                        idFieldName = FIELD_ID,
-                        rowId = sObjectId,
-                        rows = responseFileService.loadResponseAsJsonArray(config, responseBehaviour)
-                    )?.let { r: JsonObject -> addRecordAttributes(r, apiVersion, config.sObjectName) }
+                        // find and enrich record
+                        val result = findRow(
+                            idFieldName = FIELD_ID,
+                            rowId = sObjectId,
+                            rows = responseFileService.loadResponseAsJsonArray(config, responseBehaviour)
+                        )?.let { r: JsonObject -> addRecordAttributes(r, apiVersion, config.sObjectName) }
 
-                    val response = httpExchange.response
+                        val response = httpExchange.response
 
-                    result?.let {
-                        LOGGER.info("Sending SObject with ID: {}", sObjectId)
-                        response.putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON)
-                            .setStatusCode(HttpUtil.HTTP_OK)
-                            .end(Buffer.buffer(result.encodePrettily()))
-                    } ?: run {
-                        // no such record
-                        LOGGER.error("{} SObject with ID: {} not found", config.sObjectName, sObjectId)
-                        response.setStatusCode(HttpUtil.HTTP_NOT_FOUND).end()
+                        result?.let {
+                            LOGGER.info("Sending SObject with ID: {}", sObjectId)
+                            response.putHeader(CONTENT_TYPE, CONTENT_TYPE_JSON)
+                                .setStatusCode(HttpUtil.HTTP_OK)
+                                .end(Buffer.buffer(result.encodePrettily()))
+                        } ?: run {
+                            // no such record
+                            LOGGER.error("{} SObject with ID: {} not found", config.sObjectName, sObjectId)
+                            response.setStatusCode(HttpUtil.HTTP_NOT_FOUND).end()
+                        }
                     }
                 }
             }
@@ -171,7 +176,7 @@ class SfdcPluginImpl @Inject constructor(
 
         // create SObject handler
         router.post("/services/data/:apiVersion/sobjects/:sObjectName").handler(
-            resourceService.handleRoute(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
+            resourceService.handleRouteAndWrap(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
                 val request = httpExchange.request
                 val sObjectName = request.getPathParam("sObjectName")
                 val sObject = request.bodyAsJson
@@ -199,7 +204,7 @@ class SfdcPluginImpl @Inject constructor(
      * @return
      */
     private fun handleUpdateRequest(): HttpExchangeFutureHandler {
-        return resourceService.handleRoute(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
+        return resourceService.handleRouteAndWrap(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
             val request = httpExchange.request
             val sObjectName = request.getPathParam("sObjectName")
             val sObjectId = request.getPathParam("sObjectId")
@@ -210,7 +215,7 @@ class SfdcPluginImpl @Inject constructor(
                 && "PATCH" != request.getQueryParam("_HttpMethod")
             ) {
                 httpExchange.fail(HttpUtil.HTTP_BAD_METHOD)
-                return@handleRoute
+                return@handleRouteAndWrap
             }
             LOGGER.info("Received update request for {} with ID: {}: {}", sObjectName, sObjectId, sObject)
             httpExchange.response

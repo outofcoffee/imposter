@@ -90,6 +90,16 @@ interface ResourceService {
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>,
         resourceMatcher: ResourceMatcher,
+        httpExchangeHandler: HttpExchangeFutureHandler,
+    ): HttpExchangeFutureHandler
+
+    /**
+     * Same as [handleRoute] but wraps [httpExchangeHandler] in a future.
+     */
+    fun handleRouteAndWrap(
+        imposterConfig: ImposterConfig,
+        allPluginConfigs: List<PluginConfig>,
+        resourceMatcher: ResourceMatcher,
         httpExchangeHandler: HttpExchangeHandler,
     ): HttpExchangeFutureHandler
 
@@ -116,6 +126,16 @@ interface ResourceService {
      * @return the handler
      */
     fun handleRoute(
+        imposterConfig: ImposterConfig,
+        pluginConfig: PluginConfig,
+        resourceMatcher: ResourceMatcher,
+        httpExchangeHandler: HttpExchangeFutureHandler,
+    ): HttpExchangeFutureHandler
+
+    /**
+     * Same as [handleRoute] but wraps [httpExchangeHandler] in a future.
+     */
+    fun handleRouteAndWrap(
         imposterConfig: ImposterConfig,
         pluginConfig: PluginConfig,
         resourceMatcher: ResourceMatcher,

@@ -82,7 +82,7 @@ class ResponseRoutingServiceImpl @Inject constructor(
         statusCodeFactory: StatusCodeFactory,
         responseBehaviourFactory: ResponseBehaviourFactory,
         defaultBehaviourHandler: DefaultBehaviourHandler,
-    ): CompletableFuture<Unit> = makeFuture {
+    ): CompletableFuture<Unit> {
         try {
             engineLifecycle.forEach { listener: EngineLifecycleListener ->
                 listener.beforeBuildingResponse(httpExchange, resourceConfig)
@@ -96,17 +96,21 @@ class ResponseRoutingServiceImpl @Inject constructor(
                 responseBehaviourFactory
             )
             if (ResponseBehaviourType.SHORT_CIRCUIT == responseBehaviour.behaviourType) {
-                httpExchange.response
-                    .setStatusCode(responseBehaviour.statusCode)
-                    .end()
+                return makeFuture {
+                    httpExchange.response
+                        .setStatusCode(responseBehaviour.statusCode)
+                        .end()
+                }
             } else {
                 // default behaviour
-                defaultBehaviourHandler(responseBehaviour)
+                return defaultBehaviourHandler(responseBehaviour)
             }
         } catch (e: Exception) {
             val msg = "Error sending mock response for ${LogUtil.describeRequest(httpExchange)}"
             logger.error(msg, e)
-            httpExchange.fail(ResponseException(msg, e))
+            return makeFuture {
+                httpExchange.fail(ResponseException(msg, e))
+            }
         }
     }
 

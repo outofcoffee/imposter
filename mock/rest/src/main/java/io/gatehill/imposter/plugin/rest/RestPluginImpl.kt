@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2016-2024.
  *
  * This file is part of Imposter.
  *
@@ -43,7 +43,11 @@
 package io.gatehill.imposter.plugin.rest
 
 import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.http.*
+import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.http.HttpMethod
+import io.gatehill.imposter.http.HttpRouter
+import io.gatehill.imposter.http.SingletonResourceMatcher
+import io.gatehill.imposter.http.UniqueRoute
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin
 import io.gatehill.imposter.plugin.config.ContentTypedConfig
@@ -59,8 +63,10 @@ import io.gatehill.imposter.util.FileUtil.findRow
 import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.ResourceUtil
+import io.gatehill.imposter.util.makeFuture
 import io.vertx.core.Vertx
 import org.apache.logging.log4j.LogManager
+import java.util.concurrent.CompletableFuture
 import java.util.regex.Pattern
 import javax.inject.Inject
 
@@ -143,12 +149,12 @@ open class RestPluginImpl @Inject constructor(
         resourceConfig: ContentTypedConfig,
         httpExchange: HttpExchange,
         responseBehaviour: ResponseBehaviour,
-    ) {
+    ): CompletableFuture<Unit> {
         LOGGER.info(
             "Handling object request for: {}",
             LogUtil.describeRequestShort(httpExchange)
         )
-        responseService.sendResponse(pluginConfig, resourceConfig, httpExchange, responseBehaviour)
+        return responseService.sendResponse(pluginConfig, resourceConfig, httpExchange, responseBehaviour)
     }
 
     private fun handleArray(
@@ -156,7 +162,7 @@ open class RestPluginImpl @Inject constructor(
         resourceConfig: ContentTypedConfig,
         httpExchange: HttpExchange,
         responseBehaviour: ResponseBehaviour,
-    ) {
+    ): CompletableFuture<Unit> = makeFuture {
         // validate path includes parameter
         val resourcePath = resourceConfig.path ?: ""
         val matcher = PARAM_MATCHER.matcher(resourcePath)

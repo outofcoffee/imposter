@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2016-2024.
  *
  * This file is part of Imposter.
  *
@@ -68,6 +68,8 @@ import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.HttpUtil.CONTENT_TYPE_JSON
 import io.gatehill.imposter.util.HttpUtil.readAcceptedContentTypes
 import io.gatehill.imposter.util.InjectorUtil
+import io.gatehill.imposter.util.completedUnitFuture
+import io.gatehill.imposter.util.makeFuture
 import io.vertx.core.Vertx
 import org.apache.logging.log4j.LogManager
 import javax.inject.Inject
@@ -143,7 +145,7 @@ class HBasePluginImpl @Inject constructor(
                     httpExchange.response
                         .setStatusCode(HttpUtil.HTTP_NOT_FOUND)
                         .end()
-                    return@handleRoute
+                    return@handleRoute completedUnitFuture()
                 } else {
                     LOGGER.info("Received request for row with ID: {} for table: {}", recordId, tableName)
                     config = tableConfigs[tableName]!!
@@ -157,19 +159,21 @@ class HBasePluginImpl @Inject constructor(
                     scannerFilterPrefix = null
                 )
                 responseRoutingService.route(config, httpExchange, bindings) { responseBehaviour ->
-                    // find the right row from results
-                    val results = responseFileService.loadResponseAsJsonArray(config, responseBehaviour)
-                    val result = findRow(config.idField, recordInfo.recordId, results)
-                    val response = httpExchange.response
+                    makeFuture {
+                        // find the right row from results
+                        val results = responseFileService.loadResponseAsJsonArray(config, responseBehaviour)
+                        val result = findRow(config.idField, recordInfo.recordId, results)
+                        val response = httpExchange.response
 
-                    result?.let {
-                        val serialiser = findSerialiser(httpExchange)
-                        val buffer = serialiser.serialise(tableName, recordInfo.recordId, result)
-                        response.setStatusCode(HttpUtil.HTTP_OK).end(buffer)
-                    } ?: run {
-                        // no such record
-                        LOGGER.error("No row found with ID: {} for table: {}", recordInfo.recordId, tableName)
-                        response.setStatusCode(HttpUtil.HTTP_NOT_FOUND).end()
+                        result?.let {
+                            val serialiser = findSerialiser(httpExchange)
+                            val buffer = serialiser.serialise(tableName, recordInfo.recordId, result)
+                            response.setStatusCode(HttpUtil.HTTP_OK).end(buffer)
+                        } ?: run {
+                            // no such record
+                            LOGGER.error("No row found with ID: {} for table: {}", recordInfo.recordId, tableName)
+                            response.setStatusCode(HttpUtil.HTTP_NOT_FOUND).end()
+                        }
                     }
                 }
             })
@@ -194,7 +198,7 @@ class HBasePluginImpl @Inject constructor(
                     httpExchange.response
                         .setStatusCode(HttpUtil.HTTP_NOT_FOUND)
                         .end()
-                    return@handleRoute
+                    return@handleRoute completedUnitFuture()
                 }
                 LOGGER.info("Received scanner request for table: {}", tableName)
                 val config = tableConfigs[tableName]!!
@@ -204,7 +208,7 @@ class HBasePluginImpl @Inject constructor(
                     deserialiser.decodeScanner(httpExchange)
                 } catch (e: Exception) {
                     httpExchange.fail(e)
-                    return@handleRoute
+                    return@handleRoute completedUnitFuture()
                 }
                 val scannerFilterPrefix = deserialiser.decodeScannerFilterPrefix(scanner)
                 LOGGER.debug(
@@ -223,18 +227,20 @@ class HBasePluginImpl @Inject constructor(
                         scannerFilterPrefix, config.prefix
                     )
                     httpExchange.fail(HttpUtil.HTTP_INTERNAL_ERROR)
-                    return@handleRoute
+                    return@handleRoute completedUnitFuture()
                 }
 
                 // script should fire first
                 val bindings = buildScriptBindings(ResponsePhase.SCANNER, tableName, null, scannerFilterPrefix)
                 responseRoutingService.route(config, httpExchange, bindings) {
-                    val scannerId = scannerService.registerScanner(config, scanner)
-                    val resultUrl = imposterConfig.serverUrl + path + "/" + tableName + "/scanner/" + scannerId
-                    httpExchange.response
-                        .putHeader("Location", resultUrl)
-                        .setStatusCode(HttpUtil.HTTP_CREATED)
-                        .end()
+                    makeFuture {
+                        val scannerId = scannerService.registerScanner(config, scanner)
+                        val resultUrl = imposterConfig.serverUrl + path + "/" + tableName + "/scanner/" + scannerId
+                        httpExchange.response
+                            .putHeader("Location", resultUrl)
+                            .setStatusCode(HttpUtil.HTTP_CREATED)
+                            .end()
+                    }
                 }
             })
     }
@@ -263,7 +269,7 @@ class HBasePluginImpl @Inject constructor(
                     httpExchange.response
                         .setStatusCode(HttpUtil.HTTP_NOT_FOUND)
                         .end()
-                    return@handleRoute
+                    return@handleRoute completedUnitFuture()
                 }
 
                 // check that the scanner was created
@@ -277,7 +283,7 @@ class HBasePluginImpl @Inject constructor(
                     httpExchange.response
                         .setStatusCode(HttpUtil.HTTP_NOT_FOUND)
                         .end()
-                    return@handleRoute
+                    return@handleRoute completedUnitFuture()
                 }
                 LOGGER.info(
                     "Received result request for {} rows from scanner {} for table: {}",
@@ -297,13 +303,15 @@ class HBasePluginImpl @Inject constructor(
                     scannerFilterPrefix = deserialiser.decodeScannerFilterPrefix(scanner.scanner)
                 )
                 responseRoutingService.route(config, httpExchange, bindings) { responseBehaviour ->
-                    // build results
-                    val results = responseFileService.loadResponseAsJsonArray(config, responseBehaviour)
-                    val serialiser = findSerialiser(httpExchange)
-                    val buffer = serialiser.serialise(tableName, scannerId, results, scanner, rows)
-                    httpExchange.response
-                        .setStatusCode(HttpUtil.HTTP_OK)
-                        .end(buffer)
+                    makeFuture {
+                        // build results
+                        val results = responseFileService.loadResponseAsJsonArray(config, responseBehaviour)
+                        val serialiser = findSerialiser(httpExchange)
+                        val buffer = serialiser.serialise(tableName, scannerId, results, scanner, rows)
+                        httpExchange.response
+                            .setStatusCode(HttpUtil.HTTP_OK)
+                            .end(buffer)
+                    }
                 }
             })
     }

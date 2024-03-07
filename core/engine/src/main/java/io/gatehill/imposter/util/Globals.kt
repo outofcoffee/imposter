@@ -73,5 +73,7 @@ fun <T>makeFuture(block: (CompletableFuture<T>) -> T): CompletableFuture<T> {
     return future
 }
 
+fun completedUnitFuture(): CompletableFuture<Unit> = CompletableFuture.completedFuture(Unit)
+
 val supervisedDefaultCoroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 val supervisedIOCoroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())

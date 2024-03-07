@@ -94,12 +94,12 @@ class StoreRestApiServiceImpl @Inject constructor(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>
     ): HttpExchangeFutureHandler {
-        return resourceService.handleRoute(imposterConfig, allPluginConfigs, resourceMatcher) { httpExchange: HttpExchange ->
+        return resourceService.handleRouteAndWrap(imposterConfig, allPluginConfigs, resourceMatcher) { httpExchange: HttpExchange ->
             val request = httpExchange.request
             val storeName = request.getPathParam("storeName")!!
             val store = openStore(storeName)
             if (Objects.isNull(store)) {
-                return@handleRoute
+                return@handleRouteAndWrap
             }
 
             if (httpExchange.isAcceptHeaderEmpty() || httpExchange.acceptsMimeType(HttpUtil.CONTENT_TYPE_JSON)) {
@@ -127,7 +127,7 @@ class StoreRestApiServiceImpl @Inject constructor(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>
     ): HttpExchangeFutureHandler {
-        return resourceService.handleRoute(imposterConfig, allPluginConfigs, resourceMatcher) { httpExchange: HttpExchange ->
+        return resourceService.handleRouteAndWrap(imposterConfig, allPluginConfigs, resourceMatcher) { httpExchange: HttpExchange ->
             val storeName = httpExchange.request.getPathParam("storeName")!!
             storeFactory.clearStore(storeName, ephemeral = false)
             LOGGER.debug("Deleted store: {}", storeName)
@@ -142,12 +142,12 @@ class StoreRestApiServiceImpl @Inject constructor(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>
     ): HttpExchangeFutureHandler {
-        return resourceService.handleRoute(imposterConfig, allPluginConfigs, resourceMatcher) { httpExchange: HttpExchange ->
+        return resourceService.handleRouteAndWrap(imposterConfig, allPluginConfigs, resourceMatcher) { httpExchange: HttpExchange ->
             val request = httpExchange.request
             val storeName = request.getPathParam("storeName")!!
             val store = openStore(storeName)
             if (Objects.isNull(store)) {
-                return@handleRoute
+                return@handleRouteAndWrap
             }
 
             val key = request.getPathParam("key")!!
@@ -175,12 +175,12 @@ class StoreRestApiServiceImpl @Inject constructor(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>
     ): HttpExchangeFutureHandler {
-        return resourceService.handleRoute(imposterConfig, allPluginConfigs, resourceMatcher) { httpExchange: HttpExchange ->
+        return resourceService.handleRouteAndWrap(imposterConfig, allPluginConfigs, resourceMatcher) { httpExchange: HttpExchange ->
             val request = httpExchange.request
             val storeName = request.getPathParam("storeName")!!
             val store = openStore(storeName)
             if (Objects.isNull(store)) {
-                return@handleRoute
+                return@handleRouteAndWrap
             }
             val key = request.getPathParam("key")!!
 
@@ -204,12 +204,12 @@ class StoreRestApiServiceImpl @Inject constructor(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>
     ): HttpExchangeFutureHandler {
-        return resourceService.handleRoute(imposterConfig, allPluginConfigs, resourceMatcher) { httpExchange: HttpExchange ->
+        return resourceService.handleRouteAndWrap(imposterConfig, allPluginConfigs, resourceMatcher) { httpExchange: HttpExchange ->
             val request = httpExchange.request
             val storeName = request.getPathParam("storeName")!!
             val store = openStore(storeName)
             if (Objects.isNull(store)) {
-                return@handleRoute
+                return@handleRouteAndWrap
             }
 
             val items = request.bodyAsJson
@@ -227,12 +227,12 @@ class StoreRestApiServiceImpl @Inject constructor(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>
     ): HttpExchangeFutureHandler {
-        return resourceService.handleRoute(imposterConfig, allPluginConfigs, resourceMatcher) { httpExchange: HttpExchange ->
+        return resourceService.handleRouteAndWrap(imposterConfig, allPluginConfigs, resourceMatcher) { httpExchange: HttpExchange ->
             val request = httpExchange.request
             val storeName = request.getPathParam("storeName")!!
             val store = openStore(storeName)
             if (Objects.isNull(store)) {
-                return@handleRoute
+                return@handleRouteAndWrap
             }
 
             val key = request.getPathParam("key")!!

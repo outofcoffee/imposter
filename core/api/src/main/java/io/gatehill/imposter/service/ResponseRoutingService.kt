@@ -53,7 +53,7 @@ import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.script.ResponseBehaviour
 import java.util.concurrent.CompletableFuture
 
-typealias DefaultBehaviourHandler = (ResponseBehaviour) -> Unit
+typealias DefaultBehaviourHandler = (ResponseBehaviour) -> CompletableFuture<Unit>
 
 /**
  * Main entrypoint for response routing.
