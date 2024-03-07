@@ -69,14 +69,15 @@ import io.gatehill.imposter.server.ServerFactory
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.LogUtil.describeRequest
 import io.gatehill.imposter.util.ResourceUtil
+import io.gatehill.imposter.util.completedUnitFuture
 import io.gatehill.imposter.util.makeFuture
-import io.vertx.core.Handler
-import io.vertx.core.Promise
 import io.vertx.core.Vertx
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
 import java.io.File
 import java.util.UUID
+import java.util.concurrent.Callable
+import java.util.concurrent.CompletableFuture
 import java.util.regex.Pattern
 import javax.inject.Inject
 
@@ -119,7 +120,7 @@ class ResourceServiceImpl @Inject constructor(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>,
         resourceMatcher: ResourceMatcher,
-        httpExchangeHandler: HttpExchangeHandler,
+        httpExchangeHandler: HttpExchangeFutureHandler,
     ): HttpExchangeFutureHandler {
         val selectedConfig = securityService.findConfigPreferringSecurityPolicy(allPluginConfigs)
         return handleRoute(imposterConfig, selectedConfig, resourceMatcher, httpExchangeHandler)
@@ -132,43 +133,54 @@ class ResourceServiceImpl @Inject constructor(
         imposterConfig: ImposterConfig,
         pluginConfig: PluginConfig,
         resourceMatcher: ResourceMatcher,
-        httpExchangeHandler: HttpExchangeHandler,
+        httpExchangeHandler: HttpExchangeFutureHandler,
     ): HttpExchangeFutureHandler {
         val resolvedResourceConfigs = resolveResourceConfigs(pluginConfig)
         return when (imposterConfig.requestHandlingMode) {
             RequestHandlingMode.SYNC -> { httpExchange: HttpExchange ->
-                makeFuture {
-                    try {
-                        handleResource(pluginConfig, httpExchangeHandler, httpExchange, resolvedResourceConfigs, resourceMatcher)
-                    } catch (e: Exception) {
-                        handleFailure(httpExchange, e)
-                    }
-                }
+                handleResource(pluginConfig, httpExchangeHandler, httpExchange, resolvedResourceConfigs, resourceMatcher)
             }
 
             RequestHandlingMode.ASYNC -> { httpExchange: HttpExchange ->
-                val handler = Handler<Promise<Unit>> { promise ->
-                    try {
+                makeFuture { future ->
+                    val handler = Callable {
                         handleResource(pluginConfig, httpExchangeHandler, httpExchange, resolvedResourceConfigs, resourceMatcher)
-                        promise.complete()
-                    } catch (e: Exception) {
-                        promise.fail(e)
+                            .thenApply { future.complete(it) }
+                            .exceptionally { future.completeExceptionally(it) }
                     }
-                }
 
-                makeFuture {
                     // explicitly disable ordered execution - responses should not block each other
                     // as this causes head of line blocking performance issues
-                    vertx.orCreateContext.executeBlocking(handler, false) { result ->
-                        if (result.failed()) {
-                            handleFailure(httpExchange, result.cause())
-                        }
-                    }
+                    vertx.orCreateContext.executeBlocking(handler, false)
                 }
             }
 
             else -> throw UnsupportedOperationException("Unsupported request handling mode: " + imposterConfig.requestHandlingMode)
         }
+    }
+
+    override fun handleRouteAndWrap(
+        imposterConfig: ImposterConfig,
+        allPluginConfigs: List<PluginConfig>,
+        resourceMatcher: ResourceMatcher,
+        httpExchangeHandler: HttpExchangeHandler,
+    ): HttpExchangeFutureHandler {
+        val wrapped: HttpExchangeFutureHandler = { httpExchange ->
+            makeFuture { httpExchangeHandler(httpExchange) }
+        }
+        return handleRoute(imposterConfig, allPluginConfigs, resourceMatcher, wrapped)
+    }
+
+    override fun handleRouteAndWrap(
+        imposterConfig: ImposterConfig,
+        pluginConfig: PluginConfig,
+        resourceMatcher: ResourceMatcher,
+        httpExchangeHandler: HttpExchangeHandler
+    ): HttpExchangeFutureHandler {
+        val wrapped: HttpExchangeFutureHandler = { httpExchange ->
+            makeFuture { httpExchangeHandler(httpExchange) }
+        }
+        return handleRoute(imposterConfig, pluginConfig, resourceMatcher, wrapped)
     }
 
     override fun passthroughRoute(
@@ -275,45 +287,59 @@ class ResourceServiceImpl @Inject constructor(
 
     private fun handleResource(
         pluginConfig: PluginConfig,
-        httpExchangeHandler: HttpExchangeHandler,
+        httpExchangeHandler: HttpExchangeFutureHandler,
         httpExchange: HttpExchange,
         resolvedResourceConfigs: List<ResolvedResourceConfig>,
         resourceMatcher: ResourceMatcher,
-    ) {
-        httpExchange.put(LogUtil.KEY_REQUEST_START, System.nanoTime())
+    ): CompletableFuture<Unit> {
+        try {
+            httpExchange.put(LogUtil.KEY_REQUEST_START, System.nanoTime())
 
-        // every request has a unique ID
-        val requestId = UUID.randomUUID().toString()
-        httpExchange.put(ResourceUtil.RC_REQUEST_ID_KEY, requestId)
+            // every request has a unique ID
+            val requestId = UUID.randomUUID().toString()
+            httpExchange.put(ResourceUtil.RC_REQUEST_ID_KEY, requestId)
 
-        val response = httpExchange.response
+            val response = httpExchange.response
 
-        if (shouldAddEngineResponseHeaders) {
-            response.putHeader("X-Imposter-Request", requestId)
-            response.putHeader("Server", "imposter")
-        }
-
-        val rootResourceConfig = (pluginConfig as BasicResourceConfig?)!!
-
-        val resourceConfig = resourceMatcher.matchResourceConfig(pluginConfig, resolvedResourceConfigs, httpExchange)
-            ?: rootResourceConfig
-
-        // allows plugins to customise behaviour
-        httpExchange.put(ResourceUtil.RESOURCE_CONFIG_KEY, resourceConfig)
-
-        if (isRequestPermitted(rootResourceConfig, resourceConfig, resolvedResourceConfigs, httpExchange)) {
-            if (shouldForwardToUpstream(pluginConfig, resourceConfig, httpExchange)) {
-                upstreamService.forwardToUpstream(pluginConfig as UpstreamsHolder, resourceConfig as PassthroughResourceConfig, httpExchange)
-            } else {
-                try {
-                    httpExchangeHandler(httpExchange)
-                    LogUtil.logCompletion(httpExchange)
-                } finally {
-                    httpExchange.phase = ExchangePhase.REQUEST_DISPATCHED
-                }
+            if (shouldAddEngineResponseHeaders) {
+                response.putHeader("X-Imposter-Request", requestId)
+                response.putHeader("Server", "imposter")
             }
-        } else {
-            LOGGER.trace("Request {} was not permitted to continue", describeRequest(httpExchange, requestId))
+
+            val rootResourceConfig = (pluginConfig as BasicResourceConfig?)!!
+
+            val resourceConfig = resourceMatcher.matchResourceConfig(pluginConfig, resolvedResourceConfigs, httpExchange)
+                ?: rootResourceConfig
+
+            // allows plugins to customise behaviour
+            httpExchange.put(ResourceUtil.RESOURCE_CONFIG_KEY, resourceConfig)
+
+            if (isRequestPermitted(rootResourceConfig, resourceConfig, resolvedResourceConfigs, httpExchange)) {
+                if (shouldForwardToUpstream(pluginConfig, resourceConfig, httpExchange)) {
+                    return upstreamService.forwardToUpstream(
+                        pluginConfig as UpstreamsHolder,
+                        resourceConfig as PassthroughResourceConfig,
+                        httpExchange
+                    )
+                } else {
+                    try {
+                        val future = httpExchangeHandler(httpExchange)
+                        LogUtil.logCompletion(httpExchange)
+                        return future
+                    } finally {
+                        httpExchange.phase = ExchangePhase.REQUEST_DISPATCHED
+                    }
+                }
+            } else {
+                LOGGER.trace("Request {} was not permitted to continue", describeRequest(httpExchange, requestId))
+                return completedUnitFuture()
+            }
+        } catch (e: Exception) {
+            return makeFuture {
+                httpExchange.fail(
+                    RuntimeException("Unhandled exception processing request ${describeRequest(httpExchange)}", e)
+                )
+            }
         }
     }
 
@@ -336,12 +362,6 @@ class ResourceServiceImpl @Inject constructor(
         httpExchange: HttpExchange,
     ) = securityLifecycle.allMatch { listener: SecurityLifecycleListener ->
         listener.isRequestPermitted(rootResourceConfig, resourceConfig, resolvedResourceConfigs, httpExchange)
-    }
-
-    private fun handleFailure(httpExchange: HttpExchange, e: Throwable) {
-        httpExchange.fail(
-            RuntimeException("Unhandled exception processing request ${describeRequest(httpExchange)}", e)
-        )
     }
 
     companion object {

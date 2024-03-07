@@ -72,9 +72,12 @@ import io.gatehill.imposter.service.ResponseService.ResponseSender
 import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.ResourceUtil
+import io.gatehill.imposter.util.completedUnitFuture
+import io.gatehill.imposter.util.makeFuture
 import io.vertx.core.Vertx
 import org.apache.logging.log4j.LogManager
 import java.io.File
+import java.util.concurrent.CompletableFuture
 import javax.inject.Inject
 import kotlin.collections.set
 
@@ -165,13 +168,13 @@ class SoapPluginImpl @Inject constructor(
                         httpExchange.request.body?.let { body -> SoapUtil.parseBody(config, body) } ?: run {
                             LOGGER.warn("No request body - unable to parse SOAP message")
                             httpExchange.response.setStatusCode(400).end()
-                            return@handleRoute
+                            return@handleRoute completedUnitFuture()
                         }
                     }
                     else -> {
                         LOGGER.warn("Unsupported binding type: ${binding.type} - unable to parse request")
                         httpExchange.response.setStatusCode(400).end()
-                        return@handleRoute
+                        return@handleRoute completedUnitFuture()
                     }
                 }
 
@@ -179,14 +182,14 @@ class SoapPluginImpl @Inject constructor(
                 val operation = soapResourceMatcher.determineOperation(soapAction, bodyHolder) ?: run {
                     httpExchange.response.setStatusCode(404).end()
                     LOGGER.warn("Unable to find a matching binding operation using SOAPAction or SOAP request body")
-                    return@handleRoute
+                    return@handleRoute completedUnitFuture()
                 }
                 check(operation.style.equals("document", ignoreCase = true)) {
                     "Only document SOAP bindings are supported"
                 }
 
                 LOGGER.debug("Matched operation: ${operation.name} in binding ${binding.name}")
-                handle(config, parser, binding, operation, httpExchange, bodyHolder, soapAction)
+                return@handleRoute handle(config, parser, binding, operation, httpExchange, bodyHolder, soapAction)
             }
         )
     }
@@ -210,7 +213,7 @@ class SoapPluginImpl @Inject constructor(
         httpExchange: HttpExchange,
         bodyHolder: MessageBodyHolder,
         soapAction: String?,
-    ) {
+    ): CompletableFuture<Unit> {
         val statusCodeFactory = DefaultStatusCodeFactory.instance
         val responseBehaviourFactory = DefaultResponseBehaviourFactory.instance
         val resourceConfig = httpExchange.get<BasicResourceConfig>(ResourceUtil.RESOURCE_CONFIG_KEY)
@@ -240,7 +243,7 @@ class SoapPluginImpl @Inject constructor(
                 }
 
                 // attempt to serve the example, falling back if not present
-                responseService.sendResponse(
+                return@let responseService.sendResponse(
                     pluginConfig,
                     resourceConfig,
                     httpExchange,
@@ -254,7 +257,7 @@ class SoapPluginImpl @Inject constructor(
                     LogUtil.describeRequestShort(httpExchange),
                     responseBehaviour.statusCode,
                 )
-                response.end()
+                makeFuture { response.end() }
             }
         }
 
@@ -264,7 +267,7 @@ class SoapPluginImpl @Inject constructor(
         )
         soapAction?.let { context["soapAction"] = it }
 
-        responseRoutingService.route(
+        return responseRoutingService.route(
             pluginConfig,
             resourceConfig,
             httpExchange,

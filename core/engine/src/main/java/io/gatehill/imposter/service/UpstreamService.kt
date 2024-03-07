@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2023.
+ * Copyright (c) 2023-2024.
  *
  * This file is part of Imposter.
  *
@@ -50,12 +50,18 @@ import io.gatehill.imposter.plugin.config.resource.PassthroughResourceConfig
 import io.gatehill.imposter.plugin.config.resource.UpstreamsHolder
 import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.LogUtil
+import io.gatehill.imposter.util.makeFuture
 import io.vertx.core.buffer.Buffer
-import okhttp3.*
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.Response
 import org.apache.logging.log4j.LogManager
 import java.io.IOException
 import java.net.URI
+import java.util.concurrent.CompletableFuture
 import javax.inject.Inject
 
 /**
@@ -73,7 +79,7 @@ class UpstreamService @Inject constructor(
         pluginConfig: UpstreamsHolder,
         resourceConfig: PassthroughResourceConfig,
         httpExchange: HttpExchange,
-    ) {
+    ): CompletableFuture<Unit> = makeFuture {
         logger.info("Forwarding request ${LogUtil.describeRequest(httpExchange)} to upstream ${resourceConfig.passthrough}")
         val call = buildCall(pluginConfig, resourceConfig, httpExchange)
         if (logger.isTraceEnabled) {

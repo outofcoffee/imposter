@@ -53,6 +53,7 @@ import io.gatehill.imposter.server.HttpServer
 import io.gatehill.imposter.server.ServerFactory
 import io.gatehill.imposter.service.ResponseFileService
 import io.gatehill.imposter.service.ResponseService
+import io.gatehill.imposter.util.completedUnitFuture
 import io.gatehill.imposter.util.makeFuture
 import io.vertx.core.Vertx
 import io.vertx.core.http.impl.HttpUtils
@@ -82,9 +83,7 @@ class LambdaServerFactory @Inject constructor(
         return CompletableFuture.completedFuture(activeServer)
     }
 
-    override fun createBodyHttpHandler(): HttpExchangeFutureHandler = {
-        CompletableFuture.completedFuture(Unit)
-    }
+    override fun createBodyHttpHandler(): HttpExchangeFutureHandler = { completedUnitFuture() }
 
     override fun createStaticHttpHandler(root: String, relative: Boolean): HttpExchangeFutureHandler {
         val pluginConfig = PluginConfigImpl().apply {
@@ -114,9 +113,7 @@ class LambdaServerFactory @Inject constructor(
         }
     }
 
-    override fun createMetricsHandler(): HttpExchangeFutureHandler = {
-        CompletableFuture.completedFuture(Unit)
-    }
+    override fun createMetricsHandler(): HttpExchangeFutureHandler = { completedUnitFuture() }
 
     companion object {
         private const val indexFile = "index.html"

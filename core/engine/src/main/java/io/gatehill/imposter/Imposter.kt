@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2016-2024.
  *
  * This file is part of Imposter.
  *
@@ -210,7 +210,7 @@ class Imposter(
 
         // status check to indicate when server is up
         router.get("/system/status").handler(
-            resourceService.handleRoute(imposterConfig, allConfigs, resourceMatcher) { httpExchange ->
+            resourceService.handleRouteAndWrap(imposterConfig, allConfigs, resourceMatcher) { httpExchange ->
                 httpExchange.response
                     .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_JSON)
                     .end(HttpUtil.buildStatusResponse())

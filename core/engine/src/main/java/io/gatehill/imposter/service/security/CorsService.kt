@@ -102,7 +102,7 @@ class CorsService @Inject constructor(
         resourceMatcher: ResourceMatcher,
         cors: CorsConfig,
     ): HttpExchangeFutureHandler {
-        return resourceService.handleRoute(imposterConfig, selectedConfig, resourceMatcher) { exchange: HttpExchange ->
+        return resourceService.handleRouteAndWrap(imposterConfig, selectedConfig, resourceMatcher) { exchange: HttpExchange ->
             val origin = determineResponseOrigin(cors, exchange.request)
             origin?.let {
                 logger.debug("Serving CORS pre-flight request: ${LogUtil.describeRequest(exchange)}")
