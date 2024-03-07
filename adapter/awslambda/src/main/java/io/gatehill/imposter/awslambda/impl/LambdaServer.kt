@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023.
+ * Copyright (c) 2021-2024.
  *
  * This file is part of Imposter.
  *
@@ -94,14 +94,17 @@ abstract class LambdaServer<Request, Response>(
                     } catch (e: Exception) {
                         throw RuntimeException("Unhandled error in route: $route", e)
                     }
-                    // check for route failure
-                    exchange.failure()?.let { cause ->
+                    // check for exceptional route failure
+                    exchange.failureCause?.let { cause ->
                         throw RuntimeException("Route failed: $route", cause)
                     }
                 }
             }
 
         } catch (e: Exception) {
+            if (response.statusCode == HttpUtil.HTTP_OK) {
+                response.setStatusCode(HttpUtil.HTTP_INTERNAL_ERROR)
+            }
             failureCause = e
         }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2016-2024.
  *
  * This file is part of Imposter.
  *
@@ -90,9 +90,8 @@ class VertxHttpExchange(
         routingContext.fail(statusCode, cause)
     }
 
-    override fun failure(): Throwable? {
-        return routingContext.failure()
-    }
+    override val failureCause: Throwable?
+        get() = routingContext.failure()
 
     override fun <T> get(key: String): T? {
         return routingContext.get<T>(key)

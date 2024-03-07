@@ -100,7 +100,7 @@ abstract class AbstractHandler<Request, Response>(
                 }
             }.startBlocking()
 
-        val serverFactory = InjectorUtil.injector!!.getInstance(LambdaServerFactory::class.java)
+        val serverFactory = InjectorUtil.getInstance<LambdaServerFactory>()
 
         @Suppress("UNCHECKED_CAST")
         server = serverFactory.activeServer as LambdaServer<Request, Response>

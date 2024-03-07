@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2023.
+ * Copyright (c) 2023-2024.
  *
  * This file is part of Imposter.
  *
@@ -89,9 +89,8 @@ class RemoteHttpExchange(
         throw UnsupportedOperationException()
     }
 
-    override fun failure(): Throwable? {
-        throw UnsupportedOperationException()
-    }
+    override val failureCause: Throwable?
+        get() = throw UnsupportedOperationException()
 
     override fun <T> get(key: String): T? {
         return initiatingExchange.get<T>(key)

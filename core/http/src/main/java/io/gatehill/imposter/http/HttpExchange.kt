@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2016-2024.
  *
  * This file is part of Imposter.
  *
@@ -60,7 +60,7 @@ interface HttpExchange {
     fun fail(cause: Throwable?)
     fun fail(statusCode: Int)
     fun fail(statusCode: Int, cause: Throwable?)
-    fun failure(): Throwable?
+    val failureCause: Throwable?
 
     fun <T> get(key: String): T?
     fun put(key: String, value: Any)

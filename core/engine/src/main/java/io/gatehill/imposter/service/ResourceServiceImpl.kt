@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2016-2024.
  *
  * This file is part of Imposter.
  *
@@ -74,7 +74,7 @@ import io.vertx.core.Vertx
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
 import java.io.File
-import java.util.*
+import java.util.UUID
 import java.util.regex.Pattern
 import javax.inject.Inject
 
@@ -252,7 +252,7 @@ class ResourceServiceImpl @Inject constructor(
         LOGGER.log(
             level,
             "$description: ${describeRequest(httpExchange)}",
-            httpExchange.failure()
+            httpExchange.failureCause
         )
     }
 

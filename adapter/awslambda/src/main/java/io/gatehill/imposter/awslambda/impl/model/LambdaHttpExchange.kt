@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023.
+ * Copyright (c) 2021-2024.
  *
  * This file is part of Imposter.
  *
@@ -64,7 +64,9 @@ class LambdaHttpExchange(
 ) : HttpExchange {
     override var phase = ExchangePhase.REQUEST_RECEIVED
     private val attributes = mutableMapOf<String, Any>()
-    private var failureCause: Throwable? = null
+
+    override var failureCause: Throwable? = null
+        private set
 
     override val response: HttpResponse = object : HttpResponse by response {
         override fun end() {
@@ -102,10 +104,6 @@ class LambdaHttpExchange(
     override fun fail(statusCode: Int, cause: Throwable?) {
         response.setStatusCode(statusCode)
         failureCause = cause
-    }
-
-    override fun failure(): Throwable? {
-        return failureCause
     }
 
     override fun <T> get(key: String): T? {
