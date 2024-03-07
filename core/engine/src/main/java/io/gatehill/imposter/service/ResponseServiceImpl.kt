@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2016-2024.
  *
  * This file is part of Imposter.
  *
@@ -99,7 +99,7 @@ class ResponseServiceImpl @Inject constructor(
             resourceConfig,
             httpExchange,
             responseBehaviour,
-            ResponseSender { rc, rb -> sendEmptyResponse(rc, rb) }
+            this::sendEmptyResponse
         )
     }
 
