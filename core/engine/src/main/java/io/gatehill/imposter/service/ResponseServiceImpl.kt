@@ -110,7 +110,7 @@ class ResponseServiceImpl @Inject constructor(
         httpExchange: HttpExchange,
         responseBehaviour: ResponseBehaviour,
         vararg fallbackSenders: ResponseSender,
-    ): CompletableFuture<Unit> = makeFuture { future ->
+    ): CompletableFuture<Unit> = makeFuture(autoComplete = false) { future ->
         val completion = {
             try {
                 responseBehaviour.failureType?.let { failureType ->
