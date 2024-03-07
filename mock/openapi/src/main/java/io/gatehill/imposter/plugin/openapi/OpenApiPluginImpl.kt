@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2016-2024.
  *
  * This file is part of Imposter.
  *
@@ -331,9 +331,8 @@ class OpenApiPluginImpl @Inject constructor(
                         httpExchange,
                         responseBehaviour,
                         exampleSender,
-                        ResponseSender { httpExchange: HttpExchange, responseBehaviour: ResponseBehaviour ->
-                            fallback(httpExchange, responseBehaviour)
-                        })
+                        this::fallback
+                    )
                 } ?: run {
                     LOGGER.warn(
                         "No response found in specification for {} and status code {}",
