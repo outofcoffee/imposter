@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2016-2024.
  *
  * This file is part of Imposter.
  *
@@ -45,7 +45,7 @@ package io.gatehill.imposter.store.service
 import com.fasterxml.jackson.core.JsonProcessingException
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.http.HttpExchange
-import io.gatehill.imposter.http.HttpExchangeHandler
+import io.gatehill.imposter.http.HttpExchangeFutureHandler
 import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.http.SingletonResourceMatcher
 import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
@@ -93,7 +93,7 @@ class StoreRestApiServiceImpl @Inject constructor(
     private fun handleLoadAll(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>
-    ): HttpExchangeHandler {
+    ): HttpExchangeFutureHandler {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, resourceMatcher) { httpExchange: HttpExchange ->
             val request = httpExchange.request
             val storeName = request.getPathParam("storeName")!!
@@ -126,7 +126,7 @@ class StoreRestApiServiceImpl @Inject constructor(
     private fun handleDeleteStore(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>
-    ): HttpExchangeHandler {
+    ): HttpExchangeFutureHandler {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, resourceMatcher) { httpExchange: HttpExchange ->
             val storeName = httpExchange.request.getPathParam("storeName")!!
             storeFactory.clearStore(storeName, ephemeral = false)
@@ -141,7 +141,7 @@ class StoreRestApiServiceImpl @Inject constructor(
     private fun handleLoadSingle(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>
-    ): HttpExchangeHandler {
+    ): HttpExchangeFutureHandler {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, resourceMatcher) { httpExchange: HttpExchange ->
             val request = httpExchange.request
             val storeName = request.getPathParam("storeName")!!
@@ -174,7 +174,7 @@ class StoreRestApiServiceImpl @Inject constructor(
     private fun handleSaveSingle(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>
-    ): HttpExchangeHandler {
+    ): HttpExchangeFutureHandler {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, resourceMatcher) { httpExchange: HttpExchange ->
             val request = httpExchange.request
             val storeName = request.getPathParam("storeName")!!
@@ -203,7 +203,7 @@ class StoreRestApiServiceImpl @Inject constructor(
     private fun handleSaveMultiple(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>
-    ): HttpExchangeHandler {
+    ): HttpExchangeFutureHandler {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, resourceMatcher) { httpExchange: HttpExchange ->
             val request = httpExchange.request
             val storeName = request.getPathParam("storeName")!!
@@ -226,7 +226,7 @@ class StoreRestApiServiceImpl @Inject constructor(
     private fun handleDeleteSingle(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>
-    ): HttpExchangeHandler {
+    ): HttpExchangeFutureHandler {
         return resourceService.handleRoute(imposterConfig, allPluginConfigs, resourceMatcher) { httpExchange: HttpExchange ->
             val request = httpExchange.request
             val storeName = request.getPathParam("storeName")!!

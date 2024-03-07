@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2016-2024.
  *
  * This file is part of Imposter.
  *
@@ -43,6 +43,7 @@
 package io.gatehill.imposter.http
 
 import io.vertx.core.Vertx
+import java.util.concurrent.CompletableFuture
 
 /**
  * @author Pete Cornish
@@ -141,3 +142,4 @@ class HttpRouter(val vertx: Vertx) {
 }
 
 typealias HttpExchangeHandler = (HttpExchange) -> Unit
+typealias HttpExchangeFutureHandler = (HttpExchange) -> CompletableFuture<Unit>

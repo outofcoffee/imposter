@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2023.
+ * Copyright (c) 2023-2024.
  *
  * This file is part of Imposter.
  *
@@ -57,6 +57,7 @@ import io.gatehill.imposter.store.graphql.model.GraphQLRequest
 import io.gatehill.imposter.store.graphql.model.StoreItem
 import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.MapUtil
+import io.gatehill.imposter.util.makeFuture
 import io.gatehill.imposter.util.supervisedDefaultCoroutineScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -126,36 +127,38 @@ class GraphQLQueryService @Inject constructor(
 
         // see https://graphql.org/learn/serving-over-http/
         router.get(requestPath).handler { httpExchange ->
-            val request = httpExchange.request
-            val query = request.getQueryParam("query")
-            if (query.isNullOrBlank()) {
-                httpExchange.response
-                    .setStatusCode(400)
-                    .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_PLAIN_TEXT)
-                    .end("No query parameter named 'query' was provided")
-                return@handler
+            makeFuture {
+                val request = httpExchange.request
+                val query = request.getQueryParam("query")
+                if (query.isNullOrBlank()) {
+                    httpExchange.response
+                        .setStatusCode(400)
+                        .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_PLAIN_TEXT)
+                        .end("No query parameter named 'query' was provided")
+                } else {
+                    val variables = request.getQueryParam("variables")
+                    execute(query, variables, httpExchange)
+                }
             }
-
-            val variables = request.getQueryParam("variables")
-            execute(query, variables, httpExchange)
         }
 
         router.post(requestPath).handler { httpExchange ->
-            val httpRequest = httpExchange.request
-            val contentLength = httpRequest.getHeader("Content-Length")
-            if ((contentLength?.toInt() ?: 0) <= 0) {
-                httpExchange.response
-                    .setStatusCode(400)
-                    .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_PLAIN_TEXT)
-                    .end("No GraphQL body was was provided")
-                return@handler
+            makeFuture {
+                val httpRequest = httpExchange.request
+                val contentLength = httpRequest.getHeader("Content-Length")
+                if ((contentLength?.toInt() ?: 0) <= 0) {
+                    httpExchange.response
+                        .setStatusCode(400)
+                        .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_PLAIN_TEXT)
+                        .end("No GraphQL body was was provided")
+                } else {
+                    val request = MapUtil.JSON_MAPPER.readValue(httpRequest.body!!.bytes, GraphQLRequest::class.java)
+                    if (logger.isTraceEnabled) {
+                        logger.trace("Processing GraphQL query: ${request.query} with variables: ${request.variables}")
+                    }
+                    execute(request.query, request.variables, httpExchange)
+                }
             }
-
-            val request = MapUtil.JSON_MAPPER.readValue(httpRequest.body!!.bytes, GraphQLRequest::class.java)
-            if (logger.isTraceEnabled) {
-                logger.trace("Processing GraphQL query: ${request.query} with variables: ${request.variables}")
-            }
-            execute(request.query, request.variables, httpExchange)
         }
     }
 

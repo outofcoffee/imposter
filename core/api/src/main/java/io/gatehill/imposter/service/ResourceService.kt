@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2016-2024.
  *
  * This file is part of Imposter.
  *
@@ -45,6 +45,7 @@ package io.gatehill.imposter.service
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.ResolvedResourceConfig
 import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.http.HttpExchangeFutureHandler
 import io.gatehill.imposter.http.HttpExchangeHandler
 import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.http.ResourceMatcher
@@ -90,7 +91,7 @@ interface ResourceService {
         allPluginConfigs: List<PluginConfig>,
         resourceMatcher: ResourceMatcher,
         httpExchangeHandler: HttpExchangeHandler,
-    ): HttpExchangeHandler
+    ): HttpExchangeFutureHandler
 
     /**
      * Builds a handler that processes a request.
@@ -119,14 +120,14 @@ interface ResourceService {
         pluginConfig: PluginConfig,
         resourceMatcher: ResourceMatcher,
         httpExchangeHandler: HttpExchangeHandler,
-    ): HttpExchangeHandler
+    ): HttpExchangeFutureHandler
 
     fun passthroughRoute(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>,
         resourceMatcher: ResourceMatcher,
-        httpExchangeHandler: HttpExchangeHandler,
-    ): HttpExchangeHandler
+        httpExchangeHandler: HttpExchangeFutureHandler,
+    ): HttpExchangeFutureHandler
 
     /**
      * Catches 404 responses.

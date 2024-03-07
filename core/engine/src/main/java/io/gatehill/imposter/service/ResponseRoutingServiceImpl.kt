@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2016-2024.
  *
  * This file is part of Imposter.
  *
@@ -55,8 +55,9 @@ import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.ResponseBehaviour
 import io.gatehill.imposter.script.ResponseBehaviourType
 import io.gatehill.imposter.util.LogUtil
+import io.gatehill.imposter.util.makeFuture
 import org.apache.logging.log4j.LogManager
-import java.util.function.Consumer
+import java.util.concurrent.CompletableFuture
 import javax.inject.Inject
 
 /**
@@ -80,8 +81,8 @@ class ResponseRoutingServiceImpl @Inject constructor(
         additionalContext: Map<String, Any>?,
         statusCodeFactory: StatusCodeFactory,
         responseBehaviourFactory: ResponseBehaviourFactory,
-        defaultBehaviourHandler: Consumer<ResponseBehaviour>,
-    ) {
+        defaultBehaviourHandler: DefaultBehaviourHandler,
+    ): CompletableFuture<Unit> = makeFuture {
         try {
             engineLifecycle.forEach { listener: EngineLifecycleListener ->
                 listener.beforeBuildingResponse(httpExchange, resourceConfig)
@@ -100,7 +101,7 @@ class ResponseRoutingServiceImpl @Inject constructor(
                     .end()
             } else {
                 // default behaviour
-                defaultBehaviourHandler.accept(responseBehaviour)
+                defaultBehaviourHandler(responseBehaviour)
             }
         } catch (e: Exception) {
             val msg = "Error sending mock response for ${LogUtil.describeRequest(httpExchange)}"

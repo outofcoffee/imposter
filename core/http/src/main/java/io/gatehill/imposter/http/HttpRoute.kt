@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023.
+ * Copyright (c) 2022-2024.
  *
  * This file is part of Imposter.
  *
@@ -54,7 +54,7 @@ data class HttpRoute(
     val method: HttpMethod? = null
 ) {
     val hasTrailingWildcard = path?.endsWith('*') ?: false
-    var handler: HttpExchangeHandler? = null
+    var handler: HttpExchangeFutureHandler? = null
 
     private data class ParsedPathParams(
         val paramNames: List<String>,
@@ -81,7 +81,7 @@ data class HttpRoute(
 
     private val regexPattern: Pattern by lazy { Pattern.compile(regex!!) }
 
-    fun handler(requestHandler: HttpExchangeHandler): HttpRoute {
+    fun handler(requestHandler: HttpExchangeFutureHandler): HttpRoute {
         handler = requestHandler
         return this
     }

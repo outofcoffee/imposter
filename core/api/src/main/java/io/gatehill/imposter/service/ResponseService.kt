@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2016-2024.
  *
  * This file is part of Imposter.
  *
@@ -48,6 +48,7 @@ import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig
 import io.gatehill.imposter.script.ResponseBehaviour
 import io.vertx.core.buffer.Buffer
+import java.util.concurrent.CompletableFuture
 
 /**
  * @author Pete Cornish
@@ -77,7 +78,7 @@ interface ResponseService {
         resourceConfig: ResourceConfig?,
         httpExchange: HttpExchange,
         responseBehaviour: ResponseBehaviour,
-    )
+    ): CompletableFuture<Unit>
 
     /**
      * Send a response to the client, if one can be computed. If a response cannot
@@ -95,7 +96,7 @@ interface ResponseService {
         httpExchange: HttpExchange,
         responseBehaviour: ResponseBehaviour,
         vararg fallbackSenders: ResponseSender,
-    )
+    ): CompletableFuture<Unit>
 
     /**
      * Fails the [HttpExchange] with a 404, triggering the configured error handler.

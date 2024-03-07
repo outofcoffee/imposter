@@ -59,10 +59,12 @@ import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.LogUtil.describeRequest
 import io.gatehill.imposter.util.PlaceholderUtil
 import io.gatehill.imposter.util.ResourceUtil
+import io.gatehill.imposter.util.makeFuture
 import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.http.impl.MimeMapping
 import org.apache.logging.log4j.LogManager
+import java.util.concurrent.CompletableFuture
 import javax.inject.Inject
 
 /**
@@ -93,7 +95,7 @@ class ResponseServiceImpl @Inject constructor(
         resourceConfig: ResourceConfig?,
         httpExchange: HttpExchange,
         responseBehaviour: ResponseBehaviour,
-    ) {
+    ): CompletableFuture<Unit> =
         sendResponse(
             pluginConfig,
             resourceConfig,
@@ -101,7 +103,6 @@ class ResponseServiceImpl @Inject constructor(
             responseBehaviour,
             this::sendEmptyResponse
         )
-    }
 
     override fun sendResponse(
         pluginConfig: PluginConfig,
@@ -109,12 +110,17 @@ class ResponseServiceImpl @Inject constructor(
         httpExchange: HttpExchange,
         responseBehaviour: ResponseBehaviour,
         vararg fallbackSenders: ResponseSender,
-    ) {
+    ): CompletableFuture<Unit> = makeFuture { future ->
         val completion = {
-            responseBehaviour.failureType?.let { failureType ->
-                characteristicsService.sendFailure(resourceConfig, httpExchange, failureType)
-            } ?: run {
-                sendResponseInternal(pluginConfig, resourceConfig, httpExchange, responseBehaviour, fallbackSenders)
+            try {
+                responseBehaviour.failureType?.let { failureType ->
+                    characteristicsService.sendFailure(resourceConfig, httpExchange, failureType)
+                } ?: run {
+                    sendResponseInternal(pluginConfig, resourceConfig, httpExchange, responseBehaviour, fallbackSenders)
+                }
+                future.complete(Unit)
+            } catch (e: Exception) {
+                future.completeExceptionally(e)
             }
         }
         val delayMs = characteristicsService.simulatePerformance(responseBehaviour)

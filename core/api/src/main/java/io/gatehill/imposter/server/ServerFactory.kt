@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2024.
  *
  * This file is part of Imposter.
  *
@@ -44,7 +44,7 @@ package io.gatehill.imposter.server
 
 import com.google.inject.Injector
 import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.http.HttpExchangeHandler
+import io.gatehill.imposter.http.HttpExchangeFutureHandler
 import io.gatehill.imposter.http.HttpRouter
 import io.vertx.core.Vertx
 import java.util.concurrent.CompletableFuture
@@ -63,9 +63,9 @@ interface ServerFactory {
      */
     fun provide(injector: Injector, imposterConfig: ImposterConfig, vertx: Vertx, router: HttpRouter): CompletableFuture<HttpServer>
 
-    fun createBodyHttpHandler(): HttpExchangeHandler
+    fun createBodyHttpHandler(): HttpExchangeFutureHandler
 
-    fun createStaticHttpHandler(root: String, relative: Boolean = true): HttpExchangeHandler
+    fun createStaticHttpHandler(root: String, relative: Boolean = true): HttpExchangeFutureHandler
 
-    fun createMetricsHandler(): HttpExchangeHandler
+    fun createMetricsHandler(): HttpExchangeFutureHandler
 }

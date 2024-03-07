@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2024.
  *
  * This file is part of Imposter.
  *
@@ -45,6 +45,7 @@ package io.gatehill.imposter.util
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import java.util.concurrent.CompletableFuture
 
 fun getJvmVersion(): Int {
     var version = System.getProperty("java.version")
@@ -57,6 +58,19 @@ fun getJvmVersion(): Int {
         }
     }
     return version.toInt()
+}
+
+fun <T>makeFuture(block: (CompletableFuture<T>) -> T): CompletableFuture<T> {
+    val future = CompletableFuture<T>()
+    try {
+        val ret = block(future)
+        if (!future.isDone) {
+            future.complete(ret)
+        }
+    } catch (e: Exception) {
+        future.completeExceptionally(e)
+    }
+    return future
 }
 
 val supervisedDefaultCoroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())

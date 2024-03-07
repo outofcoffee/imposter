@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2016-2024.
  *
  * This file is part of Imposter.
  *
@@ -44,7 +44,7 @@ package io.gatehill.imposter.server.vertxweb
 
 import com.google.inject.Injector
 import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.http.HttpExchangeHandler
+import io.gatehill.imposter.http.HttpExchangeFutureHandler
 import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.server.HttpServer
 import io.gatehill.imposter.server.ServerFactory
@@ -52,6 +52,7 @@ import io.gatehill.imposter.server.vertxweb.impl.VertxHttpExchange
 import io.gatehill.imposter.server.vertxweb.impl.VertxHttpServer
 import io.gatehill.imposter.server.vertxweb.util.VertxResourceUtil.convertMethodToVertx
 import io.gatehill.imposter.util.FileUtil
+import io.gatehill.imposter.util.makeFuture
 import io.vertx.core.Vertx
 import io.vertx.core.http.HttpServerOptions
 import io.vertx.core.net.JksOptions
@@ -144,7 +145,7 @@ class VertxWebServerFactoryImpl : ServerFactory {
             } ?: vertxRouter.route()
 
             val handler = httpRoute.handler ?: throw IllegalStateException("No route handler set for: $httpRoute")
-            vertxRoute.handler { rc -> handler(VertxHttpExchange(router, rc, httpRoute)) }
+            vertxRoute.handler { rc -> handler(VertxHttpExchange(router, rc, httpRoute)).get() }
         }
 
         router.errorHandlers.forEach { (statusCode, errorHandler) ->
@@ -154,23 +155,25 @@ class VertxWebServerFactoryImpl : ServerFactory {
         }
     }
 
-    override fun createBodyHttpHandler(): HttpExchangeHandler {
+    override fun createBodyHttpHandler(): HttpExchangeFutureHandler {
         val handler = BodyHandlerImpl(false)
-        return { he -> handler.handle((he as VertxHttpExchange).routingContext) }
+        return { he -> makeFuture { handler.handle((he as VertxHttpExchange).routingContext) } }
     }
 
-    override fun createStaticHttpHandler(root: String, relative: Boolean): HttpExchangeHandler {
+    override fun createStaticHttpHandler(root: String, relative: Boolean): HttpExchangeFutureHandler {
         val handlerVisibility = if (relative) FileSystemAccess.RELATIVE else FileSystemAccess.ROOT
         val handler = StaticHandler.create(handlerVisibility, root)
         return { exchange ->
-            LOGGER.debug("Serving static resource: ${exchange.request.path}")
-            handler.handle((exchange as VertxHttpExchange).routingContext)
+            makeFuture {
+                LOGGER.debug("Serving static resource: ${exchange.request.path}")
+                handler.handle((exchange as VertxHttpExchange).routingContext)
+            }
         }
     }
 
-    override fun createMetricsHandler(): HttpExchangeHandler {
+    override fun createMetricsHandler(): HttpExchangeFutureHandler {
         val handler = PrometheusScrapingHandler.create()
-        return { he -> handler.handle((he as VertxHttpExchange).routingContext) }
+        return { he -> makeFuture { handler.handle((he as VertxHttpExchange).routingContext) } }
     }
 
     companion object {
