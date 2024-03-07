@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023.
+ * Copyright (c) 2021-2024.
  *
  * This file is part of Imposter.
  *
@@ -51,6 +51,7 @@ import io.gatehill.imposter.awslambda.util.PluginUtil
 import io.gatehill.imposter.plugin.internal.MetaInfPluginDetectorImpl
 import io.gatehill.imposter.plugin.openapi.OpenApiPluginImpl
 import io.gatehill.imposter.plugin.rest.RestPluginImpl
+import io.gatehill.imposter.plugin.soap.SoapPluginImpl
 import io.gatehill.imposter.server.RequestHandlingMode
 import io.gatehill.imposter.util.InjectorUtil
 import io.gatehill.imposter.util.LogUtil
@@ -81,6 +82,7 @@ abstract class AbstractHandler<Request, Response>(
         ImposterBuilderKt()
             .withPluginClass(OpenApiPluginImpl::class.java)
             .withPluginClass(RestPluginImpl::class.java)
+            .withPluginClass(SoapPluginImpl::class.java)
             .apply {
                 if (Settings.metaInfScan) {
                     withPluginClass(MetaInfPluginDetectorImpl::class.java)
