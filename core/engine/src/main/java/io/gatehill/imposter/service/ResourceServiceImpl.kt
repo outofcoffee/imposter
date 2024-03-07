@@ -142,7 +142,7 @@ class ResourceServiceImpl @Inject constructor(
             }
 
             RequestHandlingMode.ASYNC -> { httpExchange: HttpExchange ->
-                makeFuture { future ->
+                makeFuture(autoComplete = false) { future ->
                     val handler = Callable {
                         handleResource(pluginConfig, httpExchangeHandler, httpExchange, resolvedResourceConfigs, resourceMatcher)
                             .thenApply { future.complete(it) }

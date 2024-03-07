@@ -60,11 +60,17 @@ fun getJvmVersion(): Int {
     return version.toInt()
 }
 
-fun <T>makeFuture(block: (CompletableFuture<T>) -> T): CompletableFuture<T> {
+/**
+ * Wraps the given [block] in a `CompletableFuture` and returns the future.
+ * If [autoComplete] is `true`, the future will be completed with the result of the block.
+ * If [autoComplete] is `false`, the future must be completed manually by the block code.
+ * This is useful for long-running tasks that need to be managed externally.
+ */
+fun <T>makeFuture(autoComplete: Boolean = true, block: (CompletableFuture<T>) -> T): CompletableFuture<T> {
     val future = CompletableFuture<T>()
     try {
         val ret = block(future)
-        if (!future.isDone) {
+        if (autoComplete) {
             future.complete(ret)
         }
     } catch (e: Exception) {
