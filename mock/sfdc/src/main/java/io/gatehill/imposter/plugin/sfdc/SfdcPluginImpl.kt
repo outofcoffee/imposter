@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2016-2024.
  *
  * This file is part of Imposter.
  *
@@ -44,7 +44,7 @@ package io.gatehill.imposter.plugin.sfdc
 
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.http.HttpExchange
-import io.gatehill.imposter.http.HttpExchangeHandler
+import io.gatehill.imposter.http.HttpExchangeFutureHandler
 import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.http.SingletonResourceMatcher
@@ -198,7 +198,7 @@ class SfdcPluginImpl @Inject constructor(
      *
      * @return
      */
-    private fun handleUpdateRequest(): HttpExchangeHandler {
+    private fun handleUpdateRequest(): HttpExchangeFutureHandler {
         return resourceService.handleRoute(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
             val request = httpExchange.request
             val sObjectName = request.getPathParam("sObjectName")

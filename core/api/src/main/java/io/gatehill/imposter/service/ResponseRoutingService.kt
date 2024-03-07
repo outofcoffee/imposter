@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2024.
  *
  * This file is part of Imposter.
  *
@@ -51,7 +51,9 @@ import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.PluginConfigImpl
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.script.ResponseBehaviour
-import java.util.function.Consumer
+import java.util.concurrent.CompletableFuture
+
+typealias DefaultBehaviourHandler = (ResponseBehaviour) -> Unit
 
 /**
  * Main entrypoint for response routing.
@@ -71,14 +73,14 @@ interface ResponseRoutingService {
         additionalContext: Map<String, Any>?,
         statusCodeFactory: StatusCodeFactory,
         responseBehaviourFactory: ResponseBehaviourFactory,
-        defaultBehaviourHandler: Consumer<ResponseBehaviour>
-    )
+        defaultBehaviourHandler: DefaultBehaviourHandler
+    ): CompletableFuture<Unit>
 
     fun <C : PluginConfigImpl> route(
         pluginConfig: C,
         httpExchange: HttpExchange,
-        defaultBehaviourHandler: Consumer<ResponseBehaviour>
-    ) {
+        defaultBehaviourHandler: DefaultBehaviourHandler
+    ): CompletableFuture<Unit> =
         route(
             pluginConfig,
             pluginConfig,
@@ -88,14 +90,13 @@ interface ResponseRoutingService {
             DefaultResponseBehaviourFactory.instance,
             defaultBehaviourHandler
         )
-    }
 
     fun <C : PluginConfigImpl> route(
         pluginConfig: C,
         resourceConfig: BasicResourceConfig?,
         httpExchange: HttpExchange,
-        defaultBehaviourHandler: Consumer<ResponseBehaviour>
-    ) {
+        defaultBehaviourHandler: DefaultBehaviourHandler
+    ): CompletableFuture<Unit> =
         route(
             pluginConfig,
             resourceConfig,
@@ -105,14 +106,13 @@ interface ResponseRoutingService {
             DefaultResponseBehaviourFactory.instance,
             defaultBehaviourHandler
         )
-    }
 
     fun <C : PluginConfigImpl> route(
         pluginConfig: C,
         httpExchange: HttpExchange,
         additionalContext: Map<String, Any>?,
-        defaultBehaviourHandler: Consumer<ResponseBehaviour>
-    ) {
+        defaultBehaviourHandler: DefaultBehaviourHandler
+    ): CompletableFuture<Unit> =
         route(
             pluginConfig,
             pluginConfig,
@@ -122,5 +122,4 @@ interface ResponseRoutingService {
             DefaultResponseBehaviourFactory.instance,
             defaultBehaviourHandler
         )
-    }
 }

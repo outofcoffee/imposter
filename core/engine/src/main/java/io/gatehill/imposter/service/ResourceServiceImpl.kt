@@ -48,6 +48,7 @@ import io.gatehill.imposter.config.ResolvedResourceConfig
 import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.http.ExchangePhase
 import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.http.HttpExchangeFutureHandler
 import io.gatehill.imposter.http.HttpExchangeHandler
 import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.http.HttpRouter
@@ -68,6 +69,7 @@ import io.gatehill.imposter.server.ServerFactory
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.LogUtil.describeRequest
 import io.gatehill.imposter.util.ResourceUtil
+import io.gatehill.imposter.util.makeFuture
 import io.vertx.core.Handler
 import io.vertx.core.Promise
 import io.vertx.core.Vertx
@@ -118,7 +120,7 @@ class ResourceServiceImpl @Inject constructor(
         allPluginConfigs: List<PluginConfig>,
         resourceMatcher: ResourceMatcher,
         httpExchangeHandler: HttpExchangeHandler,
-    ): HttpExchangeHandler {
+    ): HttpExchangeFutureHandler {
         val selectedConfig = securityService.findConfigPreferringSecurityPolicy(allPluginConfigs)
         return handleRoute(imposterConfig, selectedConfig, resourceMatcher, httpExchangeHandler)
     }
@@ -131,14 +133,16 @@ class ResourceServiceImpl @Inject constructor(
         pluginConfig: PluginConfig,
         resourceMatcher: ResourceMatcher,
         httpExchangeHandler: HttpExchangeHandler,
-    ): HttpExchangeHandler {
+    ): HttpExchangeFutureHandler {
         val resolvedResourceConfigs = resolveResourceConfigs(pluginConfig)
         return when (imposterConfig.requestHandlingMode) {
             RequestHandlingMode.SYNC -> { httpExchange: HttpExchange ->
-                try {
-                    handleResource(pluginConfig, httpExchangeHandler, httpExchange, resolvedResourceConfigs, resourceMatcher)
-                } catch (e: Exception) {
-                    handleFailure(httpExchange, e)
+                makeFuture {
+                    try {
+                        handleResource(pluginConfig, httpExchangeHandler, httpExchange, resolvedResourceConfigs, resourceMatcher)
+                    } catch (e: Exception) {
+                        handleFailure(httpExchange, e)
+                    }
                 }
             }
 
@@ -152,11 +156,13 @@ class ResourceServiceImpl @Inject constructor(
                     }
                 }
 
-                // explicitly disable ordered execution - responses should not block each other
-                // as this causes head of line blocking performance issues
-                vertx.orCreateContext.executeBlocking(handler, false) { result ->
-                    if (result.failed()) {
-                        handleFailure(httpExchange, result.cause())
+                makeFuture {
+                    // explicitly disable ordered execution - responses should not block each other
+                    // as this causes head of line blocking performance issues
+                    vertx.orCreateContext.executeBlocking(handler, false) { result ->
+                        if (result.failed()) {
+                            handleFailure(httpExchange, result.cause())
+                        }
                     }
                 }
             }
@@ -169,8 +175,8 @@ class ResourceServiceImpl @Inject constructor(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>,
         resourceMatcher: ResourceMatcher,
-        httpExchangeHandler: HttpExchangeHandler,
-    ): HttpExchangeHandler {
+        httpExchangeHandler: HttpExchangeFutureHandler,
+    ): HttpExchangeFutureHandler {
         val selectedConfig = securityService.findConfigPreferringSecurityPolicy(allPluginConfigs)
         return handleRoute(imposterConfig, selectedConfig, resourceMatcher) { event: HttpExchange ->
             httpExchangeHandler(event)

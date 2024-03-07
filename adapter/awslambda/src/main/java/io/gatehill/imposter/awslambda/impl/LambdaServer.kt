@@ -90,7 +90,7 @@ abstract class LambdaServer<Request, Response>(
                     val exchange = LambdaHttpExchange(router, route, request, response)
                     val handler = route.handler ?: throw IllegalStateException("No route handler set for: $route")
                     try {
-                        handler(exchange)
+                        handler(exchange).get()
                     } catch (e: Exception) {
                         throw RuntimeException("Unhandled error in route: $route", e)
                     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023.
+ * Copyright (c) 2021-2024.
  *
  * This file is part of Imposter.
  *
@@ -45,7 +45,7 @@ package io.gatehill.imposter.awslambda.impl
 
 import com.google.inject.Injector
 import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.http.HttpExchangeHandler
+import io.gatehill.imposter.http.HttpExchangeFutureHandler
 import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.plugin.config.PluginConfigImpl
 import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl
@@ -53,6 +53,7 @@ import io.gatehill.imposter.server.HttpServer
 import io.gatehill.imposter.server.ServerFactory
 import io.gatehill.imposter.service.ResponseFileService
 import io.gatehill.imposter.service.ResponseService
+import io.gatehill.imposter.util.makeFuture
 import io.vertx.core.Vertx
 import io.vertx.core.http.impl.HttpUtils
 import org.apache.logging.log4j.LogManager
@@ -81,35 +82,41 @@ class LambdaServerFactory @Inject constructor(
         return CompletableFuture.completedFuture(activeServer)
     }
 
-    override fun createBodyHttpHandler(): HttpExchangeHandler = {}
+    override fun createBodyHttpHandler(): HttpExchangeFutureHandler = {
+        CompletableFuture.completedFuture(Unit)
+    }
 
-    override fun createStaticHttpHandler(root: String, relative: Boolean): HttpExchangeHandler {
+    override fun createStaticHttpHandler(root: String, relative: Boolean): HttpExchangeFutureHandler {
         val pluginConfig = PluginConfigImpl().apply {
             plugin = "rest"
             dir = File(root)
         }
         return { exchange ->
-            var path = exchange.request.path.let { HttpUtils.removeDots(it) }
-            exchange.currentRoute?.let { currentRoute ->
-                val routePath = currentRoute.path
-                if (routePath != null && currentRoute.hasTrailingWildcard) {
-                    path = path.removePrefix(routePath.removeSuffix("*"))
+            makeFuture {
+                var path = exchange.request.path.let { HttpUtils.removeDots(it) }
+                exchange.currentRoute?.let { currentRoute ->
+                    val routePath = currentRoute.path
+                    if (routePath != null && currentRoute.hasTrailingWildcard) {
+                        path = path.removePrefix(routePath.removeSuffix("*"))
+                    }
                 }
-            }
-            if (path.endsWith('/') || path.isEmpty()) {
-                path += indexFile
-            }
-            logger.debug("Serving static resource: $path")
-            responseService.sendThenFinaliseExchange(null, exchange) {
-                val responseBehaviour = ReadWriteResponseBehaviourImpl().apply {
-                    responseFile = path
+                if (path.endsWith('/') || path.isEmpty()) {
+                    path += indexFile
                 }
-                responseFileService.serveResponseFile(pluginConfig, null, exchange, responseBehaviour)
+                logger.debug("Serving static resource: $path")
+                responseService.sendThenFinaliseExchange(null, exchange) {
+                    val responseBehaviour = ReadWriteResponseBehaviourImpl().apply {
+                        responseFile = path
+                    }
+                    responseFileService.serveResponseFile(pluginConfig, null, exchange, responseBehaviour)
+                }
             }
         }
     }
 
-    override fun createMetricsHandler(): HttpExchangeHandler = {}
+    override fun createMetricsHandler(): HttpExchangeFutureHandler = {
+        CompletableFuture.completedFuture(Unit)
+    }
 
     companion object {
         private const val indexFile = "index.html"

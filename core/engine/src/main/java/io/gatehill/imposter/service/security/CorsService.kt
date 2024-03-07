@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023.
+ * Copyright (c) 2023-2024.
  *
  * This file is part of Imposter.
  *
@@ -44,7 +44,12 @@
 package io.gatehill.imposter.service.security
 
 import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.http.*
+import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.http.HttpExchangeFutureHandler
+import io.gatehill.imposter.http.HttpMethod
+import io.gatehill.imposter.http.HttpRequest
+import io.gatehill.imposter.http.HttpRouter
+import io.gatehill.imposter.http.ResourceMatcher
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.security.CorsConfig
 import io.gatehill.imposter.plugin.config.security.CorsConfigHolder
@@ -96,7 +101,7 @@ class CorsService @Inject constructor(
         selectedConfig: PluginConfig,
         resourceMatcher: ResourceMatcher,
         cors: CorsConfig,
-    ): HttpExchangeHandler {
+    ): HttpExchangeFutureHandler {
         return resourceService.handleRoute(imposterConfig, selectedConfig, resourceMatcher) { exchange: HttpExchange ->
             val origin = determineResponseOrigin(cors, exchange.request)
             origin?.let {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2016-2024.
  *
  * This file is part of Imposter.
  *
@@ -64,6 +64,7 @@ import io.gatehill.imposter.plugin.soap.parser.WsdlParser
 import io.gatehill.imposter.plugin.soap.service.SoapExampleService
 import io.gatehill.imposter.plugin.soap.util.SoapUtil
 import io.gatehill.imposter.script.ResponseBehaviour
+import io.gatehill.imposter.service.DefaultBehaviourHandler
 import io.gatehill.imposter.service.ResourceService
 import io.gatehill.imposter.service.ResponseRoutingService
 import io.gatehill.imposter.service.ResponseService
@@ -214,7 +215,7 @@ class SoapPluginImpl @Inject constructor(
         val responseBehaviourFactory = DefaultResponseBehaviourFactory.instance
         val resourceConfig = httpExchange.get<BasicResourceConfig>(ResourceUtil.RESOURCE_CONFIG_KEY)
 
-        val defaultBehaviourHandler = { responseBehaviour: ResponseBehaviour ->
+        val defaultBehaviourHandler: DefaultBehaviourHandler = { responseBehaviour: ResponseBehaviour ->
             // set status code regardless of response strategy
             val response = httpExchange.response
                 .setStatusCode(responseBehaviour.statusCode)

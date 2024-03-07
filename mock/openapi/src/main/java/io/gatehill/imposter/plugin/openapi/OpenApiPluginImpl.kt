@@ -44,7 +44,7 @@ package io.gatehill.imposter.plugin.openapi
 
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.http.HttpExchange
-import io.gatehill.imposter.http.HttpExchangeHandler
+import io.gatehill.imposter.http.HttpExchangeFutureHandler
 import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.http.SingletonResourceMatcher
@@ -62,6 +62,7 @@ import io.gatehill.imposter.plugin.openapi.service.SpecificationLoaderService
 import io.gatehill.imposter.plugin.openapi.service.SpecificationService
 import io.gatehill.imposter.script.ResponseBehaviour
 import io.gatehill.imposter.server.ServerFactory
+import io.gatehill.imposter.service.DefaultBehaviourHandler
 import io.gatehill.imposter.service.ResourceService
 import io.gatehill.imposter.service.ResponseRoutingService
 import io.gatehill.imposter.service.ResponseService
@@ -287,7 +288,7 @@ class OpenApiPluginImpl @Inject constructor(
         pluginConfig: OpenApiPluginConfig,
         operation: Operation,
         spec: OpenAPI
-    ): HttpExchangeHandler {
+    ): HttpExchangeFutureHandler {
         // statically calculate as much as possible
         val statusCodeFactory = buildStatusCodeCalculator(operation)
         return resourceService.handleRoute(imposterConfig, pluginConfig, resourceMatcher) { httpExchange: HttpExchange ->
@@ -302,7 +303,7 @@ class OpenApiPluginImpl @Inject constructor(
 
             val resourceConfig = httpExchange.get<BasicResourceConfig>(ResourceUtil.RESOURCE_CONFIG_KEY)
 
-            val defaultBehaviourHandler = { responseBehaviour: ResponseBehaviour ->
+            val defaultBehaviourHandler: DefaultBehaviourHandler = { responseBehaviour: ResponseBehaviour ->
                 // set status code regardless of response strategy
                 val response = httpExchange.response.setStatusCode(responseBehaviour.statusCode)
 
