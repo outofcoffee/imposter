@@ -324,7 +324,7 @@ class ResourceServiceImpl @Inject constructor(
                 } else {
                     try {
                         val future = httpExchangeHandler(httpExchange)
-                        LogUtil.logCompletion(httpExchange)
+                        future.thenRun { LogUtil.logCompletion(httpExchange) }
                         return future
                     } finally {
                         httpExchange.phase = ExchangePhase.REQUEST_DISPATCHED
