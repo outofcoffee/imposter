@@ -145,7 +145,15 @@ class VertxWebServerFactoryImpl : ServerFactory {
             } ?: vertxRouter.route()
 
             val handler = httpRoute.handler ?: throw IllegalStateException("No route handler set for: $httpRoute")
-            vertxRoute.handler { rc -> handler(VertxHttpExchange(router, rc, httpRoute)).get() }
+            vertxRoute.handler { rc ->
+                val exchange = VertxHttpExchange(router, rc, httpRoute)
+
+                // don't block the event loop
+                handler(exchange).handle { _, t ->
+                    t?.let { rc.fail(t) }
+                        ?: LOGGER.trace("Completed handling request for: {} {}", httpRoute.method, httpRoute.path)
+                }
+            }
         }
 
         router.errorHandlers.forEach { (statusCode, errorHandler) ->
