@@ -56,7 +56,7 @@ jobs:
           echo "EFFECTIVE_BRANCH=${EFFECTIVE_BRANCH_NAME}" >> $GITHUB_OUTPUT
 
       - name: Test
-        run: ./gradlew test --info --stacktrace
+        run: ./gradlew test --stacktrace
 
       - name: Publish Unit Test Results
         if: always()
@@ -67,7 +67,7 @@ jobs:
           check_name: Unit Tests (Java ${{ matrix.java }})
 
       - name: Build distributions
-        run: ./gradlew dist --info --stacktrace
+        run: ./gradlew dist --stacktrace
 
       - name: Integration test
         run: |
