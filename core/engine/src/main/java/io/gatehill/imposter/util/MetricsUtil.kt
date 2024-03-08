@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2024.
  *
  * This file is part of Imposter.
  *
@@ -80,7 +80,7 @@ object MetricsUtil {
                 ChainableMetricsStarter(false)
             }
         } else {
-            LOGGER.debug("Metrics disabled - skipping {}", description)
+            LOGGER.trace("Metrics disabled - skipping {}", description)
             ChainableMetricsStarter(false)
         }
     }
