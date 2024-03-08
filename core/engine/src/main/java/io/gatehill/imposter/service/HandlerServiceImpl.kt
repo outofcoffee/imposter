@@ -165,18 +165,6 @@ class HandlerServiceImpl @Inject constructor(
         return build(imposterConfig, pluginConfig, resourceMatcher, wrapped)
     }
 
-    override fun passthroughRoute(
-        imposterConfig: ImposterConfig,
-        allPluginConfigs: List<PluginConfig>,
-        resourceMatcher: ResourceMatcher,
-        httpExchangeHandler: HttpExchangeFutureHandler,
-    ): HttpExchangeFutureHandler {
-        val selectedConfig = securityService.findConfigPreferringSecurityPolicy(allPluginConfigs)
-        return build(imposterConfig, selectedConfig, resourceMatcher) { event: HttpExchange ->
-            httpExchangeHandler(event)
-        }
-    }
-
     /**
      * {@inheritDoc}
      */

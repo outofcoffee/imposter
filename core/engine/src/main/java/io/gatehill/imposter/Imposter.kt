@@ -199,7 +199,7 @@ class Imposter(
         MetricsUtil.doIfMetricsEnabled("add metrics endpoint") {
             LOGGER.trace("Metrics enabled")
             router.route("/system/metrics").handler(
-                handlerService.passthroughRoute(
+                handlerService.build(
                     imposterConfig,
                     allConfigs,
                     resourceMatcher,

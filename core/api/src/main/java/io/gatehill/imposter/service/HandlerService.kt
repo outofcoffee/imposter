@@ -133,13 +133,6 @@ interface HandlerService {
         httpExchangeHandler: HttpExchangeHandler,
     ): HttpExchangeFutureHandler
 
-    fun passthroughRoute(
-        imposterConfig: ImposterConfig,
-        allPluginConfigs: List<PluginConfig>,
-        resourceMatcher: ResourceMatcher,
-        httpExchangeHandler: HttpExchangeFutureHandler,
-    ): HttpExchangeFutureHandler
-
     /**
      * Catches 404 responses.
      */
