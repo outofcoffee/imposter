@@ -55,7 +55,7 @@ import io.gatehill.imposter.plugin.rest.config.ResourceConfigType
 import io.gatehill.imposter.plugin.rest.config.RestPluginConfig
 import io.gatehill.imposter.plugin.rest.config.RestPluginResourceConfig
 import io.gatehill.imposter.script.ResponseBehaviour
-import io.gatehill.imposter.service.ResourceService
+import io.gatehill.imposter.service.HandlerService
 import io.gatehill.imposter.service.ResponseFileService
 import io.gatehill.imposter.service.ResponseRoutingService
 import io.gatehill.imposter.service.ResponseService
@@ -79,7 +79,7 @@ import javax.inject.Inject
 open class RestPluginImpl @Inject constructor(
     vertx: Vertx,
     imposterConfig: ImposterConfig,
-    private val resourceService: ResourceService,
+    private val handlerService: HandlerService,
     private val responseFileService: ResponseFileService,
     private val responseService: ResponseService,
     private val responseRoutingService: ResponseRoutingService,
@@ -124,7 +124,7 @@ open class RestPluginImpl @Inject constructor(
         LOGGER.debug("Adding handler: {} -> {}", method, normalisedPath)
 
         router.route(method, normalisedPath).handler(
-            resourceService.handleRoute(imposterConfig, pluginConfig, resourceMatcher) { httpExchange: HttpExchange ->
+            handlerService.build(imposterConfig, pluginConfig, resourceMatcher) { httpExchange: HttpExchange ->
                 val resourceConfig = httpExchange.get<ContentTypedConfig>(ResourceUtil.RESOURCE_CONFIG_KEY)!!
 
                 responseRoutingService.route(pluginConfig, resourceConfig, httpExchange) { responseBehaviour ->

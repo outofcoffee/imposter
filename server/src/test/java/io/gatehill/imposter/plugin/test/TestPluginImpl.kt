@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2024.
  *
  * This file is part of Imposter.
  *
@@ -48,7 +48,7 @@ import io.gatehill.imposter.http.SingletonResourceMatcher
 import io.gatehill.imposter.http.UniqueRoute
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
-import io.gatehill.imposter.service.ResourceService
+import io.gatehill.imposter.service.HandlerService
 import io.gatehill.imposter.service.ResponseRoutingService
 import io.gatehill.imposter.service.ResponseService
 import io.gatehill.imposter.util.ResourceUtil
@@ -63,7 +63,7 @@ import javax.inject.Inject
 class TestPluginImpl @Inject constructor(
     vertx: Vertx,
     imposterConfig: ImposterConfig,
-    private val resourceService: ResourceService,
+    private val handlerService: HandlerService,
     private val responseService: ResponseService,
     private val responseRoutingService: ResponseRoutingService,
 ) : ConfiguredPlugin<TestPluginConfig>(vertx, imposterConfig) {
@@ -82,7 +82,7 @@ class TestPluginImpl @Inject constructor(
         uniqueRoute: UniqueRoute,
     ) {
         logger.info("Configuring route: $uniqueRoute")
-        val handler = resourceService.handleRoute(imposterConfig, pluginConfig, resourceMatcher) { httpExchange ->
+        val handler = handlerService.build(imposterConfig, pluginConfig, resourceMatcher) { httpExchange ->
             val resourceConfig = httpExchange.get<BasicResourceConfig>(ResourceUtil.RESOURCE_CONFIG_KEY)!!
 
             responseRoutingService.route(pluginConfig, resourceConfig, httpExchange) { responseBehaviour ->

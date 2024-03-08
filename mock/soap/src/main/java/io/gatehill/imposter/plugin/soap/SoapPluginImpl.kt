@@ -65,7 +65,7 @@ import io.gatehill.imposter.plugin.soap.service.SoapExampleService
 import io.gatehill.imposter.plugin.soap.util.SoapUtil
 import io.gatehill.imposter.script.ResponseBehaviour
 import io.gatehill.imposter.service.DefaultBehaviourHandler
-import io.gatehill.imposter.service.ResourceService
+import io.gatehill.imposter.service.HandlerService
 import io.gatehill.imposter.service.ResponseRoutingService
 import io.gatehill.imposter.service.ResponseService
 import io.gatehill.imposter.service.ResponseService.ResponseSender
@@ -91,7 +91,7 @@ import kotlin.collections.set
 class SoapPluginImpl @Inject constructor(
     vertx: Vertx,
     imposterConfig: ImposterConfig,
-    private val resourceService: ResourceService,
+    private val handlerService: HandlerService,
     private val responseService: ResponseService,
     private val responseRoutingService: ResponseRoutingService,
     private val soapExampleService: SoapExampleService,
@@ -162,19 +162,19 @@ class SoapPluginImpl @Inject constructor(
 
         // TODO parse HTTP binding to check for other verbs
         router.route(HttpMethod.POST, fullPath).handler(
-            resourceService.handleRoute(imposterConfig, config, soapResourceMatcher) { httpExchange: HttpExchange ->
+            handlerService.build(imposterConfig, config, soapResourceMatcher) { httpExchange: HttpExchange ->
                 val bodyHolder: MessageBodyHolder = when (binding.type) {
                     BindingType.SOAP, BindingType.HTTP -> {
                         httpExchange.request.body?.let { body -> SoapUtil.parseBody(config, body) } ?: run {
                             LOGGER.warn("No request body - unable to parse SOAP message")
                             httpExchange.response.setStatusCode(400).end()
-                            return@handleRoute completedUnitFuture()
+                            return@build completedUnitFuture()
                         }
                     }
                     else -> {
                         LOGGER.warn("Unsupported binding type: ${binding.type} - unable to parse request")
                         httpExchange.response.setStatusCode(400).end()
-                        return@handleRoute completedUnitFuture()
+                        return@build completedUnitFuture()
                     }
                 }
 
@@ -182,14 +182,14 @@ class SoapPluginImpl @Inject constructor(
                 val operation = soapResourceMatcher.determineOperation(soapAction, bodyHolder) ?: run {
                     httpExchange.response.setStatusCode(404).end()
                     LOGGER.warn("Unable to find a matching binding operation using SOAPAction or SOAP request body")
-                    return@handleRoute completedUnitFuture()
+                    return@build completedUnitFuture()
                 }
                 check(operation.style.equals("document", ignoreCase = true)) {
                     "Only document SOAP bindings are supported"
                 }
 
                 LOGGER.debug("Matched operation: ${operation.name} in binding ${binding.name}")
-                return@handleRoute handle(config, parser, binding, operation, httpExchange, bodyHolder, soapAction)
+                return@build handle(config, parser, binding, operation, httpExchange, bodyHolder, soapAction)
             }
         )
     }

@@ -84,52 +84,34 @@ import javax.inject.Inject
 /**
  * @author Pete Cornish
  */
-class ResourceServiceImpl @Inject constructor(
+class HandlerServiceImpl @Inject constructor(
     private val securityService: SecurityService,
     private val securityLifecycle: SecurityLifecycleHooks,
     private val responseService: ResponseService,
     private val upstreamService: UpstreamService,
     private val vertx: Vertx,
-) : ResourceService {
+) : HandlerService {
 
-    private val shouldAddEngineResponseHeaders: Boolean
-
-    init {
-        shouldAddEngineResponseHeaders = EnvVars.getEnv("IMPOSTER_ADD_ENGINE_RESPONSE_HEADERS")?.toBoolean() != false
-    }
+    private val shouldAddEngineResponseHeaders: Boolean =
+        EnvVars.getEnv("IMPOSTER_ADD_ENGINE_RESPONSE_HEADERS")?.toBoolean() != false
 
     /**
      * {@inheritDoc}
      */
-    override fun resolveResourceConfigs(pluginConfig: PluginConfig): List<ResolvedResourceConfig> {
-        return (pluginConfig as? ResourcesHolder<*>)?.resources?.map { config ->
-            ResolvedResourceConfig(
-                config = config,
-                pathParams = (config as? PathParamsResourceConfig)?.pathParams ?: emptyMap(),
-                queryParams = (config as? QueryParamsResourceConfig)?.queryParams ?: emptyMap(),
-                formParams = (config as? FormParamsResourceConfig)?.formParams ?: emptyMap(),
-                requestHeaders = (config as? RequestHeadersResourceConfig)?.requestHeaders ?: emptyMap()
-            )
-        } ?: emptyList()
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    override fun handleRoute(
+    override fun build(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>,
         resourceMatcher: ResourceMatcher,
         httpExchangeHandler: HttpExchangeFutureHandler,
     ): HttpExchangeFutureHandler {
         val selectedConfig = securityService.findConfigPreferringSecurityPolicy(allPluginConfigs)
-        return handleRoute(imposterConfig, selectedConfig, resourceMatcher, httpExchangeHandler)
+        return build(imposterConfig, selectedConfig, resourceMatcher, httpExchangeHandler)
     }
 
     /**
      * {@inheritDoc}
      */
-    override fun handleRoute(
+    override fun build(
         imposterConfig: ImposterConfig,
         pluginConfig: PluginConfig,
         resourceMatcher: ResourceMatcher,
@@ -159,7 +141,7 @@ class ResourceServiceImpl @Inject constructor(
         }
     }
 
-    override fun handleRouteAndWrap(
+    override fun buildAndWrap(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>,
         resourceMatcher: ResourceMatcher,
@@ -168,10 +150,10 @@ class ResourceServiceImpl @Inject constructor(
         val wrapped: HttpExchangeFutureHandler = { httpExchange ->
             makeFuture { httpExchangeHandler(httpExchange) }
         }
-        return handleRoute(imposterConfig, allPluginConfigs, resourceMatcher, wrapped)
+        return build(imposterConfig, allPluginConfigs, resourceMatcher, wrapped)
     }
 
-    override fun handleRouteAndWrap(
+    override fun buildAndWrap(
         imposterConfig: ImposterConfig,
         pluginConfig: PluginConfig,
         resourceMatcher: ResourceMatcher,
@@ -180,7 +162,7 @@ class ResourceServiceImpl @Inject constructor(
         val wrapped: HttpExchangeFutureHandler = { httpExchange ->
             makeFuture { httpExchangeHandler(httpExchange) }
         }
-        return handleRoute(imposterConfig, pluginConfig, resourceMatcher, wrapped)
+        return build(imposterConfig, pluginConfig, resourceMatcher, wrapped)
     }
 
     override fun passthroughRoute(
@@ -190,7 +172,7 @@ class ResourceServiceImpl @Inject constructor(
         httpExchangeHandler: HttpExchangeFutureHandler,
     ): HttpExchangeFutureHandler {
         val selectedConfig = securityService.findConfigPreferringSecurityPolicy(allPluginConfigs)
-        return handleRoute(imposterConfig, selectedConfig, resourceMatcher) { event: HttpExchange ->
+        return build(imposterConfig, selectedConfig, resourceMatcher) { event: HttpExchange ->
             httpExchangeHandler(event)
         }
     }
@@ -263,6 +245,24 @@ class ResourceServiceImpl @Inject constructor(
                 router.route(method, path).handler(serverFactory.createStaticHttpHandler(absoluteDirPath, false))
             }
         }
+    }
+
+    /**
+     * Extract the resource configurations from the plugin configuration, if present.
+     *
+     * @param pluginConfig the plugin configuration
+     * @return the resource configurations
+     */
+    private fun resolveResourceConfigs(pluginConfig: PluginConfig): List<ResolvedResourceConfig> {
+        return (pluginConfig as? ResourcesHolder<*>)?.resources?.map { config ->
+            ResolvedResourceConfig(
+                config = config,
+                pathParams = (config as? PathParamsResourceConfig)?.pathParams ?: emptyMap(),
+                queryParams = (config as? QueryParamsResourceConfig)?.queryParams ?: emptyMap(),
+                formParams = (config as? FormParamsResourceConfig)?.formParams ?: emptyMap(),
+                requestHeaders = (config as? RequestHeadersResourceConfig)?.requestHeaders ?: emptyMap()
+            )
+        } ?: emptyList()
     }
 
     private fun logAppropriatelyForPath(httpExchange: HttpExchange, description: String) {
@@ -374,7 +374,7 @@ class ResourceServiceImpl @Inject constructor(
     )
 
     companion object {
-        private val LOGGER = LogManager.getLogger(ResourceServiceImpl::class.java)
+        private val LOGGER = LogManager.getLogger(HandlerServiceImpl::class.java)
 
         /**
          * Log errors for the following paths at TRACE instead of ERROR.

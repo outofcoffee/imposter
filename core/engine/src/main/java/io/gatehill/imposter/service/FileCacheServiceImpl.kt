@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2016-2024.
  *
  * This file is part of Imposter.
  *
@@ -59,7 +59,7 @@ import kotlin.io.path.writeText
  * @author Pete Cornish
  */
 class FileCacheServiceImpl : FileCacheService {
-    private val logger = LogManager.getLogger(ResourceServiceImpl::class.java)
+    private val logger = LogManager.getLogger(FileCacheServiceImpl::class.java)
 
     private val mutex = Any()
 

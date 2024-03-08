@@ -63,7 +63,7 @@ import io.gatehill.imposter.plugin.openapi.service.SpecificationService
 import io.gatehill.imposter.script.ResponseBehaviour
 import io.gatehill.imposter.server.ServerFactory
 import io.gatehill.imposter.service.DefaultBehaviourHandler
-import io.gatehill.imposter.service.ResourceService
+import io.gatehill.imposter.service.HandlerService
 import io.gatehill.imposter.service.ResponseRoutingService
 import io.gatehill.imposter.service.ResponseService
 import io.gatehill.imposter.service.ResponseService.ResponseSender
@@ -98,7 +98,7 @@ import kotlin.collections.set
 class OpenApiPluginImpl @Inject constructor(
     vertx: Vertx,
     imposterConfig: ImposterConfig,
-    private val resourceService: ResourceService,
+    private val handlerService: HandlerService,
     private val specificationService: SpecificationService,
     private val exampleService: ExampleService,
     private val responseService: ResponseService,
@@ -195,12 +195,12 @@ class OpenApiPluginImpl @Inject constructor(
     private fun exposeSpec(router: HttpRouter) {
         LOGGER.debug("Adding specification UI at: {}{}", imposterConfig.serverUrl, specPathPrefix)
         router.get(combinedSpecPath).handler(
-                resourceService.handleRoute(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
+                handlerService.build(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
                     handleCombinedSpec(httpExchange)
                 }
         )
         router.getWithRegex("$specPathPrefix$").handler(
-                resourceService.handleRouteAndWrap(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
+                handlerService.buildAndWrap(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
                     httpExchange.response
                             .putHeader("Location", "$specPathPrefix/")
                             .setStatusCode(HttpUtil.HTTP_MOVED_PERM)
@@ -294,11 +294,11 @@ class OpenApiPluginImpl @Inject constructor(
     ): HttpExchangeFutureHandler {
         // statically calculate as much as possible
         val statusCodeFactory = buildStatusCodeCalculator(operation)
-        return resourceService.handleRoute(imposterConfig, pluginConfig, resourceMatcher) { httpExchange: HttpExchange ->
+        return handlerService.build(imposterConfig, pluginConfig, resourceMatcher) { httpExchange: HttpExchange ->
             LOGGER.trace("Operation ${operation.operationId} matched for request: ${describeRequestShort(httpExchange)}")
 
             if (!specificationService.isValidRequest(pluginConfig, httpExchange, allSpecs)) {
-                return@handleRoute completedUnitFuture()
+                return@build completedUnitFuture()
             }
 
             val context = mutableMapOf<String, Any>()

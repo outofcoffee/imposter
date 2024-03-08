@@ -63,7 +63,7 @@ import io.gatehill.imposter.plugin.config.ConfigurablePlugin
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.server.HttpServer
 import io.gatehill.imposter.server.ServerFactory
-import io.gatehill.imposter.service.ResourceService
+import io.gatehill.imposter.service.HandlerService
 import io.gatehill.imposter.service.security.CorsService
 import io.gatehill.imposter.util.AsyncUtil
 import io.gatehill.imposter.util.HttpUtil
@@ -99,7 +99,7 @@ class Imposter(
     private lateinit var serverFactory: ServerFactory
 
     @Inject
-    private lateinit var resourceService: ResourceService
+    private lateinit var handlerService: HandlerService
 
     @Inject
     private lateinit var corsService: CorsService
@@ -185,8 +185,8 @@ class Imposter(
         val router = HttpRouter.router(vertx)
         val resourceMatcher = SingletonResourceMatcher.instance
 
-        router.errorHandler(HttpUtil.HTTP_NOT_FOUND, resourceService.buildNotFoundExceptionHandler())
-        router.errorHandler(HttpUtil.HTTP_INTERNAL_ERROR, resourceService.buildUnhandledExceptionHandler())
+        router.errorHandler(HttpUtil.HTTP_NOT_FOUND, handlerService.buildNotFoundExceptionHandler())
+        router.errorHandler(HttpUtil.HTTP_INTERNAL_ERROR, handlerService.buildUnhandledExceptionHandler())
         router.route().handler(serverFactory.createBodyHttpHandler())
 
         val plugins = pluginManager.getPlugins()
@@ -199,7 +199,7 @@ class Imposter(
         MetricsUtil.doIfMetricsEnabled("add metrics endpoint") {
             LOGGER.trace("Metrics enabled")
             router.route("/system/metrics").handler(
-                resourceService.passthroughRoute(
+                handlerService.passthroughRoute(
                     imposterConfig,
                     allConfigs,
                     resourceMatcher,
@@ -210,13 +210,13 @@ class Imposter(
 
         // status check to indicate when server is up
         router.get("/system/status").handler(
-            resourceService.handleRouteAndWrap(imposterConfig, allConfigs, resourceMatcher) { httpExchange ->
+            handlerService.buildAndWrap(imposterConfig, allConfigs, resourceMatcher) { httpExchange ->
                 httpExchange.response
                     .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_JSON)
                     .end(HttpUtil.buildStatusResponse())
             })
 
-        resourceService.handleStaticContent(serverFactory, allConfigs, router)
+        handlerService.handleStaticContent(serverFactory, allConfigs, router)
 
         plugins.filterIsInstance<RoutablePlugin>().forEach { it.configureRoutes(router) }
 

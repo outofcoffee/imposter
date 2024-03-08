@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2016-2024.
  *
  * This file is part of Imposter.
  *
@@ -44,8 +44,27 @@ package io.gatehill.imposter.inject
 
 import com.google.inject.AbstractModule
 import com.google.inject.Singleton
-import io.gatehill.imposter.service.*
-import io.gatehill.imposter.service.script.*
+import io.gatehill.imposter.service.CharacteristicsService
+import io.gatehill.imposter.service.FileCacheService
+import io.gatehill.imposter.service.FileCacheServiceImpl
+import io.gatehill.imposter.service.HandlerService
+import io.gatehill.imposter.service.HandlerServiceImpl
+import io.gatehill.imposter.service.RemoteService
+import io.gatehill.imposter.service.ResponseFileService
+import io.gatehill.imposter.service.ResponseFileServiceImpl
+import io.gatehill.imposter.service.ResponseRoutingService
+import io.gatehill.imposter.service.ResponseRoutingServiceImpl
+import io.gatehill.imposter.service.ResponseService
+import io.gatehill.imposter.service.ResponseServiceImpl
+import io.gatehill.imposter.service.ScriptedResponseService
+import io.gatehill.imposter.service.SecurityService
+import io.gatehill.imposter.service.StepService
+import io.gatehill.imposter.service.UpstreamService
+import io.gatehill.imposter.service.script.EmbeddedScriptService
+import io.gatehill.imposter.service.script.EmbeddedScriptServiceImpl
+import io.gatehill.imposter.service.script.InlineScriptService
+import io.gatehill.imposter.service.script.ScriptServiceFactory
+import io.gatehill.imposter.service.script.ScriptedResponseServiceImpl
 import io.gatehill.imposter.service.security.CorsService
 import io.gatehill.imposter.service.security.SecurityServiceImpl
 
@@ -54,7 +73,7 @@ import io.gatehill.imposter.service.security.SecurityServiceImpl
  */
 internal class EngineModule : AbstractModule() {
     override fun configure() {
-        bind(ResourceService::class.java).to(ResourceServiceImpl::class.java).`in`(Singleton::class.java)
+        bind(HandlerService::class.java).to(HandlerServiceImpl::class.java).`in`(Singleton::class.java)
         bind(ResponseRoutingService::class.java).to(ResponseRoutingServiceImpl::class.java).`in`(Singleton::class.java)
         bind(ResponseService::class.java).to(ResponseServiceImpl::class.java).`in`(Singleton::class.java)
         bind(ResponseFileService::class.java).to(ResponseFileServiceImpl::class.java).`in`(Singleton::class.java)

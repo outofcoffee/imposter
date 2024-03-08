@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2023.
+ * Copyright (c) 2023-2024.
  *
  * This file is part of Imposter.
  *
@@ -47,7 +47,7 @@ import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.ConfigReference
 import io.gatehill.imposter.config.LoadedConfig
 import io.gatehill.imposter.config.util.EnvVars
-import io.gatehill.imposter.service.ResourceService
+import io.gatehill.imposter.service.HandlerService
 import io.gatehill.imposter.service.ResponseFileService
 import io.gatehill.imposter.service.ResponseRoutingService
 import io.gatehill.imposter.service.ResponseService
@@ -149,7 +149,7 @@ class WiremockPluginTest {
         val wiremock = WiremockPluginImpl(
             mock<Vertx>(),
             ImposterConfig(),
-            mock<ResourceService>(),
+            mock<HandlerService>(),
             mock<ResponseFileService>(),
             mock<ResponseService>(),
             mock<ResponseRoutingService>()

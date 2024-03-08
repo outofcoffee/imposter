@@ -51,7 +51,7 @@ import io.gatehill.imposter.http.SingletonResourceMatcher
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin
 import io.gatehill.imposter.plugin.sfdc.config.SfdcPluginConfig
-import io.gatehill.imposter.service.ResourceService
+import io.gatehill.imposter.service.HandlerService
 import io.gatehill.imposter.service.ResponseFileService
 import io.gatehill.imposter.service.ResponseRoutingService
 import io.gatehill.imposter.util.FileUtil.findRow
@@ -77,7 +77,7 @@ import kotlin.math.abs
 class SfdcPluginImpl @Inject constructor(
     vertx: Vertx,
     imposterConfig: ImposterConfig,
-    private val resourceService: ResourceService,
+    private val handlerService: HandlerService,
     private val responseFileService: ResponseFileService,
     private val responseRoutingService: ResponseRoutingService,
 ) : ConfiguredPlugin<SfdcPluginConfig>(
@@ -90,7 +90,7 @@ class SfdcPluginImpl @Inject constructor(
     override fun configureRoutes(router: HttpRouter) {
         // oauth handler
         router.post("/services/oauth2/token").handler(
-            resourceService.handleRouteAndWrap(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
+            handlerService.buildAndWrap(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
                 LOGGER.info("Handling oauth request: {}", httpExchange.request.bodyAsString)
                 val authResponse = JsonObject()
                 authResponse.put("access_token", "dummyAccessToken")
@@ -102,7 +102,7 @@ class SfdcPluginImpl @Inject constructor(
 
         // query handler
         router.get("/services/data/:apiVersion/query/").handler(
-            resourceService.handleRoute(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
+            handlerService.build(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
                 val request = httpExchange.request
                 val apiVersion = request.getPathParam("apiVersion")!!
 
@@ -141,7 +141,7 @@ class SfdcPluginImpl @Inject constructor(
 
         // get SObject handler
         configs.forEach { config: SfdcPluginConfig ->
-            val handler = resourceService.handleRoute(imposterConfig, config, resourceMatcher) { httpExchange: HttpExchange ->
+            val handler = handlerService.build(imposterConfig, config, resourceMatcher) { httpExchange: HttpExchange ->
                 // script should fire first
                 responseRoutingService.route(config, httpExchange) { responseBehaviour ->
                     makeFuture {
@@ -176,7 +176,7 @@ class SfdcPluginImpl @Inject constructor(
 
         // create SObject handler
         router.post("/services/data/:apiVersion/sobjects/:sObjectName").handler(
-            resourceService.handleRouteAndWrap(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
+            handlerService.buildAndWrap(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
                 val request = httpExchange.request
                 val sObjectName = request.getPathParam("sObjectName")
                 val sObject = request.bodyAsJson
@@ -204,7 +204,7 @@ class SfdcPluginImpl @Inject constructor(
      * @return
      */
     private fun handleUpdateRequest(): HttpExchangeFutureHandler {
-        return resourceService.handleRouteAndWrap(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
+        return handlerService.buildAndWrap(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
             val request = httpExchange.request
             val sObjectName = request.getPathParam("sObjectName")
             val sObjectId = request.getPathParam("sObjectId")
@@ -215,7 +215,7 @@ class SfdcPluginImpl @Inject constructor(
                 && "PATCH" != request.getQueryParam("_HttpMethod")
             ) {
                 httpExchange.fail(HttpUtil.HTTP_BAD_METHOD)
-                return@handleRouteAndWrap
+                return@buildAndWrap
             }
             LOGGER.info("Received update request for {} with ID: {}: {}", sObjectName, sObjectId, sObject)
             httpExchange.response

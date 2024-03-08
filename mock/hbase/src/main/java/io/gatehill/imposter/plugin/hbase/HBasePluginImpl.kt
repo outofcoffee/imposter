@@ -60,7 +60,7 @@ import io.gatehill.imposter.plugin.hbase.model.ResponsePhase
 import io.gatehill.imposter.plugin.hbase.service.ScannerService
 import io.gatehill.imposter.plugin.hbase.service.serialisation.DeserialisationService
 import io.gatehill.imposter.plugin.hbase.service.serialisation.SerialisationService
-import io.gatehill.imposter.service.ResourceService
+import io.gatehill.imposter.service.HandlerService
 import io.gatehill.imposter.service.ResponseFileService
 import io.gatehill.imposter.service.ResponseRoutingService
 import io.gatehill.imposter.util.FileUtil.findRow
@@ -84,7 +84,7 @@ import javax.inject.Inject
 class HBasePluginImpl @Inject constructor(
     vertx: Vertx,
     imposterConfig: ImposterConfig,
-    private val resourceService: ResourceService,
+    private val handlerService: HandlerService,
     private val responseFileService: ResponseFileService,
     private val responseRoutingService: ResponseRoutingService,
     private val scannerService: ScannerService,
@@ -131,7 +131,7 @@ class HBasePluginImpl @Inject constructor(
      */
     private fun addRowRetrievalRoute(pluginConfig: PluginConfig, router: HttpRouter, path: String) {
         router.get("$path/:tableName/:recordId/").handler(
-            resourceService.handleRoute(imposterConfig, pluginConfig, resourceMatcher) { httpExchange: HttpExchange ->
+            handlerService.build(imposterConfig, pluginConfig, resourceMatcher) { httpExchange: HttpExchange ->
                 val request = httpExchange.request
                 val tableName = request.getPathParam("tableName")!!
                 val recordId = request.getPathParam("recordId")!!
@@ -145,7 +145,7 @@ class HBasePluginImpl @Inject constructor(
                     httpExchange.response
                         .setStatusCode(HttpUtil.HTTP_NOT_FOUND)
                         .end()
-                    return@handleRoute completedUnitFuture()
+                    return@build completedUnitFuture()
                 } else {
                     LOGGER.info("Received request for row with ID: {} for table: {}", recordId, tableName)
                     config = tableConfigs[tableName]!!
@@ -189,7 +189,7 @@ class HBasePluginImpl @Inject constructor(
      */
     private fun addCreateScannerRoute(pluginConfig: PluginConfig, router: HttpRouter, path: String) {
         router.post("$path/:tableName/scanner").handler(
-            resourceService.handleRoute(imposterConfig, pluginConfig, resourceMatcher) { httpExchange: HttpExchange ->
+            handlerService.build(imposterConfig, pluginConfig, resourceMatcher) { httpExchange: HttpExchange ->
                 val tableName = httpExchange.request.getPathParam("tableName")!!
 
                 // check that the table is registered
@@ -198,7 +198,7 @@ class HBasePluginImpl @Inject constructor(
                     httpExchange.response
                         .setStatusCode(HttpUtil.HTTP_NOT_FOUND)
                         .end()
-                    return@handleRoute completedUnitFuture()
+                    return@build completedUnitFuture()
                 }
                 LOGGER.info("Received scanner request for table: {}", tableName)
                 val config = tableConfigs[tableName]!!
@@ -208,7 +208,7 @@ class HBasePluginImpl @Inject constructor(
                     deserialiser.decodeScanner(httpExchange)
                 } catch (e: Exception) {
                     httpExchange.fail(e)
-                    return@handleRoute completedUnitFuture()
+                    return@build completedUnitFuture()
                 }
                 val scannerFilterPrefix = deserialiser.decodeScannerFilterPrefix(scanner)
                 LOGGER.debug(
@@ -227,7 +227,7 @@ class HBasePluginImpl @Inject constructor(
                         scannerFilterPrefix, config.prefix
                     )
                     httpExchange.fail(HttpUtil.HTTP_INTERNAL_ERROR)
-                    return@handleRoute completedUnitFuture()
+                    return@build completedUnitFuture()
                 }
 
                 // script should fire first
@@ -255,7 +255,7 @@ class HBasePluginImpl @Inject constructor(
      */
     private fun addReadScannerResultsRoute(pluginConfig: HBasePluginConfig, router: HttpRouter, path: String) {
         router.get("$path/:tableName/scanner/:scannerId").handler(
-            resourceService.handleRoute(imposterConfig, pluginConfig, resourceMatcher) { httpExchange: HttpExchange ->
+            handlerService.build(imposterConfig, pluginConfig, resourceMatcher) { httpExchange: HttpExchange ->
                 val request = httpExchange.request
                 val tableName = request.getPathParam("tableName")!!
                 val scannerId = request.getPathParam("scannerId")!!
@@ -269,7 +269,7 @@ class HBasePluginImpl @Inject constructor(
                     httpExchange.response
                         .setStatusCode(HttpUtil.HTTP_NOT_FOUND)
                         .end()
-                    return@handleRoute completedUnitFuture()
+                    return@build completedUnitFuture()
                 }
 
                 // check that the scanner was created
@@ -283,7 +283,7 @@ class HBasePluginImpl @Inject constructor(
                     httpExchange.response
                         .setStatusCode(HttpUtil.HTTP_NOT_FOUND)
                         .end()
-                    return@handleRoute completedUnitFuture()
+                    return@build completedUnitFuture()
                 }
                 LOGGER.info(
                     "Received result request for {} rows from scanner {} for table: {}",

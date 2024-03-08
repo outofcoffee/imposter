@@ -43,7 +43,6 @@
 package io.gatehill.imposter.service
 
 import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.config.ResolvedResourceConfig
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpExchangeFutureHandler
 import io.gatehill.imposter.http.HttpExchangeHandler
@@ -55,15 +54,7 @@ import io.gatehill.imposter.server.ServerFactory
 /**
  * @author Pete Cornish
  */
-interface ResourceService {
-    /**
-     * Extract the resource configurations from the plugin configuration, if present.
-     *
-     * @param pluginConfig the plugin configuration
-     * @return the resource configurations
-     */
-    fun resolveResourceConfigs(pluginConfig: PluginConfig): List<ResolvedResourceConfig>
-
+interface HandlerService {
     /**
      * Builds a handler that processes a request.
      *
@@ -75,7 +66,7 @@ interface ResourceService {
      *
      * Example:
      * ```
-     * router.get("/example").handler(handleRoute(imposterConfig, allPluginConfigs, vertx, httpExchange -> {
+     * router.get("/example").handler(handleRoute(imposterConfig, allPluginConfigs, resourceMatcher, handler -> {
      * // use httpExchange
      * });
      * ```
@@ -86,7 +77,7 @@ interface ResourceService {
      * @param httpExchangeHandler the consumer of the [HttpExchange]
      * @return the handler
      */
-    fun handleRoute(
+    fun build(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>,
         resourceMatcher: ResourceMatcher,
@@ -94,9 +85,9 @@ interface ResourceService {
     ): HttpExchangeFutureHandler
 
     /**
-     * Same as [handleRoute] but wraps [httpExchangeHandler] in a future.
+     * Same as [build] but wraps [httpExchangeHandler] in a future.
      */
-    fun handleRouteAndWrap(
+    fun buildAndWrap(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>,
         resourceMatcher: ResourceMatcher,
@@ -114,7 +105,7 @@ interface ResourceService {
      *
      * Example:
      * ```
-     * router.get("/example").handler(handleRoute(imposterConfig, pluginConfig, vertx, httpExchange -> {
+     * router.get("/example").handler(handleRoute(imposterConfig, pluginConfig, resourceMatcher, handler -> {
      * // use httpExchange
      * });
      * ```
@@ -125,7 +116,7 @@ interface ResourceService {
      * @param httpExchangeHandler the consumer of the [HttpExchange]
      * @return the handler
      */
-    fun handleRoute(
+    fun build(
         imposterConfig: ImposterConfig,
         pluginConfig: PluginConfig,
         resourceMatcher: ResourceMatcher,
@@ -133,9 +124,9 @@ interface ResourceService {
     ): HttpExchangeFutureHandler
 
     /**
-     * Same as [handleRoute] but wraps [httpExchangeHandler] in a future.
+     * Same as [build] but wraps [httpExchangeHandler] in a future.
      */
-    fun handleRouteAndWrap(
+    fun buildAndWrap(
         imposterConfig: ImposterConfig,
         pluginConfig: PluginConfig,
         resourceMatcher: ResourceMatcher,

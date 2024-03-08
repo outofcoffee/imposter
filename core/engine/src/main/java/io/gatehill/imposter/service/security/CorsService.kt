@@ -53,7 +53,7 @@ import io.gatehill.imposter.http.ResourceMatcher
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.security.CorsConfig
 import io.gatehill.imposter.plugin.config.security.CorsConfigHolder
-import io.gatehill.imposter.service.ResourceServiceImpl
+import io.gatehill.imposter.service.HandlerService
 import io.gatehill.imposter.service.SecurityService
 import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.LogUtil
@@ -65,7 +65,7 @@ import javax.inject.Inject
  */
 class CorsService @Inject constructor(
     private val securityService: SecurityService,
-    private val resourceService: ResourceServiceImpl,
+    private val handlerService: HandlerService,
 ) {
     private val logger = LogManager.getLogger(CorsService::class.java)
 
@@ -102,7 +102,7 @@ class CorsService @Inject constructor(
         resourceMatcher: ResourceMatcher,
         cors: CorsConfig,
     ): HttpExchangeFutureHandler {
-        return resourceService.handleRouteAndWrap(imposterConfig, selectedConfig, resourceMatcher) { exchange: HttpExchange ->
+        return handlerService.buildAndWrap(imposterConfig, selectedConfig, resourceMatcher) { exchange: HttpExchange ->
             val origin = determineResponseOrigin(cors, exchange.request)
             origin?.let {
                 logger.debug("Serving CORS pre-flight request: ${LogUtil.describeRequest(exchange)}")
