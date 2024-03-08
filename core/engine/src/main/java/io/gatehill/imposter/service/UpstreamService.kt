@@ -44,7 +44,6 @@
 package io.gatehill.imposter.service
 
 import io.gatehill.imposter.exception.ResponseException
-import io.gatehill.imposter.http.ExchangePhase
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.plugin.config.resource.PassthroughResourceConfig
 import io.gatehill.imposter.plugin.config.resource.UpstreamsHolder
@@ -99,8 +98,6 @@ class UpstreamService @Inject constructor(
         } catch (e: Exception) {
             logger.error("Failed to forward request ${LogUtil.describeRequest(httpExchange)} to upstream ${call.request().url}", e)
             future.completeExceptionally(e)
-        } finally {
-            httpExchange.phase = ExchangePhase.REQUEST_DISPATCHED
         }
     }
 
@@ -178,7 +175,6 @@ class UpstreamService @Inject constructor(
                     )
                 }
             }
-            LogUtil.logCompletion(httpExchange)
             future.complete(Unit)
 
         } catch (e: Exception) {

@@ -315,25 +315,24 @@ class ResourceServiceImpl @Inject constructor(
             httpExchange.put(ResourceUtil.RESOURCE_CONFIG_KEY, resourceConfig)
 
             if (isRequestPermitted(rootResourceConfig, resourceConfig, resolvedResourceConfigs, httpExchange)) {
-                if (shouldForwardToUpstream(pluginConfig, resourceConfig, httpExchange)) {
-                    return upstreamService.forwardToUpstream(
-                        pluginConfig as UpstreamsHolder,
-                        resourceConfig as PassthroughResourceConfig,
-                        httpExchange
-                    )
+                // set before actual dispatch to avoid race condition where
+                // a response is sent before the phase is set
+                httpExchange.phase = ExchangePhase.REQUEST_DISPATCHED
+
+                val future = if (shouldForwardToUpstream(pluginConfig, resourceConfig, httpExchange)) {
+                    forwardToUpstream(pluginConfig, resourceConfig, httpExchange)
                 } else {
-                    try {
-                        val future = httpExchangeHandler(httpExchange)
-                        future.thenRun { LogUtil.logCompletion(httpExchange) }
-                        return future
-                    } finally {
-                        httpExchange.phase = ExchangePhase.REQUEST_DISPATCHED
-                    }
+                    httpExchangeHandler(httpExchange)
                 }
+
+                future.thenRun { LogUtil.logCompletion(httpExchange) }
+                return future
+
             } else {
                 LOGGER.trace("Request {} was not permitted to continue", describeRequest(httpExchange, requestId))
                 return completedUnitFuture()
             }
+
         } catch (e: Exception) {
             return makeFuture {
                 httpExchange.fail(
@@ -341,6 +340,15 @@ class ResourceServiceImpl @Inject constructor(
                 )
             }
         }
+    }
+
+    private fun isRequestPermitted(
+        rootResourceConfig: BasicResourceConfig,
+        resourceConfig: BasicResourceConfig,
+        resolvedResourceConfigs: List<ResolvedResourceConfig>,
+        httpExchange: HttpExchange,
+    ) = securityLifecycle.allMatch { listener: SecurityLifecycleListener ->
+        listener.isRequestPermitted(rootResourceConfig, resourceConfig, resolvedResourceConfigs, httpExchange)
     }
 
     private fun shouldForwardToUpstream(
@@ -355,14 +363,15 @@ class ResourceServiceImpl @Inject constructor(
         return !httpExchange.request.path.startsWith("/system")
     }
 
-    private fun isRequestPermitted(
-        rootResourceConfig: BasicResourceConfig,
+    private fun forwardToUpstream(
+        pluginConfig: PluginConfig,
         resourceConfig: BasicResourceConfig,
-        resolvedResourceConfigs: List<ResolvedResourceConfig>,
         httpExchange: HttpExchange,
-    ) = securityLifecycle.allMatch { listener: SecurityLifecycleListener ->
-        listener.isRequestPermitted(rootResourceConfig, resourceConfig, resolvedResourceConfigs, httpExchange)
-    }
+    ) = upstreamService.forwardToUpstream(
+        pluginConfig as UpstreamsHolder,
+        resourceConfig as PassthroughResourceConfig,
+        httpExchange
+    )
 
     companion object {
         private val LOGGER = LogManager.getLogger(ResourceServiceImpl::class.java)
