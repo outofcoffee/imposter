@@ -79,7 +79,7 @@ class UpstreamService @Inject constructor(
         pluginConfig: UpstreamsHolder,
         resourceConfig: PassthroughResourceConfig,
         httpExchange: HttpExchange,
-    ): CompletableFuture<Unit> = makeFuture {
+    ): CompletableFuture<Unit> = makeFuture(autoComplete = false) { future ->
         logger.info("Forwarding request ${LogUtil.describeRequest(httpExchange)} to upstream ${resourceConfig.passthrough}")
         val call = buildCall(pluginConfig, resourceConfig, httpExchange)
         if (logger.isTraceEnabled) {
@@ -89,14 +89,16 @@ class UpstreamService @Inject constructor(
             call.enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
                     logger.error("Failed to forward request ${LogUtil.describeRequest(httpExchange)} to upstream ${call.request().url}", e)
+                    future.completeExceptionally(e)
                 }
 
                 override fun onResponse(call: Call, response: Response) {
-                    handleResponse(resourceConfig, call.request(), response, httpExchange)
+                    handleResponse(resourceConfig, call.request(), response, httpExchange, future)
                 }
             })
         } catch (e: Exception) {
             logger.error("Failed to forward request ${LogUtil.describeRequest(httpExchange)} to upstream ${call.request().url}", e)
+            future.completeExceptionally(e)
         } finally {
             httpExchange.phase = ExchangePhase.REQUEST_DISPATCHED
         }
@@ -140,6 +142,7 @@ class UpstreamService @Inject constructor(
         request: Request,
         response: Response,
         httpExchange: HttpExchange,
+        future: CompletableFuture<Unit>,
     ) {
         try {
             if (logger.isTraceEnabled) {
@@ -176,11 +179,13 @@ class UpstreamService @Inject constructor(
                 }
             }
             LogUtil.logCompletion(httpExchange)
+            future.complete(Unit)
 
         } catch (e: Exception) {
             logger.error(
                 "Failed to handle response from upstream ${resourceConfig.passthrough} (${request.url}) for ${LogUtil.describeRequest(httpExchange)}", e
             )
+            future.completeExceptionally(e)
         }
     }
 
