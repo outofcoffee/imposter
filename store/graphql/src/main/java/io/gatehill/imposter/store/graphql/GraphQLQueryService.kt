@@ -63,6 +63,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
+import java.util.concurrent.CompletableFuture
 import javax.inject.Inject
 
 class GraphQLQueryService @Inject constructor(
@@ -127,7 +128,7 @@ class GraphQLQueryService @Inject constructor(
 
         // see https://graphql.org/learn/serving-over-http/
         router.get(requestPath).handler { httpExchange ->
-            makeFuture {
+            makeFuture(autoComplete = false) { future ->
                 val request = httpExchange.request
                 val query = request.getQueryParam("query")
                 if (query.isNullOrBlank()) {
@@ -135,15 +136,18 @@ class GraphQLQueryService @Inject constructor(
                         .setStatusCode(400)
                         .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_PLAIN_TEXT)
                         .end("No query parameter named 'query' was provided")
+
+                    future.complete(Unit)
+
                 } else {
                     val variables = request.getQueryParam("variables")
-                    execute(query, variables, httpExchange)
+                    execute(query, variables, httpExchange, future)
                 }
             }
         }
 
         router.post(requestPath).handler { httpExchange ->
-            makeFuture {
+            makeFuture(autoComplete = false) { future ->
                 val httpRequest = httpExchange.request
                 val contentLength = httpRequest.getHeader("Content-Length")
                 if ((contentLength?.toInt() ?: 0) <= 0) {
@@ -151,12 +155,15 @@ class GraphQLQueryService @Inject constructor(
                         .setStatusCode(400)
                         .putHeader(HttpUtil.CONTENT_TYPE, HttpUtil.CONTENT_TYPE_PLAIN_TEXT)
                         .end("No GraphQL body was was provided")
+
+                    future.complete(Unit)
+
                 } else {
                     val request = MapUtil.JSON_MAPPER.readValue(httpRequest.body!!.bytes, GraphQLRequest::class.java)
                     if (logger.isTraceEnabled) {
                         logger.trace("Processing GraphQL query: ${request.query} with variables: ${request.variables}")
                     }
-                    execute(request.query, request.variables, httpExchange)
+                    execute(request.query, request.variables, httpExchange, future)
                 }
             }
         }
@@ -165,7 +172,8 @@ class GraphQLQueryService @Inject constructor(
     fun execute(
         query: String,
         variables: String?,
-        httpExchange: HttpExchange
+        httpExchange: HttpExchange,
+        future: CompletableFuture<Unit>
     ) = launch {
         try {
             val result = schema.execute(query, variables)
@@ -183,6 +191,8 @@ class GraphQLQueryService @Inject constructor(
 
         } catch (e: Exception) {
             httpExchange.fail(e)
+        } finally {
+            future.complete(Unit)
         }
     }
 

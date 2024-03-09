@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2016-2024.
  *
  * This file is part of Imposter.
  *
@@ -62,6 +62,7 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
+import java.util.concurrent.CompletableFuture
 
 /**
  * Tests for [GraphQLQueryService].
@@ -159,7 +160,7 @@ class GraphQLQueryServiceTest {
 
     private fun queryAndReadResponse(query: String): String {
         runBlocking {
-            service.execute(query, "{}", httpExchange).join()
+            service.execute(query, "{}", httpExchange, CompletableFuture()).join()
         }
 
         verify(httpExchange).response
