@@ -3,6 +3,38 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.35.1] - 2024-03-09
+### Changed
+- chore(deps): bumps CLI to 0.38.0.
+- ci: quieten Gradle output.
+- docs: adds GraalVM examples and instructions.
+- docs: adds percentage based error response example.
+- docs: improves AWS lambda bundle instructions.
+- docs: improves CLI installation steps.
+- docs: improves latency simulation example.
+- docs: improves plugin install instructions.
+- docs: lists version requirements in es6 documentation.
+- docs: removes unneeded boilerplate from examples.
+- docs: updates plugins.
+- refactor(openapi): switches fallback response to method ref.
+- refactor: makes behaviour handlers return a future.
+- refactor: makes route handlers asynchronous.
+- refactor: quietens disabled metrics logging.
+- refactor: removes deprecated passthroughRoute function.
+- refactor: renames ResourceService to HandlerService.
+- refactor: simplifies handler wrapping.
+- refactor: switches empty fallback response to method ref.
+- refactor: unifies completion logging and setting exchange phase.
+
+### Fixed
+- fix(awslambda): includes SOAP plugin in builder plugin list.
+- fix(awslambda): sets status code to 500 if unset when an exceptional failure occurs.
+- fix: don't autocomplete future blocks for long-running tasks.
+- fix: don't autocomplete future when forwarding upstream.
+- fix: don't autocomplete futures for GraphQL queries.
+- fix: don't block the event loop in Vert.x Web handlers.
+- fix: moves completion log to after handler completion.
+
 ## [3.35.0] - 2024-02-11
 ### Added
 - feat: adds support for archive plugin files.
