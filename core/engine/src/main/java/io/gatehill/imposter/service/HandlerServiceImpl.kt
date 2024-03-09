@@ -95,9 +95,6 @@ class HandlerServiceImpl @Inject constructor(
     private val shouldAddEngineResponseHeaders: Boolean =
         EnvVars.getEnv("IMPOSTER_ADD_ENGINE_RESPONSE_HEADERS")?.toBoolean() != false
 
-    /**
-     * {@inheritDoc}
-     */
     override fun build(
         imposterConfig: ImposterConfig,
         allPluginConfigs: List<PluginConfig>,
@@ -108,9 +105,6 @@ class HandlerServiceImpl @Inject constructor(
         return build(imposterConfig, selectedConfig, resourceMatcher, httpExchangeHandler)
     }
 
-    /**
-     * {@inheritDoc}
-     */
     override fun build(
         imposterConfig: ImposterConfig,
         pluginConfig: PluginConfig,
@@ -120,13 +114,13 @@ class HandlerServiceImpl @Inject constructor(
         val resolvedResourceConfigs = resolveResourceConfigs(pluginConfig)
         return when (imposterConfig.requestHandlingMode) {
             RequestHandlingMode.SYNC -> { httpExchange: HttpExchange ->
-                handleResource(pluginConfig, httpExchangeHandler, httpExchange, resolvedResourceConfigs, resourceMatcher)
+                handle(pluginConfig, httpExchangeHandler, httpExchange, resolvedResourceConfigs, resourceMatcher)
             }
 
             RequestHandlingMode.ASYNC -> { httpExchange: HttpExchange ->
                 makeFuture(autoComplete = false) { future ->
                     val handler = Callable {
-                        handleResource(pluginConfig, httpExchangeHandler, httpExchange, resolvedResourceConfigs, resourceMatcher)
+                        handle(pluginConfig, httpExchangeHandler, httpExchange, resolvedResourceConfigs, resourceMatcher)
                             .thenApply { future.complete(it) }
                             .exceptionally { future.completeExceptionally(it) }
                     }
@@ -146,28 +140,28 @@ class HandlerServiceImpl @Inject constructor(
         allPluginConfigs: List<PluginConfig>,
         resourceMatcher: ResourceMatcher,
         httpExchangeHandler: HttpExchangeHandler,
-    ): HttpExchangeFutureHandler {
-        val wrapped: HttpExchangeFutureHandler = { httpExchange ->
-            makeFuture { httpExchangeHandler(httpExchange) }
-        }
-        return build(imposterConfig, allPluginConfigs, resourceMatcher, wrapped)
-    }
+    ): HttpExchangeFutureHandler =
+        build(imposterConfig, allPluginConfigs, resourceMatcher, wrapInFuture(httpExchangeHandler))
 
     override fun buildAndWrap(
         imposterConfig: ImposterConfig,
         pluginConfig: PluginConfig,
         resourceMatcher: ResourceMatcher,
-        httpExchangeHandler: HttpExchangeHandler
-    ): HttpExchangeFutureHandler {
-        val wrapped: HttpExchangeFutureHandler = { httpExchange ->
-            makeFuture { httpExchangeHandler(httpExchange) }
-        }
-        return build(imposterConfig, pluginConfig, resourceMatcher, wrapped)
-    }
+        httpExchangeHandler: HttpExchangeHandler,
+    ): HttpExchangeFutureHandler =
+        build(imposterConfig, pluginConfig, resourceMatcher, wrapInFuture(httpExchangeHandler))
 
     /**
-     * {@inheritDoc}
+     * Wraps the given [httpExchangeHandler] in a [HttpExchangeFutureHandler] and returns the future.
+     * Note that the future will be completed with the result of the block, so the block must
+     * be a synchronous operation.
      */
+    private fun wrapInFuture(
+        httpExchangeHandler: HttpExchangeHandler,
+    ): HttpExchangeFutureHandler = { httpExchange ->
+        makeFuture { httpExchangeHandler(httpExchange) }
+    }
+
     override fun buildNotFoundExceptionHandler() = { httpExchange: HttpExchange ->
         if (
             null == httpExchange.get(ResourceUtil.RC_REQUEST_ID_KEY) ||
@@ -182,9 +176,6 @@ class HandlerServiceImpl @Inject constructor(
         LogUtil.logCompletion(httpExchange)
     }
 
-    /**
-     * {@inheritDoc}
-     */
     override fun buildUnhandledExceptionHandler() = { httpExchange: HttpExchange ->
         logAppropriatelyForPath(httpExchange, "Unhandled routing exception for request")
 
@@ -273,7 +264,7 @@ class HandlerServiceImpl @Inject constructor(
         }
     }
 
-    private fun handleResource(
+    private fun handle(
         pluginConfig: PluginConfig,
         httpExchangeHandler: HttpExchangeFutureHandler,
         httpExchange: HttpExchange,
