@@ -22,6 +22,7 @@ nav:
     - Response templates: 'templates.md'
     - Scripting: 'scripting.md'
     - Security: 'security.md'
+    - Steps: 'steps.md'
   
   - Mock types:
     - OpenAPI (and Swagger): 'openapi_plugin.md'
