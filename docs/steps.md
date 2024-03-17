@@ -1,6 +1,6 @@
 # Steps
 
-Imposter can perform multiple operations when it receives a request. These are called Steps. You can add multiple steps to a resource, calling external systems, running scripts and using [stores](./stores.md).
+Imposter can perform multiple operations when it receives a request. These are called Steps. You can add multiple steps, including calling external systems, running scripts and using [stores](./stores.md).
 
 Steps can use data from the request, stores, or the output of previous steps. Step outputs can be used in mock responses, such as in a [response template](./templates.md), or to drive conditional logic.
 
@@ -120,7 +120,7 @@ Since no `capture` section is defined, the response will not be stored.
 
 #### Example: Send a request and store the response
 
-Here is an example of a configuration file with a `remote` step that captures the response status code and body:
+Here is an example of a configuration file with a `remote` step that captures the response body:
 
 ```yaml
 # ...part of your configuration file
@@ -133,8 +133,6 @@ resources:
       url: http://example.com
       method: GET
       capture:
-        statusCode:
-          expression: "${remote.response.statusCode}"
         responseBody:
           expression: "${remote.response.body}"
 
@@ -151,27 +149,28 @@ As with all [stores](./stores.md), you can use data in [response templates](./te
 
 In this example, the mock response will contain the body of the response from `http://example.com` prefixed with the string `The upstream response was:`.
 
+##### Multiple captures
+
+You can capture multiple parts of the response by adding more properties to the `capture` block.
+
+For example, to capture the status code and the response body:
+
+```yaml
+# ...part of your configuration file
+capture:
+  statusCode:
+    expression: "${remote.response.statusCode}"
+  responseBody:
+    expression: "${remote.response.body}"
+```
+
+In this example, the `statusCode` and `responseBody` properties will be stored in the `request` store. You can then use these properties in subsequent steps or in response templates, by referencing the store properties, such as `${stores.request.statusCode}`.
+
 ---
 
 ## Further examples
 
 This section contains further examples of using steps, including multiple steps and using stores.
-
-### Simple example
-
-Here is an example with a single step:
-
-```yaml
-# ...part of your configuration file
-
-resources:
-- path: /example
-  method: GET
-  steps:
-    - type: script
-      code: |
-        console.log('Hello World!');
-```
 
 ### Example: Use previous step output in a later step
 
