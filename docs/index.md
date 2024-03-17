@@ -25,6 +25,7 @@ To begin, check out the [Getting started](getting_started.md) guide. See the _Co
 - [Response templates](templates.md)
 - [Scripting](scripting.md)
 - [Security](security.md)
+- [Steps](./steps.md)
 
 ### Developing mocks
 
