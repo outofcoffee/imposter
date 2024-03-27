@@ -44,6 +44,8 @@ package io.gatehill.imposter.plugin.config.security
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.gatehill.imposter.plugin.config.resource.conditional.ConditionalNameValuePair
+import io.gatehill.imposter.plugin.config.resource.request.FormParamsResourceConfig
+import io.gatehill.imposter.plugin.config.resource.request.QueryParamsResourceConfig
 import io.gatehill.imposter.plugin.config.resource.request.RequestHeadersResourceConfig
 
 /**
@@ -57,27 +59,27 @@ class SecurityCondition(
      * Raw configuration. Use [queryParams] instead.
      */
     @field:JsonProperty("queryParams")
-    private val _queryParams: Map<String, Any>? = null,
+    private val rawQueryParams: Map<String, Any>? = null,
 
     /**
      * Raw configuration. Use [formParams] instead.
      */
     @field:JsonProperty("formParams")
-    private val _formParams: Map<String, Any>? = null,
+    private val rawFormParams: Map<String, Any>? = null,
 
     /**
      * Raw configuration. Use [requestHeaders] instead.
      */
     @field:JsonProperty("requestHeaders")
-    private val _requestHeaders: Map<String, Any>? = null,
-): RequestHeadersResourceConfig {
-    val queryParams: Map<String, ConditionalNameValuePair> by lazy {
-        _queryParams?.let { ConditionalNameValuePair.parse(it) } ?: emptyMap()
+    private val rawRequestHeaders: Map<String, Any>? = null,
+): QueryParamsResourceConfig, RequestHeadersResourceConfig, FormParamsResourceConfig {
+    override val queryParams: Map<String, ConditionalNameValuePair> by lazy {
+        rawQueryParams?.let { ConditionalNameValuePair.parse(it) } ?: emptyMap()
     }
-    val formParams: Map<String, ConditionalNameValuePair> by lazy {
-        _formParams?.let { ConditionalNameValuePair.parse(it) } ?: emptyMap()
+    override val formParams: Map<String, ConditionalNameValuePair> by lazy {
+        rawFormParams?.let { ConditionalNameValuePair.parse(it) } ?: emptyMap()
     }
     override val requestHeaders: Map<String, ConditionalNameValuePair> by lazy {
-        _requestHeaders?.let { ConditionalNameValuePair.parse(it) } ?: emptyMap()
+        rawRequestHeaders?.let { ConditionalNameValuePair.parse(it) } ?: emptyMap()
     }
 }
