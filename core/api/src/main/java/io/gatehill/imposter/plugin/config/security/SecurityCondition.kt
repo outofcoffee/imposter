@@ -43,7 +43,8 @@
 package io.gatehill.imposter.plugin.config.security
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import io.gatehill.imposter.plugin.config.resource.RequestHeadersResourceConfig
+import io.gatehill.imposter.plugin.config.resource.conditional.ConditionalNameValuePair
+import io.gatehill.imposter.plugin.config.resource.request.RequestHeadersResourceConfig
 
 /**
  * @author Pete Cornish

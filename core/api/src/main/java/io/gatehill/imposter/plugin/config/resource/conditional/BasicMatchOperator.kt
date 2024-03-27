@@ -40,11 +40,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.plugin.config.security
+package io.gatehill.imposter.plugin.config.resource.conditional
 
 /**
  * @author Pete Cornish
  */
-enum class SecurityMatchOperator {
+enum class BasicMatchOperator {
     EqualTo, NotEqualTo, Matches, NotMatches
 }

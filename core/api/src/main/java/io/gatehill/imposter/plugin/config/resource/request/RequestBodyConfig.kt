@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -40,49 +40,48 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.plugin.config.security
+package io.gatehill.imposter.plugin.config.resource.request
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
+import io.gatehill.imposter.plugin.config.resource.conditional.BodyMatchOperator
 
 /**
- * Represents a name/value pair, such as an HTTP header or query parameter,
- * with a logical operator controlling the match behaviour.
- *
  * @author Pete Cornish
  */
-class ConditionalNameValuePair(
-    @field:JsonProperty("name")
-    val name: String,
+open class BaseRequestBodyConfig {
+    @field:JsonProperty("jsonPath")
+    val jsonPath: String? = null
+
+    @get:JsonIgnore
+    @field:JsonProperty("xPath")
+    var xPath: String? = null
+
+    @field:JsonProperty("xmlNamespaces")
+    var xmlNamespaces: Map<String, String>? = null
 
     @field:JsonProperty("value")
-    val value: String?,
+    var value: String? = null
 
     @field:JsonProperty("operator")
-    val operator: SecurityMatchOperator = SecurityMatchOperator.EqualTo
-) {
-    companion object {
-        fun parse(raw: Map<String, Any>): Map<String, ConditionalNameValuePair> {
-            return raw.entries.associate { (k, v) -> k to parsePair(k, v) }
-        }
+    var operator: BodyMatchOperator? = null
 
-        private fun parsePair(key: String, value: Any): ConditionalNameValuePair {
-            // String configuration form.
-            // HeaderName: <value>
-            if (value is String) {
-                return ConditionalNameValuePair(key, value, SecurityMatchOperator.EqualTo)
-            }
+    override fun toString(): String {
+        return "BaseRequestBodyConfig(jsonPath=$jsonPath, xPath=$xPath, xmlNamespaces=$xmlNamespaces, value=$value, operator=$operator)"
+    }
+}
 
-            // Extended configuration form.
-            // HeaderName:
-            //   value: <value>
-            //   operator: <operator>
-            @Suppress("UNCHECKED_CAST")
-            val structuredMatch = value as Map<String, String>
-            return ConditionalNameValuePair(
-                key,
-                structuredMatch["value"],
-                SecurityMatchOperator.valueOf(structuredMatch["operator"]!!)
-            )
-        }
+/**
+ * @author Pete Cornish
+ */
+class RequestBodyConfig : BaseRequestBodyConfig() {
+    @field:JsonProperty("allOf")
+    var allOf: List<BaseRequestBodyConfig>? = null
+
+    @field:JsonProperty("anyOf")
+    var anyOf: List<BaseRequestBodyConfig>? = null
+
+    override fun toString(): String {
+        return "RequestBodyConfig(parent=${super.toString()}, allOf=$allOf, anyOf=$anyOf)"
     }
 }
