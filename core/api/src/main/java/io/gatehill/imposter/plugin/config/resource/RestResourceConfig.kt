@@ -46,8 +46,8 @@ import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.gatehill.imposter.http.HttpMethod
-import io.gatehill.imposter.plugin.config.resource.conditional.BasicMatchOperator
 import io.gatehill.imposter.plugin.config.resource.conditional.ConditionalNameValuePair
+import io.gatehill.imposter.plugin.config.resource.conditional.MatchOperator
 import io.gatehill.imposter.plugin.config.resource.request.*
 import io.gatehill.imposter.plugin.config.steps.StepConfig
 import io.gatehill.imposter.plugin.config.steps.StepsConfigHolder
@@ -115,12 +115,12 @@ open class RestResourceConfig(
 
     /**
      * Backward compatibility for deprecated `params` property.
-     * Only [BasicMatchOperator.EqualTo] matches are supported.
+     * Only [MatchOperator.EqualTo] matches are supported.
      */
     @get:JsonIgnore
     override val params: Map<String, String>?
         get() = queryParams
-                .filter { it.value.operator == BasicMatchOperator.EqualTo && it.value.value != null }
+                .filter { it.value.operator == MatchOperator.EqualTo && it.value.value != null }
                 .mapValues { it.value.value!! }
 
     @field:JsonProperty("steps")

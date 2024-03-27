@@ -58,7 +58,7 @@ class ConditionalNameValuePair(
     val value: String?,
 
     @field:JsonProperty("operator")
-    val operator: BasicMatchOperator = BasicMatchOperator.EqualTo
+    val operator: MatchOperator = MatchOperator.EqualTo
 ) {
     companion object {
         fun parse(raw: Map<String, Any>): Map<String, ConditionalNameValuePair> =
@@ -75,14 +75,14 @@ class ConditionalNameValuePair(
                 ConditionalNameValuePair(
                     key,
                     structuredMatch["value"],
-                    BasicMatchOperator.valueOf(structuredMatch["operator"]!!)
+                    MatchOperator.valueOf(structuredMatch["operator"]!!)
                 )
             }
 
             // String configuration form.
             // HeaderName: <value>
             else -> {
-                ConditionalNameValuePair(key, value.toString(), BasicMatchOperator.EqualTo)
+                ConditionalNameValuePair(key, value.toString(), MatchOperator.EqualTo)
             }
         }
     }
