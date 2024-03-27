@@ -51,16 +51,16 @@ import io.gatehill.imposter.plugin.config.resource.RestResourceConfig
  * @author Pete Cornish
  */
 class RestPluginResourceConfig(
+    queryParams: Map<String, Any>? = null,
     requestHeaders: Map<String, Any>? = null,
-) : RestResourceConfig(), ContentTypedConfig {
+) : RestResourceConfig(
+    rawQueryParams = queryParams,
+    rawRequestHeaders = requestHeaders,
+), ContentTypedConfig {
     override var contentType: String? = null
         protected set
 
     val type: ResourceConfigType? = null
-
-    init {
-        _requestHeaders = requestHeaders
-    }
 
     override fun toString(): String {
         return "RestPluginResourceConfig(parent=${super.toString()}, path=$path, contentType=$contentType, type=$type)"

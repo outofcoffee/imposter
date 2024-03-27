@@ -61,28 +61,29 @@ class ConditionalNameValuePair(
     val operator: BasicMatchOperator = BasicMatchOperator.EqualTo
 ) {
     companion object {
-        fun parse(raw: Map<String, Any>): Map<String, ConditionalNameValuePair> {
-            return raw.entries.associate { (k, v) -> k to parsePair(k, v) }
-        }
+        fun parse(raw: Map<String, Any>): Map<String, ConditionalNameValuePair> =
+            raw.entries.associate { (k, v) -> k to parsePair(k, v) }
 
-        private fun parsePair(key: String, value: Any): ConditionalNameValuePair {
-            // String configuration form.
-            // HeaderName: <value>
-            if (value is String) {
-                return ConditionalNameValuePair(key, value, BasicMatchOperator.EqualTo)
-            }
-
+        private fun parsePair(key: String, value: Any): ConditionalNameValuePair = when (value) {
             // Extended configuration form.
             // HeaderName:
             //   value: <value>
             //   operator: <operator>
-            @Suppress("UNCHECKED_CAST")
-            val structuredMatch = value as Map<String, String>
-            return ConditionalNameValuePair(
-                key,
-                structuredMatch["value"],
-                BasicMatchOperator.valueOf(structuredMatch["operator"]!!)
-            )
+            is Map<*, *> -> {
+                @Suppress("UNCHECKED_CAST")
+                val structuredMatch = value as Map<String, String>
+                ConditionalNameValuePair(
+                    key,
+                    structuredMatch["value"],
+                    BasicMatchOperator.valueOf(structuredMatch["operator"]!!)
+                )
+            }
+
+            // String configuration form.
+            // HeaderName: <value>
+            else -> {
+                ConditionalNameValuePair(key, value.toString(), BasicMatchOperator.EqualTo)
+            }
         }
     }
 }
