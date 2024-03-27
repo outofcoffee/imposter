@@ -1,6 +1,6 @@
 FROM outofcoffee/imposter as imposter
 
-FROM eclipse-temurin:11.0.16_8-jre-focal
+FROM eclipse-temurin:11.0.22_7-jre-jammy
 COPY --from=imposter /opt/imposter/lib /opt/imposter/lib
 
 # your custom config
