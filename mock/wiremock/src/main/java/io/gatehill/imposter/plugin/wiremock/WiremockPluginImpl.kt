@@ -168,11 +168,12 @@ class WiremockPluginImpl @Inject constructor(
         }
 
         val uri = URI(url)
-        return RestPluginResourceConfig().apply {
+        return RestPluginResourceConfig(
+            requestHeaders = mapping.request.headers?.let { ConversionUtil.convertHeaders(it) }
+        ).apply {
             path = uri.path
             queryParams = ConversionUtil.convertQueryParams(uri.query)
             method = mapping.request.method?.uppercase()?.let { HttpMethod.valueOf(it) }
-            requestHeaders = mapping.request.headers?.let { ConversionUtil.convertHeaders(it) }
             requestBody = ConversionUtil.convertBodyPatterns(mapping.request.bodyPatterns)
             responseConfig.apply {
                 statusCode = mapping.response.status

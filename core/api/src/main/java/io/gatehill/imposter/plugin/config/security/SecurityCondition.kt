@@ -43,6 +43,7 @@
 package io.gatehill.imposter.plugin.config.security
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import io.gatehill.imposter.plugin.config.resource.RequestHeadersResourceConfig
 
 /**
  * @author Pete Cornish
@@ -68,14 +69,14 @@ class SecurityCondition(
      */
     @field:JsonProperty("requestHeaders")
     private val _requestHeaders: Map<String, Any>? = null,
-) {
+): RequestHeadersResourceConfig {
     val queryParams: Map<String, ConditionalNameValuePair> by lazy {
         _queryParams?.let { ConditionalNameValuePair.parse(it) } ?: emptyMap()
     }
     val formParams: Map<String, ConditionalNameValuePair> by lazy {
         _formParams?.let { ConditionalNameValuePair.parse(it) } ?: emptyMap()
     }
-    val requestHeaders: Map<String, ConditionalNameValuePair> by lazy {
+    override val requestHeaders: Map<String, ConditionalNameValuePair> by lazy {
         _requestHeaders?.let { ConditionalNameValuePair.parse(it) } ?: emptyMap()
     }
 }

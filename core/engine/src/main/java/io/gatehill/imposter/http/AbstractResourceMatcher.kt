@@ -55,7 +55,7 @@ import io.gatehill.imposter.service.script.InlineScriptService
 import io.gatehill.imposter.util.BodyQueryUtil
 import io.gatehill.imposter.util.InjectorUtil
 import io.gatehill.imposter.util.LogUtil
-import io.gatehill.imposter.util.StringUtil.safeEquals
+import io.gatehill.imposter.util.MatchUtil.safeEquals
 import org.apache.logging.log4j.LogManager
 import java.util.regex.Pattern
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -40,29 +40,55 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.plugin.rest.config
+package io.gatehill.imposter.util
 
-import io.gatehill.imposter.plugin.config.ContentTypedConfig
-import io.gatehill.imposter.plugin.config.resource.RestResourceConfig
+import io.gatehill.imposter.plugin.config.security.ConditionalNameValuePair
+import io.gatehill.imposter.plugin.config.security.SecurityMatchOperator
+import java.util.*
 
 /**
- * Extends a REST resource configuration with a content type and resource type.
- *
  * @author Pete Cornish
  */
-class RestPluginResourceConfig(
-    requestHeaders: Map<String, Any>? = null,
-) : RestResourceConfig(), ContentTypedConfig {
-    override var contentType: String? = null
-        protected set
-
-    val type: ResourceConfigType? = null
-
-    init {
-        _requestHeaders = requestHeaders
+object MatchUtil {
+    /**
+     * Checks if two objects match, where either input could be null.
+     *
+     * @param a object to test, possibly `null`
+     * @param b object to test, possibly `null`
+     * @return `true` if the objects match, otherwise `false`
+     */
+    fun safeEquals(a: Any?, b: Any?): Boolean {
+        return if (Objects.nonNull(a)) {
+            a == b
+        } else {
+            Objects.isNull(b)
+        }
     }
 
-    override fun toString(): String {
-        return "RestPluginResourceConfig(parent=${super.toString()}, path=$path, contentType=$contentType, type=$type)"
+    /**
+     * Checks if the actual value matches the given regular expression.
+     */
+    fun safeRegexMatch(actualValue: String?, expression: String?) =
+        expression?.toRegex()?.matches(actualValue ?: "") ?: false
+
+    fun conditionMatches(condition: ConditionalNameValuePair, actual: String?): Boolean {
+        val matched: Boolean = when (condition.operator) {
+            SecurityMatchOperator.EqualTo -> {
+                safeEquals(actual, condition.value)
+            }
+
+            SecurityMatchOperator.NotEqualTo -> {
+                !safeEquals(actual, condition.value)
+            }
+
+            SecurityMatchOperator.Matches -> {
+                safeRegexMatch(actual, condition.value)
+            }
+
+            SecurityMatchOperator.NotMatches -> {
+                !safeRegexMatch(actual, condition.value)
+            }
+        }
+        return matched
     }
 }
