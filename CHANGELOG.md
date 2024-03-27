@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.35.2] - 2024-03-27
+### Changed
+- chore(deps): bumps base image to 11.0.22_7-jre-jammy.
+
 ## [3.35.1] - 2024-03-09
 ### Changed
 - chore(deps): bumps CLI to 0.38.0.
