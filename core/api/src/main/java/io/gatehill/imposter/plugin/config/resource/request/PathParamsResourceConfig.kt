@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2016-2021.
  *
  * This file is part of Imposter.
  *
@@ -40,11 +40,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.plugin.config.security
+package io.gatehill.imposter.plugin.config.resource.request
+
+import io.gatehill.imposter.plugin.config.resource.conditional.ConditionalNameValuePair
 
 /**
  * @author Pete Cornish
  */
-enum class SecurityMatchOperator {
-    EqualTo, NotEqualTo, Matches, NotMatches
+interface PathParamsResourceConfig {
+    val pathParams: Map<String, ConditionalNameValuePair>?
 }

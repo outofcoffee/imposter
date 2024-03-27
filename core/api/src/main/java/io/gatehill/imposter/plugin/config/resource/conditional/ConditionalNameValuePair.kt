@@ -40,17 +40,50 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.plugin.config.resource
+package io.gatehill.imposter.plugin.config.resource.conditional
+
+import com.fasterxml.jackson.annotation.JsonProperty
 
 /**
- * Deprecated and superseded by [QueryParamsResourceConfig.getQueryParams].
+ * Represents a name/value pair, such as an HTTP header or query parameter,
+ * with a logical operator controlling the match behaviour.
  *
  * @author Pete Cornish
  */
-interface LegacyQueryParamsResourceConfig {
-    /**
-     * Use [QueryParamsResourceConfig.queryParams] instead.
-     */
-    @get:Deprecated("Use queryParams instead")
-    val params: Map<String, String>?
+class ConditionalNameValuePair(
+    @field:JsonProperty("name")
+    val name: String,
+
+    @field:JsonProperty("value")
+    val value: String?,
+
+    @field:JsonProperty("operator")
+    val operator: MatchOperator = MatchOperator.EqualTo
+) {
+    companion object {
+        fun parse(raw: Map<String, Any>): Map<String, ConditionalNameValuePair> =
+            raw.entries.associate { (k, v) -> k to parsePair(k, v) }
+
+        private fun parsePair(key: String, value: Any): ConditionalNameValuePair = when (value) {
+            // Extended configuration form.
+            // HeaderName:
+            //   value: <value>
+            //   operator: <operator>
+            is Map<*, *> -> {
+                @Suppress("UNCHECKED_CAST")
+                val structuredMatch = value as Map<String, String>
+                ConditionalNameValuePair(
+                    key,
+                    structuredMatch["value"],
+                    MatchOperator.valueOf(structuredMatch["operator"]!!)
+                )
+            }
+
+            // String configuration form.
+            // HeaderName: <value>
+            else -> {
+                ConditionalNameValuePair(key, value.toString(), MatchOperator.EqualTo)
+            }
+        }
+    }
 }

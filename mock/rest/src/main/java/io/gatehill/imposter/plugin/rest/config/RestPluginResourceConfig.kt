@@ -50,7 +50,13 @@ import io.gatehill.imposter.plugin.config.resource.RestResourceConfig
  *
  * @author Pete Cornish
  */
-class RestPluginResourceConfig : RestResourceConfig(), ContentTypedConfig {
+class RestPluginResourceConfig(
+    queryParams: Map<String, Any>? = null,
+    requestHeaders: Map<String, Any>? = null,
+) : RestResourceConfig(
+    rawQueryParams = queryParams,
+    rawRequestHeaders = requestHeaders,
+), ContentTypedConfig {
     override var contentType: String? = null
         protected set
 

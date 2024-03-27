@@ -45,9 +45,10 @@ package io.gatehill.imposter.http
 import io.gatehill.imposter.config.ResolvedResourceConfig
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
-import io.gatehill.imposter.plugin.config.resource.MethodResourceConfig
+import io.gatehill.imposter.plugin.config.resource.conditional.ConditionalNameValuePair
+import io.gatehill.imposter.plugin.config.resource.request.MethodResourceConfig
 import io.gatehill.imposter.util.CollectionUtil.convertKeysToLowerCase
-import io.gatehill.imposter.util.StringUtil.safeEquals
+import io.gatehill.imposter.util.MatchUtil.conditionMatches
 import java.util.*
 
 
@@ -109,10 +110,10 @@ class SingletonResourceMatcher : AbstractResourceMatcher() {
      * @return `true` if the configured parameters match the request, otherwise `false`
      */
     private fun matchPairs(
-        matchDescription: String,
-        requestMap: Map<String, String>,
-        resourceMap: Map<String, String>,
-        caseSensitiveKeyMatch: Boolean,
+            matchDescription: String,
+            requestMap: Map<String, String>,
+            resourceMap: Map<String, ConditionalNameValuePair>,
+            caseSensitiveKeyMatch: Boolean,
     ): ResourceMatchResult {
         // none configured
         if (resourceMap.isEmpty()) {
@@ -123,9 +124,9 @@ class SingletonResourceMatcher : AbstractResourceMatcher() {
         val comparisonRequestMap = if (caseSensitiveKeyMatch) requestMap else convertKeysToLowerCase(requestMap)
 
         // all members of the config map must be present in the request for it to match
-        val allEqual = resourceMap.all { (key, value) ->
+        val allEqual = resourceMap.all { (key, condition) ->
             val configKey: String = if (caseSensitiveKeyMatch) key else key.lowercase(Locale.getDefault())
-            safeEquals(comparisonRequestMap[configKey], value)
+            conditionMatches(condition, comparisonRequestMap[configKey])
         }
         return if (allEqual) {
             ResourceMatchResult.exactMatch(matchDescription)

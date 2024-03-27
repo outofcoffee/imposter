@@ -47,7 +47,7 @@ import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.plugin.config.CommonPluginConfig
 import io.gatehill.imposter.plugin.config.ContentTypedConfig
 import io.gatehill.imposter.plugin.config.ResourcesHolder
-import io.gatehill.imposter.plugin.config.resource.MethodResourceConfig
+import io.gatehill.imposter.plugin.config.resource.request.MethodResourceConfig
 
 /**
  * @author Pete Cornish

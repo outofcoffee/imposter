@@ -43,14 +43,29 @@
 package io.gatehill.imposter.config
 
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
+import io.gatehill.imposter.plugin.config.resource.conditional.ConditionalNameValuePair
+import io.gatehill.imposter.plugin.config.resource.request.FormParamsResourceConfig
+import io.gatehill.imposter.plugin.config.resource.request.PathParamsResourceConfig
+import io.gatehill.imposter.plugin.config.resource.request.QueryParamsResourceConfig
+import io.gatehill.imposter.plugin.config.resource.request.RequestHeadersResourceConfig
 
 /**
  * @author Pete Cornish
  */
 data class ResolvedResourceConfig(
     val config: BasicResourceConfig,
-    val pathParams: Map<String, String>,
-    val queryParams: Map<String, String>,
-    val formParams: Map<String, String>,
-    val requestHeaders: Map<String, String>
-)
+    val pathParams: Map<String, ConditionalNameValuePair>,
+    val queryParams: Map<String, ConditionalNameValuePair>,
+    val formParams: Map<String, ConditionalNameValuePair>,
+    val requestHeaders: Map<String, ConditionalNameValuePair>
+) {
+    companion object {
+        fun parseConfig(config: BasicResourceConfig) = ResolvedResourceConfig(
+            config = config,
+            pathParams = (config as? PathParamsResourceConfig)?.pathParams ?: emptyMap(),
+            queryParams = (config as? QueryParamsResourceConfig)?.queryParams ?: emptyMap(),
+            formParams = (config as? FormParamsResourceConfig)?.formParams ?: emptyMap(),
+            requestHeaders = (config as? RequestHeadersResourceConfig)?.requestHeaders ?: emptyMap(),
+        )
+    }
+}

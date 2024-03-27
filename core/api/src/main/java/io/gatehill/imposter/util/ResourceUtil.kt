@@ -44,9 +44,9 @@ package io.gatehill.imposter.util
 
 import com.google.common.base.Strings
 import io.gatehill.imposter.http.HttpMethod
-import io.gatehill.imposter.plugin.config.resource.MethodResourceConfig
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
+import io.gatehill.imposter.plugin.config.resource.request.MethodResourceConfig
 import java.util.regex.Pattern
 
 /**

@@ -40,49 +40,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.plugin.config.security
+package io.gatehill.imposter.plugin.config.resource.request
 
-import com.fasterxml.jackson.annotation.JsonProperty
+import io.gatehill.imposter.plugin.config.resource.conditional.ConditionalNameValuePair
 
 /**
- * Represents a name/value pair, such as an HTTP header or query parameter,
- * with a logical operator controlling the match behaviour.
- *
  * @author Pete Cornish
  */
-class ConditionalNameValuePair(
-    @field:JsonProperty("name")
-    val name: String,
-
-    @field:JsonProperty("value")
-    val value: String?,
-
-    @field:JsonProperty("operator")
-    val operator: SecurityMatchOperator = SecurityMatchOperator.EqualTo
-) {
-    companion object {
-        fun parse(raw: Map<String, Any>): Map<String, ConditionalNameValuePair> {
-            return raw.entries.associate { (k, v) -> k to parsePair(k, v) }
-        }
-
-        private fun parsePair(key: String, value: Any): ConditionalNameValuePair {
-            // String configuration form.
-            // HeaderName: <value>
-            if (value is String) {
-                return ConditionalNameValuePair(key, value, SecurityMatchOperator.EqualTo)
-            }
-
-            // Extended configuration form.
-            // HeaderName:
-            //   value: <value>
-            //   operator: <operator>
-            @Suppress("UNCHECKED_CAST")
-            val structuredMatch = value as Map<String, String>
-            return ConditionalNameValuePair(
-                key,
-                structuredMatch["value"],
-                SecurityMatchOperator.valueOf(structuredMatch["operator"]!!)
-            )
-        }
-    }
+interface QueryParamsResourceConfig {
+    val queryParams: Map<String, ConditionalNameValuePair>?
 }

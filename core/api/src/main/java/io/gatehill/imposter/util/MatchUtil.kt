@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -40,46 +40,58 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.plugin.config.security
+package io.gatehill.imposter.util
 
-import com.fasterxml.jackson.annotation.JsonProperty
 import io.gatehill.imposter.plugin.config.resource.conditional.ConditionalNameValuePair
-import io.gatehill.imposter.plugin.config.resource.request.FormParamsResourceConfig
-import io.gatehill.imposter.plugin.config.resource.request.QueryParamsResourceConfig
-import io.gatehill.imposter.plugin.config.resource.request.RequestHeadersResourceConfig
+import io.gatehill.imposter.plugin.config.resource.conditional.MatchOperator
+import java.util.*
 
 /**
  * @author Pete Cornish
  */
-class SecurityCondition(
-    @field:JsonProperty("effect")
-    val effect: SecurityEffect = SecurityEffect.Deny,
+object MatchUtil {
+    /**
+     * Checks if the condition is satisfied by the actual value.
+     */
+    fun conditionMatches(
+        condition: ConditionalNameValuePair,
+        actual: String?
+    ): Boolean = when (condition.operator) {
+        MatchOperator.Exists -> null != actual
+        MatchOperator.NotExists -> null == actual
+        MatchOperator.EqualTo -> safeEquals(actual, condition.value)
+        MatchOperator.NotEqualTo -> !safeEquals(actual, condition.value)
+        MatchOperator.Contains -> safeContains(actual, condition.value)
+        MatchOperator.NotContains -> !safeContains(actual, condition.value)
+        MatchOperator.Matches -> safeRegexMatch(actual, condition.value)
+        MatchOperator.NotMatches -> !safeRegexMatch(actual, condition.value)
+    }
 
     /**
-     * Raw configuration. Use [queryParams] instead.
+     * Checks if two objects match, where either input could be null.
+     *
+     * @param a object to test, possibly `null`
+     * @param b object to test, possibly `null`
+     * @return `true` if the objects match, otherwise `false`
      */
-    @field:JsonProperty("queryParams")
-    private val rawQueryParams: Map<String, Any>? = null,
+    fun safeEquals(a: Any?, b: Any?): Boolean {
+        return if (Objects.nonNull(a)) {
+            a == b
+        } else {
+            Objects.isNull(b)
+        }
+    }
 
     /**
-     * Raw configuration. Use [formParams] instead.
+     * Checks if the actual value matches the given regular expression.
      */
-    @field:JsonProperty("formParams")
-    private val rawFormParams: Map<String, Any>? = null,
+    private fun safeRegexMatch(actualValue: String?, expression: String?): Boolean =
+        expression?.toRegex()?.matches(actualValue ?: "") ?: false
 
-    /**
-     * Raw configuration. Use [requestHeaders] instead.
-     */
-    @field:JsonProperty("requestHeaders")
-    private val rawRequestHeaders: Map<String, Any>? = null,
-): QueryParamsResourceConfig, RequestHeadersResourceConfig, FormParamsResourceConfig {
-    override val queryParams: Map<String, ConditionalNameValuePair> by lazy {
-        rawQueryParams?.let { ConditionalNameValuePair.parse(it) } ?: emptyMap()
-    }
-    override val formParams: Map<String, ConditionalNameValuePair> by lazy {
-        rawFormParams?.let { ConditionalNameValuePair.parse(it) } ?: emptyMap()
-    }
-    override val requestHeaders: Map<String, ConditionalNameValuePair> by lazy {
-        rawRequestHeaders?.let { ConditionalNameValuePair.parse(it) } ?: emptyMap()
-    }
+    private fun safeContains(actual: String?, expected: String?) =
+        if (actual != null && expected != null) {
+            actual.toString().contains(expected)
+        } else {
+            false
+        }
 }

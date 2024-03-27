@@ -47,8 +47,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.gatehill.imposter.plugin.config.resource.AbstractResourceConfig
 import io.gatehill.imposter.plugin.config.resource.EvalResourceConfig
-import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyConfig
-import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyResourceConfig
+import io.gatehill.imposter.plugin.config.resource.request.RequestBodyConfig
+import io.gatehill.imposter.plugin.config.resource.request.RequestBodyResourceConfig
 import java.util.*
 
 class SoapPluginResourceConfig : AbstractResourceConfig(), RequestBodyResourceConfig, EvalResourceConfig {
