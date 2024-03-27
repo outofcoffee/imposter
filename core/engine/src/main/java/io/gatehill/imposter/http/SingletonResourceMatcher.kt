@@ -46,8 +46,9 @@ import io.gatehill.imposter.config.ResolvedResourceConfig
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.resource.MethodResourceConfig
+import io.gatehill.imposter.plugin.config.security.ConditionalNameValuePair
 import io.gatehill.imposter.util.CollectionUtil.convertKeysToLowerCase
-import io.gatehill.imposter.util.StringUtil.safeEquals
+import io.gatehill.imposter.util.MatchUtil.conditionMatches
 import java.util.*
 
 
@@ -111,7 +112,7 @@ class SingletonResourceMatcher : AbstractResourceMatcher() {
     private fun matchPairs(
         matchDescription: String,
         requestMap: Map<String, String>,
-        resourceMap: Map<String, String>,
+        resourceMap: Map<String, ConditionalNameValuePair>,
         caseSensitiveKeyMatch: Boolean,
     ): ResourceMatchResult {
         // none configured
@@ -123,9 +124,9 @@ class SingletonResourceMatcher : AbstractResourceMatcher() {
         val comparisonRequestMap = if (caseSensitiveKeyMatch) requestMap else convertKeysToLowerCase(requestMap)
 
         // all members of the config map must be present in the request for it to match
-        val allEqual = resourceMap.all { (key, value) ->
+        val allEqual = resourceMap.all { (key, condition) ->
             val configKey: String = if (caseSensitiveKeyMatch) key else key.lowercase(Locale.getDefault())
-            safeEquals(comparisonRequestMap[configKey], value)
+            conditionMatches(condition, comparisonRequestMap[configKey])
         }
         return if (allEqual) {
             ResourceMatchResult.exactMatch(matchDescription)

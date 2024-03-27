@@ -42,15 +42,26 @@
  */
 package io.gatehill.imposter.config
 
-import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
+import io.gatehill.imposter.plugin.config.resource.*
+import io.gatehill.imposter.plugin.config.security.ConditionalNameValuePair
 
 /**
  * @author Pete Cornish
  */
 data class ResolvedResourceConfig(
     val config: BasicResourceConfig,
-    val pathParams: Map<String, String>,
-    val queryParams: Map<String, String>,
-    val formParams: Map<String, String>,
-    val requestHeaders: Map<String, String>
-)
+    val pathParams: Map<String, ConditionalNameValuePair>,
+    val queryParams: Map<String, ConditionalNameValuePair>,
+    val formParams: Map<String, ConditionalNameValuePair>,
+    val requestHeaders: Map<String, ConditionalNameValuePair>
+) {
+    companion object {
+        fun parseConfig(config: BasicResourceConfig) = ResolvedResourceConfig(
+            config = config,
+            pathParams = (config as? PathParamsResourceConfig)?.pathParams?.let(ConditionalNameValuePair::parse) ?: emptyMap(),
+            queryParams = (config as? QueryParamsResourceConfig)?.queryParams?.let(ConditionalNameValuePair::parse) ?: emptyMap(),
+            formParams = (config as? FormParamsResourceConfig)?.formParams?.let(ConditionalNameValuePair::parse) ?: emptyMap(),
+            requestHeaders = (config as? RequestHeadersResourceConfig)?.requestHeaders ?: emptyMap(),
+        )
+    }
+}

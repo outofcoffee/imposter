@@ -48,9 +48,9 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyConfig
 import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyResourceConfig
+import io.gatehill.imposter.plugin.config.security.ConditionalNameValuePair
 import io.gatehill.imposter.plugin.config.steps.StepConfig
 import io.gatehill.imposter.plugin.config.steps.StepsConfigHolder
-import java.util.*
 
 /**
  * @author Pete Cornish
@@ -69,11 +69,18 @@ open class RestResourceConfig : AbstractResourceConfig(), MethodResourceConfig, 
     @field:JsonAlias("params")
     override var queryParams: Map<String, String>? = null
 
+    /**
+     * Raw configuration. Use [requestHeaders] instead.
+     */
+    @field:JsonProperty("requestHeaders")
+    protected var _requestHeaders: Map<String, Any>? = null
+
+    override val requestHeaders: Map<String, ConditionalNameValuePair> by lazy {
+        _requestHeaders?.let { ConditionalNameValuePair.parse(it) } ?: emptyMap()
+    }
+
     @field:JsonProperty("formParams")
     override var formParams: Map<String, String>? = null
-
-    @field:JsonProperty("requestHeaders")
-    override var requestHeaders: Map<String, String>? = null
 
     @field:JsonProperty("requestBody")
     override var requestBody: RequestBodyConfig? = null
