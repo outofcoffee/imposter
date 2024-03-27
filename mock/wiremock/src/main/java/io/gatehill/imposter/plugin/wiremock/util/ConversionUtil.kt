@@ -42,8 +42,8 @@
  */
 package io.gatehill.imposter.plugin.wiremock.util
 
-import io.gatehill.imposter.plugin.config.resource.ResourceMatchOperator
-import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyConfig
+import io.gatehill.imposter.plugin.config.resource.conditional.BodyMatchOperator
+import io.gatehill.imposter.plugin.config.resource.request.RequestBodyConfig
 import io.gatehill.imposter.plugin.wiremock.model.BodyPattern
 import io.gatehill.imposter.plugin.wiremock.model.MappingResponse
 import io.gatehill.imposter.script.FailureSimulationType
@@ -185,7 +185,7 @@ object ConversionUtil {
                 // body pattern using XPath with embedded conditional check, but no value;
                 // treat as existence check
                 requestBodyConfig.xPath = matchesXPath
-                requestBodyConfig.operator = ResourceMatchOperator.Exists
+                requestBodyConfig.operator = BodyMatchOperator.Exists
             }
 
             is Map<*, *> -> {
@@ -197,13 +197,13 @@ object ConversionUtil {
                     requestBodyConfig.value = equalTo.toString()
                 } ?: matchesXPath["contains"]?.let { contains ->
                     requestBodyConfig.value = contains.toString()
-                    requestBodyConfig.operator = ResourceMatchOperator.Contains
+                    requestBodyConfig.operator = BodyMatchOperator.Contains
                 } ?: matchesXPath["matches"]?.let { matches ->
                     requestBodyConfig.value = matches.toString()
-                    requestBodyConfig.operator = ResourceMatchOperator.Matches
+                    requestBodyConfig.operator = BodyMatchOperator.Matches
                 } ?: matchesXPath["doesNotMatch"]?.let { matches ->
                     requestBodyConfig.value = matches.toString()
-                    requestBodyConfig.operator = ResourceMatchOperator.NotMatches
+                    requestBodyConfig.operator = BodyMatchOperator.NotMatches
                 }
             }
         }

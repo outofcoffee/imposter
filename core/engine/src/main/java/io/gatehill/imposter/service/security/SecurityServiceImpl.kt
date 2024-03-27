@@ -45,7 +45,11 @@ package io.gatehill.imposter.service.security
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.lifecycle.SecurityLifecycleHooks
 import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.config.security.*
+import io.gatehill.imposter.plugin.config.resource.conditional.ConditionalNameValuePair
+import io.gatehill.imposter.plugin.config.security.SecurityCondition
+import io.gatehill.imposter.plugin.config.security.SecurityConfig
+import io.gatehill.imposter.plugin.config.security.SecurityConfigHolder
+import io.gatehill.imposter.plugin.config.security.SecurityEffect
 import io.gatehill.imposter.service.SecurityService
 import io.gatehill.imposter.util.CollectionUtil.convertKeysToLowerCase
 import io.gatehill.imposter.util.HttpUtil
@@ -173,10 +177,10 @@ class SecurityServiceImpl @Inject constructor(
      * @return the actual effect based on the values
      */
     private fun checkCondition(
-        conditionMap: Map<String, ConditionalNameValuePair>,
-        requestMap: Map<String, String>,
-        conditionEffect: SecurityEffect,
-        caseSensitiveKeyMatch: Boolean,
+            conditionMap: Map<String, ConditionalNameValuePair>,
+            requestMap: Map<String, String>,
+            conditionEffect: SecurityEffect,
+            caseSensitiveKeyMatch: Boolean,
     ): List<SecurityEffect> {
         val comparisonMap = if (caseSensitiveKeyMatch) requestMap else convertKeysToLowerCase(requestMap)
         return conditionMap.values.map { conditionValue: ConditionalNameValuePair ->
@@ -230,9 +234,9 @@ class SecurityServiceImpl @Inject constructor(
     }
 
     private fun describeConditionPart(
-        description: StringBuilder,
-        part: Map<String, ConditionalNameValuePair>,
-        partType: String,
+            description: StringBuilder,
+            part: Map<String, ConditionalNameValuePair>,
+            partType: String,
     ) {
         if (part.isNotEmpty()) {
             if (description.isNotEmpty()) {

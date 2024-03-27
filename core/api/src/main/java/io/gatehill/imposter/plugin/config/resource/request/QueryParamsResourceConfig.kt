@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2016-2021.
  *
  * This file is part of Imposter.
  *
@@ -40,48 +40,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.plugin.config.resource.reqbody
-
-import com.fasterxml.jackson.annotation.JsonIgnore
-import com.fasterxml.jackson.annotation.JsonProperty
-import io.gatehill.imposter.plugin.config.resource.ResourceMatchOperator
+package io.gatehill.imposter.plugin.config.resource.request
 
 /**
  * @author Pete Cornish
  */
-open class BaseRequestBodyConfig {
-    @field:JsonProperty("jsonPath")
-    val jsonPath: String? = null
-
-    @get:JsonIgnore
-    @field:JsonProperty("xPath")
-    var xPath: String? = null
-
-    @field:JsonProperty("xmlNamespaces")
-    var xmlNamespaces: Map<String, String>? = null
-
-    @field:JsonProperty("value")
-    var value: String? = null
-
-    @field:JsonProperty("operator")
-    var operator: ResourceMatchOperator? = null
-
-    override fun toString(): String {
-        return "BaseRequestBodyConfig(jsonPath=$jsonPath, xPath=$xPath, xmlNamespaces=$xmlNamespaces, value=$value, operator=$operator)"
-    }
-}
-
-/**
- * @author Pete Cornish
- */
-class RequestBodyConfig : BaseRequestBodyConfig() {
-    @field:JsonProperty("allOf")
-    var allOf: List<BaseRequestBodyConfig>? = null
-
-    @field:JsonProperty("anyOf")
-    var anyOf: List<BaseRequestBodyConfig>? = null
-
-    override fun toString(): String {
-        return "RequestBodyConfig(parent=${super.toString()}, allOf=$allOf, anyOf=$anyOf)"
-    }
+interface QueryParamsResourceConfig {
+    val queryParams: Map<String, String>?
 }

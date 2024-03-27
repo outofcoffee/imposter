@@ -42,8 +42,12 @@
  */
 package io.gatehill.imposter.config
 
-import io.gatehill.imposter.plugin.config.resource.*
-import io.gatehill.imposter.plugin.config.security.ConditionalNameValuePair
+import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
+import io.gatehill.imposter.plugin.config.resource.conditional.ConditionalNameValuePair
+import io.gatehill.imposter.plugin.config.resource.request.FormParamsResourceConfig
+import io.gatehill.imposter.plugin.config.resource.request.PathParamsResourceConfig
+import io.gatehill.imposter.plugin.config.resource.request.QueryParamsResourceConfig
+import io.gatehill.imposter.plugin.config.resource.request.RequestHeadersResourceConfig
 
 /**
  * @author Pete Cornish

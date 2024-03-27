@@ -42,8 +42,8 @@
  */
 package io.gatehill.imposter.util
 
-import io.gatehill.imposter.plugin.config.security.ConditionalNameValuePair
-import io.gatehill.imposter.plugin.config.security.SecurityMatchOperator
+import io.gatehill.imposter.plugin.config.resource.conditional.BasicMatchOperator
+import io.gatehill.imposter.plugin.config.resource.conditional.ConditionalNameValuePair
 import java.util.*
 
 /**
@@ -73,19 +73,19 @@ object MatchUtil {
 
     fun conditionMatches(condition: ConditionalNameValuePair, actual: String?): Boolean {
         val matched: Boolean = when (condition.operator) {
-            SecurityMatchOperator.EqualTo -> {
+            BasicMatchOperator.EqualTo -> {
                 safeEquals(actual, condition.value)
             }
 
-            SecurityMatchOperator.NotEqualTo -> {
+            BasicMatchOperator.NotEqualTo -> {
                 !safeEquals(actual, condition.value)
             }
 
-            SecurityMatchOperator.Matches -> {
+            BasicMatchOperator.Matches -> {
                 safeRegexMatch(actual, condition.value)
             }
 
-            SecurityMatchOperator.NotMatches -> {
+            BasicMatchOperator.NotMatches -> {
                 !safeRegexMatch(actual, condition.value)
             }
         }

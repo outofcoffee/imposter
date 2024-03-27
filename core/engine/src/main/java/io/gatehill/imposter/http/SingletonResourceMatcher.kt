@@ -45,8 +45,8 @@ package io.gatehill.imposter.http
 import io.gatehill.imposter.config.ResolvedResourceConfig
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
-import io.gatehill.imposter.plugin.config.resource.MethodResourceConfig
-import io.gatehill.imposter.plugin.config.security.ConditionalNameValuePair
+import io.gatehill.imposter.plugin.config.resource.conditional.ConditionalNameValuePair
+import io.gatehill.imposter.plugin.config.resource.request.MethodResourceConfig
 import io.gatehill.imposter.util.CollectionUtil.convertKeysToLowerCase
 import io.gatehill.imposter.util.MatchUtil.conditionMatches
 import java.util.*
@@ -110,10 +110,10 @@ class SingletonResourceMatcher : AbstractResourceMatcher() {
      * @return `true` if the configured parameters match the request, otherwise `false`
      */
     private fun matchPairs(
-        matchDescription: String,
-        requestMap: Map<String, String>,
-        resourceMap: Map<String, ConditionalNameValuePair>,
-        caseSensitiveKeyMatch: Boolean,
+            matchDescription: String,
+            requestMap: Map<String, String>,
+            resourceMap: Map<String, ConditionalNameValuePair>,
+            caseSensitiveKeyMatch: Boolean,
     ): ResourceMatchResult {
         // none configured
         if (resourceMap.isEmpty()) {

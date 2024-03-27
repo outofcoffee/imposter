@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023.
+ * Copyright (c) 2016-2021.
  *
  * This file is part of Imposter.
  *
@@ -40,11 +40,17 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.plugin.config.resource
+package io.gatehill.imposter.plugin.config.resource.request
 
 /**
+ * Deprecated and superseded by [QueryParamsResourceConfig.getQueryParams].
+ *
  * @author Pete Cornish
  */
-interface FormParamsResourceConfig {
-    val formParams: Map<String, String>?
+interface LegacyQueryParamsResourceConfig {
+    /**
+     * Use [QueryParamsResourceConfig.queryParams] instead.
+     */
+    @get:Deprecated("Use queryParams instead")
+    val params: Map<String, String>?
 }

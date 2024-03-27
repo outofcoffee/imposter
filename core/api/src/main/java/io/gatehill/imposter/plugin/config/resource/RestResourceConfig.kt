@@ -46,9 +46,8 @@ import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.gatehill.imposter.http.HttpMethod
-import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyConfig
-import io.gatehill.imposter.plugin.config.resource.reqbody.RequestBodyResourceConfig
-import io.gatehill.imposter.plugin.config.security.ConditionalNameValuePair
+import io.gatehill.imposter.plugin.config.resource.conditional.ConditionalNameValuePair
+import io.gatehill.imposter.plugin.config.resource.request.*
 import io.gatehill.imposter.plugin.config.steps.StepConfig
 import io.gatehill.imposter.plugin.config.steps.StepsConfigHolder
 
@@ -56,8 +55,8 @@ import io.gatehill.imposter.plugin.config.steps.StepsConfigHolder
  * @author Pete Cornish
  */
 open class RestResourceConfig : AbstractResourceConfig(), MethodResourceConfig, PathParamsResourceConfig,
-    QueryParamsResourceConfig, LegacyQueryParamsResourceConfig, RequestHeadersResourceConfig, FormParamsResourceConfig,
-    RequestBodyResourceConfig, EvalResourceConfig, PassthroughResourceConfig, StepsConfigHolder {
+        QueryParamsResourceConfig, LegacyQueryParamsResourceConfig, RequestHeadersResourceConfig, FormParamsResourceConfig,
+        RequestBodyResourceConfig, EvalResourceConfig, PassthroughResourceConfig, StepsConfigHolder {
 
     @field:JsonProperty("method")
     override var method: HttpMethod? = null
