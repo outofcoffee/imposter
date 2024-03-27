@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2023.
  *
  * This file is part of Imposter.
  *
@@ -40,13 +40,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.plugin.config.resource
-
-import io.gatehill.imposter.plugin.config.security.ConditionalNameValuePair
+package io.gatehill.imposter.plugin.config.resource.request
 
 /**
  * @author Pete Cornish
  */
-interface RequestHeadersResourceConfig {
-    val requestHeaders: Map<String, ConditionalNameValuePair>?
+interface FormParamsResourceConfig {
+    val formParams: Map<String, String>?
 }
