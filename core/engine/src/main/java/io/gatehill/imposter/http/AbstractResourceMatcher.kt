@@ -47,7 +47,7 @@ import com.google.common.cache.CacheBuilder
 import io.gatehill.imposter.config.ResolvedResourceConfig
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
-import io.gatehill.imposter.plugin.config.resource.conditional.BodyMatchOperator
+import io.gatehill.imposter.plugin.config.resource.conditional.MatchOperator
 import io.gatehill.imposter.plugin.config.resource.request.BaseRequestBodyConfig
 import io.gatehill.imposter.plugin.config.resource.request.RequestBodyResourceConfig
 import io.gatehill.imposter.plugin.config.system.SystemConfigHolder
@@ -276,19 +276,19 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
             actualValue: Any?
     ): ResourceMatchResult {
         // defaults to equality check
-        val operator = bodyConfig.operator ?: BodyMatchOperator.EqualTo
+        val operator = bodyConfig.operator ?: MatchOperator.EqualTo
 
         val match = when (operator) {
-            BodyMatchOperator.Exists, BodyMatchOperator.NotExists ->
+            MatchOperator.Exists, MatchOperator.NotExists ->
                 matchIfExists(matchDescription, actualValue, operator)
 
-            BodyMatchOperator.EqualTo, BodyMatchOperator.NotEqualTo ->
+            MatchOperator.EqualTo, MatchOperator.NotEqualTo ->
                 matchUsingEquality(matchDescription, bodyConfig.value, actualValue, operator)
 
-            BodyMatchOperator.Contains, BodyMatchOperator.NotContains ->
+            MatchOperator.Contains, MatchOperator.NotContains ->
                 matchUsingContains(matchDescription, bodyConfig.value, actualValue, operator)
 
-            BodyMatchOperator.Matches, BodyMatchOperator.NotMatches ->
+            MatchOperator.Matches, MatchOperator.NotMatches ->
                 matchUsingRegex(matchDescription, bodyConfig.value, actualValue, operator)
         }
         if (LOGGER.isTraceEnabled) {
@@ -303,8 +303,8 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
     private fun matchIfExists(
             matchDescription: String,
             actualValue: Any?,
-            operator: BodyMatchOperator,
-    ) = if ((actualValue != null) == (operator == BodyMatchOperator.Exists)) {
+            operator: MatchOperator,
+    ) = if ((actualValue != null) == (operator == MatchOperator.Exists)) {
         ResourceMatchResult.exactMatch(matchDescription)
     } else {
         ResourceMatchResult.notMatched(matchDescription)
@@ -314,13 +314,13 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
             matchDescription: String,
             configuredValue: String?,
             actualValue: Any?,
-            operator: BodyMatchOperator,
+            operator: MatchOperator,
     ): ResourceMatchResult {
         val valueMatch = safeEquals(configuredValue, actualValue)
 
         // apply operator
-        val match = (operator == BodyMatchOperator.EqualTo && valueMatch ||
-                operator == BodyMatchOperator.NotEqualTo && !valueMatch)
+        val match = (operator == MatchOperator.EqualTo && valueMatch ||
+                operator == MatchOperator.NotEqualTo && !valueMatch)
 
         return if (match) {
             ResourceMatchResult.exactMatch(matchDescription)
@@ -333,7 +333,7 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
             matchDescription: String,
             configuredValue: String?,
             actualValue: Any?,
-            operator: BodyMatchOperator,
+            operator: MatchOperator,
     ): ResourceMatchResult {
         val valueMatch = if (actualValue != null && configuredValue != null) {
             actualValue.toString().contains(configuredValue)
@@ -342,8 +342,8 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
         }
 
         // apply operator
-        val match = (operator == BodyMatchOperator.Contains && valueMatch ||
-            operator == BodyMatchOperator.NotContains && !valueMatch)
+        val match = (operator == MatchOperator.Contains && valueMatch ||
+            operator == MatchOperator.NotContains && !valueMatch)
 
         return if (match) {
             ResourceMatchResult.exactMatch(matchDescription)
@@ -356,7 +356,7 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
             matchDescription: String,
             configuredValue: String?,
             actualValue: Any?,
-            operator: BodyMatchOperator,
+            operator: MatchOperator,
     ): ResourceMatchResult {
         val valueMatch = if (actualValue != null && configuredValue != null) {
             val pattern = patternCache.get(configuredValue) { Pattern.compile(configuredValue) }
@@ -366,8 +366,8 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
         }
 
         // apply operator
-        val match = (operator == BodyMatchOperator.Matches && valueMatch ||
-            operator == BodyMatchOperator.NotMatches && !valueMatch)
+        val match = (operator == MatchOperator.Matches && valueMatch ||
+            operator == MatchOperator.NotMatches && !valueMatch)
 
         return if (match) {
             ResourceMatchResult.exactMatch(matchDescription)

@@ -42,7 +42,7 @@
  */
 package io.gatehill.imposter.plugin.wiremock.util
 
-import io.gatehill.imposter.plugin.config.resource.conditional.BodyMatchOperator
+import io.gatehill.imposter.plugin.config.resource.conditional.MatchOperator
 import io.gatehill.imposter.plugin.config.resource.request.RequestBodyConfig
 import io.gatehill.imposter.plugin.wiremock.model.BodyPattern
 import io.gatehill.imposter.plugin.wiremock.model.MappingResponse
@@ -185,7 +185,7 @@ object ConversionUtil {
                 // body pattern using XPath with embedded conditional check, but no value;
                 // treat as existence check
                 requestBodyConfig.xPath = matchesXPath
-                requestBodyConfig.operator = BodyMatchOperator.Exists
+                requestBodyConfig.operator = MatchOperator.Exists
             }
 
             is Map<*, *> -> {
@@ -197,13 +197,13 @@ object ConversionUtil {
                     requestBodyConfig.value = equalTo.toString()
                 } ?: matchesXPath["contains"]?.let { contains ->
                     requestBodyConfig.value = contains.toString()
-                    requestBodyConfig.operator = BodyMatchOperator.Contains
+                    requestBodyConfig.operator = MatchOperator.Contains
                 } ?: matchesXPath["matches"]?.let { matches ->
                     requestBodyConfig.value = matches.toString()
-                    requestBodyConfig.operator = BodyMatchOperator.Matches
+                    requestBodyConfig.operator = MatchOperator.Matches
                 } ?: matchesXPath["doesNotMatch"]?.let { matches ->
                     requestBodyConfig.value = matches.toString()
-                    requestBodyConfig.operator = BodyMatchOperator.NotMatches
+                    requestBodyConfig.operator = MatchOperator.NotMatches
                 }
             }
         }
