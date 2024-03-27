@@ -45,20 +45,14 @@ package io.gatehill.imposter.service.security
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.lifecycle.SecurityLifecycleHooks
 import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.config.security.ConditionalNameValuePair
-import io.gatehill.imposter.plugin.config.security.SecurityCondition
-import io.gatehill.imposter.plugin.config.security.SecurityConfig
-import io.gatehill.imposter.plugin.config.security.SecurityConfigHolder
-import io.gatehill.imposter.plugin.config.security.SecurityEffect
-import io.gatehill.imposter.plugin.config.security.SecurityMatchOperator
+import io.gatehill.imposter.plugin.config.security.*
 import io.gatehill.imposter.service.SecurityService
 import io.gatehill.imposter.util.CollectionUtil.convertKeysToLowerCase
 import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.LogUtil
-import io.gatehill.imposter.util.StringUtil.safeEquals
-import io.gatehill.imposter.util.StringUtil.safeRegexMatch
+import io.gatehill.imposter.util.MatchUtil.conditionMatches
 import org.apache.logging.log4j.LogManager
-import java.util.Locale
+import java.util.*
 import javax.inject.Inject
 
 /**
@@ -189,21 +183,7 @@ class SecurityServiceImpl @Inject constructor(
             val key = if (caseSensitiveKeyMatch) conditionValue.name else conditionValue.name.lowercase(Locale.getDefault())
             val requestConditionValue = comparisonMap[key]
 
-            val matched: Boolean = when (conditionValue.operator) {
-                SecurityMatchOperator.EqualTo -> {
-                    safeEquals(requestConditionValue, conditionValue.value)
-                }
-                SecurityMatchOperator.NotEqualTo -> {
-                    !safeEquals(requestConditionValue, conditionValue.value)
-                }
-                SecurityMatchOperator.Matches -> {
-                    safeRegexMatch(requestConditionValue, conditionValue.value)
-                }
-                SecurityMatchOperator.NotMatches -> {
-                    !safeRegexMatch(requestConditionValue, conditionValue.value)
-                }
-            }
-
+            val matched = conditionMatches(conditionValue, requestConditionValue)
             val finalEffect: SecurityEffect = if (matched) {
                 conditionEffect
             } else {
