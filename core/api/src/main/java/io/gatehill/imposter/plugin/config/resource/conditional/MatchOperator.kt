@@ -45,6 +45,6 @@ package io.gatehill.imposter.plugin.config.resource.conditional
 /**
  * @author Pete Cornish
  */
-enum class BasicMatchOperator {
-    EqualTo, NotEqualTo, Matches, NotMatches
+enum class MatchOperator {
+    EqualTo, NotEqualTo, Contains, NotContains, Matches, NotMatches, Exists, NotExists
 }

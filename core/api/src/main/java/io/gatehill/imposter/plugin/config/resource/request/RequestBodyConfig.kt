@@ -44,7 +44,7 @@ package io.gatehill.imposter.plugin.config.resource.request
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
-import io.gatehill.imposter.plugin.config.resource.conditional.BodyMatchOperator
+import io.gatehill.imposter.plugin.config.resource.conditional.MatchOperator
 
 /**
  * @author Pete Cornish
@@ -64,7 +64,7 @@ open class BaseRequestBodyConfig {
     var value: String? = null
 
     @field:JsonProperty("operator")
-    var operator: BodyMatchOperator? = null
+    var operator: MatchOperator? = null
 
     override fun toString(): String {
         return "BaseRequestBodyConfig(jsonPath=$jsonPath, xPath=$xPath, xmlNamespaces=$xmlNamespaces, value=$value, operator=$operator)"

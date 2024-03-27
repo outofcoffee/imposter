@@ -42,14 +42,31 @@
  */
 package io.gatehill.imposter.util
 
-import io.gatehill.imposter.plugin.config.resource.conditional.BasicMatchOperator
 import io.gatehill.imposter.plugin.config.resource.conditional.ConditionalNameValuePair
+import io.gatehill.imposter.plugin.config.resource.conditional.MatchOperator
 import java.util.*
 
 /**
  * @author Pete Cornish
  */
 object MatchUtil {
+    /**
+     * Checks if the condition is satisfied by the actual value.
+     */
+    fun conditionMatches(
+        condition: ConditionalNameValuePair,
+        actual: String?
+    ): Boolean = when (condition.operator) {
+        MatchOperator.Exists -> null != actual
+        MatchOperator.NotExists -> null == actual
+        MatchOperator.EqualTo -> safeEquals(actual, condition.value)
+        MatchOperator.NotEqualTo -> !safeEquals(actual, condition.value)
+        MatchOperator.Contains -> safeContains(actual, condition.value)
+        MatchOperator.NotContains -> !safeContains(actual, condition.value)
+        MatchOperator.Matches -> safeRegexMatch(actual, condition.value)
+        MatchOperator.NotMatches -> !safeRegexMatch(actual, condition.value)
+    }
+
     /**
      * Checks if two objects match, where either input could be null.
      *
@@ -68,19 +85,13 @@ object MatchUtil {
     /**
      * Checks if the actual value matches the given regular expression.
      */
-    fun safeRegexMatch(actualValue: String?, expression: String?) =
+    private fun safeRegexMatch(actualValue: String?, expression: String?): Boolean =
         expression?.toRegex()?.matches(actualValue ?: "") ?: false
 
-    /**
-     * Checks if the condition is satisfied by the actual value.
-     */
-    fun conditionMatches(
-        condition: ConditionalNameValuePair,
-        actual: String?
-    ): Boolean = when (condition.operator) {
-        BasicMatchOperator.EqualTo -> safeEquals(actual, condition.value)
-        BasicMatchOperator.NotEqualTo -> !safeEquals(actual, condition.value)
-        BasicMatchOperator.Matches -> safeRegexMatch(actual, condition.value)
-        BasicMatchOperator.NotMatches -> !safeRegexMatch(actual, condition.value)
-    }
+    private fun safeContains(actual: String?, expected: String?) =
+        if (actual != null && expected != null) {
+            actual.toString().contains(expected)
+        } else {
+            false
+        }
 }
