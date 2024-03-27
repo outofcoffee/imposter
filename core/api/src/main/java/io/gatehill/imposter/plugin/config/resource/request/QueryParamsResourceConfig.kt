@@ -42,9 +42,11 @@
  */
 package io.gatehill.imposter.plugin.config.resource.request
 
+import io.gatehill.imposter.plugin.config.resource.conditional.ConditionalNameValuePair
+
 /**
  * @author Pete Cornish
  */
 interface QueryParamsResourceConfig {
-    val queryParams: Map<String, String>?
+    val queryParams: Map<String, ConditionalNameValuePair>?
 }

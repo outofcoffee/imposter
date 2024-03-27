@@ -71,24 +71,16 @@ object MatchUtil {
     fun safeRegexMatch(actualValue: String?, expression: String?) =
         expression?.toRegex()?.matches(actualValue ?: "") ?: false
 
-    fun conditionMatches(condition: ConditionalNameValuePair, actual: String?): Boolean {
-        val matched: Boolean = when (condition.operator) {
-            BasicMatchOperator.EqualTo -> {
-                safeEquals(actual, condition.value)
-            }
-
-            BasicMatchOperator.NotEqualTo -> {
-                !safeEquals(actual, condition.value)
-            }
-
-            BasicMatchOperator.Matches -> {
-                safeRegexMatch(actual, condition.value)
-            }
-
-            BasicMatchOperator.NotMatches -> {
-                !safeRegexMatch(actual, condition.value)
-            }
-        }
-        return matched
+    /**
+     * Checks if the condition is satisfied by the actual value.
+     */
+    fun conditionMatches(
+        condition: ConditionalNameValuePair,
+        actual: String?
+    ): Boolean = when (condition.operator) {
+        BasicMatchOperator.EqualTo -> safeEquals(actual, condition.value)
+        BasicMatchOperator.NotEqualTo -> !safeEquals(actual, condition.value)
+        BasicMatchOperator.Matches -> safeRegexMatch(actual, condition.value)
+        BasicMatchOperator.NotMatches -> !safeRegexMatch(actual, condition.value)
     }
 }

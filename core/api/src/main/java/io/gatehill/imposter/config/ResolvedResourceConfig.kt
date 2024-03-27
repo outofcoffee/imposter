@@ -62,9 +62,9 @@ data class ResolvedResourceConfig(
     companion object {
         fun parseConfig(config: BasicResourceConfig) = ResolvedResourceConfig(
             config = config,
-            pathParams = (config as? PathParamsResourceConfig)?.pathParams?.let(ConditionalNameValuePair::parse) ?: emptyMap(),
-            queryParams = (config as? QueryParamsResourceConfig)?.queryParams?.let(ConditionalNameValuePair::parse) ?: emptyMap(),
-            formParams = (config as? FormParamsResourceConfig)?.formParams?.let(ConditionalNameValuePair::parse) ?: emptyMap(),
+            pathParams = (config as? PathParamsResourceConfig)?.pathParams ?: emptyMap(),
+            queryParams = (config as? QueryParamsResourceConfig)?.queryParams ?: emptyMap(),
+            formParams = (config as? FormParamsResourceConfig)?.formParams ?: emptyMap(),
             requestHeaders = (config as? RequestHeadersResourceConfig)?.requestHeaders ?: emptyMap(),
         )
     }

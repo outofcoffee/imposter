@@ -46,6 +46,7 @@ import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.gatehill.imposter.http.HttpMethod
+import io.gatehill.imposter.plugin.config.resource.conditional.BasicMatchOperator
 import io.gatehill.imposter.plugin.config.resource.conditional.ConditionalNameValuePair
 import io.gatehill.imposter.plugin.config.resource.request.*
 import io.gatehill.imposter.plugin.config.steps.StepConfig
@@ -54,32 +55,54 @@ import io.gatehill.imposter.plugin.config.steps.StepsConfigHolder
 /**
  * @author Pete Cornish
  */
-open class RestResourceConfig : AbstractResourceConfig(), MethodResourceConfig, PathParamsResourceConfig,
-        QueryParamsResourceConfig, LegacyQueryParamsResourceConfig, RequestHeadersResourceConfig, FormParamsResourceConfig,
-        RequestBodyResourceConfig, EvalResourceConfig, PassthroughResourceConfig, StepsConfigHolder {
+open class RestResourceConfig(
+    /**
+     * Raw configuration. Use [pathParams] instead.
+     */
+    @field:JsonProperty("pathParams")
+    protected var rawPathParams: Map<String, Any>? = null,
+
+    /**
+     * Raw configuration. Use [queryParams] instead.
+     */
+    @field:JsonProperty("queryParams")
+    @field:JsonAlias("params")
+    protected var rawQueryParams: Map<String, Any>? = null,
+
+    /**
+    * Raw configuration. Use [requestHeaders] instead.
+    */
+    @field:JsonProperty("requestHeaders")
+    protected var rawRequestHeaders: Map<String, Any>? = null,
+
+    /**
+    * Raw configuration. Use [formParams] instead.
+    */
+    @field:JsonProperty("formParams")
+    private val rawFormParams: Map<String, Any>? = null,
+
+) : AbstractResourceConfig(), MethodResourceConfig, PathParamsResourceConfig,
+    QueryParamsResourceConfig, LegacyQueryParamsResourceConfig, RequestHeadersResourceConfig, FormParamsResourceConfig,
+    RequestBodyResourceConfig, EvalResourceConfig, PassthroughResourceConfig, StepsConfigHolder {
 
     @field:JsonProperty("method")
     override var method: HttpMethod? = null
 
-    @field:JsonProperty("pathParams")
-    override var pathParams: Map<String, String>? = null
-
-    @field:JsonProperty("queryParams")
-    @field:JsonAlias("params")
-    override var queryParams: Map<String, String>? = null
-
-    /**
-     * Raw configuration. Use [requestHeaders] instead.
-     */
-    @field:JsonProperty("requestHeaders")
-    protected var _requestHeaders: Map<String, Any>? = null
-
-    override val requestHeaders: Map<String, ConditionalNameValuePair> by lazy {
-        _requestHeaders?.let { ConditionalNameValuePair.parse(it) } ?: emptyMap()
+    override val pathParams: Map<String, ConditionalNameValuePair> by lazy {
+        rawPathParams?.let { ConditionalNameValuePair.parse(it) } ?: emptyMap()
     }
 
-    @field:JsonProperty("formParams")
-    override var formParams: Map<String, String>? = null
+    override val queryParams: Map<String, ConditionalNameValuePair> by lazy {
+        rawQueryParams?.let { ConditionalNameValuePair.parse(it) } ?: emptyMap()
+    }
+
+    override val requestHeaders: Map<String, ConditionalNameValuePair> by lazy {
+        rawRequestHeaders?.let { ConditionalNameValuePair.parse(it) } ?: emptyMap()
+    }
+
+    override val formParams: Map<String, ConditionalNameValuePair> by lazy {
+        rawFormParams?.let { ConditionalNameValuePair.parse(it) } ?: emptyMap()
+    }
 
     @field:JsonProperty("requestBody")
     override var requestBody: RequestBodyConfig? = null
@@ -90,9 +113,15 @@ open class RestResourceConfig : AbstractResourceConfig(), MethodResourceConfig, 
     @field:JsonProperty("passthrough")
     override var passthrough: String? = null
 
+    /**
+     * Backward compatibility for deprecated `params` property.
+     * Only [BasicMatchOperator.EqualTo] matches are supported.
+     */
     @get:JsonIgnore
     override val params: Map<String, String>?
         get() = queryParams
+                .filter { it.value.operator == BasicMatchOperator.EqualTo && it.value.value != null }
+                .mapValues { it.value.value!! }
 
     @field:JsonProperty("steps")
     override val steps: List<StepConfig>? = null
