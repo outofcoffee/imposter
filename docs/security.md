@@ -168,6 +168,10 @@ The following operators are supported:
 |---------------|-----------------------------------------------------------------------------------------------|
 | `EqualTo`     | Checks if the condition equals the `value`.                                                   |
 | `NotEqualTo`  | Checks if the condition does not equal the `value`.                                           |
+| `Exists`      | Checks if the condition is not `null` or empty.                                               |
+| `NotExists`   | Checks if the condition is `null` or empty.                                                   |
+| `Contains`    | Checks if the condition contains the `value`.                                                 |
+| `NotContains` | Checks if the condition does not contain the `value`.                                         |
 | `Matches`     | Checks if the condition matches the regular expression specified in the `value` field.        |
 | `NotMatches`  | Checks if the condition does not match the regular expression specified in the `value` field. |
 
