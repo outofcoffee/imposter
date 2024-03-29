@@ -1,10 +1,10 @@
 # Steps
 
-Imposter can perform multiple operations when it receives a request. These are called Steps. You can add multiple steps, including calling external systems, running scripts and using [stores](./stores.md).
+Imposter can perform actions when it receives a request. These actions are called _Steps_; they take input, perform an operation, and, optionally, produce output.
 
-Steps can use data from the request, stores, or the output of previous steps. Step outputs can be used in mock responses, such as in a [response template](./templates.md), or to drive conditional logic.
+Steps can call external systems, run scripts and use [stores](./stores.md). You can define as many steps as you need. Steps are executed in the order they are defined in the configuration file.
 
-Steps are executed in the order they are defined in the configuration file.
+Steps can use data from the current request, access stores, or use the output of previous steps. Step outputs can be used in mock responses, such as in a [response template](./templates.md), or to drive conditional logic.
 
 ## Step Types
 
@@ -41,7 +41,7 @@ resources:
 ##### Explanation
 Calling the endpoint `/example` with a `GET` request will cause the inline JavaScript code to be executed.
 
-The code prints log `Hello World!` to the console.
+The code prints `Hello World!` to the console.
 
 ##### Multiline inline scripts
 
@@ -62,12 +62,12 @@ resources:
 
 #### External script
 
-Here is an example of an external script.
+Scripts can be stored in an external file. Here is an example of an external script.
 
 > **Note**
 > External scripts can be written in JavaScript or Groovy.
 
-Let's assume you have a file called `example.js` with the following content:
+Let's assume you have a file named `example.js` with the following content:
 
 ```javascript
 console.log('Hello World!');
@@ -89,13 +89,13 @@ resources:
 ##### Explanation
 Calling the endpoint `/example` with a `GET` request will cause the external JavaScript file `example.js` to be executed.
 
-The code prints log `Hello World!` to the console.
+The code prints `Hello World!` to the console.
 
 ---
 
 ### Make an HTTP(S) request to a server
 
-The `remote` step type allows you to make an HTTP(S) request to a server. The response, including headers and body, can be captured in a [store](./stores.md), used in later steps, or in [response templates](templates.md).
+The `remote` step type allows you to make an HTTP(S) request to a server. The response, including headers and body, can be in [response templates](templates.md), captured in a [store](./stores.md) or used in later steps.
 
 #### Example: Send a request
 
@@ -164,7 +164,7 @@ capture:
     expression: "${remote.response.body}"
 ```
 
-In this example, the `statusCode` and `responseBody` properties will be stored in the `request` store. You can then use these properties in subsequent steps or in response templates, by referencing the store properties, such as `${stores.request.statusCode}`.
+In this example, both the `statusCode` and `responseBody` properties will be stored in the `request` store. You can then use these properties in subsequent steps or in response templates, by referencing the store properties, such as `${stores.request.statusCode}`.
 
 ---
 
