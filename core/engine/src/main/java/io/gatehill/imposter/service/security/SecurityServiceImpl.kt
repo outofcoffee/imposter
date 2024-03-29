@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2016-2024.
  *
  * This file is part of Imposter.
  *
@@ -56,7 +56,7 @@ import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.MatchUtil.conditionMatches
 import org.apache.logging.log4j.LogManager
-import java.util.*
+import java.util.Locale
 import javax.inject.Inject
 
 /**
@@ -177,10 +177,10 @@ class SecurityServiceImpl @Inject constructor(
      * @return the actual effect based on the values
      */
     private fun checkCondition(
-            conditionMap: Map<String, ConditionalNameValuePair>,
-            requestMap: Map<String, String>,
-            conditionEffect: SecurityEffect,
-            caseSensitiveKeyMatch: Boolean,
+        conditionMap: Map<String, ConditionalNameValuePair>,
+        requestMap: Map<String, String>,
+        conditionEffect: SecurityEffect,
+        caseSensitiveKeyMatch: Boolean,
     ): List<SecurityEffect> {
         val comparisonMap = if (caseSensitiveKeyMatch) requestMap else convertKeysToLowerCase(requestMap)
         return conditionMap.values.map { conditionValue: ConditionalNameValuePair ->
@@ -234,9 +234,9 @@ class SecurityServiceImpl @Inject constructor(
     }
 
     private fun describeConditionPart(
-            description: StringBuilder,
-            part: Map<String, ConditionalNameValuePair>,
-            partType: String,
+        description: StringBuilder,
+        part: Map<String, ConditionalNameValuePair>,
+        partType: String,
     ) {
         if (part.isNotEmpty()) {
             if (description.isNotEmpty()) {

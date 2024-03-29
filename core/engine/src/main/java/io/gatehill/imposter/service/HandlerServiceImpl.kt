@@ -46,7 +46,13 @@ import com.google.common.collect.Lists
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.ResolvedResourceConfig
 import io.gatehill.imposter.config.util.EnvVars
-import io.gatehill.imposter.http.*
+import io.gatehill.imposter.http.ExchangePhase
+import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.http.HttpExchangeFutureHandler
+import io.gatehill.imposter.http.HttpExchangeHandler
+import io.gatehill.imposter.http.HttpMethod
+import io.gatehill.imposter.http.HttpRouter
+import io.gatehill.imposter.http.ResourceMatcher
 import io.gatehill.imposter.lifecycle.SecurityLifecycleHooks
 import io.gatehill.imposter.lifecycle.SecurityLifecycleListener
 import io.gatehill.imposter.plugin.config.PluginConfig
@@ -54,10 +60,6 @@ import io.gatehill.imposter.plugin.config.ResourcesHolder
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.resource.PassthroughResourceConfig
 import io.gatehill.imposter.plugin.config.resource.UpstreamsHolder
-import io.gatehill.imposter.plugin.config.resource.request.FormParamsResourceConfig
-import io.gatehill.imposter.plugin.config.resource.request.PathParamsResourceConfig
-import io.gatehill.imposter.plugin.config.resource.request.QueryParamsResourceConfig
-import io.gatehill.imposter.plugin.config.resource.request.RequestHeadersResourceConfig
 import io.gatehill.imposter.server.RequestHandlingMode
 import io.gatehill.imposter.server.ServerFactory
 import io.gatehill.imposter.util.LogUtil
@@ -69,7 +71,7 @@ import io.vertx.core.Vertx
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
 import java.io.File
-import java.util.*
+import java.util.UUID
 import java.util.concurrent.Callable
 import java.util.concurrent.CompletableFuture
 import java.util.regex.Pattern
@@ -228,13 +230,7 @@ class HandlerServiceImpl @Inject constructor(
      */
     private fun resolveResourceConfigs(pluginConfig: PluginConfig): List<ResolvedResourceConfig> {
         return (pluginConfig as? ResourcesHolder<*>)?.resources?.map { config ->
-            ResolvedResourceConfig(
-                config = config,
-                pathParams = (config as? PathParamsResourceConfig)?.pathParams ?: emptyMap(),
-                queryParams = (config as? QueryParamsResourceConfig)?.queryParams ?: emptyMap(),
-                formParams = (config as? FormParamsResourceConfig)?.formParams ?: emptyMap(),
-                requestHeaders = (config as? RequestHeadersResourceConfig)?.requestHeaders ?: emptyMap()
-            )
+            ResolvedResourceConfig.parse(config)
         } ?: emptyList()
     }
 
