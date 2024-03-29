@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2024.
  *
  * This file is part of Imposter.
  *
@@ -60,7 +60,7 @@ data class ResolvedResourceConfig(
     val requestHeaders: Map<String, ConditionalNameValuePair>
 ) {
     companion object {
-        fun parseConfig(config: BasicResourceConfig) = ResolvedResourceConfig(
+        fun parse(config: BasicResourceConfig) = ResolvedResourceConfig(
             config = config,
             pathParams = (config as? PathParamsResourceConfig)?.pathParams ?: emptyMap(),
             queryParams = (config as? QueryParamsResourceConfig)?.queryParams ?: emptyMap(),
