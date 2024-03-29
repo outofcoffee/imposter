@@ -96,6 +96,7 @@ Imposter supports the following conditions:
 | Condition        | Meaning                   | Type                 | Example                      |
 |------------------|---------------------------|----------------------|------------------------------|
 | `queryParams`    | Request query parameters. | Map of String:String | `{ "limit": "1" }`           |
+| `formParams`     | Request form parameters.  | Map of String:String | `{ "name": "Ada" }`          |
 | `requestHeaders` | Request headers.          | Map of String:String | `{ "Authorization": "foo" }` |
 
 Here's an example showing all conditions:
@@ -168,8 +169,8 @@ The following operators are supported:
 |---------------|-----------------------------------------------------------------------------------------------|
 | `EqualTo`     | Checks if the condition equals the `value`.                                                   |
 | `NotEqualTo`  | Checks if the condition does not equal the `value`.                                           |
-| `Exists`      | Checks if the condition is not `null` or empty.                                               |
-| `NotExists`   | Checks if the condition is `null` or empty.                                                   |
+| `Exists`      | Checks if the condition is not `null` or absent.                                              |
+| `NotExists`   | Checks if the condition is `null` or absent.                                                  |
 | `Contains`    | Checks if the condition contains the `value`.                                                 |
 | `NotContains` | Checks if the condition does not contain the `value`.                                         |
 | `Matches`     | Checks if the condition matches the regular expression specified in the `value` field.        |
