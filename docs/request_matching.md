@@ -26,8 +26,8 @@ The following operators are supported:
 |---------------|-------------------------------------------------------------------------------------------------------|
 | `EqualTo`     | Checks if the expression result equals the `value`.                                                   |
 | `NotEqualTo`  | Checks if the expression result does not equal the `value`.                                           |
-| `Exists`      | Checks if the expression result is not `null` or empty.                                               |
-| `NotExists`   | Checks if the expression result is `null` or empty.                                                   |
+| `Exists`      | Checks if the expression result is not `null` or absent.                                              |
+| `NotExists`   | Checks if the expression result is `null` or absent.                                                  |
 | `Contains`    | Checks if the expression result contains the `value`.                                                 |
 | `NotContains` | Checks if the expression result does not contain the `value`.                                         |
 | `Matches`     | Checks if the expression result matches the regular expression specified in the `value` field.        |
