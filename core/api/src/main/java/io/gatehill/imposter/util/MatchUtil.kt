@@ -55,7 +55,7 @@ import java.util.regex.Pattern
  */
 object MatchUtil {
     private val patternCacheSize: Long =
-        System.getenv("IMPOSTER_REGEX_PATTERN_CACHE_SIZE")?.toLong() ?: 30
+        System.getenv("IMPOSTER_MATCHER_REGEX_CACHE_SIZE")?.toLong() ?: 30
 
     private var patternCache: Cache<String, Pattern>? = null
 
@@ -98,6 +98,9 @@ object MatchUtil {
         }
     }
 
+    /**
+     * Checks if the actual value contains the expected value.
+     */
     fun safeContains(actual: String?, expected: String?) =
         if (actual != null && expected != null) {
             actual.toString().contains(expected)

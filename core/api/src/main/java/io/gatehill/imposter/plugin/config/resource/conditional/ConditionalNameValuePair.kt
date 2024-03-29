@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2024.
  *
  * This file is part of Imposter.
  *
@@ -61,6 +61,9 @@ class ConditionalNameValuePair(
     val operator: MatchOperator = MatchOperator.EqualTo
 ) {
     companion object {
+        /**
+         * Parse a raw [Map] into a map of [ConditionalNameValuePair] instances.
+         */
         fun parse(raw: Map<String, Any>): Map<String, ConditionalNameValuePair> =
             raw.entries.associate { (k, v) -> k to parsePair(k, v) }
 
