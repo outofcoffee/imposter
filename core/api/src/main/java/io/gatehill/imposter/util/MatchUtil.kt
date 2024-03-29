@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2016-2024.
  *
  * This file is part of Imposter.
  *
@@ -42,30 +42,46 @@
  */
 package io.gatehill.imposter.util
 
+import com.google.common.cache.Cache
+import com.google.common.cache.CacheBuilder
 import io.gatehill.imposter.plugin.config.resource.conditional.ConditionalNameValuePair
 import io.gatehill.imposter.plugin.config.resource.conditional.MatchOperator
-import java.util.*
+import java.util.Objects
+import java.util.regex.Matcher
+import java.util.regex.Pattern
 
 /**
  * @author Pete Cornish
  */
 object MatchUtil {
+    private val patternCacheSize: Long =
+        System.getenv("IMPOSTER_REGEX_PATTERN_CACHE_SIZE")?.toLong() ?: 30
+
+    private var patternCache: Cache<String, Pattern>? = null
+
     /**
      * Checks if the condition is satisfied by the actual value.
      */
     fun conditionMatches(
-        condition: ConditionalNameValuePair,
-        actual: String?
-    ): Boolean = when (condition.operator) {
+        expected: String?,
+        operator: MatchOperator,
+        actual: String?,
+    ): Boolean = when (operator) {
         MatchOperator.Exists -> null != actual
         MatchOperator.NotExists -> null == actual
-        MatchOperator.EqualTo -> safeEquals(actual, condition.value)
-        MatchOperator.NotEqualTo -> !safeEquals(actual, condition.value)
-        MatchOperator.Contains -> safeContains(actual, condition.value)
-        MatchOperator.NotContains -> !safeContains(actual, condition.value)
-        MatchOperator.Matches -> safeRegexMatch(actual, condition.value)
-        MatchOperator.NotMatches -> !safeRegexMatch(actual, condition.value)
+        MatchOperator.EqualTo -> safeEquals(actual, expected)
+        MatchOperator.NotEqualTo -> !safeEquals(actual, expected)
+        MatchOperator.Contains -> safeContains(actual, expected)
+        MatchOperator.NotContains -> !safeContains(actual, expected)
+        MatchOperator.Matches -> safeRegexMatch(actual, expected)
+        MatchOperator.NotMatches -> !safeRegexMatch(actual, expected)
     }
+
+    /**
+     * Checks if the condition is satisfied by the actual value.
+     */
+    fun conditionMatches(condition: ConditionalNameValuePair, actual: String?): Boolean =
+        conditionMatches(condition.value, condition.operator, actual)
 
     /**
      * Checks if two objects match, where either input could be null.
@@ -82,16 +98,38 @@ object MatchUtil {
         }
     }
 
-    /**
-     * Checks if the actual value matches the given regular expression.
-     */
-    private fun safeRegexMatch(actualValue: String?, expression: String?): Boolean =
-        expression?.toRegex()?.matches(actualValue ?: "") ?: false
-
-    private fun safeContains(actual: String?, expected: String?) =
+    fun safeContains(actual: String?, expected: String?) =
         if (actual != null && expected != null) {
             actual.toString().contains(expected)
         } else {
             false
         }
+
+    /**
+     * Checks if the actual value matches the given regular expression.
+     */
+    private fun safeRegexMatch(actualValue: String?, expression: String?): Boolean {
+        return expression?.let {
+            val actual = actualValue ?: ""
+            if (patternCacheSize > 0) {
+                getMatcher(expression, actual).matches()
+            } else {
+                expression.toRegex().matches(actual)
+            }
+        } ?: false
+    }
+
+    private fun getMatcher(expression: String, actualValue: String): Matcher {
+        val cache: Cache<String, Pattern> = patternCache ?: run {
+            synchronized(this) {
+                // double-guard
+                patternCache = patternCache ?: CacheBuilder.newBuilder()
+                    .maximumSize(patternCacheSize)
+                    .build()
+            }
+            patternCache!!
+        }
+        val pattern = cache.get(expression) { Pattern.compile(expression) }
+        return pattern.matcher(actualValue)
+    }
 }

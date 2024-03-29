@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2016-2024.
  *
  * This file is part of Imposter.
  *
@@ -55,7 +55,7 @@ import io.gatehill.imposter.service.script.InlineScriptService
 import io.gatehill.imposter.util.BodyQueryUtil
 import io.gatehill.imposter.util.InjectorUtil
 import io.gatehill.imposter.util.LogUtil
-import io.gatehill.imposter.util.MatchUtil.safeEquals
+import io.gatehill.imposter.util.MatchUtil
 import org.apache.logging.log4j.LogManager
 import java.util.regex.Pattern
 
@@ -179,7 +179,7 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
     protected fun matchRequestBody(
         httpExchange: HttpExchange,
         pluginConfig: PluginConfig,
-        resourceConfig: BasicResourceConfig
+        resourceConfig: BasicResourceConfig,
     ): ResourceMatchResult {
         val matchDescription = "request body"
         if (resourceConfig !is RequestBodyResourceConfig) {
@@ -224,10 +224,10 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
     }
 
     private fun matchUsingBodyConfig(
-            matchDescription: String,
-            bodyConfig: BaseRequestBodyConfig,
-            pluginConfig: PluginConfig,
-            httpExchange: HttpExchange,
+        matchDescription: String,
+        bodyConfig: BaseRequestBodyConfig,
+        pluginConfig: PluginConfig,
+        httpExchange: HttpExchange,
     ): ResourceMatchResult {
         return if (!isNullOrEmpty(bodyConfig.jsonPath)) {
             matchRequestBodyJsonPath(matchDescription, bodyConfig, httpExchange)
@@ -240,9 +240,9 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
     }
 
     private fun matchRequestBodyJsonPath(
-            matchDescription: String,
-            bodyConfig: BaseRequestBodyConfig,
-            httpExchange: HttpExchange,
+        matchDescription: String,
+        bodyConfig: BaseRequestBodyConfig,
+        httpExchange: HttpExchange,
     ): ResourceMatchResult {
         val bodyValue = BodyQueryUtil.queryRequestBodyJsonPath(
             bodyConfig.jsonPath!!,
@@ -253,10 +253,10 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
     }
 
     private fun matchRequestBodyXPath(
-            matchDescription: String,
-            bodyConfig: BaseRequestBodyConfig,
-            pluginConfig: PluginConfig,
-            httpExchange: HttpExchange,
+        matchDescription: String,
+        bodyConfig: BaseRequestBodyConfig,
+        pluginConfig: PluginConfig,
+        httpExchange: HttpExchange,
     ): ResourceMatchResult {
         val allNamespaces = bodyConfig.xmlNamespaces?.toMutableMap() ?: mutableMapOf()
         if (pluginConfig is SystemConfigHolder) {
@@ -271,109 +271,22 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
     }
 
     private fun checkBodyMatch(
-            matchDescription: String,
-            bodyConfig: BaseRequestBodyConfig,
-            actualValue: Any?
+        matchDescription: String,
+        bodyConfig: BaseRequestBodyConfig,
+        actualValue: Any?,
     ): ResourceMatchResult {
         // defaults to equality check
         val operator = bodyConfig.operator ?: MatchOperator.EqualTo
 
-        val match = when (operator) {
-            MatchOperator.Exists, MatchOperator.NotExists ->
-                matchIfExists(matchDescription, actualValue, operator)
-
-            MatchOperator.EqualTo, MatchOperator.NotEqualTo ->
-                matchUsingEquality(matchDescription, bodyConfig.value, actualValue, operator)
-
-            MatchOperator.Contains, MatchOperator.NotContains ->
-                matchUsingContains(matchDescription, bodyConfig.value, actualValue, operator)
-
-            MatchOperator.Matches, MatchOperator.NotMatches ->
-                matchUsingRegex(matchDescription, bodyConfig.value, actualValue, operator)
+        val match = if (MatchUtil.conditionMatches(bodyConfig.value, operator, actualValue?.toString())) {
+            ResourceMatchResult.exactMatch(matchDescription)
+        } else {
+            ResourceMatchResult.notMatched(matchDescription)
         }
         if (LOGGER.isTraceEnabled) {
             LOGGER.trace("Body match result for {} '{}': {}", operator, bodyConfig.value, match)
         }
         return match
-    }
-
-    /**
-     * The expression is checking for the existence of a value using the given query.
-     */
-    private fun matchIfExists(
-            matchDescription: String,
-            actualValue: Any?,
-            operator: MatchOperator,
-    ) = if ((actualValue != null) == (operator == MatchOperator.Exists)) {
-        ResourceMatchResult.exactMatch(matchDescription)
-    } else {
-        ResourceMatchResult.notMatched(matchDescription)
-    }
-
-    private fun matchUsingEquality(
-            matchDescription: String,
-            configuredValue: String?,
-            actualValue: Any?,
-            operator: MatchOperator,
-    ): ResourceMatchResult {
-        val valueMatch = safeEquals(configuredValue, actualValue)
-
-        // apply operator
-        val match = (operator == MatchOperator.EqualTo && valueMatch ||
-                operator == MatchOperator.NotEqualTo && !valueMatch)
-
-        return if (match) {
-            ResourceMatchResult.exactMatch(matchDescription)
-        } else {
-            ResourceMatchResult.notMatched(matchDescription)
-        }
-    }
-
-    private fun matchUsingContains(
-            matchDescription: String,
-            configuredValue: String?,
-            actualValue: Any?,
-            operator: MatchOperator,
-    ): ResourceMatchResult {
-        val valueMatch = if (actualValue != null && configuredValue != null) {
-            actualValue.toString().contains(configuredValue)
-        } else {
-            false
-        }
-
-        // apply operator
-        val match = (operator == MatchOperator.Contains && valueMatch ||
-            operator == MatchOperator.NotContains && !valueMatch)
-
-        return if (match) {
-            ResourceMatchResult.exactMatch(matchDescription)
-        } else {
-            ResourceMatchResult.notMatched(matchDescription)
-        }
-    }
-
-    private fun matchUsingRegex(
-            matchDescription: String,
-            configuredValue: String?,
-            actualValue: Any?,
-            operator: MatchOperator,
-    ): ResourceMatchResult {
-        val valueMatch = if (actualValue != null && configuredValue != null) {
-            val pattern = patternCache.get(configuredValue) { Pattern.compile(configuredValue) }
-            pattern.matcher(actualValue.toString()).matches()
-        } else {
-            false
-        }
-
-        // apply operator
-        val match = (operator == MatchOperator.Matches && valueMatch ||
-            operator == MatchOperator.NotMatches && !valueMatch)
-
-        return if (match) {
-            ResourceMatchResult.exactMatch(matchDescription)
-        } else {
-            ResourceMatchResult.notMatched(matchDescription)
-        }
     }
 
     protected fun matchEval(
@@ -389,7 +302,7 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
     ): MatchedResource {
         // true if exact match or wildcard match, or partial config (implies match all)
         val matched = results.none { it.type == MatchResultType.NOT_MATCHED } &&
-                !results.all { it.type == MatchResultType.NO_CONFIG }
+            !results.all { it.type == MatchResultType.NO_CONFIG }
 
         // all matched and none of type wildcard
         val exact = matched && results.none { it.type == MatchResultType.WILDCARD_MATCH }

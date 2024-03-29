@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2016-2024.
  *
  * This file is part of Imposter.
  *
@@ -49,7 +49,7 @@ import io.gatehill.imposter.plugin.config.resource.conditional.ConditionalNameVa
 import io.gatehill.imposter.plugin.config.resource.request.MethodResourceConfig
 import io.gatehill.imposter.util.CollectionUtil.convertKeysToLowerCase
 import io.gatehill.imposter.util.MatchUtil.conditionMatches
-import java.util.*
+import java.util.Locale
 
 
 /**
@@ -110,10 +110,10 @@ class SingletonResourceMatcher : AbstractResourceMatcher() {
      * @return `true` if the configured parameters match the request, otherwise `false`
      */
     private fun matchPairs(
-            matchDescription: String,
-            requestMap: Map<String, String>,
-            resourceMap: Map<String, ConditionalNameValuePair>,
-            caseSensitiveKeyMatch: Boolean,
+        matchDescription: String,
+        requestMap: Map<String, String>,
+        resourceMap: Map<String, ConditionalNameValuePair>,
+        caseSensitiveKeyMatch: Boolean,
     ): ResourceMatchResult {
         // none configured
         if (resourceMap.isEmpty()) {
