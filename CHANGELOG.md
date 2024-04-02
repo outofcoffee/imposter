@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.36.0] - 2024-04-02
+### Added
+- feat: adds advanced path params, query params and form params matchers.
+- feat: adds advanced request header matchers.
+- feat: resource matchers and security conditions support all match operators.
+
+### Changed
+- chore(deps): bump actions/setup-python from 5.0.0 to 5.1.0
+- chore(deps): bump com.fasterxml.jackson.core:jackson-databind
+- chore(deps): bump org.apache.maven.plugins:maven-compiler-plugin
+- docs: aligns steps documentation with implementation.
+- docs: clarifies behaviour of 'exists' operators.
+- docs: clarifies steps introduction.
+- docs: describes all supported operators for security conditions.
+- docs: describes long form and operators for request matching.
+- docs: documents Steps API.
+- docs: improves step examples.
+- refactor: generalises request match operators.
+- refactor: moves conditional name-value pair parsing to companion.
+- refactor: moves request pair matching to use common matcher logic.
+
+### Fixed
+- fix: upgrade com.fasterxml.jackson.core:jackson-databind from 2.16.1 to 2.16.2
+
 ## [3.35.2] - 2024-03-27
 ### Changed
 - chore(deps): bumps base image to 11.0.22_7-jre-jammy.
