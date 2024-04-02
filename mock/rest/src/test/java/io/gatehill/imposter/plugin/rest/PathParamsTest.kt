@@ -50,6 +50,7 @@ import io.restassured.config.RedirectConfig
 import io.vertx.ext.unit.TestContext
 import org.hamcrest.Matchers.equalTo
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 
 /**
@@ -61,7 +62,7 @@ class PathParamsTest : BaseVerticleTest() {
     override val pluginClass = RestPluginImpl::class.java
 
     override val testConfigDirs = listOf(
-            "/path-params"
+        "/path-params"
     )
 
     @Before
@@ -74,24 +75,113 @@ class PathParamsTest : BaseVerticleTest() {
     }
 
     @Test
-    fun `should match path param`() {
+    fun `should match path param with simple form config`() {
         given()
-                .`when`()
-                .post("/test")
-                .then()
-                .statusCode(equalTo(HttpUtil.HTTP_OK))
-                .and()
-                .body(equalTo("matched"))
+            .`when`()
+            .post("/simple/test")
+            .then()
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .and()
+            .body(equalTo("matched"))
     }
 
     @Test
-    fun `should not match path param`() {
+    fun `should not match path param with simple form config`() {
         given()
-                .`when`()
-                .post("/should-not-match")
-                .then()
-                .statusCode(equalTo(HttpUtil.HTTP_OK))
-                .and()
-                .body(equalTo("not matched"))
+            .`when`()
+            .post("/simple/should-not-match")
+            .then()
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .and()
+            .body(equalTo("not matched"))
+    }
+
+    @Test
+    fun `should match query params with EqualTo operator`() {
+        given()
+            .`when`()
+            .post("/equalto/test")
+            .then()
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .and()
+            .body(equalTo("equalto"))
+    }
+
+    @Test
+    fun `should match query params with NotEqualTo operator`() {
+        given()
+            .`when`()
+            .post("/notequalto/foo")
+            .then()
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .and()
+            .body(equalTo("notequalto"))
+    }
+
+    @Test
+    fun `should match query params with Contains operator`() {
+        given()
+            .`when`()
+            .post("/contains/test")
+            .then()
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .and()
+            .body(equalTo("contains"))
+    }
+
+    @Test
+    fun `should match query params with NotContains operator`() {
+        given()
+            .`when`()
+            .post("/notcontains/foo")
+            .then()
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .and()
+            .body(equalTo("notcontains"))
+    }
+
+    @Test
+    fun `should match query params with Matches operator`() {
+        given()
+            .`when`()
+            .post("/matches/test")
+            .then()
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .and()
+            .body(equalTo("matches"))
+    }
+
+    @Test
+    fun `should match query params with NotMatches operator`() {
+        given()
+            .`when`()
+            .post("/notmatches/123")
+            .then()
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .and()
+            .body(equalTo("notmatches"))
+    }
+
+    @Test
+    fun `should match query params with Exists operator`() {
+        given()
+            .`when`()
+            .post("/exists/test")
+            .then()
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .and()
+            .body(equalTo("exists"))
+    }
+
+    @Test
+    @Ignore("This isn't currently supported")
+    fun `should match query params with NotExists operator`() {
+        given()
+            .`when`()
+            .post("/notexists//abc")
+            .then()
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .and()
+            .body(equalTo("notexists"))
     }
 }
