@@ -2,13 +2,84 @@ plugin: rest
 
 resources:
 - method: POST
-  path: /{example}
+  path: /simple/{example}
   response:
     content: "not matched"
 
 - method: POST
-  path: /{example}
+  path: /simple/{example}
   pathParams:
     example: test
   response:
     content: "matched"
+
+- method: POST
+  path: /equalto/{example}
+  pathParams:
+    example:
+      value: "test"
+      operator: EqualTo
+  response:
+    content: "equalto"
+
+- method: POST
+  path: /notequalto/{example}
+  pathParams:
+    example:
+      value: "test"
+      operator: NotEqualTo
+  response:
+    content: "notequalto"
+
+- method: POST
+  path: /contains/{example}
+  pathParams:
+    example:
+      value: "es"
+      operator: Contains
+  response:
+    content: "contains"
+
+- method: POST
+  path: /notcontains/{example}
+  pathParams:
+    example:
+      value: "test"
+      operator: NotContains
+  response:
+    content: "notcontains"
+
+- method: POST
+  path: /matches/{example}
+  pathParams:
+    example:
+      value: "[a-zA-Z]+"
+      operator: Matches
+  response:
+    content: "matches"
+
+- method: POST
+  path: /notmatches/{example}
+  pathParams:
+    example:
+      value: "[a-zA-Z]+"
+      operator: NotMatches
+  response:
+    content: "notmatches"
+
+- method: POST
+  path: /exists/{example}
+  pathParams:
+    example:
+      operator: Exists
+  response:
+    content: "exists"
+
+# This isn't currently supported
+#- method: POST
+#  path: /notexists/{example}/abc
+#  pathParams:
+#    example:
+#      operator: NotExists
+#  response:
+#    content: "notexists"
