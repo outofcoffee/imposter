@@ -2,13 +2,83 @@ plugin: rest
 
 resources:
 - method: POST
-  path: /
+  path: /simple
   response:
     content: "not matched"
 
 - method: POST
-  path: /
+  path: /simple
   requestHeaders:
     X-Example: test
   response:
     content: "matched"
+
+- method: POST
+  path: /equalto
+  requestHeaders:
+    X-Example:
+      value: "test"
+      operator: EqualTo
+  response:
+    content: "equalto"
+
+- method: POST
+  path: /notequalto
+  requestHeaders:
+    X-Example:
+      value: "test"
+      operator: NotEqualTo
+  response:
+    content: "notequalto"
+
+- method: POST
+  path: /contains
+  requestHeaders:
+    X-Example:
+      value: "es"
+      operator: Contains
+  response:
+    content: "contains"
+
+- method: POST
+  path: /notcontains
+  requestHeaders:
+    X-Example:
+      value: "test"
+      operator: NotContains
+  response:
+    content: "notcontains"
+
+- method: POST
+  path: /matches
+  requestHeaders:
+    X-Example:
+      value: "[a-zA-Z]+"
+      operator: Matches
+  response:
+    content: "matches"
+
+- method: POST
+  path: /notmatches
+  requestHeaders:
+    X-Example:
+      value: "[a-zA-Z]+"
+      operator: NotMatches
+  response:
+    content: "notmatches"
+
+- method: POST
+  path: /exists
+  requestHeaders:
+    X-Example:
+      operator: Exists
+  response:
+    content: "exists"
+
+- method: POST
+  path: /notexists
+  requestHeaders:
+    X-Example:
+      operator: NotExists
+  response:
+    content: "notexists"
