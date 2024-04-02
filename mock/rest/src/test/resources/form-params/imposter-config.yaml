@@ -2,13 +2,83 @@ plugin: rest
 
 resources:
 - method: POST
-  path: /
+  path: /simple
   response:
     content: "not matched"
 
 - method: POST
-  path: /
+  path: /simple
   formParams:
     example: test
   response:
     content: "matched"
+
+- method: POST
+  path: /equalto
+  formParams:
+    example:
+      value: "test"
+      operator: EqualTo
+  response:
+    content: "equalto"
+
+- method: POST
+  path: /notequalto
+  formParams:
+    example:
+      value: "test"
+      operator: NotEqualTo
+  response:
+    content: "notequalto"
+
+- method: POST
+  path: /contains
+  formParams:
+    example:
+      value: "es"
+      operator: Contains
+  response:
+    content: "contains"
+
+- method: POST
+  path: /notcontains
+  formParams:
+    example:
+      value: "test"
+      operator: NotContains
+  response:
+    content: "notcontains"
+
+- method: POST
+  path: /matches
+  formParams:
+    example:
+      value: "[a-zA-Z]+"
+      operator: Matches
+  response:
+    content: "matches"
+
+- method: POST
+  path: /notmatches
+  formParams:
+    example:
+      value: "[a-zA-Z]+"
+      operator: NotMatches
+  response:
+    content: "notmatches"
+
+- method: POST
+  path: /exists
+  formParams:
+    example:
+      operator: Exists
+  response:
+    content: "exists"
+
+- method: POST
+  path: /notexists
+  formParams:
+    example:
+      operator: NotExists
+  response:
+    content: "notexists"

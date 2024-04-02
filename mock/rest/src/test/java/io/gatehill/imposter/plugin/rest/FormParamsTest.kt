@@ -61,7 +61,7 @@ class FormParamsTest : BaseVerticleTest() {
     override val pluginClass = RestPluginImpl::class.java
 
     override val testConfigDirs = listOf(
-            "/form-params"
+        "/form-params"
     )
 
     @Before
@@ -74,26 +74,121 @@ class FormParamsTest : BaseVerticleTest() {
     }
 
     @Test
-    fun `should match form param`() {
+    fun `should match form param with simple form config`() {
         given()
-                .formParams(mapOf("example" to "test"))
-                .`when`()
-                .post("/")
-                .then()
-                .statusCode(equalTo(HttpUtil.HTTP_OK))
-                .and()
-                .body(equalTo("matched"))
+            .formParams(mapOf("example" to "test"))
+            .`when`()
+            .post("/simple")
+            .then()
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .and()
+            .body(equalTo("matched"))
     }
 
     @Test
-    fun `should not match form param`() {
+    fun `should not match form param with simple form config`() {
         given()
-                .formParams(mapOf("example" to "should-not-match"))
-                .`when`()
-                .post("/")
-                .then()
-                .statusCode(equalTo(HttpUtil.HTTP_OK))
-                .and()
-                .body(equalTo("not matched"))
+            .formParams(mapOf("example" to "should-not-match"))
+            .`when`()
+            .post("/simple")
+            .then()
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .and()
+            .body(equalTo("not matched"))
+    }
+
+    @Test
+    fun `should match query params with EqualTo operator`() {
+        given()
+            .formParam("example", "test")
+            .`when`()
+            .post("/equalto")
+            .then()
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .and()
+            .body(equalTo("equalto"))
+    }
+
+    @Test
+    fun `should match query params with NotEqualTo operator`() {
+        given()
+            .formParam("example", "foo")
+            .`when`()
+            .post("/notequalto")
+            .then()
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .and()
+            .body(equalTo("notequalto"))
+    }
+
+    @Test
+    fun `should match query params with Contains operator`() {
+        given()
+            .formParam("example", "test")
+            .`when`()
+            .post("/contains")
+            .then()
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .and()
+            .body(equalTo("contains"))
+    }
+
+    @Test
+    fun `should match query params with NotContains operator`() {
+        given()
+            .formParam("example", "foo")
+            .`when`()
+            .post("/notcontains")
+            .then()
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .and()
+            .body(equalTo("notcontains"))
+    }
+
+    @Test
+    fun `should match query params with Matches operator`() {
+        given()
+            .formParam("example", "test")
+            .`when`()
+            .post("/matches")
+            .then()
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .and()
+            .body(equalTo("matches"))
+    }
+
+    @Test
+    fun `should match query params with NotMatches operator`() {
+        given()
+            .formParam("example", "123")
+            .`when`()
+            .post("/notmatches")
+            .then()
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .and()
+            .body(equalTo("notmatches"))
+    }
+
+    @Test
+    fun `should match query params with Exists operator`() {
+        given()
+            .formParam("example", "test")
+            .`when`()
+            .post("/exists")
+            .then()
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .and()
+            .body(equalTo("exists"))
+    }
+
+    @Test
+    fun `should match query params with NotExists operator`() {
+        given()
+            .`when`()
+            .post("/notexists")
+            .then()
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .and()
+            .body(equalTo("notexists"))
     }
 }
