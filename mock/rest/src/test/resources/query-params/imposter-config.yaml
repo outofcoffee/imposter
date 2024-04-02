@@ -2,13 +2,83 @@ plugin: rest
 
 resources:
 - method: POST
-  path: /
+  path: /simple
   response:
     content: "not matched"
 
 - method: POST
-  path: /
+  path: /simple
   queryParams:
     example: test
   response:
     content: "matched"
+
+- method: POST
+  path: /equalto
+  queryParams:
+    example:
+      value: "test"
+      operator: EqualTo
+  response:
+    content: "equalto"
+
+- method: POST
+  path: /notequalto
+  queryParams:
+    example:
+      value: "test"
+      operator: NotEqualTo
+  response:
+    content: "notequalto"
+
+- method: POST
+  path: /contains
+  queryParams:
+    example:
+      value: "es"
+      operator: Contains
+  response:
+    content: "contains"
+
+- method: POST
+  path: /notcontains
+  queryParams:
+    example:
+      value: "test"
+      operator: NotContains
+  response:
+    content: "notcontains"
+
+- method: POST
+  path: /matches
+  queryParams:
+    example:
+      value: "[a-zA-Z]+"
+      operator: Matches
+  response:
+    content: "matches"
+
+- method: POST
+  path: /notmatches
+  queryParams:
+    example:
+      value: "[a-zA-Z]+"
+      operator: NotMatches
+  response:
+    content: "notmatches"
+
+- method: POST
+  path: /exists
+  queryParams:
+    example:
+      operator: Exists
+  response:
+    content: "exists"
+
+- method: POST
+  path: /notexists
+  queryParams:
+    example:
+      operator: NotExists
+  response:
+    content: "notexists"
