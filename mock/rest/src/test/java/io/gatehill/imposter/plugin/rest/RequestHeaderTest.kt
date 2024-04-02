@@ -61,7 +61,7 @@ class RequestHeaderTest : BaseVerticleTest() {
     override val pluginClass = RestPluginImpl::class.java
 
     override val testConfigDirs = listOf(
-            "/request-headers"
+        "/request-headers"
     )
 
     @Before
@@ -74,26 +74,121 @@ class RequestHeaderTest : BaseVerticleTest() {
     }
 
     @Test
-    fun `should match request header`() {
+    fun `should match request header with simple form config`() {
         given()
-                .header("X-Example", "test")
-                .`when`()
-                .post("/")
-                .then()
-                .statusCode(equalTo(HttpUtil.HTTP_OK))
-                .and()
-                .body(equalTo("matched"))
+            .header("X-Example", "test")
+            .`when`()
+            .post("/simple")
+            .then()
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .and()
+            .body(equalTo("matched"))
     }
 
     @Test
-    fun `should not match request header`() {
+    fun `should not match request header with simple form config`() {
         given()
-                .header("X-Example", "should-not-match")
-                .`when`()
-                .post("/")
-                .then()
-                .statusCode(equalTo(HttpUtil.HTTP_OK))
-                .and()
-                .body(equalTo("not matched"))
+            .header("X-Example", "should-not-match")
+            .`when`()
+            .post("/simple")
+            .then()
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .and()
+            .body(equalTo("not matched"))
+    }
+
+    @Test
+    fun `should match request header with EqualTo operator`() {
+        given()
+            .header("X-Example", "test")
+            .`when`()
+            .post("/equalto")
+            .then()
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .and()
+            .body(equalTo("equalto"))
+    }
+
+    @Test
+    fun `should match request header with NotEqualTo operator`() {
+        given()
+            .header("X-Example", "foo")
+            .`when`()
+            .post("/notequalto")
+            .then()
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .and()
+            .body(equalTo("notequalto"))
+    }
+
+    @Test
+    fun `should match request header with Contains operator`() {
+        given()
+            .header("X-Example", "test")
+            .`when`()
+            .post("/contains")
+            .then()
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .and()
+            .body(equalTo("contains"))
+    }
+
+    @Test
+    fun `should match request header with NotContains operator`() {
+        given()
+            .header("X-Example", "foo")
+            .`when`()
+            .post("/notcontains")
+            .then()
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .and()
+            .body(equalTo("notcontains"))
+    }
+
+    @Test
+    fun `should match request header with Matches operator`() {
+        given()
+            .header("X-Example", "test")
+            .`when`()
+            .post("/matches")
+            .then()
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .and()
+            .body(equalTo("matches"))
+    }
+
+    @Test
+    fun `should match request header with NotMatches operator`() {
+        given()
+            .header("X-Example", "123")
+            .`when`()
+            .post("/notmatches")
+            .then()
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .and()
+            .body(equalTo("notmatches"))
+    }
+
+    @Test
+    fun `should match request header with Exists operator`() {
+        given()
+            .header("X-Example", "test")
+            .`when`()
+            .post("/exists")
+            .then()
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .and()
+            .body(equalTo("exists"))
+    }
+
+    @Test
+    fun `should match request header with NotExists operator`() {
+        given()
+            .`when`()
+            .post("/notexists")
+            .then()
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .and()
+            .body(equalTo("notexists"))
     }
 }
