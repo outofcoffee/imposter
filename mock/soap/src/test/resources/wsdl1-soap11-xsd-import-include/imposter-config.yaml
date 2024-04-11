@@ -1,0 +1,13 @@
+plugin: soap
+wsdlFile: PetService/service.wsdl
+
+resources:
+  - binding: SoapBinding
+    operation: getPetByName
+    response:
+      file: getPetByNameResponse.xml
+
+  - binding: HttpBinding
+    operation: getPetByName
+    response:
+      file: getPetByNameResponse.xml
