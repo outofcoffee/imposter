@@ -1,0 +1,12 @@
+<xs:schema elementFormDefault="unqualified" targetNamespace="urn:com:example:petstore" version="1.0"
+  xmlns:tns="urn:com:example:petstore"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:simpleType name="petBreedName">
+    <xs:restriction base="xs:string">
+      <xs:minLength value="1"/>
+      <xs:maxLength value="20"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+</xs:schema>

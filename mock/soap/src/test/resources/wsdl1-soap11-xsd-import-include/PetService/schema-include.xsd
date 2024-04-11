@@ -1,0 +1,19 @@
+<xs:schema elementFormDefault="unqualified" targetNamespace="urn:com:example:petstore" version="1.0"
+  xmlns:tns="urn:com:example:petstore"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:include schemaLocation="../include/include.xsd"/>
+
+  <xs:complexType name="petBreed">
+    <xs:all>
+      <xs:element name="id" type="xs:int"/>
+
+      <!--
+      Use the 'tns' prefix defined outside the inline schema
+      to test prefix inheritance for inline schemas.
+      -->
+      <xs:element name="name" type="tns:petBreedName"/>
+    </xs:all>
+  </xs:complexType>
+
+</xs:schema>
