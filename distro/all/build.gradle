@@ -10,6 +10,9 @@ dependencies {
     implementation project (':imposter-cmd')
     implementation project (':distro:distro-base')
 
+    // scripting
+    implementation project (':scripting:scripting-graalvm')
+
     // plugins
     implementation project (':core:plugin-detector')
     implementation project (':mock:mock-hbase')
