@@ -72,7 +72,8 @@ jobs:
       - name: Integration test
         run: |
           ./scripts/docker-build.sh -p false dev
-          ./scripts/integration-tests.sh dev
+          ./scripts/integration-tests.sh outofcoffee/imposter:dev
+          ./scripts/integration-tests.sh outofcoffee/imposter-all:dev
 
       - name: Build and push Docker images
         id: docker-build
