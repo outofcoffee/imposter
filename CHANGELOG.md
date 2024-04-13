@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.36.2] - 2024-04-13
+### Changed
+- ci: includes imposter-all distro in integration tests.
+- ci: integration tests verify scripted examples.
+- docs: adds JavaScript example for HBase plugin.
+- refactor: moves HBase to external plugin.
+- test: improves coverage of form params matchers.
+- test: improves coverage of path params matchers.
+- test: improves coverage of query params matchers.
+- test: improves coverage of request header matchers.
+
 ## [3.36.1] - 2024-04-12
 ### Changed
 - build: includes js-graal plugin in all distro.
