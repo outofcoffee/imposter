@@ -15,12 +15,14 @@ dependencies {
 
     // plugins
     implementation project (':core:plugin-detector')
-    implementation project (':mock:mock-hbase')
     implementation project (':mock:mock-openapi')
     implementation project (':mock:mock-rest')
     implementation project (':mock:mock-sfdc')
     implementation project (':mock:mock-soap')
     implementation project (':mock:mock-wiremock')
+
+    // HBase excluded in favour of standalone plugin, due to https://github.com/outofcoffee/imposter/issues/547
+    // implementation project (':mock:mock-hbase')
 
     // stores
     implementation project (':store:store-dynamodb')

@@ -50,18 +50,29 @@ import java.net.URLClassLoader
  * A child-first [ClassLoader] that delegates to the superclass only when the requested
  * class is not found in the provided URLs.
  *
+ * If a [scope] is provided, this behaviour applies to those classes with the
+ * given package prefix. If it is empty, this behaviour applies to all classes.
+ *
  * @author Pete Cornish
  */
-class PluginClassLoader(urls: Array<URL>, parent: ClassLoader) : URLClassLoader(urls, parent) {
+class ChildFirstClassLoader(
+    urls: Array<URL>,
+    parent: ClassLoader,
+    private val scope: Array<String> = emptyArray(),
+) : URLClassLoader(urls, parent) {
     override fun loadClass(name: String, resolve: Boolean): Class<*>? {
-        val loadedClass = findLoadedClass(name) ?: try {
-            findClass(name)
-        } catch (e: ClassNotFoundException) {
-            super.loadClass(name, resolve)
+        if (scope.isEmpty() || scope.any { name.startsWith("$it.") }) {
+            val loadedClass = findLoadedClass(name) ?: try {
+                findClass(name)
+            } catch (e: ClassNotFoundException) {
+                super.loadClass(name, resolve)
+            }
+            if (resolve) {
+                resolveClass(loadedClass)
+            }
+            return loadedClass
+        } else {
+            return super.loadClass(name, resolve)
         }
-        if (resolve) {
-            resolveClass(loadedClass)
-        }
-        return loadedClass
     }
 }

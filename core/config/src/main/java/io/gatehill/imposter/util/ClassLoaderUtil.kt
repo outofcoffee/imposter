@@ -44,14 +44,16 @@
 package io.gatehill.imposter.util
 
 import io.gatehill.imposter.config.util.EnvVars
-import io.gatehill.imposter.plugin.PluginClassLoader
+import io.gatehill.imposter.plugin.ChildFirstClassLoader
 import org.apache.logging.log4j.LogManager
 import java.io.File
 import java.io.IOException
 import java.net.URL
 import java.net.URLClassLoader
+import java.util.concurrent.ConcurrentHashMap
 
 object ClassLoaderUtil {
+    private val jars: Array<URL>?
     val pluginClassLoader: ClassLoader
 
     private val pluginDirPath: String?
@@ -65,20 +67,31 @@ object ClassLoaderUtil {
     private const val archiveFileExtension = ".zip"
     private const val childClassloaderStrategy = "child"
 
+    private class IsolationConfig(
+        val packagePrefix: String,
+        val scope: Array<String> = emptyArray(),
+    )
+
+    private val isolatedClassLoaders = ConcurrentHashMap<String, ClassLoader>()
+    private val isolate: List<IsolationConfig> = listOf(
+        IsolationConfig("io.gatehill.imposter.plugin.hbase", arrayOf("org.objectweb.asm"))
+    )
+
     init {
+        jars = listJars()
         pluginClassLoader = determineClassLoader()
     }
 
     private fun determineClassLoader(): ClassLoader {
         val thisClassloader = ClassLoaderUtil::class.java.classLoader
 
-        return listJars()?.let { jarUrls ->
+        return jars?.let { jarUrls ->
             if (EnvVars.getEnv("IMPOSTER_PLUGIN_CLASSLOADER_STRATEGY") == childClassloaderStrategy) {
                 logger.trace("Plugins will use child-first classloader with plugin directory: {} and files: {}", pluginDirPath, jarUrls)
-                return@let PluginClassLoader(jarUrls.toTypedArray(), thisClassloader)
+                return@let ChildFirstClassLoader(jarUrls, thisClassloader)
             } else {
                 logger.trace("Plugins will use URL classloader with plugin directory: {} and files: {}", pluginDirPath, jarUrls)
-                return@let URLClassLoader(jarUrls.toTypedArray(), thisClassloader)
+                return@let URLClassLoader(jarUrls, thisClassloader)
             }
 
         } ?: run {
@@ -90,7 +103,7 @@ object ClassLoaderUtil {
     /**
      * Lists all plugin JARs, first extracting any archives.
      */
-    private fun listJars(): List<URL>? {
+    private fun listJars(): Array<URL>? {
         val pluginDir = pluginDirPath?.let { File(it) }?.also { dir ->
             if (!dir.exists() || !dir.isDirectory) {
                 logger.warn("Path $dir is not a valid directory")
@@ -115,7 +128,7 @@ object ClassLoaderUtil {
         val extractBaseDir = archiveExtractDir ?: pluginDir
         jars += archives.flatMap { listJarsFromArchive(extractBaseDir, it) }
 
-        return jars.map { it.toURI().toURL() }
+        return jars.map { it.toURI().toURL() }.toTypedArray()
     }
 
     /**
@@ -146,7 +159,20 @@ object ClassLoaderUtil {
 
     @Suppress("UNCHECKED_CAST")
     fun <T> loadClass(className: String): Class<T> {
-        return pluginClassLoader.loadClass(className) as Class<T>
+        return determineLoaderForClass(className).loadClass(className) as Class<T>
+    }
+
+    private fun determineLoaderForClass(className: String): ClassLoader {
+        val shouldIsolate = isolate.find { className.startsWith("${it.packagePrefix}.") }
+
+        return shouldIsolate?.let {
+            logger.trace("Using isolated classloader for {}", className)
+            isolatedClassLoaders.computeIfAbsent(shouldIsolate.packagePrefix) {
+                jars ?: throw IllegalStateException("No JAR files for isolated classloader")
+                ChildFirstClassLoader(jars, pluginClassLoader, shouldIsolate.scope)
+            }
+
+        } ?: pluginClassLoader
     }
 
     fun describePluginPath(): String = (pluginDirPath?.let { "$it or " } ?: "") + "program classpath"
