@@ -52,7 +52,7 @@ function start_engine() {
 
   docker run --rm -id \
     -p 8080:8080 \
-    -v "${ROOT_DIR}/examples/openapi/simple:/opt/imposter/config" \
+    -v "${ROOT_DIR}/examples/openapi/scripted-named-example-js:/opt/imposter/config" \
     --name imposter-test \
     "${DOCKER_IMAGE}"
 
@@ -86,6 +86,6 @@ fi
 
 start_engine
 
-(curl --fail http://localhost:8080/pets && test_passed) || test_failed
+(curl --fail http://localhost:8080/pets/1 && test_passed) || test_failed
 
 cleanup_engine
