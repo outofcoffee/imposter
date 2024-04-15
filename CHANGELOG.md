@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.36.3] - 2024-04-15
+### Changed
+- docs: documents EntityResolver input stream lifecycle expectations.
+- refactor(soap): reuses EntityResolver for the same WSDL file.
+- refactor: uses instance-scoped EntityResolver for WSDL parsing and SOAP example generation.
+- test: removes unneeded fork configuration.
+- test: updates test file comment.
+
+### Fixed
+- fix: in SOAP plugin, support WSDL with XML schema include
+
 ## [3.36.2] - 2024-04-13
 ### Changed
 - ci: includes imposter-all distro in integration tests.
