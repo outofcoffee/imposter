@@ -189,7 +189,7 @@ object ConfigUtil {
 
         for (configFile in configFiles) {
             try {
-                LOGGER.debug("Loading configuration file: {}", configFile)
+                LOGGER.debug("Loading configuration file: {}", configFile.file)
                 configCount++
 
                 // load to determine plugin
@@ -209,7 +209,12 @@ object ConfigUtil {
                 }
             }
         }
-        LOGGER.trace("Loaded $configCount plugin configuration file(s) with $errorCount error(s): $configFiles")
+        LOGGER.trace(
+            "Loaded {} plugin configuration file(s) with {} error(s): {}",
+            configCount,
+            errorCount,
+            configFiles
+        )
         return allPluginConfigs
     }
 
