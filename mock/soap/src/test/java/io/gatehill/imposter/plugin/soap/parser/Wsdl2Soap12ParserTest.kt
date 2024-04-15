@@ -64,7 +64,8 @@ class Wsdl2Soap12ParserTest {
     fun setUp() {
         val wsdlFile = File(Wsdl2Soap12ParserTest::class.java.getResource("/wsdl2-soap12/service.wsdl")!!.toURI())
         val document = SAXBuilder().build(wsdlFile)
-        parser = Wsdl2Parser(wsdlFile, document)
+        val entityResolver = WsdlRelativeXsdEntityResolver(wsdlFile.parentFile)
+        parser = Wsdl2Parser(wsdlFile, document, entityResolver)
     }
 
     @Test

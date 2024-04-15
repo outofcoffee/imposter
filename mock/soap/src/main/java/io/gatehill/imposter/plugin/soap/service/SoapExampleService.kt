@@ -95,6 +95,8 @@ class SoapExampleService {
             val errors = mutableListOf<XmlError>()
 
             val compileOptions = XmlOptions()
+                .setLoadLineNumbers()
+                .setLoadMessageDigest()
                 .setEntityResolver(WsdlRelativeXsdEntityResolver(wsdlDir))
                 .setErrorListener(errors)
 

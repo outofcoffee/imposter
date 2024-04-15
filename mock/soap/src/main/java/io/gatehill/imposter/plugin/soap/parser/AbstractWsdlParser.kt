@@ -55,6 +55,7 @@ import org.jdom2.Document
 import org.jdom2.Element
 import org.jdom2.Namespace
 import org.jdom2.output.XMLOutputter
+import org.xml.sax.EntityResolver
 import java.io.File
 import javax.xml.namespace.QName
 
@@ -64,6 +65,7 @@ import javax.xml.namespace.QName
 abstract class AbstractWsdlParser(
     private val wsdlFile: File,
     protected val document: Document,
+    private val entityResolver: EntityResolver,
 ) : WsdlParser {
     protected val logger: Logger = LogManager.getLogger(this::class.java)
 
@@ -75,10 +77,15 @@ abstract class AbstractWsdlParser(
         val schemas = mutableListOf<SchemaDocument>()
         schemas += findEmbeddedTypesSchemas()
 
-        // TODO consider only those referenced by 'xs:import'
+        // TODO consider only those referenced by 'xs:import' or 'xs:include'
         val xsds = wsdlFile.parentFile.listFiles { _, name -> name.endsWith(".xsd") }?.toList() ?: emptyList()
         schemas += xsds.map { schemaFile ->
-            SchemaDocument.Factory.parse(schemaFile, XmlOptions().setLoadLineNumbers().setLoadMessageDigest())
+            val options = XmlOptions()
+                .setLoadLineNumbers()
+                .setLoadMessageDigest()
+                .setEntityResolver(entityResolver)
+
+            SchemaDocument.Factory.parse(schemaFile, options)
         }
 
         logger.debug("Discovered {} schema(s) for WSDL: {}", schemas.size, wsdlFile)
@@ -117,7 +124,9 @@ abstract class AbstractWsdlParser(
             throw IllegalStateException("Cannot build XSD from empty schema list")
         }
         val compileOptions = XmlOptions()
-            .setEntityResolver(WsdlRelativeXsdEntityResolver(wsdlFile.parentFile))
+            .setLoadLineNumbers()
+            .setLoadMessageDigest()
+            .setEntityResolver(entityResolver)
         try {
             return XmlBeans.compileXsd(schemas, XmlBeans.getBuiltinTypeSystem(), compileOptions)
         } catch (e: Exception) {

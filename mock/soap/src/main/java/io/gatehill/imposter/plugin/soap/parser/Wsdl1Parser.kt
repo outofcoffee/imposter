@@ -43,12 +43,18 @@
 
 package io.gatehill.imposter.plugin.soap.parser
 
-import io.gatehill.imposter.plugin.soap.model.*
+import io.gatehill.imposter.plugin.soap.model.BindingType
+import io.gatehill.imposter.plugin.soap.model.WsdlBinding
+import io.gatehill.imposter.plugin.soap.model.WsdlEndpoint
+import io.gatehill.imposter.plugin.soap.model.WsdlInterface
+import io.gatehill.imposter.plugin.soap.model.WsdlOperation
+import io.gatehill.imposter.plugin.soap.model.WsdlService
 import io.gatehill.imposter.plugin.soap.util.SoapUtil
 import io.gatehill.imposter.util.BodyQueryUtil
 import org.jdom2.Document
 import org.jdom2.Element
 import org.jdom2.Namespace
+import org.xml.sax.EntityResolver
 import java.io.File
 import java.net.URI
 import javax.xml.namespace.QName
@@ -61,7 +67,8 @@ import javax.xml.namespace.QName
 class Wsdl1Parser(
     wsdlFile: File,
     document: Document,
-) : AbstractWsdlParser(wsdlFile, document) {
+    entityResolver: EntityResolver,
+) : AbstractWsdlParser(wsdlFile, document, entityResolver) {
 
     override val version = WsdlParser.WsdlVersion.V1
 
