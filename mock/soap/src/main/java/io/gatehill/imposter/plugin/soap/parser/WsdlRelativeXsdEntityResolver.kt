@@ -24,6 +24,9 @@ class WsdlRelativeXsdEntityResolver(
         val xsdFile = File(wsdlDir.absoluteFile, systemId.replace("project://local/", ""))
         if (Files.isRegularFile(xsdFile.toPath()) && xsdFile.name.lowercase().endsWith(".xsd")) {
             logger.debug("Resolved XSD {} relative to WSDL path", xsdFile)
+
+            // according to the InputSource docs, the parser using this resolver
+            // should manage the clean-up of the stream.
             return InputSource(FileInputStream(xsdFile))
         }
         return null
