@@ -24,10 +24,6 @@ dependencies {
     testImplementation project(':test:sample-soap-client')
 }
 
-test {
-    forkEvery 1
-}
-
 task sourcesJar(type: Jar, dependsOn: classes) {
     archiveClassifier = 'sources'
     from sourceSets.main.allSource
