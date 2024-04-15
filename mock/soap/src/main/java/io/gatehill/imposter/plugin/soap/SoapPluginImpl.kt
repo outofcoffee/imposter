@@ -61,7 +61,6 @@ import io.gatehill.imposter.plugin.soap.model.WsdlBinding
 import io.gatehill.imposter.plugin.soap.model.WsdlOperation
 import io.gatehill.imposter.plugin.soap.parser.VersionAwareWsdlParser
 import io.gatehill.imposter.plugin.soap.parser.WsdlParser
-import io.gatehill.imposter.plugin.soap.parser.WsdlRelativeXsdEntityResolver
 import io.gatehill.imposter.plugin.soap.service.SoapExampleService
 import io.gatehill.imposter.plugin.soap.util.SoapUtil
 import io.gatehill.imposter.script.ResponseBehaviour
@@ -103,11 +102,6 @@ class SoapPluginImpl @Inject constructor(
 
     companion object {
         private val LOGGER = LogManager.getLogger(SoapPluginImpl::class.java)
-
-        init {
-            // https://cwiki.apache.org/confluence/display/XMLBEANS/ExternalEntityResolver
-            System.setProperty("xmlbean.entityResolver", WsdlRelativeXsdEntityResolver::class.qualifiedName!!)
-        }
     }
 
     override fun configureRoutes(router: HttpRouter) {
@@ -124,30 +118,24 @@ class SoapPluginImpl @Inject constructor(
             check(fullWsdlPath.exists()) {
                 "WSDL file not found at path: $fullWsdlPath"
             }
-            try {
-                // resolve included XSDs which are located relative to the WSDL
-                WsdlRelativeXsdEntityResolver.wsdlFolderPathThreadLocal.set(fullWsdlPath.parentFile.absolutePath)
-                val wsdlParser = VersionAwareWsdlParser(fullWsdlPath)
+            val wsdlParser = VersionAwareWsdlParser(fullWsdlPath)
 
-                // TODO optionally support ?wsdl query to return the WSDL
+            // TODO optionally support ?wsdl query to return the WSDL
 
-                wsdlParser.services.forEach { service ->
-                    service.endpoints.forEach { endpoint ->
-                        val path = endpoint.address.path
-                        val binding = wsdlParser.getBinding(endpoint.bindingName)
-                                ?: throw IllegalStateException("Binding: ${endpoint.bindingName} not found")
+            wsdlParser.services.forEach { service ->
+                service.endpoints.forEach { endpoint ->
+                    val path = endpoint.address.path
+                    val binding = wsdlParser.getBinding(endpoint.bindingName)
+                            ?: throw IllegalStateException("Binding: ${endpoint.bindingName} not found")
 
-                        when (binding.type) {
-                            BindingType.SOAP, BindingType.HTTP -> {
-                                handleBindingOperations(router, config, wsdlParser, path, binding)
-                            }
-
-                            else -> LOGGER.debug("Ignoring unsupported binding: ${binding.name}")
+                    when (binding.type) {
+                        BindingType.SOAP, BindingType.HTTP -> {
+                            handleBindingOperations(router, config, wsdlParser, path, binding)
                         }
+
+                        else -> LOGGER.debug("Ignoring unsupported binding: ${binding.name}")
                     }
                 }
-            } finally {
-                WsdlRelativeXsdEntityResolver.wsdlFolderPathThreadLocal.remove();
             }
         }
     }
@@ -252,13 +240,14 @@ class SoapPluginImpl @Inject constructor(
 
                 // build a response from the XSD
                 val exampleSender = ResponseSender { httpExchange: HttpExchange, _: ResponseBehaviour ->
-                    try {
-                        WsdlRelativeXsdEntityResolver.wsdlFolderPathThreadLocal
-                            .set(File(pluginConfig.dir, pluginConfig.wsdlFile!!).parentFile.absolutePath)
-                        soapExampleService.serveExample(httpExchange, parser.schemas, operation.outputElementRef, bodyHolder)
-                    } finally {
-                        WsdlRelativeXsdEntityResolver.wsdlFolderPathThreadLocal.remove()
-                    }
+                    val wsdlDir = File(pluginConfig.dir, pluginConfig.wsdlFile!!).parentFile
+                    soapExampleService.serveExample(
+                        httpExchange,
+                        parser.schemas,
+                        wsdlDir,
+                        operation.outputElementRef,
+                        bodyHolder
+                    )
                 }
 
                 // attempt to serve the example, falling back if not present

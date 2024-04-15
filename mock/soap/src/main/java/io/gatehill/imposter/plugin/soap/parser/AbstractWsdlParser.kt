@@ -81,7 +81,7 @@ abstract class AbstractWsdlParser(
             SchemaDocument.Factory.parse(schemaFile, XmlOptions().setLoadLineNumbers().setLoadMessageDigest())
         }
 
-        logger.debug("Discovered ${schemas.size} schema(s) for WSDL: $wsdlFile")
+        logger.debug("Discovered {} schema(s) for WSDL: {}", schemas.size, wsdlFile)
         return schemas.toTypedArray()
     }
 
@@ -117,6 +117,7 @@ abstract class AbstractWsdlParser(
             throw IllegalStateException("Cannot build XSD from empty schema list")
         }
         val compileOptions = XmlOptions()
+            .setEntityResolver(WsdlRelativeXsdEntityResolver(wsdlFile.parentFile))
         try {
             return XmlBeans.compileXsd(schemas, XmlBeans.getBuiltinTypeSystem(), compileOptions)
         } catch (e: Exception) {
