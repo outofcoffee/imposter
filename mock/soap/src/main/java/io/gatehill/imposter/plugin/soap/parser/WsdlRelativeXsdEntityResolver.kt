@@ -11,26 +11,21 @@ import java.nio.file.Files
 /**
  * EntityResolver to resolve XSDs included relative to the WSDL file.
  */
-class WsdlRelativeXsdEntityResolver : EntityResolver {
-
-    companion object {
-        val wsdlFolderPathThreadLocal: ThreadLocal<String> = ThreadLocal()
-    }
-
+class WsdlRelativeXsdEntityResolver(
+    private val wsdlDir: File
+) : EntityResolver {
     private val logger: Logger = LogManager.getLogger(this::class.java)
 
     override fun resolveEntity(publicId: String?, systemId: String?): InputSource? {
-        logger.trace("Resolve {} relative to path {}", systemId, wsdlFolderPathThreadLocal.get())
+        logger.trace("Resolve {} relative to path {}", systemId, wsdlDir)
         systemId ?: return null
-        val wsdlFolderPath = wsdlFolderPathThreadLocal.get() ?: return null;
 
         // in certain occasions, XMLBeans prefixes the systemId (see StscState) -> strip it off
-        val xsdFile = File(wsdlFolderPath, systemId.replace("project://local/", ""))
+        val xsdFile = File(wsdlDir.absoluteFile, systemId.replace("project://local/", ""))
         if (Files.isRegularFile(xsdFile.toPath()) && xsdFile.name.lowercase().endsWith(".xsd")) {
             logger.debug("Resolved XSD {} relative to WSDL path", xsdFile)
             return InputSource(FileInputStream(xsdFile))
         }
         return null
     }
-
 }

@@ -62,7 +62,10 @@ class VersionAwareWsdlParser(wsdlFile: File) : WsdlParser {
     private val delegate: WsdlParser
 
     init {
-        val document = SAXBuilder().build(wsdlFile)
+        val document = SAXBuilder().apply {
+            entityResolver = WsdlRelativeXsdEntityResolver(wsdlFile.parentFile)
+        }.build(wsdlFile)
+
         val wsdlNamespaces = document.rootElement.namespacesInScope.filter {
             it.uri == Wsdl2Parser.wsdl2Namespace || it.uri == Wsdl1Parser.wsdl1Namespace
         }
@@ -75,7 +78,7 @@ class VersionAwareWsdlParser(wsdlFile: File) : WsdlParser {
             }
             else -> throw IllegalStateException("More than one WSDL namespace found on root element: $wsdlNamespaces")
         }
-        logger.debug("Using WSDL parser: $version for: $wsdlFile")
+        logger.debug("Using WSDL parser: {} for: {}", version, wsdlFile)
     }
 
     override val version: WsdlParser.WsdlVersion
