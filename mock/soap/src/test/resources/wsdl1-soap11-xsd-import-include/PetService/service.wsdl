@@ -65,7 +65,7 @@
                        schemaLocation="../import/schema-import.xsd"/>
         </xs:schema>
 
-        <!-- embedded schema -->
+        <!-- included schema -->
         <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
                    xmlns="urn:com:example:petstore"
                    targetNamespace="urn:com:example:petstore">
