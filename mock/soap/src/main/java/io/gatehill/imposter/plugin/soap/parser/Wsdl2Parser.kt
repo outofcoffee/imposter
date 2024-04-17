@@ -44,6 +44,8 @@
 package io.gatehill.imposter.plugin.soap.parser
 
 import io.gatehill.imposter.plugin.soap.model.BindingType
+import io.gatehill.imposter.plugin.soap.model.ElementOperationMessage
+import io.gatehill.imposter.plugin.soap.model.OperationMessage
 import io.gatehill.imposter.plugin.soap.model.WsdlBinding
 import io.gatehill.imposter.plugin.soap.model.WsdlEndpoint
 import io.gatehill.imposter.plugin.soap.model.WsdlInterface
@@ -56,7 +58,6 @@ import org.jdom2.Namespace
 import org.xml.sax.EntityResolver
 import java.io.File
 import java.net.URI
-import javax.xml.namespace.QName
 
 /**
  * WDSL 2.0 parser.
@@ -145,7 +146,7 @@ class Wsdl2Parser(
             expressionTemplate = "./wsdl:operation[@name='%s']",
             name = operationName
         )
-        return operation?.let { parseOperation(operation) }
+        return operation?.let { parseOperation(operationName, operation) }
     }
 
     private fun getInterfaceNode(interfaceName: String): Element? {
@@ -156,19 +157,19 @@ class Wsdl2Parser(
         )
     }
 
-    private fun parseOperation(operation: Element): WsdlOperation {
+    private fun parseOperation(operationName: String, operation: Element): WsdlOperation {
         val soapOperation = selectSingleNode(operation, "./soap:operation") ?: throw IllegalStateException(
-            "Unable to find soap:operation for operation ${operation.getAttributeValue("name")}"
+            "Unable to find soap:operation for operation ${operationName}"
         )
-        val input = getMessagePartElementName(operation, "./wsdl:input")
-        val output = getMessagePartElementName(operation, "./wsdl:output")
+        val input = getMessage(operationName, operation, "./wsdl:input")
+        val output = getMessage(operationName, operation, "./wsdl:output")
 
         return WsdlOperation(
             name = operation.getAttributeValue("name"),
             soapAction = soapOperation.getAttributeValue("soapAction"),
             style = soapOperation.getAttributeValue("style"),
-            inputElementRef = input,
-            outputElementRef = output,
+            inputRef = input,
+            outputRef = output,
         )
     }
 
@@ -176,12 +177,18 @@ class Wsdl2Parser(
      * Extract the WSDL message part element attribute, then attempt
      * to resolve it from within the XSD.
      */
-    private fun getMessagePartElementName(context: Element, expression: String): QName? {
+    private fun getMessage(operationName: String, context: Element, expression: String): OperationMessage? {
         val inputOrOutputNode = selectSingleNode(context, expression) ?: throw IllegalStateException(
             "Unable to find message part: $expression"
         )
-        val elementName = inputOrOutputNode.getAttributeValue("element")
-        return resolveElementFromXsd(elementName)
+
+        // WSDL 2.0 doesn't allow operation messages to refer to XML schema types
+        // directly - instead an element must be used.
+        getAttributeValueAsQName(inputOrOutputNode, "element")?.let { elementQName ->
+            return resolveElementFromXsd(elementQName)?.let { ElementOperationMessage(operationName, it) }
+        } ?: throw IllegalStateException(
+            "Invalid 'element' attribute for message input/output: ${inputOrOutputNode.name}"
+        )
     }
 
     override val xPathNamespaces = listOf(

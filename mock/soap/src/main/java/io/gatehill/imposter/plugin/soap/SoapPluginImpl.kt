@@ -185,9 +185,9 @@ class SoapPluginImpl @Inject constructor(
                     LOGGER.warn("Unable to find a matching binding operation using SOAPAction or SOAP request body")
                     return@build completedUnitFuture()
                 }
-                check(operation.style.equals("document", ignoreCase = true)) {
-                    "Only document SOAP bindings are supported"
-                }
+//                check(operation.style.equals("document", ignoreCase = true)) {
+//                    "Only document SOAP bindings are supported"
+//                }
 
                 LOGGER.debug("Matched operation: ${operation.name} in binding ${binding.name}")
                 return@build handle(config, parser, binding, operation, httpExchange, bodyHolder, soapAction)
@@ -224,8 +224,8 @@ class SoapPluginImpl @Inject constructor(
             val response = httpExchange.response
                 .setStatusCode(responseBehaviour.statusCode)
 
-            operation.outputElementRef?.let {
-                LOGGER.trace("Using output schema type: ${operation.outputElementRef}")
+            operation.outputRef?.let {
+                LOGGER.trace("Using output schema type: ${operation.outputRef}")
 
                 if (!responseBehaviour.responseHeaders.containsKey(HttpUtil.CONTENT_TYPE)) {
                     responseBehaviour.responseHeaders[HttpUtil.CONTENT_TYPE] = when (bodyHolder) {
@@ -245,7 +245,7 @@ class SoapPluginImpl @Inject constructor(
                         httpExchange,
                         parser.schemas,
                         wsdlDir,
-                        operation.outputElementRef,
+                        operation.outputRef,
                         bodyHolder
                     )
                 }

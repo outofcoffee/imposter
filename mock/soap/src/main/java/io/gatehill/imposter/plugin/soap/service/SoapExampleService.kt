@@ -44,9 +44,12 @@
 package io.gatehill.imposter.plugin.soap.service
 
 import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.plugin.soap.model.ElementOperationMessage
 import io.gatehill.imposter.plugin.soap.model.MessageBodyHolder
+import io.gatehill.imposter.plugin.soap.model.OperationMessage
 import io.gatehill.imposter.plugin.soap.model.ParsedRawBody
 import io.gatehill.imposter.plugin.soap.model.ParsedSoapMessage
+import io.gatehill.imposter.plugin.soap.model.TypeOperationMessage
 import io.gatehill.imposter.plugin.soap.parser.WsdlRelativeXsdEntityResolver
 import io.gatehill.imposter.plugin.soap.util.SoapUtil
 import io.gatehill.imposter.util.LogUtil
@@ -76,11 +79,11 @@ class SoapExampleService {
         httpExchange: HttpExchange,
         schemas: Array<SchemaDocument>,
         wsdlDir: File,
-        outputTypeDefName: QName,
+        outputRef: OperationMessage,
         bodyHolder: MessageBodyHolder,
     ): Boolean {
-        logger.debug("Generating example for {}", outputTypeDefName)
-        val example = generateInstanceFromSchemas(schemas, wsdlDir, outputTypeDefName.localPart)
+        logger.debug("Generating example for {}", outputRef)
+        val example = generateInstanceFromSchemas(schemas, wsdlDir, outputRef)
         transmitExample(httpExchange, example, bodyHolder)
         return true
     }
@@ -88,8 +91,58 @@ class SoapExampleService {
     private fun generateInstanceFromSchemas(
         schemas: Array<SchemaDocument>,
         wsdlDir: File,
-        rootName: String,
+        typeRef: OperationMessage,
     ): String {
+        when (typeRef) {
+            is ElementOperationMessage -> {
+                val sts: SchemaTypeSystem = buildSchemaTypeSystem(wsdlDir, schemas)
+
+                // TODO should this use the qualified name instead?
+                val rootElementName = typeRef.elementName.localPart
+                val elem: SchemaType = sts.documentTypes().find { it.documentElementName.localPart == rootElementName }
+                    ?: throw RuntimeException("Could not find a global element with name \"$rootElementName\"")
+
+                return SampleXmlUtil.createSampleForType(elem)
+            }
+            is TypeOperationMessage -> {
+                // by convention, the suffix 'Response' is added to the operation name
+                val rootElementName = QName(
+                    typeRef.typeName.namespaceURI,
+                    typeRef.operationName + "Response",
+                    "tns"
+                )
+                val elementSchema = createElementSchema(rootElementName, typeRef.typeName)
+                val sts: SchemaTypeSystem = buildSchemaTypeSystem(wsdlDir, schemas + elementSchema)
+
+                val elem = sts.documentTypes().find { it.documentElementName == rootElementName }
+                    ?: throw RuntimeException("Could not find a generated element with name \"$rootElementName\"")
+
+                return SampleXmlUtil.createSampleForType(elem)
+            }
+            else -> throw UnsupportedOperationException("Only element output message parts are supported")
+        }
+    }
+
+    private fun createElementSchema(elementName: QName, typeName: QName): SchemaDocument {
+        val schemaXml = """
+<xs:schema elementFormDefault="unqualified" version="1.0"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="${elementName.namespaceURI}"
+           xmlns:${elementName.prefix}="${elementName.namespaceURI}">
+    
+    <!-- use the element prefix as the type QName may not have one -->
+    <xs:element name="${elementName.localPart}" type="${elementName.prefix}:${typeName.localPart}"/>
+</xs:schema>
+""".trim()
+
+        logger.trace("Generated element schema:\n{}", schemaXml)
+        return SchemaDocument.Factory.parse(schemaXml)
+    }
+
+    private fun buildSchemaTypeSystem(
+        wsdlDir: File,
+        schemas: Array<SchemaDocument>,
+    ): SchemaTypeSystem {
         var sts: SchemaTypeSystem? = null
         if (schemas.isNotEmpty()) {
             val errors = mutableListOf<XmlError>()
@@ -101,20 +154,17 @@ class SoapExampleService {
                 .setErrorListener(errors)
 
             try {
+                // TODO consider reusing the SchemaTypeSystem from [AbstractWsdlParser.buildXsdFromSchemas]
                 sts = XmlBeans.compileXsd(schemas, XmlBeans.getBuiltinTypeSystem(), compileOptions)
             } catch (e: Exception) {
                 if (errors.isEmpty() || e !is XmlException) {
-                    logger.error("Error compiling XSD", e)
+                    throw RuntimeException("Error compiling XSD", e)
                 }
-                logger.error("Schema compilation errors: " + errors.joinToString("\n"))
+                throw RuntimeException("Schema compilation errors: " + errors.joinToString("\n"))
             }
         }
-        sts ?: throw RuntimeException("No schemas to process")
-
-        val elem: SchemaType = sts.documentTypes().find { it.documentElementName.localPart == rootName }
-            ?: throw RuntimeException("Could not find a global element with name \"$rootName\"")
-
-        return SampleXmlUtil.createSampleForType(elem)
+        sts ?: throw IllegalStateException("No schemas to process")
+        return sts
     }
 
     private fun transmitExample(httpExchange: HttpExchange, example: String?, bodyHolder: MessageBodyHolder) {

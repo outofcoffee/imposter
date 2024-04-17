@@ -44,6 +44,10 @@
 package io.gatehill.imposter.plugin.soap.parser
 
 import io.gatehill.imposter.plugin.soap.model.BindingType
+import io.gatehill.imposter.plugin.soap.model.CompositeOperationMessage
+import io.gatehill.imposter.plugin.soap.model.ElementOperationMessage
+import io.gatehill.imposter.plugin.soap.model.OperationMessage
+import io.gatehill.imposter.plugin.soap.model.TypeOperationMessage
 import io.gatehill.imposter.plugin.soap.model.WsdlBinding
 import io.gatehill.imposter.plugin.soap.model.WsdlEndpoint
 import io.gatehill.imposter.plugin.soap.model.WsdlInterface
@@ -57,7 +61,6 @@ import org.jdom2.Namespace
 import org.xml.sax.EntityResolver
 import java.io.File
 import java.net.URI
-import javax.xml.namespace.QName
 
 /**
  * WSDL 1.x parser.
@@ -170,10 +173,10 @@ class Wsdl1Parser(
             name = operationName
         ) ?: throw IllegalStateException("No portType operation found for portType: $portTypeName and operation: $operationName")
 
-        val input = getMessagePartElementName(portTypeOperation, "./wsdl:input")
+        val input = getMessage(operationName, portTypeOperation, "./wsdl:input")
                 ?: throw IllegalStateException("No input found for portType operation: $operationName")
 
-        val output = getMessagePartElementName(portTypeOperation, "./wsdl:output")
+        val output = getMessage(operationName, portTypeOperation, "./wsdl:output")
                 ?: throw IllegalStateException("No output found for portType operation: $operationName")
 
         val style = soapOperation.getAttributeValue("style") ?: run {
@@ -188,8 +191,8 @@ class Wsdl1Parser(
             name = bindingOperation.getAttributeValue("name"),
             soapAction = soapOperation.getAttributeValue("soapAction"),
             style = style,
-            inputElementRef = input,
-            outputElementRef = output,
+            inputRef = input,
+            outputRef = output,
         )
     }
 
@@ -211,7 +214,7 @@ class Wsdl1Parser(
      * Extract the WSDL message part element attribute, then attempt
      * to resolve it from within the XSD.
      */
-    private fun getMessagePartElementName(context: Element, expression: String): QName? {
+    private fun getMessage(operationName: String, context: Element, expression: String): OperationMessage? {
         val inputOrOutputNode = selectSingleNode(context, expression)
             ?: throw IllegalStateException("No input or output found for: $expression")
 
@@ -221,11 +224,33 @@ class Wsdl1Parser(
         val messageName = msgAttr.let { SoapUtil.getLocalPart(msgAttr) }
 
         // look up message
-        val messagePart = selectSingleNode(document, "/wsdl:definitions/wsdl:message[@name='$messageName']/wsdl:part")
+        val message = selectSingleNode(document, "/wsdl:definitions/wsdl:message[@name='$messageName']")
             ?: throw IllegalStateException("Message $msgAttr not found")
 
-        val elementName = messagePart.getAttributeValue("element")
-        return resolveElementFromXsd(elementName)
+        // look up message parts
+        val messageParts = selectNodes(message, "./wsdl:part")
+
+        val parts: Map<String, OperationMessage> = messageParts.associate { messagePart ->
+            val partName = messagePart.getAttributeValue("name")
+
+            // WSDL 1.1 allows message parts to refer to XML schema types
+            // directly as well as referring to elements.
+            val part = getAttributeValueAsQName(messagePart, "element")?.let { elementQName ->
+                resolveElementFromXsd(elementQName)?.let { ElementOperationMessage(operationName, it) }
+            } ?: getAttributeValueAsQName(messagePart, "type")?.let { typeQName ->
+                resolveTypeFromXsd(typeQName)?.let { TypeOperationMessage(operationName, it) }
+            } ?: throw IllegalStateException(
+                "Invalid 'element' or 'type' attribute for message: $messageName"
+            )
+
+            partName to part
+        }
+
+        return when (parts.size) {
+            0 -> return null
+            1 -> parts.values.first()
+            else -> CompositeOperationMessage(operationName, parts)
+        }
     }
 
     override val xPathNamespaces = listOf(

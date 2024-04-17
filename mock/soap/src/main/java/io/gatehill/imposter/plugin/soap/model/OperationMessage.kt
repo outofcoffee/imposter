@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2024.
  *
  * This file is part of Imposter.
  *
@@ -40,24 +40,51 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.plugin.soap
 
-import io.gatehill.imposter.plugin.soap.util.SoapUtil
-import org.junit.Test
+package io.gatehill.imposter.plugin.soap.model
+
+import javax.xml.namespace.QName
 
 /**
- * Tests for [SoapPluginImpl] using WSDL v2 and SOAP 1.2.
- *
- * @author Pete Cornish
+ * Represents an operation message. In WSDL 1.1 this is an individual
+ * `part` element within a `message`. In WSDL 2.0 this is an `input` or `output`
+ * element within an `operation`.
  */
-class Wsdl2Soap12EndToEndTest : AbstractEndToEndTest() {
-    override val testConfigDirs = listOf("/wsdl2-soap12")
-    override val soapEnvNamespace = SoapUtil.soap12RecEnvNamespace
-    override val soapContentType = SoapUtil.soap12ContentType
+abstract class OperationMessage(
+    val operationName: String,
+)
 
-    @Test
-    fun testRequestResponseUsingSoapActionInContentType() = soap12RequestResponseUsingSoapActionInContentType()
+/**
+ * Refers to an XML schema `element`.
+ */
+class ElementOperationMessage(
+    operationName: String,
+    val elementName: QName,
+) : OperationMessage(
+    operationName
+)
 
-    @Test
-    fun testHttpBinding() = httpBinding()
-}
+/**
+ * Message parts specifying an XML schema `type` are supported
+ * in WSDL 1.1 but not in WSDL 2.0.
+ */
+class TypeOperationMessage(
+    operationName: String,
+    val typeName: QName,
+): OperationMessage(
+    operationName
+)
+
+/**
+ * In WSDL 1.1, messages can define multiple parts.
+ */
+class CompositeOperationMessage(
+    operationName: String,
+
+    /**
+     * Maps the `part` name to an operation message.
+     */
+    val parts: Map<String, OperationMessage>
+): OperationMessage(
+    operationName
+)

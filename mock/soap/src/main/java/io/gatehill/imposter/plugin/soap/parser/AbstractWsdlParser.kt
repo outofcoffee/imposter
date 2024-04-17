@@ -73,6 +73,8 @@ abstract class AbstractWsdlParser(
 
     protected val xsd: SchemaTypeSystem by lazy { buildXsdFromSchemas() }
 
+    private val unionTypeSystem by lazy { XmlBeans.typeLoaderUnion(XmlBeans.getBuiltinTypeSystem(), xsd) }
+
     private fun discoverSchemas(): Array<SchemaDocument> {
         val schemas = mutableListOf<SchemaDocument>()
         schemas += findEmbeddedTypesSchemas()
@@ -153,15 +155,48 @@ abstract class AbstractWsdlParser(
      * Attempt to resolve the element with the given, optionally qualified, name
      * from within the XSD.
      */
-    protected fun resolveElementFromXsd(elementName: String): QName? {
-        val localPart = SoapUtil.getLocalPart(elementName)
-
+    protected fun resolveElementFromXsd(elementQName: QName): QName? {
+        // TODO should this use xsd.findElement(elementQName).name instead?
+        // TODO should this use QName.equals instead?
+        // TODO should this be filtered on unqualified elements?
         // the top level element from the XSD
-        val matchingTypeElement: QName? =
-            // TODO should this be filtered on unqualified elements?
-            xsd.documentTypes().find { it.documentElementName.localPart == localPart }?.documentElementName
+        val matchingElement: QName? =
+            xsd.documentTypes().find { it.documentElementName.localPart == elementQName.localPart }?.documentElementName
 
-        logger.trace("Resolved element name {} to qualified type: {}", elementName, matchingTypeElement)
-        return matchingTypeElement
+        logger.trace("Resolved element name {} to qualified type: {}", elementQName, matchingElement)
+        return matchingElement
+    }
+
+    /**
+     * Attempt to resolve the type with the given, optionally qualified, name
+     * from within the XSD.
+     */
+    protected fun resolveTypeFromXsd(typeQName: QName): QName? {
+        val matchingType = unionTypeSystem.findType(typeQName)?.name
+            ?: return null
+
+        logger.trace("Resolved type name {} to qualified type: {}", typeQName, matchingType)
+        return matchingType
+    }
+
+    protected fun getAttributeValueAsQName(element: Element, attributeName: String): QName? {
+        val attr = element.getAttribute(attributeName)
+            ?: return null
+
+        val attrValue = attr.value
+            ?: return null
+
+        val valueParts = attrValue.split(':')
+        if (valueParts.size == 1) {
+            // unqualified name
+            return QName(valueParts[0])
+        } else {
+            val prefix = valueParts[0]
+            val localName = valueParts[1]
+            val ns = attr.namespacesInScope.find { it.prefix == prefix }?.uri
+                ?: throw IllegalStateException("No namespace in scope with prefix '$prefix' for attribute '$attributeName' in element: $element")
+
+            return QName(ns, localName, prefix)
+        }
     }
 }

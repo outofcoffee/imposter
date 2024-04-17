@@ -43,6 +43,7 @@
 package io.gatehill.imposter.plugin.soap
 
 import io.gatehill.imposter.plugin.soap.util.SoapUtil
+import org.junit.Test
 
 /**
  * Tests for [SoapPluginImpl] using WSDL v1 and SOAP 1.1 where XSDs are imported and included using
@@ -52,4 +53,7 @@ class Wsdl1Soap11WithXsdImportIncludeEndToEndTest : AbstractEndToEndTest() {
     override val testConfigDirs = listOf("/wsdl1-soap11-xsd-import-include")
     override val soapEnvNamespace = SoapUtil.soap11EnvNamespace
     override val soapContentType = SoapUtil.soap11ContentType
+
+    @Test
+    fun testHttpBinding() = httpBinding()
 }

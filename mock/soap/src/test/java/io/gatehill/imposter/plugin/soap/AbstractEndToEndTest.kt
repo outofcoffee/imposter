@@ -109,8 +109,7 @@ abstract class AbstractEndToEndTest : BaseVerticleTest() {
         assertNotNull(body)
     }
 
-    @Test
-    fun testRequestResponseUsingSoapActionInContentType() {
+    protected open fun soap12RequestResponseUsingSoapActionInContentType() {
         val body = RestAssured.given()
             .log().ifValidationFails()
             .accept(soapContentType)
@@ -181,8 +180,7 @@ abstract class AbstractEndToEndTest : BaseVerticleTest() {
             )
     }
 
-    @Test
-    fun testHttpBinding() {
+    protected fun httpBinding() {
         RestAssured.given()
             .log().ifValidationFails()
             .accept(soapContentType)

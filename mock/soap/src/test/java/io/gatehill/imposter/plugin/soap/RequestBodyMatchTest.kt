@@ -56,7 +56,8 @@ import org.junit.Test
  *
  * @author Pete Cornish
  */
-class RequestBodyMatchTest : BaseVerticleTest() {override val pluginClass = SoapPluginImpl::class.java
+class RequestBodyMatchTest : BaseVerticleTest() {
+    override val pluginClass = SoapPluginImpl::class.java
     override val testConfigDirs = listOf("/request-body-match")
     private val soapEnvNamespace = SoapUtil.soap12RecEnvNamespace
     private val soapContentType = SoapUtil.soap12ContentType

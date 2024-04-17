@@ -52,6 +52,7 @@ import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.soap.config.SoapPluginConfig
 import io.gatehill.imposter.plugin.soap.config.SoapPluginResourceConfig
 import io.gatehill.imposter.plugin.soap.model.BindingType
+import io.gatehill.imposter.plugin.soap.model.ElementOperationMessage
 import io.gatehill.imposter.plugin.soap.model.MessageBodyHolder
 import io.gatehill.imposter.plugin.soap.model.WsdlBinding
 import io.gatehill.imposter.plugin.soap.model.WsdlOperation
@@ -114,7 +115,7 @@ class SoapResourceMatcher(
     }
 
     private fun matchBinding(
-        resourceConfig: SoapPluginResourceConfig
+        resourceConfig: SoapPluginResourceConfig,
     ): ResourceMatchResult {
         val matchDescription = "SOAP binding"
         return resourceConfig.binding?.let {
@@ -201,8 +202,9 @@ class SoapResourceMatcher(
         }
 
         val matchedOps = binding.operations.filter { op ->
-            op.inputElementRef?.namespaceURI == bodyRootElement.namespaceURI &&
-                    op.inputElementRef?.localPart == bodyRootElement.name
+            op.inputRef is ElementOperationMessage &&
+                op.inputRef.elementName.namespaceURI == bodyRootElement.namespaceURI &&
+                op.inputRef.elementName.localPart == bodyRootElement.name
         }
         if (LOGGER.isTraceEnabled) {
             LOGGER.trace(

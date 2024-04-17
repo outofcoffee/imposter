@@ -44,7 +44,6 @@
 package io.gatehill.imposter.plugin.soap.model
 
 import java.net.URI
-import javax.xml.namespace.QName
 
 data class WsdlService(
     val name: String,
@@ -79,6 +78,6 @@ data class WsdlOperation(
     val name: String,
     val soapAction: String?,
     val style: String?,
-    val inputElementRef: QName?,
-    val outputElementRef: QName?,
+    val inputRef: OperationMessage?,
+    val outputRef: OperationMessage?,
 )

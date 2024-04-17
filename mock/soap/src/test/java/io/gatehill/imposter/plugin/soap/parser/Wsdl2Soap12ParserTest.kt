@@ -44,6 +44,7 @@
 package io.gatehill.imposter.plugin.soap.parser
 
 import io.gatehill.imposter.plugin.soap.model.BindingType
+import io.gatehill.imposter.plugin.soap.model.ElementOperationMessage
 import org.jdom2.input.SAXBuilder
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -102,8 +103,14 @@ class Wsdl2Soap12ParserTest {
         assertEquals("getPetById", operation.name)
         assertEquals("getPetById", operation.soapAction)
         assertEquals("document", operation.style)
-        assertEquals(QName("urn:com:example:petstore", "getPetByIdRequest"), operation.inputElementRef)
-        assertEquals(QName("urn:com:example:petstore", "getPetByIdResponse"), operation.outputElementRef)
+        assertEquals(
+            QName("urn:com:example:petstore", "getPetByIdRequest"),
+            (operation.inputRef as ElementOperationMessage).elementName,
+        )
+        assertEquals(
+            QName("urn:com:example:petstore", "getPetByIdResponse"),
+            (operation.outputRef as ElementOperationMessage).elementName,
+        )
     }
 
     @Test

@@ -43,21 +43,14 @@
 package io.gatehill.imposter.plugin.soap
 
 import io.gatehill.imposter.plugin.soap.util.SoapUtil
-import org.junit.Test
 
 /**
- * Tests for [SoapPluginImpl] using WSDL v2 and SOAP 1.2.
+ * Tests for [SoapPluginImpl] using WSDL v1 and SOAP 1.1.
  *
  * @author Pete Cornish
  */
-class Wsdl2Soap12EndToEndTest : AbstractEndToEndTest() {
-    override val testConfigDirs = listOf("/wsdl2-soap12")
-    override val soapEnvNamespace = SoapUtil.soap12RecEnvNamespace
-    override val soapContentType = SoapUtil.soap12ContentType
-
-    @Test
-    fun testRequestResponseUsingSoapActionInContentType() = soap12RequestResponseUsingSoapActionInContentType()
-
-    @Test
-    fun testHttpBinding() = httpBinding()
+class Wsdl1Soap11RpcEndToEndTest : AbstractEndToEndTest() {
+    override val testConfigDirs = listOf("/wsdl1-soap11-rpc")
+    override val soapEnvNamespace = SoapUtil.soap11EnvNamespace
+    override val soapContentType = SoapUtil.soap11ContentType
 }
