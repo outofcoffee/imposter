@@ -49,9 +49,12 @@ import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider
 import io.gatehill.imposter.http.HttpExchange
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
+import org.jdom2.Attribute
+import org.jdom2.Content
 import org.jdom2.Document
 import org.jdom2.Element
 import org.jdom2.Namespace
+import org.jdom2.filter.Filter
 import org.jdom2.filter.Filters
 import org.jdom2.input.SAXBuilder
 import org.jdom2.xpath.XPathExpression
@@ -73,13 +76,17 @@ object BodyQueryUtil {
             .build()
     )
 
-    private fun buildXPath(expression: String, xPathNamespaces: List<Namespace> = emptyList()): XPathExpression<*> {
+    private fun buildXPath(
+        expression: String,
+        xPathNamespaces: List<Namespace> = emptyList(),
+        filter: Filter<*> = Filters.element()
+    ): XPathExpression<*> {
         val finalXPath = if (expression.startsWith('!')) {
             normaliseXPathExpression(expression.substring(1))
         } else {
             expression
         }
-        return XPathFactory.instance().compile(finalXPath, Filters.element(), emptyMap(), xPathNamespaces)
+        return XPathFactory.instance().compile(finalXPath, filter, emptyMap(), xPathNamespaces)
     }
 
     private fun buildNamespaces(namespaces: Map<String, String>?) =
@@ -144,11 +151,20 @@ object BodyQueryUtil {
         } else {
             try {
                 val document = getRequestXmlDocument(httpExchange, body)
-                selectSingleNode(document, xPath, buildNamespaces(xmlNamespaces))?.value
+                getXPathValue(document, xPath, buildNamespaces(xmlNamespaces))
             } catch (e: Exception) {
                 logger.warn("Error evaluating XPath expression '$xPath' against request body for ${LogUtil.describeRequest(httpExchange)}", e)
                 null
             }
+        }
+    }
+
+    fun getXPathValue(context: Any, expression: String, xPathNamespaces: List<Namespace>): String? {
+        val xPath = buildXPath(expression, xPathNamespaces, Filters.fpassthrough())
+        return when (val result = xPath.evaluateFirst(context)) {
+            is Content -> result.value // matches also Element
+            is Attribute -> result.value
+            else -> null
         }
     }
 
