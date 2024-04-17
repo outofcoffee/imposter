@@ -49,6 +49,7 @@ import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.equalTo
 import org.hamcrest.core.IsEqual
 import org.jdom2.Document
+import org.jdom2.Namespace
 import org.jdom2.input.SAXBuilder
 import org.junit.Test
 import org.mockito.Mockito.anyString
@@ -104,6 +105,22 @@ class BodyQueryUtilTest {
         val document = SAXBuilder().build(StringReader(body))
         val xPath = "//id"
         val result = BodyQueryUtil.selectSingleNode(document, xPath, emptyList())?.value
+        assertThat(result, equalTo("10"))
+    }
+
+    @Test
+    fun `query document attribute XPath`() {
+        val body = """<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope">
+  <env:Header/>
+  <env:Body>
+    <pets:getPetByIdRequest xmlns:pets="urn:com:example:petstore" id="10" />
+  </env:Body>
+</env:Envelope>"""
+
+        val document = SAXBuilder().build(StringReader(body))
+        val xPath = "//pets:getPetByIdRequest/@id"
+        val result = BodyQueryUtil.getXPathValue(document, xPath,
+                listOf(Namespace.getNamespace("pets", "urn:com:example:petstore")))
         assertThat(result, equalTo("10"))
     }
 
