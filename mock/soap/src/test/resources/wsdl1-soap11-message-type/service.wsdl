@@ -87,13 +87,13 @@
         <part type="tns:getPetByIdRequest" name="parameters"/>
     </message>
     <message name="getPetByIdResponse">
-        <part type="tns:petType" name="parameters"/>
+        <part type="tns:petType" name="pet"/>
     </message>
     <message name="getPetByNameRequest">
         <part type="tns:getPetByNameRequest" name="parameters"/>
     </message>
     <message name="getPetByNameResponse">
-        <part type="tns:petType" name="parameters"/>
+        <part type="tns:petType" name="pet"/>
     </message>
 
     <!-- Abstract port types -->

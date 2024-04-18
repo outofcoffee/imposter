@@ -172,8 +172,13 @@ abstract class AbstractWsdlParser(
      * from within the XSD.
      */
     protected fun resolveTypeFromXsd(typeQName: QName): QName? {
-        val matchingType = unionTypeSystem.findType(typeQName)?.name
+        var matchingType = unionTypeSystem.findType(typeQName)?.name
             ?: return null
+
+        if (matchingType.prefix.isNullOrBlank()) {
+            // TODO consider prefix clashes - generate unique prefix?
+            matchingType = QName(matchingType.namespaceURI, matchingType.localPart, typeQName.prefix)
+        }
 
         logger.trace("Resolved type name {} to qualified type: {}", typeQName, matchingType)
         return matchingType

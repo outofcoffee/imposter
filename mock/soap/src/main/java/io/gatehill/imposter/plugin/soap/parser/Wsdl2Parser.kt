@@ -185,7 +185,7 @@ class Wsdl2Parser(
         // WSDL 2.0 doesn't allow operation messages to refer to XML schema types
         // directly - instead an element must be used.
         getAttributeValueAsQName(inputOrOutputNode, "element")?.let { elementQName ->
-            return resolveElementFromXsd(elementQName)?.let { ElementOperationMessage(operationName, it) }
+            return resolveElementFromXsd(elementQName)?.let { ElementOperationMessage(it) }
         } ?: throw IllegalStateException(
             "Invalid 'element' attribute for message input/output: ${inputOrOutputNode.name}"
         )

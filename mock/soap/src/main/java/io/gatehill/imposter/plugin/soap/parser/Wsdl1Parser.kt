@@ -230,25 +230,23 @@ class Wsdl1Parser(
         // look up message parts
         val messageParts = selectNodes(message, "./wsdl:part")
 
-        val parts: Map<String, OperationMessage> = messageParts.associate { messagePart ->
+        val parts: List<OperationMessage> = messageParts.map { messagePart ->
             val partName = messagePart.getAttributeValue("name")
 
             // WSDL 1.1 allows message parts to refer to XML schema types
             // directly as well as referring to elements.
-            val part = getAttributeValueAsQName(messagePart, "element")?.let { elementQName ->
-                resolveElementFromXsd(elementQName)?.let { ElementOperationMessage(operationName, it) }
+            getAttributeValueAsQName(messagePart, "element")?.let { elementQName ->
+                resolveElementFromXsd(elementQName)?.let { ElementOperationMessage(it) }
             } ?: getAttributeValueAsQName(messagePart, "type")?.let { typeQName ->
-                resolveTypeFromXsd(typeQName)?.let { TypeOperationMessage(operationName, it) }
+                resolveTypeFromXsd(typeQName)?.let { TypeOperationMessage(operationName, partName, it) }
             } ?: throw IllegalStateException(
                 "Invalid 'element' or 'type' attribute for message: $messageName"
             )
-
-            partName to part
         }
 
         return when (parts.size) {
             0 -> return null
-            1 -> parts.values.first()
+            1 -> parts.first()
             else -> CompositeOperationMessage(operationName, parts)
         }
     }

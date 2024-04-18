@@ -51,6 +51,7 @@ import io.gatehill.imposter.plugin.soap.model.ParsedRawBody
 import io.gatehill.imposter.plugin.soap.model.ParsedSoapMessage
 import io.gatehill.imposter.plugin.soap.model.TypeOperationMessage
 import io.gatehill.imposter.plugin.soap.parser.WsdlRelativeXsdEntityResolver
+import io.gatehill.imposter.plugin.soap.util.SchemaGenerator
 import io.gatehill.imposter.plugin.soap.util.SoapUtil
 import io.gatehill.imposter.util.LogUtil
 import org.apache.logging.log4j.LogManager
@@ -79,11 +80,11 @@ class SoapExampleService {
         httpExchange: HttpExchange,
         schemas: Array<SchemaDocument>,
         wsdlDir: File,
-        outputRef: OperationMessage,
+        outputMessage: OperationMessage,
         bodyHolder: MessageBodyHolder,
     ): Boolean {
-        logger.debug("Generating example for {}", outputRef)
-        val example = generateInstanceFromSchemas(schemas, wsdlDir, outputRef)
+        logger.debug("Generating example for {}", outputMessage)
+        val example = generateInstanceFromSchemas(schemas, wsdlDir, outputMessage)
         transmitExample(httpExchange, example, bodyHolder)
         return true
     }
@@ -91,52 +92,42 @@ class SoapExampleService {
     private fun generateInstanceFromSchemas(
         schemas: Array<SchemaDocument>,
         wsdlDir: File,
-        typeRef: OperationMessage,
+        message: OperationMessage,
     ): String {
-        when (typeRef) {
+        when (message) {
             is ElementOperationMessage -> {
                 val sts: SchemaTypeSystem = buildSchemaTypeSystem(wsdlDir, schemas)
 
                 // TODO should this use the qualified name instead?
-                val rootElementName = typeRef.elementName.localPart
+                val rootElementName = message.elementName.localPart
                 val elem: SchemaType = sts.documentTypes().find { it.documentElementName.localPart == rootElementName }
                     ?: throw RuntimeException("Could not find a global element with name \"$rootElementName\"")
 
                 return SampleXmlUtil.createSampleForType(elem)
             }
+
             is TypeOperationMessage -> {
                 // by convention, the suffix 'Response' is added to the operation name
-                val rootElementName = QName(
-                    typeRef.typeName.namespaceURI,
-                    typeRef.operationName + "Response",
+                val rootElement = QName(
+                    message.typeName.namespaceURI,
+                    message.operationName + "Response",
                     "tns"
                 )
-                val elementSchema = createElementSchema(rootElementName, typeRef.typeName)
+
+                val parts = mutableMapOf<String, QName>()
+                parts[message.partName] = message.typeName
+
+                val elementSchema = SchemaGenerator.createElementSchema(rootElement, parts)
                 val sts: SchemaTypeSystem = buildSchemaTypeSystem(wsdlDir, schemas + elementSchema)
 
-                val elem = sts.documentTypes().find { it.documentElementName == rootElementName }
-                    ?: throw RuntimeException("Could not find a generated element with name \"$rootElementName\"")
+                val elem = sts.documentTypes().find { it.documentElementName == rootElement }
+                    ?: throw RuntimeException("Could not find a generated element with name \"$rootElement\"")
 
                 return SampleXmlUtil.createSampleForType(elem)
             }
-            else -> throw UnsupportedOperationException("Only element output message parts are supported")
+
+            else -> throw UnsupportedOperationException("Unsupported output message parts: ${message::class.java.canonicalName}")
         }
-    }
-
-    private fun createElementSchema(elementName: QName, typeName: QName): SchemaDocument {
-        val schemaXml = """
-<xs:schema elementFormDefault="unqualified" version="1.0"
-           xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           targetNamespace="${elementName.namespaceURI}"
-           xmlns:${elementName.prefix}="${elementName.namespaceURI}">
-    
-    <!-- use the element prefix as the type QName may not have one -->
-    <xs:element name="${elementName.localPart}" type="${elementName.prefix}:${typeName.localPart}"/>
-</xs:schema>
-""".trim()
-
-        logger.trace("Generated element schema:\n{}", schemaXml)
-        return SchemaDocument.Factory.parse(schemaXml)
     }
 
     private fun buildSchemaTypeSystem(

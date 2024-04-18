@@ -41,42 +41,47 @@
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.gatehill.imposter.plugin.soap.model
+package io.gatehill.imposter.plugin.soap.util
 
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
+import org.apache.xmlbeans.impl.xb.xsdschema.SchemaDocument
 import javax.xml.namespace.QName
 
 /**
- * Represents an operation message. In WSDL 1.1 this is an individual
- * `part` element within a `message`. In WSDL 2.0 this is an `input` or `output`
- * element within an `operation`.
+ * Generates schemas for elements.
  */
-abstract class OperationMessage
+object SchemaGenerator {
+    private val logger: Logger = LogManager.getLogger(SchemaGenerator::class.java)
 
-/**
- * Refers to an XML schema `element`.
- */
-class ElementOperationMessage(
-    val elementName: QName,
-) : OperationMessage()
+    fun createElementSchema(rootElement: QName, parts: Map<String, QName>): SchemaDocument {
+        val namespaces = mutableMapOf<String, String>()
+        namespaces[rootElement.prefix] = rootElement.namespaceURI
+        namespaces += parts.values.associate { it.prefix to it.namespaceURI }
 
-/**
- * Message parts specifying an XML schema `type` are supported
- * in WSDL 1.1 but not in WSDL 2.0.
- */
-class TypeOperationMessage(
-    val operationName: String,
-    val partName: String,
-    val typeName: QName,
-): OperationMessage()
+        val namespacesXml = namespaces.entries.joinToString(separator = "\n") { (prefix, nsUri) ->
+            """xmlns:${prefix}="${nsUri}""""
+        }
+        val partsXml = parts.entries.joinToString(separator = "\n") { (partName, partType) ->
+            """<xs:element name="$partName" type="${partType.prefix}:${partType.localPart}"/>"""
+        }
+        val schemaXml = """
+<xs:schema elementFormDefault="unqualified" version="1.0"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+${namespacesXml.prependIndent(" ".repeat(11))}
+           targetNamespace="${rootElement.namespaceURI}">
 
-/**
- * In WSDL 1.1, messages can define multiple parts.
- */
-class CompositeOperationMessage(
-    val operationName: String,
+    <xs:element name="${rootElement.localPart}">
+      <xs:complexType>
+        <xs:sequence>
+${partsXml.prependIndent(" ".repeat(10))}
+        </xs:sequence>
+      </xs:complexType>
+    </xs:element>
+</xs:schema>
+""".trim()
 
-    /**
-     * Maps the `part` name to an operation message.
-     */
-    val parts: List<OperationMessage>
-): OperationMessage()
+        logger.trace("Generated element schema:\n{}", schemaXml)
+        return SchemaDocument.Factory.parse(schemaXml)
+    }
+}
