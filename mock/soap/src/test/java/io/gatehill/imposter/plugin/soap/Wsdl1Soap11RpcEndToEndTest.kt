@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2024.
  *
  * This file is part of Imposter.
  *
@@ -53,4 +53,22 @@ class Wsdl1Soap11RpcEndToEndTest : AbstractEndToEndTest() {
     override val testConfigDirs = listOf("/wsdl1-soap11-rpc")
     override val soapEnvNamespace = SoapUtil.soap11EnvNamespace
     override val soapContentType = SoapUtil.soap11ContentType
+
+    override val getPetByIdEnv: String
+        get() = SoapUtil.wrapInEnv(
+            """
+<getPetById xmlns="urn:com:example:petstore">
+  <id>3</id>
+</getPetById>
+""".trim(), soapEnvNamespace
+        )
+
+    override val getPetByNameEnv
+        get() = SoapUtil.wrapInEnv(
+            """
+<getPetByName xmlns="urn:com:example:petstore">
+  <name>Fluffy</name>
+</getPetByName>
+""".trim(), soapEnvNamespace
+        )
 }

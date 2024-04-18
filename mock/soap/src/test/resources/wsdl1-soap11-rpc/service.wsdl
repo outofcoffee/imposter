@@ -72,13 +72,13 @@
         <part name="id" type="xs:int"/>
     </message>
     <message name="getPetByIdResponse">
-        <part name="result" type="tns:petType"/>
+        <part name="pet" type="tns:petType"/>
     </message>
     <message name="getPetByNameRequest">
         <part name="name" type="xs:string"/>
     </message>
     <message name="getPetByNameResponse">
-        <part name="result" type="tns:petType"/>
+        <part name="pet" type="tns:petType"/>
     </message>
 
     <!-- Port Type Definition -->
@@ -97,7 +97,7 @@
     <binding name="PetServiceSoapBinding" type="tns:PetPortType">
         <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
         <operation name="getPetById">
-            <soap:operation soapAction="getPetById" style="rpc"/>
+            <soap:operation soapAction="urn:com:example:petstore#getPetById" style="rpc"/>
             <input>
                 <soap:body use="literal" namespace="urn:com:example:petstore"/>
             </input>
@@ -106,7 +106,7 @@
             </output>
         </operation>
         <operation name="getPetByName">
-            <soap:operation soapAction="getPetByName" style="rpc"/>
+            <soap:operation soapAction="urn:com:example:petstore#getPetByName" style="rpc"/>
             <input>
                 <soap:body use="literal" namespace="urn:com:example:petstore"/>
             </input>

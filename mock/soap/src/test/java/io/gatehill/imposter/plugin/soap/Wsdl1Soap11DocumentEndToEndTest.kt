@@ -50,8 +50,8 @@ import org.junit.Test
  *
  * @author Pete Cornish
  */
-class Wsdl1Soap11EndToEndTest : AbstractEndToEndTest() {
-    override val testConfigDirs = listOf("/wsdl1-soap11")
+class Wsdl1Soap11DocumentEndToEndTest : AbstractEndToEndTest() {
+    override val testConfigDirs = listOf("/wsdl1-soap11-document")
     override val soapEnvNamespace = SoapUtil.soap11EnvNamespace
     override val soapContentType = SoapUtil.soap11ContentType
 

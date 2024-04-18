@@ -65,7 +65,7 @@ abstract class AbstractEndToEndTest : BaseVerticleTest() {
     protected abstract val soapEnvNamespace: Namespace
     protected abstract val soapContentType: String
 
-    private val getPetByIdEnv
+    protected open val getPetByIdEnv
         get() = SoapUtil.wrapInEnv(
             """
 <getPetByIdRequest xmlns="urn:com:example:petstore">
@@ -74,7 +74,7 @@ abstract class AbstractEndToEndTest : BaseVerticleTest() {
 """.trim(), soapEnvNamespace
         )
 
-    private val getPetByNameEnv
+    protected open val getPetByNameEnv
         get() = SoapUtil.wrapInEnv(
             """
 <getPetByNameRequest xmlns="urn:com:example:petstore">
