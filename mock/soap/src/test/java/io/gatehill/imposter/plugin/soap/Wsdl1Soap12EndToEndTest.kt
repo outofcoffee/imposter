@@ -57,7 +57,4 @@ class Wsdl1Soap12EndToEndTest : AbstractEndToEndTest() {
 
     @Test
     fun testRequestResponseUsingSoapActionInContentType() = soap12RequestResponseUsingSoapActionInContentType()
-
-    @Test
-    fun testHttpBinding() = httpBinding()
 }

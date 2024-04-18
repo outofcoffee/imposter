@@ -185,9 +185,10 @@ class SoapPluginImpl @Inject constructor(
                     LOGGER.warn("Unable to find a matching binding operation using SOAPAction or SOAP request body")
                     return@build completedUnitFuture()
                 }
-//                check(operation.style.equals("document", ignoreCase = true)) {
-//                    "Only document SOAP bindings are supported"
-//                }
+                check(operation.style.equals("document", ignoreCase = true)
+                    || operation.style.equals("rpc", ignoreCase = true)) {
+                    "Only document and RPC style SOAP bindings are supported"
+                }
 
                 LOGGER.debug("Matched operation: ${operation.name} in binding ${binding.name}")
                 return@build handle(config, parser, binding, operation, httpExchange, bodyHolder, soapAction)

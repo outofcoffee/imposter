@@ -180,7 +180,8 @@ abstract class AbstractEndToEndTest : BaseVerticleTest() {
             )
     }
 
-    protected fun httpBinding() {
+    @Test
+    fun testHttpBinding() {
         RestAssured.given()
             .log().ifValidationFails()
             .accept(soapContentType)

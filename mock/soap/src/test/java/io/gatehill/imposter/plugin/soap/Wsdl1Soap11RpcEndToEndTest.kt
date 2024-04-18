@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2024.
+ * Copyright (c) 2016-2021.
  *
  * This file is part of Imposter.
  *

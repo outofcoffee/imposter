@@ -209,8 +209,8 @@ class SoapResourceMatcher(
                         op.inputRef.elementName.localPart == bodyRootElement.name
                 }
                 is TypeOperationMessage -> {
-                    op.inputRef.typeName.namespaceURI == bodyRootElement.namespaceURI &&
-                        op.inputRef.operationName == bodyRootElement.name
+                    op.inputRef.operationName == bodyRootElement.name
+                    // TODO consider matching on body child element names against part names
                 }
                 else -> false
             }
