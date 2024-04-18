@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.37.0] - 2024-04-18
+### Added
+- feat(soap): SOAP response body uses typed message part names.
+- feat(soap): adds support for RPC style bindings.
+- feat(soap): adds support for messages with type attribute.
+- feat(soap): working support for WSDL 1.1 messages specifying type not element.
+
+### Changed
+- chore(deps): bump org.apache.maven.plugins:maven-jar-plugin
+- docs: adds single-file WSDL 1 and SOAP 1.1 example.
+
+### Fixed
+- fix: restores previous config file location logging behaviour.
+
 ## [3.36.3] - 2024-04-15
 ### Changed
 - docs: documents EntityResolver input stream lifecycle expectations.
