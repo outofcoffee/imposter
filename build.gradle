@@ -32,7 +32,7 @@ ext {
     version_aws_sdk = '1.12.581'
     version_coroutines = '1.7.3'
     version_hamcrest = '2.2'
-    version_groovy = '4.0.13'
+    version_groovy = '4.0.21'
     version_guice = '5.1.0'
     version_jackson = '2.15.2'
     version_jackson_databind = '2.13.4.2'
