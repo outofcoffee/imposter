@@ -56,7 +56,9 @@ object SchemaGenerator {
 
     fun createElementSchema(rootElement: QName, parts: Map<String, QName>): SchemaDocument {
         val namespaces = mutableMapOf<String, String>()
-        namespaces[rootElement.prefix] = rootElement.namespaceURI
+        if (rootElement.namespaceURI?.isNotBlank() == true) {
+            namespaces[rootElement.prefix] = rootElement.namespaceURI
+        }
         namespaces += parts.values.associate { it.prefix to it.namespaceURI }
 
         val namespacesXml = namespaces.entries.joinToString(separator = "\n") { (prefix, nsUri) ->

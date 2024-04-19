@@ -77,11 +77,15 @@ class Wsdl1Parser(
 
     override val services: List<WsdlService>
         get() {
+            val tns = selectSingleNode(document, "/wsdl:definitions")
+                ?.getAttribute("targetNamespace")?.value
+
             val services = selectNodes(document, "/wsdl:definitions/wsdl:service")
 
             return services.map { element ->
                 WsdlService(
                     name = element.getAttributeValue("name"),
+                    targetNamespace = tns,
                     endpoints = getPorts(element),
                 )
             }

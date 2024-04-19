@@ -59,6 +59,7 @@ import io.gatehill.imposter.plugin.soap.model.ParsedRawBody
 import io.gatehill.imposter.plugin.soap.model.ParsedSoapMessage
 import io.gatehill.imposter.plugin.soap.model.WsdlBinding
 import io.gatehill.imposter.plugin.soap.model.WsdlOperation
+import io.gatehill.imposter.plugin.soap.model.WsdlService
 import io.gatehill.imposter.plugin.soap.parser.VersionAwareWsdlParser
 import io.gatehill.imposter.plugin.soap.parser.WsdlParser
 import io.gatehill.imposter.plugin.soap.service.SoapExampleService
@@ -130,7 +131,7 @@ class SoapPluginImpl @Inject constructor(
 
                     when (binding.type) {
                         BindingType.SOAP, BindingType.HTTP -> {
-                            handleBindingOperations(router, config, wsdlParser, path, binding)
+                            handleBindingOperations(router, config, wsdlParser, path, service, binding)
                         }
 
                         else -> LOGGER.debug("Ignoring unsupported binding: ${binding.name}")
@@ -154,6 +155,7 @@ class SoapPluginImpl @Inject constructor(
         config: SoapPluginConfig,
         parser: WsdlParser,
         path: String,
+        service: WsdlService,
         binding: WsdlBinding,
     ) {
         val fullPath = (config.path ?: "") + path
@@ -191,7 +193,7 @@ class SoapPluginImpl @Inject constructor(
                 }
 
                 LOGGER.debug("Matched operation: ${operation.name} in binding ${binding.name}")
-                return@build handle(config, parser, binding, operation, httpExchange, bodyHolder, soapAction)
+                return@build handle(config, parser, service, binding, operation, httpExchange, bodyHolder, soapAction)
             }
         )
     }
@@ -210,6 +212,7 @@ class SoapPluginImpl @Inject constructor(
     private fun handle(
         pluginConfig: SoapPluginConfig,
         parser: WsdlParser,
+        service: WsdlService,
         binding: WsdlBinding,
         operation: WsdlOperation,
         httpExchange: HttpExchange,
@@ -226,7 +229,7 @@ class SoapPluginImpl @Inject constructor(
                 .setStatusCode(responseBehaviour.statusCode)
 
             operation.outputRef?.let {
-                LOGGER.trace("Using output schema type: ${operation.outputRef}")
+                LOGGER.trace("Using output schema type: {}", operation.outputRef)
 
                 if (!responseBehaviour.responseHeaders.containsKey(HttpUtil.CONTENT_TYPE)) {
                     responseBehaviour.responseHeaders[HttpUtil.CONTENT_TYPE] = when (bodyHolder) {
@@ -246,6 +249,7 @@ class SoapPluginImpl @Inject constructor(
                         httpExchange,
                         parser.schemas,
                         wsdlDir,
+                        service,
                         operation.outputRef,
                         bodyHolder
                     )

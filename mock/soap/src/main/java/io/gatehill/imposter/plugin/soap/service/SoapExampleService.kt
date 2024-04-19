@@ -50,6 +50,7 @@ import io.gatehill.imposter.plugin.soap.model.OperationMessage
 import io.gatehill.imposter.plugin.soap.model.ParsedRawBody
 import io.gatehill.imposter.plugin.soap.model.ParsedSoapMessage
 import io.gatehill.imposter.plugin.soap.model.TypeOperationMessage
+import io.gatehill.imposter.plugin.soap.model.WsdlService
 import io.gatehill.imposter.plugin.soap.parser.WsdlRelativeXsdEntityResolver
 import io.gatehill.imposter.plugin.soap.util.SchemaGenerator
 import io.gatehill.imposter.plugin.soap.util.SoapUtil
@@ -80,11 +81,12 @@ class SoapExampleService {
         httpExchange: HttpExchange,
         schemas: Array<SchemaDocument>,
         wsdlDir: File,
+        service: WsdlService,
         outputMessage: OperationMessage,
         bodyHolder: MessageBodyHolder,
     ): Boolean {
         logger.debug("Generating example for {}", outputMessage)
-        val example = generateInstanceFromSchemas(schemas, wsdlDir, outputMessage)
+        val example = generateInstanceFromSchemas(schemas, wsdlDir, service, outputMessage)
         transmitExample(httpExchange, example, bodyHolder)
         return true
     }
@@ -92,6 +94,7 @@ class SoapExampleService {
     private fun generateInstanceFromSchemas(
         schemas: Array<SchemaDocument>,
         wsdlDir: File,
+        service: WsdlService,
         message: OperationMessage,
     ): String {
         when (message) {
@@ -108,11 +111,12 @@ class SoapExampleService {
 
             is TypeOperationMessage -> {
                 // by convention, the suffix 'Response' is added to the operation name
-                val rootElement = QName(
-                    message.typeName.namespaceURI,
-                    message.operationName + "Response",
-                    "tns"
-                )
+                val elementName = message.operationName + "Response"
+                val rootElement = if (service.targetNamespace?.isNotBlank() == true) {
+                    QName(service.targetNamespace, elementName, "tns")
+                } else {
+                    QName(elementName)
+                }
 
                 val parts = mutableMapOf<String, QName>()
                 parts[message.partName] = message.typeName
@@ -126,7 +130,8 @@ class SoapExampleService {
                 return SampleXmlUtil.createSampleForType(elem)
             }
 
-            else -> throw UnsupportedOperationException("Unsupported output message parts: ${message::class.java.canonicalName}")
+            // TODO support CompositeOperationMessage
+            else -> throw UnsupportedOperationException("Unsupported output message: ${message::class.java.canonicalName}")
         }
     }
 

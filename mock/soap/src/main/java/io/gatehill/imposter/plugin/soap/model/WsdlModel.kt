@@ -47,6 +47,7 @@ import java.net.URI
 
 data class WsdlService(
     val name: String,
+    val targetNamespace: String?,
     val endpoints: List<WsdlEndpoint>,
 )
 
