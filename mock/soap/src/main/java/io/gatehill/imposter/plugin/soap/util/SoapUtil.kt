@@ -54,6 +54,8 @@ import org.jdom2.Namespace
 import org.jdom2.input.SAXBuilder
 
 object SoapUtil {
+    const val OPERATION_STYLE_DOCUMENT = "document"
+    const val OPERATION_STYLE_RPC = "rpc"
     const val textXmlContentType = "text/xml"
     const val soap11ContentType = textXmlContentType
     const val soap12ContentType = "application/soap+xml"

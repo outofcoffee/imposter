@@ -187,8 +187,8 @@ class SoapPluginImpl @Inject constructor(
                     LOGGER.warn("Unable to find a matching binding operation using SOAPAction or SOAP request body")
                     return@build completedUnitFuture()
                 }
-                check(operation.style.equals("document", ignoreCase = true)
-                    || operation.style.equals("rpc", ignoreCase = true)) {
+                check(operation.style.equals(SoapUtil.OPERATION_STYLE_DOCUMENT, ignoreCase = true)
+                    || operation.style.equals(SoapUtil.OPERATION_STYLE_RPC, ignoreCase = true)) {
                     "Only document and RPC style SOAP bindings are supported"
                 }
 
@@ -250,7 +250,7 @@ class SoapPluginImpl @Inject constructor(
                         parser.schemas,
                         wsdlDir,
                         service,
-                        operation.outputRef,
+                        operation,
                         bodyHolder
                     )
                 }

@@ -54,7 +54,30 @@ import javax.xml.namespace.QName
 object SchemaGenerator {
     private val logger: Logger = LogManager.getLogger(SchemaGenerator::class.java)
 
-    fun createElementSchema(rootElement: QName, parts: Map<String, QName>): SchemaDocument {
+    fun createSinglePartSchema(elementName: String, partType: QName): SchemaDocument {
+        val namespaces = mutableMapOf<String, String>()
+        if (partType.namespaceURI?.isNotBlank() == true) {
+            namespaces[partType.prefix] = partType.namespaceURI
+        }
+
+        val namespacesXml = namespaces.entries.joinToString(separator = "\n") { (prefix, nsUri) ->
+            """xmlns:${prefix}="${nsUri}""""
+        }
+        val schemaXml = """
+<xs:schema elementFormDefault="unqualified" version="1.0"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+${namespacesXml.prependIndent(" ".repeat(11))}
+           targetNamespace="${partType.namespaceURI}">
+
+    <xs:element name="$elementName" type="${partType.prefix}:${partType.localPart}" />
+</xs:schema>
+""".trim()
+
+        logger.trace("Generated element schema:\n{}", schemaXml)
+        return SchemaDocument.Factory.parse(schemaXml)
+    }
+
+    fun createCompositePartSchema(rootElement: QName, parts: Map<String, QName>): SchemaDocument {
         val namespaces = mutableMapOf<String, String>()
         if (rootElement.namespaceURI?.isNotBlank() == true) {
             namespaces[rootElement.prefix] = rootElement.namespaceURI

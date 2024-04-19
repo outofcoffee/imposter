@@ -44,12 +44,13 @@
 package io.gatehill.imposter.plugin.soap.service
 
 import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.plugin.soap.model.CompositeOperationMessage
 import io.gatehill.imposter.plugin.soap.model.ElementOperationMessage
 import io.gatehill.imposter.plugin.soap.model.MessageBodyHolder
-import io.gatehill.imposter.plugin.soap.model.OperationMessage
 import io.gatehill.imposter.plugin.soap.model.ParsedRawBody
 import io.gatehill.imposter.plugin.soap.model.ParsedSoapMessage
 import io.gatehill.imposter.plugin.soap.model.TypeOperationMessage
+import io.gatehill.imposter.plugin.soap.model.WsdlOperation
 import io.gatehill.imposter.plugin.soap.model.WsdlService
 import io.gatehill.imposter.plugin.soap.parser.WsdlRelativeXsdEntityResolver
 import io.gatehill.imposter.plugin.soap.util.SchemaGenerator
@@ -82,57 +83,147 @@ class SoapExampleService {
         schemas: Array<SchemaDocument>,
         wsdlDir: File,
         service: WsdlService,
-        outputMessage: OperationMessage,
+        operation: WsdlOperation,
         bodyHolder: MessageBodyHolder,
     ): Boolean {
-        logger.debug("Generating example for {}", outputMessage)
-        val example = generateInstanceFromSchemas(schemas, wsdlDir, service, outputMessage)
+        logger.debug("Generating example for {}", operation.outputRef)
+        val example = when (operation.style) {
+            SoapUtil.OPERATION_STYLE_DOCUMENT -> generateDocumentResponse(operation, wsdlDir, schemas)
+            SoapUtil.OPERATION_STYLE_RPC -> generateRpcResponse(service, operation, wsdlDir, schemas)
+            else -> throw UnsupportedOperationException("Unsupported operation style: ${operation.style}")
+        }
         transmitExample(httpExchange, example, bodyHolder)
         return true
     }
 
-    private fun generateInstanceFromSchemas(
-        schemas: Array<SchemaDocument>,
+    private fun generateDocumentResponse(
+        operation: WsdlOperation,
         wsdlDir: File,
-        service: WsdlService,
-        message: OperationMessage,
+        schemas: Array<SchemaDocument>,
     ): String {
-        when (message) {
+        when (val message = operation.outputRef) {
             is ElementOperationMessage -> {
-                val sts: SchemaTypeSystem = buildSchemaTypeSystem(wsdlDir, schemas)
-
-                // TODO should this use the qualified name instead?
-                val rootElementName = message.elementName.localPart
-                val elem: SchemaType = sts.documentTypes().find { it.documentElementName.localPart == rootElementName }
-                    ?: throw RuntimeException("Could not find a global element with name \"$rootElementName\"")
-
-                return SampleXmlUtil.createSampleForType(elem)
+                return generateElementExample(wsdlDir, schemas, message)
             }
 
             is TypeOperationMessage -> {
-                // by convention, the suffix 'Response' is added to the operation name
-                val elementName = message.operationName + "Response"
-                val rootElement = if (service.targetNamespace?.isNotBlank() == true) {
-                    QName(service.targetNamespace, elementName, "tns")
-                } else {
-                    QName(elementName)
-                }
-
-                val parts = mutableMapOf<String, QName>()
-                parts[message.partName] = message.typeName
-
-                val elementSchema = SchemaGenerator.createElementSchema(rootElement, parts)
-                val sts: SchemaTypeSystem = buildSchemaTypeSystem(wsdlDir, schemas + elementSchema)
-
-                val elem = sts.documentTypes().find { it.documentElementName == rootElement }
-                    ?: throw RuntimeException("Could not find a generated element with name \"$rootElement\"")
-
-                return SampleXmlUtil.createSampleForType(elem)
+                return generateTypeExample(wsdlDir, schemas, message)
             }
 
-            // TODO support CompositeOperationMessage
-            else -> throw UnsupportedOperationException("Unsupported output message: ${message::class.java.canonicalName}")
+            is CompositeOperationMessage -> {
+                val partXmls = message.parts.map { part ->
+                    val partXml = when (part) {
+                        is ElementOperationMessage -> {
+                            generateElementExample(wsdlDir, schemas, part)
+                        }
+
+                        is TypeOperationMessage -> {
+                            generateTypeExample(wsdlDir, schemas, part)
+                        }
+
+                        else -> throw UnsupportedOperationException(
+                            "Unsupported output message part: ${part::class.java.canonicalName}"
+                        )
+                    }
+                    logger.trace("Generated document part XML: {}", partXml)
+                    partXml
+                }
+
+                // no root element in document style
+                return partXmls.joinToString("\n")
+            }
+
+            else -> throw UnsupportedOperationException("Unsupported output message: ${operation.outputRef}")
         }
+    }
+
+    private fun generateRpcResponse(
+        service: WsdlService,
+        operation: WsdlOperation,
+        wsdlDir: File,
+        schemas: Array<SchemaDocument>,
+    ): String {
+        val parts = mutableMapOf<String, QName>()
+
+        when (val message = operation.outputRef) {
+            is ElementOperationMessage -> {
+                // TODO generate wrapper root element and place element part XML within it
+                TODO("Element parts in RPC bindings are not supported")
+            }
+
+            is TypeOperationMessage -> {
+                parts[message.partName] = message.typeName
+            }
+
+            is CompositeOperationMessage -> {
+                parts += message.parts.associate { part ->
+                    when (part) {
+                        is ElementOperationMessage -> {
+                            // TODO generate wrapper root element and place element part XML within it
+                            TODO("Element parts in composite messages are not supported")
+                        }
+
+                        is TypeOperationMessage -> {
+                            part.partName to part.typeName
+                        }
+
+                        else -> throw UnsupportedOperationException(
+                            "Unsupported output message part: ${part::class.java.canonicalName}"
+                        )
+                    }
+                }
+            }
+
+            else -> throw UnsupportedOperationException(
+                "Unsupported output message: $message"
+            )
+        }
+
+        // by convention, the suffix 'Response' is added to the operation name
+        val rootElementName = operation.name + "Response"
+        val rootElement = if (service.targetNamespace?.isNotBlank() == true) {
+            QName(service.targetNamespace, rootElementName, "tns")
+        } else {
+            QName(rootElementName)
+        }
+
+        val elementSchema = SchemaGenerator.createCompositePartSchema(rootElement, parts)
+        val sts: SchemaTypeSystem = buildSchemaTypeSystem(wsdlDir, schemas + elementSchema)
+
+        val elem = sts.documentTypes().find { it.documentElementName == rootElement }
+            ?: throw RuntimeException("Could not find a generated element with name \"$rootElement\"")
+
+        return SampleXmlUtil.createSampleForType(elem)
+    }
+
+    private fun generateElementExample(
+        wsdlDir: File,
+        schemas: Array<SchemaDocument>,
+        outputRef: ElementOperationMessage,
+    ): String {
+        val sts: SchemaTypeSystem = buildSchemaTypeSystem(wsdlDir, schemas)
+
+        // TODO should this use the qualified name instead?
+        val rootElementName = outputRef.elementName.localPart
+        val elem: SchemaType = sts.documentTypes().find { it.documentElementName.localPart == rootElementName }
+            ?: throw RuntimeException("Could not find a global element with name \"$rootElementName\"")
+
+        return SampleXmlUtil.createSampleForType(elem)
+    }
+
+    private fun generateTypeExample(
+        wsdlDir: File,
+        schemas: Array<SchemaDocument>,
+        message: TypeOperationMessage,
+    ): String {
+        val elementName = message.partName
+        val elementSchema = SchemaGenerator.createSinglePartSchema(elementName, message.typeName)
+        val sts: SchemaTypeSystem = buildSchemaTypeSystem(wsdlDir, schemas + elementSchema)
+
+        val elem = sts.documentTypes().find { it.documentElementName.localPart == elementName }
+            ?: throw RuntimeException("Could not find a generated element with name \"$elementName\"")
+
+        return SampleXmlUtil.createSampleForType(elem)
     }
 
     private fun buildSchemaTypeSystem(
