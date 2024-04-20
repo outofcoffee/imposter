@@ -147,8 +147,8 @@ class SoapExampleService {
 
         when (val message = operation.outputRef) {
             is ElementOperationMessage -> {
-                // TODO generate wrapper root element and place element part XML within it
-                TODO("Element parts in RPC bindings are not supported")
+                // FIXME replicate composite element logic branch below
+                parts[message.elementName.localPart] = message.elementType
             }
 
             is TypeOperationMessage -> {
@@ -156,19 +156,21 @@ class SoapExampleService {
             }
 
             is CompositeOperationMessage -> {
-                parts += message.parts.associate { part ->
-                    when (part) {
+                message.parts.forEach { child ->
+                    when (child) {
                         is ElementOperationMessage -> {
-                            // TODO generate wrapper root element and place element part XML within it
-                            TODO("Element parts in composite messages are not supported")
+                            // swap element recreation with 'ref'
+                            // e.g. <element name="foo" ref="tns:foo" />
+                            val refType = QName(child.elementName.namespaceURI, child.elementName.localPart, "ref:${child.elementName.prefix}")
+                            parts[child.elementName.localPart] = refType
                         }
 
                         is TypeOperationMessage -> {
-                            part.partName to part.typeName
+                            parts[child.partName] = child.typeName
                         }
 
                         else -> throw UnsupportedOperationException(
-                            "Unsupported output message part: ${part::class.java.canonicalName}"
+                            "Unsupported output message part: ${child::class.java.canonicalName}"
                         )
                     }
                 }
@@ -203,9 +205,8 @@ class SoapExampleService {
     ): String {
         val sts: SchemaTypeSystem = buildSchemaTypeSystem(wsdlDir, schemas)
 
-        // TODO should this use the qualified name instead?
-        val rootElementName = outputRef.elementName.localPart
-        val elem: SchemaType = sts.documentTypes().find { it.documentElementName.localPart == rootElementName }
+        val rootElementName = outputRef.elementName
+        val elem: SchemaType = sts.documentTypes().find { it.documentElementName == rootElementName }
             ?: throw RuntimeException("Could not find a global element with name \"$rootElementName\"")
 
         return SampleXmlUtil.createSampleForType(elem)

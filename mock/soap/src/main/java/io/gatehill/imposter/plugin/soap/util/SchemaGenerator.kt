@@ -59,13 +59,15 @@ object SchemaGenerator {
         if (partType.namespaceURI?.isNotBlank() == true) {
             namespaces[partType.prefix] = partType.namespaceURI
         }
+        if (!namespaces.containsKey("xs")) {
+            namespaces["xs"] ="http://www.w3.org/2001/XMLSchema"
+        }
 
         val namespacesXml = namespaces.entries.joinToString(separator = "\n") { (prefix, nsUri) ->
             """xmlns:${prefix}="${nsUri}""""
         }
         val schemaXml = """
 <xs:schema elementFormDefault="unqualified" version="1.0"
-           xmlns:xs="http://www.w3.org/2001/XMLSchema"
 ${namespacesXml.prependIndent(" ".repeat(11))}
            targetNamespace="${partType.namespaceURI}">
 
@@ -77,22 +79,39 @@ ${namespacesXml.prependIndent(" ".repeat(11))}
         return SchemaDocument.Factory.parse(schemaXml)
     }
 
+    /**
+     * @param parts map of element name to element qualified type
+     */
     fun createCompositePartSchema(rootElement: QName, parts: Map<String, QName>): SchemaDocument {
         val namespaces = mutableMapOf<String, String>()
         if (rootElement.namespaceURI?.isNotBlank() == true) {
             namespaces[rootElement.prefix] = rootElement.namespaceURI
         }
-        namespaces += parts.values.associate { it.prefix to it.namespaceURI }
+        namespaces += parts.values.associate {
+            val prefix = if (it.prefix.startsWith("ref:")) {
+                it.prefix.substringAfter("ref:")
+            } else {
+                it.prefix
+            }
+            prefix to it.namespaceURI
+        }
+        if (!namespaces.containsKey("xs")) {
+            namespaces["xs"] = "http://www.w3.org/2001/XMLSchema"
+        }
 
         val namespacesXml = namespaces.entries.joinToString(separator = "\n") { (prefix, nsUri) ->
             """xmlns:${prefix}="${nsUri}""""
         }
         val partsXml = parts.entries.joinToString(separator = "\n") { (partName, partType) ->
-            """<xs:element name="$partName" type="${partType.prefix}:${partType.localPart}"/>"""
+            if (partType.prefix.startsWith("ref:")) {
+                val refTarget = partType.prefix.substringAfter("ref:")
+                """<xs:element ref="${refTarget}:${partType.localPart}"/>"""
+            } else {
+                """<xs:element name="$partName" type="${partType.prefix}:${partType.localPart}"/>"""
+            }
         }
         val schemaXml = """
 <xs:schema elementFormDefault="unqualified" version="1.0"
-           xmlns:xs="http://www.w3.org/2001/XMLSchema"
 ${namespacesXml.prependIndent(" ".repeat(11))}
            targetNamespace="${rootElement.namespaceURI}">
 

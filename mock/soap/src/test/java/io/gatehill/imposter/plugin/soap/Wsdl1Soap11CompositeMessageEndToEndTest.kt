@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024.
+ * Copyright (c) 2016-2021.
  *
  * This file is part of Imposter.
  *
@@ -40,44 +40,35 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.plugin.soap
 
-package io.gatehill.imposter.plugin.soap.model
-
-import javax.xml.namespace.QName
-
-/**
- * Represents an operation message. In WSDL 1.1 this is an individual
- * `part` element within a `message`. In WSDL 2.0 this is an `input` or `output`
- * element within an `operation`.
- */
-interface OperationMessage
+import io.gatehill.imposter.plugin.soap.util.SoapUtil
 
 /**
- * Refers to an XML schema `element`.
+ * Tests for [SoapPluginImpl] using WSDL v1 and SOAP 1.1.
+ *
+ * @author Pete Cornish
  */
-class ElementOperationMessage(
-    val elementName: QName,
-    val elementType: QName,
-) : OperationMessage
+class Wsdl1Soap11CompositeMessageEndToEndTest : AbstractEndToEndTest() {
+    override val testConfigDirs = listOf("/wsdl1-soap11-composite-message")
+    override val soapEnvNamespace = SoapUtil.soap11EnvNamespace
+    override val soapContentType = SoapUtil.soap11ContentType
 
-/**
- * Message parts specifying an XML schema `type` are supported
- * in WSDL 1.1 but not in WSDL 2.0.
- */
-class TypeOperationMessage(
-    val operationName: String,
-    val partName: String,
-    val typeName: QName,
-): OperationMessage
+    override val getPetByIdEnv: String
+        get() = SoapUtil.wrapInEnv(
+            """
+<getPetById xmlns="urn:com:example:petstore">
+  <id>3</id>
+</getPetById>
+""".trim(), soapEnvNamespace
+        )
 
-/**
- * In WSDL 1.1, messages can define multiple parts.
- */
-class CompositeOperationMessage(
-    val operationName: String,
-
-    /**
-     * Maps the `part` name to an operation message.
-     */
-    val parts: List<OperationMessage>
-): OperationMessage
+    override val getPetByNameEnv
+        get() = SoapUtil.wrapInEnv(
+            """
+<getPetByName xmlns="urn:com:example:petstore">
+  <name>Fluffy</name>
+</getPetByName>
+""".trim(), soapEnvNamespace
+        )
+}

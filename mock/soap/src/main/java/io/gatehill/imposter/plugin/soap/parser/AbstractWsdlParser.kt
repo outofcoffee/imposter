@@ -159,7 +159,17 @@ abstract class AbstractWsdlParser(
         val matchingElement = xsd.findElement(elementQName)
             ?: return null
 
-        val elementType = matchingElement.type.name
+        var elementType = matchingElement.type.name
+
+        if (elementType.prefix.isNullOrBlank()) {
+            val prefix = if (elementType.namespaceURI == "http://www.w3.org/2001/XMLSchema") {
+                "xs"
+            } else {
+                // TODO consider prefix clashes - generate unique prefix?
+                elementQName.prefix
+            }
+            elementType = QName(elementType.namespaceURI, elementType.localPart, prefix)
+        }
 
         logger.trace("Resolved element name {} to qualified type: {}", elementQName, elementType)
         return elementType
@@ -174,8 +184,13 @@ abstract class AbstractWsdlParser(
             ?: return null
 
         if (matchingType.prefix.isNullOrBlank()) {
-            // TODO consider prefix clashes - generate unique prefix?
-            matchingType = QName(matchingType.namespaceURI, matchingType.localPart, typeQName.prefix)
+            val prefix = if (matchingType.namespaceURI == "http://www.w3.org/2001/XMLSchema") {
+                "xs"
+            } else {
+                // TODO consider prefix clashes - generate unique prefix?
+                typeQName.prefix
+            }
+            matchingType = QName(matchingType.namespaceURI, matchingType.localPart, prefix)
         }
 
         logger.trace("Resolved type name {} to qualified type: {}", typeQName, matchingType)

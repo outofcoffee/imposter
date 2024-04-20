@@ -240,7 +240,7 @@ class Wsdl1Parser(
             // WSDL 1.1 allows message parts to refer to XML schema types
             // directly as well as referring to elements.
             getAttributeValueAsQName(messagePart, "element")?.let { elementQName ->
-                resolveElementFromXsd(elementQName)?.let { ElementOperationMessage(it) }
+                resolveElementTypeFromXsd(elementQName)?.let { ElementOperationMessage(elementQName, it) }
             } ?: getAttributeValueAsQName(messagePart, "type")?.let { typeQName ->
                 resolveTypeFromXsd(typeQName)?.let { TypeOperationMessage(operationName, partName, it) }
             } ?: throw IllegalStateException(
