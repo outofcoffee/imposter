@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.38.0] - 2024-04-21
+### Added
+- feat(soap): improves support for element parts in composite messages.
+- feat(soap): supports more combinations of binding style and messages.
+- feat: support XML attributes in SOAP request body XPath
+
+### Changed
+- refactor(soap): matches type message parts on operation name.
+- refactor(soap): optimises document type lookup.
+- refactor(soap): reuses parser schema type system instead of recompiling all schemas.
+- refactor(soap): reuses schema type system and entity resolver for same WSDL.
+- refactor(soap): simplifies synthetic schema generation.
+
+### Fixed
+- fix(soap): improves example generation logging.
+- fix(soap): matches message element types by qualified name.
+- fix(soap): sets namespace of RPC root response element from WSDL target namespace.
+
 ## [3.37.0] - 2024-04-18
 ### Added
 - feat(soap): SOAP response body uses typed message part names.
