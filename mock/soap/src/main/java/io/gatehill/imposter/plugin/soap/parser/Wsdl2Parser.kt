@@ -192,7 +192,7 @@ class Wsdl2Parser(
         // directly - instead an element must be used.
         getAttributeValueAsQName(inputOrOutputNode, "element")?.let { elementQName ->
             val ns = listOf(elementQName.toNamespaceMap())
-            return resolveElementTypeFromXsd(elementQName)?.let { ElementOperationMessage(ns, elementQName, it) }
+            return resolveElementTypeFromXsd(elementQName)?.let { ElementOperationMessage(ns, elementQName) }
 
         } ?: throw IllegalStateException(
             "Invalid 'element' attribute for message input/output: ${inputOrOutputNode.name}"

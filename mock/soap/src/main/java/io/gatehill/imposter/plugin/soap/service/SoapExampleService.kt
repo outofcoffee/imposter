@@ -79,7 +79,7 @@ class SoapExampleService {
         operation: WsdlOperation,
         bodyHolder: MessageBodyHolder,
     ): Boolean {
-        logger.debug("Generating example for {}", operation.outputRef)
+        logger.debug("Generating response example for operation: {} in service: {}", operation.name, service.name)
         val example = when (operation.style) {
             SoapUtil.OPERATION_STYLE_DOCUMENT -> generateDocumentResponse(schemaContext, service, operation)
             SoapUtil.OPERATION_STYLE_RPC -> generateRpcResponse(schemaContext, service, operation)

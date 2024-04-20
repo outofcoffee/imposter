@@ -192,7 +192,7 @@ class SoapPluginImpl @Inject constructor(
                     "Only document and RPC style SOAP bindings are supported"
                 }
 
-                LOGGER.debug("Matched operation: ${operation.name} in binding ${binding.name}")
+                LOGGER.debug("Matched operation: ${operation.name} in binding: ${binding.name}")
                 return@build handle(config, parser, service, binding, operation, httpExchange, bodyHolder, soapAction)
             }
         )

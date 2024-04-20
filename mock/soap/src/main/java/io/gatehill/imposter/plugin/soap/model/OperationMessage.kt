@@ -60,10 +60,12 @@ abstract class OperationMessage(
 class ElementOperationMessage(
     namespaces: List<Map<String, String>>,
     val elementName: QName,
-    val elementType: QName,
 ) : OperationMessage(
     namespaces = namespaces
-)
+) {
+    override fun toString(): String =
+        "ElementOperationMessage(elementName=$elementName)"
+}
 
 /**
  * Message parts specifying an XML schema `type` are supported
@@ -71,12 +73,14 @@ class ElementOperationMessage(
  */
 class TypeOperationMessage(
     namespaces: List<Map<String, String>>,
-    val operationName: String,
     val partName: String,
     val typeName: QName,
 ): OperationMessage(
     namespaces = namespaces
-)
+) {
+    override fun toString(): String =
+        "TypeOperationMessage(partName='$partName', typeName=$typeName)"
+}
 
 /**
  * In WSDL 1.1, messages can define multiple parts.
@@ -88,4 +92,7 @@ class CompositeOperationMessage(
     val parts: List<OperationMessage>
 ): OperationMessage(
     namespaces = emptyList()
-)
+) {
+    override fun toString(): String =
+        "CompositeOperationMessage(parts=$parts)"
+}

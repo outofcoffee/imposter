@@ -242,11 +242,11 @@ class Wsdl1Parser(
             // directly as well as referring to elements.
             getAttributeValueAsQName(messagePart, "element")?.let { elementQName ->
                 val ns = listOf(elementQName.toNamespaceMap())
-                resolveElementTypeFromXsd(elementQName)?.let { ElementOperationMessage(ns, elementQName, it) }
+                resolveElementTypeFromXsd(elementQName)?.let { ElementOperationMessage(ns, elementQName) }
 
             } ?: getAttributeValueAsQName(messagePart, "type")?.let { typeQName ->
                 val ns = listOf(typeQName.toNamespaceMap())
-                resolveTypeFromXsd(typeQName)?.let { TypeOperationMessage(ns, operationName, partName, it) }
+                resolveTypeFromXsd(typeQName)?.let { TypeOperationMessage(ns, partName, it) }
 
             } ?: throw IllegalStateException(
                 "Invalid 'element' or 'type' attribute for message: $messageName"
