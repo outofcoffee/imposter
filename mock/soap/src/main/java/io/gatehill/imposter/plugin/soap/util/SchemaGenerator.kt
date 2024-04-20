@@ -43,6 +43,10 @@
 
 package io.gatehill.imposter.plugin.soap.util
 
+import io.gatehill.imposter.plugin.soap.model.CompositeOperationMessage
+import io.gatehill.imposter.plugin.soap.model.ElementOperationMessage
+import io.gatehill.imposter.plugin.soap.model.OperationMessage
+import io.gatehill.imposter.plugin.soap.model.TypeOperationMessage
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.apache.xmlbeans.impl.xb.xsdschema.SchemaDocument
@@ -54,66 +58,51 @@ import javax.xml.namespace.QName
 object SchemaGenerator {
     private val logger: Logger = LogManager.getLogger(SchemaGenerator::class.java)
 
-    fun createSinglePartSchema(elementName: String, partType: QName): SchemaDocument {
+    fun createSinglePartSchema(
+        targetNamespace: String,
+        part: OperationMessage,
+    ): SchemaDocument {
         val namespaces = mutableMapOf<String, String>()
-        if (partType.namespaceURI?.isNotBlank() == true) {
-            namespaces[partType.prefix] = partType.namespaceURI
-        }
-        if (!namespaces.containsKey("xs")) {
-            namespaces["xs"] ="http://www.w3.org/2001/XMLSchema"
-        }
+        val namespacesXml = generateNamespacesXml(namespaces, listOf(part))
 
-        val namespacesXml = namespaces.entries.joinToString(separator = "\n") { (prefix, nsUri) ->
-            """xmlns:${prefix}="${nsUri}""""
-        }
+        val partXml: String = convertMessage(part).joinToString("\n")
+
+        // TODO replace with XMLCursor and XMLOptions.saveSyntheticDocumentElement
+        // see: org.apache.xmlbeans.impl.xsd2inst.SampleXmlUtil#createSampleForType(org.apache.xmlbeans.SchemaField)
         val schemaXml = """
-<xs:schema elementFormDefault="unqualified" version="1.0"
+<xs:schema elementFormDefault="qualified" version="1.0"
 ${namespacesXml.prependIndent(" ".repeat(11))}
-           targetNamespace="${partType.namespaceURI}">
+           targetNamespace="$targetNamespace">
 
-    <xs:element name="$elementName" type="${partType.prefix}:${partType.localPart}" />
+${partXml.prependIndent(" ".repeat(4))}
 </xs:schema>
 """.trim()
 
-        logger.trace("Generated element schema:\n{}", schemaXml)
+        logger.trace("Generated single element schema:\n{}", schemaXml)
         return SchemaDocument.Factory.parse(schemaXml)
     }
 
     /**
      * @param parts map of element name to element qualified type
      */
-    fun createCompositePartSchema(rootElement: QName, parts: Map<String, QName>): SchemaDocument {
+    fun createCompositePartSchema(
+        targetNamespace: String,
+        rootElement: QName,
+        parts: List<OperationMessage>,
+    ): SchemaDocument {
         val namespaces = mutableMapOf<String, String>()
         if (rootElement.namespaceURI?.isNotBlank() == true) {
             namespaces[rootElement.prefix] = rootElement.namespaceURI
         }
-        namespaces += parts.values.associate {
-            val prefix = if (it.prefix.startsWith("ref:")) {
-                it.prefix.substringAfter("ref:")
-            } else {
-                it.prefix
-            }
-            prefix to it.namespaceURI
-        }
-        if (!namespaces.containsKey("xs")) {
-            namespaces["xs"] = "http://www.w3.org/2001/XMLSchema"
-        }
+        val namespacesXml = generateNamespacesXml(namespaces, parts)
+        val partsXml = parts.flatMap { convertMessage(it) }.joinToString("\n")
 
-        val namespacesXml = namespaces.entries.joinToString(separator = "\n") { (prefix, nsUri) ->
-            """xmlns:${prefix}="${nsUri}""""
-        }
-        val partsXml = parts.entries.joinToString(separator = "\n") { (partName, partType) ->
-            if (partType.prefix.startsWith("ref:")) {
-                val refTarget = partType.prefix.substringAfter("ref:")
-                """<xs:element ref="${refTarget}:${partType.localPart}"/>"""
-            } else {
-                """<xs:element name="$partName" type="${partType.prefix}:${partType.localPart}"/>"""
-            }
-        }
+        // TODO replace with XMLCursor and XMLOptions.saveSyntheticDocumentElement
+        // see: org.apache.xmlbeans.impl.xsd2inst.SampleXmlUtil#createSampleForType(org.apache.xmlbeans.SchemaField)
         val schemaXml = """
-<xs:schema elementFormDefault="unqualified" version="1.0"
+<xs:schema elementFormDefault="qualified" version="1.0"
 ${namespacesXml.prependIndent(" ".repeat(11))}
-           targetNamespace="${rootElement.namespaceURI}">
+           targetNamespace="$targetNamespace">
 
     <xs:element name="${rootElement.localPart}">
       <xs:complexType>
@@ -125,7 +114,47 @@ ${partsXml.prependIndent(" ".repeat(10))}
 </xs:schema>
 """.trim()
 
-        logger.trace("Generated element schema:\n{}", schemaXml)
+        logger.trace("Generated composite element schema:\n{}", schemaXml)
         return SchemaDocument.Factory.parse(schemaXml)
+    }
+
+    private fun generateNamespacesXml(
+        namespaces: MutableMap<String, String>,
+        parts: List<OperationMessage>,
+    ): String {
+        parts.forEach { part -> part.namespaces.forEach { namespaces += it } }
+        if (!namespaces.containsKey("xs")) {
+            namespaces["xs"] = "http://www.w3.org/2001/XMLSchema"
+        }
+        val namespacesXml = namespaces.entries.joinToString(separator = "\n") { (prefix, nsUri) ->
+            """xmlns:${prefix}="${nsUri}""""
+        }
+        return namespacesXml
+    }
+
+    private fun convertMessage(message: OperationMessage): List<String> {
+        val parts = mutableListOf<String>()
+
+        when (message) {
+            is ElementOperationMessage -> {
+                // e.g. <element ref="tns:foo" />
+                parts += """<xs:element ref="${message.elementName.prefix}:${message.elementName.localPart}"/>"""
+            }
+
+            is TypeOperationMessage -> {
+                // e.g. <element name="foo" type="tns:fooType" />
+                parts += """<xs:element name="${message.partName}" type="${message.typeName.prefix}:${message.typeName.localPart}"/>"""
+            }
+
+            is CompositeOperationMessage -> {
+                parts += message.parts.flatMap { convertMessage(it) }
+            }
+
+            else -> throw UnsupportedOperationException(
+                "Unsupported output message part: ${message::class.java.canonicalName}"
+            )
+        }
+
+        return parts
     }
 }

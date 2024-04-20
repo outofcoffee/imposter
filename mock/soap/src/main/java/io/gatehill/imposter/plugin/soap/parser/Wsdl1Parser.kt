@@ -54,6 +54,7 @@ import io.gatehill.imposter.plugin.soap.model.WsdlInterface
 import io.gatehill.imposter.plugin.soap.model.WsdlOperation
 import io.gatehill.imposter.plugin.soap.model.WsdlService
 import io.gatehill.imposter.plugin.soap.util.SoapUtil
+import io.gatehill.imposter.plugin.soap.util.SoapUtil.toNamespaceMap
 import io.gatehill.imposter.util.BodyQueryUtil
 import org.jdom2.Document
 import org.jdom2.Element
@@ -97,12 +98,12 @@ class Wsdl1Parser(
 
         val operations = selectNodes(binding, "./wsdl:operation").map { op ->
             getOperation(bindingName, op.getAttributeValue("name"), binding)
-                    ?: throw IllegalStateException("No operation found for binding: $bindingName")
+                ?: throw IllegalStateException("No operation found for binding: $bindingName")
         }
 
         // binding type=portType name
         val interfaceRef = (binding.getAttributeValue("type")
-                ?: throw IllegalStateException("No type found for binding: $bindingName"))
+            ?: throw IllegalStateException("No type found for binding: $bindingName"))
 
         return WsdlBinding(
             name = binding.getAttributeValue("name"),
@@ -178,10 +179,10 @@ class Wsdl1Parser(
         ) ?: throw IllegalStateException("No portType operation found for portType: $portTypeName and operation: $operationName")
 
         val input = getMessage(operationName, portTypeOperation, "./wsdl:input")
-                ?: throw IllegalStateException("No input found for portType operation: $operationName")
+            ?: throw IllegalStateException("No input found for portType operation: $operationName")
 
         val output = getMessage(operationName, portTypeOperation, "./wsdl:output")
-                ?: throw IllegalStateException("No output found for portType operation: $operationName")
+            ?: throw IllegalStateException("No output found for portType operation: $operationName")
 
         val style = soapOperation.getAttributeValue("style") ?: run {
             // fall back to soap:binding
@@ -240,9 +241,13 @@ class Wsdl1Parser(
             // WSDL 1.1 allows message parts to refer to XML schema types
             // directly as well as referring to elements.
             getAttributeValueAsQName(messagePart, "element")?.let { elementQName ->
-                resolveElementTypeFromXsd(elementQName)?.let { ElementOperationMessage(elementQName, it) }
+                val ns = listOf(elementQName.toNamespaceMap())
+                resolveElementTypeFromXsd(elementQName)?.let { ElementOperationMessage(ns, elementQName, it) }
+
             } ?: getAttributeValueAsQName(messagePart, "type")?.let { typeQName ->
-                resolveTypeFromXsd(typeQName)?.let { TypeOperationMessage(operationName, partName, it) }
+                val ns = listOf(typeQName.toNamespaceMap())
+                resolveTypeFromXsd(typeQName)?.let { TypeOperationMessage(ns, operationName, partName, it) }
+
             } ?: throw IllegalStateException(
                 "Invalid 'element' or 'type' attribute for message: $messageName"
             )
@@ -251,7 +256,7 @@ class Wsdl1Parser(
         return when (parts.size) {
             0 -> return null
             1 -> parts.first()
-            else -> CompositeOperationMessage(operationName, parts)
+            else -> CompositeOperationMessage(parts)
         }
     }
 

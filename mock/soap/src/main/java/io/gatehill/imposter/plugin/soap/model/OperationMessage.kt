@@ -50,34 +50,42 @@ import javax.xml.namespace.QName
  * `part` element within a `message`. In WSDL 2.0 this is an `input` or `output`
  * element within an `operation`.
  */
-interface OperationMessage
+abstract class OperationMessage(
+    val namespaces: List<Map<String, String>>
+)
 
 /**
  * Refers to an XML schema `element`.
  */
 class ElementOperationMessage(
+    namespaces: List<Map<String, String>>,
     val elementName: QName,
     val elementType: QName,
-) : OperationMessage
+) : OperationMessage(
+    namespaces = namespaces
+)
 
 /**
  * Message parts specifying an XML schema `type` are supported
  * in WSDL 1.1 but not in WSDL 2.0.
  */
 class TypeOperationMessage(
+    namespaces: List<Map<String, String>>,
     val operationName: String,
     val partName: String,
     val typeName: QName,
-): OperationMessage
+): OperationMessage(
+    namespaces = namespaces
+)
 
 /**
  * In WSDL 1.1, messages can define multiple parts.
  */
 class CompositeOperationMessage(
-    val operationName: String,
-
     /**
      * Maps the `part` name to an operation message.
      */
     val parts: List<OperationMessage>
-): OperationMessage
+): OperationMessage(
+    namespaces = emptyList()
+)

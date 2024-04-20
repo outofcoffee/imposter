@@ -51,6 +51,7 @@ import io.gatehill.imposter.plugin.soap.model.WsdlEndpoint
 import io.gatehill.imposter.plugin.soap.model.WsdlInterface
 import io.gatehill.imposter.plugin.soap.model.WsdlOperation
 import io.gatehill.imposter.plugin.soap.model.WsdlService
+import io.gatehill.imposter.plugin.soap.util.SoapUtil.toNamespaceMap
 import io.gatehill.imposter.util.BodyQueryUtil
 import org.jdom2.Document
 import org.jdom2.Element
@@ -189,7 +190,9 @@ class Wsdl2Parser(
         // WSDL 2.0 doesn't allow operation messages to refer to XML schema types
         // directly - instead an element must be used.
         getAttributeValueAsQName(inputOrOutputNode, "element")?.let { elementQName ->
-            return resolveElementTypeFromXsd(elementQName)?.let { ElementOperationMessage(elementQName, it) }
+            val ns = listOf(elementQName.toNamespaceMap())
+            return resolveElementTypeFromXsd(elementQName)?.let { ElementOperationMessage(ns, elementQName, it) }
+
         } ?: throw IllegalStateException(
             "Invalid 'element' attribute for message input/output: ${inputOrOutputNode.name}"
         )

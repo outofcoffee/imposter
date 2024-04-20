@@ -52,6 +52,7 @@ import io.vertx.core.buffer.Buffer
 import org.jdom2.Document
 import org.jdom2.Namespace
 import org.jdom2.input.SAXBuilder
+import javax.xml.namespace.QName
 
 object SoapUtil {
     const val OPERATION_STYLE_DOCUMENT = "document"
@@ -127,4 +128,7 @@ ${body.replaceIndent("    ")}
             elementName
         }
     }
+
+    fun QName.toNamespaceMap(): Map<String, String> =
+        mapOf(this.prefix to this.namespaceURI)
 }

@@ -47,6 +47,7 @@ import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.plugin.soap.model.CompositeOperationMessage
 import io.gatehill.imposter.plugin.soap.model.ElementOperationMessage
 import io.gatehill.imposter.plugin.soap.model.MessageBodyHolder
+import io.gatehill.imposter.plugin.soap.model.OperationMessage
 import io.gatehill.imposter.plugin.soap.model.ParsedRawBody
 import io.gatehill.imposter.plugin.soap.model.ParsedSoapMessage
 import io.gatehill.imposter.plugin.soap.model.TypeOperationMessage
@@ -88,8 +89,8 @@ class SoapExampleService {
     ): Boolean {
         logger.debug("Generating example for {}", operation.outputRef)
         val example = when (operation.style) {
-            SoapUtil.OPERATION_STYLE_DOCUMENT -> generateDocumentResponse(operation, wsdlDir, schemas)
-            SoapUtil.OPERATION_STYLE_RPC -> generateRpcResponse(service, operation, wsdlDir, schemas)
+            SoapUtil.OPERATION_STYLE_DOCUMENT -> generateDocumentResponse(wsdlDir, schemas, service, operation)
+            SoapUtil.OPERATION_STYLE_RPC -> generateRpcResponse(wsdlDir, schemas, service, operation)
             else -> throw UnsupportedOperationException("Unsupported operation style: ${operation.style}")
         }
         transmitExample(httpExchange, example, bodyHolder)
@@ -97,89 +98,27 @@ class SoapExampleService {
     }
 
     private fun generateDocumentResponse(
-        operation: WsdlOperation,
         wsdlDir: File,
         schemas: Array<SchemaDocument>,
+        service: WsdlService,
+        operation: WsdlOperation,
     ): String {
-        when (val message = operation.outputRef) {
-            is ElementOperationMessage -> {
-                return generateElementExample(wsdlDir, schemas, message)
-            }
+        return operation.outputRef?.let { message ->
+            // no root element in document style
+            generateDocumentMessage(wsdlDir, schemas, service, message).joinToString("\n")
 
-            is TypeOperationMessage -> {
-                return generateTypeExample(wsdlDir, schemas, message)
-            }
-
-            is CompositeOperationMessage -> {
-                val partXmls = message.parts.map { part ->
-                    val partXml = when (part) {
-                        is ElementOperationMessage -> {
-                            generateElementExample(wsdlDir, schemas, part)
-                        }
-
-                        is TypeOperationMessage -> {
-                            generateTypeExample(wsdlDir, schemas, part)
-                        }
-
-                        else -> throw UnsupportedOperationException(
-                            "Unsupported output message part: ${part::class.java.canonicalName}"
-                        )
-                    }
-                    logger.trace("Generated document part XML: {}", partXml)
-                    partXml
-                }
-
-                // no root element in document style
-                return partXmls.joinToString("\n")
-            }
-
-            else -> throw UnsupportedOperationException("Unsupported output message: ${operation.outputRef}")
-        }
+        } ?: throw IllegalStateException(
+            "No output message for operation: $operation"
+        )
     }
 
     private fun generateRpcResponse(
-        service: WsdlService,
-        operation: WsdlOperation,
         wsdlDir: File,
         schemas: Array<SchemaDocument>,
+        service: WsdlService,
+        operation: WsdlOperation,
     ): String {
-        val parts = mutableMapOf<String, QName>()
-
-        when (val message = operation.outputRef) {
-            is ElementOperationMessage -> {
-                // FIXME replicate composite element logic branch below
-                parts[message.elementName.localPart] = message.elementType
-            }
-
-            is TypeOperationMessage -> {
-                parts[message.partName] = message.typeName
-            }
-
-            is CompositeOperationMessage -> {
-                message.parts.forEach { child ->
-                    when (child) {
-                        is ElementOperationMessage -> {
-                            // swap element recreation with 'ref'
-                            // e.g. <element name="foo" ref="tns:foo" />
-                            val refType = QName(child.elementName.namespaceURI, child.elementName.localPart, "ref:${child.elementName.prefix}")
-                            parts[child.elementName.localPart] = refType
-                        }
-
-                        is TypeOperationMessage -> {
-                            parts[child.partName] = child.typeName
-                        }
-
-                        else -> throw UnsupportedOperationException(
-                            "Unsupported output message part: ${child::class.java.canonicalName}"
-                        )
-                    }
-                }
-            }
-
-            else -> throw UnsupportedOperationException(
-                "Unsupported output message: $message"
-            )
-        }
+        val parts = operation.outputRef?.let { listOf(it) } ?: emptyList()
 
         // by convention, the suffix 'Response' is added to the operation name
         val rootElementName = operation.name + "Response"
@@ -189,13 +128,43 @@ class SoapExampleService {
             QName(rootElementName)
         }
 
-        val elementSchema = SchemaGenerator.createCompositePartSchema(rootElement, parts)
+        val elementSchema = SchemaGenerator.createCompositePartSchema(service.targetNamespace ?: "", rootElement, parts)
         val sts: SchemaTypeSystem = buildSchemaTypeSystem(wsdlDir, schemas + elementSchema)
 
         val elem = sts.documentTypes().find { it.documentElementName == rootElement }
             ?: throw RuntimeException("Could not find a generated element with name \"$rootElement\"")
 
         return SampleXmlUtil.createSampleForType(elem)
+    }
+
+    private fun generateDocumentMessage(
+        wsdlDir: File,
+        schemas: Array<SchemaDocument>,
+        service: WsdlService,
+        message: OperationMessage,
+    ): List<String> {
+        val partXmls = mutableListOf<String>()
+
+        when (message) {
+            is ElementOperationMessage -> {
+                partXmls += generateElementExample(wsdlDir, schemas, message)
+            }
+
+            is TypeOperationMessage -> {
+                partXmls += generateTypeExample(wsdlDir, schemas, service, message)
+            }
+
+            is CompositeOperationMessage -> {
+                partXmls += message.parts.flatMap { part -> generateDocumentMessage(wsdlDir, schemas, service, part) }
+            }
+
+            else -> throw UnsupportedOperationException(
+                "Unsupported output message part: ${message::class.java.canonicalName}"
+            )
+        }
+
+        logger.trace("Generated document part XMLs: {}", partXmls)
+        return partXmls
     }
 
     private fun generateElementExample(
@@ -215,10 +184,11 @@ class SoapExampleService {
     private fun generateTypeExample(
         wsdlDir: File,
         schemas: Array<SchemaDocument>,
+        service: WsdlService,
         message: TypeOperationMessage,
     ): String {
         val elementName = message.partName
-        val elementSchema = SchemaGenerator.createSinglePartSchema(elementName, message.typeName)
+        val elementSchema = SchemaGenerator.createSinglePartSchema(service.targetNamespace ?: "", message)
         val sts: SchemaTypeSystem = buildSchemaTypeSystem(wsdlDir, schemas + elementSchema)
 
         val elem = sts.documentTypes().find { it.documentElementName.localPart == elementName }
@@ -242,7 +212,7 @@ class SoapExampleService {
                 .setErrorListener(errors)
 
             try {
-                // TODO consider reusing the SchemaTypeSystem from [AbstractWsdlParser.buildXsdFromSchemas]
+                // TODO consider reusing the SchemaTypeSystem from AbstractWsdlParser.buildXsdFromSchemas
                 sts = XmlBeans.compileXsd(schemas, XmlBeans.getBuiltinTypeSystem(), compileOptions)
             } catch (e: Exception) {
                 if (errors.isEmpty() || e !is XmlException) {
