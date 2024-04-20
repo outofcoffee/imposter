@@ -127,7 +127,7 @@ class SoapExampleService {
         val elementSchema = SchemaGenerator.createCompositePartSchema(service.targetNamespace ?: "", rootElement, parts)
         val sts: SchemaTypeSystem = buildSchemaTypeSystem(schemaContext, elementSchema)
 
-        val elem = sts.documentTypes().find { it.documentElementName == rootElement }
+        val elem = sts.findDocumentType(rootElement)
             ?: throw RuntimeException("Could not find a generated element with name \"$rootElement\"")
 
         return SampleXmlUtil.createSampleForType(elem)
@@ -167,7 +167,7 @@ class SoapExampleService {
         outputRef: ElementOperationMessage,
     ): String {
         val rootElementName = outputRef.elementName
-        val elem: SchemaType = schemaContext.sts.documentTypes().find { it.documentElementName == rootElementName }
+        val elem: SchemaType = schemaContext.sts.findDocumentType(rootElementName)
             ?: throw RuntimeException("Could not find a global element with name \"$rootElementName\"")
 
         return SampleXmlUtil.createSampleForType(elem)
@@ -178,11 +178,11 @@ class SoapExampleService {
         service: WsdlService,
         message: TypeOperationMessage,
     ): String {
-        val elementName = message.partName
+        val elementName = QName(service.targetNamespace, message.partName)
         val elementSchema = SchemaGenerator.createSinglePartSchema(service.targetNamespace ?: "", message)
         val sts: SchemaTypeSystem = buildSchemaTypeSystem(schemaContext, elementSchema)
 
-        val elem = sts.documentTypes().find { it.documentElementName.localPart == elementName }
+        val elem = sts.findDocumentType(elementName)
             ?: throw RuntimeException("Could not find a generated element with name \"$elementName\"")
 
         return SampleXmlUtil.createSampleForType(elem)
