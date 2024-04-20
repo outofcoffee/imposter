@@ -134,6 +134,6 @@ class Wsdl1Soap11ParserTest {
         // first schema is from the WSDL types element and just contains an import
         // second schema is the imported external XSD
         // third schema is the embedded schema from the WSDL types element
-        assertEquals(3, parser.schemas.size)
+        assertEquals(3, parser.schemaContext.schemas.size)
     }
 }

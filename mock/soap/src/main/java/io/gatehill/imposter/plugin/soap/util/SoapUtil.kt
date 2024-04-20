@@ -57,6 +57,7 @@ import javax.xml.namespace.QName
 object SoapUtil {
     const val OPERATION_STYLE_DOCUMENT = "document"
     const val OPERATION_STYLE_RPC = "rpc"
+    const val NS_XML_SCHEMA = "http://www.w3.org/2001/XMLSchema"
     const val textXmlContentType = "text/xml"
     const val soap11ContentType = textXmlContentType
     const val soap12ContentType = "application/soap+xml"

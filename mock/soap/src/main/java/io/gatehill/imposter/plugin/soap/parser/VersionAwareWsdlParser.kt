@@ -47,7 +47,6 @@ import io.gatehill.imposter.plugin.soap.model.WsdlBinding
 import io.gatehill.imposter.plugin.soap.model.WsdlInterface
 import io.gatehill.imposter.plugin.soap.model.WsdlService
 import org.apache.logging.log4j.LogManager
-import org.apache.xmlbeans.impl.xb.xsdschema.SchemaDocument
 import org.jdom2.input.SAXBuilder
 import java.io.File
 
@@ -62,7 +61,9 @@ class VersionAwareWsdlParser(wsdlFile: File) : WsdlParser {
     private val delegate: WsdlParser
 
     init {
+        // resolve relative to the parent directory of the WSDL file
         val entityResolver = WsdlRelativeXsdEntityResolver(wsdlFile.parentFile)
+
         val document = SAXBuilder().apply { setEntityResolver(entityResolver) }.build(wsdlFile)
 
         val wsdlNamespaces = document.rootElement.namespacesInScope.filter {
@@ -83,8 +84,8 @@ class VersionAwareWsdlParser(wsdlFile: File) : WsdlParser {
     override val version: WsdlParser.WsdlVersion
         get() = delegate.version
 
-    override val schemas: Array<SchemaDocument>
-        get() = delegate.schemas
+    override val schemaContext: SchemaContext
+        get() = delegate.schemaContext
 
     override val services: List<WsdlService>
         get() = delegate.services

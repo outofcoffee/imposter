@@ -46,11 +46,13 @@ package io.gatehill.imposter.plugin.soap.parser
 import io.gatehill.imposter.plugin.soap.model.WsdlBinding
 import io.gatehill.imposter.plugin.soap.model.WsdlInterface
 import io.gatehill.imposter.plugin.soap.model.WsdlService
+import org.apache.xmlbeans.SchemaTypeSystem
 import org.apache.xmlbeans.impl.xb.xsdschema.SchemaDocument
+import org.xml.sax.EntityResolver
 
 interface WsdlParser {
     val version: WsdlVersion
-    val schemas: Array<SchemaDocument>
+    val schemaContext: SchemaContext
     val services: List<WsdlService>
     fun getBinding(bindingName: String): WsdlBinding?
     fun getInterface(interfaceName: String): WsdlInterface?
@@ -60,3 +62,9 @@ interface WsdlParser {
         V2,
     }
 }
+
+class SchemaContext(
+    val schemas: Array<SchemaDocument>,
+    val sts: SchemaTypeSystem,
+    val entityResolver: EntityResolver,
+)

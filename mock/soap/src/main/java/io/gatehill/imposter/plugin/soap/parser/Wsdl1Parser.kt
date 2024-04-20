@@ -267,7 +267,7 @@ class Wsdl1Parser(
     )
 
     override fun findEmbeddedTypesSchemaNodes(): List<Element> {
-        val xsNamespaces = xPathNamespaces + Namespace.getNamespace("xs", "http://www.w3.org/2001/XMLSchema")
+        val xsNamespaces = xPathNamespaces + Namespace.getNamespace("xs", SoapUtil.NS_XML_SCHEMA)
         return BodyQueryUtil.selectNodes(document, "/wsdl:definitions/wsdl:types/xs:schema", xsNamespaces)
     }
 

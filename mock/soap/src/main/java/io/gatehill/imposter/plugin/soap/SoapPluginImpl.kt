@@ -244,11 +244,9 @@ class SoapPluginImpl @Inject constructor(
 
                 // build a response from the XSD
                 val exampleSender = ResponseSender { httpExchange: HttpExchange, _: ResponseBehaviour ->
-                    val wsdlDir = File(pluginConfig.dir, pluginConfig.wsdlFile!!).parentFile
                     soapExampleService.serveExample(
                         httpExchange,
-                        parser.schemas,
-                        wsdlDir,
+                        parser.schemaContext,
                         service,
                         operation,
                         bodyHolder

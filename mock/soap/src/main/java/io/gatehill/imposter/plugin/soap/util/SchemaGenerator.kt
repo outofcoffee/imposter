@@ -124,7 +124,7 @@ ${partsXml.prependIndent(" ".repeat(10))}
     ): String {
         parts.forEach { part -> part.namespaces.forEach { namespaces += it } }
         if (!namespaces.containsKey("xs")) {
-            namespaces["xs"] = "http://www.w3.org/2001/XMLSchema"
+            namespaces["xs"] = SoapUtil.NS_XML_SCHEMA
         }
         val namespacesXml = namespaces.entries.joinToString(separator = "\n") { (prefix, nsUri) ->
             """xmlns:${prefix}="${nsUri}""""

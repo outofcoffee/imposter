@@ -69,11 +69,16 @@ abstract class AbstractWsdlParser(
 ) : WsdlParser {
     protected val logger: Logger = LogManager.getLogger(this::class.java)
 
-    override val schemas: Array<SchemaDocument> by lazy { discoverSchemas() }
+    override val schemaContext: SchemaContext by lazy {
+        val schemas = discoverSchemas()
+        SchemaContext(
+            schemas = schemas,
+            sts = compileSchemas(schemas),
+            entityResolver = entityResolver,
+        )
+    }
 
-    protected val xsd: SchemaTypeSystem by lazy { buildXsdFromSchemas() }
-
-    private val unionTypeSystem by lazy { XmlBeans.typeLoaderUnion(XmlBeans.getBuiltinTypeSystem(), xsd) }
+    private val unionTypeSystem by lazy { XmlBeans.typeLoaderUnion(XmlBeans.getBuiltinTypeSystem(), schemaContext.sts) }
 
     private fun discoverSchemas(): Array<SchemaDocument> {
         val schemas = mutableListOf<SchemaDocument>()
@@ -121,7 +126,7 @@ abstract class AbstractWsdlParser(
 
     protected abstract fun findEmbeddedTypesSchemaNodes(): List<Element>
 
-    private fun buildXsdFromSchemas(): SchemaTypeSystem {
+    private fun compileSchemas(schemas: Array<SchemaDocument>): SchemaTypeSystem {
         if (schemas.isEmpty()) {
             throw IllegalStateException("Cannot build XSD from empty schema list")
         }
@@ -156,13 +161,13 @@ abstract class AbstractWsdlParser(
      * from within the XSD.
      */
     protected fun resolveElementTypeFromXsd(elementQName: QName): QName? {
-        val matchingElement = xsd.findElement(elementQName)
+        val matchingElement = schemaContext.sts.findElement(elementQName)
             ?: return null
 
         var elementType = matchingElement.type.name
 
         if (elementType.prefix.isNullOrBlank()) {
-            val prefix = if (elementType.namespaceURI == "http://www.w3.org/2001/XMLSchema") {
+            val prefix = if (elementType.namespaceURI == SoapUtil.NS_XML_SCHEMA) {
                 "xs"
             } else {
                 // TODO consider prefix clashes - generate unique prefix?
@@ -184,7 +189,7 @@ abstract class AbstractWsdlParser(
             ?: return null
 
         if (matchingType.prefix.isNullOrBlank()) {
-            val prefix = if (matchingType.namespaceURI == "http://www.w3.org/2001/XMLSchema") {
+            val prefix = if (matchingType.namespaceURI == SoapUtil.NS_XML_SCHEMA) {
                 "xs"
             } else {
                 // TODO consider prefix clashes - generate unique prefix?

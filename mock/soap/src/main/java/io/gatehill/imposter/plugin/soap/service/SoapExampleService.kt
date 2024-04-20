@@ -53,7 +53,7 @@ import io.gatehill.imposter.plugin.soap.model.ParsedSoapMessage
 import io.gatehill.imposter.plugin.soap.model.TypeOperationMessage
 import io.gatehill.imposter.plugin.soap.model.WsdlOperation
 import io.gatehill.imposter.plugin.soap.model.WsdlService
-import io.gatehill.imposter.plugin.soap.parser.WsdlRelativeXsdEntityResolver
+import io.gatehill.imposter.plugin.soap.parser.SchemaContext
 import io.gatehill.imposter.plugin.soap.util.SchemaGenerator
 import io.gatehill.imposter.plugin.soap.util.SoapUtil
 import io.gatehill.imposter.util.LogUtil
@@ -67,7 +67,6 @@ import org.apache.xmlbeans.XmlException
 import org.apache.xmlbeans.XmlOptions
 import org.apache.xmlbeans.impl.xb.xsdschema.SchemaDocument
 import org.apache.xmlbeans.impl.xsd2inst.SampleXmlUtil
-import java.io.File
 import javax.xml.namespace.QName
 
 
@@ -81,16 +80,15 @@ class SoapExampleService {
 
     fun serveExample(
         httpExchange: HttpExchange,
-        schemas: Array<SchemaDocument>,
-        wsdlDir: File,
+        schemaContext: SchemaContext,
         service: WsdlService,
         operation: WsdlOperation,
         bodyHolder: MessageBodyHolder,
     ): Boolean {
         logger.debug("Generating example for {}", operation.outputRef)
         val example = when (operation.style) {
-            SoapUtil.OPERATION_STYLE_DOCUMENT -> generateDocumentResponse(wsdlDir, schemas, service, operation)
-            SoapUtil.OPERATION_STYLE_RPC -> generateRpcResponse(wsdlDir, schemas, service, operation)
+            SoapUtil.OPERATION_STYLE_DOCUMENT -> generateDocumentResponse(schemaContext, service, operation)
+            SoapUtil.OPERATION_STYLE_RPC -> generateRpcResponse(schemaContext, service, operation)
             else -> throw UnsupportedOperationException("Unsupported operation style: ${operation.style}")
         }
         transmitExample(httpExchange, example, bodyHolder)
@@ -98,14 +96,13 @@ class SoapExampleService {
     }
 
     private fun generateDocumentResponse(
-        wsdlDir: File,
-        schemas: Array<SchemaDocument>,
+        schemaContext: SchemaContext,
         service: WsdlService,
         operation: WsdlOperation,
     ): String {
         return operation.outputRef?.let { message ->
             // no root element in document style
-            generateDocumentMessage(wsdlDir, schemas, service, message).joinToString("\n")
+            generateDocumentMessage(schemaContext, service, message).joinToString("\n")
 
         } ?: throw IllegalStateException(
             "No output message for operation: $operation"
@@ -113,8 +110,7 @@ class SoapExampleService {
     }
 
     private fun generateRpcResponse(
-        wsdlDir: File,
-        schemas: Array<SchemaDocument>,
+        schemaContext: SchemaContext,
         service: WsdlService,
         operation: WsdlOperation,
     ): String {
@@ -129,7 +125,7 @@ class SoapExampleService {
         }
 
         val elementSchema = SchemaGenerator.createCompositePartSchema(service.targetNamespace ?: "", rootElement, parts)
-        val sts: SchemaTypeSystem = buildSchemaTypeSystem(wsdlDir, schemas + elementSchema)
+        val sts: SchemaTypeSystem = buildSchemaTypeSystem(schemaContext, elementSchema)
 
         val elem = sts.documentTypes().find { it.documentElementName == rootElement }
             ?: throw RuntimeException("Could not find a generated element with name \"$rootElement\"")
@@ -138,8 +134,7 @@ class SoapExampleService {
     }
 
     private fun generateDocumentMessage(
-        wsdlDir: File,
-        schemas: Array<SchemaDocument>,
+        schemaContext: SchemaContext,
         service: WsdlService,
         message: OperationMessage,
     ): List<String> {
@@ -147,15 +142,15 @@ class SoapExampleService {
 
         when (message) {
             is ElementOperationMessage -> {
-                partXmls += generateElementExample(wsdlDir, schemas, message)
+                partXmls += generateElementExample(schemaContext, message)
             }
 
             is TypeOperationMessage -> {
-                partXmls += generateTypeExample(wsdlDir, schemas, service, message)
+                partXmls += generateTypeExample(schemaContext, service, message)
             }
 
             is CompositeOperationMessage -> {
-                partXmls += message.parts.flatMap { part -> generateDocumentMessage(wsdlDir, schemas, service, part) }
+                partXmls += message.parts.flatMap { part -> generateDocumentMessage(schemaContext, service, part) }
             }
 
             else -> throw UnsupportedOperationException(
@@ -168,28 +163,24 @@ class SoapExampleService {
     }
 
     private fun generateElementExample(
-        wsdlDir: File,
-        schemas: Array<SchemaDocument>,
+        schemaContext: SchemaContext,
         outputRef: ElementOperationMessage,
     ): String {
-        val sts: SchemaTypeSystem = buildSchemaTypeSystem(wsdlDir, schemas)
-
         val rootElementName = outputRef.elementName
-        val elem: SchemaType = sts.documentTypes().find { it.documentElementName == rootElementName }
+        val elem: SchemaType = schemaContext.sts.documentTypes().find { it.documentElementName == rootElementName }
             ?: throw RuntimeException("Could not find a global element with name \"$rootElementName\"")
 
         return SampleXmlUtil.createSampleForType(elem)
     }
 
     private fun generateTypeExample(
-        wsdlDir: File,
-        schemas: Array<SchemaDocument>,
+        schemaContext: SchemaContext,
         service: WsdlService,
         message: TypeOperationMessage,
     ): String {
         val elementName = message.partName
         val elementSchema = SchemaGenerator.createSinglePartSchema(service.targetNamespace ?: "", message)
-        val sts: SchemaTypeSystem = buildSchemaTypeSystem(wsdlDir, schemas + elementSchema)
+        val sts: SchemaTypeSystem = buildSchemaTypeSystem(schemaContext, elementSchema)
 
         val elem = sts.documentTypes().find { it.documentElementName.localPart == elementName }
             ?: throw RuntimeException("Could not find a generated element with name \"$elementName\"")
@@ -198,21 +189,23 @@ class SoapExampleService {
     }
 
     private fun buildSchemaTypeSystem(
-        wsdlDir: File,
-        schemas: Array<SchemaDocument>,
+        schemaContext: SchemaContext,
+        vararg extraSchemas: SchemaDocument,
     ): SchemaTypeSystem {
         var sts: SchemaTypeSystem? = null
+
+        val schemas = schemaContext.schemas + extraSchemas
         if (schemas.isNotEmpty()) {
             val errors = mutableListOf<XmlError>()
 
             val compileOptions = XmlOptions()
                 .setLoadLineNumbers()
                 .setLoadMessageDigest()
-                .setEntityResolver(WsdlRelativeXsdEntityResolver(wsdlDir))
+                .setEntityResolver(schemaContext.entityResolver)
                 .setErrorListener(errors)
 
             try {
-                // TODO consider reusing the SchemaTypeSystem from AbstractWsdlParser.buildXsdFromSchemas
+                // TODO consider reusing the SchemaTypeSystem from SchemaContext
                 sts = XmlBeans.compileXsd(schemas, XmlBeans.getBuiltinTypeSystem(), compileOptions)
             } catch (e: Exception) {
                 if (errors.isEmpty() || e !is XmlException) {
