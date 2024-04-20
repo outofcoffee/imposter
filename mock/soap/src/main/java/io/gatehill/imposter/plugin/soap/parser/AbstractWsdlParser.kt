@@ -155,16 +155,14 @@ abstract class AbstractWsdlParser(
      * Attempt to resolve the element with the given, optionally qualified, name
      * from within the XSD.
      */
-    protected fun resolveElementFromXsd(elementQName: QName): QName? {
-        // TODO should this use xsd.findElement(elementQName).name instead?
-        // TODO should this use QName.equals instead?
-        // TODO should this be filtered on unqualified elements?
-        // the top level element from the XSD
-        val matchingElement: QName? =
-            xsd.documentTypes().find { it.documentElementName.localPart == elementQName.localPart }?.documentElementName
+    protected fun resolveElementTypeFromXsd(elementQName: QName): QName? {
+        val matchingElement = xsd.findElement(elementQName)
+            ?: return null
 
-        logger.trace("Resolved element name {} to qualified type: {}", elementQName, matchingElement)
-        return matchingElement
+        val elementType = matchingElement.type.name
+
+        logger.trace("Resolved element name {} to qualified type: {}", elementQName, elementType)
+        return elementType
     }
 
     /**
