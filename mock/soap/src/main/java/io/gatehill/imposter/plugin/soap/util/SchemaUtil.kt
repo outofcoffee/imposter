@@ -49,14 +49,50 @@ import io.gatehill.imposter.plugin.soap.model.OperationMessage
 import io.gatehill.imposter.plugin.soap.model.TypeOperationMessage
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
+import org.apache.xmlbeans.SchemaTypeSystem
+import org.apache.xmlbeans.XmlBeans
+import org.apache.xmlbeans.XmlError
+import org.apache.xmlbeans.XmlException
+import org.apache.xmlbeans.XmlOptions
 import org.apache.xmlbeans.impl.xb.xsdschema.SchemaDocument
+import org.xml.sax.EntityResolver
 import javax.xml.namespace.QName
 
 /**
- * Generates schemas for elements.
+ * Compiles schemas and generates synthetic schemas for entities.
  */
-object SchemaGenerator {
-    private val logger: Logger = LogManager.getLogger(SchemaGenerator::class.java)
+object SchemaUtil {
+    private val logger: Logger = LogManager.getLogger(SchemaUtil::class.java)
+
+    /**
+     * Compiles the schemas, resolving against the base [SchemaTypeSystem] and
+     * using the specified [EntityResolver], where necessary.
+     */
+    fun compileSchemas(
+        baseSts: SchemaTypeSystem,
+        entityResolver: EntityResolver,
+        schemas: Array<SchemaDocument>,
+    ): SchemaTypeSystem {
+        if (schemas.isEmpty()) {
+            throw IllegalStateException("No schemas to compile")
+        }
+
+        val errors = mutableListOf<XmlError>()
+        val compileOptions = XmlOptions()
+            .setLoadLineNumbers()
+            .setLoadMessageDigest()
+            .setEntityResolver(entityResolver)
+            .setErrorListener(errors)
+
+        try {
+            return XmlBeans.compileXsd(schemas, baseSts, compileOptions)
+        } catch (e: Exception) {
+            if (errors.isEmpty() || e !is XmlException) {
+                throw RuntimeException("Error compiling schemas", e)
+            }
+            throw RuntimeException("Schema compilation errors: " + errors.joinToString("\n"))
+        }
+    }
 
     fun createSinglePartSchema(
         targetNamespace: String,

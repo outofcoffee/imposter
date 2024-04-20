@@ -54,18 +54,12 @@ import io.gatehill.imposter.plugin.soap.model.TypeOperationMessage
 import io.gatehill.imposter.plugin.soap.model.WsdlOperation
 import io.gatehill.imposter.plugin.soap.model.WsdlService
 import io.gatehill.imposter.plugin.soap.parser.SchemaContext
-import io.gatehill.imposter.plugin.soap.util.SchemaGenerator
+import io.gatehill.imposter.plugin.soap.util.SchemaUtil
 import io.gatehill.imposter.plugin.soap.util.SoapUtil
 import io.gatehill.imposter.util.LogUtil
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.apache.xmlbeans.SchemaType
-import org.apache.xmlbeans.SchemaTypeSystem
-import org.apache.xmlbeans.XmlBeans
-import org.apache.xmlbeans.XmlError
-import org.apache.xmlbeans.XmlException
-import org.apache.xmlbeans.XmlOptions
-import org.apache.xmlbeans.impl.xb.xsdschema.SchemaDocument
 import org.apache.xmlbeans.impl.xsd2inst.SampleXmlUtil
 import javax.xml.namespace.QName
 
@@ -114,8 +108,6 @@ class SoapExampleService {
         service: WsdlService,
         operation: WsdlOperation,
     ): String {
-        val parts = operation.outputRef?.let { listOf(it) } ?: emptyList()
-
         // by convention, the suffix 'Response' is added to the operation name
         val rootElementName = operation.name + "Response"
         val rootElement = if (service.targetNamespace?.isNotBlank() == true) {
@@ -124,8 +116,9 @@ class SoapExampleService {
             QName(rootElementName)
         }
 
-        val elementSchema = SchemaGenerator.createCompositePartSchema(service.targetNamespace ?: "", rootElement, parts)
-        val sts: SchemaTypeSystem = buildSchemaTypeSystem(schemaContext, elementSchema)
+        val parts = operation.outputRef?.let { listOf(it) } ?: emptyList()
+        val elementSchema = SchemaUtil.createCompositePartSchema(service.targetNamespace ?: "", rootElement, parts)
+        val sts = SchemaUtil.compileSchemas(schemaContext.sts, schemaContext.entityResolver, arrayOf(elementSchema))
 
         val elem = sts.findDocumentType(rootElement)
             ?: throw RuntimeException("Could not find a generated element with name \"$rootElement\"")
@@ -164,9 +157,9 @@ class SoapExampleService {
 
     private fun generateElementExample(
         schemaContext: SchemaContext,
-        outputRef: ElementOperationMessage,
+        message: ElementOperationMessage,
     ): String {
-        val rootElementName = outputRef.elementName
+        val rootElementName = message.elementName
         val elem: SchemaType = schemaContext.sts.findDocumentType(rootElementName)
             ?: throw RuntimeException("Could not find a global element with name \"$rootElementName\"")
 
@@ -178,44 +171,14 @@ class SoapExampleService {
         service: WsdlService,
         message: TypeOperationMessage,
     ): String {
-        val elementName = QName(service.targetNamespace, message.partName)
-        val elementSchema = SchemaGenerator.createSinglePartSchema(service.targetNamespace ?: "", message)
-        val sts: SchemaTypeSystem = buildSchemaTypeSystem(schemaContext, elementSchema)
+        val elementSchema = SchemaUtil.createSinglePartSchema(service.targetNamespace ?: "", message)
+        val sts = SchemaUtil.compileSchemas(schemaContext.sts, schemaContext.entityResolver, arrayOf(elementSchema))
 
+        val elementName = QName(service.targetNamespace, message.partName)
         val elem = sts.findDocumentType(elementName)
             ?: throw RuntimeException("Could not find a generated element with name \"$elementName\"")
 
         return SampleXmlUtil.createSampleForType(elem)
-    }
-
-    private fun buildSchemaTypeSystem(
-        schemaContext: SchemaContext,
-        vararg extraSchemas: SchemaDocument,
-    ): SchemaTypeSystem {
-        var sts: SchemaTypeSystem? = null
-
-        val schemas = schemaContext.schemas + extraSchemas
-        if (schemas.isNotEmpty()) {
-            val errors = mutableListOf<XmlError>()
-
-            val compileOptions = XmlOptions()
-                .setLoadLineNumbers()
-                .setLoadMessageDigest()
-                .setEntityResolver(schemaContext.entityResolver)
-                .setErrorListener(errors)
-
-            try {
-                // TODO consider reusing the SchemaTypeSystem from SchemaContext
-                sts = XmlBeans.compileXsd(schemas, XmlBeans.getBuiltinTypeSystem(), compileOptions)
-            } catch (e: Exception) {
-                if (errors.isEmpty() || e !is XmlException) {
-                    throw RuntimeException("Error compiling XSD", e)
-                }
-                throw RuntimeException("Schema compilation errors: " + errors.joinToString("\n"))
-            }
-        }
-        sts ?: throw IllegalStateException("No schemas to process")
-        return sts
     }
 
     private fun transmitExample(httpExchange: HttpExchange, example: String?, bodyHolder: MessageBodyHolder) {

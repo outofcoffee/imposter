@@ -178,10 +178,10 @@ class Wsdl1Parser(
             name = operationName
         ) ?: throw IllegalStateException("No portType operation found for portType: $portTypeName and operation: $operationName")
 
-        val input = getMessage(operationName, portTypeOperation, "./wsdl:input")
+        val input = getMessage(portTypeOperation, "./wsdl:input")
             ?: throw IllegalStateException("No input found for portType operation: $operationName")
 
-        val output = getMessage(operationName, portTypeOperation, "./wsdl:output")
+        val output = getMessage(portTypeOperation, "./wsdl:output")
             ?: throw IllegalStateException("No output found for portType operation: $operationName")
 
         val style = soapOperation.getAttributeValue("style") ?: run {
@@ -219,7 +219,7 @@ class Wsdl1Parser(
      * Extract the WSDL message part element attribute, then attempt
      * to resolve it from within the XSD.
      */
-    private fun getMessage(operationName: String, context: Element, expression: String): OperationMessage? {
+    private fun getMessage(context: Element, expression: String): OperationMessage? {
         val inputOrOutputNode = selectSingleNode(context, expression)
             ?: throw IllegalStateException("No input or output found for: $expression")
 

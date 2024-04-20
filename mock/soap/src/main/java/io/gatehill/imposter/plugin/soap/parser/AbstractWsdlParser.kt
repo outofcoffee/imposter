@@ -43,11 +43,11 @@
 
 package io.gatehill.imposter.plugin.soap.parser
 
+import io.gatehill.imposter.plugin.soap.util.SchemaUtil
 import io.gatehill.imposter.plugin.soap.util.SoapUtil
 import io.gatehill.imposter.util.BodyQueryUtil
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
-import org.apache.xmlbeans.SchemaTypeSystem
 import org.apache.xmlbeans.XmlBeans
 import org.apache.xmlbeans.XmlOptions
 import org.apache.xmlbeans.impl.xb.xsdschema.SchemaDocument
@@ -71,11 +71,8 @@ abstract class AbstractWsdlParser(
 
     override val schemaContext: SchemaContext by lazy {
         val schemas = discoverSchemas()
-        SchemaContext(
-            schemas = schemas,
-            sts = compileSchemas(schemas),
-            entityResolver = entityResolver,
-        )
+        val sts = SchemaUtil.compileSchemas(XmlBeans.getBuiltinTypeSystem(), entityResolver, schemas)
+        SchemaContext(schemas, sts, entityResolver)
     }
 
     private val unionTypeSystem by lazy { XmlBeans.typeLoaderUnion(XmlBeans.getBuiltinTypeSystem(), schemaContext.sts) }
@@ -125,21 +122,6 @@ abstract class AbstractWsdlParser(
     }
 
     protected abstract fun findEmbeddedTypesSchemaNodes(): List<Element>
-
-    private fun compileSchemas(schemas: Array<SchemaDocument>): SchemaTypeSystem {
-        if (schemas.isEmpty()) {
-            throw IllegalStateException("Cannot build XSD from empty schema list")
-        }
-        val compileOptions = XmlOptions()
-            .setLoadLineNumbers()
-            .setLoadMessageDigest()
-            .setEntityResolver(entityResolver)
-        try {
-            return XmlBeans.compileXsd(schemas, XmlBeans.getBuiltinTypeSystem(), compileOptions)
-        } catch (e: Exception) {
-            throw RuntimeException("Schema compilation errors", e)
-        }
-    }
 
     protected fun selectSingleNodeWithName(context: Any, expressionTemplate: String, name: String): Element? {
         return selectSingleNode(context, String.format(expressionTemplate, name))

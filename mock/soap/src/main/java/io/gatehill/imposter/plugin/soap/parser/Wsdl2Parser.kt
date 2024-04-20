@@ -165,10 +165,10 @@ class Wsdl2Parser(
 
     private fun parseOperation(operationName: String, operation: Element): WsdlOperation {
         val soapOperation = selectSingleNode(operation, "./soap:operation") ?: throw IllegalStateException(
-            "Unable to find soap:operation for operation ${operationName}"
+            "Unable to find soap:operation for operation $operationName"
         )
-        val input = getMessage(operationName, operation, "./wsdl:input")
-        val output = getMessage(operationName, operation, "./wsdl:output")
+        val input = getMessage(operation, "./wsdl:input")
+        val output = getMessage(operation, "./wsdl:output")
 
         return WsdlOperation(
             name = operation.getAttributeValue("name"),
@@ -183,7 +183,7 @@ class Wsdl2Parser(
      * Extract the WSDL message part element attribute, then attempt
      * to resolve it from within the XSD.
      */
-    private fun getMessage(operationName: String, context: Element, expression: String): OperationMessage? {
+    private fun getMessage(context: Element, expression: String): OperationMessage? {
         val inputOrOutputNode = selectSingleNode(context, expression) ?: throw IllegalStateException(
             "Unable to find message part: $expression"
         )
