@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.38.1] - 2024-04-21
+### Fixed
+- fix(soap): applies message part filter from binding operation.
+
 ## [3.38.0] - 2024-04-21
 ### Added
 - feat(soap): improves support for element parts in composite messages.
