@@ -46,12 +46,12 @@ import io.gatehill.imposter.plugin.soap.util.SoapUtil
 
 /**
  * Tests for [SoapPluginImpl] using WSDL v1 and SOAP 1.1,
- * using Document style.
+ * with a message part filter in the endpoint binding.
  *
  * @author Pete Cornish
  */
-class Wsdl1Soap11DocumentEndToEndTest : AbstractEndToEndTest() {
-    override val testConfigDirs = listOf("/wsdl1-soap11-document")
+class Wsdl1Soap11FilterMessagePartsEndToEndTest : AbstractEndToEndTest() {
+    override val testConfigDirs = listOf("/wsdl1-soap11-filter-message-parts")
     override val soapEnvNamespace = SoapUtil.soap11EnvNamespace
     override val soapContentType = SoapUtil.soap11ContentType
 }

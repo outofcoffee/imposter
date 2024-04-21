@@ -45,7 +45,8 @@ package io.gatehill.imposter.plugin.soap
 import io.gatehill.imposter.plugin.soap.util.SoapUtil
 
 /**
- * Tests for [SoapPluginImpl] using WSDL v1 and SOAP 1.1.
+ * Tests for [SoapPluginImpl] using WSDL v1 and SOAP 1.1
+ * using RPC style.
  *
  * @author Pete Cornish
  */
