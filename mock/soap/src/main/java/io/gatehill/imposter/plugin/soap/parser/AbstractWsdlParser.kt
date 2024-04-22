@@ -142,24 +142,22 @@ abstract class AbstractWsdlParser(
      * Attempt to resolve the element with the given, optionally qualified, name
      * from within the XSD.
      */
-    protected fun resolveElementTypeFromXsd(elementQName: QName): QName? {
-        val matchingElement = schemaContext.sts.findElement(elementQName)
+    protected fun resolveElementFromXsd(elementQName: QName): QName? {
+        var matchingElement = schemaContext.sts.findElement(elementQName)?.name
             ?: return null
 
-        var elementType = matchingElement.type.name
-
-        if (elementType.prefix.isNullOrBlank()) {
-            val prefix = if (elementType.namespaceURI == SoapUtil.NS_XML_SCHEMA) {
+        if (matchingElement.prefix.isNullOrBlank()) {
+            val prefix = if (matchingElement.namespaceURI == SoapUtil.NS_XML_SCHEMA) {
                 "xs"
             } else {
                 // TODO consider prefix clashes - generate unique prefix?
                 elementQName.prefix
             }
-            elementType = QName(elementType.namespaceURI, elementType.localPart, prefix)
+            matchingElement = QName(matchingElement.namespaceURI, matchingElement.localPart, prefix)
         }
 
-        logger.trace("Resolved element name {} to qualified type: {}", elementQName, elementType)
-        return elementType
+        logger.trace("Resolved element name {} to: {}", elementQName, matchingElement)
+        return matchingElement
     }
 
     /**

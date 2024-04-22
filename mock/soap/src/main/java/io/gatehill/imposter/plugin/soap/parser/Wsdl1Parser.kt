@@ -268,7 +268,7 @@ class Wsdl1Parser(
             // directly as well as referring to elements.
             getAttributeValueAsQName(messagePart, "element")?.let { elementQName ->
                 val ns = listOf(elementQName.toNamespaceMap())
-                resolveElementTypeFromXsd(elementQName)?.let { ElementOperationMessage(ns, elementQName) }
+                resolveElementFromXsd(elementQName)?.let { ElementOperationMessage(ns, elementQName) }
 
             } ?: getAttributeValueAsQName(messagePart, "type")?.let { typeQName ->
                 val ns = listOf(typeQName.toNamespaceMap())
