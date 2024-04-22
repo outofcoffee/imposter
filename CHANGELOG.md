@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.38.2] - 2024-04-22
+### Fixed
+- fix(soap): parse message part elements with anonymous inner types.
+
 ## [3.38.1] - 2024-04-21
 ### Fixed
 - fix(soap): applies message part filter from binding operation.
