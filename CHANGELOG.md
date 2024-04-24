@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.38.3] - 2024-04-24
+### Changed
+- chore(deps): bump org.apache.maven.plugins:maven-jar-plugin
+- test(vertxweb): improves coverage for kebab-case path param matching.
+- test: adds test for kebab-case path params.
+
+### Fixed
+- fix(vertxweb): supports kebab-case path params.
+
 ## [3.38.2] - 2024-04-22
 ### Fixed
 - fix(soap): parse message part elements with anonymous inner types.
