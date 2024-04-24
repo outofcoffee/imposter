@@ -2,6 +2,10 @@ apply plugin: 'java-library'
 apply plugin: 'kotlin'
 apply plugin: 'maven-publish'
 
+ext {
+    version_junit_jupiter = '5.10.0'
+}
+
 compileJava {
     sourceCompatibility = JavaVersion.VERSION_11
 }
@@ -9,6 +13,11 @@ compileJava {
 dependencies {
     implementation project(':core:imposter-engine')
     api "io.vertx:vertx-web:$version_vertx"
+
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$version_junit_jupiter"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$version_junit_jupiter"
+    testRuntimeOnly "org.apache.logging.log4j:log4j-core:$version_log4j"
+    testRuntimeOnly "org.apache.logging.log4j:log4j-slf4j-impl:$version_log4j"
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

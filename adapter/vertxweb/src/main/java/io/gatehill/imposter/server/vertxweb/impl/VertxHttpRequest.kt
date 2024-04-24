@@ -45,6 +45,7 @@ package io.gatehill.imposter.server.vertxweb.impl
 import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.server.vertxweb.util.VertxResourceUtil
+import io.gatehill.imposter.server.vertxweb.util.VertxResourceUtil.convertMethodFromVertx
 import io.gatehill.imposter.util.CollectionUtil
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.json.JsonObject
@@ -54,6 +55,7 @@ import io.vertx.ext.web.RoutingContext
  * @author Pete Cornish
  */
 class VertxHttpRequest(
+    private val normalisedParams: Map<String, String>,
     private val routingContext: RoutingContext,
 ) : HttpRequest {
     private val vertxRequest = routingContext.request()
@@ -65,7 +67,7 @@ class VertxHttpRequest(
         get() = vertxRequest.path() ?: ""
 
     override val method: HttpMethod
-        get() = VertxResourceUtil.convertMethodFromVertx(vertxRequest.method())
+        get() = vertxRequest.method().convertMethodFromVertx()
 
     override val absoluteUri: String
         get() = vertxRequest.absoluteURI()
@@ -78,10 +80,10 @@ class VertxHttpRequest(
     }
 
     override val pathParams: Map<String, String>
-        get() = routingContext.pathParams()
+        get() = VertxResourceUtil.denormaliseParams(normalisedParams, routingContext.pathParams())
 
     override fun getPathParam(paramName: String): String? {
-        return routingContext.pathParam(paramName)
+        return routingContext.pathParam(VertxResourceUtil.getNormalisedParamName(normalisedParams, paramName))
     }
 
     override val queryParams: Map<String, String>

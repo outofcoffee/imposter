@@ -10,4 +10,5 @@ resources:
           respond().withStatusCode(201);
         }
   response:
+    template: true
     content: "${context.request.pathParams.second-param}"

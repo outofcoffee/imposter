@@ -45,21 +45,22 @@ package io.gatehill.imposter.server.vertxweb.util
 import com.google.common.collect.BiMap
 import com.google.common.collect.HashBiMap
 import io.gatehill.imposter.http.HttpMethod
+import java.util.UUID
 
 /**
  * @author Pete Cornish
  */
 object VertxResourceUtil {
-    private val METHODS: BiMap<HttpMethod, io.vertx.core.http.HttpMethod?> = HashBiMap.create()
-
     /**
-     * Converts [io.gatehill.imposter.http.HttpMethod]s to [io.vertx.core.http.HttpMethod]s.
+     * Vert.x documentation says:
+     * > The placeholders consist of : followed by the parameter name.
+     * > Parameter names consist of any alphabetic character, numeric character or underscore.
+     *
+     * See: https://vertx.io/docs/vertx-web/java/#_capturing_path_parameters
      */
-    fun convertMethodToVertx(method: HttpMethod): io.vertx.core.http.HttpMethod =
-        METHODS[method] ?: throw UnsupportedOperationException("Unknown method: $method")
+    private val vertxPathFormat = Regex(":[a-zA-Z0-9_]+")
 
-    fun convertMethodFromVertx(method: io.vertx.core.http.HttpMethod): HttpMethod =
-        METHODS.inverse()[method] ?: throw UnsupportedOperationException("Unknown method: $method")
+    private val METHODS: BiMap<HttpMethod, io.vertx.core.http.HttpMethod?> = HashBiMap.create()
 
     init {
         METHODS[HttpMethod.GET] = io.vertx.core.http.HttpMethod.GET
@@ -71,5 +72,40 @@ object VertxResourceUtil {
         METHODS[HttpMethod.CONNECT] = io.vertx.core.http.HttpMethod.CONNECT
         METHODS[HttpMethod.OPTIONS] = io.vertx.core.http.HttpMethod.OPTIONS
         METHODS[HttpMethod.TRACE] = io.vertx.core.http.HttpMethod.TRACE
+    }
+
+    /**
+     * Converts [io.gatehill.imposter.http.HttpMethod]s to [io.vertx.core.http.HttpMethod]s.
+     */
+    fun HttpMethod.convertMethodToVertx(): io.vertx.core.http.HttpMethod =
+        METHODS[this] ?: throw UnsupportedOperationException("Unknown method: $this")
+
+    fun io.vertx.core.http.HttpMethod.convertMethodFromVertx(): HttpMethod =
+        METHODS.inverse()[this] ?: throw UnsupportedOperationException("Unknown method: $this")
+
+    fun normalisePath(normalisedParams: MutableMap<String, String>, rawPath: String): String {
+        val normalisedPath = rawPath.split("/").filter { it.isNotEmpty() }.map { pathPart ->
+            if (pathPart.startsWith(":") && !pathPart.matches(vertxPathFormat)) {
+                val paramName = pathPart.substring(1)
+                val normalisedName = UUID.randomUUID().toString().replace("-", "")
+                normalisedParams[normalisedName] = paramName
+                ":$normalisedName"
+            } else {
+                pathPart
+            }
+        }
+        return normalisedPath.joinToString(separator = "/", prefix = "/")
+    }
+
+    fun getNormalisedParamName(normalisedParams: Map<String, String>, originalParamName: String): String {
+        if (originalParamName.matches(vertxPathFormat)) {
+            return originalParamName
+        }
+        return normalisedParams.entries.find { it.value == originalParamName }?.key ?: originalParamName
+    }
+
+    fun denormaliseParams(normalisedParams: Map<String, String>, vertxParams: Map<String, String>): Map<String, String> {
+        // if it's not in the map it doesn't need to be denormalised
+        return vertxParams.mapKeys { normalisedParams[it.key] ?: it.key }
     }
 }
