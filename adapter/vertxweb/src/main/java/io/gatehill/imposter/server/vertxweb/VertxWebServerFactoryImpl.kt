@@ -50,6 +50,7 @@ import io.gatehill.imposter.server.HttpServer
 import io.gatehill.imposter.server.ServerFactory
 import io.gatehill.imposter.server.vertxweb.impl.VertxHttpExchange
 import io.gatehill.imposter.server.vertxweb.impl.VertxHttpServer
+import io.gatehill.imposter.server.vertxweb.util.VertxResourceUtil
 import io.gatehill.imposter.server.vertxweb.util.VertxResourceUtil.convertMethodToVertx
 import io.gatehill.imposter.util.FileUtil
 import io.gatehill.imposter.util.makeFuture
@@ -133,20 +134,22 @@ class VertxWebServerFactoryImpl : ServerFactory {
     }
 
     private fun convertRouterToVertx(router: HttpRouter) = Router.router(router.vertx).also { vertxRouter ->
+        val normalisedParams = mutableMapOf<String, String>()
         router.routes.forEach { httpRoute ->
             val vertxRoute = httpRoute.regex?.let { regex ->
-                httpRoute.method?.let { method -> vertxRouter.routeWithRegex(convertMethodToVertx(method), regex) }
+                httpRoute.method?.let { method -> vertxRouter.routeWithRegex(method.convertMethodToVertx(), regex) }
                     ?: vertxRouter.routeWithRegex(regex)
 
             } ?: httpRoute.path?.let { path ->
-                httpRoute.method?.let { method -> vertxRouter.route(convertMethodToVertx(method), path) }
-                    ?: vertxRouter.route(path)
+                val normalisedPath = VertxResourceUtil.normalisePath(normalisedParams, path)
+                httpRoute.method?.let { method -> vertxRouter.route(method.convertMethodToVertx(), normalisedPath) }
+                    ?: vertxRouter.route(normalisedPath)
 
             } ?: vertxRouter.route()
 
             val handler = httpRoute.handler ?: throw IllegalStateException("No route handler set for: $httpRoute")
             vertxRoute.handler { rc ->
-                val exchange = VertxHttpExchange(router, rc, httpRoute)
+                val exchange = VertxHttpExchange(router, normalisedParams, rc, httpRoute)
 
                 // don't block the event loop
                 handler(exchange).handle { _, t ->
@@ -158,7 +161,7 @@ class VertxWebServerFactoryImpl : ServerFactory {
 
         router.errorHandlers.forEach { (statusCode, errorHandler) ->
             vertxRouter.errorHandler(statusCode) { rc ->
-                errorHandler(VertxHttpExchange(router, rc, null))
+                errorHandler(VertxHttpExchange(router, normalisedParams, rc, null))
             }
         }
     }
