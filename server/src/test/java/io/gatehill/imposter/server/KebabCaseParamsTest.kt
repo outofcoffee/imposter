@@ -80,4 +80,12 @@ class KebabCaseParamsTest : BaseVerticleTest() {
             .statusCode(equalTo(201))
             .body(equalTo("bar"))
     }
+
+    @Test
+    fun `should match using kebab-case params`() {
+        RestAssured.given().`when`()
+            .get("/baz")
+            .then()
+            .body(equalTo("baz"))
+    }
 }

@@ -12,3 +12,11 @@ resources:
   response:
     template: true
     content: "${context.request.pathParams.second-param}"
+
+- path: /{first-param}
+  method: GET
+  pathParams:
+    first-param: baz
+  response:
+    template: true
+    content: "${context.request.pathParams.first-param}"
