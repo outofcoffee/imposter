@@ -1,0 +1,13 @@
+plugin: "io.gatehill.imposter.plugin.test.TestPluginImpl"
+
+resources:
+- path: /{first-param}/{second-param}
+  method: GET
+  steps:
+    - type: script
+      code: |
+        if (context.request.pathParams['first-param'] === "foo") {
+          respond().withStatusCode(201);
+        }
+  response:
+    content: "${context.request.pathParams.second-param}"
