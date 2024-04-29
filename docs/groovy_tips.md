@@ -4,6 +4,10 @@
 
 This section provides additional tips and tricks when using Groovy as the scripting language for your mocks. It builds on the [Scripting](./scripting.md) documentation. If you are new to Imposter scripting, it's best to start there.
 
+## Debugging Groovy scripts
+
+See the [debugging Groovy scripts](./groovy_debugging.md) documentation.
+
 ## Block syntax for `respond`
 
 Groovy users can use this special block syntax, for improved readability:
@@ -99,3 +103,15 @@ To do this:
 
 1. create a directory containing the JAR file
 2. set the `IMPOSTER_PLUGIN_DIR` environment variable (or set `plugin.dir` in your `.imposter.yaml` file in the config directory) to the path above
+
+## Improved Groovy DSL support in your IDE
+
+For more sophisticated script development, you can set up a project in your IDE with improved code assistance. You can use this alongside [the debugger](./groovy_debugging.md) for a fully integrated development experience.
+
+This requires setting up a project with a dependency on `imposter-api.jar` and adding the GroovyDSL (GDSL) file.
+
+➡️ [See an example project](https://github.com/outofcoffee/imposter/tree/main/examples/groovy-dsl)
+
+If you just want to download the GDSL file see:
+
+➡️ [Download the GDSL file](https://github.com/outofcoffee/imposter/tree/main/examples/groovy-dsl/src/main/resources/imposter.gdsl) 
