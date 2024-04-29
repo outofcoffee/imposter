@@ -31,13 +31,13 @@ docker run --rm -it -p8080:8080 -p8000:8000 -v $PWD:/opt/imposter/config outofco
 
 ## Steps for IntelliJ IDEA
 
-These steps will explain how to connect your IDE's debugger to the debug port.
+This section explains how to connect your IDE's debugger to the debug port.
 
 In IntelliJ, create a simple project pointing to the directory containing your script file.
 
-In the following steps, we will add a new run configuration, start your mock and attach the debugger.
-
 ### Step-by-step
+
+In the following steps, we will add a new run configuration, start the mock and attach the debugger.
 
 1. Add a 'Remote JVM Debug' run configuration:
    ![groovy_jvm_debug_config.png](images/groovy_jvm_debug_config.png)
