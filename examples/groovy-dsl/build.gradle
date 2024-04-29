@@ -1,0 +1,24 @@
+plugins {
+    id 'groovy'
+}
+
+ext {
+    groovy_version = '4.0.13'
+    imposter_version = '3.38.2'
+}
+
+group = 'org.example'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    maven {
+        // imposter maven repository
+        url 'https://s3-eu-west-1.amazonaws.com/gatehillsoftware-maven/releases/'
+    }
+}
+
+dependencies {
+    implementation "org.apache.groovy:groovy:$groovy_version"
+    implementation "io.gatehill.imposter:imposter-api:$imposter_version"
+}
