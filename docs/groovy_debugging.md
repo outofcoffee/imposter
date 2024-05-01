@@ -29,6 +29,18 @@ docker run --rm -it -p8080:8080 -p8000:8000 -v $PWD:/opt/imposter/config outofco
 
 > In this example, port 8000 is exposed along with the regular port, 8080.
 
+### CLI users
+
+When using the CLI, pass the `--debug-mode` flag.
+
+For example:
+
+```bash
+imposter up --debug-mode
+```
+
+> In this example, port 8000 is exposed along with the regular port, 8080.
+
 ## Steps for IntelliJ IDEA
 
 This section explains how to connect your IDE's debugger to the debug port.
