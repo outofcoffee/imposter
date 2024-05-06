@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2016-2021.
  *
  * This file is part of Imposter.
  *
@@ -40,34 +40,20 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.script
+package io.gatehill.imposter.service
 
-import io.gatehill.imposter.plugin.config.PluginConfig
-import org.apache.logging.log4j.Logger
+import io.gatehill.imposter.scripting.AbstractScriptServiceImplTest
+import io.gatehill.imposter.scripting.graalvm.service.GraalvmCompatScriptServiceImpl
+import javax.inject.Inject
 
 /**
  * @author Pete Cornish
  */
-class RuntimeContext(
-    private val env: Map<String, String>,
-    private val logger: Logger,
-    private val pluginConfig: PluginConfig,
-    private val additionalBindings: Map<String, Any>?,
-    val executionContext: ExecutionContext
-) {
+class GraalvmCompatScriptServiceImplTest : AbstractScriptServiceImplTest() {
+    @Inject
+    private var service: GraalvmCompatScriptServiceImpl? = null
 
-    /**
-     * @return a representation of the runtime context as a [Map] of bindings
-     */
-    fun asMap(): Map<String, Any> {
-        val bindings: MutableMap<String, Any> = mutableMapOf()
-        bindings["config"] = pluginConfig
-        bindings["context"] = executionContext
-        bindings["env"] = env
-        bindings["logger"] = logger
+    override fun getService() = service!!
 
-        // add custom bindings
-        additionalBindings?.let(bindings::putAll)
-        return bindings
-    }
+    override fun getScriptName() = "test.js"
 }

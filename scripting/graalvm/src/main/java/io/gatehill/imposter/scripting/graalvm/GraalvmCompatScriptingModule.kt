@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023.
+ * Copyright (c) 2016-2021.
  *
  * This file is part of Imposter.
  *
@@ -40,13 +40,17 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.scripting.common.dsl
+package io.gatehill.imposter.scripting.graalvm
 
-import io.gatehill.imposter.script.dsl.DslImpl
+import com.google.inject.AbstractModule
+import com.google.inject.Singleton
+import io.gatehill.imposter.scripting.graalvm.service.GraalvmCompatScriptServiceImpl
 
-abstract class RunnableDsl : DslImpl() {
-    /**
-     * The main instance function of a script.
-     */
-    abstract fun run(): Any?
+/**
+ * @author Pete Cornish
+ */
+class GraalvmCompatScriptingModule : AbstractModule() {
+    override fun configure() {
+        bind(GraalvmCompatScriptServiceImpl::class.java).`in`(Singleton::class.java)
+    }
 }

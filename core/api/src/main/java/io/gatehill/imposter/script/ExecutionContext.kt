@@ -58,9 +58,6 @@ class ExecutionContext(
         put("request", request)
     }
 
-    private val request: Request
-        get() = get("request") as Request
-
     override fun get(key: String): Any? {
         // legacy properties
         if (key == "params") {
@@ -77,63 +74,100 @@ class ExecutionContext(
         return super.get(key)
     }
 
-    /**
-     * Representation of the request, supporting lazily-initialised collections for params and headers.
-     */
-    class Request(
-        private val headersSupplier: Supplier<Map<String, String>>,
-        private val pathParamsSupplier: Supplier<Map<String, String>>,
-        private val queryParamsSupplier: Supplier<Map<String, String>>,
-        private val formParamsSupplier: Supplier<Map<String, String>>,
-        private val bodySupplier: Supplier<String?>,
-    ) {
-        lateinit var path: String
-        lateinit var method: String
-        lateinit var uri: String
-
-        val headers: Map<String, String> by lazy {
-            headersSupplier.get()
-        }
+    interface Request {
+        val path: String
+        val method: String
+        val uri: String
+        val headers: Map<String, String>
 
         /**
          * @return the request path parameters
          */
-        val pathParams: Map<String, String> by lazy {
-            pathParamsSupplier.get()
-        }
+        val pathParams: Map<String, String>
 
         /**
          * @return the request query parameters
          */
-        val queryParams: Map<String, String> by lazy {
-            queryParamsSupplier.get()
-        }
+        val queryParams: Map<String, String>
 
         /**
          * @return the request form parameters
          */
-        val formParams: Map<String, String> by lazy {
-            formParamsSupplier.get()
-        }
+        val formParams: Map<String, String>
 
         /**
          * @return the request body
          */
-        val body: String? by lazy {
-            bodySupplier.get()
-        }
+        val body: String?
 
         /**
          * @return the [headers] map, but with all keys in lowercase
          */
         val normalisedHeaders: Map<String, String>
-            get() = CollectionUtil.convertKeysToLowerCase(headers)
 
         /**
          * Legacy property removed.
          */
         @get:Deprecated("Use queryParams instead.", ReplaceWith("queryParams"))
         val params: Map<String, String>
+    }
+
+    /**
+     * Representation of the request, supporting lazily-initialised collections for params and headers.
+     */
+    class RequestImpl(
+        override val path: String,
+        override val method: String,
+        override val uri: String,
+        private val headersSupplier: Supplier<Map<String, String>>,
+        private val pathParamsSupplier: Supplier<Map<String, String>>,
+        private val queryParamsSupplier: Supplier<Map<String, String>>,
+        private val formParamsSupplier: Supplier<Map<String, String>>,
+        private val bodySupplier: Supplier<String?>,
+    ) : Request {
+        override val headers: Map<String, String> by lazy {
+            headersSupplier.get()
+        }
+
+        /**
+         * @return the request path parameters
+         */
+        override val pathParams: Map<String, String> get() {
+            return pathParamsSupplier.get()
+        }
+
+        /**
+         * @return the request query parameters
+         */
+        override val queryParams: Map<String, String> by lazy {
+            queryParamsSupplier.get()
+        }
+
+        /**
+         * @return the request form parameters
+         */
+        override val formParams: Map<String, String> by lazy {
+            formParamsSupplier.get()
+        }
+
+        /**
+         * @return the request body
+         */
+        override val body: String? by lazy {
+            bodySupplier.get()
+        }
+
+        /**
+         * @return the [headers] map, but with all keys in lowercase
+         */
+        override val normalisedHeaders: Map<String, String>
+            get() = CollectionUtil.convertKeysToLowerCase(headers)
+
+        /**
+         * Legacy property removed.
+         */
+        @get:Deprecated("Use queryParams instead.", ReplaceWith("queryParams"))
+        override val params: Map<String, String>
             get() = throw UnsupportedOperationException(
                 "Error: the deprecated 'context.request.params' property was removed. Use 'context.request.queryParams' or 'context.request.pathParams' instead."
             )

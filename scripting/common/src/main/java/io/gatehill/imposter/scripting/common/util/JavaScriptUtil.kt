@@ -45,7 +45,7 @@ package io.gatehill.imposter.scripting.common.util
 
 import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.script.RuntimeContext
-import io.gatehill.imposter.scripting.common.dsl.RunnableDsl
+import io.gatehill.imposter.script.dsl.DslImpl
 import io.gatehill.imposter.scripting.common.shim.ConsoleShim
 import io.gatehill.imposter.service.ScriptSource
 import org.apache.logging.log4j.LogManager
@@ -70,21 +70,12 @@ object JavaScriptUtil {
         "stores",
     )
 
-    private val DSL_FUNCTIONS: String
     private val GLOBAL_DSL_OBJECTS: String
 
     init {
-        // expose superclass methods as DSL functions
-        val dslMethods = listOf(
-            "respond",
-        )
-        DSL_FUNCTIONS = dslMethods.distinct().joinToString("\r\n") { methodName ->
-            "${DSL_OBJECT_PREFIX}${methodName} = Java.super(__dsl).${methodName};"
-        }
-
         // optionally expose as global objects
         GLOBAL_DSL_OBJECTS = globals.distinct().joinToString("\r\n") { methodName ->
-            "$methodName = ${DSL_OBJECT_PREFIX}${methodName};"
+            "var $methodName = ${DSL_OBJECT_PREFIX}${methodName};"
         }
     }
 
@@ -128,15 +119,13 @@ object JavaScriptUtil {
 
     private fun buildWrappedScript(script: String, setGlobalDslObjects: Boolean): WrappedScript {
         val preScript = """
-var RunnableDsl = Java.type('${RunnableDsl::class.java.canonicalName}');
-
-var __dsl = new RunnableDsl() {
-    run: function() {
+var DslImpl = Java.type('${DslImpl::class.java.canonicalName}');
+var __dsl = new DslImpl();
 
 /* ------------------------------------------------------------------------- */
 /* DSL functions                                                             */
 /* ------------------------------------------------------------------------- */
-$DSL_FUNCTIONS
+var ${DSL_OBJECT_PREFIX}respond = function() { return __dsl.respond(); }
 ${if (setGlobalDslObjects) GLOBAL_DSL_OBJECTS else ""}
 /* ------------------------------------------------------------------------- */
 /* Shim for '__imposter_types' module exports                                */
@@ -160,14 +149,13 @@ function require(moduleName) {
 /* ------------------------------------------------------------------------- */
 /* Mock script                                                               */
 /* ------------------------------------------------------------------------- */
+function __run() {
 """
         val postScript = """
+}
 /* ------------------------------------------------------------------------- */
 
-    }
-}
-
-__dsl.run();
+__run();
 __dsl;
 """
         return WrappedScript(preScript.lines().size, preScript + script + postScript)

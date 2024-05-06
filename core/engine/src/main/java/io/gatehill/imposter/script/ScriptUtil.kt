@@ -97,16 +97,16 @@ object ScriptUtil {
         }
 
         // request information
-        val request = ExecutionContext.Request(
+        val request = ExecutionContext.RequestImpl(
+            path = internalRequest.path,
+            method = internalRequest.method.name,
+            uri = internalRequest.absoluteUri,
             headersSupplier,
             pathParamsSupplier,
             queryParamsSupplier,
             formParamsSupplier,
             bodySupplier
         )
-        request.path = internalRequest.path
-        request.method = internalRequest.method.name
-        request.uri = internalRequest.absoluteUri
 
         // root context
         val executionContext = ExecutionContext(request)

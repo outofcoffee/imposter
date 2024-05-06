@@ -42,82 +42,69 @@
  */
 package io.gatehill.imposter.scripting.graalvm.service
 
+import com.oracle.truffle.js.scriptengine.GraalJSEngineFactory
 import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.RequireModules
-import io.gatehill.imposter.script.ExecutionContext
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.dsl.Dsl
 import io.gatehill.imposter.scripting.common.util.JavaScriptUtil
-import io.gatehill.imposter.scripting.graalvm.GraalvmScriptingModule
-import io.gatehill.imposter.scripting.graalvm.RequestProxy
+import io.gatehill.imposter.scripting.graalvm.GraalvmCompatScriptingModule
 import io.gatehill.imposter.service.ScriptService
 import io.gatehill.imposter.service.ScriptSource
 import org.apache.logging.log4j.LogManager
-import org.graalvm.polyglot.Context
-import org.graalvm.polyglot.Engine
-import org.graalvm.polyglot.HostAccess
-
+import javax.script.ScriptContext
+import javax.script.ScriptEngine
+import javax.script.SimpleBindings
 
 /**
  * Graal implementation of JavaScript scripting engine,
- * with modern JS features enabled.
+ * with compatibility with Nashorn.
  *
  * @author Pete Cornish
  */
-@PluginInfo("js-graal")
-@RequireModules(GraalvmScriptingModule::class)
-class GraalvmScriptServiceImpl : ScriptService, Plugin {
-    private val engine: Engine
+@PluginInfo("js-graal-compat")
+@RequireModules(GraalvmCompatScriptingModule::class)
+class GraalvmCompatScriptServiceImpl : ScriptService, Plugin {
+    private val scriptEngine: ScriptEngine
 
     init {
         // quieten interpreter mode warning until native graal compiler included in module path - see:
         // https://www.graalvm.org/reference-manual/js/RunOnJDK/
         System.setProperty("polyglot.engine.WarnInterpreterOnly", "false")
 
-        engine = Engine.newBuilder(JS_LANG_ID).build()
+        scriptEngine = GraalJSEngineFactory().scriptEngine
     }
 
     override fun executeScript(
         script: ScriptSource,
-        runtimeContext: RuntimeContext,
-    ): ReadWriteResponseBehaviour = try {
+        runtimeContext: RuntimeContext
+    ): ReadWriteResponseBehaviour {
         LOGGER.trace("Executing script: {}", script)
 
-        val wrapped = JavaScriptUtil.wrapScript(script)
+        val bindings = scriptEngine.getBindings(ScriptContext.ENGINE_SCOPE)
+        bindings["polyglot.js.allowAllAccess"] = true
 
-        Context.newBuilder(JS_LANG_ID)
-            .engine(engine)
-            .allowHostAccess(HostAccess.ALL)
-            .allowHostClassLookup { _ -> true }
-            .build()
-            .use { context ->
-                // wrap request to allow property access syntactic sugar
-                val executionContext = runtimeContext.executionContext
-                executionContext["request"] = RequestProxy(
-                    executionContext["request"] as ExecutionContext.Request
-                )
+        // see https://www.graalvm.org/reference-manual/js/NashornMigrationGuide/#nashorn-compatibility-mode
+        bindings["polyglot.js.nashorn-compat"] = true
 
-                val bindings = context.getBindings(JS_LANG_ID)
-                JavaScriptUtil.transformRuntimeMap(
-                    runtimeContext,
-                    addDslPrefix = true,
-                    addConsoleShim = false
-                ).map { (key, value) ->
-                    bindings.putMember(key, value)
-                }
+        return try {
+            val globals = JavaScriptUtil.transformRuntimeMap(
+                runtimeContext,
+                addDslPrefix = true,
+                addConsoleShim = false
+            )
+            val wrapped = JavaScriptUtil.wrapScript(script)
+            val result = scriptEngine.eval(wrapped.code, SimpleBindings(globals)) as Dsl
+            result.responseBehaviour
 
-                val result = context.eval(JS_LANG_ID, wrapped.code)
-                val dsl = result.`as`(Dsl::class.java)
-                return dsl.responseBehaviour
-            }
-    } catch (e: Exception) {
-        throw RuntimeException("Script execution terminated abnormally", e)
+        } catch (e: Exception) {
+            throw RuntimeException("Script execution terminated abnormally", e)
+        }
     }
 
     companion object {
-        private val LOGGER = LogManager.getLogger(GraalvmScriptServiceImpl::class.java)
-        private const val JS_LANG_ID = "js"
+        private val LOGGER = LogManager.getLogger(GraalvmCompatScriptServiceImpl::class.java)
     }
 }
