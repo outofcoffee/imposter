@@ -58,6 +58,7 @@ interface Store {
         phase: ExchangePhase = ExchangePhase.REQUEST_RECEIVED,
     )
     fun <T> load(key: String): T?
+    fun loadAsJson(key: String): String
     fun delete(key: String)
     fun loadAll(): Map<String, Any?>
     fun loadByKeyPrefix(keyPrefix: String): Map<String, Any?>

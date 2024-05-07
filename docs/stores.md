@@ -52,6 +52,15 @@ if (exampleStore.hasItemWithKey('example')) {
 }
 ```
 
+Read a store item as JSON:
+
+```js
+var json = exampleStore.loadAsJson('foo');
+
+// prints the 'foo' item as JSON
+console.log(json);
+```
+
 ## The Stores REST API
 
 You can also retrieve or save data to a store through the `/system/store` API. This can be useful for tests to verify what was sent to a mock:

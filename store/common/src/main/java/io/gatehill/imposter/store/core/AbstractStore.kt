@@ -44,6 +44,7 @@ package io.gatehill.imposter.store.core
 
 import io.gatehill.imposter.http.ExchangePhase
 import io.gatehill.imposter.service.DeferredOperationService
+import io.gatehill.imposter.util.MapUtil
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 
@@ -54,6 +55,10 @@ abstract class AbstractStore(
     private val deferredOperationService: DeferredOperationService,
 ) : Store {
     private val logger: Logger = LogManager.getLogger(AbstractStore::class.java)
+
+    override fun loadAsJson(key: String): String {
+        return MapUtil.jsonify(load(key))
+    }
 
     override fun save(key: String, value: Any?, phase: ExchangePhase) {
         if (phase == ExchangePhase.RESPONSE_SENT && isEphemeral) {
