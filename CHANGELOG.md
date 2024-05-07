@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.39.0] - 2024-05-07
+### Added
+- feat: allows store items to be read as JSON.
+
+### Changed
+- docs: adds CLI instructions for enabling debug mode for Groovy scripts.
+- docs: adds Groovy DSL example.
+- docs: adds instructions for debugging Groovy scripts.
+- docs: tidies Groovy debugging instructions.
+
 ## [3.38.3] - 2024-04-24
 ### Changed
 - chore(deps): bump org.apache.maven.plugins:maven-jar-plugin
