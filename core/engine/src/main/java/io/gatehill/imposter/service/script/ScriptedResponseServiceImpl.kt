@@ -185,7 +185,11 @@ class ScriptedResponseServiceImpl @Inject constructor(
                 script,
                 LogUtil.describeRequestShort(httpExchange)
             )
-            val executionContext = ScriptUtil.buildContext(httpExchange, additionalContext)
+
+            // execute the script using an appropriate implementation and read response behaviour
+            val scriptService = scriptServiceFactory.fetchScriptService(script.source)
+
+            val executionContext = ScriptUtil.buildContext(scriptService.requestBuilder, httpExchange, additionalContext)
             LOGGER.trace("Context for request: {}", Supplier<Any> { executionContext })
 
             val additionalBindings = getAdditionalBindings(httpExchange, executionContext)
@@ -199,8 +203,6 @@ class ScriptedResponseServiceImpl @Inject constructor(
                 executionContext
             )
 
-            // execute the script using an appropriate implementation and read response behaviour
-            val scriptService = scriptServiceFactory.fetchScriptService(script.source)
             val responseBehaviour = scriptService.executeScript(script, runtimeContext)
 
             // fire post execution hooks

@@ -42,16 +42,13 @@
  */
 package io.gatehill.imposter.script
 
-import io.gatehill.imposter.util.CollectionUtil
-import java.util.function.Supplier
-
 /**
  * Wrapper for context variables available during script execution.
  *
  * @author Pete Cornish
  */
 class ExecutionContext(
-    request: Request
+    request: ScriptRequest
 ) : HashMap<String, Any>() {
 
     init {
@@ -72,116 +69,5 @@ class ExecutionContext(
         }
 
         return super.get(key)
-    }
-
-    interface Request {
-        val path: String
-        val method: String
-        val uri: String
-        val headers: Map<String, String>
-
-        /**
-         * @return the request path parameters
-         */
-        val pathParams: Map<String, String>
-
-        /**
-         * @return the request query parameters
-         */
-        val queryParams: Map<String, String>
-
-        /**
-         * @return the request form parameters
-         */
-        val formParams: Map<String, String>
-
-        /**
-         * @return the request body
-         */
-        val body: String?
-
-        /**
-         * @return the [headers] map, but with all keys in lowercase
-         */
-        val normalisedHeaders: Map<String, String>
-
-        /**
-         * Legacy property removed.
-         */
-        @get:Deprecated("Use queryParams instead.", ReplaceWith("queryParams"))
-        val params: Map<String, String>
-    }
-
-    /**
-     * Representation of the request, supporting lazily-initialised collections for params and headers.
-     */
-    class RequestImpl(
-        override val path: String,
-        override val method: String,
-        override val uri: String,
-        private val headersSupplier: Supplier<Map<String, String>>,
-        private val pathParamsSupplier: Supplier<Map<String, String>>,
-        private val queryParamsSupplier: Supplier<Map<String, String>>,
-        private val formParamsSupplier: Supplier<Map<String, String>>,
-        private val bodySupplier: Supplier<String?>,
-    ) : Request {
-        override val headers: Map<String, String> by lazy {
-            headersSupplier.get()
-        }
-
-        /**
-         * @return the request path parameters
-         */
-        override val pathParams: Map<String, String> get() {
-            return pathParamsSupplier.get()
-        }
-
-        /**
-         * @return the request query parameters
-         */
-        override val queryParams: Map<String, String> by lazy {
-            queryParamsSupplier.get()
-        }
-
-        /**
-         * @return the request form parameters
-         */
-        override val formParams: Map<String, String> by lazy {
-            formParamsSupplier.get()
-        }
-
-        /**
-         * @return the request body
-         */
-        override val body: String? by lazy {
-            bodySupplier.get()
-        }
-
-        /**
-         * @return the [headers] map, but with all keys in lowercase
-         */
-        override val normalisedHeaders: Map<String, String>
-            get() = CollectionUtil.convertKeysToLowerCase(headers)
-
-        /**
-         * Legacy property removed.
-         */
-        @get:Deprecated("Use queryParams instead.", ReplaceWith("queryParams"))
-        override val params: Map<String, String>
-            get() = throw UnsupportedOperationException(
-                "Error: the deprecated 'context.request.params' property was removed. Use 'context.request.queryParams' or 'context.request.pathParams' instead."
-            )
-
-        override fun toString(): String {
-            return "Request{" +
-                    "path='" + path + '\'' +
-                    ", method='" + method + '\'' +
-                    ", uri='" + uri + '\'' +
-                    ", pathParams=" + pathParams +
-                    ", queryParams=" + queryParams +
-                    ", headers=" + headers +
-                    ", body=<" + (body?.let { "${it.length} bytes" } ?: "null") + '>' +
-                    '}'
-        }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024.
+ * Copyright (c) 2024-2024.
  *
  * This file is part of Imposter.
  *
@@ -41,18 +41,26 @@
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.gatehill.imposter.scripting.graalvm
+package io.gatehill.imposter.scripting.graalvm.model
 
-import io.gatehill.imposter.script.ExecutionContext
+import io.gatehill.imposter.http.HttpRequest
+import io.gatehill.imposter.model.script.SimpleScriptRequest
+import io.gatehill.imposter.script.ScriptRequest
+import io.gatehill.imposter.service.ScriptRequestBuilder
 import org.graalvm.polyglot.Value
 import org.graalvm.polyglot.proxy.ProxyObject
 
+// wrap request to allow property access syntactic sugar
+val objectProxyRequestBuilder : ScriptRequestBuilder  = { request ->
+    RequestProxy(request)
+}
+
 /**
- * Graal polyglot object proxy for [ExecutionContext.Request].
+ * Graal polyglot object proxy for [ScriptRequest].
  */
 class RequestProxy(
-    private val request: ExecutionContext.Request
-) : ProxyObject {
+    request: HttpRequest
+) : SimpleScriptRequest(request), ProxyObject {
     private val properties = arrayOf(
         "path",
         "method",
@@ -66,15 +74,15 @@ class RequestProxy(
     )
 
     override fun getMember(key: String?): Any? = when (key) {
-        "path" -> request.path
-        "method" -> request.method
-        "uri" -> request.uri
-        "headers" -> MapObjectProxy(request.headers)
-        "pathParams" -> MapObjectProxy(request.pathParams)
-        "queryParams" -> MapObjectProxy(request.queryParams)
-        "formParams" -> MapObjectProxy(request.formParams)
-        "body" -> request.body
-        "normalisedHeaders" -> MapObjectProxy(request.normalisedHeaders)
+        "path" -> path
+        "method" -> method
+        "uri" -> uri
+        "headers" -> MapObjectProxy(headers)
+        "pathParams" -> MapObjectProxy(pathParams)
+        "queryParams" -> MapObjectProxy(queryParams)
+        "formParams" -> MapObjectProxy(formParams)
+        "body" -> body
+        "normalisedHeaders" -> MapObjectProxy(normalisedHeaders)
         else -> null
     }
 

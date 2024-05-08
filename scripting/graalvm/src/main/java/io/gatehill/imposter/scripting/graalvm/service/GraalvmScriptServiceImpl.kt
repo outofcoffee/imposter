@@ -45,13 +45,13 @@ package io.gatehill.imposter.scripting.graalvm.service
 import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.RequireModules
-import io.gatehill.imposter.script.ExecutionContext
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.dsl.Dsl
 import io.gatehill.imposter.scripting.common.util.JavaScriptUtil
 import io.gatehill.imposter.scripting.graalvm.GraalvmScriptingModule
-import io.gatehill.imposter.scripting.graalvm.RequestProxy
+import io.gatehill.imposter.scripting.graalvm.model.objectProxyRequestBuilder
+import io.gatehill.imposter.service.ScriptRequestBuilder
 import io.gatehill.imposter.service.ScriptService
 import io.gatehill.imposter.service.ScriptSource
 import org.apache.logging.log4j.LogManager
@@ -70,6 +70,9 @@ import org.graalvm.polyglot.HostAccess
 @RequireModules(GraalvmScriptingModule::class)
 class GraalvmScriptServiceImpl : ScriptService, Plugin {
     private val engine: Engine
+
+    override val requestBuilder: ScriptRequestBuilder
+        get() = objectProxyRequestBuilder
 
     init {
         // quieten interpreter mode warning until native graal compiler included in module path - see:
@@ -93,12 +96,6 @@ class GraalvmScriptServiceImpl : ScriptService, Plugin {
             .allowHostClassLookup { _ -> true }
             .build()
             .use { context ->
-                // wrap request to allow property access syntactic sugar
-                val executionContext = runtimeContext.executionContext
-                executionContext["request"] = RequestProxy(
-                    executionContext["request"] as ExecutionContext.Request
-                )
-
                 val bindings = context.getBindings(JS_LANG_ID)
                 JavaScriptUtil.transformRuntimeMap(
                     runtimeContext,

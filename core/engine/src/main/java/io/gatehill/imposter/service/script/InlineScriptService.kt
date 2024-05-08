@@ -37,7 +37,7 @@ class InlineScriptService {
 
         val scriptId = config.resourceId
         try {
-            val executionContext = ScriptUtil.buildContext(httpExchange, emptyMap())
+            val executionContext = ScriptUtil.buildContext(jsScriptService.requestBuilder, httpExchange, emptyMap())
             val runtimeContext = RuntimeContext(
                 emptyMap(),
                 logger,

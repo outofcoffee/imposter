@@ -42,13 +42,17 @@
  */
 package io.gatehill.imposter.service
 
+import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
+import io.gatehill.imposter.script.ScriptRequest
 
 /**
  * @author Pete Cornish
  */
 interface ScriptService {
+    val requestBuilder: ScriptRequestBuilder
+
     fun initScript(script: ScriptSource) {
         // no op
     }
@@ -67,4 +71,7 @@ interface ScriptService {
 
     fun evalInlineScript(scriptId: String, scriptCode: String, runtimeContext: RuntimeContext): Boolean =
         throw NotImplementedError()
+
 }
+
+typealias ScriptRequestBuilder = (request: HttpRequest) -> ScriptRequest

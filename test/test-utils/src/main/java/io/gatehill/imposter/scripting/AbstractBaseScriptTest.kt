@@ -135,7 +135,7 @@ abstract class AbstractBaseScriptTest {
         When(mockHttpExchange.request).thenReturn(mockRequest)
 
         val pluginConfig = mock(PluginConfig::class.java)
-        val executionContext = ScriptUtil.buildContext(mockHttpExchange, null)
+        val executionContext = ScriptUtil.buildContext(getService().requestBuilder, mockHttpExchange, null)
         return RuntimeContext(env, logger, pluginConfig, additionalBindings, executionContext)
     }
 

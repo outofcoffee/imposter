@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2024.
  *
  * This file is part of Imposter.
  *
@@ -40,35 +40,51 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.service.script
 
-import io.gatehill.imposter.model.script.lazyScriptRequestBuilder
-import io.gatehill.imposter.script.ReadWriteResponseBehaviour
-import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl
-import io.gatehill.imposter.script.RuntimeContext
-import io.gatehill.imposter.script.listener.ScriptListener
-import io.gatehill.imposter.service.ScriptSource
+package io.gatehill.imposter.model.script
+
+import io.gatehill.imposter.http.HttpRequest
+import io.gatehill.imposter.script.ScriptRequest
+import io.gatehill.imposter.script.ScriptUtil
+import io.gatehill.imposter.util.CollectionUtil
 
 /**
- * @author Pete Cornish
+ * Adapter for [HttpRequest] to [ScriptRequest].
+ *
+ * This implementation doesn't perform any caching.
  */
-class EmbeddedScriptServiceImpl : EmbeddedScriptService {
-    private var listener: ScriptListener? = null
+open class SimpleScriptRequest(
+    private val request: HttpRequest,
+) : ScriptRequest {
+    override val path: String
+        get() = request.path
 
-    override val requestBuilder = lazyScriptRequestBuilder
+    override val method: String
+        get() = request.method.name
 
-    override fun executeScript(
-        script: ScriptSource,
-        runtimeContext: RuntimeContext
-    ): ReadWriteResponseBehaviour {
-        check(listener != null) { "ScriptListener is not set" }
+    override val uri: String
+        get() = request.absoluteUri
 
-        val responseBehaviour: ReadWriteResponseBehaviour = ReadWriteResponseBehaviourImpl()
-        listener!!.hear(runtimeContext.executionContext, responseBehaviour)
-        return responseBehaviour
-    }
+    override val headers: Map<String, String>
+        get() = ScriptUtil.caseHeaders(request)
 
-    override fun setListener(listener: ScriptListener) {
-        this.listener = listener
-    }
+    override val pathParams: Map<String, String>
+        get() = request.pathParams
+
+    override val queryParams: Map<String, String>
+        get() = request.queryParams
+
+    override val formParams: Map<String, String>
+        get() = request.formParams
+
+    override val body: String?
+        get() = request.bodyAsString
+
+    override val normalisedHeaders: Map<String, String>
+        get() = CollectionUtil.convertKeysToLowerCase(headers)
+
+    override val params: Map<String, String>
+        get() = throw UnsupportedOperationException(
+            "Error: the deprecated 'context.request.params' property was removed. Use 'context.request.queryParams' or 'context.request.pathParams' instead."
+        )
 }

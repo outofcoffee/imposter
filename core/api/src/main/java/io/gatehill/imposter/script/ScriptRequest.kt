@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2024.
  *
  * This file is part of Imposter.
  *
@@ -40,35 +40,43 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.service.script
 
-import io.gatehill.imposter.model.script.lazyScriptRequestBuilder
-import io.gatehill.imposter.script.ReadWriteResponseBehaviour
-import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl
-import io.gatehill.imposter.script.RuntimeContext
-import io.gatehill.imposter.script.listener.ScriptListener
-import io.gatehill.imposter.service.ScriptSource
+package io.gatehill.imposter.script
 
-/**
- * @author Pete Cornish
- */
-class EmbeddedScriptServiceImpl : EmbeddedScriptService {
-    private var listener: ScriptListener? = null
+interface ScriptRequest {
+    val path: String
+    val method: String
+    val uri: String
+    val headers: Map<String, String>
 
-    override val requestBuilder = lazyScriptRequestBuilder
+    /**
+     * @return the request path parameters
+     */
+    val pathParams: Map<String, String>
 
-    override fun executeScript(
-        script: ScriptSource,
-        runtimeContext: RuntimeContext
-    ): ReadWriteResponseBehaviour {
-        check(listener != null) { "ScriptListener is not set" }
+    /**
+     * @return the request query parameters
+     */
+    val queryParams: Map<String, String>
 
-        val responseBehaviour: ReadWriteResponseBehaviour = ReadWriteResponseBehaviourImpl()
-        listener!!.hear(runtimeContext.executionContext, responseBehaviour)
-        return responseBehaviour
-    }
+    /**
+     * @return the request form parameters
+     */
+    val formParams: Map<String, String>
 
-    override fun setListener(listener: ScriptListener) {
-        this.listener = listener
-    }
+    /**
+     * @return the request body
+     */
+    val body: String?
+
+    /**
+     * @return the [headers] map, but with all keys in lowercase
+     */
+    val normalisedHeaders: Map<String, String>
+
+    /**
+     * Legacy property removed.
+     */
+    @get:Deprecated("Use queryParams instead.", ReplaceWith("queryParams"))
+    val params: Map<String, String>
 }

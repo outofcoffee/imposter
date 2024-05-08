@@ -46,6 +46,7 @@ import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.plugin.PluginManager
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.scripting.common.util.JavaScriptUtil
+import io.gatehill.imposter.service.ScriptRequestBuilder
 import io.gatehill.imposter.service.ScriptService
 import io.gatehill.imposter.service.ScriptSource
 import org.apache.logging.log4j.LogManager
@@ -82,6 +83,9 @@ class DelegatingJsScriptServiceImpl @Inject constructor(
             )
         }
     }
+
+    override val requestBuilder: ScriptRequestBuilder
+        get() = impl.requestBuilder
 
     override fun initScript(script: ScriptSource) = impl.initScript(script)
 

@@ -45,7 +45,9 @@ package io.gatehill.imposter.script
 
 import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.plugin.config.PluginConfig
+import io.gatehill.imposter.service.ScriptRequestBuilder
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -64,49 +66,18 @@ object ScriptUtil {
         EnvVars.getEnv("IMPOSTER_NORMALISE_HEADER_KEYS")?.toBoolean() != false
 
     /**
-     * Build the {@code context}, containing lazily-evaluated values.
+     * Build an appropriate [ExecutionContext].
      *
      * @param httpExchange
      * @param additionalContext
      * @return the context
      */
-    @JvmStatic
-    fun buildContext(httpExchange: HttpExchange, additionalContext: Map<String, Any>?): ExecutionContext {
-        val internalRequest = httpExchange.request
-
-        val headersSupplier: () -> Map<String, String> = {
-            val entries = internalRequest.headers
-            if (forceHeaderKeyNormalisation) {
-                LowercaseKeysMap(entries)
-            } else {
-                entries
-            }
-        }
-
-        val pathParamsSupplier: () -> Map<String, String> = {
-            internalRequest.pathParams
-        }
-        val queryParamsSupplier: () -> Map<String, String> = {
-            internalRequest.queryParams
-        }
-        val formParamsSupplier: () -> Map<String, String> = {
-            internalRequest.formParams
-        }
-        val bodySupplier: () -> String? = {
-            internalRequest.bodyAsString
-        }
-
-        // request information
-        val request = ExecutionContext.RequestImpl(
-            path = internalRequest.path,
-            method = internalRequest.method.name,
-            uri = internalRequest.absoluteUri,
-            headersSupplier,
-            pathParamsSupplier,
-            queryParamsSupplier,
-            formParamsSupplier,
-            bodySupplier
-        )
+    fun buildContext(
+        requestBuilder: ScriptRequestBuilder,
+        httpExchange: HttpExchange,
+        additionalContext: Map<String, Any>?,
+    ): ExecutionContext {
+        val request = requestBuilder(httpExchange.request)
 
         // root context
         val executionContext = ExecutionContext(request)
@@ -119,4 +90,13 @@ object ScriptUtil {
 
     fun resolveScriptPath(pluginConfig: PluginConfig, scriptFile: String?): Path =
         Paths.get(pluginConfig.dir.absolutePath, scriptFile!!)
+
+    fun caseHeaders(request: HttpRequest): Map<String, String> {
+        val entries = request.headers
+        return if (forceHeaderKeyNormalisation) {
+            LowercaseKeysMap(entries)
+        } else {
+            entries
+        }
+    }
 }

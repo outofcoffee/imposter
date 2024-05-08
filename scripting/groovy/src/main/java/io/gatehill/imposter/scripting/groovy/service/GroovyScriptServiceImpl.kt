@@ -46,6 +46,7 @@ import com.google.common.cache.CacheBuilder
 import groovy.lang.Binding
 import groovy.lang.GroovyClassLoader
 import io.gatehill.imposter.config.util.EnvVars
+import io.gatehill.imposter.model.script.lazyScriptRequestBuilder
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.ScriptUtil
@@ -72,6 +73,8 @@ class GroovyScriptServiceImpl : ScriptService {
     private val scriptClasses = CacheBuilder.newBuilder()
         .maximumSize(EnvVars.getEnv(ScriptUtil.ENV_SCRIPT_CACHE_ENTRIES)?.toLong() ?: ScriptUtil.DEFAULT_SCRIPT_CACHE_ENTRIES)
         .build<String, Class<GroovyDsl>>()
+
+    override val requestBuilder = lazyScriptRequestBuilder
 
     init {
         val compilerConfig = CompilerConfiguration()

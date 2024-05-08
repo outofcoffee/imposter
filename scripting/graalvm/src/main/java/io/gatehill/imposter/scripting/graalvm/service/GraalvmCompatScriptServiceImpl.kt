@@ -43,6 +43,7 @@
 package io.gatehill.imposter.scripting.graalvm.service
 
 import com.oracle.truffle.js.scriptengine.GraalJSEngineFactory
+import io.gatehill.imposter.model.script.lazyScriptRequestBuilder
 import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.RequireModules
@@ -68,6 +69,8 @@ import javax.script.SimpleBindings
 @RequireModules(GraalvmCompatScriptingModule::class)
 class GraalvmCompatScriptServiceImpl : ScriptService, Plugin {
     private val scriptEngine: ScriptEngine
+
+    override val requestBuilder = lazyScriptRequestBuilder
 
     init {
         // quieten interpreter mode warning until native graal compiler included in module path - see:

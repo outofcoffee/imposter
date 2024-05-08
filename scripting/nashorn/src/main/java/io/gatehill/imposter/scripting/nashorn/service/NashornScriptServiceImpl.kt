@@ -44,6 +44,7 @@ package io.gatehill.imposter.scripting.nashorn.service
 
 import com.google.common.cache.CacheBuilder
 import io.gatehill.imposter.config.util.EnvVars.Companion.getEnv
+import io.gatehill.imposter.model.script.lazyScriptRequestBuilder
 import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.RequireModules
@@ -84,6 +85,8 @@ class NashornScriptServiceImpl : ScriptService, Plugin {
     private val compiledScripts = CacheBuilder.newBuilder()
         .maximumSize(getEnv(ScriptUtil.ENV_SCRIPT_CACHE_ENTRIES)?.toLong() ?: ScriptUtil.DEFAULT_SCRIPT_CACHE_ENTRIES)
         .build<String, CompiledJsScript<CompiledScript>>()
+
+    override val requestBuilder = lazyScriptRequestBuilder
 
     init {
         if (getJvmVersion() < 11) {
