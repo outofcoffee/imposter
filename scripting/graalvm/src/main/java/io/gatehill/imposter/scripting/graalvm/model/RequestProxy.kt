@@ -51,7 +51,7 @@ import org.graalvm.polyglot.Value
 import org.graalvm.polyglot.proxy.ProxyObject
 
 // wrap request to allow property access syntactic sugar
-val objectProxyRequestBuilder : ScriptRequestBuilder  = { request ->
+val objectProxyRequestBuilder: ScriptRequestBuilder = { request ->
     RequestProxy(request)
 }
 
@@ -59,19 +59,22 @@ val objectProxyRequestBuilder : ScriptRequestBuilder  = { request ->
  * Graal polyglot object proxy for [ScriptRequest].
  */
 class RequestProxy(
-    request: HttpRequest
+    request: HttpRequest,
 ) : SimpleScriptRequest(request), ProxyObject {
-    private val properties = arrayOf(
-        "path",
-        "method",
-        "uri",
-        "headers",
-        "pathParams",
-        "queryParams",
-        "formParams",
-        "body",
-        "normalisedHeaders",
-    )
+
+    companion object {
+        private val properties = arrayOf(
+            "path",
+            "method",
+            "uri",
+            "headers",
+            "pathParams",
+            "queryParams",
+            "formParams",
+            "body",
+            "normalisedHeaders",
+        )
+    }
 
     override fun getMember(key: String?): Any? = when (key) {
         "path" -> path
@@ -96,7 +99,7 @@ class RequestProxy(
     }
 }
 
-class MapObjectProxy(private val orig: Map<String, *>): ProxyObject {
+class MapObjectProxy(private val orig: Map<String, *>) : ProxyObject {
     override fun getMember(key: String?): Any? {
         return key?.let { orig[key] }
     }
@@ -106,7 +109,7 @@ class MapObjectProxy(private val orig: Map<String, *>): ProxyObject {
     }
 
     override fun hasMember(key: String?): Boolean {
-        return key?.let {  orig.containsKey(key) } ?: false
+        return key?.let { orig.containsKey(key) } ?: false
     }
 
     override fun putMember(key: String?, value: Value?) {
