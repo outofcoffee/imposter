@@ -209,6 +209,11 @@ class Wsdl2Parser(
         return BodyQueryUtil.selectNodes(document, "/wsdl:description/wsdl:types/xs:schema", xsNamespaces)
     }
 
+    override fun resolveTargetNamespace(): String? {
+        return selectSingleNode(document, "/wsdl:description")
+            ?.getAttribute("targetNamespace")?.value
+    }
+
     companion object {
         const val wsdl2Namespace = "http://www.w3.org/ns/wsdl"
     }

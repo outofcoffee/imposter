@@ -123,6 +123,8 @@ abstract class AbstractWsdlParser(
 
     protected abstract fun findEmbeddedTypesSchemaNodes(): List<Element>
 
+    protected abstract fun resolveTargetNamespace(): String?
+
     protected fun selectSingleNodeWithName(context: Any, expressionTemplate: String, name: String): Element? {
         return selectSingleNode(context, String.format(expressionTemplate, name))
             ?: name.takeIf { it.contains(":") }?.let {
@@ -191,6 +193,10 @@ abstract class AbstractWsdlParser(
 
         val valueParts = attrValue.split(':')
         if (valueParts.size == 1) {
+            val tns = resolveTargetNamespace()
+            if (tns != null) {
+                return QName(tns, valueParts[0]);
+            }
             // unqualified name
             return QName(valueParts[0])
         } else {
