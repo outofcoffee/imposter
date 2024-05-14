@@ -78,8 +78,7 @@ class Wsdl1Parser(
 
     override val services: List<WsdlService>
         get() {
-            val tns = selectSingleNode(document, "/wsdl:definitions")
-                ?.getAttribute("targetNamespace")?.value
+            val tns = resolveTargetNamespace()
 
             val services = selectNodes(document, "/wsdl:definitions/wsdl:service")
 
@@ -295,6 +294,11 @@ class Wsdl1Parser(
     override fun findEmbeddedTypesSchemaNodes(): List<Element> {
         val xsNamespaces = xPathNamespaces + Namespace.getNamespace("xs", SoapUtil.NS_XML_SCHEMA)
         return BodyQueryUtil.selectNodes(document, "/wsdl:definitions/wsdl:types/xs:schema", xsNamespaces)
+    }
+
+    override fun resolveTargetNamespace(): String? {
+        return selectSingleNode(document, "/wsdl:definitions")
+            ?.getAttribute("targetNamespace")?.value
     }
 
     /**

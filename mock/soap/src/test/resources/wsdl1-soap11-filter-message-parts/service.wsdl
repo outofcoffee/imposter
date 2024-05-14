@@ -93,7 +93,7 @@
 
     <message name="getPetByIdRequest">
         <part type="xs:string" name="header"/>
-        <part element="tns:getPetByIdRequest" name="body"/>
+        <part element="getPetByIdRequest" name="body"/>
     </message>
     <message name="getPetByIdResponse">
         <part element="tns:getPetByIdResponse" name="body"/>
