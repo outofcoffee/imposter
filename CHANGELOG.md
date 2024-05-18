@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.39.1] - 2024-05-18
+### Changed
+- chore(deps): bump com.fasterxml.jackson.core:jackson-databind
+- chore(deps): bump org.apache.maven.plugins:maven-deploy-plugin
+- chore(deps): bump org.apache.maven.plugins:maven-install-plugin
+- chore(deps): bump version_groovy from 4.0.13 to 4.0.21
+- docs: improves style of scripting example.
+- refactor: allows script engines to customise request object.
+- refactor: don't initialise property list for each request proxy.
+- refactor: splits modern and compat Graal implementations.
+- test(soap): improves coverage of parser attribute reader.
+
+### Fixed
+- fix: support messages having a part attribute without namespace prefix
+
 ## [3.39.0] - 2024-05-07
 ### Added
 - feat: allows store items to be read as JSON.
