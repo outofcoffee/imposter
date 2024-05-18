@@ -80,12 +80,12 @@ class RequestProxy(
         "path" -> path
         "method" -> method
         "uri" -> uri
-        "headers" -> MapObjectProxy(headers)
-        "pathParams" -> MapObjectProxy(pathParams)
-        "queryParams" -> MapObjectProxy(queryParams)
-        "formParams" -> MapObjectProxy(formParams)
+        "headers" -> ProxyObject.fromMap(headers)
+        "pathParams" -> ProxyObject.fromMap(pathParams)
+        "queryParams" -> ProxyObject.fromMap(queryParams)
+        "formParams" -> ProxyObject.fromMap(formParams)
         "body" -> body
-        "normalisedHeaders" -> MapObjectProxy(normalisedHeaders)
+        "normalisedHeaders" -> ProxyObject.fromMap(normalisedHeaders)
         else -> null
     }
 
@@ -96,23 +96,5 @@ class RequestProxy(
 
     override fun putMember(key: String?, value: Value?) {
         throw UnsupportedOperationException("Request cannot be modified")
-    }
-}
-
-class MapObjectProxy(private val orig: Map<String, *>) : ProxyObject {
-    override fun getMember(key: String?): Any? {
-        return key?.let { orig[key] }
-    }
-
-    override fun getMemberKeys(): Any {
-        return orig.keys.toTypedArray()
-    }
-
-    override fun hasMember(key: String?): Boolean {
-        return key?.let { orig.containsKey(key) } ?: false
-    }
-
-    override fun putMember(key: String?, value: Value?) {
-        throw UnsupportedOperationException("Object is unmodifiable")
     }
 }
