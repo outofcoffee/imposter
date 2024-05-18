@@ -22,6 +22,9 @@ dependencies {
 
     // sample client
     testImplementation project(':test:sample-soap-client')
+
+    // mocking
+    implementation "org.mockito:mockito-core:$version_mockito"
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

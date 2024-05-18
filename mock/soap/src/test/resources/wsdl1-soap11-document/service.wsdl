@@ -93,7 +93,8 @@
     </types>
 
     <message name="getPetByIdRequest">
-        <part element="tns:getPetByIdRequest" name="parameters"/>
+        <!-- no namespace prefix for the element, so fallback to WSDL targetNamespace -->
+        <part element="getPetByIdRequest" name="parameters"/>
     </message>
     <message name="getPetByIdResponse">
         <part element="tns:getPetByIdResponse" name="parameters"/>

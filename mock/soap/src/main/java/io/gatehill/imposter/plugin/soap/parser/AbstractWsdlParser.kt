@@ -184,7 +184,7 @@ abstract class AbstractWsdlParser(
         return matchingType
     }
 
-    protected fun getAttributeValueAsQName(element: Element, attributeName: String): QName? {
+    protected open fun getAttributeValueAsQName(element: Element, attributeName: String): QName? {
         val attr = element.getAttribute(attributeName)
             ?: return null
 
