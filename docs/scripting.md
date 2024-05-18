@@ -200,7 +200,7 @@ respond()
 
 As we have seen above, to return data when using a script, you specify a response file.
 
-More specifically, to specify which response file to use, you can either:
+To specify which response file to use, you can either:
 
 1. set the `file` property within the `response` object in your configuration, which will be treated as the default, or
 2. explicitly call the `withFile(String)` method in your script.
