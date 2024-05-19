@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.40.0] - 2024-05-19
+### Added
+- feat(graal): adds optional store proxy.
+
+### Changed
+- refactor(graal): uses inbuilt map proxy for request properties.
+- refactor: adds Guice binding asSingleton() extension function.
+- test: adds hamcrest to test-utils.
+
 ## [3.39.1] - 2024-05-18
 ### Changed
 - chore(deps): bump com.fasterxml.jackson.core:jackson-databind
