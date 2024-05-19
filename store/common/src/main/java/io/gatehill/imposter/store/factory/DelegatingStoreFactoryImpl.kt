@@ -60,6 +60,9 @@ class DelegatingStoreFactoryImpl @Inject constructor(
 ) : StoreFactory {
     private val logger = LogManager.getLogger(DelegatingStoreFactoryImpl::class.java)
 
+    override val storeInterceptors: MutableList<(Store) -> Store>
+        get() = impl.storeInterceptors
+
     private val impl: StoreFactory by lazy { loadStoreFactory() }
 
     private fun loadStoreFactory(): StoreFactory {

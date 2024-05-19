@@ -42,6 +42,7 @@
  */
 package io.gatehill.imposter.service
 
+import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.scripting.AbstractScriptServiceImplTest
 import io.gatehill.imposter.scripting.graalvm.service.GraalvmScriptServiceImpl
 import javax.inject.Inject
@@ -56,4 +57,8 @@ class GraalvmScriptServiceImplTest : AbstractScriptServiceImplTest() {
     override fun getService() = service!!
 
     override fun getScriptName() = "test.js"
+
+    override fun onBeforeInject() {
+        EnvVars.populate(GraalvmScriptServiceImpl.ENV_IMPOSTER_GRAAL_STORE_PROXY to "false")
+    }
 }

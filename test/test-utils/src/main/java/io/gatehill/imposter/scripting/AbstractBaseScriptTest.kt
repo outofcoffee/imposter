@@ -43,7 +43,7 @@
 
 package io.gatehill.imposter.scripting
 
-import com.google.inject.Guice
+import com.google.inject.Module
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.http.HttpRequest
@@ -55,6 +55,7 @@ import io.gatehill.imposter.script.ScriptUtil
 import io.gatehill.imposter.service.ScriptService
 import io.gatehill.imposter.service.ScriptSource
 import io.gatehill.imposter.util.FeatureUtil
+import io.gatehill.imposter.util.InjectorUtil
 import io.gatehill.imposter.util.MetricsUtil
 import org.apache.logging.log4j.LogManager
 import org.junit.AfterClass
@@ -86,12 +87,17 @@ abstract class AbstractBaseScriptTest {
 
     @Before
     fun setUp() {
-        Guice.createInjector().injectMembers(this)
+        onBeforeInject()
+        InjectorUtil.create(*modules).injectMembers(this)
     }
 
     protected abstract fun getService(): ScriptService
 
+    protected open val modules: Array<out Module> = emptyArray()
+
     protected abstract fun getScriptName(): String
+
+    protected open fun onBeforeInject() {}
 
     protected val fullScriptPath: Path
         get() {
@@ -113,7 +119,7 @@ abstract class AbstractBaseScriptTest {
     }
 
     protected fun buildRuntimeContext(
-        additionalBindings: Map<String, String>,
+        additionalBindings: Map<String, Any>,
         headers: Map<String, String> = emptyMap(),
         pathParams: Map<String, String> = emptyMap(),
         queryParams: Map<String, String> = emptyMap(),

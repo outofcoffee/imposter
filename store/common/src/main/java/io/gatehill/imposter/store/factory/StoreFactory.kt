@@ -48,6 +48,7 @@ import io.gatehill.imposter.store.core.Store
  * @author Pete Cornish
  */
 interface StoreFactory {
+    val storeInterceptors: MutableList<(Store) -> Store>
     fun getStoreByName(storeName: String, ephemeral: Boolean): Store
     fun clearStore(storeName: String, ephemeral: Boolean)
 }

@@ -18,6 +18,9 @@ dependencies {
     pluginImplementation "org.graalvm.truffle:truffle-api:$version_graal"
     pluginImplementation "org.graalvm.js:js-scriptengine:$version_graal"
 
+    // store proxy
+    pluginImplementation project(':store:store-common')
+
     // test
     testImplementation project(':test:test-utils')
     testImplementation project(':test:api-tests')

@@ -42,6 +42,7 @@
  */
 package io.gatehill.imposter.scripting.graalvm.service
 
+import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.RequireModules
@@ -51,13 +52,17 @@ import io.gatehill.imposter.script.dsl.Dsl
 import io.gatehill.imposter.scripting.common.util.JavaScriptUtil
 import io.gatehill.imposter.scripting.graalvm.GraalvmScriptingModule
 import io.gatehill.imposter.scripting.graalvm.model.objectProxyRequestBuilder
+import io.gatehill.imposter.scripting.graalvm.storeproxy.ObjectProxyingStore
 import io.gatehill.imposter.service.ScriptRequestBuilder
 import io.gatehill.imposter.service.ScriptService
 import io.gatehill.imposter.service.ScriptSource
+import io.gatehill.imposter.store.factory.StoreFactory
+import io.gatehill.imposter.util.InjectorUtil
 import org.apache.logging.log4j.LogManager
 import org.graalvm.polyglot.Context
 import org.graalvm.polyglot.Engine
 import org.graalvm.polyglot.HostAccess
+import javax.inject.Inject
 
 
 /**
@@ -80,6 +85,15 @@ class GraalvmScriptServiceImpl : ScriptService, Plugin {
         System.setProperty("polyglot.engine.WarnInterpreterOnly", "false")
 
         engine = Engine.newBuilder(JS_LANG_ID).build()
+    }
+
+    @Inject
+    fun onPostInject() {
+        if (EnvVars.getEnv(ENV_IMPOSTER_GRAAL_STORE_PROXY)?.toBoolean() == true) {
+            LOGGER.debug("Enabling Graal store proxy")
+            val storeFactory = InjectorUtil.getInstance<StoreFactory>()
+            storeFactory.storeInterceptors += { ObjectProxyingStore(it) }
+        }
     }
 
     override fun executeScript(
@@ -116,5 +130,6 @@ class GraalvmScriptServiceImpl : ScriptService, Plugin {
     companion object {
         private val LOGGER = LogManager.getLogger(GraalvmScriptServiceImpl::class.java)
         private const val JS_LANG_ID = "js"
+        const val ENV_IMPOSTER_GRAAL_STORE_PROXY = "IMPOSTER_GRAAL_STORE_PROXY"
     }
 }
