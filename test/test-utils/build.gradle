@@ -14,6 +14,7 @@ dependencies {
     // test
     api "junit:junit:$version_junit"
     api "io.vertx:vertx-unit:$version_vertx"
+    api group: 'org.hamcrest', name: 'hamcrest', version: version_hamcrest
 
     // logging
     api "org.apache.logging.log4j:log4j-core:$version_log4j"
