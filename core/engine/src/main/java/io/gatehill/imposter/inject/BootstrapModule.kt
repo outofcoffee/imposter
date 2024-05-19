@@ -51,8 +51,8 @@ import io.gatehill.imposter.plugin.PluginDiscoveryStrategy
 import io.gatehill.imposter.plugin.PluginManager
 import io.gatehill.imposter.server.ServerFactory
 import io.gatehill.imposter.util.ClassLoaderUtil
+import io.gatehill.imposter.util.asSingleton
 import io.vertx.core.Vertx
-import javax.inject.Singleton
 
 /**
  * @author Pete Cornish
@@ -75,13 +75,13 @@ class BootstrapModule(
         val serverFactory = imposterConfig.serverFactory!!
         try {
             val serverFactoryClass = ClassLoaderUtil.loadClass<ServerFactory>(serverFactory)
-            bind(ServerFactory::class.java).to(serverFactoryClass).`in`(Singleton::class.java)
+            bind(ServerFactory::class.java).to(serverFactoryClass).asSingleton()
         } catch (e: ClassNotFoundException) {
             throw RuntimeException("Could not load server factory: $serverFactory", e)
         }
 
         bind(EngineLifecycleHooks::class.java).toInstance(engineLifecycle)
-        bind(SecurityLifecycleHooks::class.java).`in`(Singleton::class.java)
-        bind(ScriptLifecycleHooks::class.java).`in`(Singleton::class.java)
+        bind(SecurityLifecycleHooks::class.java).asSingleton()
+        bind(ScriptLifecycleHooks::class.java).asSingleton()
     }
 }

@@ -43,14 +43,14 @@
 package io.gatehill.imposter.scripting.graalvm
 
 import com.google.inject.AbstractModule
-import com.google.inject.Singleton
 import io.gatehill.imposter.scripting.graalvm.service.GraalvmScriptServiceImpl
+import io.gatehill.imposter.util.asSingleton
 
 /**
  * @author Pete Cornish
  */
 class GraalvmScriptingModule : AbstractModule() {
     override fun configure() {
-        bind(GraalvmScriptServiceImpl::class.java).`in`(Singleton::class.java)
+        bind(GraalvmScriptServiceImpl::class.java).asSingleton()
     }
 }

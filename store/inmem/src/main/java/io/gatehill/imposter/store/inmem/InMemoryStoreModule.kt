@@ -43,13 +43,13 @@
 package io.gatehill.imposter.store.inmem
 
 import com.google.inject.AbstractModule
-import com.google.inject.Singleton
+import io.gatehill.imposter.util.asSingleton
 
 /**
  * @author Pete Cornish
  */
 class InMemoryStoreModule : AbstractModule() {
     override fun configure() {
-        bind(InMemoryStoreFactoryImpl::class.java).`in`(Singleton::class.java)
+        bind(InMemoryStoreFactoryImpl::class.java).asSingleton()
     }
 }

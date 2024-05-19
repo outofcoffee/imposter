@@ -43,7 +43,6 @@
 package io.gatehill.imposter.inject
 
 import com.google.inject.AbstractModule
-import com.google.inject.Singleton
 import io.gatehill.imposter.service.CharacteristicsService
 import io.gatehill.imposter.service.FileCacheService
 import io.gatehill.imposter.service.FileCacheServiceImpl
@@ -67,34 +66,35 @@ import io.gatehill.imposter.service.script.ScriptServiceFactory
 import io.gatehill.imposter.service.script.ScriptedResponseServiceImpl
 import io.gatehill.imposter.service.security.CorsService
 import io.gatehill.imposter.service.security.SecurityServiceImpl
+import io.gatehill.imposter.util.asSingleton
 
 /**
  * @author Pete Cornish
  */
 internal class EngineModule : AbstractModule() {
     override fun configure() {
-        bind(HandlerService::class.java).to(HandlerServiceImpl::class.java).`in`(Singleton::class.java)
-        bind(ResponseRoutingService::class.java).to(ResponseRoutingServiceImpl::class.java).`in`(Singleton::class.java)
-        bind(ResponseService::class.java).to(ResponseServiceImpl::class.java).`in`(Singleton::class.java)
-        bind(ResponseFileService::class.java).to(ResponseFileServiceImpl::class.java).`in`(Singleton::class.java)
-        bind(FileCacheService::class.java).to(FileCacheServiceImpl::class.java).`in`(Singleton::class.java)
-        bind(CharacteristicsService::class.java).`in`(Singleton::class.java)
-        bind(ScriptServiceFactory::class.java).`in`(Singleton::class.java)
+        bind(HandlerService::class.java).to(HandlerServiceImpl::class.java).asSingleton()
+        bind(ResponseRoutingService::class.java).to(ResponseRoutingServiceImpl::class.java).asSingleton()
+        bind(ResponseService::class.java).to(ResponseServiceImpl::class.java).asSingleton()
+        bind(ResponseFileService::class.java).to(ResponseFileServiceImpl::class.java).asSingleton()
+        bind(FileCacheService::class.java).to(FileCacheServiceImpl::class.java).asSingleton()
+        bind(CharacteristicsService::class.java).asSingleton()
+        bind(ScriptServiceFactory::class.java).asSingleton()
 
         // needs to be eager to register lifecycle listener
         bind(ScriptedResponseService::class.java)
             .to(ScriptedResponseServiceImpl::class.java)
             .asEagerSingleton()
 
-        bind(EmbeddedScriptService::class.java).to(EmbeddedScriptServiceImpl::class.java).`in`(Singleton::class.java)
-        bind(InlineScriptService::class.java).`in`(Singleton::class.java)
+        bind(EmbeddedScriptService::class.java).to(EmbeddedScriptServiceImpl::class.java).asSingleton()
+        bind(InlineScriptService::class.java).asSingleton()
 
         // needs to be eager to register lifecycle listener
         bind(SecurityService::class.java).to(SecurityServiceImpl::class.java).asEagerSingleton()
 
-        bind(CorsService::class.java).`in`(Singleton::class.java)
-        bind(RemoteService::class.java).`in`(Singleton::class.java)
-        bind(StepService::class.java).`in`(Singleton::class.java)
-        bind(UpstreamService::class.java).`in`(Singleton::class.java)
+        bind(CorsService::class.java).asSingleton()
+        bind(RemoteService::class.java).asSingleton()
+        bind(StepService::class.java).asSingleton()
+        bind(UpstreamService::class.java).asSingleton()
     }
 }

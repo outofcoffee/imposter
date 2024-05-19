@@ -44,14 +44,14 @@
 package io.gatehill.imposter.awslambda.util
 
 import com.google.inject.AbstractModule
-import com.google.inject.Singleton
 import io.gatehill.imposter.awslambda.impl.LambdaServerFactory
+import io.gatehill.imposter.util.asSingleton
 
 /**
  * @author Pete Cornish
  */
 class LambdaModule : AbstractModule() {
     override fun configure() {
-        bind(LambdaServerFactory::class.java).`in`(Singleton::class.java)
+        bind(LambdaServerFactory::class.java).asSingleton()
     }
 }

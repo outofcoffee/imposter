@@ -43,13 +43,13 @@
 package io.gatehill.imposter.store.redis
 
 import com.google.inject.AbstractModule
-import com.google.inject.Singleton
+import io.gatehill.imposter.util.asSingleton
 
 /**
  * @author Pete Cornish
  */
 class RedisStoreModule : AbstractModule() {
     override fun configure() {
-        bind(RedisStoreFactoryImpl::class.java).`in`(Singleton::class.java)
+        bind(RedisStoreFactoryImpl::class.java).asSingleton()
     }
 }

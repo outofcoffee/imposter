@@ -43,7 +43,6 @@
 package io.gatehill.imposter.plugin.hbase
 
 import com.google.inject.AbstractModule
-import com.google.inject.Singleton
 import com.google.inject.name.Names
 import io.gatehill.imposter.plugin.hbase.service.ScannerService
 import io.gatehill.imposter.plugin.hbase.service.ScannerServiceImpl
@@ -51,26 +50,27 @@ import io.gatehill.imposter.plugin.hbase.service.serialisation.DeserialisationSe
 import io.gatehill.imposter.plugin.hbase.service.serialisation.JsonSerialisationServiceImpl
 import io.gatehill.imposter.plugin.hbase.service.serialisation.ProtobufSerialisationServiceImpl
 import io.gatehill.imposter.plugin.hbase.service.serialisation.SerialisationService
+import io.gatehill.imposter.util.asSingleton
 
 /**
  * @author Pete Cornish
  */
 class HBasePluginModule : AbstractModule() {
     override fun configure() {
-        bind(ScannerService::class.java).to(ScannerServiceImpl::class.java).`in`(Singleton::class.java)
+        bind(ScannerService::class.java).to(ScannerServiceImpl::class.java).asSingleton()
 
         bind(SerialisationService::class.java).annotatedWith(Names.named("application/x-protobuf"))
-            .to(ProtobufSerialisationServiceImpl::class.java).`in`(Singleton::class.java)
+            .to(ProtobufSerialisationServiceImpl::class.java).asSingleton()
 
         bind(DeserialisationService::class.java).annotatedWith(Names.named("application/x-protobuf"))
-            .to(ProtobufSerialisationServiceImpl::class.java).`in`(Singleton::class.java)
+            .to(ProtobufSerialisationServiceImpl::class.java).asSingleton()
 
         bind(SerialisationService::class.java).annotatedWith(Names.named("application/json"))
-            .to(JsonSerialisationServiceImpl::class.java).`in`(Singleton::class.java)
+            .to(JsonSerialisationServiceImpl::class.java).asSingleton()
 
         bind(DeserialisationService::class.java).annotatedWith(Names.named("application/json"))
-            .to(JsonSerialisationServiceImpl::class.java).`in`(Singleton::class.java)
+            .to(JsonSerialisationServiceImpl::class.java).asSingleton()
 
-        bind(ScannerService::class.java).to(ScannerServiceImpl::class.java).`in`(Singleton::class.java)
+        bind(ScannerService::class.java).to(ScannerServiceImpl::class.java).asSingleton()
     }
 }

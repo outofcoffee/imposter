@@ -52,15 +52,16 @@ import io.gatehill.imposter.plugin.openapi.service.SchemaService
 import io.gatehill.imposter.plugin.openapi.service.SchemaServiceImpl
 import io.gatehill.imposter.plugin.openapi.service.SpecificationService
 import io.gatehill.imposter.plugin.openapi.service.SpecificationServiceImpl
+import io.gatehill.imposter.util.asSingleton
 
 /**
  * @author Pete Cornish
  */
 class OpenApiModule : AbstractModule() {
     override fun configure() {
-        bind(SpecificationService::class.java).to(SpecificationServiceImpl::class.java).`in`(Singleton::class.java)
-        bind(ExampleService::class.java).to(ExampleServiceImpl::class.java).`in`(Singleton::class.java)
-        bind(SchemaService::class.java).to(SchemaServiceImpl::class.java).`in`(Singleton::class.java)
+        bind(SpecificationService::class.java).to(SpecificationServiceImpl::class.java).asSingleton()
+        bind(ExampleService::class.java).to(ExampleServiceImpl::class.java).asSingleton()
+        bind(SchemaService::class.java).to(SchemaServiceImpl::class.java).asSingleton()
         bind(ResponseTransmissionService::class.java).to(ResponseTransmissionServiceImpl::class.java).`in`(
             Singleton::class.java
         )

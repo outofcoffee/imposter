@@ -42,6 +42,8 @@
  */
 package io.gatehill.imposter.util
 
+import com.google.inject.Singleton
+import com.google.inject.binder.ScopedBindingBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -83,3 +85,5 @@ fun completedUnitFuture(): CompletableFuture<Unit> = CompletableFuture.completed
 
 val supervisedDefaultCoroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 val supervisedIOCoroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
+fun ScopedBindingBuilder.asSingleton() = `in`(Singleton::class.java)
