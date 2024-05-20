@@ -56,7 +56,7 @@ subprojects {
 
     buildscript {
         ext {
-            version_shadow = '7.1.2'
+            version_shadow = '8.0.0'
         }
         repositories {
             mavenCentral()
