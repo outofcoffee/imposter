@@ -25,7 +25,8 @@ The `script` step type allows you to execute a script. The script has access to 
 Here is an example of an inline script.
 
 > **Note**
-> Inline scripts can be written in JavaScript.
+> Inline scripts can be written in JavaScript or Groovy.
+> Set the `lang` property to either `javascript` or `groovy`
 
 ```yaml
 # ...part of your configuration file
@@ -35,6 +36,7 @@ resources:
   method: GET
   steps:
     - type: script
+      lang: javascript
       code: console.log('Hello World!');
 ```
 
@@ -55,6 +57,7 @@ resources:
   method: GET
   steps:
     - type: script
+      lang: javascript
       code: |
         console.log('Hello World!');
         console.log('This is a second line');
@@ -196,6 +199,7 @@ resources:
   
     # the second step will log the status code of the response
     - type: script
+      lang: javascript
       code: |
         console.log('Remote HTTP response status code: ' + stores.request.statusCode);
 ```

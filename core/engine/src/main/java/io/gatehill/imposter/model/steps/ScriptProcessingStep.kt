@@ -43,6 +43,7 @@
 
 package io.gatehill.imposter.model.steps
 
+import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.gatehill.imposter.http.HttpExchange
@@ -86,9 +87,14 @@ class ScriptProcessingStep(
 
     companion object {
         fun parseScriptSource(ctx: ScriptStepContext) = ctx.config.scriptCode?.let {
+            val ext = when (val lang = ctx.config.language) {
+                "groovy" -> "groovy"
+                null, "js", "javascript" -> "js"
+                else -> throw IllegalStateException("Unsupported script language: $lang")
+            }
             ScriptSource(
                 // stable ID for script cache key
-                source = "${ctx.stepId}_inline.js",
+                source = "${ctx.stepId}_inline.$ext",
                 code = ctx.config.scriptCode
             )
         } ?: ctx.config.scriptFile?.let {
@@ -109,6 +115,10 @@ data class ScriptStepConfig(
 
     @JsonProperty("file")
     val scriptFile: String? = null,
+
+    @JsonProperty("language")
+    @JsonAlias("lang")
+    val language: String? = null,
 )
 
 data class ScriptStepContext(
