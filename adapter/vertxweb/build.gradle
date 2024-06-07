@@ -65,3 +65,7 @@ compileTestKotlin {
         freeCompilerArgs = ["-Xjvm-default=all"]
     }
 }
+
+test {
+    useJUnitPlatform()
+}
