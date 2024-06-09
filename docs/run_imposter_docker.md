@@ -34,10 +34,11 @@ Most users should choose the 'core' image available at: [outofcoffee/imposter](h
 
 The following images are available:
 
-| Image       | Docker Hub link                                                                       | Plugins             | Notes                                                                                                                             |
-|-------------|---------------------------------------------------------------------------------------|---------------------|-----------------------------------------------------------------------------------------------------------------------------------|
-| **core**    | [outofcoffee/imposter](https://hub.docker.com/r/outofcoffee/imposter)                 | openapi, rest, soap | This is the primary Imposter Docker image supporting OpenAPI, plain REST APIs and SOAP/WSDL mocks. Most users should choose this. |
-| **all**     | [outofcoffee/imposter-all](https://hub.docker.com/r/outofcoffee/imposter-all)         | All plugins         | Contains all mock plugins, and is the largest and has the most dependencies.                                                      |
+| Image          | Docker Hub link                                                                             | Plugins               | Notes                                                                                                                             |
+|----------------|---------------------------------------------------------------------------------------------|-----------------------|-----------------------------------------------------------------------------------------------------------------------------------|
+| **core**       | [outofcoffee/imposter](https://hub.docker.com/r/outofcoffee/imposter)                       | openapi, rest, soap   | This is the primary Imposter Docker image supporting OpenAPI, plain REST APIs and SOAP/WSDL mocks. Most users should choose this. |
+| **all**        | [outofcoffee/imposter-all](https://hub.docker.com/r/outofcoffee/imposter-all)               | All plugins           | Contains all mock plugins. Largest image, with the most dependencies.                                                             |
+| **distroless** | [outofcoffee/imposter-distroless](https://hub.docker.com/r/outofcoffee/imposter-distroless) | Same as `core` image. | Built on the `distroless` base image. Smallest image, with the fewest dependencies.                                               |
 
 > You can also use the these images to create your own custom images with embedded configuration.
 
