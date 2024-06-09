@@ -1,0 +1,42 @@
+name: Validate
+on:
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: [ '11', '17' ]
+    permissions:
+      checks: write
+    env:
+      AWS_REGION: "eu-west-1"
+      TESTCONTAINERS_RYUK_DISABLED: "true"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Set up build environment
+        run: |
+          chmod +x ./scripts/*.sh
+          # Disable gradle daemon
+          mkdir -p ~/.gradle
+          echo "org.gradle.daemon=false" >> ~/.gradle/gradle.properties
+
+      - name: Test
+        run: ./gradlew test --stacktrace
+
+      - name: Publish Unit Test Results
+        if: always()
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: "**/test-results/**/*.xml"
+          comment_mode: off
+          check_name: Unit Tests (Java ${{ matrix.java }})

@@ -1,132 +1,25 @@
 name: CI
 on: [ push ]
 jobs:
-  build:
+  setup:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        java: [ '11', '17' ]
-    permissions:
-      checks: write
-      contents: write
-    env:
-      AWS_REGION: "eu-west-1"
-      CONTAINER_BUILDER: "buildx"
-      SINCE_VERSION: "0.14.2"
-      TESTCONTAINERS_RYUK_DISABLED: "true"
+    outputs:
+      effective-branch: ${{ steps.git-meta.outputs.EFFECTIVE_BRANCH }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install since
-        if: ${{ (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop') && matrix.java == '11' }}
-        run: |
-          cd "$( mktemp -d )"
-          curl --fail -L -o since.tar.gz https://github.com/release-tools/since/releases/download/v${SINCE_VERSION}/since_${SINCE_VERSION}_linux_amd64.tar.gz
-          tar xvf since.tar.gz
-          cp since /usr/local/bin
-
-      - name: Write changelog
-        if: ${{ (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop') && matrix.java == '11' }}
-        run: |
-          mkdir -p build
-          since changelog extract -q > build/CHANGES.md
-          cat build/CHANGES.md
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          java-version: ${{ matrix.java }}
-          distribution: 'temurin'
-          cache: 'gradle'
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up build environment
-        run: |
-          chmod +x ./scripts/*.sh
-          # Disable gradle daemon
-          mkdir -p ~/.gradle
-          echo "org.gradle.daemon=false" >> ~/.gradle/gradle.properties
-
       - name: Determine effective branch
         id: git-meta
         run: |
           EFFECTIVE_BRANCH_NAME="$( ./scripts/get-effective-branch.sh )"
           echo "EFFECTIVE_BRANCH=${EFFECTIVE_BRANCH_NAME}" >> $GITHUB_OUTPUT
 
-      - name: Test
-        run: ./gradlew test --stacktrace
+  validate:
+    needs: [setup]
+    uses: ./.github/workflows/validate.yaml
 
-      - name: Publish Unit Test Results
-        if: always()
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        with:
-          files: "**/test-results/**/*.xml"
-          comment_mode: off
-          check_name: Unit Tests (Java ${{ matrix.java }})
-
-      - name: Build distributions
-        run: ./gradlew dist --stacktrace
-
-      - name: Integration test
-        run: |
-          ./scripts/docker-build.sh -p false dev
-          ./scripts/integration-tests.sh outofcoffee/imposter:dev
-          ./scripts/integration-tests.sh outofcoffee/imposter-all:dev
-
-      - name: Build and push Docker images
-        id: docker-build
-        if: ${{ (startsWith(github.ref, 'refs/tags/') || steps.git-meta.outputs.EFFECTIVE_BRANCH == 'develop') && matrix.java == '11' }}
-        run: |
-          case ${{ steps.git-meta.outputs.EFFECTIVE_BRANCH }} in
-          develop)
-            ./scripts/docker-build.sh -p true beta
-            ;;
-
-          main)
-            CURRENT_VERSION="$( git describe --tags --exact-match )"
-            if [[ "${CURRENT_VERSION:0:1}" == "v" ]]; then
-                CURRENT_VERSION="$( echo ${CURRENT_VERSION} | cut -c 2- )"
-            fi
-            ./scripts/docker-build.sh -p true "${CURRENT_VERSION}"
-            ./scripts/docker-build.sh -p true "latest"
-            ;;
-
-          release/2.x)
-            CURRENT_VERSION="$( git describe --tags --exact-match )"
-            if [[ "${CURRENT_VERSION:0:1}" == "v" ]]; then
-                CURRENT_VERSION="$( echo ${CURRENT_VERSION} | cut -c 2- )"
-            fi
-            ./scripts/docker-build.sh -p true "${CURRENT_VERSION}"
-            ;;
-          esac
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Release Java assets
-        if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.java == '11' }}
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const script = require('./.github/github-release.js')
-            await script({github, context}, [
-              'main',
-              './distro/awslambda/build/distributions/imposter-awslambda.zip',
-              './mock/hbase/build/libs/imposter-plugin-mock-hbase.jar',
-              './mock/sfdc/build/libs/imposter-plugin-mock-sfdc.jar',
-              './mock/wiremock/build/libs/imposter-plugin-wiremock.jar',
-              './scripting/graalvm/build/distributions/imposter-plugin-js-graal.zip',
-              './store/dynamodb/build/libs/imposter-plugin-store-dynamodb.jar',
-              './store/graphql/build/libs/imposter-plugin-store-graphql.jar',
-              './store/redis/build/libs/imposter-plugin-store-redis.jar',
-              './lib/fake-data/build/libs/imposter-plugin-fake-data.jar',
-            ])
-
-      - name: Publish Maven artifacts
-        if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.java == '11' }}
-        run: ./gradlew publish --info --stacktrace
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  dist:
+    needs: [setup, validate]
+    uses: ./.github/workflows/dist.yaml
+    with:
+      effective-branch: ${{ needs.setup.outputs.effective-branch }}
+    secrets: inherit
