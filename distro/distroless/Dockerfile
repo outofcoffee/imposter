@@ -17,7 +17,9 @@ USER nonroot
 WORKDIR /app
 
 ENV GRADLE_OPTS="-Dorg.gradle.daemon=false"
-RUN ./gradlew :distro:distro-core:dist -xtest
+
+# don't run shadowJar/dist tasks
+RUN ./gradlew :distro:distro-core:installDist -xtest
 
 RUN cp -r ./distro/core/build/install/imposter/lib/* /opt/imposter/lib/
 
