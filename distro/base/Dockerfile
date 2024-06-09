@@ -11,7 +11,7 @@ ENV IMPOSTER_VERSION="${IMPOSTER_VERSION}" \
     IMPOSTER_ENGINE=unpacked \
     IMPOSTER_JVM_DISTRODIR=/opt/imposter
 
-ARG IMPOSTER_CLI_VERSION="0.38.0"
+ARG IMPOSTER_CLI_VERSION="0.42.2"
 ADD https://github.com/gatehill/imposter-cli/releases/download/v${IMPOSTER_CLI_VERSION}/imposter_${IMPOSTER_CLI_VERSION}_linux_amd64.tar.gz /tmp/imposter-cli/imposter.tar.gz
 
 RUN cd /tmp/imposter-cli && \
