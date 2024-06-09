@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.41.1] - 2024-06-09
+### Changed
+- chore: bumps CLI to 0.42.2.
+
 ## [3.41.0] - 2024-06-09
 ### Added
 - feat(groovy): adds support for Groovy inline script steps.
