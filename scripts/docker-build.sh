@@ -131,7 +131,7 @@ function build_image_buildx() {
 
   if [[ "${PUSH_IMAGES}" == "true" ]]; then
     echo -e "\nBuilding multiplatform image: ${FULL_IMAGE_NAME}"
-    docker buildx create --driver docker-container --use
+    docker buildx create --driver docker-container --config "${ROOT_DIR}/buildkitd.toml" --use
     BUILD_ARGS="${BUILD_ARGS} --push --platform linux/amd64,linux/arm64"
   else
     docker buildx use default
