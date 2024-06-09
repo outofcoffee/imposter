@@ -55,27 +55,24 @@ DEFAULT_IMAGE_DIRS=(
   "distroless"
 )
 PUSH_IMAGES="false"
+BUILD_BASE_IMAGE="true"
+IMAGE_DIR=
 
 function usage() {
   echo -e "Usage:\n  $(basename $0) [-p <true|false> -e]"
   exit 1
 }
 
-if [[ -z "${IMAGE_DIR}" ]]; then
-  IMAGE_DIRS=(
-    "${DEFAULT_IMAGE_DIRS[@]}"
-  )
-else
-  IMAGE_DIRS=(
-    "base"
-    "${IMAGE_DIR}"
-  )
-fi
-
-while getopts "ep:" OPT; do
+while getopts "bep:i:" OPT; do
   case ${OPT} in
+  b)
+    BUILD_BASE_IMAGE="$OPTARG"
+    ;;
   e)
     DOCKER_LOGIN_ARGS="--email dummy@example.com"
+    ;;
+  i)
+    IMAGE_DIR="$OPTARG"
     ;;
   p)
     PUSH_IMAGES="$OPTARG"
@@ -86,6 +83,19 @@ while getopts "ep:" OPT; do
   esac
 done
 shift $((OPTIND - 1))
+
+if [[ -z "${IMAGE_DIR}" ]]; then
+  IMAGE_DIRS=(
+    "${DEFAULT_IMAGE_DIRS[@]}"
+  )
+else
+  IMAGE_DIRS=(
+    "${IMAGE_DIR}"
+  )
+  if [[ "${BUILD_BASE_IMAGE}" == "true" ]]; then
+    IMAGE_DIRS=( "base" "${IMAGE_DIRS[@]}" )
+  fi
+fi
 
 IMAGE_TAG="${1-dev}"
 
