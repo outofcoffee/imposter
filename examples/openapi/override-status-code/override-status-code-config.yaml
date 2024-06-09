@@ -20,13 +20,13 @@ resources:
     response:
       statusCode: 201
 
-  - path: "/pets/:petId"
+  - path: "/pets/{petId}"
     method: "put"
     response:
       statusCode: 202
 
   # handles GET /pets/10
-  - path: "/pets/:petId"
+  - path: "/pets/{petId}"
     method: GET
     pathParams:
       petId: 10
@@ -34,8 +34,8 @@ resources:
       statusCode: 401
       content: "You do not have permission to view this pet."
 
-  # handles PUT /pets/:petId with a request header 'X-Pet-Username: foo'
-  - path: "/pets/:petId"
+  # handles PUT /pets/{petId} with a request header 'X-Pet-Username: foo'
+  - path: "/pets/{petId}"
     method: PUT
     requestHeaders:
       X-Pet-Username: foo

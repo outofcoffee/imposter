@@ -4,7 +4,7 @@
   "contentType": "application/json",
   "resources": [
     {
-      "path": "/:id",
+      "path": "/{id}",
       "type": "ARRAY",
       "response": {
         "staticFile": "rest-plugin-list-data.json"

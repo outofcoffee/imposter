@@ -16,7 +16,7 @@ Use the `capture` block of a resource, as follows:
 
 ```yaml
 resources:
-- path: "/users/:userName"
+- path: "/users/{userName}"
   method: PUT
   capture:
     user:
@@ -38,7 +38,7 @@ Note that the name of the item is the object key - in the above example it is `u
 
 ```yaml
 resources:
-- path: "/users/:userName"
+- path: "/users/{userName}"
   method: PUT
   capture:
     user:
@@ -57,7 +57,7 @@ The following configuration options are available for a capture:
 |-------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | capture block key | The name of the item to capture, e.g. `user`.                                                                                                                 |
 | `store`           | The name of the store in which to put the item.                                                                                                               |
-| `pathParam`       | The name of the path parameter to capture. Must reference the resource path, e.g. `userId` for a path of `/users/:userId`                                     |
+| `pathParam`       | The name of the path parameter to capture. Must reference the resource path, e.g. `userId` for a path of `/users/{userId}`                                    |
 | `queryParam`      | The name of the query parameter to capture.                                                                                                                   |
 | `formParam`       | The name of the form parameter to capture.                                                                                                                    |
 | `requestHeader`   | The name of the request header to capture.                                                                                                                    |
@@ -174,7 +174,7 @@ Example:
 # part of your configuration file
 
 resources:
-  - path: "/people/:team/:person"
+  - path: "/people/{team}/{person}"
     method: POST
     capture:
       personInTeam:
@@ -267,7 +267,7 @@ plugin: rest
 
 resources:
 - method: PUT
-  path: /users/admins/:userId
+  path: /users/admins/{userId}
   capture:
     adminUser:
       expression: "${datetime.now.iso8601_datetime}"
@@ -287,7 +287,7 @@ plugin: rest
 
 resources:
 - method: PUT
-  path: /users/admins/:userId
+  path: /users/admins/{userId}
   capture:
     adminUser:
       expression: "${datetime.now.iso8601_datetime}"
@@ -314,7 +314,7 @@ Here is an example combining capture and response template:
 # part of your configuration file
 
 resources:
-  - path: "/users/:userName"
+  - path: "/users/{userName}"
     method: PUT
     capture:
       user:

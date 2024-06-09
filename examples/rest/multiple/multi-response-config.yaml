@@ -2,11 +2,11 @@
 plugin: rest
 contentType: application/json
 resources:
-  - path: "/cats/:id"
+  - path: "/cats/{id}"
     type: array
     response:
       file: cats.json
-  - path: "/dogs/:id"
+  - path: "/dogs/{id}"
     type: array
     response:
       file: dogs.json

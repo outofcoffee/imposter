@@ -224,7 +224,7 @@ resources:
     response:
       statusCode: 201
 
-  - path: "/pets/:petId"
+  - path: "/pets/{petId}"
     method: put
     response:
       statusCode: 202

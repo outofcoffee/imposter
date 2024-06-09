@@ -72,11 +72,11 @@ We can configure different responses at multiple paths as follows:
     plugin: rest
     contentType: application/json
     resources:
-      - path: "/cats/:id"
+      - path: "/cats/{id}"
         type: array
         response:
           file: cats.json
-      - path: "/dogs/:id"
+      - path: "/dogs/{id}"
         type: array
         response:
           file: dogs.json
@@ -84,7 +84,7 @@ We can configure different responses at multiple paths as follows:
 A few things to call out:
 
 * We’ve defined the endpoint `/cats` to return the contents of our sample JSON file; in other words an array of cats.
-* We’ve also said that, because the response file is a JSON array, we want to allow querying of individual items by their ID, under the `/cats/:id` endpoint.
+* We’ve also said that, because the response file is a JSON array, we want to allow querying of individual items by their ID, under the `/cats/{id}` endpoint.
 * This example assumes you’ve named the file containing your JSON array `cats.json` and that it is in the same directory as the configuration file.
 
 Let's return an array of data at each endpoint:

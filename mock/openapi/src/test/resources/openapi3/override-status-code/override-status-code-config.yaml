@@ -26,19 +26,19 @@ resources:
     response:
       statusCode: 201
 
-  - path: "/pets/:petId"
+  - path: "/pets/{petId}"
     method: get
     pathParams:
       petId: 99
     response:
       statusCode: 203
 
-  - path: "/pets/:petId"
+  - path: "/pets/{petId}"
     method: put
     response:
       statusCode: 202
 
-  - path: "/pets/:petId"
+  - path: "/pets/{petId}"
     method: put
     requestHeaders:
       # header key deliberately lowercase in config, but uppercase in request

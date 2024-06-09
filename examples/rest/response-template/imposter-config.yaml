@@ -8,7 +8,7 @@ resources:
     template: true
 
 - method: PUT
-  path: /pets/:petId
+  path: /pets/{petId}
   capture:
     petId:
       pathParam: petId

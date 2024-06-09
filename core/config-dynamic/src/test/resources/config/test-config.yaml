@@ -3,7 +3,7 @@ plugin: io.gatehill.imposter.core.test.ExamplePluginImpl
 path: "/example"
 contentType: application/json
 resources:
-  - path: "/:id"
+  - path: "/{id}"
     type: ARRAY
     response:
       file: rest-plugin-list-data.json

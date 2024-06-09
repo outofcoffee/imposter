@@ -3,7 +3,7 @@ plugin: "io.gatehill.imposter.plugin.test.TestPluginImpl"
 resources:
 # Path with placeholder
 - method: GET
-  path: /users/:userId
+  path: /users/{userId}
   response:
     content: "alice"
 
