@@ -45,6 +45,7 @@ package io.gatehill.imposter.plugin.rest
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpMethod
+import io.gatehill.imposter.http.HttpRoute
 import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.http.SingletonResourceMatcher
 import io.gatehill.imposter.http.UniqueRoute
@@ -67,7 +68,6 @@ import io.gatehill.imposter.util.makeFuture
 import io.vertx.core.Vertx
 import org.apache.logging.log4j.LogManager
 import java.util.concurrent.CompletableFuture
-import java.util.regex.Pattern
 import javax.inject.Inject
 
 /**
@@ -165,8 +165,8 @@ open class RestPluginImpl @Inject constructor(
     ): CompletableFuture<Unit> = makeFuture {
         // validate path includes parameter
         val resourcePath = resourceConfig.path ?: ""
-        val matcher = PARAM_MATCHER.matcher(resourcePath)
-        require(matcher.matches()) {
+        val matcher = HttpRoute.PATH_PARAM_PLACEHOLDER.matcher(resourcePath)
+        require(matcher.find()) {
             "Resource '$resourcePath' does not contain a field ID parameter"
         }
 
@@ -201,10 +201,5 @@ open class RestPluginImpl @Inject constructor(
 
     companion object {
         private val LOGGER = LogManager.getLogger(RestPluginImpl::class.java)
-
-        /**
-         * Example: `/anything/:id/something`
-         */
-        private val PARAM_MATCHER = Pattern.compile(".*:(.+).*")
     }
 }

@@ -47,7 +47,6 @@ import io.gatehill.imposter.config.LoadedConfig
 import io.gatehill.imposter.config.util.ConfigUtil
 import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.config.util.MetaUtil
-import io.gatehill.imposter.http.HttpRoute
 import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.http.SingletonResourceMatcher
 import io.gatehill.imposter.inject.BootstrapModule
@@ -69,6 +68,7 @@ import io.gatehill.imposter.util.AsyncUtil
 import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.InjectorUtil
 import io.gatehill.imposter.util.MetricsUtil
+import io.gatehill.imposter.util.ResourceUtil
 import io.gatehill.imposter.util.splitOnCommaAndTrim
 import io.gatehill.imposter.util.supervisedDefaultCoroutineScope
 import io.vertx.core.Promise
@@ -230,16 +230,10 @@ class Imposter(
 
         if (preferExactMatchRoutes) {
             LOGGER.trace("Ordering routes by exact matches first")
-            router.routes.sortWith { r1, r2 -> countPlaceholders(r1) - countPlaceholders(r2) }
+            router.routes.sortWith { r1, r2 -> ResourceUtil.countPlaceholders(r1) - ResourceUtil.countPlaceholders(r2) }
         }
 
         return router
-    }
-
-    private fun countPlaceholders(route: HttpRoute): Int {
-        return route.path?.let { path -> path.count { it == ':' } }
-            ?: route.regex?.let { 1000 } // weight regex more than placeholders
-            ?: 0
     }
 
     fun stop(promise: Promise<Void>) {

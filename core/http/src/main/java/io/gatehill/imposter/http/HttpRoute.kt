@@ -65,10 +65,10 @@ data class HttpRoute(
         path ?: return@lazy null
 
         val paramNames = mutableListOf<String>()
-        val matcher = placeholderPattern.matcher(path)
+        val matcher = PATH_PARAM_PLACEHOLDER.matcher(path)
         val sb = StringBuffer()
         while (matcher.find()) {
-            val paramName: String = matcher.group().substring(1)
+            val paramName: String = matcher.group(1)
             require(!paramNames.contains(paramName)) { "Cannot use param name '$paramName' more than once in path" }
 
             matcher.appendReplacement(sb, "(?<$paramName>[^/]+)")
@@ -98,7 +98,7 @@ data class HttpRoute(
 
     private fun isPathPlaceholderMatch(requestPath: String): Boolean {
         parsedPathParams?.let { pathParams ->
-            if (path?.contains(':') == true) {
+            if (path?.contains('{') == true) {
                 val matcher = pathParams.pathPattern.matcher(requestPath)
                 if (matcher.matches()) {
                     return true
@@ -129,6 +129,9 @@ data class HttpRoute(
     }
 
     companion object {
-        private val placeholderPattern = Pattern.compile(":([A-Za-z][A-Za-z0-9_]*)")
+        /**
+         * Path parameter placeholders are bracketed, e.g. `{paramName}`.
+         */
+        val PATH_PARAM_PLACEHOLDER: Pattern = Pattern.compile("\\{([a-zA-Z0-9._\\-]+)}")
     }
 }

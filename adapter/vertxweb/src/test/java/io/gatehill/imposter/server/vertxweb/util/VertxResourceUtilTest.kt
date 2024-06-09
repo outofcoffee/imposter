@@ -56,9 +56,27 @@ import org.junit.jupiter.api.Test
  */
 class VertxResourceUtilTest {
     @Test
+    fun `should convert path to Vertx format`() {
+        val normalisedParams = mutableMapOf<String, String>()
+        val result = VertxResourceUtil.normalisePath(normalisedParams, "/{pathParam}/notParam")
+
+        assertEquals(0, normalisedParams.size)
+        assertEquals("/:pathParam/notParam", result)
+    }
+
+    @Test
+    fun `should handle param and plain string`() {
+        val normalisedParams = mutableMapOf<String, String>()
+        val result = VertxResourceUtil.normalisePath(normalisedParams, "/{firstParam}.notParam")
+
+        assertEquals(0, normalisedParams.size)
+        assertEquals("/:firstParam.notParam", result)
+    }
+
+    @Test
     fun `should normalise path`() {
         val normalisedParams = mutableMapOf<String, String>()
-        val result = VertxResourceUtil.normalisePath(normalisedParams, "/:firstParam/:second-param/notParam")
+        val result = VertxResourceUtil.normalisePath(normalisedParams, "/{firstParam}/{second-param}/notParam")
 
         assertEquals(1, normalisedParams.size)
         assertFalse(normalisedParams.containsKey("firstParam"))
