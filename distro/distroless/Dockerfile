@@ -1,27 +1,25 @@
-FROM eclipse-temurin:17-jdk-jammy AS build
+FROM gradle:7.6-jdk17 AS build
 
 # mirror uid/gid from distroless
 RUN addgroup nonroot --gid 65532 && \
     adduser nonroot --uid 65532 --gid 65532
 
-RUN mkdir -p \
-    /opt/imposter/bin \
-    /opt/imposter/lib \
-    /opt/imposter/config \
-    /opt/imposter/plugins \
-    && chown -R nonroot:nonroot /opt/imposter
-
 COPY --chown=nonroot:nonroot . /app
 USER nonroot
-
 WORKDIR /app
+
+RUN mkdir -p \
+    ./build/imposter/bin \
+    ./build/imposter/lib \
+    ./build/imposter/config \
+    ./build/imposter/plugins
 
 ENV GRADLE_OPTS="-Dorg.gradle.daemon=false"
 
 # don't run shadowJar/dist tasks
-RUN ./gradlew :distro:distro-core:installDist -xtest
+RUN gradle :distro:distro-core:installDist -xtest
 
-RUN cp -r ./distro/core/build/install/imposter/lib/* /opt/imposter/lib/
+RUN cp -r ./distro/core/build/install/imposter/lib/* ./build/imposter/lib/
 
 FROM gcr.io/distroless/java17-debian12
 
@@ -32,7 +30,7 @@ ENV IMPOSTER_VERSION="${IMPOSTER_VERSION}" \
     IMPOSTER_ENGINE=unpacked \
     IMPOSTER_JVM_DISTRODIR=/opt/imposter
 
-COPY --from=build --chown=nonroot:nonroot /opt/imposter /opt/imposter
+COPY --from=build --chown=nonroot:nonroot /app/build/imposter /opt/imposter
 USER nonroot
 
 ENV IMPOSTER_PLUGIN_DIR=/opt/imposter/plugins
