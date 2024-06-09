@@ -52,7 +52,6 @@ DEFAULT_IMAGE_DIRS=(
   "base"
   "core"
   "all"
-  "distroless"
 )
 PUSH_IMAGES="false"
 BUILD_BASE_IMAGE="true"

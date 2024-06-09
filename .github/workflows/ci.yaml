@@ -23,3 +23,10 @@ jobs:
     with:
       effective-branch: ${{ needs.setup.outputs.effective-branch }}
     secrets: inherit
+
+  distroless:
+    needs: [setup, validate]
+    uses: ./.github/workflows/distroless.yaml
+    with:
+      effective-branch: ${{ needs.setup.outputs.effective-branch }}
+    secrets: inherit

@@ -1,0 +1,48 @@
+name: Distroless
+on:
+  workflow_call:
+    inputs:
+      effective-branch:
+        required: true
+        type: string
+    secrets:
+      DOCKER_USERNAME:
+        required: true
+      DOCKER_PASSWORD:
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      CONTAINER_BUILDER: "buildx"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up build environment
+        run: chmod +x ./scripts/*.sh
+
+      - name: Build and push Docker images
+        id: docker-build
+        if: ${{ (startsWith(github.ref, 'refs/tags/') || inputs.effective-branch == 'develop') }}
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          case ${{ inputs.effective-branch }} in
+          develop)
+            ./scripts/docker-build.sh -p true -i distroless -b false beta
+            ;;
+
+          main)
+            CURRENT_VERSION="$( git describe --tags --exact-match )"
+            if [[ "${CURRENT_VERSION:0:1}" == "v" ]]; then
+                CURRENT_VERSION="$( echo ${CURRENT_VERSION} | cut -c 2- )"
+            fi
+            ./scripts/docker-build.sh -p true -i distroless -b false "${CURRENT_VERSION}"
+            ./scripts/docker-build.sh -p true -i distroless -b false "latest"
+            ;;
+          esac
