@@ -2,7 +2,7 @@ plugin: "openapi"
 specFile: "pet-api.yaml"
 
 resources:
-  - path: /pets/:petId
+  - path: /pets/{petId}
     method: get
     pathParams:
       petId: 2

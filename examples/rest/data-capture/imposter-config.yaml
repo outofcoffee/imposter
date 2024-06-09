@@ -2,7 +2,7 @@ plugin: rest
 
 resources:
 - method: GET
-  path: /users/:userId
+  path: /users/{userId}
   capture:
     userId:
       pathParam: userId
@@ -29,7 +29,7 @@ resources:
     statusCode: 200
 
 - method: PUT
-  path: /users/admins/:userId
+  path: /users/admins/{userId}
   capture:
     # constant value, but dynamic key
     adminUser:

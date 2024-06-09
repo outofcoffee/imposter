@@ -94,7 +94,7 @@ A few things to call out:
 
 #### Multiple resources example
 
-The [OpenAPI plugin](./openapi_plugin.md) and [REST plugin](./rest_plugin.md) allow you to specify multiple resources, using the `resources` array. Each resource can have its own path, method, response behaviour etc.
+The [OpenAPI plugin](./openapi_plugin.md), [SOAP plugin](./soap_plugin.md) and [REST plugin](./rest_plugin.md) allow you to specify multiple resources, using the `resources` array. Each resource can have its own path, method, response behaviour etc.
 
 ```yaml
 # multi-response-config.yaml
@@ -200,7 +200,7 @@ resources:
       statusCode: 200
   
   # handles GET /pets/10
-  - path: "/pets/:petId"
+  - path: "/pets/{petId}"
     method: GET
     pathParams:
       petId: 10
@@ -208,8 +208,8 @@ resources:
       statusCode: 401
       content: "You do not have permission to view this pet."
   
-  # handles PUT /pets/:petId with a request header 'X-Pet-Username: foo'
-  - path: "/pets/:petId"
+  # handles PUT /pets/{petId} with a request header 'X-Pet-Username: foo'
+  - path: "/pets/{petId}"
     method: PUT
     requestHeaders:
       X-Pet-Username: foo
