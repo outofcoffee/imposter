@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.41.0] - 2024-06-09
+### Added
+- feat(groovy): adds support for Groovy inline script steps.
+- feat: switches to bracketed parameter format internally.
+
+### Changed
+- docs: prefers bracketed path parameter format.
+- test: fixes JUnit build config for vertx-web.
+
 ## [3.40.0] - 2024-05-19
 ### Added
 - feat(graal): adds optional store proxy.
