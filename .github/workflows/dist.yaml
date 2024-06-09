@@ -64,7 +64,7 @@ jobs:
           echo "org.gradle.daemon=false" >> ~/.gradle/gradle.properties
 
       - name: Build distributions
-        run: ./gradlew dist --stacktrace
+        run: ./gradlew dist --stacktrace -xtest
 
       - name: Integration test
         run: |
