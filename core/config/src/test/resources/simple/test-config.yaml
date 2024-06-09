@@ -7,7 +7,12 @@ resources:
     statusCode: 200
     content: "example"
 
-- path: /openapi-style/{param1}
+- path: /bracket-style/{param1}
+  method: GET
+  response:
+    statusCode: 200
+
+- path: /vertx-style/:param1
   method: GET
   response:
     statusCode: 200

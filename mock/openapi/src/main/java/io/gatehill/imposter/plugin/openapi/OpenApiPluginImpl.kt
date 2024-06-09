@@ -71,7 +71,6 @@ import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.LogUtil.describeRequestShort
 import io.gatehill.imposter.util.MapUtil.addJavaTimeSupport
 import io.gatehill.imposter.util.ResourceUtil
-import io.gatehill.imposter.util.ResourceUtil.convertPathFromOpenApi
 import io.gatehill.imposter.util.completedUnitFuture
 import io.gatehill.imposter.util.makeFuture
 import io.swagger.util.Json
@@ -243,20 +242,18 @@ class OpenApiPluginImpl @Inject constructor(
      * Construct the full path from the base path and the operation path.
      *
      * @param pathPrefix
-     * @param specOperationPath the operation path from the OpenAPI specification
+     * @param operationPath the operation path from the OpenAPI specification
      * @return the full path
      */
-    private fun buildFullPath(pathPrefix: String, specOperationPath: String): String {
-        val operationPath = convertPathFromOpenApi(specOperationPath)
-
+    private fun buildFullPath(pathPrefix: String, operationPath: String): String {
         return if (pathPrefix.endsWith("/")) {
-            if (operationPath!!.startsWith("/")) {
+            if (operationPath.startsWith("/")) {
                 pathPrefix + operationPath.substring(1)
             } else {
                 pathPrefix + operationPath
             }
         } else {
-            if (operationPath!!.startsWith("/")) {
+            if (operationPath.startsWith("/")) {
                 pathPrefix + operationPath
             } else {
                 "$pathPrefix/$operationPath"

@@ -42,10 +42,12 @@
  */
 package io.gatehill.imposter.server.vertxweb.util
 
+import com.google.common.base.Strings
 import com.google.common.collect.BiMap
 import com.google.common.collect.HashBiMap
 import io.gatehill.imposter.http.HttpMethod
-import java.util.UUID
+import io.gatehill.imposter.http.HttpRoute
+import java.util.*
 
 /**
  * @author Pete Cornish
@@ -57,8 +59,10 @@ object VertxResourceUtil {
      * > Parameter names consist of any alphabetic character, numeric character or underscore.
      *
      * See: https://vertx.io/docs/vertx-web/java/#_capturing_path_parameters
+     *
+     * This regex pattern does not include the colon prefix.
      */
-    private val vertxPathFormat = Regex(":[a-zA-Z0-9_]+")
+    private val VERTX_PATH_PARAM_NAME = Regex("[a-zA-Z0-9_]+")
 
     private val METHODS: BiMap<HttpMethod, io.vertx.core.http.HttpMethod?> = HashBiMap.create()
 
@@ -83,22 +87,65 @@ object VertxResourceUtil {
     fun io.vertx.core.http.HttpMethod.convertMethodFromVertx(): HttpMethod =
         METHODS.inverse()[this] ?: throw UnsupportedOperationException("Unknown method: $this")
 
+    /**
+     * Normalises path parameters to Vert.x format.
+     *
+     * If a path parameter name does not match the Vert.x format, it is replaced with a UUID,
+     * and a mapping is added to the `normalisedParams` map.
+     *
+     * For example:
+     * ```
+     * /{pathParam}/notParam
+     * ```
+     * will be converted to:
+     * ```
+     * /:pathParam/notParam
+     * ```
+     *
+     * A path parameter name that does not match the Vert.x format, such as:
+     * ```
+     * /{param-with-dashes}
+     * ```
+     * will be converted to:
+     * ```
+     * /:123e4567e89b12d3a4564266141740000
+     * ```
+     * and the mapping `param-with-dashes -> 123e4567e89b12d3a4564266141740000`
+     * will be added to the `normalisedParams` map.
+     *
+     * @param normalisedParams a map to store the normalised parameter names
+     * @param rawPath the path to normalise
+     */
     fun normalisePath(normalisedParams: MutableMap<String, String>, rawPath: String): String {
-        val normalisedPath = rawPath.split("/").filter { it.isNotEmpty() }.map { pathPart ->
-            if (pathPart.startsWith(":") && !pathPart.matches(vertxPathFormat)) {
-                val paramName = pathPart.substring(1)
-                val normalisedName = UUID.randomUUID().toString().replace("-", "")
-                normalisedParams[normalisedName] = paramName
-                ":$normalisedName"
-            } else {
-                pathPart
-            }
+        var path = rawPath
+        if (!Strings.isNullOrEmpty(path)) {
+            var matchFound: Boolean
+            do {
+                val matcher = HttpRoute.PATH_PARAM_PLACEHOLDER.matcher(path)
+                matchFound = matcher.find()
+                if (matchFound) {
+                    val finalParamName = matcher.group(1).let { paramName ->
+                        if (paramName.matches(VERTX_PATH_PARAM_NAME)) {
+                            paramName
+                        } else {
+                            val existingMapping = normalisedParams.entries.find { it.value == paramName }
+                            if (null != existingMapping) {
+                                return@let existingMapping.key
+                            }
+                            val normalisedName = UUID.randomUUID().toString().replace("-", "")
+                            normalisedParams[normalisedName] = paramName
+                            normalisedName
+                        }
+                    }
+                    path = matcher.replaceFirst(":$finalParamName")
+                }
+            } while (matchFound)
         }
-        return normalisedPath.joinToString(separator = "/", prefix = "/")
+        return path
     }
 
     fun getNormalisedParamName(normalisedParams: Map<String, String>, originalParamName: String): String {
-        if (originalParamName.matches(vertxPathFormat)) {
+        if (originalParamName.matches(VERTX_PATH_PARAM_NAME)) {
             return originalParamName
         }
         return normalisedParams.entries.find { it.value == originalParamName }?.key ?: originalParamName

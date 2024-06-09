@@ -295,10 +295,10 @@ object ConfigUtil {
             check(config.plugin != null) { "No plugin specified in configuration file: $configFile" }
             config.dir = configFile.parentFile
 
-            // convert any OpenAPI format path parameters
+            // normalise path param format
             if (config is ResourcesHolder<*>) {
                 (config as ResourcesHolder<*>).resources?.forEach { resource ->
-                    resource.path = ResourceUtil.convertPathFromOpenApi(resource.path)
+                    resource.path = ResourceUtil.convertPathParamsToBracketFormat(resource.path)
                 }
             }
 

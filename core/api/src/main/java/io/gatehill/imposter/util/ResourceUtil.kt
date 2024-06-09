@@ -44,6 +44,7 @@ package io.gatehill.imposter.util
 
 import com.google.common.base.Strings
 import io.gatehill.imposter.http.HttpMethod
+import io.gatehill.imposter.http.HttpRoute
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig
 import io.gatehill.imposter.plugin.config.resource.ResponseConfigHolder
 import io.gatehill.imposter.plugin.config.resource.request.MethodResourceConfig
@@ -57,33 +58,40 @@ object ResourceUtil {
     const val RC_REQUEST_ID_KEY = "request.id"
     const val RC_SEND_NOT_FOUND_RESPONSE = "response.sendNotFoundResponse"
 
-    private val PATH_PARAM_PLACEHOLDER = Pattern.compile("\\{([a-zA-Z0-9._\\-]+)}")
+    /**
+     * Vert.x documentation says:
+     * > The placeholders consist of : followed by the parameter name.
+     * > Parameter names consist of any alphabetic character, numeric character or underscore.
+     *
+     * See: https://vertx.io/docs/vertx-web/java/#_capturing_path_parameters
+     */
+    private val COLON_PATH_PLACEHOLDER = Pattern.compile(":([a-zA-Z0-9_]+)")
 
     /**
-     * Convert the OpenAPI style path to one with colon-prefixed parameter placeholders.
+     * Convert colon-prefixed path params to bracketed format (OpenAPI-style) ones.
      *
      * For example:
-     * ```
-     * /example/{foo}
-     * ```
-     *
-     * will be converted to:
      * ```
      * /example/:foo
      * ```
      *
-     * @param openapiPath the OpenAPI path
+     * will be converted to:
+     * ```
+     * /example/{foo}
+     * ```
+     *
+     * @param pathToConvert the path to convert
      * @return the converted path
      */
-    fun convertPathFromOpenApi(openapiPath: String?): String? {
-        var path = openapiPath
+    fun convertPathParamsToBracketFormat(pathToConvert: String?): String? {
+        var path = pathToConvert
         if (!Strings.isNullOrEmpty(path)) {
             var matchFound: Boolean
             do {
-                val matcher = PATH_PARAM_PLACEHOLDER.matcher(path!!)
+                val matcher = COLON_PATH_PLACEHOLDER.matcher(path!!)
                 matchFound = matcher.find()
                 if (matchFound) {
-                    path = matcher.replaceFirst(":" + matcher.group(1))
+                    path = matcher.replaceFirst("{" + matcher.group(1) + "}")
                 }
             } while (matchFound)
         }
@@ -106,4 +114,13 @@ object ResourceUtil {
      */
     fun isStaticContentRoute(resource: ResourceConfig): Boolean =
             resource is ResponseConfigHolder && !resource.responseConfig.dir.isNullOrBlank()
+
+    /**
+     * @return the number of placeholders in the route, or a large number if the route is regex-based
+     */
+    fun countPlaceholders(route: HttpRoute): Int {
+        return route.path?.let { path -> path.count { it == '{' } }
+            ?: route.regex?.let { 1000 } // weight regex more than placeholders
+            ?: 0
+    }
 }

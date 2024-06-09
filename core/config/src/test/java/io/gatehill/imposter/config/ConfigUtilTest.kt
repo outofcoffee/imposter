@@ -181,9 +181,13 @@ class ConfigUtilTest {
         assertThat("resource response status code should be set", exampleResource?.responseConfig?.statusCode, equalTo(200))
         assertThat("resource response content should be set", exampleResource?.responseConfig?.content, equalTo("example"))
 
-        val openApiStyleResource = config.resources?.find { it.path?.startsWith("/openapi-style") == true }
-        assertNotNull("openapi style resource should be set", openApiStyleResource)
-        assertThat("openapi style resource path should be converted to vertx style", openApiStyleResource?.path, equalTo("/openapi-style/:param1"))
+        val bracketStylePathResource = config.resources?.find { it.path?.startsWith("/bracket-style") == true }
+        assertNotNull("bracket style resource should be set", bracketStylePathResource)
+        assertThat("bracket style resource path should be preserved", bracketStylePathResource?.path, equalTo("/bracket-style/{param1}"))
+
+        val vertxStylePathResource = config.resources?.find { it.path?.startsWith("/vertx-style") == true }
+        assertNotNull("vertx style resource should be set", vertxStylePathResource)
+        assertThat("vertx style resource path should be converted to bracketed style", vertxStylePathResource?.path, equalTo("/vertx-style/{param1}"))
     }
 
     /**
