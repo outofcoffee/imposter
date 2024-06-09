@@ -33,4 +33,4 @@ cd ${ROOT_DIR}
 
 echo -e "\nPackaging and pushing"
 cd ${SCRIPT_DIR}
-./docker-build.sh ${CURRENT_VERSION}
+./docker-build.sh -p true ${CURRENT_VERSION}

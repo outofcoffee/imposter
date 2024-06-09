@@ -53,7 +53,7 @@ DEFAULT_IMAGE_DIRS=(
   "core"
   "all"
 )
-PUSH_IMAGES="true"
+PUSH_IMAGES="false"
 
 function usage() {
   echo -e "Usage:\n  $(basename $0) [-p <true|false> -e]"
