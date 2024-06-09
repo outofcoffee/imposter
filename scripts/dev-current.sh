@@ -143,8 +143,7 @@ export JAVA_TOOL_OPTIONS
 
 case ${LAUNCH_MODE} in
   docker)
-    export IMAGE_DIR="${DISTRO_NAME}"
-    ./scripts/docker-build.sh
+    ./scripts/docker-build.sh -i "${DISTRO_NAME}"
 
     case "${DISTRO_NAME}" in
     core)
