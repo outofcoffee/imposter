@@ -1,2 +1,3 @@
 [worker.oci]
-max-parallelism = 1
+  # limit the number of parallel build steps that can run at the same time
+  max-parallelism = 1
