@@ -5,11 +5,16 @@ on:
       effective-branch:
         required: true
         type: string
+      release:
+        required: true
+        type: boolean
     secrets:
       DOCKER_USERNAME:
-        required: true
+        # only needed for release builds
+        required: false
       DOCKER_PASSWORD:
-        required: true
+        # only needed for release builds
+        required: false
 
 jobs:
   build:
@@ -41,7 +46,6 @@ jobs:
 
       - name: Build and push Docker images
         id: docker-build
-        if: ${{ (startsWith(github.ref, 'refs/tags/') || inputs.effective-branch == 'develop') }}
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
