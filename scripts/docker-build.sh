@@ -62,7 +62,7 @@ function usage() {
   exit 1
 }
 
-while getopts "bep:i:" OPT; do
+while getopts "b:ep:i:" OPT; do
   case ${OPT} in
   b)
     BUILD_BASE_IMAGE="$OPTARG"
@@ -131,7 +131,7 @@ function build_image_buildx() {
 
   if [[ "${PUSH_IMAGES}" == "true" ]]; then
     echo -e "\nBuilding multiplatform image: ${FULL_IMAGE_NAME}"
-    docker buildx create --driver docker-container --config "${ROOT_DIR}/buildkitd.toml" --use
+    docker buildx create --driver docker-container --use
     BUILD_ARGS="${BUILD_ARGS} --push --platform linux/amd64,linux/arm64"
   else
     docker buildx use default
