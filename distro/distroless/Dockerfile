@@ -16,7 +16,7 @@ RUN mkdir -p \
 
 COPY --chown=nonroot:nonroot ./distro/core/build/install/imposter/lib/* ./build/imposter/lib/
 
-FROM gcr.io/distroless/java17-debian12
+FROM gcr.io/distroless/java17-debian12:nonroot
 
 LABEL MAINTAINER="Pete Cornish <outofcoffee@gmail.com>"
 
