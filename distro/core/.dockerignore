@@ -4,6 +4,7 @@
 core
 docs
 embedded
+examples
 gradle
 mock
 scripting

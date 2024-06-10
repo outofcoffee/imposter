@@ -1,4 +1,4 @@
-FROM debian:bookworm AS build
+FROM gradle:7.6-jdk17 AS build
 
 # mirror uid/gid from distroless
 RUN addgroup nonroot --gid 65532 && \
@@ -14,7 +14,12 @@ RUN mkdir -p \
     ./build/imposter/config \
     ./build/imposter/plugins
 
-COPY --chown=nonroot:nonroot ./distro/core/build/install/imposter/lib/* ./build/imposter/lib/
+ENV GRADLE_OPTS="-Dorg.gradle.daemon=false"
+
+# don't run shadowJar/dist tasks
+RUN gradle :distro:distro-core:installDist -xtest
+
+RUN cp -r ./distro/core/build/install/imposter/lib/* ./build/imposter/lib/
 
 FROM gcr.io/distroless/java17-debian12
 
