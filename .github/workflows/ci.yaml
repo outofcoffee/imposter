@@ -23,7 +23,7 @@ jobs:
     uses: ./.github/workflows/dist.yaml
     with:
       effective-branch: ${{ needs.setup.outputs.effective-branch }}
-      release: ${{ needs.setup.outputs.release }}
+      release: ${{ needs.setup.outputs.release == true }}
     secrets: inherit
 
   distroless:
@@ -32,5 +32,5 @@ jobs:
     uses: ./.github/workflows/distroless.yaml
     with:
       effective-branch: ${{ needs.setup.outputs.effective-branch }}
-      release: ${{ needs.setup.outputs.release }}
+      release: ${{ needs.setup.outputs.release == true }}
     secrets: inherit
