@@ -48,4 +48,4 @@ package io.gatehill.imposter.plugin.config.resource
  *
  * @author Pete Cornish
  */
-interface BasicResourceConfig : ResourceConfig, ResponseConfigHolder, StableResourceIdHolder
+interface BasicResourceConfig : ResourceConfig, ResponseConfigHolder, StableResourceIdHolder, InterceptorConfigHolder

@@ -142,7 +142,7 @@ class ResponseRoutingServiceImpl @Inject constructor(
                     LogUtil.describeRequestShort(httpExchange),
                 )
             }
-            responseBehaviour = responseBehaviourFactory.build(statusCode, responseConfig)
+            responseBehaviour = responseBehaviourFactory.build(statusCode, resourceConfig)
         } else {
             val responseBehaviours = steps.map {
                 it.step.execute(
@@ -164,7 +164,7 @@ class ResponseRoutingServiceImpl @Inject constructor(
                     logger.trace("Inheriting root response configuration as defaults")
                     responseBehaviourFactory.populate(
                         statusCode,
-                        (pluginConfig as BasicResourceConfig).responseConfig,
+                        (pluginConfig as BasicResourceConfig),
                         responseBehaviour
                     )
                 }

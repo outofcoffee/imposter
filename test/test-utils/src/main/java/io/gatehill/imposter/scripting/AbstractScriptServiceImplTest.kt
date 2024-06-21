@@ -95,7 +95,7 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
         // zero as un-set by script
         assertEquals(0, actual.statusCode)
         assertNull(actual.responseFile)
-        assertEquals(ResponseBehaviourType.DEFAULT_BEHAVIOUR, actual.behaviourType)
+        assertNull("Behaviour type should not be set", actual.behaviourType)
     }
 
     @Test
@@ -114,8 +114,8 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
 
         assertNotNull(actual)
         assertEquals(203, actual.statusCode)
-        assertEquals(ResponseBehaviourType.DEFAULT_BEHAVIOUR, actual.behaviourType)
-        assertEquals("quux", actual.responseHeaders.get("X-Echo-Qux"))
+        assertNull("Behaviour type should not be set", actual.behaviourType)
+        assertEquals("quux", actual.responseHeaders["X-Echo-Qux"])
     }
 
     @Test
@@ -134,8 +134,8 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
 
         assertNotNull(actual)
         assertEquals(200, actual.statusCode)
-        assertEquals(ResponseBehaviourType.DEFAULT_BEHAVIOUR, actual.behaviourType)
-        assertEquals("bar", actual.responseHeaders.get("X-Echo-Foo"))
+        assertNull("Behaviour type should not be set", actual.behaviourType)
+        assertEquals("bar", actual.responseHeaders["X-Echo-Foo"])
     }
 
     @Test
@@ -154,8 +154,8 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
 
         assertNotNull(actual)
         assertEquals(202, actual.statusCode)
-        assertEquals(ResponseBehaviourType.DEFAULT_BEHAVIOUR, actual.behaviourType)
-        assertEquals("qux", actual.responseHeaders.get("X-Echo-Baz"))
+        assertNull("Behaviour type should not be set", actual.behaviourType)
+        assertEquals("qux", actual.responseHeaders["X-Echo-Baz"])
     }
 
     @Test
@@ -176,8 +176,8 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
 
         assertNotNull(actual)
         assertEquals(202, actual.statusCode)
-        assertEquals(ResponseBehaviourType.DEFAULT_BEHAVIOUR, actual.behaviourType)
-        assertEquals("grault", actual.responseHeaders.get("X-Echo-Corge"))
+        assertNull("Behaviour type should not be set", actual.behaviourType)
+        assertEquals("grault", actual.responseHeaders["X-Echo-Corge"])
     }
 
     @Test
@@ -198,8 +198,8 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
 
         assertNotNull(actual)
         assertEquals(204, actual.statusCode)
-        assertEquals(ResponseBehaviourType.DEFAULT_BEHAVIOUR, actual.behaviourType)
-        assertEquals("foo", actual.responseHeaders.get("X-Echo-Env-Var"))
+        assertNull("Behaviour type should not be set", actual.behaviourType)
+        assertEquals("foo", actual.responseHeaders["X-Echo-Env-Var"])
     }
 
     @Test
@@ -223,6 +223,6 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
         assertEquals("foo.bar", actual.responseFile)
         assertEquals(ResponseBehaviourType.SHORT_CIRCUIT, actual.behaviourType)
         assertEquals(1, actual.responseHeaders.size)
-        assertEquals("AwesomeHeader", actual.responseHeaders.get("MyHeader"))
+        assertEquals("AwesomeHeader", actual.responseHeaders["MyHeader"])
     }
 }

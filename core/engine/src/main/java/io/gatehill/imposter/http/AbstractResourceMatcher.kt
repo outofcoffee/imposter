@@ -68,10 +68,22 @@ import java.util.regex.Pattern
 abstract class AbstractResourceMatcher : ResourceMatcher {
     private val inlineScriptService: InlineScriptService by lazy { InjectorUtil.getInstance() }
 
-    /**
-     * {@inheritDoc}
-     */
-    override fun matchResourceConfig(
+    override fun matchAllResourceConfigs(
+        pluginConfig: PluginConfig,
+        resources: List<ResolvedResourceConfig>,
+        httpExchange: HttpExchange,
+    ): List<BasicResourceConfig> {
+        val resourceConfigs = filterResourceConfigs(pluginConfig, resources, httpExchange)
+        LOGGER.trace(
+            "Matched {} resource configs for {}: {}",
+            resourceConfigs.size,
+            LogUtil.describeRequestShort(httpExchange),
+            resourceConfigs
+        )
+        return resourceConfigs.map { it.resource.config };
+    }
+
+    override fun matchSingleResourceConfig(
         pluginConfig: PluginConfig,
         resources: List<ResolvedResourceConfig>,
         httpExchange: HttpExchange,

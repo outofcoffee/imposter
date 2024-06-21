@@ -46,5 +46,9 @@ package io.gatehill.imposter.script
  * @author Pete Cornish
  */
 enum class ResponseBehaviourType {
-    DEFAULT_BEHAVIOUR, SHORT_CIRCUIT
+    /**
+     * TODO rename to `CONTINUE_TO_NEXT`
+     */
+    DEFAULT_BEHAVIOUR,
+    SHORT_CIRCUIT,
 }

@@ -1,0 +1,24 @@
+plugin: "io.gatehill.imposter.plugin.test.TestPluginImpl"
+
+interceptors:
+- path: /short-circuit
+  requestHeaders:
+    User-Agent: foo
+  response:
+    statusCode: 400
+    content: "shortcircuit"
+
+- path: /pass-through
+  continue: true
+  steps:
+    - type: script
+      code: |
+        var req = stores.open("request");
+        req.save("response", "passthrough");
+
+resources:
+- path: /*
+  method: GET
+  response:
+    content: "${stores.request.response:-default}"
+    template: true

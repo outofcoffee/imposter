@@ -48,6 +48,8 @@ import io.gatehill.imposter.service.FileCacheService
 import io.gatehill.imposter.service.FileCacheServiceImpl
 import io.gatehill.imposter.service.HandlerService
 import io.gatehill.imposter.service.HandlerServiceImpl
+import io.gatehill.imposter.service.InterceptorService
+import io.gatehill.imposter.service.InterceptorServiceImpl
 import io.gatehill.imposter.service.RemoteService
 import io.gatehill.imposter.service.ResponseFileService
 import io.gatehill.imposter.service.ResponseFileServiceImpl
@@ -74,6 +76,7 @@ import io.gatehill.imposter.util.asSingleton
 internal class EngineModule : AbstractModule() {
     override fun configure() {
         bind(HandlerService::class.java).to(HandlerServiceImpl::class.java).asSingleton()
+        bind(InterceptorService::class.java).to(InterceptorServiceImpl::class.java).asSingleton()
         bind(ResponseRoutingService::class.java).to(ResponseRoutingServiceImpl::class.java).asSingleton()
         bind(ResponseService::class.java).to(ResponseServiceImpl::class.java).asSingleton()
         bind(ResponseFileService::class.java).to(ResponseFileServiceImpl::class.java).asSingleton()

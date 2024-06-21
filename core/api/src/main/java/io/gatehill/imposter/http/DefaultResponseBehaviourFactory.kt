@@ -43,7 +43,7 @@
 package io.gatehill.imposter.http
 
 import com.google.common.base.Strings
-import io.gatehill.imposter.plugin.config.resource.ResponseConfig
+import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl
 
@@ -51,17 +51,26 @@ import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl
  * @author Pete Cornish
  */
 open class DefaultResponseBehaviourFactory protected constructor() : ResponseBehaviourFactory {
-    override fun build(statusCode: Int, responseConfig: ResponseConfig): ReadWriteResponseBehaviour {
+    override fun build(statusCode: Int, resourceConfig: BasicResourceConfig): ReadWriteResponseBehaviour {
         val responseBehaviour = ReadWriteResponseBehaviourImpl()
-        populate(statusCode, responseConfig, responseBehaviour)
+        populate(statusCode, resourceConfig, responseBehaviour)
         return responseBehaviour
     }
 
     override fun populate(
         statusCode: Int,
-        responseConfig: ResponseConfig,
-        responseBehaviour: ReadWriteResponseBehaviour
+        resourceConfig: BasicResourceConfig,
+        responseBehaviour: ReadWriteResponseBehaviour,
     ) {
+        if (null == responseBehaviour.behaviourType) {
+            resourceConfig.continueToNext?.let { continueToNext ->
+                if (continueToNext) responseBehaviour.usingDefaultBehaviour() else responseBehaviour.skipDefaultBehaviour()
+            } ?: run {
+                if (resourceConfig.isInterceptor) responseBehaviour.skipDefaultBehaviour() else responseBehaviour.usingDefaultBehaviour()
+            }
+        }
+
+        val responseConfig = resourceConfig.responseConfig
         if (0 == responseBehaviour.statusCode) {
             responseBehaviour.withStatusCode(statusCode)
         }

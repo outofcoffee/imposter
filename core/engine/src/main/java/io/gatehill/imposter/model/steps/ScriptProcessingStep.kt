@@ -78,8 +78,8 @@ class ScriptProcessingStep(
         )
 
         // use defaults if not set
-        if (ResponseBehaviourType.DEFAULT_BEHAVIOUR == responseBehaviour.behaviourType) {
-            responseBehaviourFactory.populate(statusCode, ctx.resourceConfig.responseConfig, responseBehaviour)
+        if (null == responseBehaviour.behaviourType || ResponseBehaviourType.DEFAULT_BEHAVIOUR == responseBehaviour.behaviourType) {
+            responseBehaviourFactory.populate(statusCode, ctx.resourceConfig, responseBehaviour)
         }
 
         return responseBehaviour

@@ -57,6 +57,7 @@ interface MutableResponseBehaviour {
     fun withExampleName(exampleName: String): MutableResponseBehaviour
     fun usingDefaultBehaviour(): MutableResponseBehaviour
     fun skipDefaultBehaviour(): MutableResponseBehaviour
+    fun continueToNext(): MutableResponseBehaviour
     fun and(): MutableResponseBehaviour
     fun withPerformance(performance: PerformanceSimulationConfig?): MutableResponseBehaviour
     fun withDelay(exactDelayMs: Int): MutableResponseBehaviour

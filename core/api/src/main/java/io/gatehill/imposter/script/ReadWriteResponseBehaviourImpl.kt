@@ -46,7 +46,7 @@ package io.gatehill.imposter.script
  * @author Pete Cornish
  */
 open class ReadWriteResponseBehaviourImpl : ReadWriteResponseBehaviour {
-    override var behaviourType = ResponseBehaviourType.DEFAULT_BEHAVIOUR
+    override var behaviourType: ResponseBehaviourType? = null
     override var statusCode = 0
     override var responseFile: String? = null
     override var content: String? = null
@@ -141,6 +141,18 @@ open class ReadWriteResponseBehaviourImpl : ReadWriteResponseBehaviour {
         }
         behaviourType = ResponseBehaviourType.SHORT_CIRCUIT
         return this
+    }
+
+    /**
+     * Continue to the next interceptor, or the matched resource if
+     * there are no more interceptors.
+     *
+     * Alias for [usingDefaultBehaviour].
+     *
+     * @return this
+     */
+    override fun continueToNext(): MutableResponseBehaviour {
+        return usingDefaultBehaviour()
     }
 
     /**

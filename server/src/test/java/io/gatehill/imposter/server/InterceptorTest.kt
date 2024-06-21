@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022.
+ * Copyright (c) 2024.
  *
  * This file is part of Imposter.
  *
@@ -40,39 +40,63 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.server
 
-package io.gatehill.imposter.http
+import io.gatehill.imposter.plugin.test.TestPluginImpl
+import io.restassured.RestAssured
+import io.vertx.ext.unit.TestContext
+import io.vertx.ext.unit.junit.VertxUnitRunner
+import org.hamcrest.Matchers.equalTo
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
 
-import io.gatehill.imposter.config.ResolvedResourceConfig
-import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
+/**
+ * Tests for kebab-case path parameters.
+ *
+ * @author Pete Cornish
+ */
+@RunWith(VertxUnitRunner::class)
+class InterceptorTest : BaseVerticleTest() {
+    override val pluginClass = TestPluginImpl::class.java
 
-interface ResourceMatcher {
-    /**
-     * Search for all resource configurations matching the current request.
-     *
-     * @param pluginConfig   the plugin configuration containing the resources
-     * @param resources      the resources from the response configuration
-     * @param httpExchange   the current exchange
-     * @return a matching resource configuration or else empty
-     */
-    fun matchAllResourceConfigs(
-        pluginConfig: PluginConfig,
-        resources: List<ResolvedResourceConfig>,
-        httpExchange: HttpExchange,
-    ): List<BasicResourceConfig>
+    @Before
+    @Throws(Exception::class)
+    override fun setUp(testContext: TestContext) {
+        super.setUp(testContext)
+        RestAssured.baseURI = "http://$host:$listenPort"
+        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails()
+    }
 
-    /**
-     * Search for a resource configuration matching the current request.
-     *
-     * @param pluginConfig   the plugin configuration containing the resources
-     * @param resources      the resources from the response configuration
-     * @param httpExchange   the current exchange
-     * @return a matching resource configuration or else empty
-     */
-    fun matchSingleResourceConfig(
-        pluginConfig: PluginConfig,
-        resources: List<ResolvedResourceConfig>,
-        httpExchange: HttpExchange,
-    ): BasicResourceConfig?
+    override val testConfigDirs = listOf(
+        "/interceptor"
+    )
+
+    @Test
+    fun `interceptor should short-circuit response`() {
+        RestAssured.given().`when`()
+            .header("User-Agent", "foo")
+            .get("/short-circuit")
+            .then()
+            .statusCode(400)
+            .body(equalTo("shortcircuit"))
+    }
+
+    @Test
+    fun `interceptor should update store and continue`() {
+        RestAssured.given().`when`()
+            .get("/pass-through")
+            .then()
+            .statusCode(200)
+            .body(equalTo("passthrough"))
+    }
+
+    @Test
+    fun `interceptors should be skipped`() {
+        RestAssured.given().`when`()
+            .get("/example")
+            .then()
+            .statusCode(200)
+            .body(equalTo("default"))
+    }
 }

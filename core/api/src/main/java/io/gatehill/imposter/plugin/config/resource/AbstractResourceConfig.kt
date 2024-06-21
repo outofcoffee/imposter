@@ -68,10 +68,16 @@ abstract class AbstractResourceConfig : BasicResourceConfig, SecurityConfigHolde
     @JsonProperty("response")
     override val responseConfig = ResponseConfig()
 
+    @JsonIgnore
+    override var isInterceptor: Boolean = false
+
+    @JsonProperty("continue")
+    override val continueToNext: Boolean? = null
+
     @get:JsonIgnore
     override val resourceId by lazy { UUID.randomUUID().toString() }
 
     override fun toString(): String {
-        return "AbstractResourceConfig(path=$path, securityConfig=$securityConfig, captureConfig=$captureConfig, responseConfig=$responseConfig)"
+        return "AbstractResourceConfig(path=$path, securityConfig=$securityConfig, captureConfig=$captureConfig, responseConfig=$responseConfig, continueToNext=$continueToNext)"
     }
 }
