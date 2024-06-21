@@ -43,7 +43,6 @@
 package io.gatehill.imposter.service
 
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
-import io.gatehill.imposter.script.ResponseBehaviourType
 import io.gatehill.imposter.scripting.AbstractBaseScriptTest
 import io.gatehill.imposter.scripting.graalvm.service.GraalvmScriptServiceImpl
 import org.junit.Assert
@@ -76,6 +75,6 @@ class RequireTypesTest : AbstractBaseScriptTest() {
         Assert.assertNotNull(actual)
         Assert.assertEquals(201, actual.statusCode)
         Assert.assertEquals("foo", actual.content)
-        Assert.assertEquals(ResponseBehaviourType.DEFAULT_BEHAVIOUR, actual.behaviourType)
+        Assert.assertNull("Behaviour type should not be set", actual.behaviourType)
     }
 }

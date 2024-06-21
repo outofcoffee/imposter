@@ -55,6 +55,7 @@ import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.http.ResourceMatcher
 import io.gatehill.imposter.lifecycle.SecurityLifecycleHooks
 import io.gatehill.imposter.lifecycle.SecurityLifecycleListener
+import io.gatehill.imposter.plugin.config.InterceptorsHolder
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.ResourcesHolder
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
@@ -83,6 +84,7 @@ import javax.inject.Inject
 class HandlerServiceImpl @Inject constructor(
     private val securityService: SecurityService,
     private val securityLifecycle: SecurityLifecycleHooks,
+    private val interceptorService: InterceptorService,
     private val responseService: ResponseService,
     private val upstreamService: UpstreamService,
     private val vertx: Vertx,
@@ -108,19 +110,36 @@ class HandlerServiceImpl @Inject constructor(
         httpExchangeHandler: HttpExchangeFutureHandler,
     ): HttpExchangeFutureHandler {
         val resolvedResourceConfigs = resolveResourceConfigs(pluginConfig)
+        val resolvedInterceptorConfigs = resolveInterceptorConfigs(pluginConfig)
+
         return when (imposterConfig.requestHandlingMode) {
             RequestHandlingMode.SYNC -> { httpExchange: HttpExchange ->
-                handle(pluginConfig, httpExchangeHandler, httpExchange, resolvedResourceConfigs, resourceMatcher)
+                handle(
+                    pluginConfig,
+                    httpExchangeHandler,
+                    httpExchange,
+                    resolvedResourceConfigs,
+                    resolvedInterceptorConfigs,
+                    resourceMatcher
+                )
             }
 
             RequestHandlingMode.ASYNC -> { httpExchange: HttpExchange ->
                 makeFuture(autoComplete = false) { future ->
                     val handler = Callable {
-                        handle(pluginConfig, httpExchangeHandler, httpExchange, resolvedResourceConfigs, resourceMatcher)
-                            .thenApply { future.complete(it) }
-                            .exceptionally { future.completeExceptionally(it) }
+                        handle(
+                            pluginConfig,
+                            httpExchangeHandler,
+                            httpExchange,
+                            resolvedResourceConfigs,
+                            resolvedInterceptorConfigs,
+                            resourceMatcher
+                        ).thenApply {
+                            future.complete(it)
+                        }.exceptionally {
+                            future.completeExceptionally(it)
+                        }
                     }
-
                     // explicitly disable ordered execution - responses should not block each other
                     // as this causes head of line blocking performance issues
                     vertx.orCreateContext.executeBlocking(handler, false)
@@ -234,6 +253,18 @@ class HandlerServiceImpl @Inject constructor(
         } ?: emptyList()
     }
 
+    /**
+     * Extract the interceptor configurations from the plugin configuration, if present.
+     *
+     * @param pluginConfig the plugin configuration
+     * @return the interceptor configurations
+     */
+    private fun resolveInterceptorConfigs(pluginConfig: PluginConfig): List<ResolvedResourceConfig> {
+        return (pluginConfig as? InterceptorsHolder<*>)?.interceptors?.map { config ->
+            ResolvedResourceConfig.parse(config)
+        } ?: emptyList()
+    }
+
     private fun logAppropriatelyForPath(httpExchange: HttpExchange, description: String) {
         val level = determineLogLevel(httpExchange)
         LOGGER.log(
@@ -258,7 +289,8 @@ class HandlerServiceImpl @Inject constructor(
         pluginConfig: PluginConfig,
         httpExchangeHandler: HttpExchangeFutureHandler,
         httpExchange: HttpExchange,
-        resolvedResourceConfigs: List<ResolvedResourceConfig>,
+        resourceConfigs: List<ResolvedResourceConfig>,
+        interceptorConfigs: List<ResolvedResourceConfig>,
         resourceMatcher: ResourceMatcher,
     ): CompletableFuture<Unit> {
         try {
@@ -275,27 +307,33 @@ class HandlerServiceImpl @Inject constructor(
                 response.putHeader("Server", "imposter")
             }
 
-            val rootResourceConfig = (pluginConfig as BasicResourceConfig?)!!
-
-            val resourceConfig = resourceMatcher.matchResourceConfig(pluginConfig, resolvedResourceConfigs, httpExchange)
+            val matchedInterceptors = resourceMatcher.matchAllResourceConfigs(pluginConfig, interceptorConfigs, httpExchange)
+            val rootResourceConfig = pluginConfig as BasicResourceConfig
+            val resourceConfig = resourceMatcher.matchSingleResourceConfig(pluginConfig, resourceConfigs, httpExchange)
                 ?: rootResourceConfig
 
             // allows plugins to customise behaviour
             httpExchange.put(ResourceUtil.RESOURCE_CONFIG_KEY, resourceConfig)
 
-            if (isRequestPermitted(rootResourceConfig, resourceConfig, resolvedResourceConfigs, httpExchange)) {
+            if (isRequestPermitted(rootResourceConfig, resourceConfig, resourceConfigs, httpExchange)) {
                 // set before actual dispatch to avoid race condition where
                 // a response is sent before the phase is set
                 httpExchange.phase = ExchangePhase.REQUEST_DISPATCHED
 
-                val future = if (shouldForwardToUpstream(pluginConfig, resourceConfig, httpExchange)) {
-                    forwardToUpstream(pluginConfig, resourceConfig, httpExchange)
-                } else {
-                    httpExchangeHandler(httpExchange)
+                val interceptorResult = interceptorService.executeInterceptors(pluginConfig, matchedInterceptors, httpExchange)
+                return interceptorResult.thenCompose { handled ->
+                    if (!handled) {
+                        return@thenCompose if (shouldForwardToUpstream(pluginConfig, resourceConfig, httpExchange)) {
+                            forwardToUpstream(pluginConfig, resourceConfig, httpExchange)
+                        } else {
+                            httpExchangeHandler(httpExchange)
+                        }
+                    } else {
+                        return@thenCompose completedUnitFuture()
+                    }
+                }.thenApply {
+                    LogUtil.logCompletion(httpExchange)
                 }
-
-                future.thenRun { LogUtil.logCompletion(httpExchange) }
-                return future
 
             } else {
                 LOGGER.trace("Request {} was not permitted to continue", describeRequest(httpExchange, requestId))

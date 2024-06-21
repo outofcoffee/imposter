@@ -45,10 +45,23 @@ package io.gatehill.imposter.plugin.config
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
+import io.gatehill.imposter.plugin.config.capture.CaptureConfigHolder
 import io.gatehill.imposter.plugin.config.resource.AbstractResourceConfig
+import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
+import io.gatehill.imposter.plugin.config.security.SecurityConfigHolder
 import io.gatehill.imposter.plugin.config.system.SystemConfig
 import io.gatehill.imposter.plugin.config.system.SystemConfigHolder
 import java.io.File
+
+interface BasicPluginConfig :
+    PluginConfig,
+    SystemConfigHolder,
+    SecurityConfigHolder,
+    BasicResourceConfig,
+    CaptureConfigHolder {
+
+    override var dir: File
+}
 
 /**
  * Base configuration for plugins.
@@ -56,7 +69,7 @@ import java.io.File
  * @author Pete Cornish
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-open class PluginConfigImpl : AbstractResourceConfig(), SystemConfigHolder, PluginConfig {
+open class PluginConfigImpl : AbstractResourceConfig(), BasicPluginConfig {
     @field:JsonProperty("plugin")
     override var plugin: String? = null
 

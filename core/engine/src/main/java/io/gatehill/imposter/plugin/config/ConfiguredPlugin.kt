@@ -58,7 +58,7 @@ import javax.inject.Inject
 /**
  * @author Pete Cornish
  */
-abstract class ConfiguredPlugin<T : PluginConfigImpl> @Inject constructor(
+abstract class ConfiguredPlugin<T : BasicPluginConfig> @Inject constructor(
     protected val vertx: Vertx,
     protected val imposterConfig: ImposterConfig
 ) : RoutablePlugin, ConfigurablePlugin<T> {

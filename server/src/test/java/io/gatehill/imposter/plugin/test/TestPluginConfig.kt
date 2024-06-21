@@ -44,14 +44,18 @@ package io.gatehill.imposter.plugin.test
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.gatehill.imposter.plugin.config.CommonPluginConfig
+import io.gatehill.imposter.plugin.config.InterceptorsHolder
 import io.gatehill.imposter.plugin.config.ResourcesHolder
 
 /**
  * @author Pete Cornish
  */
-class TestPluginConfig : CommonPluginConfig(), ResourcesHolder<TestPluginResourceConfig> {
+class TestPluginConfig : CommonPluginConfig(), ResourcesHolder<TestPluginResourceConfig>, InterceptorsHolder<TestPluginResourceConfig> {
     @JsonProperty("resources")
     override val resources: List<TestPluginResourceConfig>? = null
+
+    @JsonProperty("interceptors")
+    override val interceptors: List<TestPluginResourceConfig>? = null
 
     @JsonProperty("defaultsFromRootResponse")
     override val isDefaultsFromRootResponse = false

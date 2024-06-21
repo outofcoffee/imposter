@@ -50,6 +50,7 @@ import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.http.ResponseBehaviourFactory
 import io.gatehill.imposter.placeholder.RemoteEvaluator
 import io.gatehill.imposter.plugin.config.capture.ItemCaptureConfig
+import io.gatehill.imposter.plugin.config.resource.AbstractResourceConfig
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.resource.ResponseConfig
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
@@ -91,10 +92,13 @@ class RemoteProcessingStep(
             ctx.config.capture?.forEach { (key, config) ->
                 captureService.captureItem(key, config, remoteExchange, evaluators)
             }
-            responseBehaviourFactory.build(statusCode, ctx.resourceConfig.responseConfig)
+            responseBehaviourFactory.build(statusCode, ctx.resourceConfig)
         } catch (e: Exception) {
             logger.error("Error sending remote request: {} {}", ctx.config.method, ctx.config.url, e)
-            responseBehaviourFactory.build(HttpUtil.HTTP_INTERNAL_ERROR, ResponseConfig())
+            val emptyResourceConfig = object : AbstractResourceConfig() {
+                override val responseConfig = ResponseConfig()
+            }
+            responseBehaviourFactory.build(HttpUtil.HTTP_INTERNAL_ERROR, emptyResourceConfig)
         }
     }
 }

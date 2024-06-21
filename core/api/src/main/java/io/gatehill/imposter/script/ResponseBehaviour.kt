@@ -52,7 +52,7 @@ interface ResponseBehaviour {
     val content: String?
     val isTemplate: Boolean
     val exampleName: String?
-    val behaviourType: ResponseBehaviourType
+    val behaviourType: ResponseBehaviourType?
     val performanceSimulation: PerformanceSimulationConfig?
     val failureType: FailureSimulationType?
 }

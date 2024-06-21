@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022.
+ * Copyright (c) 2024.
  *
  * This file is part of Imposter.
  *
@@ -41,38 +41,9 @@
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.gatehill.imposter.http
+package io.gatehill.imposter.plugin.config.resource
 
-import io.gatehill.imposter.config.ResolvedResourceConfig
-import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
-
-interface ResourceMatcher {
-    /**
-     * Search for all resource configurations matching the current request.
-     *
-     * @param pluginConfig   the plugin configuration containing the resources
-     * @param resources      the resources from the response configuration
-     * @param httpExchange   the current exchange
-     * @return a matching resource configuration or else empty
-     */
-    fun matchAllResourceConfigs(
-        pluginConfig: PluginConfig,
-        resources: List<ResolvedResourceConfig>,
-        httpExchange: HttpExchange,
-    ): List<BasicResourceConfig>
-
-    /**
-     * Search for a resource configuration matching the current request.
-     *
-     * @param pluginConfig   the plugin configuration containing the resources
-     * @param resources      the resources from the response configuration
-     * @param httpExchange   the current exchange
-     * @return a matching resource configuration or else empty
-     */
-    fun matchSingleResourceConfig(
-        pluginConfig: PluginConfig,
-        resources: List<ResolvedResourceConfig>,
-        httpExchange: HttpExchange,
-    ): BasicResourceConfig?
+interface InterceptorConfigHolder {
+    var isInterceptor: Boolean
+    val continueToNext: Boolean?
 }

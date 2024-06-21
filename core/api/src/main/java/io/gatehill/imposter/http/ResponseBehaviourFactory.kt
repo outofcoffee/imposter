@@ -42,6 +42,7 @@
  */
 package io.gatehill.imposter.http
 
+import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.resource.ResponseConfig
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 
@@ -49,7 +50,7 @@ import io.gatehill.imposter.script.ReadWriteResponseBehaviour
  * @author Pete Cornish
  */
 interface ResponseBehaviourFactory {
-    fun build(statusCode: Int, responseConfig: ResponseConfig): ReadWriteResponseBehaviour
+    fun build(statusCode: Int, resourceConfig: BasicResourceConfig): ReadWriteResponseBehaviour
 
     /**
      * Sets (but does not overwrite) values on the [io.gatehill.imposter.script.ResponseBehaviour], from
@@ -59,5 +60,5 @@ interface ResponseBehaviourFactory {
      * @param responseConfig
      * @param responseBehaviour
      */
-    fun populate(statusCode: Int, responseConfig: ResponseConfig, responseBehaviour: ReadWriteResponseBehaviour)
+    fun populate(statusCode: Int, resourceConfig: BasicResourceConfig, responseBehaviour: ReadWriteResponseBehaviour)
 }

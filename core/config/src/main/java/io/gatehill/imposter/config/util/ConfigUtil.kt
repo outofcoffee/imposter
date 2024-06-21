@@ -54,7 +54,8 @@ import io.gatehill.imposter.config.resolver.ConfigResolver
 import io.gatehill.imposter.expression.eval.ExpressionEvaluator
 import io.gatehill.imposter.expression.util.ExpressionUtil
 import io.gatehill.imposter.plugin.PluginManager
-import io.gatehill.imposter.plugin.config.PluginConfigImpl
+import io.gatehill.imposter.plugin.config.BasicPluginConfig
+import io.gatehill.imposter.plugin.config.InterceptorsHolder
 import io.gatehill.imposter.plugin.config.ResourcesHolder
 import io.gatehill.imposter.plugin.config.resource.BasePathHolder
 import io.gatehill.imposter.util.MapUtil
@@ -284,7 +285,7 @@ object ConfigUtil {
      * @param configClass            the configuration class
      * @return the configuration
      */
-    fun <T : PluginConfigImpl> loadPluginConfig(
+    fun <T : BasicPluginConfig> loadPluginConfig(
         imposterConfig: ImposterConfig,
         loadedConfig: LoadedConfig,
         configClass: Class<T>,
@@ -297,7 +298,7 @@ object ConfigUtil {
 
             // normalise path param format
             if (config is ResourcesHolder<*>) {
-                (config as ResourcesHolder<*>).resources?.forEach { resource ->
+                config.resources?.forEach { resource ->
                     resource.path = ResourceUtil.convertPathParamsToBracketFormat(resource.path)
                 }
             }
@@ -317,6 +318,11 @@ object ConfigUtil {
 
             if (imposterConfig.useEmbeddedScriptEngine) {
                 config.responseConfig.scriptFile = "embedded"
+            }
+
+            // mark interceptors
+            if (config is InterceptorsHolder<*>) {
+                config.interceptors?.forEach { it.isInterceptor = true }
             }
 
             return config
@@ -343,7 +349,7 @@ object ConfigUtil {
     /**
      * Applies the base path to the root path and resource paths.
      */
-    private fun <T : PluginConfigImpl> applyBasePath(basePath: String, configFile: File, config: T) {
+    private fun <T : BasicPluginConfig> applyBasePath(basePath: String, configFile: File, config: T) {
         LOGGER.trace("Using base path '{}' for config file {}", basePath, configFile)
         if (!config.path.isNullOrEmpty() || config.responseConfig.hasConfiguration()) {
             config.path = basePath + (config.path ?: "")

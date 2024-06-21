@@ -44,7 +44,7 @@ package io.gatehill.imposter.plugin.openapi.http
 
 import com.google.common.base.Strings
 import io.gatehill.imposter.http.DefaultResponseBehaviourFactory
-import io.gatehill.imposter.plugin.config.resource.ResponseConfig
+import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.openapi.config.OpenApiResponseConfig
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 
@@ -57,11 +57,11 @@ import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 class OpenApiResponseBehaviourFactory : DefaultResponseBehaviourFactory() {
     override fun populate(
         statusCode: Int,
-        responseConfig: ResponseConfig,
+        resourceConfig: BasicResourceConfig,
         responseBehaviour: ReadWriteResponseBehaviour
     ) {
-        super.populate(statusCode, responseConfig, responseBehaviour)
-        val configExampleName = (responseConfig as OpenApiResponseConfig).exampleName
+        super.populate(statusCode, resourceConfig, responseBehaviour)
+        val configExampleName = (resourceConfig.responseConfig as OpenApiResponseConfig).exampleName
         if (Strings.isNullOrEmpty(responseBehaviour.exampleName) && !Strings.isNullOrEmpty(configExampleName)) {
             responseBehaviour.withExampleName(configExampleName!!)
         }

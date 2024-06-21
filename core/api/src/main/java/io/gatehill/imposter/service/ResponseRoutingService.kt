@@ -47,8 +47,8 @@ import io.gatehill.imposter.http.DefaultStatusCodeFactory
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.ResponseBehaviourFactory
 import io.gatehill.imposter.http.StatusCodeFactory
+import io.gatehill.imposter.plugin.config.BasicPluginConfig
 import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.config.PluginConfigImpl
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.script.ResponseBehaviour
 import java.util.concurrent.CompletableFuture
@@ -76,8 +76,8 @@ interface ResponseRoutingService {
         defaultBehaviourHandler: DefaultBehaviourHandler
     ): CompletableFuture<Unit>
 
-    fun <C : PluginConfigImpl> route(
-        pluginConfig: C,
+    fun route(
+        pluginConfig: BasicPluginConfig,
         httpExchange: HttpExchange,
         defaultBehaviourHandler: DefaultBehaviourHandler
     ): CompletableFuture<Unit> =
@@ -91,8 +91,8 @@ interface ResponseRoutingService {
             defaultBehaviourHandler
         )
 
-    fun <C : PluginConfigImpl> route(
-        pluginConfig: C,
+    fun route(
+        pluginConfig: PluginConfig,
         resourceConfig: BasicResourceConfig?,
         httpExchange: HttpExchange,
         defaultBehaviourHandler: DefaultBehaviourHandler
@@ -107,8 +107,8 @@ interface ResponseRoutingService {
             defaultBehaviourHandler
         )
 
-    fun <C : PluginConfigImpl> route(
-        pluginConfig: C,
+    fun route(
+        pluginConfig: BasicPluginConfig,
         httpExchange: HttpExchange,
         additionalContext: Map<String, Any>?,
         defaultBehaviourHandler: DefaultBehaviourHandler
