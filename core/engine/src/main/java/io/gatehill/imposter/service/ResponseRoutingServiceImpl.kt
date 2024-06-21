@@ -68,6 +68,7 @@ import javax.inject.Inject
 class ResponseRoutingServiceImpl @Inject constructor(
     private val engineLifecycle: EngineLifecycleHooks,
     private val stepService: StepService,
+    private val responseService: ResponseService,
 ) : ResponseRoutingService {
     private val logger = LogManager.getLogger(ResponseRoutingServiceImpl::class.java)
 
@@ -96,11 +97,12 @@ class ResponseRoutingServiceImpl @Inject constructor(
                 responseBehaviourFactory
             )
             if (ResponseBehaviourType.SHORT_CIRCUIT == responseBehaviour.behaviourType) {
-                return makeFuture {
-                    httpExchange.response
-                        .setStatusCode(responseBehaviour.statusCode)
-                        .end()
-                }
+                return responseService.sendResponse(
+                    pluginConfig,
+                    resourceConfig,
+                    httpExchange,
+                    responseBehaviour,
+                )
             } else {
                 // default behaviour
                 return defaultBehaviourHandler(responseBehaviour)
