@@ -52,7 +52,6 @@ import io.gatehill.imposter.plugin.internal.MetaInfPluginDetectorImpl
 import io.gatehill.imposter.plugin.openapi.OpenApiPluginImpl
 import io.gatehill.imposter.plugin.rest.RestPluginImpl
 import io.gatehill.imposter.plugin.soap.SoapPluginImpl
-import io.gatehill.imposter.server.RequestHandlingMode
 import io.gatehill.imposter.util.InjectorUtil
 import io.gatehill.imposter.util.LogUtil
 import org.apache.logging.log4j.LogManager
@@ -91,7 +90,6 @@ abstract class AbstractHandler<Request, Response>(
             }
             .withEngineOptions { options ->
                 options.serverFactory = LambdaServerFactory::class.qualifiedName
-                options.requestHandlingMode = RequestHandlingMode.SYNC
 
                 Settings.pluginDiscoveryStrategyClass?.let { discoveryStrategy ->
                     options.pluginDiscoveryStrategyClass = discoveryStrategy

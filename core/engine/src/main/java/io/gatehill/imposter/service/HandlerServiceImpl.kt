@@ -61,19 +61,18 @@ import io.gatehill.imposter.plugin.config.ResourcesHolder
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.resource.PassthroughResourceConfig
 import io.gatehill.imposter.plugin.config.resource.UpstreamsHolder
-import io.gatehill.imposter.server.RequestHandlingMode
 import io.gatehill.imposter.server.ServerFactory
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.LogUtil.describeRequest
 import io.gatehill.imposter.util.ResourceUtil
 import io.gatehill.imposter.util.completedUnitFuture
 import io.gatehill.imposter.util.makeFuture
-import io.vertx.core.Vertx
+import io.gatehill.imposter.util.supervisedDefaultCoroutineScope
+import kotlinx.coroutines.CoroutineScope
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
 import java.io.File
 import java.util.UUID
-import java.util.concurrent.Callable
 import java.util.concurrent.CompletableFuture
 import java.util.regex.Pattern
 import javax.inject.Inject
@@ -87,8 +86,7 @@ class HandlerServiceImpl @Inject constructor(
     private val interceptorService: InterceptorService,
     private val responseService: ResponseService,
     private val upstreamService: UpstreamService,
-    private val vertx: Vertx,
-) : HandlerService {
+) : HandlerService, CoroutineScope by supervisedDefaultCoroutineScope {
 
     private val shouldAddEngineResponseHeaders: Boolean =
         EnvVars.getEnv("IMPOSTER_ADD_ENGINE_RESPONSE_HEADERS")?.toBoolean() != false
@@ -111,42 +109,15 @@ class HandlerServiceImpl @Inject constructor(
     ): HttpExchangeFutureHandler {
         val resolvedResourceConfigs = resolveResourceConfigs(pluginConfig)
         val resolvedInterceptorConfigs = resolveInterceptorConfigs(pluginConfig)
-
-        return when (imposterConfig.requestHandlingMode) {
-            RequestHandlingMode.SYNC -> { httpExchange: HttpExchange ->
-                handle(
-                    pluginConfig,
-                    httpExchangeHandler,
-                    httpExchange,
-                    resolvedResourceConfigs,
-                    resolvedInterceptorConfigs,
-                    resourceMatcher
-                )
-            }
-
-            RequestHandlingMode.ASYNC -> { httpExchange: HttpExchange ->
-                makeFuture(autoComplete = false) { future ->
-                    val handler = Callable {
-                        handle(
-                            pluginConfig,
-                            httpExchangeHandler,
-                            httpExchange,
-                            resolvedResourceConfigs,
-                            resolvedInterceptorConfigs,
-                            resourceMatcher
-                        ).thenApply {
-                            future.complete(it)
-                        }.exceptionally {
-                            future.completeExceptionally(it)
-                        }
-                    }
-                    // explicitly disable ordered execution - responses should not block each other
-                    // as this causes head of line blocking performance issues
-                    vertx.orCreateContext.executeBlocking(handler, false)
-                }
-            }
-
-            else -> throw UnsupportedOperationException("Unsupported request handling mode: " + imposterConfig.requestHandlingMode)
+        return { httpExchange: HttpExchange ->
+            handle(
+                pluginConfig,
+                httpExchangeHandler,
+                httpExchange,
+                resolvedResourceConfigs,
+                resolvedInterceptorConfigs,
+                resourceMatcher
+            )
         }
     }
 
