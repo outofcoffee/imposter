@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.42.0] - 2024-06-25
+### Added
+- feat: adds distroless Docker image.
+
+### Changed
+- build(docker): disable parallel builds in buildkit.
+- build(docker): uses gradle base image for distroless build stage.
+- build: defaults docker build convenience script to not push images.
+- build: don't run shadowjar in distroless image build.
+- build: moves Docker ignore files next to Dockerfiles.
+- build: moves docker build image name to script arg.
+- build: switches distroless tag to nonroot.
+- chore(deps): bump org.apache.maven.plugins:maven-jar-plugin
+- chore(deps): bump org.apache.maven.plugins:maven-project-info-reports-plugin
+- chore(deps): bump org.apache.maven.plugins:maven-surefire-plugin
+- chore: bumps base JRE to 11.0.23_9.
+- ci: don't duplicate unit tests when building distributions.
+- ci: enables dist workflow for PR builds.
+- ci: indent buildkitd config file.
+- ci: removes unneeded matrix strategy from dist workflow.
+- ci: splits out distroless image build into separate job.
+- ci: splits out validate and dist steps into separate jobs.
+- ci: switches distroless to external build.
+- ci: work-around for https://github.com/actions/runner/issues/2206
+- docs: improves description of environment variable purpose.
+- refactor: replaces legacy internal colon-delimited path params with bracketed format.
+
+### Fixed
+- fix: adds option to escape non-param colons in path.
+
 ## [3.41.2] - 2024-06-09
 ### Changed
 - chore: bumps CLI to 0.42.3.
