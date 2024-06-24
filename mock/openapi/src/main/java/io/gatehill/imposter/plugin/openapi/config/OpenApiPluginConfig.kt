@@ -44,17 +44,24 @@ package io.gatehill.imposter.plugin.openapi.config
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.gatehill.imposter.plugin.config.CommonPluginConfig
+import io.gatehill.imposter.plugin.config.InterceptorsHolder
 import io.gatehill.imposter.plugin.config.ResourcesHolder
 
 /**
  * @author Pete Cornish
  */
-class OpenApiPluginConfig : CommonPluginConfig(), ResourcesHolder<OpenApiResourceConfig> {
+class OpenApiPluginConfig : CommonPluginConfig(),
+    ResourcesHolder<OpenApiResourceConfig>,
+    InterceptorsHolder<OpenApiResourceConfig> {
+
     @JsonProperty("specFile")
     var specFile: String? = null
 
     @JsonProperty("resources")
     override val resources: List<OpenApiResourceConfig>? = null
+
+    @JsonProperty("interceptors")
+    override val interceptors: List<OpenApiResourceConfig>? = null
 
     @JsonProperty("defaultsFromRootResponse")
     override val isDefaultsFromRootResponse = false
@@ -84,6 +91,6 @@ class OpenApiPluginConfig : CommonPluginConfig(), ResourcesHolder<OpenApiResourc
 
     @Suppress("DEPRECATION")
     override fun toString(): String {
-        return "OpenApiPluginConfig(parent=${super.toString()}, specFile=$specFile, resources=$resources, isDefaultsFromRootResponse=$isDefaultsFromRootResponse, isPickFirstIfNoneMatch=$isPickFirstIfNoneMatch, isUseServerPathAsBaseUrl=$isUseServerPathAsBaseUrl, stripServerPath=$stripServerPath, responseConfig=$responseConfig, validation=$validation)"
+        return "OpenApiPluginConfig(parent=${super.toString()}, specFile=$specFile, resources=$resources, interceptors=$interceptors, isDefaultsFromRootResponse=$isDefaultsFromRootResponse, isPickFirstIfNoneMatch=$isPickFirstIfNoneMatch, isUseServerPathAsBaseUrl=$isUseServerPathAsBaseUrl, stripServerPath=$stripServerPath, responseConfig=$responseConfig, validation=$validation)"
     }
 }
