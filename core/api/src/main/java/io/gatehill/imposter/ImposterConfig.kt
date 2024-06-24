@@ -43,7 +43,6 @@
 package io.gatehill.imposter
 
 import io.gatehill.imposter.plugin.PluginDiscoveryStrategy
-import io.gatehill.imposter.server.RequestHandlingMode
 
 /**
  * Mock engine settings.
@@ -63,10 +62,9 @@ class ImposterConfig {
     var serverFactory: String? = null
     var pluginDiscoveryStrategy: PluginDiscoveryStrategy? = null
     var pluginDiscoveryStrategyClass: String? = null
-    var requestHandlingMode = RequestHandlingMode.ASYNC
     var useEmbeddedScriptEngine: Boolean = false
 
     override fun toString(): String {
-        return "ImposterConfig(host=$host, listenPort=$listenPort, configDirs=${configDirs.contentToString()}, serverUrl=$serverUrl, isTlsEnabled=$isTlsEnabled, keystorePath=$keystorePath, keystorePassword=$keystorePassword, plugins=${plugins?.contentToString()}, pluginArgs=$pluginArgs, serverFactory=$serverFactory, pluginDiscoveryStrategy=$pluginDiscoveryStrategy, pluginDiscoveryStrategyClass=$pluginDiscoveryStrategyClass, requestHandlingMode=$requestHandlingMode, useEmbeddedScriptEngine=$useEmbeddedScriptEngine)"
+        return "ImposterConfig(host=$host, listenPort=$listenPort, configDirs=${configDirs.contentToString()}, serverUrl=$serverUrl, isTlsEnabled=$isTlsEnabled, keystorePath=$keystorePath, keystorePassword=$keystorePassword, plugins=${plugins?.contentToString()}, pluginArgs=$pluginArgs, serverFactory=$serverFactory, pluginDiscoveryStrategy=$pluginDiscoveryStrategy, pluginDiscoveryStrategyClass=$pluginDiscoveryStrategyClass, useEmbeddedScriptEngine=$useEmbeddedScriptEngine)"
     }
 }

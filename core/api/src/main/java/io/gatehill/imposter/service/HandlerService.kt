@@ -58,17 +58,12 @@ interface HandlerService {
     /**
      * Builds a handler that processes a request.
      *
-     * If `requestHandlingMode` is [io.gatehill.imposter.server.RequestHandlingMode.SYNC], then the `httpExchangeHandler`
-     * is invoked on the calling thread.
-     *
-     * If it is [io.gatehill.imposter.server.RequestHandlingMode.ASYNC], then upon receiving a request,
-     * the `httpExchangeHandler` is invoked on a worker thread, passing the `httpExchange`.
-     *
      * Example:
      * ```
-     * router.get("/example").handler(handleRoute(imposterConfig, allPluginConfigs, resourceMatcher, handler -> {
-     * // use httpExchange
-     * });
+     * val handler = build(imposterConfig, allPluginConfigs, resourceMatcher) {
+     *   // use httpExchange
+     * }
+     * router.get("/example").handler(handler)
      * ```
      *
      * @param imposterConfig      the Imposter configuration
@@ -97,17 +92,12 @@ interface HandlerService {
     /**
      * Builds a handler that processes a request.
      *
-     * If `requestHandlingMode` is [io.gatehill.imposter.server.RequestHandlingMode.SYNC], then the `httpExchangeHandler`
-     * is invoked on the calling thread.
-     *
-     * If it is [io.gatehill.imposter.server.RequestHandlingMode.ASYNC], then upon receiving a request,
-     * the `httpExchangeHandler` is invoked on a worker thread, passing the `httpExchange`.
-     *
      * Example:
      * ```
-     * router.get("/example").handler(handleRoute(imposterConfig, pluginConfig, resourceMatcher, handler -> {
-     * // use httpExchange
-     * });
+     * val handler = build(imposterConfig, pluginConfig, resourceMatcher) {
+     *   // use httpExchange
+     * }
+     * router.get("/example").handler(handler)
      * ```
      *
      * @param imposterConfig      the Imposter configuration
