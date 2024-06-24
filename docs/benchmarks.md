@@ -24,19 +24,19 @@ Test configuration:
 
 | Threads | Requests/sec | HTTP Keep-alive |
 |---------|--------------|-----------------|
-| 50      | 1099         | Disabled        |
-| 100     | 1330         | Disabled        |
-| 200     | 1438         | Disabled        |
-| 200     | 1904         | Enabled         |
+| 50      | 1075         | Disabled        |
+| 100     | 1399         | Disabled        |
+| 200     | 1733         | Disabled        |
+| 200     | 2712         | Enabled         |
 
 ### Scenario 2: Conditional, configuration-driven
 
 | Threads | Requests/sec | HTTP Keep-alive |
 |---------|--------------|-----------------|
-| 50      | 901          | Disabled        |
-| 100     | 1159         | Disabled        |
-| 200     | 1416         | Disabled        |
-| 200     | 1855         | Enabled         |
+| 50      | 939          | Disabled        |
+| 100     | 1216         | Disabled        |
+| 200     | 1619         | Disabled        |
+| 200     | 2027         | Enabled         |
 
 ### Scenario 3: Dynamic, script-driven
 
@@ -59,7 +59,13 @@ Configuration and commands to allow benchmarks to be independently reproduced.
 
 #### Start command
 
-     docker run --rm -it -v /path/to/config:/opt/imposter/config -p 8080:8080 --cpus=1 --memory=256m outofcoffee/imposter:1.23.3
+     docker run --rm -it \
+        -v /path/to/config:/opt/imposter/config \
+        -p 8080:8080 \
+        -e IMPOSTER_LOG_LEVEL=info \
+        --cpus=1 \
+        --memory=256m \
+        outofcoffee/imposter:3.42.0
 
 Notes:
 
@@ -68,7 +74,7 @@ Notes:
 
 #### Warmup command
 
-    for i in {1..5}; do ab -t 2 -c 50 http://localhost:8080/example ; sleep 5 ; done
+    for i in {1..10}; do ab -t 2 -c 50 http://localhost:8080/example ; sleep 5 ; done
 
 Notes:
 
