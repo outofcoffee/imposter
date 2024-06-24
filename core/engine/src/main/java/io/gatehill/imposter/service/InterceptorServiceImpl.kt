@@ -49,11 +49,11 @@ import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.script.ResponseBehaviourType
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.makeFuture
+import io.gatehill.imposter.util.supervisedDefaultCoroutineScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.await
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.future.future
 import org.apache.logging.log4j.LogManager
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.CompletableFuture.completedFuture
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
@@ -63,43 +63,38 @@ import javax.inject.Inject
  */
 class InterceptorServiceImpl @Inject constructor(
     private val responseRoutingService: ResponseRoutingService,
-) : InterceptorService {
+) : InterceptorService, CoroutineScope by supervisedDefaultCoroutineScope {
 
     override fun executeInterceptors(
         pluginConfig: PluginConfig,
         interceptors: List<BasicResourceConfig>,
         httpExchange: HttpExchange,
-    ): CompletableFuture<Boolean> {
+    ) = future {
         if (interceptors.isEmpty()) {
-            return completedFuture(false)
+            return@future false
         }
-        return makeFuture {
-            val handled = AtomicBoolean(true)
-            val handler = buildHandler(httpExchange, handled)
+        val handled = AtomicBoolean(true)
+        val handler = buildHandler(httpExchange, handled)
 
-            for (interceptor in interceptors) {
-                // FIXME remove runBlocking
-                runBlocking {
-                    responseRoutingService.route(
-                        pluginConfig,
-                        interceptor,
-                        httpExchange,
-                        handler,
-                    ).await()
-                }
+        for (interceptor in interceptors) {
+            responseRoutingService.route(
+                pluginConfig,
+                interceptor,
+                httpExchange,
+                handler,
+            ).await()
 
-                LOGGER.trace(
-                    "Interceptor {} handled for {}: {}",
-                    interceptor,
-                    LogUtil.describeRequestShort(httpExchange),
-                    handled
-                )
-                if (handled.get()) {
-                    break
-                }
+            LOGGER.trace(
+                "Interceptor {} handled for {}: {}",
+                interceptor,
+                LogUtil.describeRequestShort(httpExchange),
+                handled
+            )
+            if (handled.get()) {
+                break
             }
-            return@makeFuture handled.get()
         }
+        return@future handled.get()
     }
 
     private fun buildHandler(
