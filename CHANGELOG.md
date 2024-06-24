@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.42.1] - 2024-06-25
+### Changed
+- ci: fix release condition.
+
 ## [3.42.0] - 2024-06-25
 ### Added
 - feat: adds distroless Docker image.
