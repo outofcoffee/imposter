@@ -42,10 +42,10 @@ Test configuration:
 
 | Threads | Requests/sec | HTTP Keep-alive |
 |---------|--------------|-----------------|
-| 50      | 3364         | Disabled        |
-| 100     | 3590         | Disabled        |
-| 200     | 3710         | Disabled        |
-| 200     | 7236         | Enabled         |
+| 50      | 669          | Disabled        |
+| 100     | 733          | Disabled        |
+| 200     | 869          | Disabled        |
+| 200     | 1028         | Enabled         |
 
 ### Benchmark set up
 
