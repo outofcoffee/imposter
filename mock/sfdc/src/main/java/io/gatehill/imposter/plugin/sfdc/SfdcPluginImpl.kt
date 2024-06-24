@@ -101,7 +101,7 @@ class SfdcPluginImpl @Inject constructor(
         )
 
         // query handler
-        router.get("/services/data/:apiVersion/query/").handler(
+        router.get("/services/data/{apiVersion}/query/").handler(
             handlerService.build(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
                 val request = httpExchange.request
                 val apiVersion = request.getPathParam("apiVersion")!!
@@ -171,11 +171,11 @@ class SfdcPluginImpl @Inject constructor(
                     }
                 }
             }
-            router.get("/services/data/:apiVersion/sobjects/${config.sObjectName}/:sObjectId").handler(handler)
+            router.get("/services/data/{apiVersion}/sobjects/${config.sObjectName}/{sObjectId}").handler(handler)
         }
 
         // create SObject handler
-        router.post("/services/data/:apiVersion/sobjects/:sObjectName").handler(
+        router.post("/services/data/{apiVersion}/sobjects/{sObjectName}").handler(
             handlerService.buildAndWrap(imposterConfig, configs, resourceMatcher) { httpExchange: HttpExchange ->
                 val request = httpExchange.request
                 val sObjectName = request.getPathParam("sObjectName")
@@ -194,8 +194,8 @@ class SfdcPluginImpl @Inject constructor(
         )
 
         // update SObject handlers
-        router.patch("/services/data/:apiVersion/sobjects/:sObjectName/:sObjectId").handler(handleUpdateRequest())
-        router.post("/services/data/:apiVersion/sobjects/:sObjectName/:sObjectId").handler(handleUpdateRequest())
+        router.patch("/services/data/{apiVersion}/sobjects/{sObjectName}/{sObjectId}").handler(handleUpdateRequest())
+        router.post("/services/data/{apiVersion}/sobjects/{sObjectName}/{sObjectId}").handler(handleUpdateRequest())
     }
 
     /**

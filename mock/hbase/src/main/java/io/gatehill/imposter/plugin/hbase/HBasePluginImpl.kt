@@ -130,7 +130,7 @@ class HBasePluginImpl @Inject constructor(
      * @param path
      */
     private fun addRowRetrievalRoute(pluginConfig: PluginConfig, router: HttpRouter, path: String) {
-        router.get("$path/:tableName/:recordId/").handler(
+        router.get("$path/{tableName}/{recordId}/").handler(
             handlerService.build(imposterConfig, pluginConfig, resourceMatcher) { httpExchange: HttpExchange ->
                 val request = httpExchange.request
                 val tableName = request.getPathParam("tableName")!!
@@ -188,7 +188,7 @@ class HBasePluginImpl @Inject constructor(
      * @param path
      */
     private fun addCreateScannerRoute(pluginConfig: PluginConfig, router: HttpRouter, path: String) {
-        router.post("$path/:tableName/scanner").handler(
+        router.post("$path/{tableName}/scanner").handler(
             handlerService.build(imposterConfig, pluginConfig, resourceMatcher) { httpExchange: HttpExchange ->
                 val tableName = httpExchange.request.getPathParam("tableName")!!
 
@@ -254,7 +254,7 @@ class HBasePluginImpl @Inject constructor(
      * @param path
      */
     private fun addReadScannerResultsRoute(pluginConfig: HBasePluginConfig, router: HttpRouter, path: String) {
-        router.get("$path/:tableName/scanner/:scannerId").handler(
+        router.get("$path/{tableName}/scanner/{scannerId}").handler(
             handlerService.build(imposterConfig, pluginConfig, resourceMatcher) { httpExchange: HttpExchange ->
                 val request = httpExchange.request
                 val tableName = request.getPathParam("tableName")!!

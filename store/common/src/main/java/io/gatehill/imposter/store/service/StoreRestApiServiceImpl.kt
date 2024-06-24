@@ -82,12 +82,12 @@ class StoreRestApiServiceImpl @Inject constructor(
         allPluginConfigs: List<PluginConfig>,
         router: HttpRouter
     ) {
-        router.get("/system/store/:storeName").handler(handleLoadAll(imposterConfig, allPluginConfigs))
-        router.delete("/system/store/:storeName").handler(handleDeleteStore(imposterConfig, allPluginConfigs))
-        router.get("/system/store/:storeName/:key").handler(handleLoadSingle(imposterConfig, allPluginConfigs))
-        router.put("/system/store/:storeName/:key").handler(handleSaveSingle(imposterConfig, allPluginConfigs))
-        router.post("/system/store/:storeName").handler(handleSaveMultiple(imposterConfig, allPluginConfigs))
-        router.delete("/system/store/:storeName/:key").handler(handleDeleteSingle(imposterConfig, allPluginConfigs))
+        router.get("/system/store/{storeName}").handler(handleLoadAll(imposterConfig, allPluginConfigs))
+        router.delete("/system/store/{storeName}").handler(handleDeleteStore(imposterConfig, allPluginConfigs))
+        router.get("/system/store/{storeName}/{key}").handler(handleLoadSingle(imposterConfig, allPluginConfigs))
+        router.put("/system/store/{storeName}/{key}").handler(handleSaveSingle(imposterConfig, allPluginConfigs))
+        router.post("/system/store/{storeName}").handler(handleSaveMultiple(imposterConfig, allPluginConfigs))
+        router.delete("/system/store/{storeName}/{key}").handler(handleDeleteSingle(imposterConfig, allPluginConfigs))
     }
 
     private fun handleLoadAll(
