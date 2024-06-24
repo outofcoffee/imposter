@@ -46,20 +46,27 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.plugin.config.CommonPluginConfig
 import io.gatehill.imposter.plugin.config.ContentTypedConfig
+import io.gatehill.imposter.plugin.config.InterceptorsHolder
 import io.gatehill.imposter.plugin.config.ResourcesHolder
 import io.gatehill.imposter.plugin.config.resource.request.MethodResourceConfig
 
 /**
  * @author Pete Cornish
  */
-class RestPluginConfig : CommonPluginConfig(), MethodResourceConfig,
-    ResourcesHolder<RestPluginResourceConfig>, ContentTypedConfig {
+class RestPluginConfig : CommonPluginConfig(),
+    MethodResourceConfig,
+    ResourcesHolder<RestPluginResourceConfig>,
+    InterceptorsHolder<RestPluginResourceConfig>,
+    ContentTypedConfig {
 
     override var contentType: String? = null
         protected set
 
     @JsonProperty("resources")
     override var resources: List<RestPluginResourceConfig>? = null
+
+    @JsonProperty("interceptors")
+    override val interceptors: List<RestPluginResourceConfig>? = null
 
     @JsonProperty("method")
     override val method: HttpMethod? = null
@@ -68,6 +75,6 @@ class RestPluginConfig : CommonPluginConfig(), MethodResourceConfig,
     override val isDefaultsFromRootResponse = false
 
     override fun toString(): String {
-        return "RestPluginConfig(parent=${super.toString()}, method=$method, resources=$resources, contentType=$contentType, isDefaultsFromRootResponse=$isDefaultsFromRootResponse)"
+        return "RestPluginConfig(parent=${super.toString()}, method=$method, resources=$resources, interceptors=$interceptors, contentType=$contentType, isDefaultsFromRootResponse=$isDefaultsFromRootResponse)"
     }
 }
