@@ -23,14 +23,14 @@ jobs:
     uses: ./.github/workflows/dist.yaml
     with:
       effective-branch: ${{ needs.setup.outputs.effective-branch }}
-      release: ${{ needs.setup.outputs.release == true }}
+      release: ${{ needs.setup.outputs.release == 'true' }}
     secrets: inherit
 
   distroless:
     needs: [setup, validate]
-    if: ${{ needs.setup.outputs.release || needs.setup.outputs.effective-branch == 'develop' }}
+    if: ${{ needs.setup.outputs.release == 'true' || needs.setup.outputs.effective-branch == 'develop' }}
     uses: ./.github/workflows/distroless.yaml
     with:
       effective-branch: ${{ needs.setup.outputs.effective-branch }}
-      release: ${{ needs.setup.outputs.release == true }}
+      release: ${{ needs.setup.outputs.release == 'true' }}
     secrets: inherit
