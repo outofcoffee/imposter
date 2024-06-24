@@ -65,10 +65,11 @@ import io.gatehill.imposter.server.ServerFactory
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.LogUtil.describeRequest
 import io.gatehill.imposter.util.ResourceUtil
-import io.gatehill.imposter.util.completedUnitFuture
 import io.gatehill.imposter.util.makeFuture
 import io.gatehill.imposter.util.supervisedDefaultCoroutineScope
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.future.await
+import kotlinx.coroutines.future.future
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
 import java.io.File
@@ -263,7 +264,7 @@ class HandlerServiceImpl @Inject constructor(
         resourceConfigs: List<ResolvedResourceConfig>,
         interceptorConfigs: List<ResolvedResourceConfig>,
         resourceMatcher: ResourceMatcher,
-    ): CompletableFuture<Unit> {
+    ): CompletableFuture<Unit> = future {
         try {
             httpExchange.put(LogUtil.KEY_REQUEST_START, System.nanoTime())
 
@@ -291,32 +292,29 @@ class HandlerServiceImpl @Inject constructor(
                 // a response is sent before the phase is set
                 httpExchange.phase = ExchangePhase.REQUEST_DISPATCHED
 
-                val interceptorResult = interceptorService.executeInterceptors(pluginConfig, matchedInterceptors, httpExchange)
-                return interceptorResult.thenCompose { handled ->
-                    if (!handled) {
-                        return@thenCompose if (shouldForwardToUpstream(pluginConfig, resourceConfig, httpExchange)) {
-                            forwardToUpstream(pluginConfig, resourceConfig, httpExchange)
-                        } else {
-                            httpExchangeHandler(httpExchange)
-                        }
+                val handled = interceptorService.executeInterceptors(
+                    pluginConfig,
+                    matchedInterceptors,
+                    httpExchange
+                ).await()
+
+                if (!handled) {
+                    if (shouldForwardToUpstream(pluginConfig, resourceConfig, httpExchange)) {
+                        forwardToUpstream(pluginConfig, resourceConfig, httpExchange).await()
                     } else {
-                        return@thenCompose completedUnitFuture()
+                        httpExchangeHandler(httpExchange).await()
                     }
-                }.thenApply {
-                    LogUtil.logCompletion(httpExchange)
                 }
+                LogUtil.logCompletion(httpExchange)
 
             } else {
                 LOGGER.trace("Request {} was not permitted to continue", describeRequest(httpExchange, requestId))
-                return completedUnitFuture()
             }
 
         } catch (e: Exception) {
-            return makeFuture {
-                httpExchange.fail(
-                    RuntimeException("Unhandled exception processing request ${describeRequest(httpExchange)}", e)
-                )
-            }
+            httpExchange.fail(
+                RuntimeException("Unhandled exception processing request ${describeRequest(httpExchange)}", e)
+            )
         }
     }
 
