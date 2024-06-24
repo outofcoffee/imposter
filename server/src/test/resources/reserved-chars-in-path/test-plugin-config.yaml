@@ -1,0 +1,7 @@
+plugin: "io.gatehill.imposter.plugin.test.TestPluginImpl"
+
+resources:
+- method: GET
+  path: /example/foo:{bar}
+  response:
+    content: "baz"

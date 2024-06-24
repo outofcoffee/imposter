@@ -45,14 +45,18 @@ package io.gatehill.imposter.server.vertxweb.util
 import com.google.common.base.Strings
 import com.google.common.collect.BiMap
 import com.google.common.collect.HashBiMap
+import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.http.HttpRoute
-import java.util.*
+import org.apache.logging.log4j.LogManager
+import java.util.UUID
 
 /**
  * @author Pete Cornish
  */
 object VertxResourceUtil {
+    private val LOGGER = LogManager.getLogger(VertxResourceUtil::class.java)
+
     /**
      * Vert.x documentation says:
      * > The placeholders consist of : followed by the parameter name.
@@ -65,6 +69,14 @@ object VertxResourceUtil {
     private val VERTX_PATH_PARAM_NAME = Regex("[a-zA-Z0-9_]+")
 
     private val METHODS: BiMap<HttpMethod, io.vertx.core.http.HttpMethod?> = HashBiMap.create()
+
+    /**
+     * Vert.x shouldn't interpret a colon in a path component as the
+     * start of a path parameter.
+     * Work-around for https://github.com/outofcoffee/imposter/issues/587
+     */
+    private val escapeColonsInPath: Boolean
+        get() = EnvVars.getEnv("IMPOSTER_ESCAPE_COLONS_IN_PATH").toBoolean()
 
     init {
         METHODS[HttpMethod.GET] = io.vertx.core.http.HttpMethod.GET
@@ -119,6 +131,10 @@ object VertxResourceUtil {
     fun normalisePath(normalisedParams: MutableMap<String, String>, rawPath: String): String {
         var path = rawPath
         if (!Strings.isNullOrEmpty(path)) {
+            if (escapeColonsInPath) {
+                path = path.replace(":", "%3A")
+            }
+
             var matchFound: Boolean
             do {
                 val matcher = HttpRoute.PATH_PARAM_PLACEHOLDER.matcher(path)
