@@ -5,6 +5,9 @@ on:
       effective-branch:
         required: true
         type: string
+      version:
+        required: true
+        type: string
     secrets:
       DOCKER_USERNAME:
         # only needed for release builds
@@ -53,7 +56,7 @@ jobs:
             ;;
 
           main)
-            CURRENT_VERSION="$( git describe --tags --exact-match )"
+            CURRENT_VERSION="${{ inputs.version }}"
             if [[ "${CURRENT_VERSION:0:1}" == "v" ]]; then
                 CURRENT_VERSION="$( echo ${CURRENT_VERSION} | cut -c 2- )"
             fi

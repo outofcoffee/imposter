@@ -9,6 +9,9 @@ on:
       release:
         required: true
         type: boolean
+      version:
+        required: true
+        type: string
     secrets:
       AWS_ACCESS_KEY_ID:
         # only needed for release builds
@@ -37,6 +40,7 @@ jobs:
     with:
       effective-branch: ${{ inputs.effective-branch }}
       release: ${{ inputs.release }}
+      version: ${{ inputs.version }}
     secrets: inherit
 
   maven-publish:
@@ -51,4 +55,5 @@ jobs:
     uses: ./.github/workflows/distroless.yaml
     with:
       effective-branch: ${{ inputs.effective-branch }}
+      version: ${{ inputs.version }}
     secrets: inherit

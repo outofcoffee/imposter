@@ -7,6 +7,8 @@ permissions:
 
 jobs:
   cut-release:
+    outputs:
+      version: ${{ steps.since.outputs.CURRENT_VERSION }}
     runs-on: ubuntu-latest
     env:
       SINCE_VERSION: "0.15.5"
@@ -29,7 +31,10 @@ jobs:
           cp since /usr/local/bin
 
       - name: Cut release
-        run: since project release
+        id: since
+        run: |
+          since project release
+          echo "CURRENT_VERSION=$( since project version --current )" >> $GITHUB_OUTPUT
 
       - name: Push changes
         run: git push origin main --tags
@@ -40,4 +45,5 @@ jobs:
     with:
       effective-branch: main
       release: true
+      version: ${{ needs.cut-release.outputs.version }}
     secrets: inherit
