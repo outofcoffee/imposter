@@ -1,0 +1,31 @@
+name: Cut release
+on: [ workflow_dispatch ]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      SINCE_VERSION: "0.15.5"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure git
+        run: |
+          git config user.name "Imposter release bot"
+          git config user.email "release-bot@imposter.sh"
+
+      - name: Install since
+        run: |
+          cd "$( mktemp -d )"
+          curl --fail -L -o since.tar.gz https://github.com/release-tools/since/releases/download/v${SINCE_VERSION}/since_${SINCE_VERSION}_linux_amd64.tar.gz
+          tar xvf since.tar.gz
+          cp since /usr/local/bin
+
+      - name: Cut release
+        run: since project release
+
+      - name: Push changes
+        run: git push origin main --tags
