@@ -13,13 +13,18 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
+      - name: Install since
+        run: |
+          cd "$( mktemp -d )"
+          curl --fail -L -o since.tar.gz https://github.com/release-tools/since/releases/download/v${SINCE_VERSION}/since_${SINCE_VERSION}_linux_amd64.tar.gz
+          tar xvf since.tar.gz
+          cp since /usr/local/bin
+
       - name: Determine effective branch
         id: git-meta
         run: |
-          EFFECTIVE_BRANCH_NAME="$( ./scripts/get-effective-branch.sh )"
-          echo "EFFECTIVE_BRANCH=${EFFECTIVE_BRANCH_NAME}" >> $GITHUB_OUTPUT
-          CURRENT_VERSION="$( git describe --tags --exact-match )"
-          echo "CURRENT_VERSION=${CURRENT_VERSION}" >> $GITHUB_OUTPUT
+          echo "EFFECTIVE_BRANCH=$( ./scripts/get-effective-branch.sh )" >> $GITHUB_OUTPUT
+          echo "CURRENT_VERSION=$( since project version --current )" >> $GITHUB_OUTPUT
 
   ci:
     needs: [setup]

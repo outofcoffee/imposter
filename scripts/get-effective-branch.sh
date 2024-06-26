@@ -7,7 +7,7 @@ if [[ "$CURRENT_BRANCH" == "develop" || "$CURRENT_BRANCH" == "main" ]]; then
   EFFECTIVE_BRANCH_NAME="$CURRENT_BRANCH"
 
 else
-  case "$( git describe --tags --exact-match 2>/dev/null )" in
+  case "$( since project version --current )" in
   v3.*)
     EFFECTIVE_BRANCH_NAME="main"
     ;;
