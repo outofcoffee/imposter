@@ -55,7 +55,7 @@ import io.gatehill.imposter.util.HttpUtil
 /**
  * Server for API Gateway v1 events.
  *
- * @author pete
+ * @author Pete Cornish
  */
 class ServerV1(
     responseService: ResponseService,

@@ -60,7 +60,7 @@ import javax.xml.namespace.QName
 /**
  * Tests for [AbstractWsdlParser].
  *
- * @author pete
+ * @author Pete Cornish
  */
 class AbstractWsdlParserTest {
     @Test
