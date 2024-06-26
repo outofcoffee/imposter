@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.43.5] - 2024-06-26
+### Changed
+- ci: determine version using since.
+- ci: sets fetch depth on CI push.
+- ci: sets since log level to info.
+- ci: sets since version for download.
+- ci: takes version as input.
+
 ## [3.43.4] - 2024-06-26
 ### Changed
 - ci: passes through release input.
