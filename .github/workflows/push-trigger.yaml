@@ -1,5 +1,6 @@
 name: CI on push
 on: [ push ]
+
 jobs:
   setup:
     runs-on: ubuntu-latest
@@ -7,6 +8,8 @@ jobs:
       effective-branch: ${{ steps.git-meta.outputs.EFFECTIVE_BRANCH }}
       release: ${{ startsWith(github.ref, 'refs/tags/') }}
       version: ${{ steps.git-meta.outputs.CURRENT_VERSION }}
+    env:
+      SINCE_VERSION: "0.15.5"
     steps:
       - uses: actions/checkout@v4
         with:
