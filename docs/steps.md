@@ -205,7 +205,7 @@ resources:
 ```
 
 > **Note**
-> Remember that the `request` store is ephemeral, and holds values for the current, in-flight request. See the [Stores documentation](./stores) for details.
+> Remember that the `request` store is ephemeral, and holds values for the current, in-flight request. See the [Stores documentation](./stores.md) for details.
 
 ### Example: Use previous step output in the mock response
 
@@ -236,4 +236,4 @@ resources:
 ```
 
 > **Note**
-> Remember that the `request` store is ephemeral, and holds values for the current, in-flight request. See the [Stores documentation](./stores) for details.
+> Remember that the `request` store is ephemeral, and holds values for the current, in-flight request. See the [Stores documentation](./stores.md) for details.
