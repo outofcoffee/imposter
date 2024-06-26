@@ -46,8 +46,9 @@ package io.gatehill.imposter.plugin.config
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 
 /**
+ * Represents a list of interceptor configurations.
  *
- * @author pete
+ * @author Pete Cornish
  */
 interface InterceptorsHolder<T : BasicResourceConfig> {
     val interceptors: List<T>?
