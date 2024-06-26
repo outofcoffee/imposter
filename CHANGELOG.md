@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.43.0] - 2024-06-26
+### Added
+- feat(openapi): adds support for interceptors to openapi plugin.
+- feat(rest): adds support for interceptors to rest plugin.
+- feat: adds support for interceptors.
+
+### Changed
+- chore(deps): bump org.apache.maven.plugins:maven-clean-plugin
+- docs: adds examples for interceptors.
+- docs: adds interceptors documentation.
+- docs: fixes links to stores documentation.
+- docs: fixes script benchmarks based on current version.
+- docs: fixes top level file comments.
+- docs: updates benchmarks based on current version.
+- refactor: replaces Vert.x blocking executor with coroutines.
+- refactor: replaces future handlers with coroutine await.
+- refactor: run interceptors in a coroutine.
+- refactor: short-circuited responses should respect response behaviour.
+
 ## [3.42.1] - 2024-06-25
 ### Changed
 - ci: fix release condition.
