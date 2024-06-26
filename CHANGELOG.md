@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.43.2] - 2024-06-26
+### Changed
+- ci: adds release workflow.
+- ci: fetch tags on release checkout.
+- ci: sets fetch depth on release checkout.
+
 ## [3.43.1] - 2024-06-26
 ### Changed
 - ci: makes release job conditional on beta or release tag.
