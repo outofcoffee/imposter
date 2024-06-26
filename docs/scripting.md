@@ -21,12 +21,10 @@ response:
 
 ```groovy
 if (context.request.queryParams.action == 'create') {
-    respond()
-        .withStatusCode(201)
-        .skipDefaultBehaviour()
+    respond().withStatusCode(201)
 }
 ```
-    
+
 We will explain this syntax later, in the _ResponseBehaviour object_ section. For now, it's enough to know that the example above causes the mock server to respond with HTTP status code 201 if the value of the `action` parameter in the request is `create`.
 
 For example:
@@ -35,7 +33,8 @@ For example:
     ...
     201 Created
 
-*Tip:* The `queryParams` object used in the script is just a map of the request parameters, so you can use either `params.yourParamName` or `params['yourParamName']` syntax to access its members.
+> **Note**
+> See this [rest plugin example](https://github.com/outofcoffee/imposter/blob/main/examples/rest/conditional-scripted) for a simple example.
 
 ### Another example
 
@@ -52,9 +51,7 @@ switch (context.request.queryParams.action) {
 
     case 'fetch':
         // use a static response file and the default plugin behaviour
-        respond()
-            .withFile('example-data.json')
-            .usingDefaultBehaviour()
+        respond().withFile('example-data.json')
         break
 
     default:
@@ -89,11 +86,13 @@ And:
 
 In the default case, the script causes the mock server to return an HTTP 400 response, as shown above.
 
+The `queryParams` object used in the script is just a map of the request query parameters, so you can use either `params.yourParamName` or `params['yourParamName']` syntax to access its members.
+
 There are many other script objects you could use in order to decide what to return. For example, your script might use the request method (GET, POST, PUT, DELETE etc.) or other request attributes.
 
 ## Script objects
 
-In order to help you determine what action to take, Imposter makes certain objects available to your scripts.
+The following objects are available to your scripts, to help you determine what action to take.
 
 | Object    | Description                                                                  |
 |-----------|------------------------------------------------------------------------------|
@@ -161,18 +160,19 @@ Your scripts have access to the methods on `io.gatehill.imposter.script.MutableR
 
 The response behaviour object provides a number of methods to enable you to control the response:
 
-| Method                       | Plugin(s) | Description                                                                        |
-|------------------------------|-----------|------------------------------------------------------------------------------------|
-| `withStatusCode(int)`        | all       | Set the HTTP status code for the response.                                         |
-| `withFile(String)`           | all       | Respond with the content of a static file. Also see `template`.                    |
-| `withContent(String)`        | all       | Respond with the literal content of a string. Also see `template`.                 |
-| `withExampleName(String)`    | openapi   | Respond with the OpenAPI specification example with a given name.                  |
-| `withHeader(String, String)` | all       | Set a response header.                                                             |
-| `withEmpty()`                | all       | Respond with empty content, or no records.                                         |
-| `usingDefaultBehaviour()`    | all       | Use the plugin's default behaviour to respond.                                     |
-| `skipDefaultBehaviour()`     | all       | Skip the plugin's default behaviour when responding.                               |
-| `and()`                      | all       | Syntactic sugar to improve readability of `respond` statements.                    |
-| `template()`                 | all       | Treat the response file or data as a [template](./templates.md) with placeholders. |
+| Method                       | Plugin(s)     | Description                                                                                                         |
+|------------------------------|---------------|---------------------------------------------------------------------------------------------------------------------|
+| `withStatusCode(int)`        | all           | Set the HTTP status code for the response.                                                                          |
+| `withFile(String)`           | all           | Respond with the content of a static file. Also see `template`.                                                     |
+| `withContent(String)`        | all           | Respond with the literal content of a string. Also see `template`.                                                  |
+| `withExampleName(String)`    | openapi       | Use with the [OpenAPI plugin](./openapi_plugin.md) to respond with a particular OpenAPI specification example.      |
+| `withHeader(String, String)` | all           | Set a response header.                                                                                              |
+| `withEmpty()`                | all           | Respond with empty content, or no records.                                                                          |
+| `usingDefaultBehaviour()`    | all           | Use the plugin's default behaviour to respond.                                                                      |
+| `skipDefaultBehaviour()`     | all           | Skip the plugin's default behaviour when responding.                                                                |
+| `template()`                 | all           | Treat the response file or data as a [template](./templates.md) with placeholders.                                  |
+| `continueToNext()`           | openapi, rest | Used by [interceptors](./interceptors.md) to indicate request processing should continue after the script executes. |
+| `and()`                      | all           | Syntactic sugar to improve readability of `respond` statements.                                                     |
 
 You structure your response behaviours like so:
 
@@ -183,32 +183,36 @@ respond() // ... behaviours go here
 For example:
 
 ```groovy
-respond()
-    .withStatusCode(201)
-    .skipDefaultBehaviour()
+respond().withFile('static-data.json')
 ```
 
 Or:
 
 ```groovy
 respond()
-    .withFile('static-data.json')
-    .usingDefaultBehaviour()
+    .withStatusCode(201)
+    .withHeader("x-custom-header", "somevalue")
 ```
 
 ### Returning data from a script
 
-As we have seen above, to return data when using a script, you specify a response file.
+To return data when using a script, you specify a response file or set the content to a string value.
 
-To specify which response file to use, you can either:
+When using a response file, you can either:
 
-1. set the `file` property within the `response` object in your configuration, which will be treated as the default, or
-2. explicitly call the `withFile(String)` method in your script.
+1. explicitly call the `withFile(String)` method in your script, or
+2. set the `file` property within the `response` object in your configuration file, which will be used by default unless you override it.
 
-Here's an example of the static file approach:
+Here's an example of setting the file from a script:
+
+```groovy
+respond().withFile('some-data.json')
+```
+
+Here's an example using the `file` property within the configuration file:
 
 ```yaml
-# file-example-config.yaml
+# example-config.yaml
 ---
 plugin: rest
 path: "/scripted"
@@ -218,12 +222,68 @@ response:
   file: example-data.json
 ```
 
-Here, the response file `example-data.json` will be used, unless the script invokes the
+In this example, the response file `example-data.json` will be used, unless the script invokes the
 `withFile(String)` method with a different filename.
 
-In order for the mock server to return the response file in an appropriate format, the plugin must be allowed to process it. That means you should not call `skipDefaultBehaviour()` unless you want to skip using a response file (e.g. if you want to send an error code back or a response without a body).
+#### Response templates
 
-Whilst not required, your script could invoke `usingDefaultBehaviour()` for readability to indicate that you want the plugin to handle the response file for you. See the *rest* plugin tests for a working example. To this end, the following blocks are semantically identical:
+Response files can be [templated](./templates.md), allowing you to populate placeholders with dynamic data.
+
+### Returning raw response data
+
+You can return response data using the `withContent(String)` method.
+
+```groovy
+respond().withContent('{ "someKey": "someValue" }')
+```
+
+Raw response content can also be [templated](./templates.md), allowing you to populate placeholders with dynamic data.
+
+### Setting response headers
+
+You can set response headers using the `withHeader(String, String)` method. 
+
+```groovy
+respond().withHeader('X-Custom-Header', 'example value')
+```
+
+### Returning a specific OpenAPI example
+
+When using the [OpenAPI plugin](./openapi_plugin.md), you can return a specific named example from the specification using the `withExampleName(String)` method.
+
+```groovy
+respond().withExampleName('example1')
+```
+
+This selects the example from the OpenAPI `examples` section for the API response.
+
+> **Note**
+> See this [openapi plugin example](https://github.com/outofcoffee/imposter/blob/main/examples/openapi/scripted-named-example) for a simple example.
+
+### Using stores
+
+You can read and write data in [Stores](./stores.md) using scripts.
+
+### Overriding plugin behaviour
+
+In advanced scenarios you can control the response processing behaviour of the mock plugin you're using. 
+
+<details>
+<summary>Skipping plugin default behaviour</summary>
+
+In order for the mock server to return the response file in an appropriate format, the plugin must be allowed to process it. This is the default behaviour after your script runs.
+
+If you want to override the plugin's behaviour, you can call `skipDefaultBehaviour()` on the response (e.g. if you want to send an error code back).
+
+```groovy
+respond()
+    .withStatusCode(400)
+    .skipDefaultBehaviour()
+```
+
+The alternative to skipping the default behaviour is `usingDefaultBehaviour()`. Whilst not required, your script can invoke this for readability to indicate that you want the plugin to handle the response file for you.
+
+The following blocks are semantically identical:
 
 ```groovy
 respond()
@@ -236,32 +296,7 @@ and:
 ```groovy
 respond().withFile('static-data.json')
 ```
-
-### Setting response headers
-
-You can set response headers using the `withHeader(String, String)` method. 
-
-```groovy
-respond().withHeader('X-Custom-Header', 'example value')
-```
-
-### Returning raw data
-
-You can return raw data using the `withContent(String)` method.
-
-```groovy
-respond().withContent('{ "someKey": "someValue" }')
-```
-
-### Returning a specific example
-
-When using the [OpenAPI plugin](./openapi_plugin.md), you can return a specific named example from the specification using the `withExampleName(String)` method.
-
-```groovy
-respond().withExampleName('example1')
-```
-
-This selects the example from the OpenAPI `examples` section for the API response.
+</details>
 
 ## Further reading
 
