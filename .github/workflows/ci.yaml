@@ -32,22 +32,22 @@ jobs:
 
   release:
     needs: [validate, integ-test]
-    if: ${{ inputs.release == 'true' || inputs.effective-branch == 'develop' }}
+    if: ${{ inputs.release || inputs.effective-branch == 'develop' }}
     uses: ./.github/workflows/release.yaml
     with:
       effective-branch: ${{ inputs.effective-branch }}
-      release: ${{ inputs.release == 'true' }}
+      release: ${{ inputs.release }}
     secrets: inherit
 
   maven-publish:
     needs: [validate, integ-test]
-    if: ${{ inputs.release == 'true' }}
+    if: ${{ inputs.release }}
     uses: ./.github/workflows/maven-publish.yaml
     secrets: inherit
 
   distroless:
     needs: [validate, integ-test]
-    if: ${{ inputs.release == 'true' || inputs.effective-branch == 'develop' }}
+    if: ${{ inputs.release || inputs.effective-branch == 'develop' }}
     uses: ./.github/workflows/distroless.yaml
     with:
       effective-branch: ${{ inputs.effective-branch }}
