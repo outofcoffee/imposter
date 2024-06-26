@@ -1,0 +1,25 @@
+plugin: rest
+
+interceptors:
+  - path: /*
+    continue: true
+    capture:
+      theUserAgent:
+        requestHeader: "user-agent"
+
+  - path: /*
+    steps:
+      - type: script
+        code: |
+          var req = stores.open("request");
+          req.save("otherData", "foo");
+          respond().continueToNext();
+
+resources:
+  - path: /example
+    method: GET
+    response:
+      template: true
+      content: |
+        User agent: ${stores.request.theUserAgent}
+        Other data: ${stores.request.otherData}

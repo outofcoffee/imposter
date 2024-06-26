@@ -1,0 +1,15 @@
+plugin: rest
+
+interceptors:
+  - path: /*
+    requestHeaders:
+      User-Agent: foo
+    response:
+      statusCode: 400
+      content: Invalid user agent
+
+resources:
+  - path: /example
+    method: GET
+    response:
+      content: "hello world"
