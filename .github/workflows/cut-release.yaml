@@ -2,6 +2,7 @@ name: Cut release
 on: [ workflow_dispatch ]
 
 permissions:
+  checks: write
   contents: write
 
 jobs:
