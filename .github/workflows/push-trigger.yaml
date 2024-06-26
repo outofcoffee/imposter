@@ -9,6 +9,10 @@ jobs:
       version: ${{ steps.git-meta.outputs.CURRENT_VERSION }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
       - name: Determine effective branch
         id: git-meta
         run: |
