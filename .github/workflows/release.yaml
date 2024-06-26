@@ -51,7 +51,6 @@ jobs:
 
       - name: Build and push Docker images
         id: docker-build
-        if: ${{ inputs.release || inputs.effective-branch == 'develop' }}
         run: |
           case ${{ inputs.effective-branch }} in
           develop)
@@ -80,7 +79,6 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Install since
-        if: ${{ inputs.release || inputs.effective-branch == 'develop' }}
         run: |
           cd "$( mktemp -d )"
           curl --fail -L -o since.tar.gz https://github.com/release-tools/since/releases/download/v${SINCE_VERSION}/since_${SINCE_VERSION}_linux_amd64.tar.gz
@@ -88,13 +86,12 @@ jobs:
           cp since /usr/local/bin
 
       - name: Write changelog
-        if: ${{ inputs.release || inputs.effective-branch == 'develop' }}
         run: |
           mkdir -p build
           since changelog extract -q > build/CHANGES.md
           cat build/CHANGES.md
 
-      - name: Release Java assets
+      - name: Create release and upload Java assets
         if: ${{ inputs.release }}
         uses: actions/github-script@v7
         with:

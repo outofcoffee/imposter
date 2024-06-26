@@ -24,6 +24,7 @@ jobs:
 
   release:
     needs: [setup, validate, integ-test]
+    if: ${{ needs.setup.outputs.release == 'true' || needs.setup.outputs.effective-branch == 'develop' }}
     uses: ./.github/workflows/release.yaml
     with:
       effective-branch: ${{ needs.setup.outputs.effective-branch }}
