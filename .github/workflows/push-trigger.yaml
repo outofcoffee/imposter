@@ -1,0 +1,23 @@
+name: CI on push
+on: [ push ]
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      effective-branch: ${{ steps.git-meta.outputs.EFFECTIVE_BRANCH }}
+      release: ${{ startsWith(github.ref, 'refs/tags/') }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Determine effective branch
+        id: git-meta
+        run: |
+          EFFECTIVE_BRANCH_NAME="$( ./scripts/get-effective-branch.sh )"
+          echo "EFFECTIVE_BRANCH=${EFFECTIVE_BRANCH_NAME}" >> $GITHUB_OUTPUT
+
+  ci:
+    needs: [setup]
+    uses: ./.github/workflows/ci.yaml
+    with:
+      effective-branch: ${{ needs.setup.outputs.effective-branch }}
+      release: ${{ needs.setup.outputs.release == 'true' }}
+    secrets: inherit

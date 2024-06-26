@@ -5,8 +5,10 @@ permissions:
   contents: write
 
 jobs:
-  release:
+  cut-release:
     runs-on: ubuntu-latest
+    outputs:
+      effective-branch: ${{ steps.git-meta.outputs.EFFECTIVE_BRANCH }}
     env:
       SINCE_VERSION: "0.15.5"
     steps:
@@ -32,3 +34,17 @@ jobs:
 
       - name: Push changes
         run: git push origin main --tags
+
+      - name: Determine effective branch
+        id: git-meta
+        run: |
+          EFFECTIVE_BRANCH_NAME="$( ./scripts/get-effective-branch.sh )"
+          echo "EFFECTIVE_BRANCH=${EFFECTIVE_BRANCH_NAME}" >> $GITHUB_OUTPUT
+
+  ci:
+    needs: [cut-release]
+    uses: ./.github/workflows/ci.yaml
+    with:
+      effective-branch: ${{ needs.cut-release.outputs.effective-branch }}
+      release: true
+    secrets: inherit

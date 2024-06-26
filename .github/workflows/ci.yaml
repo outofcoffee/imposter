@@ -1,46 +1,54 @@
 name: CI
-on: [ push ]
-jobs:
-  setup:
-    runs-on: ubuntu-latest
-    outputs:
-      effective-branch: ${{ steps.git-meta.outputs.EFFECTIVE_BRANCH }}
-      release: ${{ startsWith(github.ref, 'refs/tags/') }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Determine effective branch
-        id: git-meta
-        run: |
-          EFFECTIVE_BRANCH_NAME="$( ./scripts/get-effective-branch.sh )"
-          echo "EFFECTIVE_BRANCH=${EFFECTIVE_BRANCH_NAME}" >> $GITHUB_OUTPUT
 
+on:
+  workflow_call:
+    inputs:
+      effective-branch:
+        required: true
+        type: string
+      release:
+        required: true
+        type: boolean
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        # only needed for release builds
+        required: false
+      AWS_SECRET_ACCESS_KEY:
+        # only needed for release builds
+        required: false
+      DOCKER_USERNAME:
+        # only needed for release builds
+        required: false
+      DOCKER_PASSWORD:
+        # only needed for release builds
+        required: false
+
+jobs:
   validate:
-    needs: [setup]
     uses: ./.github/workflows/validate.yaml
 
   integ-test:
-    needs: [setup]
     uses: ./.github/workflows/integ-test.yaml
 
   release:
-    needs: [setup, validate, integ-test]
-    if: ${{ needs.setup.outputs.release == 'true' || needs.setup.outputs.effective-branch == 'develop' }}
+    needs: [validate, integ-test]
+    if: ${{ inputs.release == 'true' || inputs.effective-branch == 'develop' }}
     uses: ./.github/workflows/release.yaml
     with:
-      effective-branch: ${{ needs.setup.outputs.effective-branch }}
-      release: ${{ needs.setup.outputs.release == 'true' }}
+      effective-branch: ${{ inputs.effective-branch }}
+      release: ${{ inputs.release == 'true' }}
     secrets: inherit
 
   maven-publish:
-    needs: [setup, validate, integ-test]
-    if: ${{ needs.setup.outputs.release == 'true' }}
+    needs: [validate, integ-test]
+    if: ${{ inputs.release == 'true' }}
     uses: ./.github/workflows/maven-publish.yaml
     secrets: inherit
 
   distroless:
-    needs: [setup, validate, integ-test]
-    if: ${{ needs.setup.outputs.release == 'true' || needs.setup.outputs.effective-branch == 'develop' }}
+    needs: [validate, integ-test]
+    if: ${{ inputs.release == 'true' || inputs.effective-branch == 'develop' }}
     uses: ./.github/workflows/distroless.yaml
     with:
-      effective-branch: ${{ needs.setup.outputs.effective-branch }}
+      effective-branch: ${{ inputs.effective-branch }}
     secrets: inherit
