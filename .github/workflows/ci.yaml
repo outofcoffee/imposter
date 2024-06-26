@@ -18,12 +18,18 @@ jobs:
     needs: [setup]
     uses: ./.github/workflows/validate.yaml
 
-  dist:
+  release:
     needs: [setup, validate]
-    uses: ./.github/workflows/dist.yaml
+    uses: ./.github/workflows/release.yaml
     with:
       effective-branch: ${{ needs.setup.outputs.effective-branch }}
       release: ${{ needs.setup.outputs.release == 'true' }}
+    secrets: inherit
+
+  maven-publish:
+    needs: [setup, validate]
+    if: ${{ needs.setup.outputs.release == 'true' }}
+    uses: ./.github/workflows/maven-publish.yaml
     secrets: inherit
 
   distroless:
@@ -32,5 +38,4 @@ jobs:
     uses: ./.github/workflows/distroless.yaml
     with:
       effective-branch: ${{ needs.setup.outputs.effective-branch }}
-      release: ${{ needs.setup.outputs.release == 'true' }}
     secrets: inherit

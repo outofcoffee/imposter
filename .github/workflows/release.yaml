@@ -15,12 +15,6 @@ on:
       DOCKER_PASSWORD:
         # only needed for release builds
         required: false
-      AWS_ACCESS_KEY_ID:
-        # only needed for release builds
-        required: false
-      AWS_SECRET_ACCESS_KEY:
-        # only needed for release builds
-        required: false
 
 jobs:
   build:
@@ -54,12 +48,6 @@ jobs:
 
       - name: Build distributions
         run: ./gradlew dist --stacktrace -xtest
-
-      - name: Integration test
-        run: |
-          ./scripts/docker-build.sh -p false dev
-          ./scripts/integration-tests.sh outofcoffee/imposter:dev
-          ./scripts/integration-tests.sh outofcoffee/imposter-all:dev
 
       - name: Build and push Docker images
         id: docker-build
@@ -124,10 +112,3 @@ jobs:
               './store/redis/build/libs/imposter-plugin-store-redis.jar',
               './lib/fake-data/build/libs/imposter-plugin-fake-data.jar',
             ])
-
-      - name: Publish Maven artifacts
-        if: ${{ inputs.release }}
-        run: ./gradlew publish --info --stacktrace
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
