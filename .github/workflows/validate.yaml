@@ -33,15 +33,6 @@ jobs:
       - name: Test
         run: ./gradlew test --stacktrace
 
-      - name: Build distributions
-        run: ./gradlew dist --stacktrace -xtest
-
-      - name: Integration test
-        run: |
-          ./scripts/docker-build.sh -p false dev
-          ./scripts/integration-tests.sh outofcoffee/imposter:dev
-          ./scripts/integration-tests.sh outofcoffee/imposter-all:dev
-
       - name: Publish Unit Test Results
         if: always()
         uses: EnricoMi/publish-unit-test-result-action@v2

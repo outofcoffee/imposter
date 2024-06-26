@@ -1,18 +1,14 @@
-name: Publish Maven artifacts
+name: Integration test
 on:
   workflow_call:
-    secrets:
-      AWS_ACCESS_KEY_ID:
-        required: true
-      AWS_SECRET_ACCESS_KEY:
-        required: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      checks: write
     env:
+      AWS_REGION: "eu-west-1"
       TESTCONTAINERS_RYUK_DISABLED: "true"
     steps:
       - uses: actions/checkout@v4
@@ -31,8 +27,11 @@ jobs:
           mkdir -p ~/.gradle
           echo "org.gradle.daemon=false" >> ~/.gradle/gradle.properties
 
-      - name: Publish Maven artifacts
-        run: ./gradlew publish -xtest --stacktrace
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      - name: Build distributions
+        run: ./gradlew dist --stacktrace -xtest
+
+      - name: Integration test
+        run: |
+          ./scripts/docker-build.sh -p false dev
+          ./scripts/integration-tests.sh outofcoffee/imposter:dev
+          ./scripts/integration-tests.sh outofcoffee/imposter-all:dev

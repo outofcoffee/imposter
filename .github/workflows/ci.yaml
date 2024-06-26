@@ -18,8 +18,12 @@ jobs:
     needs: [setup]
     uses: ./.github/workflows/validate.yaml
 
+  integ-test:
+    needs: [setup]
+    uses: ./.github/workflows/integ-test.yaml
+
   release:
-    needs: [setup, validate]
+    needs: [setup, validate, integ-test]
     uses: ./.github/workflows/release.yaml
     with:
       effective-branch: ${{ needs.setup.outputs.effective-branch }}
@@ -27,13 +31,13 @@ jobs:
     secrets: inherit
 
   maven-publish:
-    needs: [setup, validate]
+    needs: [setup, validate, integ-test]
     if: ${{ needs.setup.outputs.release == 'true' }}
     uses: ./.github/workflows/maven-publish.yaml
     secrets: inherit
 
   distroless:
-    needs: [setup, validate]
+    needs: [setup, validate, integ-test]
     if: ${{ needs.setup.outputs.release == 'true' || needs.setup.outputs.effective-branch == 'develop' }}
     uses: ./.github/workflows/distroless.yaml
     with:
