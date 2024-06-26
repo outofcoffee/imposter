@@ -27,7 +27,7 @@ jobs:
         id: git-meta
         run: |
           echo "EFFECTIVE_BRANCH=$( ./scripts/get-effective-branch.sh )" >> $GITHUB_OUTPUT
-          echo "CURRENT_VERSION=$( since project version --current )" >> $GITHUB_OUTPUT
+          echo "CURRENT_VERSION=$( since project version --current --log-level=info )" >> $GITHUB_OUTPUT
 
   ci:
     needs: [setup]

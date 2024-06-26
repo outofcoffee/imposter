@@ -7,7 +7,7 @@ if [[ "$CURRENT_BRANCH" == "develop" || "$CURRENT_BRANCH" == "main" ]]; then
   EFFECTIVE_BRANCH_NAME="$CURRENT_BRANCH"
 
 else
-  case "$( since project version --current )" in
+  case "$( since project version --current --log-level=info )" in
   v3.*)
     EFFECTIVE_BRANCH_NAME="main"
     ;;
