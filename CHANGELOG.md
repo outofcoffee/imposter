@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.43.1] - 2024-06-26
+### Changed
+- ci: makes release job conditional on beta or release tag.
+- ci: splits integration test from validate job.
+- ci: splits maven publish step from release job.
+- docs: simplifies scripting documentation.
+
 ## [3.43.0] - 2024-06-26
 ### Added
 - feat(openapi): adds support for interceptors to openapi plugin.
