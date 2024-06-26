@@ -30,6 +30,7 @@ To begin, check out the [Getting started](getting_started.md) guide. See the _Co
 ### Developing mocks
 
 - [Advanced request matching](request_matching.md)
+- [Interceptors](./interceptors.md)
 - [OpenAPI validation](openapi_validation.md)
 - [Template queries](template_queries.md)
 - [Performance simulation](performance_simulation.md)
