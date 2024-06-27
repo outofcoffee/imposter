@@ -41,7 +41,7 @@ jobs:
 
   ci:
     needs: [cut-release]
-    uses: ./.github/workflows/ci.yaml
+    uses: ./.github/workflows/pipeline.yaml
     with:
       effective-branch: main
       release: true
