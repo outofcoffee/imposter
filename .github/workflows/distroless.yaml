@@ -17,7 +17,7 @@ on:
         required: false
 
 jobs:
-  build:
+  build-push:
     runs-on: ubuntu-latest
     env:
       CONTAINER_BUILDER: "buildx"
