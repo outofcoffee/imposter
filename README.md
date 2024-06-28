@@ -1,6 +1,6 @@
 # Imposter: Scriptable, multipurpose mock server
 
-[![CI](https://github.com/outofcoffee/imposter/actions/workflows/ci.yaml/badge.svg)](https://github.com/outofcoffee/imposter/actions/workflows/ci.yaml)
+[![CI](https://github.com/outofcoffee/imposter/actions/workflows/cicd.yaml/badge.svg)](https://github.com/outofcoffee/imposter/actions/workflows/cicd.yaml)
 
 > Mock server for REST APIs, OpenAPI (and Swagger) specifications, SOAP web services (and WSDL files), Salesforce and HBase APIs.
 >
