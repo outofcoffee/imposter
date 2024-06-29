@@ -99,7 +99,7 @@ abstract class AbstractWsdlParser(
     private fun findEmbeddedTypesSchemas(): List<SchemaDocument> {
         val schemaNodes = findEmbeddedTypesSchemaNodes()
         if (schemaNodes.isEmpty()) {
-            logger.warn("No embedded types schema found")
+            logger.info("No embedded types schema found")
             return emptyList()
         }
         return schemaNodes.map { inlineSchemaElement ->

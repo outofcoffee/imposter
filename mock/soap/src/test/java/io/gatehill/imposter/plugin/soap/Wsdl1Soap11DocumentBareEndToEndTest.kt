@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024.
+ * Copyright (c) 2016-2021.
  *
  * This file is part of Imposter.
  *
@@ -40,57 +40,18 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.plugin.soap
 
-package io.gatehill.imposter.plugin.soap.model
-
-import javax.xml.namespace.QName
-
-/**
- * Represents an operation message. In WSDL 1.1 this is an individual
- * `part` element within a `message`. In WSDL 2.0 this is an `input` or `output`
- * element within an `operation`.
- */
-abstract class OperationMessage(
-    val namespaces: List<Map<String, String>>
-)
+import io.gatehill.imposter.plugin.soap.util.SoapUtil
 
 /**
- * Refers to an XML schema `element`.
+ * Tests for [SoapPluginImpl] using WSDL v1 and SOAP 1.1,
+ * using Document style.
+ *
+ * @author Pete Cornish
  */
-class ElementOperationMessage(
-    namespaces: List<Map<String, String>>,
-    val elementName: QName,
-) : OperationMessage(
-    namespaces = namespaces
-) {
-    override fun toString(): String =
-        "ElementOperationMessage(elementName=$elementName)"
-}
-
-/**
- * Message parts specifying an XML schema `type` are supported
- * in WSDL 1.1 but not in WSDL 2.0.
- */
-class TypeOperationMessage(
-    namespaces: List<Map<String, String>>,
-    val partName: String,
-    val typeName: QName,
-): OperationMessage(
-    namespaces = namespaces
-) {
-    override fun toString(): String =
-        "TypeOperationMessage(partName='$partName', typeName=$typeName)"
-}
-
-/**
- * In WSDL 1.1, messages can define multiple parts.
- */
-class CompositeOperationMessage(
-    val messageName: String,
-    val parts: List<OperationMessage>
-): OperationMessage(
-    namespaces = emptyList()
-) {
-    override fun toString(): String =
-        "CompositeOperationMessage(messageName=$messageName, parts=$parts)"
+class Wsdl1Soap11DocumentBareEndToEndTest : AbstractEndToEndTest() {
+    override val testConfigDirs = listOf("/wsdl1-soap11-document-bare")
+    override val soapEnvNamespace = SoapUtil.soap11EnvNamespace
+    override val soapContentType = SoapUtil.soap11ContentType
 }

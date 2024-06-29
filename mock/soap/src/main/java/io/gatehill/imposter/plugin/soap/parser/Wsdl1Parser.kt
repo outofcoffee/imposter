@@ -281,7 +281,7 @@ class Wsdl1Parser(
         return when (parts.size) {
             0 -> return null
             1 -> parts.first()
-            else -> CompositeOperationMessage(parts)
+            else -> CompositeOperationMessage(messageName, parts)
         }
     }
 

@@ -52,6 +52,7 @@ import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.soap.config.SoapPluginConfig
 import io.gatehill.imposter.plugin.soap.config.SoapPluginResourceConfig
 import io.gatehill.imposter.plugin.soap.model.BindingType
+import io.gatehill.imposter.plugin.soap.model.CompositeOperationMessage
 import io.gatehill.imposter.plugin.soap.model.ElementOperationMessage
 import io.gatehill.imposter.plugin.soap.model.MessageBodyHolder
 import io.gatehill.imposter.plugin.soap.model.TypeOperationMessage
@@ -211,6 +212,9 @@ class SoapResourceMatcher(
                 is TypeOperationMessage -> {
                     op.name == bodyRootElement.name
                     // TODO consider matching on body child element names against part names
+                }
+                is CompositeOperationMessage -> {
+                    op.inputRef.messageName == bodyRootElement.name
                 }
                 else -> false
             }
