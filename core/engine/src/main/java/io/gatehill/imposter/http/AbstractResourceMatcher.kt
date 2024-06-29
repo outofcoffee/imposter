@@ -203,7 +203,12 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
             if (LOGGER.isTraceEnabled) {
                 LOGGER.trace("Matching against all of ${bodyConfigs.size} request body configs for ${LogUtil.describeRequestShort(httpExchange)}: $bodyConfigs")
             }
-            return if (bodyConfigs.all { matchUsingBodyConfig(matchDescription, it, pluginConfig, httpExchange).type == MatchResultType.EXACT_MATCH }) {
+            val parentConfigNamespaces = resourceConfig.requestBody?.xmlNamespaces
+            val allMatch = bodyConfigs.all { childConfig ->
+                val matchType = matchUsingBodyConfig(matchDescription, childConfig, pluginConfig, parentConfigNamespaces, httpExchange)
+                return@all matchType.type == MatchResultType.EXACT_MATCH
+            }
+            return if (allMatch) {
                 // each matched config contributes to the weight
                 ResourceMatchResult.exactMatch(matchDescription, bodyConfigs.size)
             } else {
@@ -214,7 +219,12 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
             if (LOGGER.isTraceEnabled) {
                 LOGGER.trace("Matching against any of ${bodyConfigs.size} request body configs for ${LogUtil.describeRequestShort(httpExchange)}: $bodyConfigs")
             }
-            return if (bodyConfigs.any { matchUsingBodyConfig(matchDescription, it, pluginConfig, httpExchange).type == MatchResultType.EXACT_MATCH }) {
+            val parentConfigNamespaces = resourceConfig.requestBody?.xmlNamespaces
+            val anyMatch = bodyConfigs.any { childConfig ->
+                val matchType = matchUsingBodyConfig(matchDescription, childConfig, pluginConfig, parentConfigNamespaces, httpExchange)
+                return@any matchType.type == MatchResultType.EXACT_MATCH
+            }
+            return if (anyMatch) {
                 ResourceMatchResult.exactMatch(matchDescription)
             } else {
                 ResourceMatchResult.notMatched(matchDescription)
@@ -224,7 +234,7 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
             if (LOGGER.isTraceEnabled) {
                 LOGGER.trace("Matching against a single request body config for ${LogUtil.describeRequestShort(httpExchange)}: $singleRequestBodyConfig")
             }
-            return matchUsingBodyConfig(matchDescription, singleRequestBodyConfig, pluginConfig, httpExchange)
+            return matchUsingBodyConfig(matchDescription, singleRequestBodyConfig, pluginConfig, emptyMap(), httpExchange)
 
         } ?: run {
             if (LOGGER.isTraceEnabled) {
@@ -239,12 +249,13 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
         matchDescription: String,
         bodyConfig: BaseRequestBodyConfig,
         pluginConfig: PluginConfig,
+        additionalNamespaces: Map<String, String>?,
         httpExchange: HttpExchange,
     ): ResourceMatchResult {
         return if (!isNullOrEmpty(bodyConfig.jsonPath)) {
             matchRequestBodyJsonPath(matchDescription, bodyConfig, httpExchange)
         } else if (!isNullOrEmpty(bodyConfig.xPath)) {
-            matchRequestBodyXPath(matchDescription, bodyConfig, pluginConfig, httpExchange)
+            matchRequestBodyXPath(matchDescription, bodyConfig, pluginConfig, additionalNamespaces, httpExchange)
         } else {
             // none configured
             ResourceMatchResult.noConfig(matchDescription)
@@ -268,9 +279,12 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
         matchDescription: String,
         bodyConfig: BaseRequestBodyConfig,
         pluginConfig: PluginConfig,
+        additionalNamespaces: Map<String, String>?,
         httpExchange: HttpExchange,
     ): ResourceMatchResult {
         val allNamespaces = bodyConfig.xmlNamespaces?.toMutableMap() ?: mutableMapOf()
+        additionalNamespaces?.let(allNamespaces::putAll)
+
         if (pluginConfig is SystemConfigHolder) {
             pluginConfig.systemConfig?.xmlNamespaces?.let { allNamespaces.putAll(it) }
         }
