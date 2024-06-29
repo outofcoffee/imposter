@@ -58,7 +58,7 @@ import org.junit.Test
  */
 class JAXWSTest : BaseVerticleTest() {
     override val pluginClass = SoapPluginImpl::class.java
-    override val testConfigDirs = listOf("/wsdl1-soap11-document")
+    override val testConfigDirs = listOf("/wsdl1-soap11-document-bare")
 
     private lateinit var baseURI: String
 
@@ -71,7 +71,7 @@ class JAXWSTest : BaseVerticleTest() {
 
     @Test
     fun testRequestResponseUsingSoapClient() {
-        val wsdlUrl = JAXWSTest::class.java.getResource("/wsdl1-soap11-document/service.wsdl")
+        val wsdlUrl = JAXWSTest::class.java.getResource("/wsdl1-soap11-document-bare/service.wsdl")
         val soapEndpoint = PetService(wsdlUrl).soapEndpoint
 
         (soapEndpoint as BindingProvider)

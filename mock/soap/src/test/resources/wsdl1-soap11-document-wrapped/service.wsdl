@@ -47,63 +47,30 @@
              xmlns:tns="urn:com:example:petstore"
              xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
              xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns:xs="http://www.w3.org/2001/XMLSchema"
              targetNamespace="urn:com:example:petstore">
 
     <documentation>
         This is a sample WSDL 1.1 document describing the pet service.
-        It has SOAP 1.1 bindings, uses the Document style, with messages
-        specifying an XML schema element.
+        It has SOAP 1.1 bindings, uses the Document wrapped style,
+        with messages specifying multiple parts.
     </documentation>
 
-    <!-- Abstract type -->
-    <types>
-        <!-- imported schema -->
-        <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-                   xmlns="urn:com:example:petstore"
-                   targetNamespace="urn:com:example:petstore">
-
-            <xs:import namespace="urn:com:example:petstore"
-                       schemaLocation="schema.xsd"/>
-        </xs:schema>
-
-        <!-- embedded schema -->
-        <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-                   xmlns="urn:com:example:petstore"
-                   targetNamespace="urn:com:example:petstore">
-
-            <xs:simpleType name="petBreedName">
-                <xs:restriction base="xs:string">
-                    <xs:minLength value="1"/>
-                    <xs:maxLength value="20"/>
-                </xs:restriction>
-            </xs:simpleType>
-
-            <xs:complexType name="petBreed">
-                <xs:all>
-                    <xs:element name="id" type="xs:int"/>
-
-                    <!--
-                    Use the 'tns' prefix defined outside the inline schema
-                    to test prefix inheritance for inline schemas.
-                    -->
-                    <xs:element name="name" type="tns:petBreedName"/>
-                </xs:all>
-            </xs:complexType>
-        </xs:schema>
-    </types>
-
     <message name="getPetByIdRequest">
-        <!-- no namespace prefix for the element, so fallback to WSDL targetNamespace -->
-        <part element="getPetByIdRequest" name="parameters"/>
+        <part type="xs:int" name="id"/>
+        <part type="xs:int" name="age"/>
     </message>
     <message name="getPetByIdResponse">
-        <part element="tns:getPetByIdResponse" name="parameters"/>
+        <part type="xs:string" name="id"/>
+        <part type="xs:string" name="name"/>
     </message>
     <message name="getPetByNameRequest">
-        <part element="tns:getPetByNameRequest" name="parameters"/>
+        <part type="xs:string" name="name"/>
+        <part type="xs:int" name="age"/>
     </message>
     <message name="getPetByNameResponse">
-        <part element="tns:getPetByNameResponse" name="parameters"/>
+        <part type="xs:string" name="id"/>
+        <part type="xs:string" name="name"/>
     </message>
 
     <!-- Abstract port types -->

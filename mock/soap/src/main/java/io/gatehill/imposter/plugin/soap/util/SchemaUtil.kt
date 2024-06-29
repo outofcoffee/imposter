@@ -74,7 +74,7 @@ object SchemaUtil {
         schemas: Array<SchemaDocument>,
     ): SchemaTypeSystem {
         if (schemas.isEmpty()) {
-            throw IllegalStateException("No schemas to compile")
+            logger.info("No schemas to compile")
         }
 
         val errors = mutableListOf<XmlError>()

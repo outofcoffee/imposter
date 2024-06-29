@@ -55,7 +55,7 @@ import java.io.File
 class VersionAwareWsdlParserTest {
     @Test
     fun parseV1() {
-        val wsdlFile = File(VersionAwareWsdlParserTest::class.java.getResource("/wsdl1-soap11-document/service.wsdl")!!.toURI())
+        val wsdlFile = File(VersionAwareWsdlParserTest::class.java.getResource("/wsdl1-soap11-document-bare/service.wsdl")!!.toURI())
         val parser = VersionAwareWsdlParser(wsdlFile)
 
         assertEquals(WsdlParser.WsdlVersion.V1, parser.version)

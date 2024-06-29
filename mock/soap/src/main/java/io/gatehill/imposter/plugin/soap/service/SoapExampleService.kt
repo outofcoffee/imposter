@@ -95,8 +95,7 @@ class SoapExampleService {
         operation: WsdlOperation,
     ): String {
         return operation.outputRef?.let { message ->
-            // no root element in document style
-            generateDocumentMessage(schemaContext, service, message).joinToString("\n")
+            generateDocumentMessage(schemaContext, service, message)
 
         } ?: throw IllegalStateException(
             "No output message for operation: $operation"
@@ -110,40 +109,35 @@ class SoapExampleService {
     ): String {
         // by convention, the suffix 'Response' is added to the operation name
         val rootElementName = operation.name + "Response"
-        val rootElement = if (service.targetNamespace?.isNotBlank() == true) {
-            QName(service.targetNamespace, rootElementName, "tns")
-        } else {
-            QName(rootElementName)
-        }
-
         val parts = operation.outputRef?.let { listOf(it) } ?: emptyList()
-        val elementSchema = SchemaUtil.createCompositePartSchema(service.targetNamespace ?: "", rootElement, parts)
-        val sts = SchemaUtil.compileSchemas(schemaContext.sts, schemaContext.entityResolver, arrayOf(elementSchema))
-
-        val elem = sts.findDocumentType(rootElement)
-            ?: throw RuntimeException("Could not find a generated element with name \"$rootElement\"")
-
-        return SampleXmlUtil.createSampleForType(elem)
+        return generateWrappedResponse(schemaContext, service, rootElementName, parts)
     }
 
+    /**
+     * This can be one of two styles: 'Document-Literal Wrapped' and 'Document-Literal Bare'.
+     *
+     * - Wrapped: If the WSDL defines a message with multiple parts and uses the wrapped style,
+     *   the response message will include a wrapper element that matches the operation or message name.
+     * - Bare: If the WSDL defines a message with a single part and uses the bare style,
+     *   the parts are placed directly under the SOAP body.
+     */
     private fun generateDocumentMessage(
         schemaContext: SchemaContext,
         service: WsdlService,
         message: OperationMessage,
-    ): List<String> {
-        val partXmls = mutableListOf<String>()
-
-        when (message) {
+    ): String {
+        val responseXml = when (message) {
             is ElementOperationMessage -> {
-                partXmls += generateElementExample(schemaContext, message)
+                generateElementExample(schemaContext, message)
             }
 
             is TypeOperationMessage -> {
-                partXmls += generateTypeExample(schemaContext, service, message)
+                generateTypeExample(schemaContext, service, message)
             }
 
             is CompositeOperationMessage -> {
-                partXmls += message.parts.flatMap { part -> generateDocumentMessage(schemaContext, service, part) }
+                val rootElementName = message.messageName
+                generateWrappedResponse(schemaContext, service, rootElementName, message.parts)
             }
 
             else -> throw UnsupportedOperationException(
@@ -151,8 +145,29 @@ class SoapExampleService {
             )
         }
 
-        logger.trace("Generated document part XMLs: {}", partXmls)
-        return partXmls
+        logger.trace("Generated document response XML: {}", responseXml)
+        return responseXml
+    }
+
+    private fun generateWrappedResponse(
+        schemaContext: SchemaContext,
+        service: WsdlService,
+        rootElementName: String,
+        parts: List<OperationMessage>,
+    ): String {
+        val rootElement = if (service.targetNamespace?.isNotBlank() == true) {
+            QName(service.targetNamespace, rootElementName, "tns")
+        } else {
+            QName(rootElementName)
+        }
+
+        val elementSchema = SchemaUtil.createCompositePartSchema(service.targetNamespace ?: "", rootElement, parts)
+        val sts = SchemaUtil.compileSchemas(schemaContext.sts, schemaContext.entityResolver, arrayOf(elementSchema))
+
+        val elem = sts.findDocumentType(rootElement)
+            ?: throw RuntimeException("Could not find a generated element with name \"$rootElement\"")
+
+        return SampleXmlUtil.createSampleForType(elem)
     }
 
     private fun generateElementExample(

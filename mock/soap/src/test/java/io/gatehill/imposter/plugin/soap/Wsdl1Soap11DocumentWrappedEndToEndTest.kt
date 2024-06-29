@@ -50,8 +50,8 @@ import io.gatehill.imposter.plugin.soap.util.SoapUtil
  *
  * @author Pete Cornish
  */
-class Wsdl1Soap11DocumentEndToEndTest : AbstractEndToEndTest() {
-    override val testConfigDirs = listOf("/wsdl1-soap11-document")
+class Wsdl1Soap11DocumentWrappedEndToEndTest : AbstractEndToEndTest() {
+    override val testConfigDirs = listOf("/wsdl1-soap11-document-wrapped")
     override val soapEnvNamespace = SoapUtil.soap11EnvNamespace
     override val soapContentType = SoapUtil.soap11ContentType
 }
