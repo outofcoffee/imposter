@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.44.0] - 2024-06-29
+### Added
+- feat(soap): adds support for document wrapped style.
+- feat(soap): includes parent config XML namespaces when using allOf and anyOf body matchers.
+
+### Changed
+- ci: improves job names.
+- ci: improves workflow names.
+- docs: updates CI badge URL.
+
 ## [3.43.5] - 2024-06-26
 ### Changed
 - ci: determine version using since.
