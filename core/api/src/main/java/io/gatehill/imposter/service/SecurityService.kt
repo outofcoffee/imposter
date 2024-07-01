@@ -53,7 +53,6 @@ interface SecurityService {
     /**
      * Find a plugin configuration with a 'security' block if one is non-null.
      *
-     *
      * Only zero or one configurations can specify the 'security' block.
      * If none are found, the first configuration is returned, indicating no security policy is specified.
      * If more than one configuration has a security block, an [IllegalStateException] is thrown.
@@ -66,7 +65,6 @@ interface SecurityService {
     /**
      * Enforces the given security policy on the current request.
      *
-     *
      * If the request is to be denied, then this method sends HTTP 401 to the [HttpExchange].
      * If the request is to be permitted, no modification is made to the [HttpExchange].
      *
@@ -74,5 +72,5 @@ interface SecurityService {
      * @param httpExchange the current request
      * @return `true` of the request is permitted to continue, otherwise `false`
      */
-    fun enforce(security: SecurityConfig?, httpExchange: HttpExchange): Boolean
+    fun enforce(security: SecurityConfig, httpExchange: HttpExchange): Boolean
 }

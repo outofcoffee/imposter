@@ -56,7 +56,7 @@ import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.MatchUtil.conditionMatches
 import org.apache.logging.log4j.LogManager
-import java.util.Locale
+import java.util.*
 import javax.inject.Inject
 
 /**
@@ -98,8 +98,8 @@ class SecurityServiceImpl @Inject constructor(
     /**
      * {@inheritDoc}
      */
-    override fun enforce(security: SecurityConfig?, httpExchange: HttpExchange): Boolean {
-        val outcome: PolicyOutcome = if (security!!.conditions.isEmpty()) {
+    override fun enforce(security: SecurityConfig, httpExchange: HttpExchange): Boolean {
+        val outcome: PolicyOutcome = if (security.conditions.isEmpty()) {
             PolicyOutcome(security.defaultEffect, "default effect")
         } else {
             evaluatePolicy(security, httpExchange)
