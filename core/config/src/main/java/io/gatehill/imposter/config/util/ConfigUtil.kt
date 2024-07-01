@@ -58,6 +58,7 @@ import io.gatehill.imposter.plugin.config.BasicPluginConfig
 import io.gatehill.imposter.plugin.config.InterceptorsHolder
 import io.gatehill.imposter.plugin.config.ResourcesHolder
 import io.gatehill.imposter.plugin.config.resource.BasePathHolder
+import io.gatehill.imposter.plugin.config.security.SecurityConfigHolder
 import io.gatehill.imposter.util.MapUtil
 import io.gatehill.imposter.util.ResourceUtil
 import io.gatehill.imposter.util.splitOnCommaAndTrim
@@ -322,7 +323,12 @@ object ConfigUtil {
 
             // mark interceptors
             if (config is InterceptorsHolder<*>) {
-                config.interceptors?.forEach { it.isInterceptor = true }
+                config.interceptors?.forEach {
+                    it.isInterceptor = true
+                    if (it is SecurityConfigHolder && null != it.securityConfig) {
+                        throw IllegalStateException("Interceptors cannot specify security conditions")
+                    }
+                }
             }
 
             return config
