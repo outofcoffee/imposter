@@ -3,6 +3,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.44.1] - 2024-07-02
+### Changed
+- refactor: throw exception if interceptors specify security config.
+- refactor: tightens up type definition.
+
 ## [3.44.0] - 2024-06-29
 ### Added
 - feat(soap): adds support for document wrapped style.
