@@ -57,23 +57,25 @@ class OpenApiPluginValidationConfig {
     @field:JsonProperty("request")
     private val rawRequest: String? = null
 
-    val request: ValidationIssueBehaviour by lazy {
-        ValidationIssueBehaviour.from(rawRequest, Settings.defaultValidationIssueBehaviour)
-    }
-
     /**
      * Could be [Boolean] or [ValidationIssueBehaviour]
      */
     @field:JsonProperty("response")
     private val rawResponse: String? = null
 
-    val response: ValidationIssueBehaviour by lazy {
-        ValidationIssueBehaviour.from(rawResponse, ValidationIssueBehaviour.IGNORE)
-    }
-
     val returnErrorsInResponse = true
 
     val levels: Map<String, String>? = null
+
+    companion object {
+        fun request(config: OpenApiPluginValidationConfig): ValidationIssueBehaviour = with(config) {
+            ValidationIssueBehaviour.from(rawRequest, Settings.defaultValidationIssueBehaviour)
+        }
+
+        fun response(config: OpenApiPluginValidationConfig): ValidationIssueBehaviour = with(config) {
+            ValidationIssueBehaviour.from(rawResponse, ValidationIssueBehaviour.IGNORE)
+        }
+    }
 
     /**
      * Supports backwards compatible boolean-style values, mapping

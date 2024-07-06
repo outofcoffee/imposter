@@ -43,6 +43,7 @@
 package io.gatehill.imposter.server
 
 import io.gatehill.imposter.plugin.PluginManager
+import io.gatehill.imposter.plugin.config.security.SecurityCondition
 import io.gatehill.imposter.plugin.config.security.SecurityEffect
 import io.gatehill.imposter.plugin.test.TestPluginImpl
 import io.gatehill.imposter.util.HttpUtil
@@ -93,14 +94,14 @@ class SecurityConfigTest : BaseVerticleTest() {
         // check short configuration option
         val condition1 = securityConfig.conditions[0]
         testContext.assertEquals(SecurityEffect.Permit, condition1.effect)
-        val parsedHeaders1 = condition1.requestHeaders
+        val parsedHeaders1 = SecurityCondition.requestHeaders(condition1)
         testContext.assertEquals(1, parsedHeaders1.size)
         testContext.assertEquals("s3cr3t", parsedHeaders1["Authorization"]!!.value)
 
         // check long configuration option
         val condition2 = securityConfig.conditions[1]
         testContext.assertEquals(SecurityEffect.Deny, condition2.effect)
-        val parsedHeaders2 = condition2.requestHeaders
+        val parsedHeaders2 = SecurityCondition.requestHeaders(condition2)
         testContext.assertEquals(1, parsedHeaders2.size)
         testContext.assertEquals("opensesame", parsedHeaders2["X-Api-Key"]!!.value)
     }

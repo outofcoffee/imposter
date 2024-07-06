@@ -52,6 +52,7 @@ import com.google.common.cache.CacheBuilder
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig
+import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginValidationConfig
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginValidationConfig.ValidationIssueBehaviour
 import io.gatehill.imposter.plugin.openapi.model.ParsedSpec
 import io.gatehill.imposter.plugin.openapi.util.ValidationReportUtil
@@ -218,11 +219,13 @@ class SpecificationServiceImpl @Inject constructor(
             LOGGER.trace("Validation is disabled")
             return true
         }
-        if (ValidationIssueBehaviour.IGNORE == pluginConfig.validation?.request) {
+        val validationRequest = pluginConfig.validation?.let { OpenApiPluginValidationConfig.request(it) }
+        if (ValidationIssueBehaviour.IGNORE == validationRequest) {
             LOGGER.trace("Request validation is disabled")
             return true
         }
-        if (ValidationIssueBehaviour.IGNORE != pluginConfig.validation?.response) {
+        val validationResponse = pluginConfig.validation?.let { OpenApiPluginValidationConfig.response(it) }
+        if (ValidationIssueBehaviour.IGNORE != validationResponse) {
             throw UnsupportedOperationException("Response validation is not supported")
         }
 
@@ -246,7 +249,7 @@ class SpecificationServiceImpl @Inject constructor(
             LOGGER.warn("Validation failed for {}: {}", LogUtil.describeRequestShort(httpExchange), reportMessages)
 
             // only respond with 400 if validation failures are at error level
-            if (report.hasErrors() && ValidationIssueBehaviour.FAIL == pluginConfig.validation.request) {
+            if (report.hasErrors() && ValidationIssueBehaviour.FAIL == validationRequest) {
                 val response = httpExchange.response
                 response.setStatusCode(400)
                 if (pluginConfig.validation.returnErrorsInResponse) {

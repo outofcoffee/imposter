@@ -62,6 +62,7 @@ import io.gatehill.imposter.util.splitOnCommaAndTrim
 import org.apache.logging.log4j.LogManager
 import java.io.File
 import java.io.IOException
+import java.util.UUID
 
 /**
  * Utility methods for reading configuration.
@@ -277,11 +278,14 @@ object ConfigUtil {
             val config: T = configLoader.loadConfig(configFile, loadedConfig, configClass)
 
             check(config.plugin != null) { "No plugin specified in configuration file: $configFile" }
-            config.dir = configFile.parentFile
 
-            // normalise path param format
+            config.resourceId = UUID.randomUUID().toString()
+
             if (config is ResourcesHolder<*>) {
                 config.resources?.forEach { resource ->
+                    resource.resourceId = UUID.randomUUID().toString()
+
+                    // normalise path param format
                     resource.path = ResourceUtil.convertPathParamsToBracketFormat(resource.path)
                 }
             }
@@ -303,15 +307,21 @@ object ConfigUtil {
                 config.responseConfig.scriptFile = "embedded"
             }
 
-            // mark interceptors
             if (config is InterceptorsHolder<*>) {
-                config.interceptors?.forEach {
-                    it.isInterceptor = true
-                    if (it is SecurityConfigHolder && null != it.securityConfig) {
+                config.interceptors?.forEach { interceptor ->
+                    // mark interceptors
+                    interceptor.isInterceptor = true
+
+                    if (interceptor is SecurityConfigHolder && null != interceptor.securityConfig) {
                         throw IllegalStateException("Interceptors cannot specify security conditions")
                     }
+
+                    interceptor.resourceId = UUID.randomUUID().toString()
                 }
             }
+
+            // always set after deserialisation
+            config.dir = configFile.parentFile
 
             // always set after deserialisation
             config.dir = configFile.parentFile

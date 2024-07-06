@@ -177,7 +177,7 @@ class OpenApiPluginImpl @Inject constructor(
             // If server-agnostic mock paths are required, set the
             // 'stripServerPath=true' configuration option and specify the
             // root path in the configuration.
-            val servingPrefix = pathPrefix + if (config.stripServerPath) "" else specificationService.determinePathFromSpec(spec)
+            val servingPrefix = pathPrefix + if (OpenApiPluginConfig.stripServerPath(config)) "" else specificationService.determinePathFromSpec(spec)
 
             spec.paths.forEach { path: String, pathConfig: PathItem ->
                 handlePathOperations(router, config, spec, servingPrefix, path, pathConfig)

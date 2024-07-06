@@ -57,13 +57,18 @@ object FlexibleTypeUtil {
      * @param T the computed value
      * @return a delegate that will parse [raw] to an instance of [T] when [Lazy.getValue] is called.
      */
+    inline fun <reified R, reified T> parse(raw: Any?, parser: TypeParser<R, T>) = when (raw) {
+        null -> null
+        is T -> raw
+        is R -> parser.parse(raw)
+        is Map<*, *> -> converter.convertValue(raw, T::class.java)
+        else -> throw ClassCastException("Config must be Map, ${R::class.qualifiedName} or ${T::class.qualifiedName} - value: $raw")
+    }
+
+    /**
+     * Wraps [parse] in a [lazy] delegate.
+     */
     inline fun <reified R, reified T> lazyParse(raw: Any?, parser: TypeParser<R, T>): Lazy<T?> = lazy {
-        return@lazy when (raw) {
-            null -> null
-            is T -> raw
-            is R -> parser.parse(raw)
-            is Map<*, *> -> converter.convertValue(raw, T::class.java)
-            else -> throw ClassCastException("Config must be Map, ${R::class.qualifiedName} or ${T::class.qualifiedName} - value: $raw")
-        }
+        return@lazy parse<R, T>(raw, parser)
     }
 }

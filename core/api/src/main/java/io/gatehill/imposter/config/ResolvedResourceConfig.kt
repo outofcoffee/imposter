@@ -43,6 +43,7 @@
 package io.gatehill.imposter.config
 
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
+import io.gatehill.imposter.plugin.config.resource.RestResourceConfig
 import io.gatehill.imposter.plugin.config.resource.conditional.ConditionalNameValuePair
 import io.gatehill.imposter.plugin.config.resource.request.FormParamsResourceConfig
 import io.gatehill.imposter.plugin.config.resource.request.PathParamsResourceConfig
@@ -62,10 +63,10 @@ data class ResolvedResourceConfig(
     companion object {
         fun parse(config: BasicResourceConfig) = ResolvedResourceConfig(
             config = config,
-            pathParams = (config as? PathParamsResourceConfig)?.pathParams ?: emptyMap(),
-            queryParams = (config as? QueryParamsResourceConfig)?.queryParams ?: emptyMap(),
-            formParams = (config as? FormParamsResourceConfig)?.formParams ?: emptyMap(),
-            requestHeaders = (config as? RequestHeadersResourceConfig)?.requestHeaders ?: emptyMap(),
+            pathParams = (config as? PathParamsResourceConfig)?.let { RestResourceConfig.pathParams(it) } ?: emptyMap(),
+            queryParams = (config as? QueryParamsResourceConfig)?.let { RestResourceConfig.queryParams(it) } ?: emptyMap(),
+            formParams = (config as? FormParamsResourceConfig)?.let { RestResourceConfig.formParams(it) } ?: emptyMap(),
+            requestHeaders = (config as? RequestHeadersResourceConfig)?.let { RestResourceConfig.requestHeaders(it) } ?: emptyMap(),
         )
     }
 }

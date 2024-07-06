@@ -44,7 +44,9 @@ package io.gatehill.imposter.plugin.config.capture
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.gatehill.imposter.http.ExchangePhase
-import io.gatehill.imposter.plugin.config.flex.FlexibleTypeUtil.lazyParse
+import io.gatehill.imposter.plugin.config.capture.ItemCaptureConfig.Companion.key
+import io.gatehill.imposter.plugin.config.capture.ItemCaptureConfig.Companion.store
+import io.gatehill.imposter.plugin.config.flex.FlexibleTypeUtil
 
 /**
  * A capture configuration for values, that allows the key and store to be overridden.
@@ -86,6 +88,13 @@ class ItemCaptureConfig(
     expression,
     constValue,
 ) {
-    val key: CaptureConfig? by lazyParse(_key, CaptureConfig)
-    val store: CaptureConfig? by lazyParse(_store, CaptureConfig)
+    companion object {
+        fun key(itemCaptureConfig: ItemCaptureConfig): CaptureConfig? = with(itemCaptureConfig) {
+            FlexibleTypeUtil.parse(_key, CaptureConfig)
+        }
+
+        fun store(itemCaptureConfig: ItemCaptureConfig): CaptureConfig? = with(itemCaptureConfig) {
+            FlexibleTypeUtil.parse(_store, CaptureConfig)
+        }
+    }
 }

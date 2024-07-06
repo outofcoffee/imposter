@@ -76,13 +76,6 @@ class OpenApiPluginConfig : CommonPluginConfig(),
     @field:JsonProperty("stripServerPath")
     private val _stripServerPath: Boolean? = null
 
-    @Suppress("DEPRECATION")
-    val stripServerPath: Boolean by lazy {
-        _stripServerPath
-            ?: isUseServerPathAsBaseUrl?.let { !it }
-            ?: false
-    }
-
     @JsonProperty("response")
     override val responseConfig = OpenApiResponseConfig()
 
@@ -91,6 +84,15 @@ class OpenApiPluginConfig : CommonPluginConfig(),
 
     @Suppress("DEPRECATION")
     override fun toString(): String {
-        return "OpenApiPluginConfig(parent=${super.toString()}, specFile=$specFile, resources=$resources, interceptors=$interceptors, isDefaultsFromRootResponse=$isDefaultsFromRootResponse, isPickFirstIfNoneMatch=$isPickFirstIfNoneMatch, isUseServerPathAsBaseUrl=$isUseServerPathAsBaseUrl, stripServerPath=$stripServerPath, responseConfig=$responseConfig, validation=$validation)"
+        return "OpenApiPluginConfig(parent=${super.toString()}, specFile=$specFile, resources=$resources, interceptors=$interceptors, isDefaultsFromRootResponse=$isDefaultsFromRootResponse, isPickFirstIfNoneMatch=$isPickFirstIfNoneMatch, isUseServerPathAsBaseUrl=$isUseServerPathAsBaseUrl, stripServerPath=$_stripServerPath, responseConfig=$responseConfig, validation=$validation)"
+    }
+
+    companion object {
+        @Suppress("DEPRECATION")
+        fun stripServerPath(config: OpenApiPluginConfig): Boolean = with(config) {
+            _stripServerPath
+                ?: isUseServerPathAsBaseUrl?.let { !it }
+                ?: false
+        }
     }
 }

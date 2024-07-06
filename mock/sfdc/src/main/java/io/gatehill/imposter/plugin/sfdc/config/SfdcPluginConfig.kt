@@ -52,7 +52,7 @@ import io.gatehill.imposter.plugin.config.PluginConfigImpl
 class SfdcPluginConfig(
     @JsonProperty("sObjectName")
     @JsonAlias("SObjectName")
-    val sObjectName: String
+    val sObjectName: String? = null
 ) : PluginConfigImpl() {
     override fun toString(): String {
         return "SfdcPluginConfig(parent=${super.toString()}, sObjectName='$sObjectName')"

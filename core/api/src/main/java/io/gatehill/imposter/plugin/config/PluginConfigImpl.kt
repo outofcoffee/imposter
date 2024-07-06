@@ -77,9 +77,10 @@ open class PluginConfigImpl : AbstractResourceConfig(), BasicPluginConfig {
     override val systemConfig: SystemConfig? = null
 
     /**
-     * Not set by configuration file.
+     * Not set by configuration file, and should not be serialised once set.
      */
     @field:JsonIgnore
+    @field:Transient
     override lateinit var dir: File
 
     override fun toString(): String {

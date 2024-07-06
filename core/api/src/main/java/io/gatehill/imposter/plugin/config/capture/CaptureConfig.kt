@@ -43,6 +43,7 @@
 package io.gatehill.imposter.plugin.config.capture
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import io.gatehill.imposter.plugin.config.capture.CaptureConfig.Companion.requestBody
 import io.gatehill.imposter.plugin.config.flex.TypeParser
 
 /**
@@ -78,19 +79,19 @@ open class CaptureConfig(
 ) {
     companion object : TypeParser<String?, CaptureConfig> {
         override fun parse(raw: String?) = CaptureConfig(expression = raw)
+
+        fun requestBody(config: CaptureConfig): BodyCaptureConfig = with(config) {
+            @Suppress("DEPRECATION")
+            BodyCaptureConfig.parse(_requestBody, legacyJsonPath)
+        }
     }
 
     @Deprecated("Use requestBody.jsonPath instead")
     @field:JsonProperty("jsonPath")
     private val legacyJsonPath: String? = null
 
-    val requestBody: BodyCaptureConfig by lazy {
-        @Suppress("DEPRECATION")
-        BodyCaptureConfig.parse(_requestBody, legacyJsonPath)
-    }
-
     override fun toString(): String {
         @Suppress("DEPRECATION")
-        return "CaptureConfig(pathParam=$pathParam, queryParam=$queryParam, formParam=$formParam, requestHeader=$requestHeader, legacyJsonPath=$legacyJsonPath, expression=$expression, constValue=$constValue, requestBody=$requestBody)"
+        return "CaptureConfig(pathParam=$pathParam, queryParam=$queryParam, formParam=$formParam, requestHeader=$requestHeader, legacyJsonPath=$legacyJsonPath, expression=$expression, constValue=$constValue)"
     }
 }

@@ -43,12 +43,20 @@
 package io.gatehill.imposter.plugin.config.resource
 
 import com.fasterxml.jackson.annotation.JsonAlias
-import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.gatehill.imposter.http.HttpMethod
+import io.gatehill.imposter.plugin.config.resource.RestResourceConfig.Companion.formParams
+import io.gatehill.imposter.plugin.config.resource.RestResourceConfig.Companion.pathParams
+import io.gatehill.imposter.plugin.config.resource.RestResourceConfig.Companion.queryParams
+import io.gatehill.imposter.plugin.config.resource.RestResourceConfig.Companion.requestHeaders
 import io.gatehill.imposter.plugin.config.resource.conditional.ConditionalNameValuePair
-import io.gatehill.imposter.plugin.config.resource.conditional.MatchOperator
-import io.gatehill.imposter.plugin.config.resource.request.*
+import io.gatehill.imposter.plugin.config.resource.request.FormParamsResourceConfig
+import io.gatehill.imposter.plugin.config.resource.request.MethodResourceConfig
+import io.gatehill.imposter.plugin.config.resource.request.PathParamsResourceConfig
+import io.gatehill.imposter.plugin.config.resource.request.QueryParamsResourceConfig
+import io.gatehill.imposter.plugin.config.resource.request.RequestBodyConfig
+import io.gatehill.imposter.plugin.config.resource.request.RequestBodyResourceConfig
+import io.gatehill.imposter.plugin.config.resource.request.RequestHeadersResourceConfig
 import io.gatehill.imposter.plugin.config.steps.StepConfig
 import io.gatehill.imposter.plugin.config.steps.StepsConfigHolder
 
@@ -60,49 +68,33 @@ open class RestResourceConfig(
      * Raw configuration. Use [pathParams] instead.
      */
     @field:JsonProperty("pathParams")
-    protected var rawPathParams: Map<String, Any>? = null,
+    override var rawPathParams: Map<String, Any>? = null,
 
     /**
      * Raw configuration. Use [queryParams] instead.
      */
     @field:JsonProperty("queryParams")
     @field:JsonAlias("params")
-    protected var rawQueryParams: Map<String, Any>? = null,
+    override var rawQueryParams: Map<String, Any>? = null,
 
     /**
     * Raw configuration. Use [requestHeaders] instead.
     */
     @field:JsonProperty("requestHeaders")
-    protected var rawRequestHeaders: Map<String, Any>? = null,
+    override var rawRequestHeaders: Map<String, Any>? = null,
 
     /**
     * Raw configuration. Use [formParams] instead.
     */
     @field:JsonProperty("formParams")
-    private val rawFormParams: Map<String, Any>? = null,
+    override val rawFormParams: Map<String, Any>? = null,
 
 ) : AbstractResourceConfig(), MethodResourceConfig, PathParamsResourceConfig,
-    QueryParamsResourceConfig, LegacyQueryParamsResourceConfig, RequestHeadersResourceConfig, FormParamsResourceConfig,
+    QueryParamsResourceConfig, RequestHeadersResourceConfig, FormParamsResourceConfig,
     RequestBodyResourceConfig, EvalResourceConfig, PassthroughResourceConfig, StepsConfigHolder {
 
     @field:JsonProperty("method")
     override var method: HttpMethod? = null
-
-    override val pathParams: Map<String, ConditionalNameValuePair> by lazy {
-        rawPathParams?.let { ConditionalNameValuePair.parse(it) } ?: emptyMap()
-    }
-
-    override val queryParams: Map<String, ConditionalNameValuePair> by lazy {
-        rawQueryParams?.let { ConditionalNameValuePair.parse(it) } ?: emptyMap()
-    }
-
-    override val requestHeaders: Map<String, ConditionalNameValuePair> by lazy {
-        rawRequestHeaders?.let { ConditionalNameValuePair.parse(it) } ?: emptyMap()
-    }
-
-    override val formParams: Map<String, ConditionalNameValuePair> by lazy {
-        rawFormParams?.let { ConditionalNameValuePair.parse(it) } ?: emptyMap()
-    }
 
     @field:JsonProperty("requestBody")
     override var requestBody: RequestBodyConfig? = null
@@ -113,20 +105,28 @@ open class RestResourceConfig(
     @field:JsonProperty("passthrough")
     override var passthrough: String? = null
 
-    /**
-     * Backward compatibility for deprecated `params` property.
-     * Only [MatchOperator.EqualTo] matches are supported.
-     */
-    @get:JsonIgnore
-    override val params: Map<String, String>?
-        get() = queryParams
-                .filter { it.value.operator == MatchOperator.EqualTo && it.value.value != null }
-                .mapValues { it.value.value!! }
-
     @field:JsonProperty("steps")
     override val steps: List<StepConfig>? = null
 
     override fun toString(): String {
-        return "RestResourceConfig(parent=${super.toString()}, method=$method, pathParams=$pathParams, queryParams=$queryParams, formParams=$formParams, requestHeaders=$requestHeaders, requestBody=$requestBody, eval=$eval, passthrough=$passthrough)"
+        return "RestResourceConfig(parent=${super.toString()}, method=$method, pathParams=$rawPathParams, queryParams=$rawQueryParams, formParams=$rawFormParams, requestHeaders=$rawRequestHeaders, requestBody=$requestBody, eval=$eval, passthrough=$passthrough)"
+    }
+
+    companion object {
+        fun pathParams(config: PathParamsResourceConfig): Map<String, ConditionalNameValuePair> = with(config) {
+            rawPathParams?.let { ConditionalNameValuePair.parse(it) } ?: emptyMap()
+        }
+
+        fun queryParams(config: QueryParamsResourceConfig): Map<String, ConditionalNameValuePair> = with(config) {
+            rawQueryParams?.let { ConditionalNameValuePair.parse(it) } ?: emptyMap()
+        }
+
+        fun requestHeaders(config: RequestHeadersResourceConfig): Map<String, ConditionalNameValuePair> = with(config) {
+            rawRequestHeaders?.let { ConditionalNameValuePair.parse(it) } ?: emptyMap()
+        }
+
+        fun formParams(config: FormParamsResourceConfig): Map<String, ConditionalNameValuePair> = with(config) {
+            rawFormParams?.let { ConditionalNameValuePair.parse(it) } ?: emptyMap()
+        }
     }
 }

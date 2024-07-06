@@ -134,7 +134,7 @@ class CaptureServiceImpl @Inject constructor(
         httpExchange: HttpExchange
     ): String {
         try {
-            return (itemConfig.store?.let { capture<String>(httpExchange, it, PlaceholderUtil.defaultEvaluators) }
+            return (ItemCaptureConfig.store(itemConfig)?.let { capture<String>(httpExchange, it, PlaceholderUtil.defaultEvaluators) }
                 ?: StoreService.DEFAULT_CAPTURE_STORE_NAME)
 
         } catch (e: Exception) {
@@ -152,13 +152,14 @@ class CaptureServiceImpl @Inject constructor(
         storeName: String,
         captureConfigKey: String
     ): String? {
-        if (Objects.isNull(itemConfig.key)) {
+        val itemKey = ItemCaptureConfig.key(itemConfig)
+        if (Objects.isNull(itemKey)) {
             LOGGER.debug("Capturing item: {} into store: {}", captureConfigKey, storeName)
             return captureConfigKey
 
         } else {
             try {
-                capture<String?>(httpExchange, itemConfig.key, PlaceholderUtil.defaultEvaluators)?.let { itemName ->
+                capture<String?>(httpExchange, itemKey, PlaceholderUtil.defaultEvaluators)?.let { itemName ->
                     LOGGER.debug(
                         "Capturing item: $captureConfigKey into store: $storeName with name: $itemName"
                     )
@@ -213,6 +214,7 @@ class CaptureServiceImpl @Inject constructor(
         if (null == captureConfig) {
             return null
         }
+        val requestBody = CaptureConfig.requestBody(captureConfig)
 
         return if (!Strings.isNullOrEmpty(captureConfig.constValue)) {
             captureConfig.constValue as T?
@@ -229,16 +231,16 @@ class CaptureServiceImpl @Inject constructor(
         } else if (!Strings.isNullOrEmpty(captureConfig.requestHeader)) {
             httpExchange.request.getHeader(captureConfig.requestHeader!!) as T?
 
-        } else if (!Strings.isNullOrEmpty(captureConfig.requestBody.jsonPath)) {
+        } else if (!Strings.isNullOrEmpty(requestBody.jsonPath)) {
             BodyQueryUtil.queryRequestBodyJsonPath(
-                captureConfig.requestBody.jsonPath!!,
+                requestBody.jsonPath!!,
                 httpExchange
             ) as T?
 
-        } else if (!Strings.isNullOrEmpty(captureConfig.requestBody.xPath)) {
+        } else if (!Strings.isNullOrEmpty(requestBody.xPath)) {
             BodyQueryUtil.queryRequestBodyXPath(
-                captureConfig.requestBody.xPath!!,
-                captureConfig.requestBody.xmlNamespaces,
+                requestBody.xPath!!,
+                requestBody.xmlNamespaces,
                 httpExchange
             ) as T?
 

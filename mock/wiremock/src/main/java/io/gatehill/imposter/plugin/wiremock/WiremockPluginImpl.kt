@@ -155,6 +155,10 @@ class WiremockPluginImpl @Inject constructor(
         val config = RestPluginConfig().apply {
             plugin = "rest"
             this.resources = resources
+
+            // TODO remove this assignment
+            // needs to be assigned for serialisation, even though field is marked as transient and @JsonIgnore
+            dir = File(".")
         }
         destFile.writeText(MapUtil.jsonify(config))
         logger.trace("Converted wiremock mapping file to Imposter config: {}", destFile)

@@ -56,7 +56,7 @@ import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.MatchUtil.conditionMatches
 import org.apache.logging.log4j.LogManager
-import java.util.*
+import java.util.Locale
 import javax.inject.Inject
 
 /**
@@ -134,7 +134,7 @@ class SecurityServiceImpl @Inject constructor(
         // query params
         results.addAll(
             checkCondition(
-                condition.queryParams,
+                SecurityCondition.queryParams(condition),
                 request.queryParams,
                 condition.effect,
                 caseSensitiveKeyMatch = true
@@ -144,7 +144,7 @@ class SecurityServiceImpl @Inject constructor(
         // form params
         results.addAll(
             checkCondition(
-                condition.formParams,
+                SecurityCondition.formParams(condition),
                 request.formParams,
                 condition.effect,
                 caseSensitiveKeyMatch = true
@@ -154,7 +154,7 @@ class SecurityServiceImpl @Inject constructor(
         // headers
         results.addAll(
             checkCondition(
-                condition.requestHeaders,
+                SecurityCondition.requestHeaders(condition),
                 request.headers,
                 condition.effect,
                 caseSensitiveKeyMatch = false
@@ -228,8 +228,8 @@ class SecurityServiceImpl @Inject constructor(
 
     private fun describeCondition(condition: SecurityCondition): String {
         val description = StringBuilder()
-        describeConditionPart(description, condition.queryParams, "query conditions")
-        describeConditionPart(description, condition.requestHeaders, "header conditions")
+        describeConditionPart(description, SecurityCondition.queryParams(condition), "query conditions")
+        describeConditionPart(description, SecurityCondition.requestHeaders(condition), "header conditions")
         return description.toString()
     }
 

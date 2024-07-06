@@ -42,11 +42,9 @@
  */
 package io.gatehill.imposter.plugin.config.resource.request
 
-import io.gatehill.imposter.plugin.config.resource.conditional.ConditionalNameValuePair
-
 /**
  * @author Pete Cornish
  */
 interface RequestHeadersResourceConfig {
-    val requestHeaders: Map<String, ConditionalNameValuePair>?
+    val rawRequestHeaders: Map<String, Any>?
 }
