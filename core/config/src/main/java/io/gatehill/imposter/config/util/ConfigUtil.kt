@@ -293,7 +293,14 @@ object ConfigUtil {
     ): T {
         val configFile = loadedConfig.ref.file
         try {
-            val config = lookupMapper(configFile).readValue(loadedConfig.serialised, configClass)!!
+            var config = lookupMapper(configFile).readValue(loadedConfig.serialised, configClass)!!
+
+            BinarySerialisationUtil.serialise(config, "/tmp/config.bin")
+            println("serialised config")
+
+            config = BinarySerialisationUtil.deserialise("/tmp/config.bin")
+            println("deserialised config")
+
             check(config.plugin != null) { "No plugin specified in configuration file: $configFile" }
             config.dir = configFile.parentFile
 

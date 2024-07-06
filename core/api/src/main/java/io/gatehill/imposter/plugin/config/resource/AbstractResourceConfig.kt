@@ -48,7 +48,7 @@ import io.gatehill.imposter.plugin.config.capture.CaptureConfigHolder
 import io.gatehill.imposter.plugin.config.capture.ItemCaptureConfig
 import io.gatehill.imposter.plugin.config.security.SecurityConfig
 import io.gatehill.imposter.plugin.config.security.SecurityConfigHolder
-import java.util.UUID
+import java.util.*
 
 /**
  * Base configuration for plugins and sub-resources.
@@ -75,7 +75,7 @@ abstract class AbstractResourceConfig : BasicResourceConfig, SecurityConfigHolde
     override val continueToNext: Boolean? = null
 
     @get:JsonIgnore
-    override val resourceId by lazy { UUID.randomUUID().toString() }
+    override val resourceId = UUID.randomUUID().toString()
 
     override fun toString(): String {
         return "AbstractResourceConfig(path=$path, securityConfig=$securityConfig, captureConfig=$captureConfig, responseConfig=$responseConfig, continueToNext=$continueToNext)"

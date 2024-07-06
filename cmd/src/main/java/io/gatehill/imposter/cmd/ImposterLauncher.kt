@@ -123,6 +123,8 @@ class ImposterLauncher(args: Array<String>) {
 
         @JvmStatic
         fun main(args: Array<String>) {
+            println("Ready")
+            readln()
             LogUtil.configureLoggingFromEnvironment()
             LogUtil.configureVertxLogging()
             ImposterLauncher(args)
