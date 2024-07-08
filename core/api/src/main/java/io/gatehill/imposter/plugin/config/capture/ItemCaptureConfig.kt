@@ -86,6 +86,12 @@ class ItemCaptureConfig(
     expression,
     constValue,
 ) {
+    @delegate:Transient
     val key: CaptureConfig? by lazyParse(_key, CaptureConfig)
+
+    @delegate:Transient
     val store: CaptureConfig? by lazyParse(_store, CaptureConfig)
+
+    override val requestBody
+        get() = super.requestBody
 }

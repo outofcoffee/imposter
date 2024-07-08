@@ -54,6 +54,11 @@ enum class StepType {
     Remote,
 }
 
-class StepConfig(
+class StepConfig: HashMap<String, Any>() {
     val type: StepType
-) : HashMap<String, Any>()
+        get() = when(val stepType = this["type"]) {
+            "script" -> StepType.Script
+            "remote" -> StepType.Remote
+            else -> throw IllegalStateException("Unsupported step type: $stepType")
+        }
+}

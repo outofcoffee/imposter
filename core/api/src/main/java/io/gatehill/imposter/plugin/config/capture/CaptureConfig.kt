@@ -83,7 +83,8 @@ open class CaptureConfig(
     @field:JsonProperty("jsonPath")
     private val jsonPath: String? = null
 
-    val requestBody: BodyCaptureConfig by lazy { BodyCaptureConfig.parse(_requestBody, jsonPath) }
+    @delegate:Transient
+    open val requestBody: BodyCaptureConfig by lazy { BodyCaptureConfig.parse(_requestBody, jsonPath) }
 
     override fun toString(): String {
         return "CaptureConfig(pathParam=$pathParam, queryParam=$queryParam, formParam=$formParam, requestHeader=$requestHeader, jsonPath=$jsonPath, expression=$expression, constValue=$constValue)"

@@ -16,6 +16,9 @@ dependencies {
 
     implementation "com.esotericsoftware:kryo:5.6.0"
 
+//    implementation "de.ruedigermoeller:fst:2.56"
+    implementation "de.ruedigermoeller:fst:3.0.1"
+
     // test
     testImplementation "junit:junit:$version_junit"
     testImplementation group: 'org.hamcrest', name: 'hamcrest', version: version_hamcrest

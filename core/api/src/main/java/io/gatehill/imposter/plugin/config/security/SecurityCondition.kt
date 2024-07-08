@@ -73,12 +73,15 @@ class SecurityCondition(
     @field:JsonProperty("requestHeaders")
     private val rawRequestHeaders: Map<String, Any>? = null,
 ): QueryParamsResourceConfig, RequestHeadersResourceConfig, FormParamsResourceConfig {
+    @delegate:Transient
     override val queryParams: Map<String, ConditionalNameValuePair> by lazy {
         rawQueryParams?.let { ConditionalNameValuePair.parse(it) } ?: emptyMap()
     }
+    @delegate:Transient
     override val formParams: Map<String, ConditionalNameValuePair> by lazy {
         rawFormParams?.let { ConditionalNameValuePair.parse(it) } ?: emptyMap()
     }
+    @delegate:Transient
     override val requestHeaders: Map<String, ConditionalNameValuePair> by lazy {
         rawRequestHeaders?.let { ConditionalNameValuePair.parse(it) } ?: emptyMap()
     }

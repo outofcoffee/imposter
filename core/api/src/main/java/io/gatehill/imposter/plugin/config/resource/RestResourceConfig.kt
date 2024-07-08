@@ -48,7 +48,14 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.plugin.config.resource.conditional.ConditionalNameValuePair
 import io.gatehill.imposter.plugin.config.resource.conditional.MatchOperator
-import io.gatehill.imposter.plugin.config.resource.request.*
+import io.gatehill.imposter.plugin.config.resource.request.FormParamsResourceConfig
+import io.gatehill.imposter.plugin.config.resource.request.LegacyQueryParamsResourceConfig
+import io.gatehill.imposter.plugin.config.resource.request.MethodResourceConfig
+import io.gatehill.imposter.plugin.config.resource.request.PathParamsResourceConfig
+import io.gatehill.imposter.plugin.config.resource.request.QueryParamsResourceConfig
+import io.gatehill.imposter.plugin.config.resource.request.RequestBodyConfig
+import io.gatehill.imposter.plugin.config.resource.request.RequestBodyResourceConfig
+import io.gatehill.imposter.plugin.config.resource.request.RequestHeadersResourceConfig
 import io.gatehill.imposter.plugin.config.steps.StepConfig
 import io.gatehill.imposter.plugin.config.steps.StepsConfigHolder
 
@@ -88,18 +95,22 @@ open class RestResourceConfig(
     @field:JsonProperty("method")
     override var method: HttpMethod? = null
 
+    @delegate:Transient
     override val pathParams: Map<String, ConditionalNameValuePair> by lazy {
         rawPathParams?.let { ConditionalNameValuePair.parse(it) } ?: emptyMap()
     }
 
+    @delegate:Transient
     override val queryParams: Map<String, ConditionalNameValuePair> by lazy {
         rawQueryParams?.let { ConditionalNameValuePair.parse(it) } ?: emptyMap()
     }
 
+    @delegate:Transient
     override val requestHeaders: Map<String, ConditionalNameValuePair> by lazy {
         rawRequestHeaders?.let { ConditionalNameValuePair.parse(it) } ?: emptyMap()
     }
 
+    @delegate:Transient
     override val formParams: Map<String, ConditionalNameValuePair> by lazy {
         rawFormParams?.let { ConditionalNameValuePair.parse(it) } ?: emptyMap()
     }
