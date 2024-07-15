@@ -49,10 +49,6 @@ import com.esotericsoftware.kryo.io.Output
 import org.apache.logging.log4j.LogManager
 import java.io.File
 
-/**
- *
- * @author pete
- */
 object BinarySerialiser {
     private val logger = LogManager.getLogger(BinarySerialiser::class.java)
 

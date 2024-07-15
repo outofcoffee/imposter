@@ -1,0 +1,68 @@
+apply plugin: 'java-library'
+apply plugin: 'kotlin'
+apply plugin: 'maven-publish'
+
+compileJava {
+    sourceCompatibility = JavaVersion.VERSION_11
+}
+
+dependencies {
+    implementation project(':core:imposter-api')
+    implementation project(':core:config')
+    implementation project(':core:config-kryo')
+
+    implementation project(':core:config-dynamic')
+    implementation project (':mock:mock-openapi')
+    implementation project (':mock:mock-rest')
+    implementation project (':mock:mock-soap')
+
+    // logging
+    implementation "org.apache.logging.log4j:log4j-core:$version_log4j"
+    implementation "org.apache.logging.log4j:log4j-slf4j-impl:$version_log4j"
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    archiveClassifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives sourcesJar
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+
+            repositories {
+                maven {
+                    url = version.endsWith('SNAPSHOT') ? mavenSnapshotRepository : mavenReleaseRepository
+                    credentials(AwsCredentials) {
+                        accessKey awsAccessKey
+                        secretKey awsSecretKey
+                    }
+                }
+            }
+        }
+    }
+}
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_11
+
+        // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
+        freeCompilerArgs = ["-Xjvm-default=all"]
+    }
+}
+
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_11
+
+        // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
+        freeCompilerArgs = ["-Xjvm-default=all"]
+    }
+}
