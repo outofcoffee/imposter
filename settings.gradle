@@ -8,6 +8,7 @@ project(':core:api').name = 'imposter-api'
 
 include ':core:config'
 include ':core:config-dynamic'
+include ':core:config-kryo'
 include ':core:config-resolver-s3'
 
 include ':core:engine'
@@ -108,3 +109,6 @@ include ':lib:fake-data'
 
 // observability
 include ':tools:perf-monitor'
+
+// utils
+include ':tools:kryo-util'
