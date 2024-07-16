@@ -29,8 +29,9 @@ dependencies {
     implementation project (':store:store-redis')
     implementation project (':store:store-graphql')
 
-    // config resolvers
+    // config
     implementation project (':core:config-resolver-s3')
+    implementation project (':core:config-kryo')
 
     // libraries
     implementation project (':lib:fake-data')
