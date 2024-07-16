@@ -62,7 +62,6 @@ import org.apache.logging.log4j.LogManager
 import org.graalvm.polyglot.Context
 import org.graalvm.polyglot.Engine
 import org.graalvm.polyglot.HostAccess
-import javax.inject.Inject
 
 
 /**
@@ -87,17 +86,29 @@ class GraalvmScriptServiceImpl : ScriptService, Plugin {
         engine = Engine.newBuilder(JS_LANG_ID).build()
     }
 
-    @Inject
-    fun onPostInject() {
-        if (EnvVars.getEnv(ENV_IMPOSTER_GRAAL_STORE_PROXY)?.toBoolean() == true) {
-            LOGGER.debug("Enabling Graal store proxy")
-            val storeFactory = InjectorUtil.getInstance<StoreFactory>()
-            storeFactory.storeInterceptors += { ObjectProxyingStore(it) }
-        }
+    private val enableStoreProxy = EnvVars.getEnv(ENV_IMPOSTER_GRAAL_STORE_PROXY)?.toBoolean() != false
+    private var checkedStoreProxy = false
+
+    override fun initScript(script: ScriptSource) {
+        checkEnableStoreProxy()
     }
 
     override fun initInlineScript(scriptId: String, scriptCode: String) {
-        LOGGER.trace("No op inline script init for script with ID: $scriptId")
+        checkEnableStoreProxy()
+    }
+
+    fun checkEnableStoreProxy() {
+        if (!checkedStoreProxy) {
+            checkedStoreProxy = true
+
+            if (enableStoreProxy) {
+                LOGGER.trace("Graal store proxy enabled")
+                val storeFactory = InjectorUtil.getInstance<StoreFactory>()
+                storeFactory.storeInterceptors += { ObjectProxyingStore(it) }
+            } else {
+                LOGGER.trace("Graal store proxy disabled")
+            }
+        }
     }
 
     override fun executeScript(

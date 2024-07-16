@@ -82,6 +82,9 @@ class StoreJsonTest : AbstractBaseScriptTest() {
 
     @Test
     fun `stringify to JSON`() {
+        // init the store proxy
+        getService().checkEnableStoreProxy()
+
         val pluginConfig = configureScript()
         val resourceConfig = pluginConfig as BasicResourceConfig
 
