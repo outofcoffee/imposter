@@ -106,7 +106,7 @@ jobs:
               './mock/hbase/build/libs/imposter-plugin-mock-hbase.jar',
               './mock/sfdc/build/libs/imposter-plugin-mock-sfdc.jar',
               './mock/wiremock/build/libs/imposter-plugin-wiremock.jar',
-              './scripting/graalvm/build/distributions/imposter-plugin-js-graal.zip',
+              './scripting/nashorn/build/libs/imposter-plugin-js-nashorn.jar',
               './store/dynamodb/build/libs/imposter-plugin-store-dynamodb.jar',
               './store/graphql/build/libs/imposter-plugin-store-graphql.jar',
               './store/redis/build/libs/imposter-plugin-store-redis.jar',

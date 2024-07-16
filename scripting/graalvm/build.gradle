@@ -14,12 +14,12 @@ dependencies {
     implementation project(':core:imposter-engine')
     implementation project(':scripting:scripting-common')
 
-    pluginImplementation "org.graalvm.js:js:$version_graal"
-    pluginImplementation "org.graalvm.truffle:truffle-api:$version_graal"
-    pluginImplementation "org.graalvm.js:js-scriptengine:$version_graal"
+    implementation "org.graalvm.js:js:$version_graal"
+    implementation "org.graalvm.truffle:truffle-api:$version_graal"
+    implementation "org.graalvm.js:js-scriptengine:$version_graal"
 
     // store proxy
-    pluginImplementation project(':store:store-common')
+    implementation project(':store:store-common')
 
     // test
     testImplementation project(':test:test-utils')
@@ -73,18 +73,4 @@ compileTestKotlin {
         // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
         freeCompilerArgs = ["-Xjvm-default=all"]
     }
-}
-
-task buildZip(type: Zip) {
-    archiveName('imposter-plugin-js-graal.zip')
-    from compileJava
-    from processResources
-    into('lib') {
-        from(jar)
-        from(project.configurations.pluginImplementation)
-    }
-}
-
-task dist {
-    dependsOn buildZip
 }
