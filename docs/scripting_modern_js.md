@@ -1,6 +1,6 @@
 # Using modern JavaScript features in scripts
 
-The default JavaScript engine is Nashorn, which is based on ECMAScript 5.1. However, you can use modern JavaScript features by switching to the GraalVM JavaScript engine.
+The default JavaScript engine is GraalVM, which is based on ECMAScript 2022 (more formally, [ECMA-262, 13th edition](https://262.ecma-international.org/13.0/)). This means you can use modern JavaScript features from ECMAScript 2022 in your scripts.
 
 ### Features
 
@@ -12,36 +12,7 @@ GraalVM enables you to use modern JavaScript features such as:
 - Destructuring
 - Classes
 
-To use the GraalVM JavaScript engine, you need to be running Imposter v3.35.0 or later, and install the `js-graal` plugin.
-
-## Install plugin
-
-### Option 1: Using the CLI
-
-> **Note**
-> This option requires the [Imposter CLI](./run_imposter_cli.md) version 0.37.0 or later.
-
-To use this plugin, install it with the Imposter CLI:
-
-    imposter plugin install -d js-graal:zip
-
-This will install the plugin version matching the current engine version used by the CLI. The next time you run `imposter up`, the plugin will be available.
-
-### Option 2: Install the plugin manually
-
-To use this plugin, download the `imposter-plugin-js-graal.zip` ZIP file from the [Releases page](https://github.com/outofcoffee/imposter/releases).
-
-Enable it with the following environment variable:
-
-    IMPOSTER_PLUGIN_DIR="/path/to/dir/containing/plugin"
-
-## Using the plugin
-
-To use GraalVM, you need to specify the `js-graal` engine as the JavaScript plugin. You can do this by setting the environment variable `IMPOSTER_JS_PLUGIN` to `js-graal`:
-
-```bash
-export IMPOSTER_JS_PLUGIN=js-graal
-```
+To use the GraalVM JavaScript engine, you need to be running Imposter v4.0.0 or later.
 
 ---
 
@@ -49,15 +20,12 @@ export IMPOSTER_JS_PLUGIN=js-graal
 
 For examples, see the `examples/graal` directory [in GitHub](https://github.com/outofcoffee/imposter/blob/main/examples/graal).
 
-> **Note**
-> Complete the prerequisites first.
-
 ### Simple example
 
-Start the mock server with the `js-graal` engine:
+Start the mock server:
 
 ```bash
-imposter up examples/graal/simple -e IMPOSTER_JS_PLUGIN=js-graal
+imposter up examples/graal/simple
 ```
 
 Send a request to the mock server:
@@ -71,3 +39,9 @@ Hello Ada
 ### Advanced example
 
 See the `examples/graal/es6` [directory](https://github.com/outofcoffee/imposter/blob/main/examples/graal) for an example of using modern JavaScript features in a script.
+
+---
+
+## Further reading
+
+- [Using legacy JavaScript engine (Nashorn)](scripting_legacy_js.md)

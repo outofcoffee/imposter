@@ -38,6 +38,7 @@ To begin, check out the [Getting started](getting_started.md) guide. See the _Co
 - [Generating fake data](fake_data.md)
 - [CORS](cors.md)
 - [Groovy scripting tips](groovy_tips.md)
+- [JavaScript compatibility](scripting_modern_js.md)
 - [Examples](https://github.com/outofcoffee/imposter/tree/main/examples)
 
 ### Data capture and storage
