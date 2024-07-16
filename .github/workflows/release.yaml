@@ -69,7 +69,7 @@ jobs:
             ./scripts/docker-build.sh -p true "latest"
             ;;
 
-          release/2.x)
+          release/3.x)
             CURRENT_VERSION="${{ inputs.version }}"
             if [[ "${CURRENT_VERSION:0:1}" == "v" ]]; then
                 CURRENT_VERSION="$( echo ${CURRENT_VERSION} | cut -c 2- )"

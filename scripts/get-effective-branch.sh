@@ -8,11 +8,11 @@ if [[ "$CURRENT_BRANCH" == "develop" || "$CURRENT_BRANCH" == "main" ]]; then
 
 else
   case "$( since project version --current --log-level=info )" in
-  v3.*)
+  v4.*)
     EFFECTIVE_BRANCH_NAME="main"
     ;;
-  v2.*)
-    EFFECTIVE_BRANCH_NAME="release/2.x"
+  v3.*)
+    EFFECTIVE_BRANCH_NAME="release/3.x"
     ;;
   *)
     EFFECTIVE_BRANCH_NAME="dev"
