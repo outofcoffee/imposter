@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.0.0] - 2024-07-17
+### BREAKING CHANGES
+- feat: switches to GraalVM as the default JavaScript engine.
+
+### Added
+- feat: adds inline script support to Graal engine.
+- feat: enables graal store proxy by default.
+
+### Changed
+- build: creates v3 release branch.
+- build: publishes Nashorn as standalone plugin.
+- build: removes GraalVM standalone plugin as it's now bundled with core.
+- docs: reference GraalVM as default JavaScript engine.
+
+### Fixed
+- fix: disambiguate store save arity.
+
 ## [3.44.1] - 2024-07-02
 ### Changed
 - refactor: throw exception if interceptors specify security config.
