@@ -96,6 +96,10 @@ class GraalvmScriptServiceImpl : ScriptService, Plugin {
         }
     }
 
+    override fun initInlineScript(scriptId: String, scriptCode: String) {
+        LOGGER.trace("No op inline script init for script with ID: $scriptId")
+    }
+
     override fun executeScript(
         script: ScriptSource,
         runtimeContext: RuntimeContext,
@@ -104,28 +108,56 @@ class GraalvmScriptServiceImpl : ScriptService, Plugin {
 
         val wrapped = JavaScriptUtil.wrapScript(script)
 
-        Context.newBuilder(JS_LANG_ID)
-            .engine(engine)
-            .allowHostAccess(HostAccess.ALL)
-            .allowHostClassLookup { _ -> true }
-            .build()
-            .use { context ->
+        buildContext().use { context ->
+            val bindings = context.getBindings(JS_LANG_ID)
+            JavaScriptUtil.transformRuntimeMap(
+                runtimeContext,
+                addDslPrefix = true,
+                addConsoleShim = false
+            ).map { (key, value) ->
+                bindings.putMember(key, value)
+            }
+
+            val result = context.eval(JS_LANG_ID, wrapped.code)
+            val dsl = result.`as`(Dsl::class.java)
+            return dsl.responseBehaviour
+        }
+    } catch (e: Exception) {
+        throw RuntimeException("Script execution terminated abnormally", e)
+    }
+
+    override fun evalInlineScript(
+        scriptId: String,
+        scriptCode: String,
+        runtimeContext: RuntimeContext,
+    ): Boolean {
+        LOGGER.trace("Executing inline script: {}", scriptId)
+
+        try {
+            buildContext().use { context ->
                 val bindings = context.getBindings(JS_LANG_ID)
                 JavaScriptUtil.transformRuntimeMap(
                     runtimeContext,
-                    addDslPrefix = true,
+                    addDslPrefix = false,
                     addConsoleShim = false
                 ).map { (key, value) ->
                     bindings.putMember(key, value)
                 }
 
-                val result = context.eval(JS_LANG_ID, wrapped.code)
-                val dsl = result.`as`(Dsl::class.java)
-                return dsl.responseBehaviour
+                val result = context.eval(JS_LANG_ID, scriptCode)
+                val resultValue = result.`as`(Any::class.java)
+                return resultValue is Boolean && resultValue
             }
-    } catch (e: Exception) {
-        throw RuntimeException("Script execution terminated abnormally", e)
+        } catch (e: Exception) {
+            throw RuntimeException("Inline script evaluation terminated abnormally", e)
+        }
     }
+
+    private fun buildContext(): Context = Context.newBuilder(JS_LANG_ID)
+        .engine(engine)
+        .allowHostAccess(HostAccess.ALL)
+        .allowHostClassLookup { _ -> true }
+        .build()
 
     companion object {
         private val LOGGER = LogManager.getLogger(GraalvmScriptServiceImpl::class.java)
