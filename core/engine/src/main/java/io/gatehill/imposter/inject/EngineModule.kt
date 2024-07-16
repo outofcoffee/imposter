@@ -63,7 +63,7 @@ import io.gatehill.imposter.service.StepService
 import io.gatehill.imposter.service.UpstreamService
 import io.gatehill.imposter.service.script.EmbeddedScriptService
 import io.gatehill.imposter.service.script.EmbeddedScriptServiceImpl
-import io.gatehill.imposter.service.script.InlineScriptService
+import io.gatehill.imposter.service.script.EvalScriptService
 import io.gatehill.imposter.service.script.ScriptServiceFactory
 import io.gatehill.imposter.service.script.ScriptedResponseServiceImpl
 import io.gatehill.imposter.service.security.CorsService
@@ -90,7 +90,7 @@ internal class EngineModule : AbstractModule() {
             .asEagerSingleton()
 
         bind(EmbeddedScriptService::class.java).to(EmbeddedScriptServiceImpl::class.java).asSingleton()
-        bind(InlineScriptService::class.java).asSingleton()
+        bind(EvalScriptService::class.java).asSingleton()
 
         // needs to be eager to register lifecycle listener
         bind(SecurityService::class.java).to(SecurityServiceImpl::class.java).asEagerSingleton()

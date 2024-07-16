@@ -57,7 +57,7 @@ interface ScriptService {
         // no op
     }
 
-    fun initInlineScript(scriptId: String, scriptCode: String): Unit =
+    fun initEvalScript(scriptId: String, scriptCode: String): Unit =
         throw NotImplementedError()
 
     /**
@@ -69,9 +69,8 @@ interface ScriptService {
      */
     fun executeScript(script: ScriptSource, runtimeContext: RuntimeContext): ReadWriteResponseBehaviour
 
-    fun evalInlineScript(scriptId: String, scriptCode: String, runtimeContext: RuntimeContext): Boolean =
+    fun executeEvalScript(scriptId: String, scriptCode: String, runtimeContext: RuntimeContext): Boolean =
         throw NotImplementedError()
-
 }
 
 typealias ScriptRequestBuilder = (request: HttpRequest) -> ScriptRequest
