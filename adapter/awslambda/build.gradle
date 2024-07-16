@@ -26,7 +26,7 @@ dependencies {
     implementation project (':mock:mock-openapi')
     implementation project (':mock:mock-rest')
     implementation project (':mock:mock-soap')
-    implementation project (':scripting:scripting-nashorn')
+    implementation project (':scripting:scripting-graalvm')
     implementation project (':store:store-dynamodb')
     implementation project (':store:store-inmem')
 
