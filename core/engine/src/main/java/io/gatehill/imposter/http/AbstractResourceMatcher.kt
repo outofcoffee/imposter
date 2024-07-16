@@ -51,7 +51,7 @@ import io.gatehill.imposter.plugin.config.resource.conditional.MatchOperator
 import io.gatehill.imposter.plugin.config.resource.request.BaseRequestBodyConfig
 import io.gatehill.imposter.plugin.config.resource.request.RequestBodyResourceConfig
 import io.gatehill.imposter.plugin.config.system.SystemConfigHolder
-import io.gatehill.imposter.service.script.InlineScriptService
+import io.gatehill.imposter.service.script.EvalScriptService
 import io.gatehill.imposter.util.BodyQueryUtil
 import io.gatehill.imposter.util.InjectorUtil
 import io.gatehill.imposter.util.LogUtil
@@ -66,7 +66,7 @@ import java.util.regex.Pattern
  * @author Pete Cornish
  */
 abstract class AbstractResourceMatcher : ResourceMatcher {
-    private val inlineScriptService: InlineScriptService by lazy { InjectorUtil.getInstance() }
+    private val evalScriptService: EvalScriptService by lazy { InjectorUtil.getInstance() }
 
     override fun matchAllResourceConfigs(
         pluginConfig: PluginConfig,
@@ -319,7 +319,7 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
         httpExchange: HttpExchange,
         pluginConfig: PluginConfig,
         resource: ResolvedResourceConfig,
-    ) = inlineScriptService.evalScript(httpExchange, pluginConfig, resource.config)
+    ) = evalScriptService.evalScript(httpExchange, pluginConfig, resource.config)
 
     fun determineMatch(
         results: List<ResourceMatchResult>,

@@ -89,16 +89,16 @@ class DelegatingJsScriptServiceImpl @Inject constructor(
 
     override fun initScript(script: ScriptSource) = impl.initScript(script)
 
-    override fun initInlineScript(scriptId: String, scriptCode: String) = impl.initInlineScript(scriptId, scriptCode)
+    override fun initEvalScript(scriptId: String, scriptCode: String) = impl.initEvalScript(scriptId, scriptCode)
 
     override fun executeScript(
         script: ScriptSource,
         runtimeContext: RuntimeContext
     ) = impl.executeScript(script, runtimeContext)
 
-    override fun evalInlineScript(
+    override fun executeEvalScript(
         scriptId: String,
         scriptCode: String,
         runtimeContext: RuntimeContext
-    ) = impl.evalInlineScript(scriptId, scriptCode, runtimeContext)
+    ) = impl.executeEvalScript(scriptId, scriptCode, runtimeContext)
 }

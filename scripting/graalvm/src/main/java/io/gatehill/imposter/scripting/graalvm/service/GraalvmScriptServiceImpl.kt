@@ -93,7 +93,7 @@ class GraalvmScriptServiceImpl : ScriptService, Plugin {
         checkEnableStoreProxy()
     }
 
-    override fun initInlineScript(scriptId: String, scriptCode: String) {
+    override fun initEvalScript(scriptId: String, scriptCode: String) {
         checkEnableStoreProxy()
     }
 
@@ -137,12 +137,12 @@ class GraalvmScriptServiceImpl : ScriptService, Plugin {
         throw RuntimeException("Script execution terminated abnormally", e)
     }
 
-    override fun evalInlineScript(
+    override fun executeEvalScript(
         scriptId: String,
         scriptCode: String,
         runtimeContext: RuntimeContext,
     ): Boolean {
-        LOGGER.trace("Executing inline script: {}", scriptId)
+        LOGGER.trace("Executing eval script: {}", scriptId)
 
         try {
             buildContext().use { context ->
@@ -160,7 +160,7 @@ class GraalvmScriptServiceImpl : ScriptService, Plugin {
                 return resultValue is Boolean && resultValue
             }
         } catch (e: Exception) {
-            throw RuntimeException("Inline script evaluation terminated abnormally", e)
+            throw RuntimeException("Eval script execution terminated abnormally", e)
         }
     }
 

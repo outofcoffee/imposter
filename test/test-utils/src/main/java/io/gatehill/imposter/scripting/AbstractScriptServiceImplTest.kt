@@ -209,7 +209,7 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
         )
         val runtimeContext = buildRuntimeContext(additionalBindings)
         val script = ScriptSource(
-            source = "${UUID.randomUUID()}_inline.js",
+            source = "${UUID.randomUUID()}_eval.js",
             code = scriptCode,
         )
         val actual = getService().executeScript(script, runtimeContext)

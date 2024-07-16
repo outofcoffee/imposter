@@ -80,7 +80,7 @@ class ScriptedResponseServiceImpl @Inject constructor(
     engineLifecycle: EngineLifecycleHooks,
     private val scriptLifecycle: ScriptLifecycleHooks,
     private val scriptServiceFactory: ScriptServiceFactory,
-    private val inlineScriptService: InlineScriptService,
+    private val evalScriptService: EvalScriptService,
     private val stepService: StepService,
 ) : ScriptedResponseService, EngineLifecycleListener {
 
@@ -126,7 +126,7 @@ class ScriptedResponseServiceImpl @Inject constructor(
 
                     // inline eval scripts
                     if (resource is EvalResourceConfig) {
-                        inlineScriptService.initScript(resource)
+                        evalScriptService.initScript(resource)
                     }
                 }
             }

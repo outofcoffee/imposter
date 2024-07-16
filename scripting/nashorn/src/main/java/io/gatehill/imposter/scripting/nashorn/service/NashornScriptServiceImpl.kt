@@ -109,7 +109,7 @@ class NashornScriptServiceImpl : ScriptService, Plugin {
         }
     }
 
-    override fun initInlineScript(scriptId: String, scriptCode: String) {
+    override fun initEvalScript(scriptId: String, scriptCode: String) {
         if (ScriptUtil.shouldPrecompile) {
             LOGGER.debug("Precompiling inline script: $scriptId")
             getCompiledInlineScript(scriptId, scriptCode)
@@ -145,12 +145,12 @@ class NashornScriptServiceImpl : ScriptService, Plugin {
         }
     }
 
-    override fun evalInlineScript(
+    override fun executeEvalScript(
         scriptId: String,
         scriptCode: String,
         runtimeContext: RuntimeContext
     ): Boolean {
-        LOGGER.trace("Executing inline script: {}", scriptId)
+        LOGGER.trace("Executing eval script: {}", scriptId)
 
         try {
             val bindings = SimpleBindings(
@@ -166,7 +166,7 @@ class NashornScriptServiceImpl : ScriptService, Plugin {
             return result is Boolean && result
 
         } catch (e: Exception) {
-            throw RuntimeException("Inline script evaluation terminated abnormally", e)
+            throw RuntimeException("Eval script execution terminated abnormally", e)
         }
     }
 
@@ -200,10 +200,10 @@ class NashornScriptServiceImpl : ScriptService, Plugin {
     ): CompiledJsScript<CompiledScript> =
         compiledScripts.get(scriptId) {
             try {
-                LOGGER.trace("Compiling inline script: {}", scriptCode)
+                LOGGER.trace("Compiling eval script: {}", scriptCode)
                 return@get CompiledJsScript(0, scriptEngine.compile(scriptCode))
             } catch (e: Exception) {
-                throw RuntimeException("Failed to compile inline script: $scriptCode", e)
+                throw RuntimeException("Failed to compile eval script: $scriptCode", e)
             }
         }
 

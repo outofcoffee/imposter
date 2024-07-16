@@ -12,16 +12,16 @@ import io.gatehill.imposter.util.InjectorUtil
 import io.gatehill.imposter.util.LogUtil
 import org.apache.logging.log4j.LogManager
 
-class InlineScriptService {
+class EvalScriptService {
     private val jsScriptService: ScriptService by lazy {
-        InjectorUtil.getInstance<ScriptServiceFactory>().fetchScriptService("inline.js")
+        InjectorUtil.getInstance<ScriptServiceFactory>().fetchScriptService("eval.js")
     }
 
     fun initScript(config: EvalResourceConfig) {
         if (config.eval.isNullOrBlank()) {
             return
         }
-        jsScriptService.initInlineScript(config.resourceId, config.eval!!)
+        jsScriptService.initEvalScript(config.resourceId, config.eval!!)
     }
 
     fun evalScript(
@@ -45,7 +45,7 @@ class InlineScriptService {
                 emptyMap(),
                 executionContext
             )
-            val result = jsScriptService.evalInlineScript(scriptId, config.eval!!, runtimeContext)
+            val result = jsScriptService.executeEvalScript(scriptId, config.eval!!, runtimeContext)
             if (logger.isTraceEnabled) {
                 logger.trace("Evaluation of inline script {} result: {}: {}", scriptId, result, config.eval)
             } else {
@@ -71,6 +71,6 @@ class InlineScriptService {
     }
 
     companion object {
-        private val logger = LogManager.getLogger(InlineScriptService::class.java)
+        private val logger = LogManager.getLogger(EvalScriptService::class.java)
     }
 }
