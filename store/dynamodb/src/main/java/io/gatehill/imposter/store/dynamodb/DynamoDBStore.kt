@@ -79,7 +79,7 @@ class DynamoDBStore(
         logger.debug("Initialised DynamoDB store: $storeName using table: $tableName")
     }
 
-    override fun save(key: String, value: Any?) {
+    override fun saveItem(key: String, value: Any?) {
         logger.trace("Saving item with key: {} to store: {}", key, storeName)
         val valueAttribute = convertToAttributeValue(value)
 

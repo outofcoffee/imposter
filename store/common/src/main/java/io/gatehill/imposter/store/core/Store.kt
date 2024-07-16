@@ -52,11 +52,11 @@ interface Store {
     val typeDescription: String
     val isEphemeral: Boolean
 
-    fun save(
-        key: String,
-        value: Any?,
-        phase: ExchangePhase = ExchangePhase.REQUEST_RECEIVED,
-    )
+    fun save(key: String, value: Any?, phase: ExchangePhase)
+
+    fun save(key: String, value: Any?) =
+        save(key, value, ExchangePhase.REQUEST_RECEIVED)
+
     fun <T> load(key: String): T?
     fun loadAsJson(key: String): String
     fun delete(key: String)

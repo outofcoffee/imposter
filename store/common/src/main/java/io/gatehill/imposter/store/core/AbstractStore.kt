@@ -65,7 +65,7 @@ abstract class AbstractStore(
             throw IllegalStateException("Cannot use deferred persistence for ephemeral store: $storeName of type: $typeDescription")
         }
         when (phase) {
-            ExchangePhase.REQUEST_RECEIVED -> save(key, value)
+            ExchangePhase.REQUEST_RECEIVED -> saveItem(key, value)
             ExchangePhase.RESPONSE_SENT -> deferSave(key, value)
             else -> throw IllegalStateException("Unsupported exchange phase for store persistence: $phase")
         }
@@ -74,9 +74,9 @@ abstract class AbstractStore(
     private fun deferSave(key: String, value: Any?) {
         logger.debug("Deferring persistence of item: $key to store: $storeName")
         deferredOperationService.defer("Write item: $key to store: $storeName") {
-            save(key, value)
+            saveItem(key, value)
         }
     }
 
-    abstract fun save(key: String, value: Any?)
+    abstract fun saveItem(key: String, value: Any?)
 }

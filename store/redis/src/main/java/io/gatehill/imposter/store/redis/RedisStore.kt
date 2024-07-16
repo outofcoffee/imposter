@@ -79,7 +79,7 @@ class RedisStore(
         }
     }
 
-    override fun save(key: String, value: Any?) {
+    override fun saveItem(key: String, value: Any?) {
         LOGGER.trace("Saving item with key: {} to store: {}", key, storeName)
         if (null == value) {
             // can't save a null map value - remove existing if present

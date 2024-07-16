@@ -63,7 +63,7 @@ class InMemoryStore(
     private val store: MutableMap<String, Any> by lazy { ConcurrentHashMap() }
     override val typeDescription = "inmem"
 
-    override fun save(key: String, value: Any?) {
+    override fun saveItem(key: String, value: Any?) {
         LOGGER.trace("Saving item with key: {} to store: {}", key, storeName)
         modified = true
         value?.let { store[key] = value } ?: store.remove(key)
