@@ -42,10 +42,14 @@
  */
 package io.gatehill.imposter.scripting.graalvm.service
 
+import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.util.EnvVars
+import io.gatehill.imposter.http.HttpRouter
+import io.gatehill.imposter.lifecycle.EngineLifecycleListener
 import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.RequireModules
+import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.dsl.Dsl
@@ -72,7 +76,7 @@ import org.graalvm.polyglot.HostAccess
  */
 @PluginInfo("js-graal")
 @RequireModules(GraalvmScriptingModule::class)
-class GraalvmScriptServiceImpl : ScriptService, Plugin {
+class GraalvmScriptServiceImpl : ScriptService, Plugin, EngineLifecycleListener {
     private val engine: Engine
 
     override val requestBuilder: ScriptRequestBuilder
@@ -87,28 +91,27 @@ class GraalvmScriptServiceImpl : ScriptService, Plugin {
     }
 
     private val enableStoreProxy = EnvVars.getEnv(ENV_IMPOSTER_GRAAL_STORE_PROXY)?.toBoolean() != false
-    private var checkedStoreProxy = false
 
-    override fun initScript(script: ScriptSource) {
-        checkEnableStoreProxy()
-    }
-
-    override fun initEvalScript(scriptId: String, scriptCode: String) {
+    override fun afterRoutesConfigured(
+        imposterConfig: ImposterConfig,
+        allPluginConfigs: List<PluginConfig>,
+        router: HttpRouter
+    ) {
         checkEnableStoreProxy()
     }
 
     fun checkEnableStoreProxy() {
-        if (!checkedStoreProxy) {
-            checkedStoreProxy = true
-
-            if (enableStoreProxy) {
-                LOGGER.trace("Graal store proxy enabled")
-                val storeFactory = InjectorUtil.getInstance<StoreFactory>()
-                storeFactory.storeInterceptors += { ObjectProxyingStore(it) }
-            } else {
-                LOGGER.trace("Graal store proxy disabled")
-            }
+        if (enableStoreProxy) {
+            LOGGER.trace("Graal store proxy enabled")
+            val storeFactory = InjectorUtil.getInstance<StoreFactory>()
+            storeFactory.storeInterceptors += { ObjectProxyingStore(it) }
+        } else {
+            LOGGER.trace("Graal store proxy disabled")
         }
+    }
+
+    override fun initEvalScript(scriptId: String, scriptCode: String) {
+        LOGGER.trace("No-op eval script init")
     }
 
     override fun executeScript(
