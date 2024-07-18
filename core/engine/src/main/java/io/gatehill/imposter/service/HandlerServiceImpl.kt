@@ -64,6 +64,7 @@ import io.gatehill.imposter.plugin.config.resource.UpstreamsHolder
 import io.gatehill.imposter.server.ServerFactory
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.LogUtil.describeRequest
+import io.gatehill.imposter.util.LogUtil.describeRequestFull
 import io.gatehill.imposter.util.ResourceUtil
 import io.gatehill.imposter.util.makeFuture
 import io.gatehill.imposter.util.supervisedDefaultCoroutineScope
@@ -73,7 +74,7 @@ import kotlinx.coroutines.future.future
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
 import java.io.File
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.regex.Pattern
 import javax.inject.Inject
@@ -91,6 +92,9 @@ class HandlerServiceImpl @Inject constructor(
 
     private val shouldAddEngineResponseHeaders: Boolean =
         EnvVars.getEnv("IMPOSTER_ADD_ENGINE_RESPONSE_HEADERS")?.toBoolean() != false
+
+    private val verboseRequestLogging: Boolean =
+        EnvVars.getEnv("IMPOSTER_VERBOSE_REQUEST_LOGGING")?.toBoolean() == true
 
     override fun build(
         imposterConfig: ImposterConfig,
@@ -271,6 +275,10 @@ class HandlerServiceImpl @Inject constructor(
             // every request has a unique ID
             val requestId = UUID.randomUUID().toString()
             httpExchange.put(ResourceUtil.RC_REQUEST_ID_KEY, requestId)
+
+            if (verboseRequestLogging) {
+                LOGGER.debug("Handling request: {}", describeRequestFull(httpExchange, requestId))
+            }
 
             val response = httpExchange.response
 

@@ -163,6 +163,24 @@ object LogUtil {
         return requestIdDescription + request.method + " " + request.absoluteUri
     }
 
+    /**
+     * @param httpExchange the HTTP exchange
+     * @param requestId      the request ID (can be null)
+     * @return a description of the request and body
+     */
+    @JvmOverloads
+    fun describeRequestFull(
+        httpExchange: HttpExchange,
+        requestId: String? = httpExchange.get(ResourceUtil.RC_REQUEST_ID_KEY)
+    ): String {
+        val header = describeRequest(httpExchange, requestId)
+        var body = httpExchange.request.bodyAsString
+        if (body.isNullOrEmpty()) {
+            body = "<no body>"
+        }
+        return "$header\n$body"
+    }
+
     private fun formatDuration(input: Any) = String.format("%.2f", input)
 
     fun logCompletion(httpExchange: HttpExchange) {
