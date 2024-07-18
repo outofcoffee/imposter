@@ -96,6 +96,9 @@ object DeepProxy {
 
 class InterceptingList(private val src: List<Any?>) : ProxyArray {
     override fun get(index: Long): Any? {
+        if (index < 0 || index >= src.size) {
+            throw IndexOutOfBoundsException("Index out of bounds: $index, size: ${src.size}")
+        }
         val value = src[index.toInt()]
         return value?.let(DeepProxy::of)
     }
