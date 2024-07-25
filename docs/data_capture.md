@@ -390,8 +390,9 @@ You can selectively enable or disable a capture configuration using the `enabled
 capture:
   firstName:
     enabled: true
-    jsonPath: $.name
     store: testStore
+    requestBody:
+      jsonPath: $.name
 ```
 
 > The default value of `enabled` is `true`.
