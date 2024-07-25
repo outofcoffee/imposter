@@ -64,9 +64,9 @@ The following configuration options are available for a capture:
 | `expression`      | A placeholder expression, e.g. `${context.request.queryParams.foo}` - see _Expressions_ section.                                                              |
 | `const`           | A constant value, e.g. `example`.                                                                                                                             |
 | `phase`           | The point in the request processing lifecycle that capture and persistence will occur. By default this is `REQUEST_RECEIVED`. See _Deferred capture_ section. |                                                                                         |
-| `jsonPath`        | The JsonPath expression to query the JSON body. Only works with JSON request bodies.                                                                          |
-| `xPath`           | The XPath expression to query the XML body. Only works with XML request bodies.                                                                               |
-| `xmlNamespaces`   | Map of prefixes to XML namespaces used by the XPath expression.                                                                                               |
+| `requestBody.jsonPath`        | The JsonPath expression to query the JSON body. Only works with JSON request bodies.                                                                          |
+| `requestBody.xPath`           | The XPath expression to query the XML body. Only works with XML request bodies.                                                                               |
+| `requestBody.xmlNamespaces`   | Map of prefixes to XML namespaces used by the XPath expression.                                                                                               |
 
 ### Capturing the request body
 
@@ -96,8 +96,9 @@ resources:
   method: POST
   capture:
     firstName:
-      jsonPath: $.name
       store: testStore
+      requestBody:
+        jsonPath: $.name
 ```
 
 In this example, the `name` property of the body would be stored in the 'firstName' item in the store named 'testStore'.
@@ -128,11 +129,12 @@ resources:
   method: POST
   capture:
     petName:
-      xPath: "/env:Envelope/env:Body/pets:animal/pets:name"
       store: testStore
-      xmlNamespaces:
-        env: "http://schemas.xmlsoap.org/soap/envelope/"
-        pets: "urn:com:example:petstore"
+      requestBody:
+        xPath: "/env:Envelope/env:Body/pets:animal/pets:name"
+        xmlNamespaces:
+          env: "http://schemas.xmlsoap.org/soap/envelope/"
+          pets: "urn:com:example:petstore"
 ```
 
 In this example, the value of the `pets:name` element in the body would be stored in the 'petName' item in the store named 'testStore'.
@@ -225,8 +227,9 @@ resources:
   method: POST
   capture:
     person:
-      jsonPath: $
       store: testStore
+      requestBody:
+        jsonPath: $
 ```
 
 Here the `$` expression indicates the whole request body object should be captured into the 'person' item.
@@ -270,10 +273,10 @@ resources:
   path: /users/admins/{userId}
   capture:
     adminUser:
+      store: adminUsers
       expression: "${datetime.now.iso8601_datetime}"
       key:
         pathParam: userId
-      store: adminUsers
   response:
     statusCode: 200
 ```
@@ -290,10 +293,10 @@ resources:
   path: /users/admins/{userId}
   capture:
     adminUser:
+      store: adminUsers
       expression: "${datetime.now.iso8601_datetime}"
       key:
         expression: "${context.request.pathParams.userId}"
-      store: adminUsers
   response:
     statusCode: 200
 ```
@@ -406,8 +409,9 @@ You can refer to it in your configuration to selectively enable the capture conf
 capture:
   firstName:
     enabled: ${env.NAME_CAPTURE_ENABLED}
-    jsonPath: $.name
     store: testStore
+    requestBody:
+      jsonPath: $.name
 ```
 
 ## Capture performance
