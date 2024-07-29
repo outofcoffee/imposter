@@ -6,13 +6,13 @@ resources:
   capture:
     userId:
       pathParam: userId
-      store: captureTest
+      store: captureTestHeaders
     page:
       queryParam: page
-      store: captureTest
+      store: captureTestHeaders
     correlationId:
       requestHeader: X-Correlation-ID
-      store: captureTest
+      store: captureTestHeaders
   response:
     statusCode: 200
 
@@ -21,15 +21,15 @@ resources:
   capture:
     name:
       jsonPath: "$.name"
-      store: captureTest
+      store: captureTestRequestBody
     postCode:
       jsonPath: "$.address.postCode"
-      store: captureTest
+      store: captureTestRequestBody
     street:
       # should not be captured
       enabled: false
       jsonPath: "$.address.street"
-      store: captureTest
+      store: captureTestRequestBody
   response:
     statusCode: 200
 
@@ -60,7 +60,7 @@ resources:
   capture:
     responseBody:
       expression: "${context.response.body}"
-      store: captureResponseBody
+      store: captureTestResponseBody
       phase: RESPONSE_SENT
   response:
     content: "Example response"

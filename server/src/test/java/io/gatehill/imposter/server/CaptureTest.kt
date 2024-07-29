@@ -93,7 +93,7 @@ class CaptureTest : BaseVerticleTest() {
 
         // retrieve via system
         RestAssured.given().`when`()
-            .pathParam("storeId", "captureTest")
+            .pathParam("storeId", "captureTestHeaders")
             .pathParam("key", "userId")
             .get("/system/store/{storeId}/{key}")
             .then()
@@ -101,7 +101,7 @@ class CaptureTest : BaseVerticleTest() {
             .body(Matchers.equalTo("foo"))
 
         RestAssured.given().`when`()
-            .pathParam("storeId", "captureTest")
+            .pathParam("storeId", "captureTestHeaders")
             .pathParam("key", "page")
             .get("/system/store/{storeId}/{key}")
             .then()
@@ -109,7 +109,7 @@ class CaptureTest : BaseVerticleTest() {
             .body(Matchers.equalTo("2"))
 
         RestAssured.given().`when`()
-            .pathParam("storeId", "captureTest")
+            .pathParam("storeId", "captureTestHeaders")
             .pathParam("key", "correlationId")
             .get("/system/store/{storeId}/{key}")
             .then()
@@ -135,7 +135,7 @@ class CaptureTest : BaseVerticleTest() {
 
         // retrieve via system
         RestAssured.given().`when`()
-            .pathParam("storeId", "captureTest")
+            .pathParam("storeId", "captureTestRequestBody")
             .pathParam("key", "name")
             .get("/system/store/{storeId}/{key}")
             .then()
@@ -143,7 +143,7 @@ class CaptureTest : BaseVerticleTest() {
             .body(Matchers.equalTo("Alice"))
 
         RestAssured.given().`when`()
-            .pathParam("storeId", "captureTest")
+            .pathParam("storeId", "captureTestRequestBody")
             .pathParam("key", "postCode")
             .get("/system/store/{storeId}/{key}")
             .then()
@@ -153,7 +153,7 @@ class CaptureTest : BaseVerticleTest() {
         // the capture configuration for 'street' is disabled, so it
         // should not exist in the store.
         RestAssured.given().`when`()
-            .pathParam("storeId", "captureTest")
+            .pathParam("storeId", "captureTestRequestBody")
             .pathParam("key", "street")
             .get("/system/store/{storeId}/{key}")
             .then()
@@ -234,7 +234,7 @@ class CaptureTest : BaseVerticleTest() {
     fun testCaptureResponseBody() {
         // should not exist yet
         RestAssured.given().`when`()
-            .pathParam("storeId", "captureResponseBody")
+            .pathParam("storeId", "captureTestResponseBody")
             .get("/system/store/{storeId}/userId")
             .then()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_NOT_FOUND))
@@ -248,7 +248,7 @@ class CaptureTest : BaseVerticleTest() {
         // allow for background processing to complete
         attempt(attempts = 5) {
             RestAssured.given().`when`()
-                .pathParam("storeId", "captureResponseBody")
+                .pathParam("storeId", "captureTestResponseBody")
                 .get("/system/store/{storeId}/responseBody")
                 .then()
                 .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
