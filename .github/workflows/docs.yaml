@@ -13,9 +13,10 @@ jobs:
         with:
           python-version: 3.x
 
-      - run: pip install \
-               mkdocs-material \
-               mkdocs-mermaid2-plugin
+      - name: Install mkdocs
+        env:
+          PIP_CONSTRAINT: ./docs/infrastructure/constraints.txt
+        run: pip install -r ./docs/infrastructure/requirements.txt
 
       - name: Build static site
         run: mkdocs build

@@ -49,8 +49,10 @@ set -e
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT_DIR="$( cd "${SCRIPT_DIR}"/../ && pwd )"
 
-cd "${SCRIPT_DIR}/docs"
-docker build -t imposter-docs .
+docker build \
+  --file="${ROOT_DIR}/docs/infrastructure/Dockerfile" \
+  --tag=imposter-docs \
+  "${ROOT_DIR}/docs"
 
 docker run --rm -it -p 8000:8000 \
   -v "${ROOT_DIR}/mkdocs.yml:/docs/mkdocs.yml:ro" \
