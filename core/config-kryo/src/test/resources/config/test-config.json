@@ -1,0 +1,14 @@
+{
+  "plugin": "io.gatehill.imposter.core.test.ExamplePluginImpl",
+  "path": "/example",
+  "contentType": "application/json",
+  "resources": [
+    {
+      "path": "/{id}",
+      "type": "ARRAY",
+      "response": {
+        "staticFile": "rest-plugin-list-data.json"
+      }
+    }
+  ]
+}

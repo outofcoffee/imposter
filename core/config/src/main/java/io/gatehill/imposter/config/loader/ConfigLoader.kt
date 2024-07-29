@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2023.
+ * Copyright (c) 2024.
  *
  * This file is part of Imposter.
  *
@@ -41,19 +41,19 @@
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.gatehill.imposter.config
+package io.gatehill.imposter.config.loader
+
+import io.gatehill.imposter.config.ConfigReference
+import io.gatehill.imposter.config.LoadedConfig
+import io.gatehill.imposter.plugin.config.BasicPluginConfig
+import java.io.File
 
 /**
- * Holds a loaded configuration and its reference.
+ * Reads configuration files and deserialises them to plugin configuration instances.
+ *
+ * @author Pete Cornish
  */
-interface LoadedConfig {
-    val ref: ConfigReference
-    val serialised: String
-    val plugin: String
+interface ConfigLoader<C : LoadedConfig> {
+    fun readPluginConfig(configRef: ConfigReference): C
+    fun <T : BasicPluginConfig> loadConfig(configFile: File, loadedConfig: C, configClass: Class<T>): T
 }
-
-data class LoadedConfigImpl(
-    override val ref: ConfigReference,
-    override val serialised: String,
-    override val plugin: String,
-) : LoadedConfig

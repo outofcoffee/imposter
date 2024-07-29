@@ -47,12 +47,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.ConfigReference
 import io.gatehill.imposter.config.LoadedConfig
-import io.gatehill.imposter.config.expression.EnvEvaluator
-import io.gatehill.imposter.config.expression.SystemEvaluator
-import io.gatehill.imposter.config.model.LightweightConfig
+import io.gatehill.imposter.config.loader.ConfigLoader
+import io.gatehill.imposter.config.loader.YamlConfigLoaderImpl
 import io.gatehill.imposter.config.resolver.ConfigResolver
-import io.gatehill.imposter.expression.eval.ExpressionEvaluator
-import io.gatehill.imposter.expression.util.ExpressionUtil
 import io.gatehill.imposter.plugin.PluginManager
 import io.gatehill.imposter.plugin.config.BasicPluginConfig
 import io.gatehill.imposter.plugin.config.InterceptorsHolder
@@ -83,13 +80,11 @@ object ConfigUtil {
         "yml" to MapUtil.YAML_MAPPER
     )
 
-    private val scanRecursiveConfig
+    val scanRecursiveConfig
         get() = EnvVars.getEnv("IMPOSTER_CONFIG_SCAN_RECURSIVE")?.toBoolean() == true
 
     private val autoBasePath
         get() = EnvVars.getEnv("IMPOSTER_AUTO_BASE_PATH")?.toBoolean() == true
-
-    private var expressionEvaluators: Map<String, ExpressionEvaluator<*>> = emptyMap()
 
     private val defaultIgnoreList: List<String> by lazy {
         ConfigUtil::class.java.getResourceAsStream("/$IGNORE_FILE_NAME")?.use {
@@ -100,7 +95,9 @@ object ConfigUtil {
         }
     }
 
-    val configResolvers: Set<ConfigResolver>
+    private val configResolvers: Set<ConfigResolver>
+
+    private val configLoader: ConfigLoader<LoadedConfig>
 
     /**
      * Controls whether errors encountered during configuration parsing
@@ -115,7 +112,7 @@ object ConfigUtil {
 
     init {
         configResolvers = registerResolvers()
-        initInterpolators(EnvVars.getEnv())
+        configLoader = getLoader()
     }
 
     private fun registerResolvers(): Set<ConfigResolver> {
@@ -131,19 +128,28 @@ object ConfigUtil {
         }.toSet()
     }
 
+    private fun getLoader(): ConfigLoader<LoadedConfig> {
+        val loaderName = EnvVars.getEnv("IMPOSTER_CONFIG_LOADER") ?: YamlConfigLoaderImpl::class.qualifiedName
+        LOGGER.trace("Using config loader: $loaderName")
+
+        val clazz = try {
+            @Suppress("UNCHECKED_CAST")
+            Class.forName(loaderName) as Class<ConfigLoader<LoadedConfig>>
+        } catch (e: Exception) {
+            throw RuntimeException("Error loading configuration loader class: $loaderName", e)
+        }
+        return try {
+            clazz.getDeclaredConstructor().newInstance()
+        } catch (e: Exception) {
+            throw RuntimeException("Error instantiating configuration loader: $loaderName", e)
+        }
+    }
+
     /**
      * Parses the `IMPOSTER_CONFIG_DIR` environment variable for a list of configuration directories.
      */
     fun parseConfigDirEnvVar(): Array<String> =
         EnvVars.getEnv("IMPOSTER_CONFIG_DIR")?.splitOnCommaAndTrim()?.toTypedArray() ?: emptyArray()
-
-    fun initInterpolators(environment: Map<String, String>) {
-        // reset the environment used by the expression evaluator
-        expressionEvaluators = mapOf(
-            "env" to EnvEvaluator(environment),
-            "system" to SystemEvaluator,
-        )
-    }
 
     /**
      * Resolves configuration directories to local paths, then
@@ -195,7 +201,7 @@ object ConfigUtil {
                 configCount++
 
                 // load to determine plugin
-                val config = readPluginConfig(configFile)
+                val config = configLoader.readPluginConfig(configFile)
 
                 val pluginClass = pluginManager.determinePluginClass(config.plugin)
                 val pluginConfigs = allPluginConfigs.getOrPut(pluginClass) { mutableListOf() }
@@ -254,31 +260,6 @@ object ConfigUtil {
     }
 
     /**
-     * Reads the contents of the configuration file, performing necessary string substitutions.
-     *
-     * @param configRef             the configuration reference
-     * @return the loaded configuration
-     */
-    internal fun readPluginConfig(configRef: ConfigReference): LoadedConfig {
-        val configFile = configRef.file
-        try {
-            val rawContents = configFile.readText()
-            val parsedContents = ExpressionUtil.eval(rawContents, expressionEvaluators, nullifyUnsupported = false)
-
-            val config = lookupMapper(configFile).readValue(parsedContents, LightweightConfig::class.java)
-            config.plugin
-                ?: throw IllegalStateException("No plugin specified in configuration file: $configFile")
-
-            return LoadedConfig(configRef, parsedContents, config.plugin)
-
-        } catch (e: JsonMappingException) {
-            throw RuntimeException("Error reading configuration file: " + configFile.absolutePath + ", reason: ${e.message}")
-        } catch (e: IOException) {
-            throw RuntimeException("Error reading configuration file: " + configFile.absolutePath, e)
-        }
-    }
-
-    /**
      * Converts the raw configuration into a typed configuration object.
      *
      * @param imposterConfig             the imposter configuration
@@ -293,7 +274,8 @@ object ConfigUtil {
     ): T {
         val configFile = loadedConfig.ref.file
         try {
-            val config = lookupMapper(configFile).readValue(loadedConfig.serialised, configClass)!!
+            val config: T = configLoader.loadConfig(configFile, loadedConfig, configClass)
+
             check(config.plugin != null) { "No plugin specified in configuration file: $configFile" }
             config.dir = configFile.parentFile
 
@@ -331,6 +313,9 @@ object ConfigUtil {
                 }
             }
 
+            // always set after deserialisation
+            config.dir = configFile.parentFile
+
             return config
 
         } catch (e: JsonMappingException) {
@@ -346,7 +331,7 @@ object ConfigUtil {
      * @param configFile the configuration file
      * @return the mapper
      */
-    private fun lookupMapper(configFile: File): ObjectMapper {
+    internal fun lookupMapper(configFile: File): ObjectMapper {
         val extension = configFile.name.substringAfterLast(".")
         return CONFIG_FILE_MAPPERS[extension]
             ?: throw IllegalStateException("Unable to locate mapper for config file: $configFile")

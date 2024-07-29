@@ -60,7 +60,7 @@ import io.gatehill.imposter.util.BodyQueryUtil
 import io.gatehill.imposter.util.PlaceholderUtil
 import io.gatehill.imposter.util.ResourceUtil
 import org.apache.logging.log4j.LogManager
-import java.util.*
+import java.util.Objects
 import javax.inject.Inject
 
 /**

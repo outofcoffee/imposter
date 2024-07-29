@@ -45,6 +45,7 @@ package io.gatehill.imposter.plugin.wiremock
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.ConfigReference
 import io.gatehill.imposter.config.LoadedConfig
+import io.gatehill.imposter.config.LoadedConfigImpl
 import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.plugin.PluginInfo
@@ -126,7 +127,7 @@ class WiremockPluginImpl @Inject constructor(
                     configFiles += writeConfig(localConfigDir, 0, converted.flatten())
                 }
                 logger.debug("Wrote converted wiremock mapping file(s) to $localConfigDir")
-                return configFiles.map { LoadedConfig(ConfigReference(it, mappingsFile.ref.configRoot), mappingsFile.serialised, mappingsFile.plugin) }
+                return configFiles.map { LoadedConfigImpl(ConfigReference(it, mappingsFile.ref.configRoot), mappingsFile.serialised, mappingsFile.plugin) }
             }
         }
         logger.warn("No wiremock mapping files found in $sourceDir")

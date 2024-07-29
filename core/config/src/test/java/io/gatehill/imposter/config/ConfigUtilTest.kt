@@ -43,17 +43,16 @@
 package io.gatehill.imposter.config
 
 import io.gatehill.imposter.ImposterConfig
+import io.gatehill.imposter.config.loader.YamlConfigLoaderImpl
 import io.gatehill.imposter.config.support.BasePathSupportingPluginConfig
 import io.gatehill.imposter.config.util.ConfigUtil
 import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.http.HttpMethod
 import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.Matchers.containsString
 import org.hamcrest.Matchers.equalTo
 import org.hamcrest.Matchers.not
 import org.hamcrest.Matchers.nullValue
 import org.hamcrest.Matchers.startsWith
-import org.junit.AfterClass
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -66,34 +65,6 @@ import java.io.File
  * @author Pete Cornish
  */
 class ConfigUtilTest {
-    companion object {
-        @AfterClass
-        @JvmStatic
-        fun afterClass() {
-            ConfigHolder.config.listenPort = 0
-        }
-    }
-
-    @Test
-    fun testReadInterpolatedPluginConfig() {
-        ConfigHolder.config.listenPort = 9090
-
-        // override environment variables in string interpolators
-        val environment: Map<String, String> = mapOf(
-            "EXAMPLE_PLUGIN" to "example-plugin"
-        )
-        ConfigUtil.initInterpolators(environment)
-
-        val configFile = File(ConfigUtilTest::class.java.getResource("/interpolated/test-config.yaml").toURI())
-        val configRef = ConfigReference(
-            file = configFile,
-            configRoot = configFile.parentFile,
-        )
-        val loadedConfig = ConfigUtil.readPluginConfig(configRef)
-        assertEquals("example-plugin", loadedConfig.plugin)
-        assertThat(loadedConfig.serialised, containsString("port 9090"))
-    }
-
     /**
      * All config files within the config dir and its subdirectories should be returned.
      */
@@ -163,7 +134,8 @@ class ConfigUtilTest {
             file = configFile,
             configRoot = configFile.parentFile,
         )
-        val loadedConfig = ConfigUtil.readPluginConfig(configRef)
+        val loader = YamlConfigLoaderImpl()
+        val loadedConfig = loader.readPluginConfig(configRef)
         val config = ConfigUtil.loadPluginConfig(
             ImposterConfig(),
             loadedConfig,
@@ -201,7 +173,8 @@ class ConfigUtilTest {
             file = configFile,
             configRoot = configFile.parentFile,
         )
-        val loadedConfig = ConfigUtil.readPluginConfig(configRef)
+        val loader = YamlConfigLoaderImpl()
+        val loadedConfig = loader.readPluginConfig(configRef)
         val config = ConfigUtil.loadPluginConfig(
             ImposterConfig(),
             loadedConfig,
@@ -236,5 +209,5 @@ class ConfigUtilTest {
     }
 
     private fun buildLoadedConfig(configRef: ConfigReference, configFile: File) =
-        LoadedConfig(configRef, configFile.readText(), "io.gatehill.imposter.core.test.ExamplePluginImpl")
+        LoadedConfigImpl(configRef, configFile.readText(), "io.gatehill.imposter.core.test.ExamplePluginImpl")
 }
