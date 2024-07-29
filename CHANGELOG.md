@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.0.1] - 2024-07-29
+### Changed
+- docs: fixes body capture examples.
+- docs: fixes capture enable/disable example.
+- refactor: improves internal naming of eval scripts.
+- refactor: moves graal store proxy initialisation to engine lifecycle listener.
+- test: separates store names.
+
+### Fixed
+- fix: improves exception handling for out of bounds index in store proxy.
+- fix: marks legacy jsonPath property as deprecated.
+- fix: store interceptors should only wrap when used in a script engine.
+
 ## [4.0.0] - 2024-07-17
 ### BREAKING CHANGES
 - feat: switches to GraalVM as the default JavaScript engine.
