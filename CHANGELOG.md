@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.0.2] - 2024-07-29
+### Changed
+- build: adds comment to mkdocs constraints file.
+- chore(deps): bump actions/setup-python from 5.1.0 to 5.1.1
+- chore(deps): bump org.apache.maven.plugins:maven-project-info-reports-plugin
+
+### Fixed
+- fix: correctly serialise Vert.x JSON types.
+- fix: correctly serialise dates as ISO-8601 strings.
+- fix: pins mkdocs dependencies.
+- fix: upgrade com.fasterxml.jackson.core:jackson-databind from 2.17.1 to 2.17.2
+
 ## [4.0.1] - 2024-07-29
 ### Changed
 - docs: fixes body capture examples.
