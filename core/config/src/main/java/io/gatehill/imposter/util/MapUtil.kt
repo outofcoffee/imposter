@@ -53,6 +53,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.gatehill.imposter.config.util.EnvVars
+import io.gatehill.imposter.util.mapper.VertxJsonModule
 import org.yaml.snakeyaml.LoaderOptions
 
 /**
@@ -91,21 +92,26 @@ object MapUtil {
 
     init {
         JSON_MAPPER = configureBuilder<ObjectMapper>(
-                JsonMapper.builder().enable(SerializationFeature.INDENT_OUTPUT)
+            JsonMapper.builder().enable(SerializationFeature.INDENT_OUTPUT)
         ).apply {
             setSerializationInclusion(JsonInclude.Include.NON_NULL)
         }
 
-        val yamlBuilder = YAMLMapper.builder(YAMLFactory.builder()
+        val yamlBuilder = YAMLMapper.builder(
+            YAMLFactory.builder()
                 .loaderOptions(LoaderOptions().apply { codePointLimit = yamlCodePointLimit })
-                .build())
+                .build()
+        )
         YAML_MAPPER = configureBuilder(yamlBuilder)
     }
 
     @Suppress("UNCHECKED_CAST")
     private fun <M : ObjectMapper> configureBuilder(builder: MapperBuilder<*, *>): M {
-        val mapper = builder.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS).build()
+        val mapper = builder
+            .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
+            .build()
 
+        mapper.registerModule(VertxJsonModule())
         addJavaTimeSupport(mapper)
         mapper.registerKotlinModule()
 
