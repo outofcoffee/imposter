@@ -55,7 +55,7 @@ import io.gatehill.imposter.plugin.config.system.StoreConfig
 import io.gatehill.imposter.plugin.config.system.SystemConfigHolder
 import io.gatehill.imposter.script.ExecutionContext
 import io.gatehill.imposter.store.factory.StoreFactory
-import io.gatehill.imposter.store.model.StoreHolder
+import io.gatehill.imposter.store.model.StoreProvider
 import io.gatehill.imposter.store.placeholder.StoreEvaluator
 import io.gatehill.imposter.store.util.StoreUtil
 import io.gatehill.imposter.util.MapUtil
@@ -74,6 +74,8 @@ class StoreServiceImpl @Inject constructor(
     engineLifecycle: EngineLifecycleHooks,
     scriptLifecycle: ScriptLifecycleHooks,
 ) : StoreService, EngineLifecycleListener, ScriptLifecycleListener {
+
+    override val storeInterceptors: MutableList<StoreInterceptor> = mutableListOf()
 
     init {
         LOGGER.trace("Stores enabled")
@@ -146,7 +148,7 @@ class StoreServiceImpl @Inject constructor(
     ) {
         // inject store object into script engine
         val requestId = httpExchange.get<String>(ResourceUtil.RC_REQUEST_ID_KEY)!!
-        additionalBindings["stores"] = StoreHolder(storeFactory, requestId)
+        additionalBindings["stores"] = StoreProvider(storeFactory, storeInterceptors, requestId)
     }
 
     override fun afterResponseSent(httpExchange: HttpExchange, resourceConfig: ResourceConfig?) {

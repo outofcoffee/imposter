@@ -47,9 +47,12 @@ import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.scripting.AbstractBaseScriptTest
 import io.gatehill.imposter.scripting.graalvm.service.GraalvmScriptServiceImpl
+import io.gatehill.imposter.scripting.graalvm.storeproxy.ObjectProxyingStore
 import io.gatehill.imposter.store.factory.StoreFactory
 import io.gatehill.imposter.store.inmem.InMemoryStoreFactoryImpl
-import io.gatehill.imposter.store.model.StoreHolder
+import io.gatehill.imposter.store.model.StoreProvider
+import io.gatehill.imposter.store.service.StoreService
+import io.gatehill.imposter.store.service.StoreServiceImpl
 import io.gatehill.imposter.util.asSingleton
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.equalTo
@@ -96,7 +99,7 @@ class StoreJsonTest : AbstractBaseScriptTest() {
         }
 
         val runtimeContext = buildRuntimeContext(mapOf(
-            "stores" to StoreHolder(storeFactory, "1")
+            "stores" to StoreProvider(storeFactory, listOf { ObjectProxyingStore(it) }, "1")
         ))
         val script = resolveScriptFile(pluginConfig, resourceConfig)
         val actual = getService().executeScript(script, runtimeContext)
@@ -110,6 +113,7 @@ class StoreJsonTest : AbstractBaseScriptTest() {
     class TestStoreFactoryModule: AbstractModule() {
         override fun configure() {
             bind(StoreFactory::class.java).to(InMemoryStoreFactoryImpl::class.java).asSingleton()
+            bind(StoreService::class.java).to(StoreServiceImpl::class.java).asSingleton()
         }
     }
 }

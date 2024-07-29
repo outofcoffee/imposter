@@ -60,7 +60,7 @@ import io.gatehill.imposter.scripting.graalvm.storeproxy.ObjectProxyingStore
 import io.gatehill.imposter.service.ScriptRequestBuilder
 import io.gatehill.imposter.service.ScriptService
 import io.gatehill.imposter.service.ScriptSource
-import io.gatehill.imposter.store.factory.StoreFactory
+import io.gatehill.imposter.store.service.StoreService
 import io.gatehill.imposter.util.InjectorUtil
 import org.apache.logging.log4j.LogManager
 import org.graalvm.polyglot.Context
@@ -103,8 +103,8 @@ class GraalvmScriptServiceImpl : ScriptService, Plugin, EngineLifecycleListener 
     fun checkEnableStoreProxy() {
         if (enableStoreProxy) {
             LOGGER.trace("Graal store proxy enabled")
-            val storeFactory = InjectorUtil.getInstance<StoreFactory>()
-            storeFactory.storeInterceptors += { ObjectProxyingStore(it) }
+            val storeService = InjectorUtil.getInstance<StoreService>()
+            storeService.storeInterceptors += { ObjectProxyingStore(it) }
         } else {
             LOGGER.trace("Graal store proxy disabled")
         }

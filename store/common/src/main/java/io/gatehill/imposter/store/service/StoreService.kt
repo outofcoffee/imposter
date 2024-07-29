@@ -42,12 +42,17 @@
  */
 package io.gatehill.imposter.store.service
 
+import io.gatehill.imposter.store.core.Store
 import io.gatehill.imposter.store.util.StoreUtil
+
+typealias StoreInterceptor = (Store) -> Store
 
 /**
  * @author Pete Cornish
  */
 interface StoreService {
+    val storeInterceptors: MutableList<StoreInterceptor>
+
     companion object {
         /**
          * Default to request scope unless specified.

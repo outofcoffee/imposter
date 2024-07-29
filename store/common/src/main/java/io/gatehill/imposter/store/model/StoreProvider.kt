@@ -44,17 +44,25 @@ package io.gatehill.imposter.store.model
 
 import io.gatehill.imposter.store.core.Store
 import io.gatehill.imposter.store.factory.StoreFactory
+import io.gatehill.imposter.store.service.StoreInterceptor
 import io.gatehill.imposter.store.util.StoreUtil
 
 /**
  * @author Pete Cornish
  */
-class StoreHolder(private val storeFactory: StoreFactory, private val requestId: String) {
+class StoreProvider(
+    private val storeFactory: StoreFactory,
+    private val storeInterceptors: List<StoreInterceptor>,
+    private val requestId: String,
+) {
     fun open(storeName: String): Store {
-        if (StoreUtil.isRequestScopedStore(storeName)) {
+        var store = if (StoreUtil.isRequestScopedStore(storeName)) {
             val requestStoreName = StoreUtil.buildRequestStoreName(requestId)
-            return storeFactory.getStoreByName(requestStoreName, true)
+            storeFactory.getStoreByName(requestStoreName, true)
+        } else {
+            storeFactory.getStoreByName(storeName, false)
         }
-        return storeFactory.getStoreByName(storeName, false)
+        storeInterceptors.forEach { interceptor -> store = interceptor(store) }
+        return store
     }
 }

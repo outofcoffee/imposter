@@ -65,14 +65,12 @@ abstract class AbstractStoreFactory (
     protected val stores: MutableMap<String, Store> = ConcurrentHashMap()
     private val keyPrefix: String?
 
-    override val storeInterceptors: MutableList<(Store) -> Store> = mutableListOf()
-
     init {
         keyPrefix = getEnv(ENV_VAR_KEY_PREFIX)?.let { "$it." }
     }
 
     override fun getStoreByName(storeName: String, ephemeral: Boolean): Store {
-        var store: Store = stores.getOrPut(storeName) {
+        val store: Store = stores.getOrPut(storeName) {
             LOGGER.trace("Initialising new store: {}", storeName)
             return@getOrPut if (ephemeral) {
                 InMemoryStore(deferredOperationService, storeName, true)
@@ -82,7 +80,6 @@ abstract class AbstractStoreFactory (
             }
         }
         LOGGER.trace("Got store: {} (type: {})", storeName, store.typeDescription)
-        storeInterceptors.forEach { interceptor -> store = interceptor(store) }
         return store
     }
 
