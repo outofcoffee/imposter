@@ -125,6 +125,9 @@ object MapUtil {
      */
     fun addJavaTimeSupport(mapper: ObjectMapper) {
         mapper.registerModule(JavaTimeModule())
+
+        // write dates as string
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
     }
 
     fun jsonify(obj: Any?): String = obj?.let { JSON_MAPPER.writeValueAsString(it) } ?: ""
