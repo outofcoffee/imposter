@@ -55,9 +55,9 @@ class BodyCaptureConfig {
     val xmlNamespaces: Map<String, String>? = null
 
     companion object {
-        fun parse(requestBody: BodyCaptureConfig?, jsonPath: String?): BodyCaptureConfig {
+        fun parse(requestBody: BodyCaptureConfig?, legacyJsonPath: String?): BodyCaptureConfig {
             return requestBody ?: BodyCaptureConfig().apply {
-                this.jsonPath = jsonPath
+                legacyJsonPath?.also { this.jsonPath = legacyJsonPath }
             }
         }
     }

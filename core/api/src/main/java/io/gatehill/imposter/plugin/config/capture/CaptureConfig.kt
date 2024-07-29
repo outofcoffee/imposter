@@ -80,12 +80,17 @@ open class CaptureConfig(
         override fun parse(raw: String?) = CaptureConfig(expression = raw)
     }
 
+    @Deprecated("Use requestBody.jsonPath instead")
     @field:JsonProperty("jsonPath")
-    private val jsonPath: String? = null
+    private val legacyJsonPath: String? = null
 
-    val requestBody: BodyCaptureConfig by lazy { BodyCaptureConfig.parse(_requestBody, jsonPath) }
+    val requestBody: BodyCaptureConfig by lazy {
+        @Suppress("DEPRECATION")
+        BodyCaptureConfig.parse(_requestBody, legacyJsonPath)
+    }
 
     override fun toString(): String {
-        return "CaptureConfig(pathParam=$pathParam, queryParam=$queryParam, formParam=$formParam, requestHeader=$requestHeader, jsonPath=$jsonPath, expression=$expression, constValue=$constValue)"
+        @Suppress("DEPRECATION")
+        return "CaptureConfig(pathParam=$pathParam, queryParam=$queryParam, formParam=$formParam, requestHeader=$requestHeader, legacyJsonPath=$legacyJsonPath, expression=$expression, constValue=$constValue, requestBody=$requestBody)"
     }
 }

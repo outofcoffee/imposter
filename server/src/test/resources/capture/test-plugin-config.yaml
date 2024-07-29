@@ -20,16 +20,19 @@ resources:
   path: /users
   capture:
     name:
-      jsonPath: "$.name"
       store: captureTestRequestBody
+      requestBody:
+        jsonPath: "$.name"
     postCode:
-      jsonPath: "$.address.postCode"
       store: captureTestRequestBody
+      requestBody:
+        jsonPath: "$.address.postCode"
     street:
       # should not be captured
       enabled: false
-      jsonPath: "$.address.street"
       store: captureTestRequestBody
+      requestBody:
+        jsonPath: "$.address.street"
   response:
     statusCode: 200
 
