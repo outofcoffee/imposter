@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.0.3] - 2024-08-19
+### Changed
+- build: parameterises datafaker version.
+- chore: bumps version_swagger_parser to 2.1.22, version_swagger_models to 2.22.2 and version_swagger_request_validator to 2.41.0.
+
+### Fixed
+- fix(openapi): improves schema type detection when generating examples.
+
 ## [4.0.2] - 2024-07-29
 ### Changed
 - build: adds comment to mkdocs constraints file.
