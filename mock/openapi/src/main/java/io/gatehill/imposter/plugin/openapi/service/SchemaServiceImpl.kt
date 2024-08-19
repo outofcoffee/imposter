@@ -118,7 +118,7 @@ class SchemaServiceImpl : SchemaService {
                     is ObjectSchema -> buildFromProperties(spec, schema.properties)
                     is ArraySchema -> buildFromArraySchema(spec, schema)
                     is ComposedSchema -> buildFromComposedSchema(spec, schema)
-                    else -> getPropertyDefault(schema, propNameHint)
+                    else -> determineFromType(spec, schema, propNameHint)
                 }
             }
             return example
@@ -127,7 +127,51 @@ class SchemaServiceImpl : SchemaService {
         }
     }
 
-    private fun buildFromArraySchema(spec: OpenAPI, schema: ArraySchema): List<Any?> {
+    /**
+     * Use the schema `type` or `types` (OpenAPI 3.1) properties to build an example.
+     */
+    private fun determineFromType(spec: OpenAPI, schema: Schema<*>, propNameHint: String?): Any? {
+        schema.type?.let { schemaType ->
+            return buildFromType(spec, schema, schemaType, propNameHint)
+
+        } ?: schema.types?.let { schemaTypes ->
+            if (schemaTypes.isEmpty()) {
+                LOGGER.warn("Schema type is null and no schema types set [propName={}] - falling back to property default: {}", propNameHint, schema)
+                return getPropertyDefault(schema, propNameHint)
+            } else {
+                val schemaType = schemaTypes.first()
+                if (schemaTypes.size > 1) {
+                    // TODO consider `null` as a valid type in an array of `types` in OpenAPI 3.1 - choose first non-null
+                    LOGGER.warn("More than one schema type ({}) set [propName={}] - choosing first: {}", schemaTypes, propNameHint, schemaType)
+                } else {
+                    LOGGER.trace("Exactly one schema type set [propName={}]: {}", propNameHint, schemaType)
+                }
+                return buildFromType(spec, schema, schemaType, propNameHint)
+            }
+        } ?: run {
+            LOGGER.warn("No schema type or types set - falling back to property default for '{}', {}", propNameHint, schema)
+            return getPropertyDefault(schema, propNameHint)
+        }
+    }
+
+    /**
+     * Use the given schema type to build an example.
+     */
+    private fun buildFromType(
+        spec: OpenAPI,
+        schema: Schema<*>,
+        schemaType: String,
+        propNameHint: String?,
+    ) = when (schemaType) {
+        "array" -> buildFromArraySchema(spec, schema)
+        "object" -> buildFromProperties(spec, schema.properties)
+        else -> {
+            // schema type is not an aggregate - look for specific example
+            getPropertyDefault(schema, propNameHint)
+        }
+    }
+
+    private fun buildFromArraySchema(spec: OpenAPI, schema: Schema<*>): List<Any?> {
         if (null == schema.items) {
             return emptyList()
         }
