@@ -3,8 +3,8 @@ apply plugin: 'kotlin'
 apply plugin: 'maven-publish'
 
 ext {
-    version_swagger_parser = '2.1.16'
-    version_swagger_request_validator = '2.35.2'
+    version_swagger_parser = '2.1.22'
+    version_swagger_request_validator = '2.41.0'
 }
 
 compileJava {
@@ -15,7 +15,7 @@ dependencies {
     implementation project(':core:imposter-engine')
     implementation project(':core:config-resolver-s3')
 
-    implementation "io.swagger.parser.v3:swagger-parser:$version_swagger_parser"
+    implementation "io.swagger.parser.v3:swagger-parser-v3:$version_swagger_parser"
     implementation "com.atlassian.oai:swagger-request-validator-core:$version_swagger_request_validator"
 
     implementation platform("com.amazonaws:aws-java-sdk-bom:$version_aws_sdk")

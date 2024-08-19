@@ -408,6 +408,7 @@ class OpenApiPluginImpl @Inject constructor(
                 statusCode
             )
             // allow for absent 'responses' block
+            @Suppress("DEPRECATION")
             operation.responses?.default
         }
     }
