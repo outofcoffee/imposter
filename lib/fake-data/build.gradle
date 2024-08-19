@@ -4,6 +4,8 @@ apply plugin: 'maven-publish'
 apply plugin: 'com.github.johnrengelman.shadow'
 
 ext {
+    version_datafaker = '1.9.0'
+
     // same as swagger-core version
     version_swagger_models = '2.2.22'
 }
@@ -17,7 +19,7 @@ dependencies {
     implementation project(':mock:mock-openapi')
     implementation ("io.swagger.core.v3:swagger-models:$version_swagger_models")
 
-    pluginImplementation('net.datafaker:datafaker:1.9.0') {
+    pluginImplementation("net.datafaker:datafaker:$version_datafaker") {
         exclude module: 'snakeyaml'
     }
 
