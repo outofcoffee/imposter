@@ -1,0 +1,9 @@
+plugin: rest
+
+resources:
+  - method: GET
+    path: "/some/path"
+    queryParams:
+      foo: "bar"
+    response:
+      file: response.json
