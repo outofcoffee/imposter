@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.0.4] - 2024-10-01
+### Changed
+- chore(deps): bump actions/setup-python from 5.1.1 to 5.2.0
+- chore(deps): bump org.apache.maven.plugins:maven-deploy-plugin
+- chore(deps): bump org.apache.maven.plugins:maven-site-plugin
+- chore(deps): bump org.apache.maven.plugins:maven-surefire-plugin
+- chore(deps): bump org.testcontainers:localstack from 1.17.6 to 1.20.2
+- refactor(openapi): converts examples to inner types.
+- test(awslambda): removed unnecessary test data.
+- test(lambda): improves coverage for lambda requests with query strings.
+
+### Fixed
+- fix(awslambda): adds failing test case for IllegalStateException when returning 404.
+- fix(awslambda): attributes should persist between exchanges for the same request/response pair.
+- fix: ignore invalid expressions when parsing config.
+
 ## [4.0.3] - 2024-08-19
 ### Changed
 - build: parameterises datafaker version.
