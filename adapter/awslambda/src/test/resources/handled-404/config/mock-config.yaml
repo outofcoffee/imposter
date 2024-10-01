@@ -1,0 +1,8 @@
+plugin: rest
+
+resources:
+  - method: GET
+    path: /notfound
+    response:
+      statusCode: 404
+      content: Not Found
