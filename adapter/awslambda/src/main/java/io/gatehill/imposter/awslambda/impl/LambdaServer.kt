@@ -76,6 +76,8 @@ abstract class LambdaServer<Request, Response>(
 
     fun dispatch(event: Request): Response {
         val response = LambdaHttpResponse()
+        val attributes = mutableMapOf<String, Any>()
+
         var failureCause: Throwable? = null
         try {
             val matched = matchRoutes(event)
@@ -87,7 +89,7 @@ abstract class LambdaServer<Request, Response>(
             } else {
                 matched.forEach { route ->
                     val request = buildRequest(event, route)
-                    val exchange = LambdaHttpExchange(router, route, request, response)
+                    val exchange = LambdaHttpExchange(router, route, request, response, attributes)
                     val handler = route.handler ?: throw IllegalStateException("No route handler set for: $route")
                     try {
                         handler(exchange).get()
@@ -111,12 +113,12 @@ abstract class LambdaServer<Request, Response>(
         when (val statusCode = response.statusCode) {
             in 400..499 -> {
                 errorHandlers[statusCode]?.let { errorHandler ->
-                    failExchange(event, response, statusCode, null, errorHandler)
+                    failExchange(event, response, attributes, statusCode, null, errorHandler)
                 } ?: logger.warn("Unhandled client error for: ${describeRequestShort(event)} [status code: $statusCode]")
             }
             in 500..599 -> {
                 errorHandlers[statusCode]?.let { errorHandler ->
-                    failExchange(event, response, statusCode, failureCause, errorHandler)
+                    failExchange(event, response, attributes, statusCode, failureCause, errorHandler)
                 } ?: logger.error("Unhandled server error for: ${describeRequestShort(event)} [status code: $statusCode]", failureCause)
             }
         }
@@ -127,12 +129,13 @@ abstract class LambdaServer<Request, Response>(
     private fun failExchange(
         event: Request,
         response: LambdaHttpResponse,
+        attributes: MutableMap<String, Any>,
         statusCode: Int,
         failureCause: Throwable?,
         errorHandler: (HttpExchange) -> Unit,
     ) {
         val request = buildRequest(event, null)
-        val exchange = LambdaHttpExchange(router, null, request, response)
+        val exchange = LambdaHttpExchange(router, null, request, response, attributes)
         exchange.fail(statusCode, failureCause)
         errorHandler(exchange)
     }

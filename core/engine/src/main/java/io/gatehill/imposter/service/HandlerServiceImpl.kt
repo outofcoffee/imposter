@@ -46,13 +46,7 @@ import com.google.common.collect.Lists
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.ResolvedResourceConfig
 import io.gatehill.imposter.config.util.EnvVars
-import io.gatehill.imposter.http.ExchangePhase
-import io.gatehill.imposter.http.HttpExchange
-import io.gatehill.imposter.http.HttpExchangeFutureHandler
-import io.gatehill.imposter.http.HttpExchangeHandler
-import io.gatehill.imposter.http.HttpMethod
-import io.gatehill.imposter.http.HttpRouter
-import io.gatehill.imposter.http.ResourceMatcher
+import io.gatehill.imposter.http.*
 import io.gatehill.imposter.lifecycle.SecurityLifecycleHooks
 import io.gatehill.imposter.lifecycle.SecurityLifecycleListener
 import io.gatehill.imposter.plugin.config.InterceptorsHolder
@@ -73,7 +67,7 @@ import kotlinx.coroutines.future.future
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
 import java.io.File
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.regex.Pattern
 import javax.inject.Inject
@@ -155,6 +149,8 @@ class HandlerServiceImpl @Inject constructor(
             httpExchange.get<Boolean>(ResourceUtil.RC_SEND_NOT_FOUND_RESPONSE) == true
         ) {
             // only override response processing if the 404 did not originate from the mock engine
+            // otherwise this will attempt to send a duplicate response to an already completed
+            // exchange, resulting in an IllegalStateException
             logAppropriatelyForPath(httpExchange, "File not found")
             responseService.sendNotFoundResponse(httpExchange)
         }
