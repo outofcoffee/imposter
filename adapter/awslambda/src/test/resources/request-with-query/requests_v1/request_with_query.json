@@ -5,9 +5,7 @@
   "queryStringParameters": {
     "foo": "bar"
   },
-  "pathParameters": {
-    "petId": "2"
-  },
+  "pathParameters": {},
   "body": null,
   "isBase64Encoded": false
 }
