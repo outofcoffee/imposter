@@ -42,15 +42,18 @@
  */
 package io.gatehill.imposter.plugin.openapi.service
 
+import com.fasterxml.jackson.core.TreeNode
 import com.google.common.base.Strings
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig
 import io.gatehill.imposter.plugin.openapi.model.ContentTypedHolder
+import io.gatehill.imposter.plugin.openapi.model.ResponseEntities
 import io.gatehill.imposter.plugin.openapi.util.RefUtil
 import io.gatehill.imposter.script.ResponseBehaviour
 import io.gatehill.imposter.util.HttpUtil.readAcceptedContentTypes
 import io.gatehill.imposter.util.LogUtil
+import io.gatehill.imposter.util.MapUtil
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.examples.Example
 import io.swagger.v3.oas.models.media.Content
@@ -58,7 +61,7 @@ import io.swagger.v3.oas.models.media.MediaType
 import io.swagger.v3.oas.models.media.Schema
 import io.swagger.v3.oas.models.responses.ApiResponse
 import org.apache.logging.log4j.LogManager
-import java.util.Objects
+import java.util.*
 import javax.inject.Inject
 
 /**
@@ -135,7 +138,9 @@ class ExampleServiceImpl @Inject constructor(
             //  "The example field is mutually exclusive of the examples field."
             // See: https://github.com/OAI/OpenAPI-Specification/blob/3.0.1/versions/3.0.1.md#mediaTypeObject
             if (Objects.nonNull(mediaType.example)) {
-                examples.add(ResponseEntities.of("inline example", mimeTypeName, mediaType.example))
+                val example = convertToInnerType(mediaType.example)
+                examples.add(ResponseEntities.of("inline example", mimeTypeName, example))
+
             } else if (Objects.nonNull(mediaType.examples)) {
                 mediaType.examples.forEach { (exampleName: String, example: Example) ->
                     examples.add(
@@ -274,20 +279,13 @@ class ExampleServiceImpl @Inject constructor(
         }
     }
 
-    private class ResponseEntities<T> private constructor(
-        val entityDescription: String,
-        val contentType: String,
-        val item: T,
-        val name: String?
-    ) {
-        companion object {
-            fun <T> of(entityDescription: String, contentType: String, item: T): ResponseEntities<T> {
-                return of(entityDescription, contentType, item, null)
-            }
-
-            fun <T> of(entityDescription: String, contentType: String, item: T, name: String?): ResponseEntities<T> {
-                return ResponseEntities(entityDescription, contentType, item, name)
-            }
+    private fun convertToInnerType(example: Any): Any = when (example) {
+        is String, is Number -> example
+        is Array<*>, is Collection<*>, is Map<*, *> -> example
+        is Example -> example
+        is TreeNode -> MapUtil.JSON_MAPPER.treeToValue(example, Map::class.java)
+        else -> {
+            LOGGER.trace("Unsupported inner type: {}", example::class.java)
         }
     }
 
