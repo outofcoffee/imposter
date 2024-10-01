@@ -64,6 +64,16 @@ object ExpressionUtil {
      */
     private val expressionPattern = Pattern.compile("\\$\\{(.+?)}")
 
+    enum class UnsupportedBehaviour {
+        NULLIFY,
+        IGNORE,
+    }
+
+    data class MatchResult(
+        val replace: Boolean,
+        val replacement: String? = null,
+    )
+
     /**
      * Evaluates an expression in the form:
      * ```
@@ -79,7 +89,7 @@ object ExpressionUtil {
         evaluators: Map<String, ExpressionEvaluator<*>>,
         context: Map<String, Any> = emptyMap(),
         queryProvider: QueryProvider? = null,
-        nullifyUnsupported: Boolean,
+        onUnsupported: UnsupportedBehaviour,
     ): String {
         val matcher = expressionPattern.matcher(input)
         var matched = false
@@ -88,9 +98,14 @@ object ExpressionUtil {
             matched = true
             val expression = matcher.group(1)
             try {
-                val result = evalSingle(expression, evaluators, context, queryProvider, nullifyUnsupported)
+                val result = evalSingle(expression, evaluators, context, queryProvider, onUnsupported)
                 LOGGER.trace("{}={}", expression, result)
-                matcher.appendReplacement(sb, result)
+                if (result.replace) {
+                    matcher.appendReplacement(sb, result.replacement)
+                } else {
+                    matcher.appendReplacement(sb, "")
+                    sb.append(matcher.group(0))
+                }
             } catch (e: Exception) {
                 throw RuntimeException("Error evaluating expression: $expression", e)
             }
@@ -108,24 +123,26 @@ object ExpressionUtil {
         evaluators: Map<String, ExpressionEvaluator<*>>,
         context: Map<String, Any>,
         queryProvider: QueryProvider?,
-        nullifyUnsupported: Boolean,
-    ): String? {
-        var result: String? = null
-
+        onUnsupported: UnsupportedBehaviour,
+    ): MatchResult {
         val evaluator = lookupEvaluator(expression, evaluators)
         evaluator?.let {
-            result = loadAndQuery(expression, context, evaluator, queryProvider) ?: ""
-
+            return MatchResult(
+                replace = true,
+                replacement = loadAndQuery(expression, context, evaluator, queryProvider) ?: ""
+            )
         } ?: run {
-            if (nullifyUnsupported) {
-                LOGGER.warn("Unsupported expression: $expression")
-                result = ""
-            } else {
-                // don't replace; should ignore match
-                result = "\\\${$expression}"
+            when (onUnsupported) {
+                UnsupportedBehaviour.IGNORE -> {
+                    LOGGER.trace("Ignoring unsupported expression: $expression")
+                    return MatchResult(replace = false)
+                }
+                UnsupportedBehaviour.NULLIFY -> {
+                    LOGGER.warn("Nullifying unsupported expression: $expression")
+                    return MatchResult(replace = true, replacement = "")
+                }
             }
         }
-        return result
     }
 
     private fun lookupEvaluator(

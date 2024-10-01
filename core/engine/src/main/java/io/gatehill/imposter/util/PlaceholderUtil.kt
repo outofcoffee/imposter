@@ -93,6 +93,6 @@ object PlaceholderUtil {
         evaluators: Map<String, ExpressionEvaluator<*>>,
     ): String {
         val context = mapOf(HttpExpressionEvaluator.HTTP_EXCHANGE_KEY to httpExchange)
-        return ExpressionUtil.eval(input, evaluators, context, queryProvider, nullifyUnsupported = true)
+        return ExpressionUtil.eval(input, evaluators, context, queryProvider, onUnsupported = ExpressionUtil.UnsupportedBehaviour.NULLIFY)
     }
 }

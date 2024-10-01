@@ -263,7 +263,7 @@ object ConfigUtil {
         val configFile = configRef.file
         try {
             val rawContents = configFile.readText()
-            val parsedContents = ExpressionUtil.eval(rawContents, expressionEvaluators, nullifyUnsupported = false)
+            val parsedContents = ExpressionUtil.eval(rawContents, expressionEvaluators, onUnsupported = ExpressionUtil.UnsupportedBehaviour.IGNORE)
 
             val config = lookupMapper(configFile).readValue(parsedContents, LightweightConfig::class.java)
             config.plugin

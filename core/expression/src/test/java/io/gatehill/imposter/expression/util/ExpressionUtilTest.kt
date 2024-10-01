@@ -16,7 +16,7 @@ class ExpressionUtilTest {
                     override fun eval(expression: String, context: Map<String, *>) = null
                 }
             ),
-            nullifyUnsupported = true,
+            onUnsupported = ExpressionUtil.UnsupportedBehaviour.NULLIFY,
         )
 
         assertThat(result, equalTo("fallback"))
@@ -27,8 +27,28 @@ class ExpressionUtilTest {
         val result = ExpressionUtil.eval(
             input = "\${invalid}",
             evaluators = emptyMap(),
-            nullifyUnsupported = true,
+            onUnsupported = ExpressionUtil.UnsupportedBehaviour.NULLIFY,
         )
         assertThat(result, equalTo(""))
+    }
+
+    @Test
+    fun `ignore invalid expression`() {
+        val result = ExpressionUtil.eval(
+            input = "\${some.expression.with:\$inlineDollar}",
+            evaluators = emptyMap(),
+            onUnsupported = ExpressionUtil.UnsupportedBehaviour.IGNORE,
+        )
+        assertThat(result, equalTo("\${some.expression.with:\$inlineDollar}"))
+    }
+
+    @Test
+    fun `ignore multiple invalid expressions`() {
+        val result = ExpressionUtil.eval(
+            input = "\${some.expression.with:\$inlineDollar} and \${another.expression}",
+            evaluators = emptyMap(),
+            onUnsupported = ExpressionUtil.UnsupportedBehaviour.IGNORE,
+        )
+        assertThat(result, equalTo("\${some.expression.with:\$inlineDollar} and \${another.expression}"))
     }
 }
