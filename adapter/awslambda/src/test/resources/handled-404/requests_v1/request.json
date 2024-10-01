@@ -1,0 +1,9 @@
+{
+  "path": "/notfound",
+  "httpMethod":  "GET",
+  "headers": {},
+  "queryStringParameters": {},
+  "pathParameters": {},
+  "body": null,
+  "isBase64Encoded": false
+}
