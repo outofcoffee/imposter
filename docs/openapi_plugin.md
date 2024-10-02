@@ -232,7 +232,7 @@ resources:
 
 Here, POST requests to the `/pets` endpoint will default to the HTTP 201 status code. If there is a corresponding response example for the 201 status, this will be returned in the HTTP response.
 
-The `path` property supports placeholders, using the Vert.x Web colon format, so in the second example above, PUT requests to the endpoint `/pets/<some ID>` will return a 202 status. 
+The `path` property supports placeholders using the usual OpenAPI `{placeholder}` format, so in the second example above, PUT requests to the endpoint `/pets/<some ID>` will return a 202 status. Any placeholder names in paths in the plugin configuration file must match the ones used in the OpenAPI schema.
 
 ## Return a specific example
 
