@@ -44,9 +44,6 @@
 package io.gatehill.imposter.server.vertxweb.util
 
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertNotEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 
 /**
@@ -57,57 +54,19 @@ import org.junit.jupiter.api.Test
 class VertxResourceUtilTest {
     @Test
     fun `should convert path to Vertx format`() {
-        val normalisedParams = mutableMapOf<String, String>()
-        val result = VertxResourceUtil.normalisePath(normalisedParams, "/{pathParam}/notParam")
-
-        assertEquals(0, normalisedParams.size)
+        val result = VertxResourceUtil.convertPath("/{pathParam}/notParam")
         assertEquals("/:pathParam/notParam", result)
     }
 
     @Test
     fun `should handle param and plain string`() {
-        val normalisedParams = mutableMapOf<String, String>()
-        val result = VertxResourceUtil.normalisePath(normalisedParams, "/{firstParam}.notParam")
-
-        assertEquals(0, normalisedParams.size)
+        val result = VertxResourceUtil.convertPath("/{firstParam}.notParam")
         assertEquals("/:firstParam.notParam", result)
     }
 
     @Test
-    fun `should normalise path`() {
-        val normalisedParams = mutableMapOf<String, String>()
-        val result = VertxResourceUtil.normalisePath(normalisedParams, "/{firstParam}/{second-param}/notParam")
-
-        assertEquals(1, normalisedParams.size)
-        assertFalse(normalisedParams.containsKey("firstParam"))
-
-        val secondParam = normalisedParams.entries.first()
-        assertNotNull(secondParam)
-        assertEquals("second-param", secondParam.value)
-        assertNotEquals("second-param", secondParam.key)
-        assertEquals("/:firstParam/:${secondParam.key}/notParam", result)
-    }
-
-    @Test
-    fun `should get normalised param name`() {
-        val normalisedParams = mapOf(
-            "abcdef1234567890" to "kebab-param"
-        )
-        assertEquals("abcdef1234567890", VertxResourceUtil.getNormalisedParamName(normalisedParams, "kebab-param"))
-        assertEquals("normalParam", VertxResourceUtil.getNormalisedParamName(normalisedParams, "normalParam"))
-    }
-
-    @Test
-    fun `should denormalise params`() {
-        val normalisedParams = mapOf(
-            "abcdef1234567890" to "kebab-param"
-        )
-        val vertxParams = mapOf(
-            "abcdef1234567890" to "param value",
-            "content-type" to "application/json"
-        )
-        val result = VertxResourceUtil.denormaliseParams(normalisedParams, vertxParams)
-        assertEquals("param value", result["kebab-param"])
-        assertEquals("application/json", result["content-type"])
+    fun `should convert path with multiple path params`() {
+        val result = VertxResourceUtil.convertPath("/{firstParam}/{secondParam}/notParam")
+        assertEquals("/:firstParam/:secondParam/notParam", result)
     }
 }

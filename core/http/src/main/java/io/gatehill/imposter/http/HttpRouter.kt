@@ -42,6 +42,7 @@
  */
 package io.gatehill.imposter.http
 
+import io.gatehill.imposter.http.util.PathNormaliser
 import io.vertx.core.Vertx
 import java.util.concurrent.CompletableFuture
 
@@ -52,21 +53,27 @@ class HttpRouter(val vertx: Vertx) {
     val routes = mutableListOf<HttpRoute>()
     val errorHandlers = mutableMapOf<Int, HttpExchangeHandler>()
     private val beforeEndHandlers = mutableListOf<HttpExchangeHandler>()
+    private val _normalisedParams = mutableMapOf<String, String>()
+
+    val normalisedParams: Map<String, String>
+        get() = _normalisedParams
 
     fun route(): HttpRoute {
-        return HttpRoute().also(::addOrReplaceRoute)
+        return HttpRoute(this).also(::addOrReplaceRoute)
     }
 
     fun route(path: String): HttpRoute {
-        return HttpRoute(path = path).also(::addOrReplaceRoute)
+        val normalisedPath = PathNormaliser.normalisePath(_normalisedParams, path)
+        return HttpRoute(this, path = normalisedPath).also(::addOrReplaceRoute)
     }
 
     fun route(method: HttpMethod, path: String): HttpRoute {
-        return HttpRoute(path = path, method = method).also(::addOrReplaceRoute)
+        val normalisedPath = PathNormaliser.normalisePath(_normalisedParams, path)
+        return HttpRoute(this, path = normalisedPath, method = method).also(::addOrReplaceRoute)
     }
 
     fun routeWithRegex(method: HttpMethod, regex: String): HttpRoute {
-        return HttpRoute(regex = regex, method = method).also(::addOrReplaceRoute)
+        return HttpRoute(this, regex = regex, method = method).also(::addOrReplaceRoute)
     }
 
     /**

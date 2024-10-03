@@ -56,14 +56,13 @@ import io.vertx.ext.web.impl.ParsableMIMEValue
  */
 class VertxHttpExchange(
     private val router: HttpRouter,
-    normalisedParams: Map<String, String>,
-    internal val routingContext: RoutingContext,
     override val currentRoute: HttpRoute?,
+    internal val routingContext: RoutingContext,
 ) : HttpExchange {
     override var phase = ExchangePhase.REQUEST_RECEIVED
 
     override val request: HttpRequest by lazy {
-        VertxHttpRequest(normalisedParams, routingContext)
+        VertxHttpRequest(router, routingContext)
     }
 
     override val response: HttpResponse by lazy {

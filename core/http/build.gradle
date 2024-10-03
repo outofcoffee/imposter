@@ -10,6 +10,13 @@ dependencies {
     implementation "io.vertx:vertx-core:$version_vertx"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation "com.fasterxml.jackson.core:jackson-databind:$version_jackson_databind"
+
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$version_junit_jupiter"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$version_junit_jupiter"
+    testImplementation "org.mockito:mockito-core:$version_mockito"
+    testImplementation "org.mockito.kotlin:mockito-kotlin:$version_mockito_kotlin"
+    testRuntimeOnly "org.apache.logging.log4j:log4j-core:$version_log4j"
+    testRuntimeOnly "org.apache.logging.log4j:log4j-slf4j-impl:$version_log4j"
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
@@ -56,4 +63,8 @@ compileTestKotlin {
         // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
         freeCompilerArgs = ["-Xjvm-default=all"]
     }
+}
+
+test {
+    useJUnitPlatform()
 }
