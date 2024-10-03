@@ -134,22 +134,21 @@ class VertxWebServerFactoryImpl : ServerFactory {
     }
 
     private fun convertRouterToVertx(router: HttpRouter) = Router.router(router.vertx).also { vertxRouter ->
-        val normalisedParams = mutableMapOf<String, String>()
         router.routes.forEach { httpRoute ->
             val vertxRoute = httpRoute.regex?.let { regex ->
                 httpRoute.method?.let { method -> vertxRouter.routeWithRegex(method.convertMethodToVertx(), regex) }
                     ?: vertxRouter.routeWithRegex(regex)
 
             } ?: httpRoute.path?.let { path ->
-                val normalisedPath = VertxResourceUtil.normalisePath(normalisedParams, path)
-                httpRoute.method?.let { method -> vertxRouter.route(method.convertMethodToVertx(), normalisedPath) }
-                    ?: vertxRouter.route(normalisedPath)
+                val convertedPath = VertxResourceUtil.convertPath(path)
+                httpRoute.method?.let { method -> vertxRouter.route(method.convertMethodToVertx(), convertedPath) }
+                    ?: vertxRouter.route(convertedPath)
 
             } ?: vertxRouter.route()
 
             val handler = httpRoute.handler ?: throw IllegalStateException("No route handler set for: $httpRoute")
             vertxRoute.handler { rc ->
-                val exchange = VertxHttpExchange(router, normalisedParams, rc, httpRoute)
+                val exchange = VertxHttpExchange(router, httpRoute, rc)
 
                 // don't block the event loop
                 handler(exchange).handle { _, t ->
@@ -161,7 +160,7 @@ class VertxWebServerFactoryImpl : ServerFactory {
 
         router.errorHandlers.forEach { (statusCode, errorHandler) ->
             vertxRouter.errorHandler(statusCode) { rc ->
-                errorHandler(VertxHttpExchange(router, normalisedParams, rc, null))
+                errorHandler(VertxHttpExchange(router, null, rc))
             }
         }
     }
