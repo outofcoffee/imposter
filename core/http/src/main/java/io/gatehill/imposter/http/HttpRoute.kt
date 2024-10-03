@@ -49,9 +49,10 @@ import java.util.regex.Pattern
  * @author Pete Cornish
  */
 data class HttpRoute(
+    val router: HttpRouter,
     val path: String? = null,
     val regex: String? = null,
-    val method: HttpMethod? = null
+    val method: HttpMethod? = null,
 ) {
     val hasTrailingWildcard = path?.endsWith('*') ?: false
     var handler: HttpExchangeFutureHandler? = null

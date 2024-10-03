@@ -45,6 +45,7 @@ package io.gatehill.imposter.http
 import com.google.common.base.Strings.isNullOrEmpty
 import com.google.common.cache.CacheBuilder
 import io.gatehill.imposter.config.ResolvedResourceConfig
+import io.gatehill.imposter.http.util.PathNormaliser
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.resource.conditional.MatchOperator
@@ -164,21 +165,34 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
     ): ResourceMatchResult {
         val matchDescription = "path"
 
-        // note: path template can be null when a regex route is used
-        val routePathTemplate = httpExchange.currentRoute?.path
-
-        val pathMatch = resourceConfig.path?.let { resourceConfigPath ->
-            if (resourceConfigPath.endsWith("*") && request.path.startsWith(resourceConfigPath.substring(0, resourceConfigPath.length - 1))) {
+        val pathMatch = resourceConfig.path?.takeIf(String::isNotEmpty)?.let { resourceConfigPath ->
+            val resourcePathWithoutWildcard = resourceConfigPath.substring(0, resourceConfigPath.length - 1)
+            if (resourceConfigPath.endsWith("*") && request.path.startsWith(resourcePathWithoutWildcard)) {
                 return@let ResourceMatchResult.wildcardMatch(matchDescription)
-            } else if (request.path == resourceConfigPath || routePathTemplate?.let { it == resourceConfigPath } == true) {
+            } else if (request.path == resourceConfigPath) {
                 return@let ResourceMatchResult.exactMatch(matchDescription)
             } else {
-                return@let ResourceMatchResult.notMatched(matchDescription)
+                val currentRoute = httpExchange.currentRoute
+                if (null != currentRoute && isPathTemplateMatch(currentRoute, resourceConfigPath)) {
+                    return@let ResourceMatchResult.exactMatch(matchDescription)
+                } else {
+                    return@let ResourceMatchResult.notMatched(matchDescription)
+                }
             }
             // path is un-set
         } ?: ResourceMatchResult.noConfig(matchDescription)
 
         return pathMatch
+    }
+
+    private fun isPathTemplateMatch(currentRoute: HttpRoute, resourceConfigPath: String): Boolean {
+        val normalisedParams = currentRoute.router.normalisedParams.toMutableMap()
+
+        // TODO consider caching the normalised resource path
+        val normalisedResourcePath = PathNormaliser.normalisePath(normalisedParams, resourceConfigPath)
+
+        // note: route path template can be null when a regex route is used
+        return currentRoute.path == normalisedResourcePath
     }
 
     /**
@@ -201,11 +215,23 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
 
         resourceConfig.requestBody?.allOf?.let { bodyConfigs ->
             if (LOGGER.isTraceEnabled) {
-                LOGGER.trace("Matching against all of ${bodyConfigs.size} request body configs for ${LogUtil.describeRequestShort(httpExchange)}: $bodyConfigs")
+                LOGGER.trace(
+                    "Matching against all of ${bodyConfigs.size} request body configs for ${
+                        LogUtil.describeRequestShort(
+                            httpExchange
+                        )
+                    }: $bodyConfigs"
+                )
             }
             val parentConfigNamespaces = resourceConfig.requestBody?.xmlNamespaces
             val allMatch = bodyConfigs.all { childConfig ->
-                val matchType = matchUsingBodyConfig(matchDescription, childConfig, pluginConfig, parentConfigNamespaces, httpExchange)
+                val matchType = matchUsingBodyConfig(
+                    matchDescription,
+                    childConfig,
+                    pluginConfig,
+                    parentConfigNamespaces,
+                    httpExchange
+                )
                 return@all matchType.type == MatchResultType.EXACT_MATCH
             }
             return if (allMatch) {
@@ -217,11 +243,23 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
 
         } ?: resourceConfig.requestBody?.anyOf?.let { bodyConfigs ->
             if (LOGGER.isTraceEnabled) {
-                LOGGER.trace("Matching against any of ${bodyConfigs.size} request body configs for ${LogUtil.describeRequestShort(httpExchange)}: $bodyConfigs")
+                LOGGER.trace(
+                    "Matching against any of ${bodyConfigs.size} request body configs for ${
+                        LogUtil.describeRequestShort(
+                            httpExchange
+                        )
+                    }: $bodyConfigs"
+                )
             }
             val parentConfigNamespaces = resourceConfig.requestBody?.xmlNamespaces
             val anyMatch = bodyConfigs.any { childConfig ->
-                val matchType = matchUsingBodyConfig(matchDescription, childConfig, pluginConfig, parentConfigNamespaces, httpExchange)
+                val matchType = matchUsingBodyConfig(
+                    matchDescription,
+                    childConfig,
+                    pluginConfig,
+                    parentConfigNamespaces,
+                    httpExchange
+                )
                 return@any matchType.type == MatchResultType.EXACT_MATCH
             }
             return if (anyMatch) {
@@ -232,9 +270,17 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
 
         } ?: resourceConfig.requestBody?.let { singleRequestBodyConfig ->
             if (LOGGER.isTraceEnabled) {
-                LOGGER.trace("Matching against a single request body config for ${LogUtil.describeRequestShort(httpExchange)}: $singleRequestBodyConfig")
+                LOGGER.trace(
+                    "Matching against a single request body config for ${LogUtil.describeRequestShort(httpExchange)}: $singleRequestBodyConfig"
+                )
             }
-            return matchUsingBodyConfig(matchDescription, singleRequestBodyConfig, pluginConfig, emptyMap(), httpExchange)
+            return matchUsingBodyConfig(
+                matchDescription,
+                singleRequestBodyConfig,
+                pluginConfig,
+                emptyMap(),
+                httpExchange
+            )
 
         } ?: run {
             if (LOGGER.isTraceEnabled) {
@@ -328,14 +374,15 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
     ): MatchedResource {
         // true if exact match or wildcard match, or partial config (implies match all)
         val matched = results.none { it.type == MatchResultType.NOT_MATCHED } &&
-            !results.all { it.type == MatchResultType.NO_CONFIG }
+                !results.all { it.type == MatchResultType.NO_CONFIG }
 
         // all matched and none of type wildcard
         val exact = matched && results.none { it.type == MatchResultType.WILDCARD_MATCH }
 
         // score is the number of exact or wildcard matches
-        val score = results.filter { it.type == MatchResultType.EXACT_MATCH || it.type == MatchResultType.WILDCARD_MATCH }
-            .sumOf { it.weight }
+        val score =
+            results.filter { it.type == MatchResultType.EXACT_MATCH || it.type == MatchResultType.WILDCARD_MATCH }
+                .sumOf { it.weight }
 
         val outcome = MatchedResource(resource, matched, score, exact)
         if (LOGGER.isTraceEnabled) {

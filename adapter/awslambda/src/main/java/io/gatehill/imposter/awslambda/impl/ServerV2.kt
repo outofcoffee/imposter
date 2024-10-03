@@ -59,7 +59,7 @@ import io.gatehill.imposter.util.HttpUtil
  */
 class ServerV2(
     responseService: ResponseService,
-    router: HttpRouter,
+    private val router: HttpRouter,
 ) : LambdaServer<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse>(responseService, router) {
 
     init {
@@ -74,7 +74,7 @@ class ServerV2(
         return HttpUtil.readAcceptedContentTypes(event.headers["Accept"]).contains(HttpUtil.CONTENT_TYPE_HTML)
     }
 
-    override fun buildRequest(event: APIGatewayV2HTTPEvent, route: HttpRoute?) = LambdaHttpRequestV2(event, route)
+    override fun buildRequest(event: APIGatewayV2HTTPEvent, route: HttpRoute?) = LambdaHttpRequestV2(event, router, route)
 
     override fun buildResponse(response: LambdaHttpResponse) = APIGatewayV2HTTPResponse().apply {
         // read status again in case modified by error handler

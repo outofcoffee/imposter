@@ -38,6 +38,7 @@ ext {
     version_jackson_databind = '2.13.4.2'
     version_jaxb_api = '2.3.1'
     version_junit = '4.13.2'
+    version_junit_jupiter = '5.10.0'
     version_log4j = '2.18.0'
     version_micrometer = '1.9.4'
     version_mockito = '5.2.0'

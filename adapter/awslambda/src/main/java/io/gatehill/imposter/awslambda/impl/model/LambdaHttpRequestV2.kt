@@ -49,6 +49,8 @@ import io.gatehill.imposter.awslambda.util.FormParserUtil
 import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.http.HttpRoute
+import io.gatehill.imposter.http.HttpRouter
+import io.gatehill.imposter.http.util.PathNormaliser
 import io.gatehill.imposter.script.LowercaseKeysMap
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.json.JsonObject
@@ -58,6 +60,7 @@ import io.vertx.core.json.JsonObject
  */
 class LambdaHttpRequestV2(
     private val event: APIGatewayV2HTTPEvent,
+    private val router: HttpRouter,
     private val currentRoute: HttpRoute?,
 ) : HttpRequest {
     private val baseUrl: String
@@ -91,10 +94,10 @@ class LambdaHttpRequestV2(
     }
 
     override val pathParams: Map<String, String>
-        get() = pathParameters
+        get() = PathNormaliser.denormaliseParams(router.normalisedParams, pathParameters)
 
     override fun getPathParam(paramName: String): String? {
-        return pathParameters[paramName]
+        return pathParameters[PathNormaliser.getNormalisedParamName(router.normalisedParams, paramName)]
     }
 
     override val queryParams: Map<String, String>

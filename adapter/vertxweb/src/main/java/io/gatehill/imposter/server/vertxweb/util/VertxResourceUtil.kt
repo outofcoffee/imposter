@@ -42,32 +42,16 @@
  */
 package io.gatehill.imposter.server.vertxweb.util
 
-import com.google.common.base.Strings
 import com.google.common.collect.BiMap
 import com.google.common.collect.HashBiMap
 import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.http.HttpRoute
-import org.apache.logging.log4j.LogManager
-import java.util.UUID
 
 /**
  * @author Pete Cornish
  */
 object VertxResourceUtil {
-    private val LOGGER = LogManager.getLogger(VertxResourceUtil::class.java)
-
-    /**
-     * Vert.x documentation says:
-     * > The placeholders consist of : followed by the parameter name.
-     * > Parameter names consist of any alphabetic character, numeric character or underscore.
-     *
-     * See: https://vertx.io/docs/vertx-web/java/#_capturing_path_parameters
-     *
-     * This regex pattern does not include the colon prefix.
-     */
-    private val VERTX_PATH_PARAM_NAME = Regex("[a-zA-Z0-9_]+")
-
     private val METHODS: BiMap<HttpMethod, io.vertx.core.http.HttpMethod?> = HashBiMap.create()
 
     /**
@@ -100,10 +84,7 @@ object VertxResourceUtil {
         METHODS.inverse()[this] ?: throw UnsupportedOperationException("Unknown method: $this")
 
     /**
-     * Normalises path parameters to Vert.x format.
-     *
-     * If a path parameter name does not match the Vert.x format, it is replaced with a UUID,
-     * and a mapping is added to the `normalisedParams` map.
+     * Converts path parameters to Vert.x format.
      *
      * For example:
      * ```
@@ -113,62 +94,27 @@ object VertxResourceUtil {
      * ```
      * /:pathParam/notParam
      * ```
-     *
-     * A path parameter name that does not match the Vert.x format, such as:
-     * ```
-     * /{param-with-dashes}
-     * ```
-     * will be converted to:
-     * ```
-     * /:123e4567e89b12d3a4564266141740000
-     * ```
-     * and the mapping `param-with-dashes -> 123e4567e89b12d3a4564266141740000`
-     * will be added to the `normalisedParams` map.
-     *
-     * @param normalisedParams a map to store the normalised parameter names
      * @param rawPath the path to normalise
      */
-    fun normalisePath(normalisedParams: MutableMap<String, String>, rawPath: String): String {
+    fun convertPath(rawPath: String): String {
         var path = rawPath
-        if (!Strings.isNullOrEmpty(path)) {
+        if (path.isNotEmpty()) {
             if (escapeColonsInPath) {
                 path = path.replace(":", "%3A")
             }
 
+            // convert to colon format
             var matchFound: Boolean
             do {
                 val matcher = HttpRoute.PATH_PARAM_PLACEHOLDER.matcher(path)
                 matchFound = matcher.find()
                 if (matchFound) {
-                    val finalParamName = matcher.group(1).let { paramName ->
-                        if (paramName.matches(VERTX_PATH_PARAM_NAME)) {
-                            paramName
-                        } else {
-                            val existingMapping = normalisedParams.entries.find { it.value == paramName }
-                            if (null != existingMapping) {
-                                return@let existingMapping.key
-                            }
-                            val normalisedName = UUID.randomUUID().toString().replace("-", "")
-                            normalisedParams[normalisedName] = paramName
-                            normalisedName
-                        }
-                    }
-                    path = matcher.replaceFirst(":$finalParamName")
+                    val paramName = matcher.group(1)
+                    path = matcher.replaceFirst(":$paramName")
                 }
             } while (matchFound)
         }
+
         return path
-    }
-
-    fun getNormalisedParamName(normalisedParams: Map<String, String>, originalParamName: String): String {
-        if (originalParamName.matches(VERTX_PATH_PARAM_NAME)) {
-            return originalParamName
-        }
-        return normalisedParams.entries.find { it.value == originalParamName }?.key ?: originalParamName
-    }
-
-    fun denormaliseParams(normalisedParams: Map<String, String>, vertxParams: Map<String, String>): Map<String, String> {
-        // if it's not in the map it doesn't need to be denormalised
-        return vertxParams.mapKeys { normalisedParams[it.key] ?: it.key }
     }
 }
