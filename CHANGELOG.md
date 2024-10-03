@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.0.5] - 2024-10-03
+### Changed
+- chore(deps): bump com.fasterxml.jackson.core:jackson-databind
+- chore(deps): bump org.apache.maven.plugins:maven-install-plugin
+- chore(deps): bump org.apache.maven.plugins:maven-project-info-reports-plugin
+
+### Fixed
+- fix(awslambda): extends path param normalisation to all adapters.
+
+### Other
+- Clarify OpenAPI plugin path placeholder usage docs
+
 ## [4.0.4] - 2024-10-01
 ### Changed
 - chore(deps): bump actions/setup-python from 5.1.1 to 5.2.0
