@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.1.0] - 2024-10-12
+### Added
+- feat: allows raw request body content to be matched.
+
+### Changed
+- chore(deps): bump org.apache.maven.plugins:maven-surefire-plugin
+
 ## [4.0.5] - 2024-10-03
 ### Changed
 - chore(deps): bump com.fasterxml.jackson.core:jackson-databind
