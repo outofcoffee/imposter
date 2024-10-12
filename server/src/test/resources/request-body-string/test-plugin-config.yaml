@@ -1,0 +1,103 @@
+plugin: "io.gatehill.imposter.plugin.test.TestPluginImpl"
+
+resources:
+- method: POST
+  path: /example
+  requestBody:
+    operator: EqualTo
+    value: bar
+  response:
+    statusCode: 204
+
+- method: POST
+  path: /example-negative
+  requestBody:
+    operator: NotEqualTo
+    value: baz
+  response:
+    content: "NotEqualTo"
+
+- method: POST
+  path: /example
+  requestBody:
+    operator: EqualTo
+    value: 99
+  response:
+    statusCode: 302
+
+- method: POST
+  path: /example-nonmatch
+  requestBody:
+    operator: EqualTo
+    # tilde is YAML for null
+    value: ~
+  response:
+    statusCode: 409
+
+- method: POST
+  path: /example-exists
+  requestBody:
+    operator: Exists
+  response:
+    statusCode: 201
+
+- method: POST
+  path: /example-not-exists
+  requestBody:
+    operator: NotExists
+  response:
+    statusCode: 202
+
+- method: POST
+  path: /example-contains
+  requestBody:
+    operator: Contains
+    value: "b"
+  response:
+    content: "Contains"
+
+- method: POST
+  path: /example-contains-negative
+  requestBody:
+    operator: NotContains
+    value: "b"
+  response:
+    content: "NotContains"
+
+- method: POST
+  path: /example-regex
+  requestBody:
+    operator: Matches
+    value: "b.*"
+  response:
+    content: "Matches"
+
+- method: POST
+  path: /example-regex-negative
+  requestBody:
+    operator: NotMatches
+    value: "b.*"
+  response:
+    content: "NotMatches"
+
+- method: POST
+  path: /example-allof
+  requestBody:
+    allOf:
+    - operator: Contains
+      value: bar
+    - operator: Contains
+      value: qux
+  response:
+    content: "AllOf"
+
+- method: POST
+  path: /example-anyof
+  requestBody:
+    anyOf:
+    - operator: Contains
+      value: bar
+    - operator: Contains
+      value: qux
+  response:
+    content: "AnyOf"

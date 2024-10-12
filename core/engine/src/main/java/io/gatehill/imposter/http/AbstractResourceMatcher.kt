@@ -299,9 +299,14 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
         httpExchange: HttpExchange,
     ): ResourceMatchResult {
         return if (!isNullOrEmpty(bodyConfig.jsonPath)) {
+            LOGGER.trace("Matching body using jsonPath")
             matchRequestBodyJsonPath(matchDescription, bodyConfig, httpExchange)
         } else if (!isNullOrEmpty(bodyConfig.xPath)) {
+            LOGGER.trace("Matching body using xPath")
             matchRequestBodyXPath(matchDescription, bodyConfig, pluginConfig, additionalNamespaces, httpExchange)
+        } else if (null != bodyConfig.operator) {
+            LOGGER.trace("Matching body using whole string")
+            checkBodyMatch(matchDescription, bodyConfig, httpExchange.request.bodyAsString)
         } else {
             // none configured
             ResourceMatchResult.noConfig(matchDescription)

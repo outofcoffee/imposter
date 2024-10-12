@@ -1,6 +1,6 @@
 # Advanced request matching
 
-You can match resources to requests using attributes such as the HTTP method, path, query string, headers or body (both JSON and XML supported).
+You can match resources to requests using attributes such as the HTTP method, path, query string, headers or body. For JSON and XML request bodies, JsonPath and XPath can also be used, respectively.
 
 ## Match operators
 
@@ -62,7 +62,7 @@ Request matchers support the range of operators described in this document.
 
 ## Matching against the request body
 
-You can also match a resource based on the request body. Both JSON and XML request bodies are supported.
+You can also match a resource based on the request body. For JSON and XML request bodies, JsonPath and XPath can also be used, respectively.
 
 ### Matching a JSON request body
 
@@ -92,6 +92,8 @@ This example will match a request body like this:
 ```json
 { "foo": "bar" }
 ```
+
+Any of the match operators, such as `Contains`, `Matches` etc. can be used in a JsonPath matcher.
 
 #### Unmatched or null JsonPath expressions
 
@@ -185,6 +187,8 @@ system:
     pets: "urn:com:example:petstore"
 ```
 
+Any of the match operators, such as `Contains`, `Matches` etc. can be used in an XPath matcher.
+
 #### Unmatched or null XPath expressions
 
 If the result of evaluating the XPath expression is `null` or if the path evaluates to non-existent property in the body, then it is considered `null`.
@@ -207,6 +211,56 @@ resources:
 ```
 
 > Note: the YAML keyword `null` indicates a null value, not the string literal `"null"`
+
+### Matching raw request body content
+
+You can match a resource based on the raw content of the request body.
+
+Specify the match configuration using the `requestBody.operator` and `requestBody.value` properties of a resource.
+
+Here you specify the operator and a value to compare.
+
+For example:
+
+```yaml
+resources:
+- method: GET
+  path: /example1
+  requestBody:
+    operator: EqualTo
+    value: bar
+  response:
+    statusCode: 204
+```
+
+This example will match a request body like this:
+
+```
+bar
+```
+
+Any of the match operators, such as `Contains`, `Matches` etc. can be used in a request body matcher.
+
+#### Matching an empty request body
+
+If the request body is empty, then it is considered `null`.
+
+You can explicitly match a `null` value, as follows:
+
+```yaml
+resources:
+- method: GET
+  path: /example2
+  requestBody:
+    operator: EqualTo
+    value: null
+  response:
+    statusCode: 409
+```
+
+> Note: the YAML keyword `null` indicates a null value, not the string literal `"null"`
+
+---
 
 ### Using multiple request body matchers
 
