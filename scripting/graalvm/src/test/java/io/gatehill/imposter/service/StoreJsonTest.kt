@@ -99,7 +99,7 @@ class StoreJsonTest : AbstractBaseScriptTest() {
         }
 
         val runtimeContext = buildRuntimeContext(mapOf(
-            "stores" to StoreProvider(storeFactory, listOf { ObjectProxyingStore(it) }, "1")
+            "stores" to StoreProvider(storeFactory, { ObjectProxyingStore(it) }, "1")
         ))
         val script = resolveScriptFile(pluginConfig, resourceConfig)
         val actual = getService().executeScript(script, runtimeContext)
