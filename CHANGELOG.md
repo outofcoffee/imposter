@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.1.2] - 2024-10-15
+### Changed
+- test: sets up store provider properly for JSON test.
+
 ## [4.1.1] - 2024-10-15
 ### Fixed
 - fix: store interceptor should be scoped to script engine.
