@@ -55,6 +55,8 @@ import io.gatehill.imposter.service.ScriptSource
 class EmbeddedScriptServiceImpl : EmbeddedScriptService {
     private var listener: ScriptListener? = null
 
+    override val implName = "embedded"
+
     override val requestBuilder = lazyScriptRequestBuilder
 
     override fun executeScript(

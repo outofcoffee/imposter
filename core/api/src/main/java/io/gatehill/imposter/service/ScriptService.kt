@@ -51,6 +51,7 @@ import io.gatehill.imposter.script.ScriptRequest
  * @author Pete Cornish
  */
 interface ScriptService {
+    val implName: String
     val requestBuilder: ScriptRequestBuilder
 
     fun initScript(script: ScriptSource) {

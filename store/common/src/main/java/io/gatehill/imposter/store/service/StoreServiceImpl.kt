@@ -75,7 +75,7 @@ class StoreServiceImpl @Inject constructor(
     scriptLifecycle: ScriptLifecycleHooks,
 ) : StoreService, EngineLifecycleListener, ScriptLifecycleListener {
 
-    override val storeInterceptors: MutableList<StoreInterceptor> = mutableListOf()
+    override val storeInterceptors: MutableMap<String, StoreInterceptor> = mutableMapOf()
 
     init {
         LOGGER.trace("Stores enabled")
@@ -143,12 +143,14 @@ class StoreServiceImpl @Inject constructor(
 
     override fun beforeBuildingRuntimeContext(
         httpExchange: HttpExchange,
+        scriptEngineName: String,
         additionalBindings: MutableMap<String, Any>,
         executionContext: ExecutionContext,
     ) {
         // inject store object into script engine
         val requestId = httpExchange.get<String>(ResourceUtil.RC_REQUEST_ID_KEY)!!
-        additionalBindings["stores"] = StoreProvider(storeFactory, storeInterceptors, requestId)
+        val interceptor: StoreInterceptor? = storeInterceptors[scriptEngineName]
+        additionalBindings["stores"] = StoreProvider(storeFactory, interceptor, requestId)
     }
 
     override fun afterResponseSent(httpExchange: HttpExchange, resourceConfig: ResourceConfig?) {

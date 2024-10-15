@@ -84,6 +84,9 @@ class DelegatingJsScriptServiceImpl @Inject constructor(
         }
     }
 
+    override val implName: String
+        get() = impl.implName
+
     override val requestBuilder: ScriptRequestBuilder
         get() = impl.requestBuilder
 

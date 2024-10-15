@@ -70,6 +70,8 @@ import javax.script.SimpleBindings
 class GraalvmCompatScriptServiceImpl : ScriptService, Plugin {
     private val scriptEngine: ScriptEngine
 
+    override val implName = "js-graal-compat"
+
     override val requestBuilder = lazyScriptRequestBuilder
 
     init {

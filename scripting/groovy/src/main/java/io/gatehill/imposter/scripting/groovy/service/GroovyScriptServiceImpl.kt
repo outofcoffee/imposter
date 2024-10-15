@@ -66,6 +66,8 @@ import org.codehaus.groovy.control.CompilerConfiguration
 class GroovyScriptServiceImpl : ScriptService {
     private val groovyClassLoader: GroovyClassLoader
 
+    override val implName = "groovy"
+
     /**
      * Holds compiled scripts, with maximum number of entries determined by the environment
      * variable [ScriptUtil.ENV_SCRIPT_CACHE_ENTRIES].

@@ -51,7 +51,7 @@ typealias StoreInterceptor = (Store) -> Store
  * @author Pete Cornish
  */
 interface StoreService {
-    val storeInterceptors: MutableList<StoreInterceptor>
+    val storeInterceptors: MutableMap<String, StoreInterceptor>
 
     companion object {
         /**

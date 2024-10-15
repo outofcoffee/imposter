@@ -79,6 +79,8 @@ import org.graalvm.polyglot.HostAccess
 class GraalvmScriptServiceImpl : ScriptService, Plugin, EngineLifecycleListener {
     private val engine: Engine
 
+    override val implName = "js-graal"
+
     override val requestBuilder: ScriptRequestBuilder
         get() = objectProxyRequestBuilder
 
@@ -104,7 +106,7 @@ class GraalvmScriptServiceImpl : ScriptService, Plugin, EngineLifecycleListener 
         if (enableStoreProxy) {
             LOGGER.trace("Graal store proxy enabled")
             val storeService = InjectorUtil.getInstance<StoreService>()
-            storeService.storeInterceptors += { ObjectProxyingStore(it) }
+            storeService.storeInterceptors[implName] = { ObjectProxyingStore(it) }
         } else {
             LOGGER.trace("Graal store proxy disabled")
         }

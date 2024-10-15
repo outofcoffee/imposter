@@ -52,7 +52,7 @@ import io.gatehill.imposter.store.util.StoreUtil
  */
 class StoreProvider(
     private val storeFactory: StoreFactory,
-    private val storeInterceptors: List<StoreInterceptor>,
+    private val storeInterceptor: StoreInterceptor?,
     private val requestId: String,
 ) {
     fun open(storeName: String): Store {
@@ -62,7 +62,7 @@ class StoreProvider(
         } else {
             storeFactory.getStoreByName(storeName, false)
         }
-        storeInterceptors.forEach { interceptor -> store = interceptor(store) }
+        storeInterceptor?.let { interceptor -> store = interceptor(store) }
         return store
     }
 }

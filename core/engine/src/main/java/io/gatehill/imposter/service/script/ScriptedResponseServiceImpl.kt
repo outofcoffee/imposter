@@ -192,7 +192,7 @@ class ScriptedResponseServiceImpl @Inject constructor(
             val executionContext = ScriptUtil.buildContext(scriptService.requestBuilder, httpExchange, additionalContext)
             LOGGER.trace("Context for request: {}", Supplier<Any> { executionContext })
 
-            val additionalBindings = getAdditionalBindings(httpExchange, executionContext)
+            val additionalBindings = getAdditionalBindings(httpExchange, scriptService.implName, executionContext)
             val scriptLogger = buildScriptLogger(script.source)
 
             val runtimeContext = RuntimeContext(
@@ -248,6 +248,7 @@ class ScriptedResponseServiceImpl @Inject constructor(
 
     private fun getAdditionalBindings(
         httpExchange: HttpExchange,
+        scriptEngineName: String,
         executionContext: ExecutionContext
     ): Map<String, Any> {
         // fire pre-context build hooks
@@ -256,6 +257,7 @@ class ScriptedResponseServiceImpl @Inject constructor(
             scriptLifecycle.forEach { listener ->
                 listener.beforeBuildingRuntimeContext(
                     httpExchange,
+                    scriptEngineName,
                     additionalBindings,
                     executionContext
                 )

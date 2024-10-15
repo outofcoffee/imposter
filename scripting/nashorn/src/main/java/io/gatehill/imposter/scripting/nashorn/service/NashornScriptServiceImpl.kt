@@ -78,6 +78,8 @@ import javax.script.SimpleBindings
 class NashornScriptServiceImpl : ScriptService, Plugin {
     private val scriptEngine: NashornScriptEngine
 
+    override val implName = "js-nashorn"
+
     /**
      * Holds compiled scripts, with maximum number of entries determined by the environment
      * variable [ScriptUtil.ENV_SCRIPT_CACHE_ENTRIES].
