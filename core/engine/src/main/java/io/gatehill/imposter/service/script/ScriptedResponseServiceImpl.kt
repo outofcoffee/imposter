@@ -45,6 +45,7 @@ package io.gatehill.imposter.service.script
 import com.google.common.cache.CacheBuilder
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.config.util.EnvVars
+import io.gatehill.imposter.expression.helper.RandomHelper
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpRouter
 import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
@@ -251,9 +252,12 @@ class ScriptedResponseServiceImpl @Inject constructor(
         scriptEngineName: String,
         executionContext: ExecutionContext
     ): Map<String, Any> {
+        val additionalBindings = mutableMapOf<String, Any>(
+            "random" to RandomHelper
+        )
+
         // fire pre-context build hooks
         if (!scriptLifecycle.isEmpty) {
-            val additionalBindings = mutableMapOf<String, Any>()
             scriptLifecycle.forEach { listener ->
                 listener.beforeBuildingRuntimeContext(
                     httpExchange,
@@ -262,11 +266,8 @@ class ScriptedResponseServiceImpl @Inject constructor(
                     executionContext
                 )
             }
-            if (additionalBindings.isNotEmpty()) {
-                return additionalBindings
-            }
         }
-        return emptyMap()
+        return additionalBindings
     }
 
     companion object {

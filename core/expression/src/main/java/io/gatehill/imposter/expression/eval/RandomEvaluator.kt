@@ -43,16 +43,12 @@
 
 package io.gatehill.imposter.expression.eval
 
+import io.gatehill.imposter.expression.helper.RandomHelper
 import io.gatehill.imposter.util.splitOnCommaAndTrim
 import org.apache.logging.log4j.LogManager
-import java.util.UUID
 
 object RandomEvaluator : ExpressionEvaluator<String> {
     override val name = "random"
-
-    val alphabetUpper = ('A'..'Z')
-    val alphabetLower = ('a'..'z')
-    val numbers = ('0'..'9')
 
     private val LOGGER = LogManager.getLogger(RandomEvaluator::class.java)
 
@@ -92,27 +88,16 @@ object RandomEvaluator : ExpressionEvaluator<String> {
             it.substring(1, it.length - 1)
         }
 
-        val random = when (type) {
-            "alphabetic" -> getRandomString(length, alphabetUpper + alphabetLower)
-            "alphanumeric" -> getRandomString(length, alphabetUpper + alphabetLower + numbers)
-            "any" -> {
-                if (chars == null) {
-                    LOGGER.warn("chars string must be provided for random type 'any'")
-                    return null
-                }
-                getRandomString(length, chars.toList())
-            }
-            "numeric" -> getRandomString(length, numbers.toList())
-            "uuid" -> UUID.randomUUID().toString()
+        return when (type) {
+            "alphabetic" -> RandomHelper.alphabetic(length, uppercase)
+            "alphanumeric" -> RandomHelper.alphanumeric(length, uppercase)
+            "any" -> RandomHelper.any(length, uppercase, chars)
+            "numeric" -> RandomHelper.numeric(length, uppercase)
+            "uuid" -> RandomHelper.uuid(uppercase)
             else -> {
                 LOGGER.warn("Could not parse random expression: $randomConfig")
-                return null
+                null
             }
         }
-        return if (uppercase) random.uppercase() else random
     }
-
-    private fun getRandomString(length: Int, allowedChars: List<Char>) = (1..length)
-            .map { allowedChars.random() }
-            .joinToString("")
 }
