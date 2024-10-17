@@ -55,6 +55,7 @@ import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.soap.config.SoapPluginConfig
 import io.gatehill.imposter.plugin.soap.model.BindingType
 import io.gatehill.imposter.plugin.soap.model.MessageBodyHolder
+import io.gatehill.imposter.plugin.soap.model.OperationMessage
 import io.gatehill.imposter.plugin.soap.model.ParsedRawBody
 import io.gatehill.imposter.plugin.soap.model.ParsedSoapMessage
 import io.gatehill.imposter.plugin.soap.model.WsdlBinding
@@ -127,7 +128,7 @@ class SoapPluginImpl @Inject constructor(
                 service.endpoints.forEach { endpoint ->
                     val path = endpoint.address.path
                     val binding = wsdlParser.getBinding(endpoint.bindingName)
-                            ?: throw IllegalStateException("Binding: ${endpoint.bindingName} not found")
+                        ?: throw IllegalStateException("Binding: ${endpoint.bindingName} not found")
 
                     when (binding.type) {
                         BindingType.SOAP, BindingType.HTTP -> {
@@ -174,6 +175,7 @@ class SoapPluginImpl @Inject constructor(
                             return@build completedUnitFuture()
                         }
                     }
+
                     else -> {
                         LOGGER.warn("Unsupported binding type: ${binding.type} - unable to parse request")
                         httpExchange.response.setStatusCode(400).end()
@@ -187,8 +189,10 @@ class SoapPluginImpl @Inject constructor(
                     LOGGER.warn("Unable to find a matching binding operation using SOAPAction or SOAP request body")
                     return@build completedUnitFuture()
                 }
-                check(operation.style.equals(SoapUtil.OPERATION_STYLE_DOCUMENT, ignoreCase = true)
-                    || operation.style.equals(SoapUtil.OPERATION_STYLE_RPC, ignoreCase = true)) {
+                check(
+                    operation.style.equals(SoapUtil.OPERATION_STYLE_DOCUMENT, ignoreCase = true)
+                            || operation.style.equals(SoapUtil.OPERATION_STYLE_RPC, ignoreCase = true)
+                ) {
                     "Only document and RPC style SOAP bindings are supported"
                 }
 
@@ -228,8 +232,8 @@ class SoapPluginImpl @Inject constructor(
             val response = httpExchange.response
                 .setStatusCode(responseBehaviour.statusCode)
 
-            operation.outputRef?.let {
-                LOGGER.trace("Using output schema type: {}", operation.outputRef)
+            determineResponseMessage(responseBehaviour, operation)?.let { message ->
+                LOGGER.trace("Using output schema type: {}", message)
 
                 if (!responseBehaviour.responseHeaders.containsKey(HttpUtil.CONTENT_TYPE)) {
                     responseBehaviour.responseHeaders[HttpUtil.CONTENT_TYPE] = when (bodyHolder) {
@@ -237,6 +241,7 @@ class SoapPluginImpl @Inject constructor(
                             WsdlParser.WsdlVersion.V1 -> SoapUtil.soap11ContentType
                             WsdlParser.WsdlVersion.V2 -> SoapUtil.soap12ContentType
                         }
+
                         is ParsedRawBody -> SoapUtil.textXmlContentType
                         else -> throw IllegalStateException("Unsupported request body: ${bodyHolder::class.java.canonicalName}")
                     }
@@ -249,6 +254,7 @@ class SoapPluginImpl @Inject constructor(
                         parser.schemaContext,
                         service,
                         operation,
+                        message,
                         bodyHolder
                     )
                 }
@@ -264,7 +270,7 @@ class SoapPluginImpl @Inject constructor(
 
             } ?: run {
                 LOGGER.warn(
-                    "No output type definition found in WSDL for {} and status code {}",
+                    "No output or fault definition found in WSDL for {} and status code {}",
                     LogUtil.describeRequestShort(httpExchange),
                     responseBehaviour.statusCode,
                 )
@@ -287,5 +293,15 @@ class SoapPluginImpl @Inject constructor(
             responseBehaviourFactory,
             defaultBehaviourHandler,
         )
+    }
+
+    private fun determineResponseMessage(
+        responseBehaviour: ResponseBehaviour,
+        operation: WsdlOperation
+    ): OperationMessage? {
+        return when (responseBehaviour.statusCode) {
+            HttpUtil.HTTP_INTERNAL_ERROR -> operation.faultRef
+            else -> operation.outputRef
+        }
     }
 }

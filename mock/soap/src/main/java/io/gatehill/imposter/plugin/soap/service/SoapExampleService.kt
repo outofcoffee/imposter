@@ -77,39 +77,28 @@ class SoapExampleService {
         schemaContext: SchemaContext,
         service: WsdlService,
         operation: WsdlOperation,
+        message: OperationMessage,
         bodyHolder: MessageBodyHolder,
     ): Boolean {
         logger.debug("Generating response example for operation: {} in service: {}", operation.name, service.name)
         val example = when (operation.style) {
-            SoapUtil.OPERATION_STYLE_DOCUMENT -> generateDocumentResponse(schemaContext, service, operation)
-            SoapUtil.OPERATION_STYLE_RPC -> generateRpcResponse(schemaContext, service, operation)
+            SoapUtil.OPERATION_STYLE_DOCUMENT -> generateDocumentMessage(schemaContext, service, message)
+            SoapUtil.OPERATION_STYLE_RPC -> generateRpcResponse(schemaContext, service, operation, message)
             else -> throw UnsupportedOperationException("Unsupported operation style: ${operation.style}")
         }
         transmitExample(httpExchange, example, bodyHolder)
         return true
     }
 
-    private fun generateDocumentResponse(
-        schemaContext: SchemaContext,
-        service: WsdlService,
-        operation: WsdlOperation,
-    ): String {
-        return operation.outputRef?.let { message ->
-            generateDocumentMessage(schemaContext, service, message)
-
-        } ?: throw IllegalStateException(
-            "No output message for operation: $operation"
-        )
-    }
-
     private fun generateRpcResponse(
         schemaContext: SchemaContext,
         service: WsdlService,
         operation: WsdlOperation,
+        message: OperationMessage,
     ): String {
         // by convention, the suffix 'Response' is added to the operation name
         val rootElementName = operation.name + "Response"
-        val parts = operation.outputRef?.let { listOf(it) } ?: emptyList()
+        val parts = listOf(message)
         return generateWrappedResponse(schemaContext, service, rootElementName, parts)
     }
 
