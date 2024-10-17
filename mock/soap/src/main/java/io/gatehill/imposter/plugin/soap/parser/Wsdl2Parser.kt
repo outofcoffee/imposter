@@ -167,8 +167,9 @@ class Wsdl2Parser(
         val soapOperation = selectSingleNode(operation, "./soap:operation") ?: throw IllegalStateException(
             "Unable to find soap:operation for operation $operationName"
         )
-        val input = getMessage(operation, "./wsdl:input")
-        val output = getMessage(operation, "./wsdl:output")
+        val input = getMessage(operation, "./wsdl:input", required = true)
+        val output = getMessage(operation, "./wsdl:output", required = true)
+        val fault = getMessage(operation, "./wsdl:fault", required = false)
 
         return WsdlOperation(
             name = operation.getAttributeValue("name"),
@@ -176,6 +177,7 @@ class Wsdl2Parser(
             style = soapOperation.getAttributeValue("style"),
             inputRef = input,
             outputRef = output,
+            faultRef = fault,
         )
     }
 
@@ -183,10 +185,12 @@ class Wsdl2Parser(
      * Extract the WSDL message part element attribute, then attempt
      * to resolve it from within the XSD.
      */
-    private fun getMessage(context: Element, expression: String): OperationMessage? {
-        val inputOrOutputNode = selectSingleNode(context, expression) ?: throw IllegalStateException(
-            "Unable to find message part: $expression"
-        )
+    private fun getMessage(context: Element, expression: String, required: Boolean): OperationMessage? {
+        val inputOrOutputNode = selectSingleNode(context, expression) ?: run {
+            if (!required) return null else throw IllegalStateException(
+                "Unable to find message part: $expression"
+            )
+        }
 
         // WSDL 2.0 doesn't allow operation messages to refer to XML schema types
         // directly - instead an element must be used.
