@@ -85,7 +85,7 @@ response:
     X-Custom-Header: foo
 ```
 
-A few things to call out:
+Some highlights:
 
 - This endpoint will only be accessible via the `POST` HTTP method
 - We've indicated that status code 201 should be returned

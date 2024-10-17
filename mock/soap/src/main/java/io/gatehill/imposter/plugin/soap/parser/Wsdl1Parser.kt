@@ -185,8 +185,9 @@ class Wsdl1Parser(
             soapBinding?.getAttributeValue("style")
         }
 
-        val input = getInputOrOutput(bindingOperation, portTypeOperation, operationName, "input")
-        val output = getInputOrOutput(bindingOperation, portTypeOperation, operationName, "output")
+        val input = getMessage(bindingOperation, portTypeOperation, operationName, "input", required = true)
+        val output = getMessage(bindingOperation, portTypeOperation, operationName, "output", required = true)
+        val fault = getMessage(bindingOperation, portTypeOperation, operationName, "fault", required = false)
 
         return WsdlOperation(
             name = bindingOperation.getAttributeValue("name"),
@@ -194,21 +195,26 @@ class Wsdl1Parser(
             style = style,
             inputRef = input,
             outputRef = output,
+            faultRef = fault,
         )
     }
 
-    private fun getInputOrOutput(
+    private fun getMessage(
         bindingOperation: Element,
         portTypeOperation: Element,
         operationName: String,
         messageType: String,
-    ): OperationMessage {
+        required: Boolean,
+    ): OperationMessage? {
         // fallback to SOAP 1.2
         val partFilter: List<String>? = getMessagePartFilter(bindingOperation, "./wsdl:$messageType/soap:body")
             ?: getMessagePartFilter(bindingOperation, "./wsdl:$messageType/soap12:body")
 
-        val input = getMessage(portTypeOperation, "./wsdl:$messageType", partFilter)
-            ?: throw IllegalStateException("No $messageType found for portType operation: $operationName")
+        val input = getMessage(portTypeOperation, "./wsdl:$messageType", partFilter, required) ?: run {
+            if (!required) return null else throw IllegalStateException(
+                "No $messageType found for portType operation: $operationName"
+            )
+        }
 
         return input
     }
@@ -238,12 +244,20 @@ class Wsdl1Parser(
      * Extract the WSDL message part element attribute, then attempt
      * to resolve it from within the XSD.
      */
-    private fun getMessage(context: Element, expression: String, partFilter: List<String>?): OperationMessage? {
-        val inputOrOutputNode = selectSingleNode(context, expression)
-            ?: throw IllegalStateException("No input or output found for: $expression")
+    private fun getMessage(
+        context: Element,
+        expression: String,
+        partFilter: List<String>?,
+        required: Boolean,
+    ): OperationMessage? {
+        val messageNode = selectSingleNode(context, expression) ?: run {
+            if (!required) return null else throw IllegalStateException(
+                "No message found for: $expression"
+            )
+        }
 
-        val msgAttr = inputOrOutputNode.getAttributeValue("message")
-            ?: throw IllegalStateException("No message attribute found for: ${describeNode(inputOrOutputNode)}")
+        val msgAttr = messageNode.getAttributeValue("message")
+            ?: throw IllegalStateException("No message attribute found for: ${describeNode(messageNode)}")
 
         val messageName = msgAttr.let { SoapUtil.getLocalPart(msgAttr) }
 

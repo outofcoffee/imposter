@@ -81,4 +81,5 @@ data class WsdlOperation(
     val style: String?,
     val inputRef: OperationMessage?,
     val outputRef: OperationMessage?,
+    val faultRef: OperationMessage?,
 )

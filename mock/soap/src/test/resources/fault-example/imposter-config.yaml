@@ -1,0 +1,8 @@
+plugin: soap
+wsdlFile: service.wsdl
+
+resources:
+  - binding: SoapBinding
+    operation: getPetById
+    response:
+      statusCode: 500

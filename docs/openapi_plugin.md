@@ -94,7 +94,7 @@ definitions:
         type: "string"
 ```
 
-A few things to call out:
+Some highlights:
 
 * We’ve defined the endpoint `/pets` as expecting an HTTP GET request
 * We’ve said it will produce JSON responses

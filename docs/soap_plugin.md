@@ -23,9 +23,9 @@ This plugin will match the operation using a combination of:
 * matching SOAPAction (if required)
 * matching XML schema type of the root element within the request SOAP envelope body 
 
-Imposter will return the first response found that matches the above criteria. You can, of course, override the behaviour by setting the response body (see below).
+Imposter will return the first response found that matches the above criteria. You can, of course, override the behaviour by setting the response body (see below) or status code.
 
-Typically, you will use the configuration file `<something>-config.yaml` to customise the response, however, you can use the in-built script engine to gain further control of the response data, headers etc. (see below). 
+Typically, you will use the configuration file `<something>-config.yaml` to customise the response, however, you can use the in-built script engine to gain further control of the response data, headers etc.
 
 ## Example
 
@@ -88,7 +88,7 @@ In this example, we are using a WSDL file (`petstore.wsdl`) containing the follo
 </description>
 ```
 
-A few things to call out:
+Some highlights:
 
 * We’ve defined the service `PetService` at the SOAP endpoint `/pets/`
 * We’ve said it has one operation: `getPetById`
@@ -223,6 +223,26 @@ $ curl -v -X POST http://localhost:8080/pets/ -H 'SOAPAction: invalid-pet-action
 HTTP/1.1 400 Bad Request
 ```
 
+## Returning fault messages
+
+If your WSDL document defines a `fault`, then Imposter can generate a sample response from its type. To return a fault, set the response status code to 500.
+
+### Example configuration to respond with a fault
+
+```yaml
+plugin: soap
+wsdlFile: service.wsdl
+
+resources:
+  - binding: SoapBinding
+    operation: getPetById
+    response:
+      statusCode: 500
+```
+
+> **Tip**
+> Use conditional matching with resources, to only return a fault in particular circumstances. 
+
 ## Scripted responses (advanced)
 
 For more advanced scenarios, you can also control Imposter's responses using JavaScript or Groovy scripts.
@@ -258,29 +278,37 @@ response:
 
 Now, `example.groovy` can control the responses, such as:
 
-1. the content of a file to return
+1. **the content of a file to return**
 
-```groovy
-respond().withFile('some-file.xml')
-```
+   ```groovy
+   respond().withFile('some-file.xml')
+   ```
 
-2. a literal string to return
+2. **a literal string to return**
 
-```groovy
-respond().withContent('''<?xml version="1.0" encoding="UTF-8"?>
-<env:Envelope xmlns:env="http://www.w3.org/2001/12/soap-envelope">
-    <env:Header/>
-    <env:Body>
-        <getPetByIdResponse xmlns="urn:com:example:petstore">
-            <id>3</id>
-            <name>Custom pet name</name>
-        </getPetByIdResponse>
-    </env:Body>
-</env:Envelope>
-''')
-```
+   ```groovy
+   respond().withContent('''<?xml version="1.0" encoding="UTF-8"?>
+   <env:Envelope xmlns:env="http://www.w3.org/2001/12/soap-envelope">
+       <env:Header/>
+       <env:Body>
+           <getPetByIdResponse xmlns="urn:com:example:petstore">
+               <id>3</id>
+               <name>Custom pet name</name>
+           </getPetByIdResponse>
+       </env:Body>
+   </env:Envelope>
+   ''')
+   ```
 
-#### Examples
+3. **a specific HTTP status code**
+
+   Setting the status code to 500 will trigger a fault message to be returned if one is defined within the WSDL document.
+   
+   ```groovy
+   respond().withStatusCode(500)
+   ```
+
+#### Scripting examples
 
 - [conditional-example](https://github.com/outofcoffee/imposter/blob/main/examples/soap/conditional-example)
 - [scripted-example](https://github.com/outofcoffee/imposter/blob/main/examples/soap/scripted-example)

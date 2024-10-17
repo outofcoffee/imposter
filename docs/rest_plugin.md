@@ -81,7 +81,7 @@ We can configure different responses at multiple paths as follows:
         response:
           file: dogs.json
 
-A few things to call out:
+Some highlights:
 
 * We’ve defined the endpoint `/cats` to return the contents of our sample JSON file; in other words an array of cats.
 * We’ve also said that, because the response file is a JSON array, we want to allow querying of individual items by their ID, under the `/cats/{id}` endpoint.
