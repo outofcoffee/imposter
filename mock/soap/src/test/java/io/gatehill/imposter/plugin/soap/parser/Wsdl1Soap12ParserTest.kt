@@ -86,7 +86,7 @@ class Wsdl1Soap12ParserTest {
     }
 
     @Test
-    fun getBinding() {
+    fun `get SOAP binding, getPetById operation`() {
         val binding = parser.getBinding("SoapBinding")
         assertNotNull("SoapBinding should not be null", binding)
 
@@ -102,7 +102,10 @@ class Wsdl1Soap12ParserTest {
         operation!!
         assertEquals("getPetById", operation.name)
         assertEquals("getPetById", operation.soapAction)
+
+        // operation style defined at operation level in this service
         assertEquals("document", operation.style)
+
         assertEquals(
             QName("urn:com:example:petstore","getPetByIdRequest"),
             (operation.inputRef as ElementOperationMessage).elementName,
@@ -111,11 +114,45 @@ class Wsdl1Soap12ParserTest {
             QName("urn:com:example:petstore","getPetByIdResponse"),
             (operation.outputRef as ElementOperationMessage).elementName,
         )
+        assertEquals(
+            QName("urn:com:example:petstore", "getPetFault"),
+            (operation.faultRef as ElementOperationMessage?)?.elementName,
+        )
+    }
+
+    @Test
+    fun `get HTTP binding, getPetByName operation`() {
+        val binding = parser.getBinding("HttpBinding")
+        assertNotNull("HttpBinding should not be null", binding)
+
+        binding!!
+        assertEquals("HttpBinding", binding.name)
+        assertEquals(BindingType.HTTP, binding.type)
+        assertEquals("tns:PetPortType", binding.interfaceRef)
+
+        assertEquals(2, binding.operations.size)
+        val operation = binding.operations.find { it.name == "getPetByName" }
+        assertNotNull("getPetByName operation should not be null", operation)
+
+        operation!!
+        assertEquals("getPetByName", operation.name)
+        assertEquals("getPetByName", operation.soapAction)
 
         // operation style should fall back to binding style in WSDL 1.x
-        val petNameOp = binding.operations.find { it.name == "getPetByName" }
-        assertNotNull(petNameOp)
-        assertEquals("document", petNameOp?.style)
+        assertEquals("document", operation.style)
+
+        assertEquals(
+            QName("urn:com:example:petstore","getPetByNameRequest"),
+            (operation.inputRef as ElementOperationMessage).elementName,
+        )
+        assertEquals(
+            QName("urn:com:example:petstore","getPetByNameResponse"),
+            (operation.outputRef as ElementOperationMessage).elementName,
+        )
+        assertEquals(
+            QName("urn:com:example:petstore", "getPetFault"),
+            (operation.faultRef as ElementOperationMessage?)?.elementName,
+        )
     }
 
     @Test

@@ -86,7 +86,7 @@ class Wsdl2Soap12ParserTest {
     }
 
     @Test
-    fun getBinding() {
+    fun `get SOAP binding, getPetById operation`() {
         val binding = parser.getBinding("SoapBinding")
         assertNotNull("SoapBinding should not be null", binding)
 
@@ -110,6 +110,46 @@ class Wsdl2Soap12ParserTest {
         assertEquals(
             QName("urn:com:example:petstore", "getPetByIdResponse"),
             (operation.outputRef as ElementOperationMessage).elementName,
+        )
+
+        // fault defined at interface level
+        assertEquals(
+            QName("urn:com:example:petstore", "getPetFault"),
+            (operation.faultRef as ElementOperationMessage?)?.elementName,
+        )
+    }
+
+    @Test
+    fun `get HTTP binding, getPetByName operation`() {
+        val binding = parser.getBinding("HttpBinding")
+        assertNotNull("HttpBinding should not be null", binding)
+
+        binding!!
+        assertEquals("HttpBinding", binding.name)
+        assertEquals(BindingType.HTTP, binding.type)
+        assertEquals("tns:PetInterface", binding.interfaceRef)
+
+        assertEquals(2, binding.operations.size)
+        val operation = binding.operations.find { it.name == "getPetByName" }
+        assertNotNull("getPetByName operation should not be null", operation)
+
+        operation!!
+        assertEquals("getPetByName", operation.name)
+        assertEquals("getPetByName", operation.soapAction)
+        assertEquals("document", operation.style)
+        assertEquals(
+            QName("urn:com:example:petstore", "getPetByNameRequest"),
+            (operation.inputRef as ElementOperationMessage).elementName,
+        )
+        assertEquals(
+            QName("urn:com:example:petstore", "getPetByNameResponse"),
+            (operation.outputRef as ElementOperationMessage).elementName,
+        )
+
+        // fault defined in operation
+        assertEquals(
+            QName("urn:com:example:petstore", "getPetFault"),
+            (operation.faultRef as ElementOperationMessage?)?.elementName,
         )
     }
 
