@@ -40,30 +40,23 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.plugin.openapi.http
+package io.gatehill.imposter.plugin.soap.config
 
-import com.google.common.base.Strings
-import io.gatehill.imposter.http.DefaultResponseBehaviourFactory
-import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
-import io.gatehill.imposter.plugin.openapi.config.OpenApiResponseConfig
-import io.gatehill.imposter.script.ReadWriteResponseBehaviour
+import io.gatehill.imposter.plugin.config.resource.ResponseConfig
 
 /**
- * Extends base response behaviour population with specific
- * OpenAPI plugin configuration.
+ * Extends the base response configuration with items specific
+ * to the OpenAPI plugin.
  *
  * @author Pete Cornish
  */
-class OpenApiResponseBehaviourFactory : DefaultResponseBehaviourFactory() {
-    override fun populate(
-        statusCode: Int,
-        resourceConfig: BasicResourceConfig,
-        responseBehaviour: ReadWriteResponseBehaviour
-    ) {
-        super.populate(statusCode, resourceConfig, responseBehaviour)
-        val configExampleName = (resourceConfig.responseConfig as OpenApiResponseConfig).exampleName
-        if (Strings.isNullOrEmpty(responseBehaviour.exampleName) && !Strings.isNullOrEmpty(configExampleName)) {
-            responseBehaviour.withExampleName(configExampleName!!)
-        }
+class SoapResponseConfig : ResponseConfig() {
+    val soapFault: Boolean? = null
+
+    override fun hasConfiguration(): Boolean =
+        super.hasConfiguration() || null != soapFault
+
+    override fun toString(): String {
+        return "OpenApiResponseConfig(parent=${super.toString()}, soapFault=$soapFault)"
     }
 }

@@ -70,11 +70,71 @@ class FaultExampleTest : BaseVerticleTest() {
     }
 
     @Test
-    fun `respond with a fault generated from the schema`() {
+    fun `respond with a fault generated from the schema if status is 500`() {
         val getPetByIdEnv = SoapUtil.wrapInEnv(
             """
 <getPetByIdRequest xmlns="urn:com:example:petstore">
   <id>10</id>
+</getPetByIdRequest>
+""".trim(), soapEnvNamespace
+        )
+
+        RestAssured.given()
+            .log().ifValidationFails()
+            .accept(soapContentType)
+            .contentType(soapContentType)
+            .`when`()
+            .body(getPetByIdEnv)
+            .post("/pets/")
+            .then()
+            .log().ifValidationFails()
+            .statusCode(HttpUtil.HTTP_INTERNAL_ERROR)
+            .body(
+                Matchers.allOf(
+                    Matchers.containsString("Envelope"),
+                    Matchers.containsString("getPetFault"),
+                    Matchers.containsString("code"),
+                    Matchers.containsString("description"),
+                )
+            )
+    }
+
+    @Test
+    fun `respond with a fault generated from the schema if response configuration set`() {
+        val getPetByIdEnv = SoapUtil.wrapInEnv(
+            """
+<getPetByIdRequest xmlns="urn:com:example:petstore">
+  <id>99</id>
+</getPetByIdRequest>
+""".trim(), soapEnvNamespace
+        )
+
+        RestAssured.given()
+            .log().ifValidationFails()
+            .accept(soapContentType)
+            .contentType(soapContentType)
+            .`when`()
+            .body(getPetByIdEnv)
+            .post("/pets/")
+            .then()
+            .log().ifValidationFails()
+            .statusCode(HttpUtil.HTTP_INTERNAL_ERROR)
+            .body(
+                Matchers.allOf(
+                    Matchers.containsString("Envelope"),
+                    Matchers.containsString("getPetFault"),
+                    Matchers.containsString("code"),
+                    Matchers.containsString("description"),
+                )
+            )
+    }
+
+    @Test
+    fun `respond with a fault generated from the schema if script function called`() {
+        val getPetByIdEnv = SoapUtil.wrapInEnv(
+            """
+<getPetByIdRequest xmlns="urn:com:example:petstore">
+  <id>100</id>
 </getPetByIdRequest>
 """.trim(), soapEnvNamespace
         )

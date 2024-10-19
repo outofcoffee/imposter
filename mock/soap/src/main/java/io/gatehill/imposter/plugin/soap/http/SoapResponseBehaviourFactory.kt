@@ -40,30 +40,31 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.plugin.openapi.http
+package io.gatehill.imposter.plugin.soap.http
 
-import com.google.common.base.Strings
 import io.gatehill.imposter.http.DefaultResponseBehaviourFactory
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
-import io.gatehill.imposter.plugin.openapi.config.OpenApiResponseConfig
+import io.gatehill.imposter.plugin.soap.config.SoapResponseConfig
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 
 /**
  * Extends base response behaviour population with specific
- * OpenAPI plugin configuration.
+ * SOAP plugin configuration.
  *
  * @author Pete Cornish
  */
-class OpenApiResponseBehaviourFactory : DefaultResponseBehaviourFactory() {
+class SoapResponseBehaviourFactory : DefaultResponseBehaviourFactory() {
     override fun populate(
         statusCode: Int,
         resourceConfig: BasicResourceConfig,
         responseBehaviour: ReadWriteResponseBehaviour
     ) {
-        super.populate(statusCode, resourceConfig, responseBehaviour)
-        val configExampleName = (resourceConfig.responseConfig as OpenApiResponseConfig).exampleName
-        if (Strings.isNullOrEmpty(responseBehaviour.exampleName) && !Strings.isNullOrEmpty(configExampleName)) {
-            responseBehaviour.withExampleName(configExampleName!!)
+        if ((resourceConfig.responseConfig as SoapResponseConfig).soapFault == true) {
+            responseBehaviour.withSoapFault()
         }
+
+        // invoke superclass after calling `withSoapFault` as it
+        // overrides the status code to 500
+        super.populate(statusCode, resourceConfig, responseBehaviour)
     }
 }
