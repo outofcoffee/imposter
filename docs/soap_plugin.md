@@ -225,7 +225,13 @@ HTTP/1.1 400 Bad Request
 
 ## Returning fault messages
 
-If your WSDL document defines a `fault`, then Imposter can generate a sample response from its type. To return a fault, set the response status code to 500.
+If your WSDL document defines a `fault`, then Imposter can generate a sample response from its type.
+
+To return a fault you can:
+
+1. set the response status code to `500`, or
+2. set the `response.soapFault` configuration property to `true`, or
+3. use the `respond().withSoapFault()` script function
 
 ### Example configuration to respond with a fault
 
@@ -241,7 +247,8 @@ resources:
 ```
 
 > **Tip**
-> Use conditional matching with resources, to only return a fault in particular circumstances. 
+> Use conditional matching with resources, to only return a fault in particular circumstances.
+> See [fault-example](https://github.com/outofcoffee/imposter/blob/main/examples/soap/fault-example) for an example of how to do this.
 
 ## Scripted responses (advanced)
 
@@ -312,6 +319,7 @@ Now, `example.groovy` can control the responses, such as:
 
 - [conditional-example](https://github.com/outofcoffee/imposter/blob/main/examples/soap/conditional-example)
 - [scripted-example](https://github.com/outofcoffee/imposter/blob/main/examples/soap/scripted-example)
+- [fault-example](https://github.com/outofcoffee/imposter/blob/main/examples/soap/fault-example)
 
 ### Configuration reference
 

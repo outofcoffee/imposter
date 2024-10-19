@@ -43,7 +43,6 @@
 package io.gatehill.imposter.plugin.soap
 
 import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.http.DefaultResponseBehaviourFactory
 import io.gatehill.imposter.http.DefaultStatusCodeFactory
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpMethod
@@ -53,6 +52,7 @@ import io.gatehill.imposter.plugin.RequireModules
 import io.gatehill.imposter.plugin.config.ConfiguredPlugin
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.soap.config.SoapPluginConfig
+import io.gatehill.imposter.plugin.soap.http.SoapResponseBehaviourFactory
 import io.gatehill.imposter.plugin.soap.model.BindingType
 import io.gatehill.imposter.plugin.soap.model.MessageBodyHolder
 import io.gatehill.imposter.plugin.soap.model.OperationMessage
@@ -97,6 +97,7 @@ class SoapPluginImpl @Inject constructor(
     private val responseService: ResponseService,
     private val responseRoutingService: ResponseRoutingService,
     private val soapExampleService: SoapExampleService,
+    private val soapResponseBehaviourFactory: SoapResponseBehaviourFactory,
 ) : ConfiguredPlugin<SoapPluginConfig>(
     vertx, imposterConfig
 ) {
@@ -224,7 +225,6 @@ class SoapPluginImpl @Inject constructor(
         soapAction: String?,
     ): CompletableFuture<Unit> {
         val statusCodeFactory = DefaultStatusCodeFactory.instance
-        val responseBehaviourFactory = DefaultResponseBehaviourFactory.instance
         val resourceConfig = httpExchange.get<BasicResourceConfig>(ResourceUtil.RESOURCE_CONFIG_KEY)
 
         val defaultBehaviourHandler: DefaultBehaviourHandler = { responseBehaviour: ResponseBehaviour ->
@@ -290,7 +290,7 @@ class SoapPluginImpl @Inject constructor(
             httpExchange,
             context,
             statusCodeFactory,
-            responseBehaviourFactory,
+            soapResponseBehaviourFactory,
             defaultBehaviourHandler,
         )
     }
@@ -299,8 +299,9 @@ class SoapPluginImpl @Inject constructor(
         responseBehaviour: ResponseBehaviour,
         operation: WsdlOperation
     ): OperationMessage? {
-        return when (responseBehaviour.statusCode) {
-            HttpUtil.HTTP_INTERNAL_ERROR -> operation.faultRef
+        return when {
+            responseBehaviour.soapFault -> operation.faultRef
+            responseBehaviour.statusCode == HttpUtil.HTTP_INTERNAL_ERROR -> operation.faultRef
             else -> operation.outputRef
         }
     }

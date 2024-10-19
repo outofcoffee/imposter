@@ -6,3 +6,24 @@ resources:
     operation: getPetById
     response:
       statusCode: 500
+
+  - binding: SoapBinding
+    operation: getPetById
+    requestBody:
+      xPath: //pets:id
+      value: 99
+    response:
+      soapFault: true
+
+  - binding: SoapBinding
+    operation: getPetById
+    requestBody:
+      xPath: //pets:id
+      value: 100
+    steps:
+      - type: script
+        code: respond().withSoapFault()
+
+system:
+  xmlNamespaces:
+    pets: "urn:com:example:petstore"

@@ -51,11 +51,12 @@ open class ReadWriteResponseBehaviourImpl : ReadWriteResponseBehaviour {
     override var responseFile: String? = null
     override var content: String? = null
     override var isTemplate = false
-    override var exampleName: String? = null
     override val responseHeaders: MutableMap<String, String> = mutableMapOf()
     private var behaviourConfigured = false
     override var performanceSimulation: PerformanceSimulationConfig? = null
     override var failureType: FailureSimulationType? = null
+    override var exampleName: String? = null
+    override var soapFault: Boolean = false
 
     override fun template(): MutableResponseBehaviour {
         isTemplate = true
@@ -105,11 +106,6 @@ open class ReadWriteResponseBehaviourImpl : ReadWriteResponseBehaviour {
 
     override fun withContent(content: String?): MutableResponseBehaviour {
         this.content = content
-        return this
-    }
-
-    override fun withExampleName(exampleName: String): MutableResponseBehaviour {
-        this.exampleName = exampleName
         return this
     }
 
@@ -203,6 +199,17 @@ open class ReadWriteResponseBehaviourImpl : ReadWriteResponseBehaviour {
 
     override fun withFailureType(failureType: FailureSimulationType?): MutableResponseBehaviour {
         this.failureType = failureType
+        return this
+    }
+
+    override fun withExampleName(exampleName: String): MutableResponseBehaviour {
+        this.exampleName = exampleName
+        return this
+    }
+
+    override fun withSoapFault(): MutableResponseBehaviour {
+        this.soapFault = true
+        withStatusCode(500)
         return this
     }
 }

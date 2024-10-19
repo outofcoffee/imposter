@@ -49,9 +49,11 @@ import io.gatehill.imposter.plugin.config.resource.AbstractResourceConfig
 import io.gatehill.imposter.plugin.config.resource.EvalResourceConfig
 import io.gatehill.imposter.plugin.config.resource.request.RequestBodyConfig
 import io.gatehill.imposter.plugin.config.resource.request.RequestBodyResourceConfig
+import io.gatehill.imposter.plugin.config.steps.StepConfig
+import io.gatehill.imposter.plugin.config.steps.StepsConfigHolder
 import java.util.*
 
-class SoapPluginResourceConfig : AbstractResourceConfig(), RequestBodyResourceConfig, EvalResourceConfig {
+class SoapPluginResourceConfig : AbstractResourceConfig(), RequestBodyResourceConfig, EvalResourceConfig, StepsConfigHolder {
     @JsonProperty("binding")
     val binding: String? = null
 
@@ -66,6 +68,12 @@ class SoapPluginResourceConfig : AbstractResourceConfig(), RequestBodyResourceCo
 
     @field:JsonProperty("eval")
     override var eval: String? = null
+
+    @field:JsonProperty("steps")
+    override val steps: List<StepConfig>? = null
+
+    @JsonProperty("response")
+    override val responseConfig = SoapResponseConfig()
 
     @get:JsonIgnore
     override val resourceId by lazy { UUID.randomUUID().toString() }

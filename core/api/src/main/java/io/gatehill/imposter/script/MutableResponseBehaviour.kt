@@ -54,7 +54,6 @@ interface MutableResponseBehaviour {
     @Deprecated("Use withContent(String) instead", replaceWith = ReplaceWith("withContent"))
     fun withData(responseData: String?) = withContent(responseData)
     fun template(): MutableResponseBehaviour
-    fun withExampleName(exampleName: String): MutableResponseBehaviour
     fun usingDefaultBehaviour(): MutableResponseBehaviour
     fun skipDefaultBehaviour(): MutableResponseBehaviour
     fun continueToNext(): MutableResponseBehaviour
@@ -68,6 +67,16 @@ interface MutableResponseBehaviour {
      */
     fun withFailure(failureType: String): MutableResponseBehaviour
     fun withFailureType(failureType: FailureSimulationType?): MutableResponseBehaviour
+
+    /**
+     * Only supported for OpenAPI plugin.
+     */
+    fun withExampleName(exampleName: String): MutableResponseBehaviour
+
+    /**
+     * Only supported for SOAP plugin.
+     */
+    fun withSoapFault(): MutableResponseBehaviour
 
     @Deprecated("Use skipDefaultBehaviour() instead", ReplaceWith("skipDefaultBehaviour()"))
     fun immediately(): MutableResponseBehaviour

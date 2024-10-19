@@ -51,8 +51,17 @@ interface ResponseBehaviour {
     val responseFile: String?
     val content: String?
     val isTemplate: Boolean
-    val exampleName: String?
     val behaviourType: ResponseBehaviourType?
     val performanceSimulation: PerformanceSimulationConfig?
     val failureType: FailureSimulationType?
+
+    /**
+     * Only supported for OpenAPI plugin.
+     */
+    val exampleName: String?
+
+    /**
+     * Only supported for SOAP plugin.
+     */
+    val soapFault: Boolean
 }
