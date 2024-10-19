@@ -105,16 +105,21 @@
     <message name="getPetByNameResponse">
         <part element="tns:getPetByNameResponse" name="parameters"/>
     </message>
+    <message name="getPetFault">
+        <part element="tns:getPetFault" name="parameters"/>
+    </message>
 
     <!-- Abstract port types -->
     <portType name="PetPortType">
         <operation name="getPetById">
             <input message="tns:getPetByIdRequest" name="getPetByIdRequest"/>
             <output message="tns:getPetByIdResponse" name="getPetByIdResponse"/>
+            <fault message="tns:getPetFault" name="getPetFault" />
         </operation>
         <operation name="getPetByName">
             <input message="tns:getPetByNameRequest" name="getPetByNameRequest"/>
             <output message="tns:getPetByNameResponse" name="getPetByNameResponse"/>
+            <fault message="tns:getPetFault" name="getPetFault" />
         </operation>
     </portType>
 
@@ -130,6 +135,9 @@
             <output name="getPetByIdResponse">
                 <soap:body use="literal"/>
             </output>
+            <fault name="getPetFault">
+                <soap:body use="literal"/>
+            </fault>
         </operation>
         <operation name="getPetByName">
             <soap:operation soapAction="getPetByName" style="document"/>
@@ -139,6 +147,9 @@
             <output name="getPetByNameResponse">
                 <soap:body use="literal"/>
             </output>
+            <fault name="getPetFault">
+                <soap:body use="literal"/>
+            </fault>
         </operation>
     </binding>
 
@@ -154,6 +165,9 @@
             <output name="getPetByIdResponse">
                 <soap:body use="literal"/>
             </output>
+            <fault name="getPetFault">
+                <soap:body use="literal"/>
+            </fault>
         </operation>
 
         <operation name="getPetByName">
@@ -165,6 +179,9 @@
             <output name="getPetByNameResponse">
                 <soap:body use="literal"/>
             </output>
+            <fault name="getPetFault">
+                <soap:body use="literal"/>
+            </fault>
         </operation>
     </binding>
 

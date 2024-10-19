@@ -152,7 +152,7 @@ class Wsdl2Parser(
             expressionTemplate = "./wsdl:operation[@name='%s']",
             name = operationName
         )
-        return operation?.let { parseOperation(operationName, operation) }
+        return operation?.let { parseOperation(operationName, interfaceNode, operation) }
     }
 
     private fun getInterfaceNode(interfaceName: String): Element? {
@@ -163,13 +163,16 @@ class Wsdl2Parser(
         )
     }
 
-    private fun parseOperation(operationName: String, operation: Element): WsdlOperation {
+    private fun parseOperation(operationName: String, iface: Element, operation: Element): WsdlOperation {
         val soapOperation = selectSingleNode(operation, "./soap:operation") ?: throw IllegalStateException(
             "Unable to find soap:operation for operation $operationName"
         )
         val input = getMessage(operation, "./wsdl:input", required = true)
         val output = getMessage(operation, "./wsdl:output", required = true)
+
+        // fall back to fault defined at interface level
         val fault = getMessage(operation, "./wsdl:fault", required = false)
+            ?: getMessage(iface, "./wsdl:fault", required = false)
 
         return WsdlOperation(
             name = operation.getAttributeValue("name"),

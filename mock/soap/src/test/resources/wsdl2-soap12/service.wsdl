@@ -94,19 +94,21 @@ http://www.w3.org/ns/wsdl/soap http://www.w3.org/2002/ws/desc/ns/soap.xsd">
 
     <!-- Abstract interfaces -->
     <interface name="PetInterface">
-        <fault name="Error1" element="tns:fault"/>
+        <fault name="getPetFault" element="tns:getPetFault"/>
 
         <operation name="getPetById" pattern="http://www.w3.org/ns/wsdl/in-out">
             <wsoap:operation soapAction="getPetById" style="document"/>
             <!-- no namespace prefix for the element, so fallback to WSDL targetNamespace -->
             <input messageLabel="In" element="getPetByIdRequest"/>
             <output messageLabel="Out" element="tns:getPetByIdResponse"/>
+            <!-- no fault defined for operation, so fallback to interface -->
         </operation>
 
         <operation name="getPetByName" pattern="http://www.w3.org/ns/wsdl/in-out">
             <wsoap:operation soapAction="getPetByName" style="document"/>
             <input messageLabel="In" element="tns:getPetByNameRequest"/>
             <output messageLabel="Out" element="tns:getPetByNameResponse"/>
+            <fault name="getPetFault" element="tns:getPetFault"/>
         </operation>
     </interface>
 
