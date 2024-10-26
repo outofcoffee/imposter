@@ -35,7 +35,7 @@ ext {
     version_groovy = '4.0.21'
     version_guice = '5.1.0'
     version_jackson = '2.18.0'
-    version_jackson_databind = '2.13.4.2'
+    version_jackson_databind = '2.18.0'
     version_jaxb_api = '2.3.1'
     version_junit = '4.13.2'
     version_junit_jupiter = '5.10.0'
