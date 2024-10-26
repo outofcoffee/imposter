@@ -285,35 +285,35 @@ response:
 
 Now, `example.groovy` can control the responses, such as:
 
-1. **the content of a file to return**
+#### Return the content of a file
 
-   ```groovy
-   respond().withFile('some-file.xml')
-   ```
+```groovy
+respond().withFile('some-file.xml')
+```
 
-2. **a literal string to return**
+#### Return a literal string
 
-   ```groovy
-   respond().withContent('''<?xml version="1.0" encoding="UTF-8"?>
-   <env:Envelope xmlns:env="http://www.w3.org/2001/12/soap-envelope">
-       <env:Header/>
-       <env:Body>
-           <getPetByIdResponse xmlns="urn:com:example:petstore">
-               <id>3</id>
-               <name>Custom pet name</name>
-           </getPetByIdResponse>
-       </env:Body>
-   </env:Envelope>
-   ''')
-   ```
+```groovy
+respond().withContent('''<?xml version="1.0" encoding="UTF-8"?>
+<env:Envelope xmlns:env="http://www.w3.org/2001/12/soap-envelope">
+ <env:Header/>
+ <env:Body>
+     <getPetByIdResponse xmlns="urn:com:example:petstore">
+         <id>3</id>
+         <name>Custom pet name</name>
+     </getPetByIdResponse>
+ </env:Body>
+</env:Envelope>
+''')
+```
 
-3. **a specific HTTP status code**
+#### Return a specific HTTP status code
 
-   Setting the status code to 500 will trigger a fault message to be returned if one is defined within the WSDL document.
-   
-   ```groovy
-   respond().withStatusCode(500)
-   ```
+Setting the status code to 500 will trigger a fault message to be returned if one is defined within the WSDL document.
+
+```groovy
+respond().withStatusCode(500)
+```
 
 #### Scripting examples
 
