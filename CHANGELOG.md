@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.2.0] - 2024-10-26
+### Added
+- feat(soap): adds additional script method and configuration property to return a fault.
+- feat(soap): adds support for returning SOAP faults when status code is 500.
+
+### Changed
+- chore(deps): bump actions/setup-python from 5.2.0 to 5.3.0
+- chore(deps): bump org.apache.maven.plugins:maven-project-info-reports-plugin
+- chore(deps): bump org.apache.maven.plugins:maven-site-plugin
+- chore(deps): bump version_jackson from 2.15.2 to 2.18.0
+- chore(deps): bumps version_jackson_databind to 2.18.0.
+- docs: adds SOAP fault example.
+- docs: describes how to trigger SOAP fault response.
+- test(soap): improves WSDL parser coverage for faults and HTTP bindings.
+
 ## [4.1.2] - 2024-10-15
 ### Changed
 - test: sets up store provider properly for JSON test.
