@@ -298,51 +298,46 @@ class OpenApiPluginImpl @Inject constructor(
                 return@build completedUnitFuture()
             }
 
-            val context = mutableMapOf<String, Any>()
-            context["operation"] = operation
-
             val resourceConfig = httpExchange.get<BasicResourceConfig>(ResourceUtil.RESOURCE_CONFIG_KEY)
 
             val defaultBehaviourHandler: DefaultBehaviourHandler = { responseBehaviour: ResponseBehaviour ->
                 // set status code regardless of response strategy
-                val response = httpExchange.response.setStatusCode(responseBehaviour.statusCode)
+                httpExchange.response.setStatusCode(responseBehaviour.statusCode)
 
-                findApiResponse(operation, responseBehaviour.statusCode)?.let { specResponse ->
-                    if (!responseBehaviour.responseHeaders.containsKey(HttpUtil.CONTENT_TYPE)) {
-                        setContentTypeFromSpec(httpExchange, responseBehaviour, specResponse)
-                    }
+                // build a response from the specification
+                val exampleSender = ResponseSender { httpExchange: HttpExchange, _: ResponseBehaviour ->
+                    findApiResponse(operation, responseBehaviour.statusCode)?.let { specResponse ->
+                        LOGGER.trace("Using output response: {}", specResponse)
 
-                    // build a response from the specification
-                    val exampleSender =
-                        ResponseSender { httpExchange: HttpExchange, responseBehaviour: ResponseBehaviour ->
-                            exampleService.serveExample(
-                                imposterConfig,
-                                pluginConfig,
-                                httpExchange,
-                                responseBehaviour,
-                                specResponse,
-                                spec
-                            )
+                        if (!responseBehaviour.responseHeaders.containsKey(HttpUtil.CONTENT_TYPE)) {
+                            setContentTypeFromSpec(httpExchange, responseBehaviour, specResponse)
                         }
 
-                    // attempt to serve an example from the specification, falling back if not present
-                    return@let responseService.sendResponse(
-                        pluginConfig,
-                        resourceConfig,
-                        httpExchange,
-                        responseBehaviour,
-                        exampleSender,
-                        this::fallback
-                    )
-                } ?: run {
-                    LOGGER.warn(
-                        "No response found in specification for {} and status code {}",
-                        describeRequestShort(httpExchange),
-                        responseBehaviour.statusCode
-                    )
-                    makeFuture { response.end() }
+                        exampleService.serveExample(
+                            imposterConfig,
+                            pluginConfig,
+                            httpExchange,
+                            responseBehaviour,
+                            specResponse,
+                            spec
+                        )
+                    } ?: return@ResponseSender false
                 }
+
+                // attempt to serve an example from the specification, falling back if not present
+                responseService.sendResponse(
+                    pluginConfig,
+                    resourceConfig,
+                    httpExchange,
+                    responseBehaviour,
+                    exampleSender,
+                    this::fallback
+                )
             }
+
+            val context = mutableMapOf(
+                "operation" to operation,
+            )
 
             responseRoutingService.route(
                 pluginConfig,
@@ -421,9 +416,11 @@ class OpenApiPluginImpl @Inject constructor(
      */
     private fun fallback(httpExchange: HttpExchange, responseBehaviour: ResponseBehaviour): Boolean {
         LOGGER.warn(
-            "No example match found and no response file set for mock response for {} with status code {}" +
-                    " - sending empty response", describeRequestShort(httpExchange), responseBehaviour.statusCode
+            "No example match found in OpenAPI specification for {} with status code {} and no response file or content set - sending empty response",
+            describeRequestShort(httpExchange),
+            responseBehaviour.statusCode,
         )
+        // should this be a 400, as it's not in the spec?
         httpExchange.response.end()
         return true
     }

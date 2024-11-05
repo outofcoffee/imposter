@@ -1,0 +1,49 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Swagger Petstore
+  license:
+    name: MIT
+paths:
+  /cats:
+    get:
+      summary: List all cats
+      operationId: listCats
+      responses:
+        "200":
+          description: cats response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PetResponse"
+
+  /dogs:
+    get:
+      summary: List all dogs
+      operationId: listDogs
+      responses:
+        "200":
+          description: dogs response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PetResponse"
+
+components:
+  schemas:
+    PetResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+      example:
+        {
+          "code": 1,
+          "message": "Pet response"
+        }

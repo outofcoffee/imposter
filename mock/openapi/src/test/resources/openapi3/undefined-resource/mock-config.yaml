@@ -1,0 +1,15 @@
+---
+plugin: openapi
+specFile: spec.yaml
+
+resources:
+  - method: get
+    path: /cats
+    response:
+      statusCode: 201
+
+  - method: get
+    path: /dogs
+    response:
+      statusCode: 202
+      content: "Custom response"
