@@ -100,6 +100,37 @@ class FaultExampleTest : BaseVerticleTest() {
     }
 
     @Test
+    fun `respond with a custom fault if status is 500 and content set`() {
+        val getPetByIdEnv = SoapUtil.wrapInEnv(
+            """
+<getPetByIdRequest xmlns="urn:com:example:petstore">
+  <id>2</id>
+</getPetByIdRequest>
+""".trim(), soapEnvNamespace
+        )
+
+        RestAssured.given()
+            .log().ifValidationFails()
+            .accept(soapContentType)
+            .contentType(soapContentType)
+            .`when`()
+            .body(getPetByIdEnv)
+            .post("/pets/")
+            .then()
+            .log().ifValidationFails()
+            .statusCode(HttpUtil.HTTP_INTERNAL_ERROR)
+            .body(
+                Matchers.allOf(
+                    Matchers.containsString("Envelope"),
+                    Matchers.containsString("soap:Fault"),
+                    Matchers.containsString("code"),
+                    Matchers.containsString("description"),
+                    Matchers.containsString("Custom fault"),
+                )
+            )
+    }
+
+    @Test
     fun `respond with a fault generated from the schema if response configuration set`() {
         val getPetByIdEnv = SoapUtil.wrapInEnv(
             """

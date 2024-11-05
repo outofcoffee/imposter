@@ -11,6 +11,23 @@ resources:
     operation: getPetById
     requestBody:
       xPath: //pets:id
+      value: 2
+    response:
+      statusCode: 500
+      content: |
+        <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+          <soap:Body>
+            <soap:Fault>
+              <code>2</code>
+              <description>Custom fault</description>
+            </soap:Fault>
+          </soap:Body>
+        </soap:Envelope>
+
+  - binding: SoapBinding
+    operation: getPetById
+    requestBody:
+      xPath: //pets:id
       value: 99
     response:
       soapFault: true

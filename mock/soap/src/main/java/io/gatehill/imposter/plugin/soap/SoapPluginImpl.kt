@@ -72,10 +72,9 @@ import io.gatehill.imposter.service.ResponseRoutingService
 import io.gatehill.imposter.service.ResponseService
 import io.gatehill.imposter.service.ResponseService.ResponseSender
 import io.gatehill.imposter.util.HttpUtil
-import io.gatehill.imposter.util.LogUtil
+import io.gatehill.imposter.util.LogUtil.describeRequestShort
 import io.gatehill.imposter.util.ResourceUtil
 import io.gatehill.imposter.util.completedUnitFuture
-import io.gatehill.imposter.util.makeFuture
 import io.vertx.core.Vertx
 import org.apache.logging.log4j.LogManager
 import java.io.File
@@ -229,26 +228,25 @@ class SoapPluginImpl @Inject constructor(
 
         val defaultBehaviourHandler: DefaultBehaviourHandler = { responseBehaviour: ResponseBehaviour ->
             // set status code regardless of response strategy
-            val response = httpExchange.response
-                .setStatusCode(responseBehaviour.statusCode)
+            httpExchange.response.setStatusCode(responseBehaviour.statusCode)
 
-            determineResponseMessage(responseBehaviour, operation)?.let { message ->
-                LOGGER.trace("Using output schema type: {}", message)
+            // build a response from the XSD
+            val exampleSender = ResponseSender { httpExchange: HttpExchange, _: ResponseBehaviour ->
+                determineResponseMessage(responseBehaviour, operation)?.let { message ->
+                    LOGGER.trace("Using output schema type: {}", message)
 
-                if (!responseBehaviour.responseHeaders.containsKey(HttpUtil.CONTENT_TYPE)) {
-                    responseBehaviour.responseHeaders[HttpUtil.CONTENT_TYPE] = when (bodyHolder) {
-                        is ParsedSoapMessage -> when (parser.version) {
-                            WsdlParser.WsdlVersion.V1 -> SoapUtil.soap11ContentType
-                            WsdlParser.WsdlVersion.V2 -> SoapUtil.soap12ContentType
+                    if (!responseBehaviour.responseHeaders.containsKey(HttpUtil.CONTENT_TYPE)) {
+                        responseBehaviour.responseHeaders[HttpUtil.CONTENT_TYPE] = when (bodyHolder) {
+                            is ParsedSoapMessage -> when (parser.version) {
+                                WsdlParser.WsdlVersion.V1 -> SoapUtil.soap11ContentType
+                                WsdlParser.WsdlVersion.V2 -> SoapUtil.soap12ContentType
+                            }
+
+                            is ParsedRawBody -> SoapUtil.textXmlContentType
+                            else -> throw IllegalStateException("Unsupported request body: ${bodyHolder::class.java.canonicalName}")
                         }
-
-                        is ParsedRawBody -> SoapUtil.textXmlContentType
-                        else -> throw IllegalStateException("Unsupported request body: ${bodyHolder::class.java.canonicalName}")
                     }
-                }
 
-                // build a response from the XSD
-                val exampleSender = ResponseSender { httpExchange: HttpExchange, _: ResponseBehaviour ->
                     soapExampleService.serveExample(
                         httpExchange,
                         parser.schemaContext,
@@ -257,25 +255,18 @@ class SoapPluginImpl @Inject constructor(
                         message,
                         bodyHolder
                     )
-                }
-
-                // attempt to serve the example, falling back if not present
-                return@let responseService.sendResponse(
-                    pluginConfig,
-                    resourceConfig,
-                    httpExchange,
-                    responseBehaviour,
-                    exampleSender,
-                )
-
-            } ?: run {
-                LOGGER.warn(
-                    "No output or fault definition found in WSDL for {} and status code {}",
-                    LogUtil.describeRequestShort(httpExchange),
-                    responseBehaviour.statusCode,
-                )
-                makeFuture { response.end() }
+                } ?: return@ResponseSender false
             }
+
+            // attempt to serve the example, falling back if not present
+            responseService.sendResponse(
+                pluginConfig,
+                resourceConfig,
+                httpExchange,
+                responseBehaviour,
+                exampleSender,
+                this::fallback,
+            )
         }
 
         val context = mutableMapOf(
@@ -304,5 +295,22 @@ class SoapPluginImpl @Inject constructor(
             responseBehaviour.statusCode == HttpUtil.HTTP_INTERNAL_ERROR -> operation.faultRef
             else -> operation.outputRef
         }
+    }
+
+    /**
+     * Handles the scenario when no example is found.
+     *
+     * @param httpExchange    the HTTP exchange
+     * @param responseBehaviour the response behaviour
+     */
+    private fun fallback(httpExchange: HttpExchange, responseBehaviour: ResponseBehaviour): Boolean {
+        LOGGER.warn(
+            "No output or fault definition found in WSDL for {} with status code {} and no response file or content set - sending empty response",
+            describeRequestShort(httpExchange),
+            responseBehaviour.statusCode,
+        )
+        // should this be a 400, as it's not in the WSDL?
+        httpExchange.response.end()
+        return true
     }
 }
