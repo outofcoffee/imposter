@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.2.1] - 2024-11-05
+### Changed
+- chore(deps): bump com.fasterxml.jackson.core:jackson-databind
+- chore(deps): bump org.apache.maven.plugins:maven-surefire-plugin
+- docs(soap): improves scripted examples.
+
+### Fixed
+- fix(openapi): handle responses for status codes not in specification.
+- fix(soap): respond with custom fault if status is 500 and content set.
+
 ## [4.2.0] - 2024-10-26
 ### Added
 - feat(soap): adds additional script method and configuration property to return a fault.
