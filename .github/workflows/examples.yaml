@@ -17,13 +17,14 @@ jobs:
           cache: 'maven'
 
       - name: Install Maven dependencies locally
-        run: ./gradlew publishToMavenLocal --stacktrace -xtest
+        id: publish-maven-local
+        run: |
+          ./gradlew publishToMavenLocal --stacktrace -xtest
+          echo "PUBLISHED_VERSION=$( cat gradle.properties | grep projectVersion= | cut -c16- )" >> $GITHUB_OUTPUT
 
       - name: Test JUnit example project
         working-directory: ./examples/junit-sample
-        run: |
-          PUBLISHED_VERSION=$( cat gradle.properties | grep projectVersion= | cut -c16- )
-          ./mvnw test -Dimposter.version=${PUBLISHED_VERSION}
+        run: ./mvnw test -Dimposter.version=${steps.publish-maven-local.outputs.PUBLISHED_VERSION}
 
       - name: Publish Unit Test Results
         if: always()
