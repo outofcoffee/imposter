@@ -16,6 +16,12 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
+      - name: Set up build environment
+        run: |
+          # Disable gradle daemon
+          mkdir -p ~/.gradle
+          echo "org.gradle.daemon=false" >> ~/.gradle/gradle.properties
+
       - name: Install Maven dependencies locally
         id: publish-maven-local
         run: |
@@ -24,7 +30,7 @@ jobs:
 
       - name: Test JUnit example project
         working-directory: ./examples/junit-sample
-        run: ./mvnw test -Dimposter.version=${steps.publish-maven-local.outputs.PUBLISHED_VERSION}
+        run: ./mvnw test -Dimposter.version=${{ steps.publish-maven-local.outputs.PUBLISHED_VERSION }}
 
       - name: Publish Unit Test Results
         if: always()
