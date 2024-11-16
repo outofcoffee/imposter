@@ -9,7 +9,7 @@ dependencies {
 }
 
 task buildZip(type: Zip) {
-    archiveName('imposter-awslambda.zip')
+    archiveFileName.set('imposter-awslambda.zip')
     from compileJava
     from processResources
     into('lib') {
