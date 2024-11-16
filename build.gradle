@@ -57,7 +57,7 @@ subprojects {
 
     buildscript {
         ext {
-            version_shadow = '7.1.2'
+            version_shadow = '8.3.5'
         }
         repositories {
             mavenCentral()
@@ -67,7 +67,7 @@ subprojects {
         }
         dependencies {
             classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-            classpath "gradle.plugin.com.github.johnrengelman:shadow:$version_shadow"
+            classpath "com.gradleup.shadow:shadow-gradle-plugin:$version_shadow"
         }
     }
 
