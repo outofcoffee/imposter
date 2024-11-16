@@ -16,9 +16,14 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
+      - name: Install Maven dependencies locally
+        run: ./gradlew publishToMavenLocal
+
       - name: Test JUnit example project
         working-directory: ./examples/junit-sample
-        run: ./mvnw test
+        run: |
+          PUBLISHED_VERSION=$( cat gradle.properties | grep projectVersion= | cut -c16- )
+          ./mvnw test -Dimposter.version=${PUBLISHED_VERSION}
 
       - name: Publish Unit Test Results
         if: always()
