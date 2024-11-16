@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.2.2] - 2024-11-16
+### Changed
+- build: fix Maven transitive dependencies for scripting-graalvm.
+
 ## [4.2.1] - 2024-11-05
 ### Changed
 - chore(deps): bump com.fasterxml.jackson.core:jackson-databind
