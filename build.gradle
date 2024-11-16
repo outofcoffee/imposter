@@ -10,11 +10,11 @@ buildscript {
 }
 
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.9.10' apply false
+    id 'org.jetbrains.kotlin.jvm' version '1.9.20' apply false
 }
 
 ext {
-    kotlin_version = '1.9.10'
+    kotlin_version = '1.9.20'
 
     try {
         awsCredentials = new ProfileCredentialsProvider().credentials
@@ -105,5 +105,5 @@ subprojects {
 }
 
 wrapper {
-    gradleVersion = '7.6.4'
+    gradleVersion = '8.0'
 }

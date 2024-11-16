@@ -15,5 +15,5 @@ jar {
 }
 
 shadowJar {
-    archiveName 'imposter-perf-monitor.jar'
+    archiveFileName.set('imposter-perf-monitor.jar')
 }
