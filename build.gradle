@@ -81,7 +81,26 @@ subprojects {
     }
 
     plugins.withType(JavaPlugin).whenPluginAdded {
+        java {
+            toolchain {
+                languageVersion = JavaLanguageVersion.of(11)
+            }
+        }
+
+        tasks.withType(JavaCompile) {
+            sourceCompatibility = '11'
+            targetCompatibility = '11'
+        }
+
         project.archivesBaseName = project.name.startsWith('imposter-') ? project.name : 'imposter-' + project.name
+    }
+
+    plugins.withType(org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper).whenPluginAdded {
+        kotlin {
+            jvmToolchain {
+                languageVersion.set(JavaLanguageVersion.of(11))
+            }
+        }
     }
 }
 
