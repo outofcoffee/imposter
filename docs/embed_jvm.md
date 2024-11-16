@@ -18,12 +18,12 @@ Add the following Maven repository to your build tool:
 
 Add the following Maven dependencies in your build tool:
 
-| Component      | Group ID               | Artifact ID       | Version                                                                            |
-|----------------|------------------------|-------------------|------------------------------------------------------------------------------------|
-| Main library   | `io.gatehill.imposter` | `distro-embedded` | As per [Releases](https://github.com/outofcoffee/imposter/releases), e.g. `1.24.3` |
-| HTTP server    | `io.gatehill.imposter` | `imposter-server` | As per [Releases](https://github.com/outofcoffee/imposter/releases), e.g. `1.24.3` |
-| Config parser  | `io.gatehill.imposter` | `config-dynamic`  | As per [Releases](https://github.com/outofcoffee/imposter/releases), e.g. `1.24.3` |
-| OpenAPI plugin | `io.gatehill.imposter` | `mock-openapi`    | As per [Releases](https://github.com/outofcoffee/imposter/releases), e.g. `1.24.3` |
+| Component      | Group ID               | Artifact ID       | Version                                                                           |
+|----------------|------------------------|-------------------|-----------------------------------------------------------------------------------|
+| Main library   | `io.gatehill.imposter` | `distro-embedded` | As per [Releases](https://github.com/outofcoffee/imposter/releases), e.g. `4.2.2` |
+| HTTP server    | `io.gatehill.imposter` | `imposter-server` | As per [Releases](https://github.com/outofcoffee/imposter/releases), e.g. `4.2.2` |
+| Config parser  | `io.gatehill.imposter` | `config-dynamic`  | As per [Releases](https://github.com/outofcoffee/imposter/releases), e.g. `4.2.2` |
+| OpenAPI plugin | `io.gatehill.imposter` | `mock-openapi`    | As per [Releases](https://github.com/outofcoffee/imposter/releases), e.g. `4.2.2` |
 
 > See the _Dependencies_ section for full Maven and Gradle examples.
 
@@ -74,8 +74,6 @@ String mockEndpoint = imposter.getBaseUrl() + "/v1/pets";
 
 > Note the need to specify the plugin, which was implicit in the example above.
 
-> For a working example, see [ImposterBuilderTest](https://github.com/outofcoffee/imposter/blob/main/distro/embedded/src/test/java/io/gatehill/imposter/embedded/ImposterBuilderTest.java)
-
 ## Dependencies
 
 Build tool configuration for Gradle and Maven.
@@ -87,7 +85,7 @@ Using Gradle, add the following to your build configuration:
 ```groovy
 ext {
     // choose latest release from: https://github.com/outofcoffee/imposter/releases
-    imposter_version = '1.24.3'
+    imposter_version = '4.2.2'
 }
 
 repositories {
@@ -123,7 +121,7 @@ Using Maven, add the following to your POM:
     ...
     <properties>
         <!-- choose latest release from https://github.com/outofcoffee/imposter/releases -->
-        <imposter.version>1.24.3</imposter.version>
+        <imposter.version>4.2.2</imposter.version>
     </properties>
     ...
     <dependencies>
@@ -155,3 +153,14 @@ Using Maven, add the following to your POM:
     </dependencies>
 </project>
 ```
+
+## Other plugins
+
+Imposter supports a range of plugins, such as SOAP/WSDL and RESTful services. Here are some examples:
+
+| Component       | Group ID               | Artifact ID | More information                    |
+|-----------------|------------------------|-------------|-------------------------------------|
+| SOAP/WSDL mocks | `io.gatehill.imposter` | `mock-soap` | See [SOAP plugin](./soap_plugin.md) |
+| RESTful mocks   | `io.gatehill.imposter` | `mock-rest` | See [REST plugin](./rest_plugin.md) |
+
+See the [Plugins](./plugins.md) section for more.
