@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.2.3] - 2024-11-16
+### Changed
+- build: bumps Gradle to 7.6.4.
+- build: bumps Gradle to 8.0.
+- build: bumps Gradle to 8.11.
+- build: sets JVM toolchain to Java 11.
+- chore(deps): bumps shadow plugin to 8.3.5.
+- ci: determine project version from root Gradle properties file.
+- ci: disables Gradle daemon for example tests.
+- ci: don't duplicate unit test execution on local maven publish.
+- docs: improves embedded JVM instructions.
+- test: use locally published maven artifacts in example project test.
+
 ## [4.2.2] - 2024-11-16
 ### Changed
 - build: fix Maven transitive dependencies for scripting-graalvm.
