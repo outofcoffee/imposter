@@ -5,8 +5,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [4.2.3] - 2024-11-16
 ### Changed
-- build: bumps Gradle to 7.6.4.
-- build: bumps Gradle to 8.0.
 - build: bumps Gradle to 8.11.
 - build: sets JVM toolchain to Java 11.
 - chore(deps): bumps shadow plugin to 8.3.5.
