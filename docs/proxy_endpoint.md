@@ -115,6 +115,26 @@ For completeness, see the contents of the response file reflect the content of t
 
 You can, of course, edit the configuration file so the mock behaves differently. When you change either the configuration file or response file, the Imposter CLI will restart to reflect your latest changes.
 
+### Capture request body and headers
+
+It's possible to capture the request body and/or request headers using the following flags:
+
+```
+--capture-request-body
+```
+
+and
+
+```
+--capture-request-headers
+```
+
+For example:
+
+```
+imposter proxy http://example.com --capture-request-body --capture-request-headers
+```
+
 ## What's next
 
 Learn how to use Imposter with the [Configuration guide](configuration.md).
