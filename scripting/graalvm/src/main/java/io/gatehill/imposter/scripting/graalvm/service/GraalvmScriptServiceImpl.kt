@@ -53,7 +53,9 @@ import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.dsl.Dsl
+import io.gatehill.imposter.script.dsl.FunctionHolder
 import io.gatehill.imposter.scripting.common.util.JavaScriptUtil
+import io.gatehill.imposter.scripting.common.util.JavaScriptUtil.DSL_VAR_NAME
 import io.gatehill.imposter.scripting.graalvm.GraalvmScriptingModule
 import io.gatehill.imposter.scripting.graalvm.model.objectProxyRequestBuilder
 import io.gatehill.imposter.scripting.graalvm.storeproxy.ObjectProxyingStore
@@ -66,6 +68,7 @@ import org.apache.logging.log4j.LogManager
 import org.graalvm.polyglot.Context
 import org.graalvm.polyglot.Engine
 import org.graalvm.polyglot.HostAccess
+import org.graalvm.polyglot.Value
 
 
 /**
@@ -112,6 +115,15 @@ class GraalvmScriptServiceImpl : ScriptService, Plugin, EngineLifecycleListener 
         }
     }
 
+    override fun initScript(script: ScriptSource) {
+        LOGGER.trace("Running script health check: {}", script)
+        executeScriptInternal(script, RuntimeContext.empty) { _, fnHolder ->
+            if (!fnHolder.healthCheck()) {
+                throw RuntimeException("Health check failed for script: $script")
+            }
+        }
+    }
+
     override fun initEvalScript(scriptId: String, scriptCode: String) {
         LOGGER.trace("No-op eval script init")
     }
@@ -119,27 +131,37 @@ class GraalvmScriptServiceImpl : ScriptService, Plugin, EngineLifecycleListener 
     override fun executeScript(
         script: ScriptSource,
         runtimeContext: RuntimeContext,
-    ): ReadWriteResponseBehaviour = try {
-        LOGGER.trace("Executing script: {}", script)
+    ): ReadWriteResponseBehaviour = executeScriptInternal(script, runtimeContext) { bindings, fnHolder ->
+        LOGGER.trace("Invoking script code: {}", script)
+        fnHolder.run()
+        bindings.getMember(DSL_VAR_NAME).`as`(Dsl::class.java).responseBehaviour
+    }
 
-        val wrapped = JavaScriptUtil.wrapScript(script)
+    private fun <T> executeScriptInternal(
+        script: ScriptSource,
+        runtimeContext: RuntimeContext,
+        block: (bindings: Value, fnHolder: FunctionHolder) -> T
+    ): T {
+        LOGGER.trace("Evaluating script: {}", script)
+        try {
+            val wrapped = JavaScriptUtil.wrapScript(script)
 
-        buildContext().use { context ->
-            val bindings = context.getBindings(JS_LANG_ID)
-            JavaScriptUtil.transformRuntimeMap(
-                runtimeContext,
-                addDslPrefix = true,
-                addConsoleShim = false
-            ).map { (key, value) ->
-                bindings.putMember(key, value)
+            buildContext().use { context ->
+                val bindings = context.getBindings(JS_LANG_ID)
+                JavaScriptUtil.transformRuntimeMap(
+                    runtimeContext,
+                    addDslPrefix = true,
+                    addConsoleShim = false
+                ).map { (key, value) ->
+                    bindings.putMember(key, value)
+                }
+
+                val fnHolder = context.eval(JS_LANG_ID, wrapped.code).`as`(FunctionHolder::class.java)
+                return block(bindings, fnHolder)
             }
-
-            val result = context.eval(JS_LANG_ID, wrapped.code)
-            val dsl = result.`as`(Dsl::class.java)
-            return dsl.responseBehaviour
+        } catch (e: Exception) {
+            throw RuntimeException("Script execution terminated abnormally", e)
         }
-    } catch (e: Exception) {
-        throw RuntimeException("Script execution terminated abnormally", e)
     }
 
     override fun executeEvalScript(
@@ -148,7 +170,6 @@ class GraalvmScriptServiceImpl : ScriptService, Plugin, EngineLifecycleListener 
         runtimeContext: RuntimeContext,
     ): Boolean {
         LOGGER.trace("Executing eval script: {}", scriptId)
-
         try {
             buildContext().use { context ->
                 val bindings = context.getBindings(JS_LANG_ID)
@@ -160,9 +181,8 @@ class GraalvmScriptServiceImpl : ScriptService, Plugin, EngineLifecycleListener 
                     bindings.putMember(key, value)
                 }
 
-                val result = context.eval(JS_LANG_ID, scriptCode)
-                val resultValue = result.`as`(Any::class.java)
-                return resultValue is Boolean && resultValue
+                val result = context.eval(JS_LANG_ID, scriptCode).`as`(Any::class.java)
+                return result is Boolean && result
             }
         } catch (e: Exception) {
             throw RuntimeException("Eval script execution terminated abnormally", e)

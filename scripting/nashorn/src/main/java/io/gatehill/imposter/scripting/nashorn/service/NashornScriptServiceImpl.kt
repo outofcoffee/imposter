@@ -52,6 +52,7 @@ import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.ScriptUtil
 import io.gatehill.imposter.script.dsl.Dsl
+import io.gatehill.imposter.script.dsl.FunctionHolder
 import io.gatehill.imposter.scripting.common.util.CompiledJsScript
 import io.gatehill.imposter.scripting.common.util.JavaScriptUtil
 import io.gatehill.imposter.scripting.nashorn.NashornScriptingModule
@@ -106,7 +107,7 @@ class NashornScriptServiceImpl : ScriptService, Plugin {
 
     override fun initScript(script: ScriptSource) {
         if (ScriptUtil.shouldPrecompile) {
-            LOGGER.debug("Precompiling script: $script")
+            LOGGER.debug("Precompiling script: {}", script)
             getCompiledScript(script)
         }
     }
@@ -122,7 +123,7 @@ class NashornScriptServiceImpl : ScriptService, Plugin {
         script: ScriptSource,
         runtimeContext: RuntimeContext
     ): ReadWriteResponseBehaviour {
-        LOGGER.trace("Executing script: {}", script)
+        LOGGER.trace("Evaluating script: {}", script)
         check(script.valid) { "Invalid script: $script" }
 
         try {
@@ -136,8 +137,14 @@ class NashornScriptServiceImpl : ScriptService, Plugin {
 
             val compiled = getCompiledScript(script)
             try {
-                val result = compiled.code.eval(bindings) as Dsl
+                val fnHolder = compiled.code.eval(bindings) as FunctionHolder
+
+                LOGGER.trace("Invoking script code: {}", script)
+                fnHolder.run()
+
+                val result = bindings[JavaScriptUtil.DSL_VAR_NAME] as Dsl
                 return result.responseBehaviour
+
             } catch (e: ScriptException) {
                 throw JavaScriptUtil.unwrapScriptException(e, compiled)
             }
