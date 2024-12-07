@@ -70,4 +70,8 @@ class ExecutionContext(
 
         return super.get(key)
     }
+
+    companion object {
+        val empty: ExecutionContext = ExecutionContext(emptyScriptRequest)
+    }
 }

@@ -51,7 +51,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Test
-import java.util.UUID
+import java.util.*
 import kotlin.io.path.readText
 
 /**
@@ -63,6 +63,15 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
      */
     private val scriptCode: String
         get() = fullScriptPath.readText()
+
+    @Test
+    fun testInitScript() {
+        val pluginConfig = configureScript()
+        val resourceConfig = pluginConfig as BasicResourceConfig
+
+        val script = resolveScriptFile(pluginConfig, resourceConfig)
+        getService().initScript(script)
+    }
 
     @Test
     fun testExecuteScript_Immediate() {
