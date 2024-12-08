@@ -44,13 +44,12 @@
 package io.gatehill.imposter.scripting
 
 import com.google.inject.Module
-import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.PluginConfigImpl
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
-import io.gatehill.imposter.script.RuntimeContext
+import io.gatehill.imposter.script.ScriptBindings
 import io.gatehill.imposter.script.ScriptUtil
 import io.gatehill.imposter.service.ScriptService
 import io.gatehill.imposter.service.ScriptSource
@@ -118,14 +117,15 @@ abstract class AbstractBaseScriptTest {
         }
     }
 
-    protected fun buildRuntimeContext(
-        additionalBindings: Map<String, Any>,
+    protected fun buildScriptBindings(
+        additionalBindings: Map<String, Any> = emptyMap(),
         headers: Map<String, String> = emptyMap(),
         pathParams: Map<String, String> = emptyMap(),
         queryParams: Map<String, String> = emptyMap(),
         env: Map<String, String> = emptyMap(),
-        body: String = ""
-    ): RuntimeContext {
+        body: String = "",
+        additionalContext: Map<String, Any> = emptyMap()
+    ): ScriptBindings {
         val logger = LogManager.getLogger("script-engine-test")
 
         val mockRequest = mock(HttpRequest::class.java)
@@ -137,12 +137,9 @@ abstract class AbstractBaseScriptTest {
         When(mockRequest.queryParams).thenReturn(queryParams)
         When(mockRequest.bodyAsString).thenReturn(body)
 
-        val mockHttpExchange = mock(HttpExchange::class.java)
-        When(mockHttpExchange.request).thenReturn(mockRequest)
-
         val pluginConfig = mock(PluginConfig::class.java)
-        val executionContext = ScriptUtil.buildContext(getService().requestBuilder, mockHttpExchange, null)
-        return RuntimeContext(env, logger, pluginConfig, additionalBindings, executionContext)
+        val executionContext = getService().contextBuilder(mockRequest, additionalContext)
+        return ScriptBindings(env, logger, pluginConfig, additionalBindings, executionContext)
     }
 
     protected fun resolveScriptFile(pluginConfig: PluginConfig, resourceConfig: BasicResourceConfig): ScriptSource {

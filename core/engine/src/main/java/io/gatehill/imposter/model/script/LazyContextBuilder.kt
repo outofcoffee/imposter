@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2024.
  *
  * This file is part of Imposter.
  *
@@ -40,38 +40,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.service
 
-import io.gatehill.imposter.http.HttpRequest
-import io.gatehill.imposter.script.ExecutionContext
-import io.gatehill.imposter.script.ReadWriteResponseBehaviour
-import io.gatehill.imposter.script.ScriptBindings
+package io.gatehill.imposter.model.script
 
-/**
- * @author Pete Cornish
- */
-interface ScriptService {
-    val implName: String
-    val contextBuilder: ScriptContextBuilder
+import io.gatehill.imposter.service.ScriptContextBuilder
 
-    fun initScript(script: ScriptSource) {
-        // no op
-    }
-
-    fun initEvalScript(scriptId: String, scriptCode: String): Unit =
-        throw NotImplementedError()
-
-    /**
-     * Execute the script and read response behaviour.
-     *
-     * @param script         the source of the script
-     * @param scriptBindings the script engine bindings
-     * @return the response behaviour
-     */
-    fun executeScript(script: ScriptSource, scriptBindings: ScriptBindings): ReadWriteResponseBehaviour
-
-    fun executeEvalScript(scriptId: String, scriptCode: String, scriptBindings: ScriptBindings): Boolean =
-        throw NotImplementedError()
+val LazyContextBuilder: ScriptContextBuilder = { request, additional ->
+    val req = buildLazyScriptRequest(request)
+    val executionContext = mutableMapOf<String, Any>("request" to req)
+    additional?.let(executionContext::putAll)
+    executionContext
 }
-
-typealias ScriptContextBuilder = (request: HttpRequest, additional: Map<String, Any>?) -> ExecutionContext

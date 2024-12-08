@@ -42,10 +42,10 @@
  */
 package io.gatehill.imposter.service.script
 
-import io.gatehill.imposter.model.script.lazyScriptRequestBuilder
+import io.gatehill.imposter.model.script.LazyContextBuilder
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl
-import io.gatehill.imposter.script.RuntimeContext
+import io.gatehill.imposter.script.ScriptBindings
 import io.gatehill.imposter.script.listener.ScriptListener
 import io.gatehill.imposter.service.ScriptSource
 
@@ -57,16 +57,16 @@ class EmbeddedScriptServiceImpl : EmbeddedScriptService {
 
     override val implName = "embedded"
 
-    override val requestBuilder = lazyScriptRequestBuilder
+    override val contextBuilder = LazyContextBuilder
 
     override fun executeScript(
         script: ScriptSource,
-        runtimeContext: RuntimeContext
+        scriptBindings: ScriptBindings
     ): ReadWriteResponseBehaviour {
         check(listener != null) { "ScriptListener is not set" }
 
         val responseBehaviour: ReadWriteResponseBehaviour = ReadWriteResponseBehaviourImpl()
-        listener!!.hear(runtimeContext.executionContext, responseBehaviour)
+        listener!!.hear(scriptBindings.executionContext, responseBehaviour)
         return responseBehaviour
     }
 

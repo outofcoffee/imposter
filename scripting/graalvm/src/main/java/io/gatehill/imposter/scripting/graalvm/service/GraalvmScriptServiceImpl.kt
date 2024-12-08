@@ -51,15 +51,15 @@ import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.RequireModules
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
-import io.gatehill.imposter.script.RuntimeContext
+import io.gatehill.imposter.script.ScriptBindings
 import io.gatehill.imposter.script.dsl.Dsl
 import io.gatehill.imposter.script.dsl.FunctionHolder
 import io.gatehill.imposter.scripting.common.util.JavaScriptUtil
 import io.gatehill.imposter.scripting.common.util.JavaScriptUtil.DSL_VAR_NAME
 import io.gatehill.imposter.scripting.graalvm.GraalvmScriptingModule
-import io.gatehill.imposter.scripting.graalvm.model.objectProxyRequestBuilder
-import io.gatehill.imposter.scripting.graalvm.storeproxy.ObjectProxyingStore
-import io.gatehill.imposter.service.ScriptRequestBuilder
+import io.gatehill.imposter.scripting.graalvm.proxy.DeepProxyContextBuilder
+import io.gatehill.imposter.scripting.graalvm.proxy.ObjectProxyingStore
+import io.gatehill.imposter.service.ScriptContextBuilder
 import io.gatehill.imposter.service.ScriptService
 import io.gatehill.imposter.service.ScriptSource
 import io.gatehill.imposter.store.service.StoreService
@@ -84,8 +84,8 @@ class GraalvmScriptServiceImpl : ScriptService, Plugin, EngineLifecycleListener 
 
     override val implName = "js-graal"
 
-    override val requestBuilder: ScriptRequestBuilder
-        get() = objectProxyRequestBuilder
+    override val contextBuilder: ScriptContextBuilder
+        get() = DeepProxyContextBuilder
 
     init {
         // quieten interpreter mode warning until native graal compiler included in module path - see:
@@ -117,7 +117,7 @@ class GraalvmScriptServiceImpl : ScriptService, Plugin, EngineLifecycleListener 
 
     override fun initScript(script: ScriptSource) {
         LOGGER.trace("Running script health check: {}", script)
-        executeScriptInternal(script, RuntimeContext.empty) { _, fnHolder ->
+        executeScriptInternal(script, ScriptBindings.empty) { _, fnHolder ->
             if (!fnHolder.healthCheck()) {
                 throw RuntimeException("Health check failed for script: $script")
             }
@@ -130,8 +130,8 @@ class GraalvmScriptServiceImpl : ScriptService, Plugin, EngineLifecycleListener 
 
     override fun executeScript(
         script: ScriptSource,
-        runtimeContext: RuntimeContext,
-    ): ReadWriteResponseBehaviour = executeScriptInternal(script, runtimeContext) { bindings, fnHolder ->
+        scriptBindings: ScriptBindings,
+    ): ReadWriteResponseBehaviour = executeScriptInternal(script, scriptBindings) { bindings, fnHolder ->
         LOGGER.trace("Invoking script code: {}", script)
         fnHolder.run()
         bindings.getMember(DSL_VAR_NAME).`as`(Dsl::class.java).responseBehaviour
@@ -139,7 +139,7 @@ class GraalvmScriptServiceImpl : ScriptService, Plugin, EngineLifecycleListener 
 
     private fun <T> executeScriptInternal(
         script: ScriptSource,
-        runtimeContext: RuntimeContext,
+        scriptBindings: ScriptBindings,
         block: (bindings: Value, fnHolder: FunctionHolder) -> T
     ): T {
         LOGGER.trace("Evaluating script: {}", script)
@@ -148,8 +148,8 @@ class GraalvmScriptServiceImpl : ScriptService, Plugin, EngineLifecycleListener 
 
             buildContext().use { context ->
                 val bindings = context.getBindings(JS_LANG_ID)
-                JavaScriptUtil.transformRuntimeMap(
-                    runtimeContext,
+                JavaScriptUtil.transformBindingsMap(
+                    scriptBindings,
                     addDslPrefix = true,
                     addConsoleShim = false
                 ).map { (key, value) ->
@@ -167,14 +167,14 @@ class GraalvmScriptServiceImpl : ScriptService, Plugin, EngineLifecycleListener 
     override fun executeEvalScript(
         scriptId: String,
         scriptCode: String,
-        runtimeContext: RuntimeContext,
+        scriptBindings: ScriptBindings,
     ): Boolean {
         LOGGER.trace("Executing eval script: {}", scriptId)
         try {
             buildContext().use { context ->
                 val bindings = context.getBindings(JS_LANG_ID)
-                JavaScriptUtil.transformRuntimeMap(
-                    runtimeContext,
+                JavaScriptUtil.transformBindingsMap(
+                    scriptBindings,
                     addDslPrefix = false,
                     addConsoleShim = false
                 ).map { (key, value) ->

@@ -41,50 +41,32 @@
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.gatehill.imposter.model.script
+package io.gatehill.imposter.scripting.graalvm.proxy
 
-import io.gatehill.imposter.http.HttpRequest
-import io.gatehill.imposter.script.ScriptRequest
-import io.gatehill.imposter.script.ScriptUtil
-import io.gatehill.imposter.util.CollectionUtil
+import org.graalvm.polyglot.Value
+import org.graalvm.polyglot.proxy.ProxyArray
 
 /**
- * Adapter for [HttpRequest] to [ScriptRequest].
- *
- * This implementation doesn't perform any caching.
+ * Wraps a list to intercept access. All retrieved elements are proxied.
  */
-open class SimpleScriptRequest(
-    private val request: HttpRequest,
-) : ScriptRequest {
-    override val path: String
-        get() = request.path
+class InterceptingList(private val src: List<Any?>) : ProxyArray {
+    override fun get(index: Long): Any? {
+        if (index < 0 || index >= src.size) {
+            throw IndexOutOfBoundsException("Index out of bounds: $index, size: ${src.size}")
+        }
+        val value = src[index.toInt()]
+        return value?.let(DeepProxy::of)
+    }
 
-    override val method: String
-        get() = request.method.name
+    override fun set(index: Long, value: Value?) {
+        check(src is MutableList)
+        value?.also {
+            val valueToSet = if (value.isHostObject) value.asHostObject() else value
+            src[index.toInt()] = valueToSet
+        }
+    }
 
-    override val uri: String
-        get() = request.absoluteUri
-
-    override val headers: Map<String, String>
-        get() = ScriptUtil.caseHeaders(request)
-
-    override val pathParams: Map<String, String>
-        get() = request.pathParams
-
-    override val queryParams: Map<String, String>
-        get() = request.queryParams
-
-    override val formParams: Map<String, String>
-        get() = request.formParams
-
-    override val body: String?
-        get() = request.bodyAsString
-
-    override val normalisedHeaders: Map<String, String>
-        get() = CollectionUtil.convertKeysToLowerCase(headers)
-
-    override val params: Map<String, String>
-        get() = throw UnsupportedOperationException(
-            "Error: the deprecated 'context.request.params' property was removed. Use 'context.request.queryParams' or 'context.request.pathParams' instead."
-        )
+    override fun getSize(): Long {
+        return src.size.toLong()
+    }
 }

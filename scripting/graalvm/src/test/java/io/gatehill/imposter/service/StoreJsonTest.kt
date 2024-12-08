@@ -46,8 +46,8 @@ import com.google.inject.AbstractModule
 import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.scripting.AbstractBaseScriptTest
+import io.gatehill.imposter.scripting.graalvm.proxy.ObjectProxyingStore
 import io.gatehill.imposter.scripting.graalvm.service.GraalvmScriptServiceImpl
-import io.gatehill.imposter.scripting.graalvm.storeproxy.ObjectProxyingStore
 import io.gatehill.imposter.store.factory.StoreFactory
 import io.gatehill.imposter.store.inmem.InMemoryStoreFactoryImpl
 import io.gatehill.imposter.store.model.StoreProvider
@@ -98,11 +98,11 @@ class StoreJsonTest : AbstractBaseScriptTest() {
             ))
         }
 
-        val runtimeContext = buildRuntimeContext(mapOf(
+        val scriptBindings = buildScriptBindings(mapOf(
             "stores" to StoreProvider(storeFactory, { ObjectProxyingStore(it) }, "1")
         ))
         val script = resolveScriptFile(pluginConfig, resourceConfig)
-        val actual = getService().executeScript(script, runtimeContext)
+        val actual = getService().executeScript(script, scriptBindings)
 
         val itemHeader = actual.responseHeaders["items"]
         assertThat(itemHeader, equalTo("foo,bar,baz,"))

@@ -44,9 +44,9 @@ package io.gatehill.imposter.scripting.common.service
 
 import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.plugin.PluginManager
-import io.gatehill.imposter.script.RuntimeContext
+import io.gatehill.imposter.script.ScriptBindings
 import io.gatehill.imposter.scripting.common.util.JavaScriptUtil
-import io.gatehill.imposter.service.ScriptRequestBuilder
+import io.gatehill.imposter.service.ScriptContextBuilder
 import io.gatehill.imposter.service.ScriptService
 import io.gatehill.imposter.service.ScriptSource
 import org.apache.logging.log4j.LogManager
@@ -87,8 +87,8 @@ class DelegatingJsScriptServiceImpl @Inject constructor(
     override val implName: String
         get() = impl.implName
 
-    override val requestBuilder: ScriptRequestBuilder
-        get() = impl.requestBuilder
+    override val contextBuilder: ScriptContextBuilder
+        get() = impl.contextBuilder
 
     override fun initScript(script: ScriptSource) = impl.initScript(script)
 
@@ -96,12 +96,12 @@ class DelegatingJsScriptServiceImpl @Inject constructor(
 
     override fun executeScript(
         script: ScriptSource,
-        runtimeContext: RuntimeContext
-    ) = impl.executeScript(script, runtimeContext)
+        scriptBindings: ScriptBindings
+    ) = impl.executeScript(script, scriptBindings)
 
     override fun executeEvalScript(
         scriptId: String,
         scriptCode: String,
-        runtimeContext: RuntimeContext
-    ) = impl.executeEvalScript(scriptId, scriptCode, runtimeContext)
+        scriptBindings: ScriptBindings
+    ) = impl.executeEvalScript(scriptId, scriptCode, scriptBindings)
 }

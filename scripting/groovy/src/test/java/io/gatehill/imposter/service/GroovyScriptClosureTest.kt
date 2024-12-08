@@ -65,9 +65,9 @@ class GroovyScriptClosureTest : AbstractBaseScriptTest() {
         val pluginConfig = configureScript()
         val resourceConfig = pluginConfig as BasicResourceConfig
 
-        val runtimeContext = buildRuntimeContext(emptyMap())
+        val scriptBindings = buildScriptBindings(emptyMap())
         val script = resolveScriptFile(pluginConfig, resourceConfig)
-        val actual = getService().executeScript(script, runtimeContext)
+        val actual = getService().executeScript(script, scriptBindings)
 
         Assert.assertNotNull(actual)
         Assert.assertEquals("closure", actual.content)

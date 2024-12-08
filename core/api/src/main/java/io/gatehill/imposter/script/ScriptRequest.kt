@@ -43,6 +43,9 @@
 
 package io.gatehill.imposter.script
 
+/**
+ * Represents the current request within a script context.
+ */
 interface ScriptRequest {
     val path: String
     val method: String
@@ -79,17 +82,4 @@ interface ScriptRequest {
      */
     @get:Deprecated("Use queryParams instead.", ReplaceWith("queryParams"))
     val params: Map<String, String>
-}
-
-val emptyScriptRequest: ScriptRequest = object : ScriptRequest {
-    override val path: String = ""
-    override val method: String = ""
-    override val uri: String = ""
-    override val headers: Map<String, String> = emptyMap()
-    override val pathParams: Map<String, String> = emptyMap()
-    override val queryParams: Map<String, String> = emptyMap()
-    override val formParams: Map<String, String> = emptyMap()
-    override val body: String? = null
-    override val normalisedHeaders: Map<String, String> = emptyMap()
-    override val params: Map<String, String> = emptyMap()
 }

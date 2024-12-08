@@ -65,12 +65,12 @@ class RequireTypesTest : AbstractBaseScriptTest() {
         val pluginConfig = configureScript()
         val resourceConfig = pluginConfig as BasicResourceConfig
 
-        val runtimeContext = buildRuntimeContext(
+        val scriptBindings = buildScriptBindings(
             additionalBindings = emptyMap(),
             headers = mapOf("X-Example" to "foo")
         )
         val script = resolveScriptFile(pluginConfig, resourceConfig)
-        val actual = getService().executeScript(script, runtimeContext)
+        val actual = getService().executeScript(script, scriptBindings)
 
         Assert.assertNotNull(actual)
         Assert.assertEquals(201, actual.statusCode)
