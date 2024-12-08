@@ -1,0 +1,40 @@
+apply plugin: 'java-library'
+apply plugin: 'maven-publish'
+
+compileJava {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+dependencies {
+    implementation "org.apache.logging.log4j:log4j-api:$version_log4j"
+    implementation "io.micrometer:micrometer-commons:$version_micrometer"
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    archiveClassifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives sourcesJar
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+
+            repositories {
+                maven {
+                    url = version.endsWith('SNAPSHOT') ? mavenSnapshotRepository : mavenReleaseRepository
+                    credentials(AwsCredentials) {
+                        accessKey awsAccessKey
+                        secretKey awsSecretKey
+                    }
+                }
+            }
+        }
+    }
+}

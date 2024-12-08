@@ -105,6 +105,7 @@ project(':distro:embedded').name = 'distro-embedded'
 
 // libraries
 include ':lib:fake-data'
+include ':lib:micrometer-log4j2'
 
 // observability
 include ':tools:perf-monitor'
