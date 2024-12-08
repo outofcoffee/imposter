@@ -53,7 +53,7 @@ class RuntimeContext(
     private val logger: Logger,
     private val pluginConfig: PluginConfig,
     private val additionalBindings: Map<String, Any>?,
-    val executionContext: ExecutionContext
+    var executionContext: ExecutionContext
 ) {
 
     /**

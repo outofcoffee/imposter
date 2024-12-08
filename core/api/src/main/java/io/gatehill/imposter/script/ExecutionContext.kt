@@ -47,7 +47,7 @@ package io.gatehill.imposter.script
  *
  * @author Pete Cornish
  */
-class ExecutionContext(
+open class ExecutionContext(
     request: ScriptRequest
 ) : HashMap<String, Any>() {
 

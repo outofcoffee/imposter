@@ -56,6 +56,7 @@ import io.gatehill.imposter.script.dsl.Dsl
 import io.gatehill.imposter.scripting.common.util.JavaScriptUtil
 import io.gatehill.imposter.scripting.graalvm.GraalvmScriptingModule
 import io.gatehill.imposter.scripting.graalvm.model.objectProxyRequestBuilder
+import io.gatehill.imposter.scripting.graalvm.storeproxy.DeepProxy
 import io.gatehill.imposter.scripting.graalvm.storeproxy.ObjectProxyingStore
 import io.gatehill.imposter.service.ScriptRequestBuilder
 import io.gatehill.imposter.service.ScriptService
@@ -122,6 +123,13 @@ class GraalvmScriptServiceImpl : ScriptService, Plugin, EngineLifecycleListener 
     ): ReadWriteResponseBehaviour = try {
         LOGGER.trace("Executing script: {}", script)
 
+//        val req = runtimeContext.executionContext["request"] as ScriptRequest
+//        runtimeContext.executionContext = object : ExecutionContext(req) {
+//            override fun get(key: String): Any? {
+//                return super.get(key)?.let(DeepProxy::of)
+//            }
+//        }
+
         val wrapped = JavaScriptUtil.wrapScript(script)
 
         buildContext().use { context ->
@@ -133,6 +141,11 @@ class GraalvmScriptServiceImpl : ScriptService, Plugin, EngineLifecycleListener 
             ).map { (key, value) ->
                 bindings.putMember(key, value)
             }
+
+            val ctx = bindings.getMember("__imposter_dsl_context").`as`(Map::class.java)
+//            bindings.putMember("__imposter_dsl_context", ReflectionProxyObject(ctx))
+//            bindings.putMember("__imposter_dsl_context", InterceptingObject(ctx.toMap()))
+            bindings.putMember("__imposter_dsl_context", DeepProxy.of(ctx))
 
             val result = context.eval(JS_LANG_ID, wrapped.code)
             val dsl = result.`as`(Dsl::class.java)

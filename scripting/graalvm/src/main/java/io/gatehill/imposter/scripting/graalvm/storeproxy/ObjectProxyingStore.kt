@@ -89,7 +89,66 @@ object DeepProxy {
             is Array<*> -> InterceptingList(obj.toList())
             is List<*> -> InterceptingList(obj)
             is Map<*, *> -> InterceptingObject(obj)
-            else -> obj
+            else -> {
+                if (obj::class.java.isPrimitive || obj is Number || obj is Boolean || obj is Char|| obj is CharSequence ) {
+                    obj
+                } else {
+                    ReflectionProxyObject(obj)
+                }
+            }
+        }
+    }
+}
+
+class ReflectionProxyObject(private val obj: Any): ProxyObject {
+    private val memberKeys by lazy<List<String>> {
+        val fieldNames = obj::class.java.fields.map { it.name }
+        val accessors = obj::class.java.methods.filter { it.name.startsWith("get") || it.name.startsWith("is") }.map {
+            val memberName = it.name.removePrefix("get").removePrefix("is")
+            memberName.substring(0, 1).lowercase() + memberName.substring(1)
+        }
+        (fieldNames + accessors).distinct() - listOf("class")
+    }
+
+    override fun getMember(key: String): Any? {
+        if (!memberKeys.contains(key)) {
+            return null
+        }
+
+        val value = if (obj::class.java.fields.any { it.name == key }) {
+            obj::class.java.getField(key).let {
+                it.isAccessible = true
+                it.get(obj)
+            }
+        } else if (obj::class.java.methods.any { toMemberForm(key, "get") == it.name  }) {
+            obj::class.java.getMethod(toMemberForm(key, "get")).let {
+                it.isAccessible = true
+                it.invoke(obj)
+            }
+        } else if (obj::class.java.methods.any { toMemberForm(key, "it") == it.name }) {
+            obj::class.java.getMethod(toMemberForm(key, "it")).let {
+                it.isAccessible = true
+                it.invoke(obj)
+            }
+        }
+        else null
+        return value?.let(DeepProxy::of)
+    }
+
+    private fun toMemberForm(name: String, prefix: String) = prefix + name.substring(0, 1).uppercase() + name.substring(1)
+
+    override fun getMemberKeys(): Any {
+        return ProxyArray.fromList(memberKeys)
+    }
+
+    override fun hasMember(key: String): Boolean {
+        return memberKeys.contains(key)
+    }
+
+    override fun putMember(key: String, value: Value?) {
+        obj::class.java.getDeclaredField(key).let {
+            it.isAccessible = true
+            it.set(obj, value?.let { if (value.isHostObject) value.asHostObject() else value })
         }
     }
 }

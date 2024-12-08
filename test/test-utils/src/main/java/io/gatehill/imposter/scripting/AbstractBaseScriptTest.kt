@@ -119,12 +119,13 @@ abstract class AbstractBaseScriptTest {
     }
 
     protected fun buildRuntimeContext(
-        additionalBindings: Map<String, Any>,
+        additionalBindings: Map<String, Any> = emptyMap(),
         headers: Map<String, String> = emptyMap(),
         pathParams: Map<String, String> = emptyMap(),
         queryParams: Map<String, String> = emptyMap(),
         env: Map<String, String> = emptyMap(),
-        body: String = ""
+        body: String = "",
+        additionalContext: Map<String, Any> = emptyMap()
     ): RuntimeContext {
         val logger = LogManager.getLogger("script-engine-test")
 
@@ -141,7 +142,7 @@ abstract class AbstractBaseScriptTest {
         When(mockHttpExchange.request).thenReturn(mockRequest)
 
         val pluginConfig = mock(PluginConfig::class.java)
-        val executionContext = ScriptUtil.buildContext(getService().requestBuilder, mockHttpExchange, null)
+        val executionContext = ScriptUtil.buildContext(getService().requestBuilder, mockHttpExchange, additionalContext)
         return RuntimeContext(env, logger, pluginConfig, additionalBindings, executionContext)
     }
 
