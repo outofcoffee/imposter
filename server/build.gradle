@@ -21,7 +21,7 @@ dependencies {
     // logging
     implementation "org.apache.logging.log4j:log4j-core:$version_log4j"
     implementation "org.apache.logging.log4j:log4j-jcl:$version_log4j"
-    implementation "org.apache.logging.log4j:log4j-slf4j-impl:$version_log4j"
+    implementation "org.apache.logging.log4j:log4j-slf4j18-impl:$version_log4j"
     implementation "org.apache.logging.log4j:log4j-1.2-api:$version_log4j"
     implementation "org.apache.logging.log4j:log4j-jul:$version_log4j"
 
