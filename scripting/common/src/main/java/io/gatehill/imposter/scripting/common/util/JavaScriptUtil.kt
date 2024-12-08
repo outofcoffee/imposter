@@ -46,6 +46,7 @@ package io.gatehill.imposter.scripting.common.util
 import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.dsl.DslImpl
+import io.gatehill.imposter.script.dsl.FunctionHolder
 import io.gatehill.imposter.scripting.common.shim.ConsoleShim
 import io.gatehill.imposter.service.ScriptSource
 import org.apache.logging.log4j.LogManager
@@ -58,8 +59,11 @@ import kotlin.io.path.readText
  * @author Pete Cornish
  */
 object JavaScriptUtil {
+    const val DSL_VAR_NAME = "__dsl"
+
     private val LOGGER: Logger = LogManager.getLogger(JavaScriptUtil::class.java)
-    private const val envJsPlugin = "IMPOSTER_JS_PLUGIN"
+    private const val ENV_JS_PLUGIN = "IMPOSTER_JS_PLUGIN"
+    private const val DEFAULT_JS_PLUGIN = "js-graal"
 
     private const val DSL_OBJECT_PREFIX = "__imposter_dsl_"
     private val globals = listOf(
@@ -69,6 +73,29 @@ object JavaScriptUtil {
         "respond",
         "stores",
     )
+
+    private const val CJS_REQUIRE_SHIM = """
+/* ------------------------------------------------------------------------- */
+/* Shim for '__imposter_types' module exports                                */
+/* ------------------------------------------------------------------------- */
+var __imposter_types = {
+    env: (function() { return ${DSL_OBJECT_PREFIX}env })(),
+    context: (function() { return ${DSL_OBJECT_PREFIX}context })(),
+    logger: (function() { return ${DSL_OBJECT_PREFIX}logger })(),
+    respond: ${DSL_OBJECT_PREFIX}respond,
+    stores: (function() { try { return ${DSL_OBJECT_PREFIX}stores } catch(e) { return undefined } })()
+};
+
+/* ------------------------------------------------------------------------- */
+/* Shim for 'require()'                                                      */
+/* ------------------------------------------------------------------------- */
+function require(moduleName) {
+  if ("@imposter-js/types" !== moduleName) {
+    throw new Error('require() only supports "@imposter-js/types"');
+  }
+  return __imposter_types;
+}         
+"""
 
     private val GLOBAL_DSL_OBJECTS: String
 
@@ -83,10 +110,20 @@ object JavaScriptUtil {
      * @return the plugin name of the active JavaScript implementation
      */
     val activePlugin: String
-        get() = EnvVars.getEnv(envJsPlugin) ?: "js-graal"
+        get() = EnvVars.getEnv(ENV_JS_PLUGIN) ?: DEFAULT_JS_PLUGIN
 
-    fun transformRuntimeMap(runtimeContext: RuntimeContext, addDslPrefix: Boolean, addConsoleShim: Boolean): Map<String, *> {
+    /**
+     * Transforms the runtime context into a map for use as script bindings.
+     * Always adds the DSL object and, optionally, a console shim and
+     * no-op 'stores' object.
+     */
+    fun transformRuntimeMap(
+        runtimeContext: RuntimeContext,
+        addDslPrefix: Boolean,
+        addConsoleShim: Boolean
+    ): Map<String, *> {
         val runtimeObjects = runtimeContext.asMap().toMutableMap()
+        runtimeObjects[DSL_VAR_NAME] = DslImpl()
         if (!runtimeObjects.containsKey("stores")) {
             runtimeObjects["stores"] = Any()
         }
@@ -118,34 +155,15 @@ object JavaScriptUtil {
     }
 
     private fun buildWrappedScript(script: String, setGlobalDslObjects: Boolean): WrappedScript {
-        val preScript = """
-var DslImpl = Java.type('${DslImpl::class.java.canonicalName}');
-var __dsl = new DslImpl();
+        val addCjsRequireShim = script.contains("@imposter-js/types")
 
+        val preScript = """
 /* ------------------------------------------------------------------------- */
 /* DSL functions                                                             */
 /* ------------------------------------------------------------------------- */
-var ${DSL_OBJECT_PREFIX}respond = function() { return __dsl.respond(); }
+var ${DSL_OBJECT_PREFIX}respond = function() { return ${DSL_VAR_NAME}.respond(); }
 ${if (setGlobalDslObjects) GLOBAL_DSL_OBJECTS else ""}
-/* ------------------------------------------------------------------------- */
-/* Shim for '__imposter_types' module exports                                */
-/* ------------------------------------------------------------------------- */
-var __imposter_types = {
-    env: (function() { return ${DSL_OBJECT_PREFIX}env })(),
-    context: (function() { return ${DSL_OBJECT_PREFIX}context })(),
-    logger: (function() { return ${DSL_OBJECT_PREFIX}logger })(),
-    respond: ${DSL_OBJECT_PREFIX}respond,
-    stores: (function() { try { return ${DSL_OBJECT_PREFIX}stores } catch(e) { return undefined } })()
-};
-/* ------------------------------------------------------------------------- */
-/* Shim for 'require()'                                                      */
-/* ------------------------------------------------------------------------- */
-function require(moduleName) {
-  if ("@imposter-js/types" !== moduleName){
-    throw new Error('require() only supports "@imposter-js/types"');
-  }
-  return __imposter_types;
-}
+${if (addCjsRequireShim) CJS_REQUIRE_SHIM else ""}
 /* ------------------------------------------------------------------------- */
 /* Mock script                                                               */
 /* ------------------------------------------------------------------------- */
@@ -155,8 +173,12 @@ function __run() {
 }
 /* ------------------------------------------------------------------------- */
 
-__run();
-__dsl;
+var FunctionHolder = Java.extend(Java.type('${FunctionHolder::class.java.canonicalName}'));
+var fnHolder = new FunctionHolder({
+  healthCheck: function() { return true; },
+  run: __run,
+});
+fnHolder;
 """
         return WrappedScript(preScript.lines().size, preScript + script + postScript)
     }

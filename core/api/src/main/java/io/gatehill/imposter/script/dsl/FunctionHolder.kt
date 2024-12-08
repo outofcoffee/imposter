@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023.
+ * Copyright (c) 2024.
  *
  * This file is part of Imposter.
  *
@@ -40,18 +40,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 package io.gatehill.imposter.script.dsl
 
-import io.gatehill.imposter.script.MutableResponseBehaviour
-import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl
-
-open class DslImpl : Dsl {
-    override var responseBehaviour = ReadWriteResponseBehaviourImpl()
-
-    /**
-     * @return `this`
-     */
-    override fun respond(): MutableResponseBehaviour {
-        return responseBehaviour
-    }
+interface FunctionHolder {
+    fun healthCheck(): Boolean
+    fun run()
 }

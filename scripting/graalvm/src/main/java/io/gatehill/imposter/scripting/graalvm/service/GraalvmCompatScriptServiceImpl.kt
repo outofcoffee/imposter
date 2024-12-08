@@ -50,6 +50,7 @@ import io.gatehill.imposter.plugin.RequireModules
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
 import io.gatehill.imposter.script.RuntimeContext
 import io.gatehill.imposter.script.dsl.Dsl
+import io.gatehill.imposter.script.dsl.FunctionHolder
 import io.gatehill.imposter.scripting.common.util.JavaScriptUtil
 import io.gatehill.imposter.scripting.graalvm.GraalvmCompatScriptingModule
 import io.gatehill.imposter.service.ScriptService
@@ -86,7 +87,7 @@ class GraalvmCompatScriptServiceImpl : ScriptService, Plugin {
         script: ScriptSource,
         runtimeContext: RuntimeContext
     ): ReadWriteResponseBehaviour {
-        LOGGER.trace("Executing script: {}", script)
+        LOGGER.trace("Evaluating script: {}", script)
 
         val bindings = scriptEngine.getBindings(ScriptContext.ENGINE_SCOPE)
         bindings["polyglot.js.allowAllAccess"] = true
@@ -94,15 +95,21 @@ class GraalvmCompatScriptServiceImpl : ScriptService, Plugin {
         // see https://www.graalvm.org/reference-manual/js/NashornMigrationGuide/#nashorn-compatibility-mode
         bindings["polyglot.js.nashorn-compat"] = true
 
-        return try {
+        try {
             val globals = JavaScriptUtil.transformRuntimeMap(
                 runtimeContext,
                 addDslPrefix = true,
                 addConsoleShim = false
             )
             val wrapped = JavaScriptUtil.wrapScript(script)
-            val result = scriptEngine.eval(wrapped.code, SimpleBindings(globals)) as Dsl
-            result.responseBehaviour
+            val evalBindings = SimpleBindings(globals)
+            val fnHolder = scriptEngine.eval(wrapped.code, evalBindings) as FunctionHolder
+
+            LOGGER.trace("Invoking script code: {}", script)
+            fnHolder.run()
+
+            val result = evalBindings[JavaScriptUtil.DSL_VAR_NAME] as Dsl
+            return result.responseBehaviour
 
         } catch (e: Exception) {
             throw RuntimeException("Script execution terminated abnormally", e)

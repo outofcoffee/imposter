@@ -43,6 +43,8 @@
 package io.gatehill.imposter.script
 
 import io.gatehill.imposter.plugin.config.PluginConfig
+import io.gatehill.imposter.plugin.config.PluginConfigImpl
+import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 
 /**
@@ -69,5 +71,15 @@ class RuntimeContext(
         // add custom bindings
         additionalBindings?.let(bindings::putAll)
         return bindings
+    }
+
+    companion object {
+        val empty = RuntimeContext(
+            emptyMap(),
+            LogManager.getLogger("noop"),
+            PluginConfigImpl(),
+            emptyMap(),
+            ExecutionContext.empty
+        )
     }
 }
