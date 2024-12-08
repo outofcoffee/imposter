@@ -1,20 +1,14 @@
 apply plugin: 'java-library'
-apply plugin: 'kotlin'
 apply plugin: 'maven-publish'
 
 compileJava {
     sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
 
 dependencies {
     implementation "org.apache.logging.log4j:log4j-api:$version_log4j"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    implementation project(':core:imposter-api')
-
-    // test
-    testImplementation "junit:junit:$version_junit"
-    testImplementation group: 'org.hamcrest', name: 'hamcrest', version: version_hamcrest
-    testImplementation "org.apache.logging.log4j:log4j-slf4j18-impl:$version_log4j"
+    implementation "io.micrometer:micrometer-commons:$version_micrometer"
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
@@ -42,23 +36,5 @@ publishing {
                 }
             }
         }
-    }
-}
-
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11
-
-        // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
-        freeCompilerArgs = ["-Xjvm-default=all"]
-    }
-}
-
-compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11
-
-        // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
-        freeCompilerArgs = ["-Xjvm-default=all"]
     }
 }

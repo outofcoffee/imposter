@@ -45,6 +45,8 @@ package io.gatehill.imposter.util
 import io.gatehill.imposter.config.util.ConfigUtil
 import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.http.HttpExchange
+import io.netty.util.internal.logging.InternalLoggerFactory
+import io.netty.util.internal.logging.Log4J2LoggerFactory
 import io.vertx.core.logging.Log4j2LogDelegateFactory
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
@@ -113,6 +115,10 @@ object LogUtil {
     }
 
     fun configureVertxLogging() {
+        // Netty uses SLF4J 1.7, which is incompatible with other libraries
+        // that use SLF4J 2, so we need to force it to use Log4J2
+        InternalLoggerFactory.setDefaultFactory(Log4J2LoggerFactory.INSTANCE);
+
         // delegate all Vert.x logging to Log4J2
         System.setProperty(VERTX_LOGGER_FACTORY, Log4j2LogDelegateFactory::class.java.canonicalName)
     }

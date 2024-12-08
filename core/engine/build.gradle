@@ -5,7 +5,7 @@ apply plugin: 'maven-publish'
 ext {
     version_jaxen = '2.0.0'
     version_jdom2 = '2.0.6.1'
-    version_json_path = '2.7.0'
+    version_json_path = '2.9.0'
 }
 
 compileJava {
@@ -29,6 +29,7 @@ dependencies {
     // metrics
     api "io.vertx:vertx-micrometer-metrics:$version_vertx"
     api "io.micrometer:micrometer-registry-prometheus:$version_micrometer"
+    implementation project(':lib:micrometer-log4j2')
 
     implementation "com.squareup.okhttp3:okhttp:4.10.0"
 
@@ -37,7 +38,7 @@ dependencies {
     testImplementation "org.mockito:mockito-core:$version_mockito"
     testImplementation "org.mockito.kotlin:mockito-kotlin:$version_mockito_kotlin"
     testImplementation "org.apache.logging.log4j:log4j-core:$version_log4j"
-    testImplementation "org.apache.logging.log4j:log4j-slf4j-impl:$version_log4j"
+    testImplementation "org.apache.logging.log4j:log4j-slf4j18-impl:$version_log4j"
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

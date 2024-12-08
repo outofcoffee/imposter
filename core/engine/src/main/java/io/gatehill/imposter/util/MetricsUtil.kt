@@ -42,6 +42,8 @@
  */
 package io.gatehill.imposter.util
 
+import io.micrometer.common.util.internal.logging.InternalLoggerFactory
+import io.micrometer.common.util.internal.logging.Log4J2LoggerFactory
 import io.micrometer.core.instrument.MeterRegistry
 import io.vertx.core.VertxOptions
 import io.vertx.micrometer.MicrometerMetricsOptions
@@ -59,6 +61,10 @@ object MetricsUtil {
 
     @JvmStatic
     fun configureMetrics(options: VertxOptions): VertxOptions {
+        // Micrometer uses SLF4J 1.7, which is incompatible with other libraries
+        // that use SLF4J 2, so we need to force it to use Log4J2
+        InternalLoggerFactory.setDefaultFactory(Log4J2LoggerFactory.INSTANCE);
+
         return options.setMetricsOptions(
             MicrometerMetricsOptions()
                 .setPrometheusOptions(VertxPrometheusOptions().setEnabled(true))
