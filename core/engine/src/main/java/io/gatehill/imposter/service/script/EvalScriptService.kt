@@ -5,8 +5,7 @@ import io.gatehill.imposter.http.ResourceMatchResult
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.resource.EvalResourceConfig
-import io.gatehill.imposter.script.RuntimeContext
-import io.gatehill.imposter.script.ScriptUtil
+import io.gatehill.imposter.script.ScriptBindings
 import io.gatehill.imposter.service.ScriptService
 import io.gatehill.imposter.util.InjectorUtil
 import io.gatehill.imposter.util.LogUtil
@@ -37,15 +36,15 @@ class EvalScriptService {
 
         val scriptId = config.resourceId
         try {
-            val executionContext = ScriptUtil.buildContext(jsScriptService.requestBuilder, httpExchange, emptyMap())
-            val runtimeContext = RuntimeContext(
+            val executionContext = jsScriptService.contextBuilder(httpExchange.request, emptyMap())
+            val scriptBindings = ScriptBindings(
                 emptyMap(),
                 logger,
                 pluginConfig,
                 emptyMap(),
                 executionContext
             )
-            val result = jsScriptService.executeEvalScript(scriptId, config.eval!!, runtimeContext)
+            val result = jsScriptService.executeEvalScript(scriptId, config.eval!!, scriptBindings)
             if (logger.isTraceEnabled) {
                 logger.trace("Evaluation of inline script {} result: {}: {}", scriptId, result, config.eval)
             } else {

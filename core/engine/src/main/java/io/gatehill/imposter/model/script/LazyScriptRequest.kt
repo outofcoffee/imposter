@@ -43,9 +43,9 @@
 
 package io.gatehill.imposter.model.script
 
+import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.script.ScriptRequest
 import io.gatehill.imposter.script.ScriptUtil
-import io.gatehill.imposter.service.ScriptRequestBuilder
 import io.gatehill.imposter.util.CollectionUtil
 import java.util.function.Supplier
 
@@ -126,7 +126,7 @@ class LazyScriptRequest(
 /**
  * Constructs a [LazyScriptRequest].
  */
-val lazyScriptRequestBuilder : ScriptRequestBuilder = { request ->
+fun buildLazyScriptRequest(request: HttpRequest): LazyScriptRequest {
     val headersSupplier: () -> Map<String, String> = {
         ScriptUtil.caseHeaders(request)
     }
@@ -144,7 +144,7 @@ val lazyScriptRequestBuilder : ScriptRequestBuilder = { request ->
         request.bodyAsString
     }
 
-    LazyScriptRequest(
+    return LazyScriptRequest(
         path = request.path,
         method = request.method.name,
         uri = request.absoluteUri,

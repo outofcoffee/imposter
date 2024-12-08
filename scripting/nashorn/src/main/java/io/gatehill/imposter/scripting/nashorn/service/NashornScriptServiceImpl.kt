@@ -44,12 +44,12 @@ package io.gatehill.imposter.scripting.nashorn.service
 
 import com.google.common.cache.CacheBuilder
 import io.gatehill.imposter.config.util.EnvVars.Companion.getEnv
-import io.gatehill.imposter.model.script.lazyScriptRequestBuilder
+import io.gatehill.imposter.model.script.LazyContextBuilder
 import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.RequireModules
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
-import io.gatehill.imposter.script.RuntimeContext
+import io.gatehill.imposter.script.ScriptBindings
 import io.gatehill.imposter.script.ScriptUtil
 import io.gatehill.imposter.script.dsl.Dsl
 import io.gatehill.imposter.script.dsl.FunctionHolder
@@ -89,7 +89,7 @@ class NashornScriptServiceImpl : ScriptService, Plugin {
         .maximumSize(getEnv(ScriptUtil.ENV_SCRIPT_CACHE_ENTRIES)?.toLong() ?: ScriptUtil.DEFAULT_SCRIPT_CACHE_ENTRIES)
         .build<String, CompiledJsScript<CompiledScript>>()
 
-    override val requestBuilder = lazyScriptRequestBuilder
+    override val contextBuilder = LazyContextBuilder
 
     init {
         if (getJvmVersion() < 11) {
@@ -121,15 +121,15 @@ class NashornScriptServiceImpl : ScriptService, Plugin {
 
     override fun executeScript(
         script: ScriptSource,
-        runtimeContext: RuntimeContext
+        scriptBindings: ScriptBindings
     ): ReadWriteResponseBehaviour {
         LOGGER.trace("Evaluating script: {}", script)
         check(script.valid) { "Invalid script: $script" }
 
         try {
             val bindings = SimpleBindings(
-                JavaScriptUtil.transformRuntimeMap(
-                    runtimeContext,
+                JavaScriptUtil.transformBindingsMap(
+                    scriptBindings,
                     addDslPrefix = true,
                     addConsoleShim = true
                 )
@@ -157,14 +157,14 @@ class NashornScriptServiceImpl : ScriptService, Plugin {
     override fun executeEvalScript(
         scriptId: String,
         scriptCode: String,
-        runtimeContext: RuntimeContext
+        scriptBindings: ScriptBindings
     ): Boolean {
         LOGGER.trace("Executing eval script: {}", scriptId)
 
         try {
             val bindings = SimpleBindings(
-                JavaScriptUtil.transformRuntimeMap(
-                    runtimeContext,
+                JavaScriptUtil.transformBindingsMap(
+                    scriptBindings,
                     addDslPrefix = false,
                     addConsoleShim = false
                 )

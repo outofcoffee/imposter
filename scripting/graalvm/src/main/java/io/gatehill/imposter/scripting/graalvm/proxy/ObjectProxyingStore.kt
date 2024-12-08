@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024-2024.
+ * Copyright (c) 2024.
  *
  * This file is part of Imposter.
  *
@@ -41,15 +41,16 @@
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.gatehill.imposter.scripting.graalvm.storeproxy
+package io.gatehill.imposter.scripting.graalvm.proxy
 
 import io.gatehill.imposter.http.ExchangePhase
 import io.gatehill.imposter.store.core.Store
 import io.gatehill.imposter.util.MapUtil
 import org.graalvm.polyglot.Value
-import org.graalvm.polyglot.proxy.ProxyArray
-import org.graalvm.polyglot.proxy.ProxyObject
 
+/**
+ * Proxies a store to intercept access. All retrieved elements are proxied.
+ */
 class ObjectProxyingStore(private val delegate: Store) : Store {
     override val storeName: String
         get() = delegate.storeName
@@ -58,7 +59,15 @@ class ObjectProxyingStore(private val delegate: Store) : Store {
     override val isEphemeral: Boolean
         get() = delegate.isEphemeral
 
-    override fun save(key: String, value: Any?, phase: ExchangePhase) = delegate.save(key, value)
+    override fun save(key: String, value: Any?, phase: ExchangePhase) {
+        val v = when(value) {
+            is Value -> {
+                if (value.isHostObject) value.asHostObject() else value
+            }
+            else -> value
+        }
+        delegate.save(key, v)
+    }
 
     override fun <T> load(key: String): T? {
         val value = delegate.load<T?>(key)
@@ -81,71 +90,4 @@ class ObjectProxyingStore(private val delegate: Store) : Store {
     override fun hasItemWithKey(key: String) = delegate.hasItemWithKey(key)
 
     override fun count() = delegate.count()
-}
-
-object DeepProxy {
-    fun of(obj: Any): Any {
-        return when (obj) {
-            is Array<*> -> InterceptingList(obj.toList())
-            is List<*> -> InterceptingList(obj)
-            is Map<*, *> -> InterceptingObject(obj)
-            else -> obj
-        }
-    }
-}
-
-class InterceptingList(private val src: List<Any?>) : ProxyArray {
-    override fun get(index: Long): Any? {
-        if (index < 0 || index >= src.size) {
-            throw IndexOutOfBoundsException("Index out of bounds: $index, size: ${src.size}")
-        }
-        val value = src[index.toInt()]
-        return value?.let(DeepProxy::of)
-    }
-
-    override fun set(index: Long, value: Value?) {
-        check(src is MutableList)
-        value?.also {
-            val valueToSet = if (value.isHostObject) value.asHostObject() else value
-            src[index.toInt()] = valueToSet
-        }
-    }
-
-    override fun getSize(): Long {
-        return src.size.toLong()
-    }
-}
-
-class InterceptingObject(private val src: Map<*, *>) : ProxyObject {
-    override fun getMember(key: String?): Any? {
-        val value = src[key]
-        return value?.let(DeepProxy::of)
-    }
-
-    override fun getMemberKeys(): Any {
-        return ProxyArray.fromList(src.keys.toList())
-    }
-
-    override fun hasMember(key: String?): Boolean {
-        return key?.let { src.containsKey(key) } ?: false
-    }
-
-    override fun putMember(key: String, value: Value?) {
-        check(src is MutableMap)
-        value?.also {
-            @Suppress("UNCHECKED_CAST")
-            (src as MutableMap<Any?, Any?>)[key] = if (value.isHostObject) value.asHostObject() else value
-        }
-    }
-
-    override fun removeMember(key: String?): Boolean {
-        check(src is MutableMap)
-        if (src.containsKey(key)) {
-            @Suppress("UNCHECKED_CAST")
-            (src as MutableMap<Any?, Any?>).remove<Any?, Any?>(key)
-            return true
-        } else {
-            return false
-        }
-    }
 }

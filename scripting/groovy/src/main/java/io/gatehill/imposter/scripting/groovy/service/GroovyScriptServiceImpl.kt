@@ -46,9 +46,9 @@ import com.google.common.cache.CacheBuilder
 import groovy.lang.Binding
 import groovy.lang.GroovyClassLoader
 import io.gatehill.imposter.config.util.EnvVars
-import io.gatehill.imposter.model.script.lazyScriptRequestBuilder
+import io.gatehill.imposter.model.script.LazyContextBuilder
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
-import io.gatehill.imposter.script.RuntimeContext
+import io.gatehill.imposter.script.ScriptBindings
 import io.gatehill.imposter.script.ScriptUtil
 import io.gatehill.imposter.scripting.groovy.impl.GroovyDsl
 import io.gatehill.imposter.scripting.groovy.util.ScriptLoader
@@ -76,7 +76,7 @@ class GroovyScriptServiceImpl : ScriptService {
         .maximumSize(EnvVars.getEnv(ScriptUtil.ENV_SCRIPT_CACHE_ENTRIES)?.toLong() ?: ScriptUtil.DEFAULT_SCRIPT_CACHE_ENTRIES)
         .build<String, Class<GroovyDsl>>()
 
-    override val requestBuilder = lazyScriptRequestBuilder
+    override val contextBuilder = LazyContextBuilder
 
     init {
         val compilerConfig = CompilerConfiguration()
@@ -99,14 +99,14 @@ class GroovyScriptServiceImpl : ScriptService {
 
     override fun executeScript(
         script: ScriptSource,
-        runtimeContext: RuntimeContext
+        scriptBindings: ScriptBindings
     ): ReadWriteResponseBehaviour {
         LOGGER.trace("Executing script: {}", script)
 
         try {
             val scriptClass = getCompiledScript(script)
             val result = scriptClass.getDeclaredConstructor().newInstance().apply {
-                binding = convertBindings(runtimeContext, script)
+                binding = convertBindings(scriptBindings, script)
                 run()
             }
             return result.responseBehaviour
@@ -137,8 +137,8 @@ class GroovyScriptServiceImpl : ScriptService {
         }
     }
 
-    private fun convertBindings(runtimeContext: RuntimeContext, script: ScriptSource) = Binding().apply {
-        runtimeContext.asMap().forEach { (name: String, value: Any?) -> setVariable(name, value) }
+    private fun convertBindings(scriptBindings: ScriptBindings, script: ScriptSource) = Binding().apply {
+        scriptBindings.asMap().forEach { (name: String, value: Any?) -> setVariable(name, value) }
 
         // resolved path to the script
         setVariable(ScriptLoader.contextKeyScriptPath, script.file)

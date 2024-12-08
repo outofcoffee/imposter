@@ -68,17 +68,24 @@ class AdditionalContextPropertiesTest : AbstractBaseScriptTest() {
         val pluginConfig = configureScript()
         val resourceConfig = pluginConfig as BasicResourceConfig
 
-        val runtimeContext = buildRuntimeContext(mapOf(
-            "additional" to TestContextItem()
-        ))
+        val scriptBindings = buildScriptBindings(
+            additionalContext = mapOf(
+                "additional" to ParentItem()
+            )
+        )
         val script = resolveScriptFile(pluginConfig, resourceConfig)
-        val actual = getService().executeScript(script, runtimeContext)
+        val actual = getService().executeScript(script, scriptBindings)
 
         val content = actual.content
-        assertThat(content, equalTo("foo"))
+        assertThat(content, equalTo("foo bar"))
     }
 
-    class TestContextItem() {
-        val example = "foo"
+    class ParentItem() {
+        val name = "foo"
+        val child = ChildItem()
+    }
+
+    class ChildItem() {
+        val name = "bar"
     }
 }

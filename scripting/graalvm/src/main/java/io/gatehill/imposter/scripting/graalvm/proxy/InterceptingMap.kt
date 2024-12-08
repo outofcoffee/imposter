@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2024.
  *
  * This file is part of Imposter.
  *
@@ -40,46 +40,46 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.script
 
-import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.config.PluginConfigImpl
-import org.apache.logging.log4j.LogManager
-import org.apache.logging.log4j.Logger
+package io.gatehill.imposter.scripting.graalvm.proxy
+
+import org.graalvm.polyglot.Value
+import org.graalvm.polyglot.proxy.ProxyArray
+import org.graalvm.polyglot.proxy.ProxyObject
 
 /**
- * @author Pete Cornish
+ * Wraps a map to intercept access. All retrieved elements are proxied.
  */
-class RuntimeContext(
-    private val env: Map<String, String>,
-    private val logger: Logger,
-    private val pluginConfig: PluginConfig,
-    private val additionalBindings: Map<String, Any>?,
-    val executionContext: ExecutionContext
-) {
-
-    /**
-     * @return a representation of the runtime context as a [Map] of bindings
-     */
-    fun asMap(): Map<String, Any> {
-        val bindings: MutableMap<String, Any> = mutableMapOf()
-        bindings["config"] = pluginConfig
-        bindings["context"] = executionContext
-        bindings["env"] = env
-        bindings["logger"] = logger
-
-        // add custom bindings
-        additionalBindings?.let(bindings::putAll)
-        return bindings
+class InterceptingMap(private val src: Map<*, *>) : ProxyObject {
+    override fun getMember(key: String?): Any? {
+        val value = src[key]
+        return value?.let(DeepProxy::of)
     }
 
-    companion object {
-        val empty = RuntimeContext(
-            emptyMap(),
-            LogManager.getLogger("noop"),
-            PluginConfigImpl(),
-            emptyMap(),
-            ExecutionContext.empty
-        )
+    override fun getMemberKeys(): Any {
+        return ProxyArray.fromList(src.keys.toList())
+    }
+
+    override fun hasMember(key: String?): Boolean {
+        return key?.let { src.containsKey(key) } ?: false
+    }
+
+    override fun putMember(key: String, value: Value?) {
+        check(src is MutableMap)
+        value?.also {
+            @Suppress("UNCHECKED_CAST")
+            (src as MutableMap<Any?, Any?>)[key] = if (value.isHostObject) value.asHostObject() else value
+        }
+    }
+
+    override fun removeMember(key: String?): Boolean {
+        check(src is MutableMap)
+        if (src.containsKey(key)) {
+            @Suppress("UNCHECKED_CAST")
+            (src as MutableMap<Any?, Any?>).remove<Any?, Any?>(key)
+            return true
+        } else {
+            return false
+        }
     }
 }

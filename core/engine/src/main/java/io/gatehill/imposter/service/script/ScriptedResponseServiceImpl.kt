@@ -59,8 +59,7 @@ import io.gatehill.imposter.plugin.config.resource.EvalResourceConfig
 import io.gatehill.imposter.plugin.config.steps.StepType
 import io.gatehill.imposter.script.ExecutionContext
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
-import io.gatehill.imposter.script.RuntimeContext
-import io.gatehill.imposter.script.ScriptUtil
+import io.gatehill.imposter.script.ScriptBindings
 import io.gatehill.imposter.service.ScriptSource
 import io.gatehill.imposter.service.ScriptedResponseService
 import io.gatehill.imposter.service.StepService
@@ -189,13 +188,13 @@ class ScriptedResponseServiceImpl @Inject constructor(
             // execute the script using an appropriate implementation and read response behaviour
             val scriptService = scriptServiceFactory.fetchScriptService(script.source)
 
-            val executionContext = ScriptUtil.buildContext(scriptService.requestBuilder, httpExchange, additionalContext)
+            val executionContext = scriptService.contextBuilder(httpExchange.request, additionalContext)
             LOGGER.trace("Context for request: {}", Supplier<Any> { executionContext })
 
             val additionalBindings = getAdditionalBindings(httpExchange, scriptService.implName, executionContext)
             val scriptLogger = buildScriptLogger(script.source)
 
-            val runtimeContext = RuntimeContext(
+            val scriptBindings = ScriptBindings(
                 EnvVars.getEnv(),
                 scriptLogger,
                 pluginConfig,
@@ -203,7 +202,7 @@ class ScriptedResponseServiceImpl @Inject constructor(
                 executionContext
             )
 
-            val responseBehaviour = scriptService.executeScript(script, runtimeContext)
+            val responseBehaviour = scriptService.executeScript(script, scriptBindings)
 
             // fire post execution hooks
             scriptLifecycle.forEach { listener ->
@@ -255,7 +254,7 @@ class ScriptedResponseServiceImpl @Inject constructor(
         if (!scriptLifecycle.isEmpty) {
             val additionalBindings = mutableMapOf<String, Any>()
             scriptLifecycle.forEach { listener ->
-                listener.beforeBuildingRuntimeContext(
+                listener.beforeBuildingScriptBindings(
                     httpExchange,
                     scriptEngineName,
                     additionalBindings,

@@ -43,12 +43,12 @@
 package io.gatehill.imposter.scripting.graalvm.service
 
 import com.oracle.truffle.js.scriptengine.GraalJSEngineFactory
-import io.gatehill.imposter.model.script.lazyScriptRequestBuilder
+import io.gatehill.imposter.model.script.LazyContextBuilder
 import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.plugin.PluginInfo
 import io.gatehill.imposter.plugin.RequireModules
 import io.gatehill.imposter.script.ReadWriteResponseBehaviour
-import io.gatehill.imposter.script.RuntimeContext
+import io.gatehill.imposter.script.ScriptBindings
 import io.gatehill.imposter.script.dsl.Dsl
 import io.gatehill.imposter.script.dsl.FunctionHolder
 import io.gatehill.imposter.scripting.common.util.JavaScriptUtil
@@ -73,7 +73,7 @@ class GraalvmCompatScriptServiceImpl : ScriptService, Plugin {
 
     override val implName = "js-graal-compat"
 
-    override val requestBuilder = lazyScriptRequestBuilder
+    override val contextBuilder = LazyContextBuilder
 
     init {
         // quieten interpreter mode warning until native graal compiler included in module path - see:
@@ -85,7 +85,7 @@ class GraalvmCompatScriptServiceImpl : ScriptService, Plugin {
 
     override fun executeScript(
         script: ScriptSource,
-        runtimeContext: RuntimeContext
+        scriptBindings: ScriptBindings
     ): ReadWriteResponseBehaviour {
         LOGGER.trace("Evaluating script: {}", script)
 
@@ -96,8 +96,8 @@ class GraalvmCompatScriptServiceImpl : ScriptService, Plugin {
         bindings["polyglot.js.nashorn-compat"] = true
 
         try {
-            val globals = JavaScriptUtil.transformRuntimeMap(
-                runtimeContext,
+            val globals = JavaScriptUtil.transformBindingsMap(
+                scriptBindings,
                 addDslPrefix = true,
                 addConsoleShim = false
             )

@@ -44,10 +44,8 @@
 package io.gatehill.imposter.script
 
 import io.gatehill.imposter.config.util.EnvVars
-import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.http.HttpRequest
 import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.service.ScriptRequestBuilder
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -64,29 +62,6 @@ object ScriptUtil {
 
     private val forceHeaderKeyNormalisation =
         EnvVars.getEnv("IMPOSTER_NORMALISE_HEADER_KEYS")?.toBoolean() != false
-
-    /**
-     * Build an appropriate [ExecutionContext].
-     *
-     * @param httpExchange
-     * @param additionalContext
-     * @return the context
-     */
-    fun buildContext(
-        requestBuilder: ScriptRequestBuilder,
-        httpExchange: HttpExchange,
-        additionalContext: Map<String, Any>?,
-    ): ExecutionContext {
-        val request = requestBuilder(httpExchange.request)
-
-        // root context
-        val executionContext = ExecutionContext(request)
-
-        // additional context
-        additionalContext?.forEach { executionContext[it.key] = it.value }
-
-        return executionContext
-    }
 
     fun resolveScriptPath(pluginConfig: PluginConfig, scriptFile: String?): Path =
         Paths.get(pluginConfig.dir.absolutePath, scriptFile!!)

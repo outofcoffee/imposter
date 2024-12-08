@@ -141,7 +141,7 @@ class StoreServiceImpl @Inject constructor(
         }
     }
 
-    override fun beforeBuildingRuntimeContext(
+    override fun beforeBuildingScriptBindings(
         httpExchange: HttpExchange,
         scriptEngineName: String,
         additionalBindings: MutableMap<String, Any>,

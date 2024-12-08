@@ -81,9 +81,9 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
         val additionalBindings = mapOf(
             "hello" to "world"
         )
-        val runtimeContext = buildRuntimeContext(additionalBindings)
+        val scriptBindings = buildScriptBindings(additionalBindings)
         val script = resolveScriptFile(pluginConfig, resourceConfig)
-        val actual = getService().executeScript(script, runtimeContext)
+        val actual = getService().executeScript(script, scriptBindings)
 
         assertSuccessfulExecution(actual)
     }
@@ -96,9 +96,9 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
         val additionalBindings = mapOf(
             "hello" to "should not match"
         )
-        val runtimeContext = buildRuntimeContext(additionalBindings)
+        val scriptBindings = buildScriptBindings(additionalBindings)
         val script = resolveScriptFile(pluginConfig, resourceConfig)
-        val actual = getService().executeScript(script, runtimeContext)
+        val actual = getService().executeScript(script, scriptBindings)
 
         assertNotNull(actual)
         // zero as un-set by script
@@ -117,9 +117,9 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
         )
         val pathParams = mapOf("qux" to "quux")
 
-        val runtimeContext = buildRuntimeContext(additionalBindings, emptyMap(), pathParams, emptyMap(), emptyMap())
+        val scriptBindings = buildScriptBindings(additionalBindings, emptyMap(), pathParams, emptyMap(), emptyMap())
         val script = resolveScriptFile(pluginConfig, resourceConfig)
-        val actual = getService().executeScript(script, runtimeContext)
+        val actual = getService().executeScript(script, scriptBindings)
 
         assertNotNull(actual)
         assertEquals(203, actual.statusCode)
@@ -137,9 +137,9 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
         )
         val queryParams = mapOf("foo" to "bar")
 
-        val runtimeContext = buildRuntimeContext(additionalBindings, emptyMap(), emptyMap(), queryParams, emptyMap())
+        val scriptBindings = buildScriptBindings(additionalBindings, emptyMap(), emptyMap(), queryParams, emptyMap())
         val script = resolveScriptFile(pluginConfig, resourceConfig)
-        val actual = getService().executeScript(script, runtimeContext)
+        val actual = getService().executeScript(script, scriptBindings)
 
         assertNotNull(actual)
         assertEquals(200, actual.statusCode)
@@ -157,9 +157,9 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
         )
         val headers = mapOf("baz" to "qux")
 
-        val runtimeContext = buildRuntimeContext(additionalBindings, headers, emptyMap(), emptyMap(), emptyMap())
+        val scriptBindings = buildScriptBindings(additionalBindings, headers, emptyMap(), emptyMap(), emptyMap())
         val script = resolveScriptFile(pluginConfig, resourceConfig)
-        val actual = getService().executeScript(script, runtimeContext)
+        val actual = getService().executeScript(script, scriptBindings)
 
         assertNotNull(actual)
         assertEquals(202, actual.statusCode)
@@ -179,9 +179,9 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
         // request header casing should be normalised by the script engine
         val headers = mapOf("CORGE" to "grault")
 
-        val runtimeContext = buildRuntimeContext(additionalBindings, headers, emptyMap(), emptyMap(), emptyMap())
+        val scriptBindings = buildScriptBindings(additionalBindings, headers, emptyMap(), emptyMap(), emptyMap())
         val script = resolveScriptFile(pluginConfig, resourceConfig)
-        val actual = getService().executeScript(script, runtimeContext)
+        val actual = getService().executeScript(script, scriptBindings)
 
         assertNotNull(actual)
         assertEquals(202, actual.statusCode)
@@ -201,9 +201,9 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
         val env = mapOf(
             "example" to "foo"
         )
-        val runtimeContext = buildRuntimeContext(additionalBindings, emptyMap(), emptyMap(), emptyMap(), env)
+        val scriptBindings = buildScriptBindings(additionalBindings, emptyMap(), emptyMap(), emptyMap(), env)
         val script = resolveScriptFile(pluginConfig, resourceConfig)
-        val actual = getService().executeScript(script, runtimeContext)
+        val actual = getService().executeScript(script, scriptBindings)
 
         assertNotNull(actual)
         assertEquals(204, actual.statusCode)
@@ -216,12 +216,12 @@ abstract class AbstractScriptServiceImplTest : AbstractBaseScriptTest() {
         val additionalBindings = mapOf(
             "hello" to "world"
         )
-        val runtimeContext = buildRuntimeContext(additionalBindings)
+        val scriptBindings = buildScriptBindings(additionalBindings)
         val script = ScriptSource(
             source = "${UUID.randomUUID()}_eval.js",
             code = scriptCode,
         )
-        val actual = getService().executeScript(script, runtimeContext)
+        val actual = getService().executeScript(script, scriptBindings)
 
         assertSuccessfulExecution(actual)
     }

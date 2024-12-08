@@ -65,9 +65,9 @@ class GroovyScriptJsonTest : AbstractBaseScriptTest() {
         val pluginConfig = configureScript()
         val resourceConfig = pluginConfig as BasicResourceConfig
 
-        val runtimeContext = buildRuntimeContext(emptyMap(), body = """{ "hello": "world" }""")
+        val scriptBindings = buildScriptBindings(emptyMap(), body = """{ "hello": "world" }""")
         val script = resolveScriptFile(pluginConfig, resourceConfig)
-        val actual = getService().executeScript(script, runtimeContext)
+        val actual = getService().executeScript(script, scriptBindings)
 
         Assert.assertNotNull(actual)
         Assert.assertEquals("world", actual.content)

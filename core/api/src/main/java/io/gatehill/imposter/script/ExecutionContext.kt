@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021.
+ * Copyright (c) 2016-2024.
  *
  * This file is part of Imposter.
  *
@@ -47,31 +47,4 @@ package io.gatehill.imposter.script
  *
  * @author Pete Cornish
  */
-class ExecutionContext(
-    request: ScriptRequest
-) : HashMap<String, Any>() {
-
-    init {
-        put("request", request)
-    }
-
-    override fun get(key: String): Any? {
-        // legacy properties
-        if (key == "params") {
-            throw UnsupportedOperationException(
-                "Error: the deprecated 'context.params' property was removed. Use 'context.request.queryParams' or 'context.request.pathParams' instead."
-            )
-
-        } else if (key == "uri") {
-            throw UnsupportedOperationException(
-                "Error: the deprecated 'context.uri' property was removed. Use 'context.request.uri' instead."
-            )
-        }
-
-        return super.get(key)
-    }
-
-    companion object {
-        val empty: ExecutionContext = ExecutionContext(emptyScriptRequest)
-    }
-}
+typealias ExecutionContext = Any

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023.
+ * Copyright (c) 2024-2024.
  *
  * This file is part of Imposter.
  *
@@ -40,38 +40,60 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
-package io.gatehill.imposter.service
+
+package io.gatehill.imposter.scripting.graalvm.proxy
 
 import io.gatehill.imposter.http.HttpRequest
-import io.gatehill.imposter.script.ExecutionContext
-import io.gatehill.imposter.script.ReadWriteResponseBehaviour
-import io.gatehill.imposter.script.ScriptBindings
+import io.gatehill.imposter.script.ScriptUtil
+import io.gatehill.imposter.util.CollectionUtil
+import org.graalvm.polyglot.Value
+import org.graalvm.polyglot.proxy.ProxyObject
 
 /**
- * @author Pete Cornish
+ * Graal polyglot object proxy for request.
  */
-interface ScriptService {
-    val implName: String
-    val contextBuilder: ScriptContextBuilder
-
-    fun initScript(script: ScriptSource) {
-        // no op
+class RequestProxy(
+    private val req: HttpRequest,
+) : ProxyObject {
+    companion object {
+        private val properties = arrayOf(
+            "path",
+            "method",
+            "uri",
+            "headers",
+            "pathParams",
+            "queryParams",
+            "formParams",
+            "body",
+            "normalisedHeaders",
+        )
     }
 
-    fun initEvalScript(scriptId: String, scriptCode: String): Unit =
-        throw NotImplementedError()
+    override fun getMember(key: String?): Any? = when (key) {
+        "path" -> req.path
+        "method" -> req.method
+        "uri" -> req.absoluteUri
+        "headers" -> {
+            val h = ScriptUtil.caseHeaders(req)
+            ProxyObject.fromMap(h)
+        }
+        "pathParams" -> ProxyObject.fromMap(req.pathParams)
+        "queryParams" -> ProxyObject.fromMap(req.queryParams)
+        "formParams" -> ProxyObject.fromMap(req.formParams)
+        "body" -> req.body
+        "normalisedHeaders" -> {
+            val h = CollectionUtil.convertKeysToLowerCase(req.headers)
+            ProxyObject.fromMap(h)
+        }
+        else -> null
+    }
 
-    /**
-     * Execute the script and read response behaviour.
-     *
-     * @param script         the source of the script
-     * @param scriptBindings the script engine bindings
-     * @return the response behaviour
-     */
-    fun executeScript(script: ScriptSource, scriptBindings: ScriptBindings): ReadWriteResponseBehaviour
+    override fun getMemberKeys(): Array<*> = properties
 
-    fun executeEvalScript(scriptId: String, scriptCode: String, scriptBindings: ScriptBindings): Boolean =
-        throw NotImplementedError()
+    override fun hasMember(key: String?) =
+        key?.let { properties.contains(key) } ?: false
+
+    override fun putMember(key: String?, value: Value?) {
+        throw UnsupportedOperationException("Request cannot be modified")
+    }
 }
-
-typealias ScriptContextBuilder = (request: HttpRequest, additional: Map<String, Any>?) -> ExecutionContext

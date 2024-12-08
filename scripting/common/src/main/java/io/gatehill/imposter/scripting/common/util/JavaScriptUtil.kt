@@ -44,7 +44,7 @@
 package io.gatehill.imposter.scripting.common.util
 
 import io.gatehill.imposter.config.util.EnvVars
-import io.gatehill.imposter.script.RuntimeContext
+import io.gatehill.imposter.script.ScriptBindings
 import io.gatehill.imposter.script.dsl.DslImpl
 import io.gatehill.imposter.script.dsl.FunctionHolder
 import io.gatehill.imposter.scripting.common.shim.ConsoleShim
@@ -117,12 +117,12 @@ function require(moduleName) {
      * Always adds the DSL object and, optionally, a console shim and
      * no-op 'stores' object.
      */
-    fun transformRuntimeMap(
-        runtimeContext: RuntimeContext,
+    fun transformBindingsMap(
+        scriptBindings: ScriptBindings,
         addDslPrefix: Boolean,
         addConsoleShim: Boolean
     ): Map<String, *> {
-        val runtimeObjects = runtimeContext.asMap().toMutableMap()
+        val runtimeObjects = scriptBindings.asMap().toMutableMap()
         runtimeObjects[DSL_VAR_NAME] = DslImpl()
         if (!runtimeObjects.containsKey("stores")) {
             runtimeObjects["stores"] = Any()

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024-2024.
+ * Copyright (c) 2016-2023.
  *
  * This file is part of Imposter.
  *
@@ -40,61 +40,46 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.script
 
-package io.gatehill.imposter.scripting.graalvm.model
-
-import io.gatehill.imposter.http.HttpRequest
-import io.gatehill.imposter.model.script.SimpleScriptRequest
-import io.gatehill.imposter.script.ScriptRequest
-import io.gatehill.imposter.service.ScriptRequestBuilder
-import org.graalvm.polyglot.Value
-import org.graalvm.polyglot.proxy.ProxyObject
-
-// wrap request to allow property access syntactic sugar
-val objectProxyRequestBuilder: ScriptRequestBuilder = { request ->
-    RequestProxy(request)
-}
+import io.gatehill.imposter.plugin.config.PluginConfig
+import io.gatehill.imposter.plugin.config.PluginConfigImpl
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 
 /**
- * Graal polyglot object proxy for [ScriptRequest].
+ * @author Pete Cornish
  */
-class RequestProxy(
-    request: HttpRequest,
-) : SimpleScriptRequest(request), ProxyObject {
+class ScriptBindings(
+    private val env: Map<String, String>,
+    private val logger: Logger,
+    private val pluginConfig: PluginConfig,
+    private val additionalBindings: Map<String, Any>?,
+    val executionContext: ExecutionContext
+) {
+
+    /**
+     * @return a representation of the script bindings as a [Map]
+     */
+    fun asMap(): Map<String, Any> {
+        val bindings: MutableMap<String, Any> = mutableMapOf()
+        bindings["config"] = pluginConfig
+        bindings["context"] = executionContext
+        bindings["env"] = env
+        bindings["logger"] = logger
+
+        // add custom bindings
+        additionalBindings?.let(bindings::putAll)
+        return bindings
+    }
 
     companion object {
-        private val properties = arrayOf(
-            "path",
-            "method",
-            "uri",
-            "headers",
-            "pathParams",
-            "queryParams",
-            "formParams",
-            "body",
-            "normalisedHeaders",
+        val empty = ScriptBindings(
+            emptyMap(),
+            LogManager.getLogger("noop"),
+            PluginConfigImpl(),
+            emptyMap(),
+            ExecutionContext()
         )
-    }
-
-    override fun getMember(key: String?): Any? = when (key) {
-        "path" -> path
-        "method" -> method
-        "uri" -> uri
-        "headers" -> ProxyObject.fromMap(headers)
-        "pathParams" -> ProxyObject.fromMap(pathParams)
-        "queryParams" -> ProxyObject.fromMap(queryParams)
-        "formParams" -> ProxyObject.fromMap(formParams)
-        "body" -> body
-        "normalisedHeaders" -> ProxyObject.fromMap(normalisedHeaders)
-        else -> null
-    }
-
-    override fun getMemberKeys(): Array<*> = properties
-
-    override fun hasMember(key: String?) =
-        key?.let { properties.contains(key) } ?: false
-
-    override fun putMember(key: String?, value: Value?) {
-        throw UnsupportedOperationException("Request cannot be modified")
     }
 }

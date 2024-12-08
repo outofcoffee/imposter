@@ -53,14 +53,14 @@ import io.gatehill.imposter.script.ReadWriteResponseBehaviour
  */
 interface ScriptLifecycleListener {
     /**
-     * Invoked before building the script runtime context.
+     * Invoked before building the script bindings.
      *
      * @param httpExchange the HTTP exchange
      * @param scriptEngineName the script engine implementation
      * @param additionalBindings the additional bindings that will be passed to the script
      * @param executionContext   the script execution context
      */
-    fun beforeBuildingRuntimeContext(
+    fun beforeBuildingScriptBindings(
         httpExchange: HttpExchange,
         scriptEngineName: String,
         additionalBindings: MutableMap<String, Any>,
