@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.3.0] - 2024-12-12
+### Added
+- feat: performs healthcheck on Graal JS scripts at init time.
+
+### Changed
+- chore(deps): bump com.fasterxml.jackson.core:jackson-databind
+- docs: describes capture of body and header in CLI proxy.
+- refactor: adds shim for Micrometer to use Log4J2.
+- refactor: configures Micrometer and Netty to use Log4J2 instead of SLF4J 1.7.
+- refactor: deep proxy Graal context.
+- test: adds failing test to cover #621.
+
 ## [4.2.4] - 2024-11-20
 ### Changed
 - chore: bumps CLI to 0.45.0.
