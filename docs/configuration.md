@@ -222,6 +222,23 @@ resources:
 
 You can also match resources based on the request body (both JSON and XML are supported). See [advanced matching](./request_matching.md) for details.
 
+### Matching paths with a trailing wildcard
+
+You can match paths with a trailing wildcard (`*`) to match multiple paths. For example:
+
+```yaml
+plugin: rest
+
+resources:
+  - path: "/example/*"
+    method: GET
+    response:
+      statusCode: 200
+      content: "This is a wildcard response."
+```
+
+In this example, the response will be returned for any path starting with `/example/`.
+
 ## Capturing data
 
 Imposter allows you to capture elements of the request. You can use these elements in a [response template](./templates.md), a [script](./scripting.md) or add them to a [store](./stores.md) for later use.
