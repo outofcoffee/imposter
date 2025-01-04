@@ -319,6 +319,107 @@ resources:
 > **Note**
 > If no `operator` is specified, then `EqualTo` is used.
 
+## Matching using expressions
+
+You can match resources using expressions, using the [template syntax](./templates.md). This provides a powerful way to match against request attributes (including headers, path parameters, query parameters, or body content) as well as store items (including the `request` store).
+
+Specify the match configuration using the `evals` property of a resource. Each eval matcher consists of an expression to evaluate, an operator, and a value to match against.
+
+For example:
+
+```yaml
+resources:
+- method: POST
+  path: /example
+  evals:
+    - expression: "${context.request.headers.X-Test}"
+      operator: EqualTo
+      value: test-value
+  response:
+    statusCode: 204
+```
+
+This example will match a request with a header like this:
+
+```
+X-Test: test-value
+```
+
+### Multiple expressions
+
+You can specify multiple expressions, all of which must evaluate to true for the resource to be matched.
+
+For example:
+
+```yaml
+resources:
+- method: POST
+  path: /example
+  evals:
+    - expression: "${context.request.headers.X-Test1}"
+      operator: EqualTo
+      value: test-value-1
+    - expression: "${context.request.headers.X-Test2}"
+      operator: EqualTo
+      value: test-value-2
+  response:
+    content: "All expressions matched"
+```
+
+This example will match a request with both headers:
+
+```
+X-Test1: test-value-1
+X-Test2: test-value-2
+```
+
+### Using match operators
+
+Any of the match operators, such as `Contains` and `Matches`, can be used in an eval matcher. If no operator is specified, `EqualTo` is used by default.
+
+For example, using the `Contains` operator:
+
+```yaml
+resources:
+- method: POST
+  path: /example
+  evals:
+    - expression: "${context.request.headers.X-Test}"
+      operator: Contains
+      value: "test"
+  response:
+    content: "Header contains test"
+```
+
+Or using a regular expression with the `Matches` operator:
+
+```yaml
+resources:
+- method: POST
+  path: /example
+  evals:
+    - expression: "${context.request.headers.X-Test}"
+      operator: Matches
+      value: "test-.*"
+  response:
+    content: "Header matches pattern"
+```
+
+### Expression syntax
+
+Expressions use the template syntax. See [Response templates](./templates.md) for details of the available placeholders and syntax.
+
+Common placeholders include:
+
+- `${context.request.headers.HEADER_NAME}` - Access request headers
+- `${context.request.pathParams.PARAM_NAME}` - Access path parameters
+- `${context.request.queryParams.PARAM_NAME}` - Access query parameters
+- `${context.request.body}` - Access the raw request body
+- `${context.request.path}` - Access the request path
+- `${context.request.uri}` - Access the full request URI
+- `${stores.request.someKey}` - Access a value stored in the `request` store
+- `${stores.example.someKey}` - Access a value stored in the `example` store
+
 ## Resource matching performance
 
 [Resource matching](./configuration.md) is typically the fastest method of providing conditional responses. This is the case for request properties such as headers, query parameters, path parameters, path and HTTP method. In the case of using JsonPath or XPath to query the request body to conditionally match resources, however, the body must be parsed, which is computationally expensive and will result in lower performance.

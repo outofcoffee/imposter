@@ -43,12 +43,13 @@
 package io.gatehill.imposter.http
 
 import com.google.common.base.Strings.isNullOrEmpty
-import com.google.common.cache.CacheBuilder
 import io.gatehill.imposter.config.ResolvedResourceConfig
 import io.gatehill.imposter.http.util.PathNormaliser
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.resource.conditional.MatchOperator
+import io.gatehill.imposter.plugin.config.resource.eval.EvalMatcherConfig
+import io.gatehill.imposter.plugin.config.resource.eval.EvalMatchersConfigHolder
 import io.gatehill.imposter.plugin.config.resource.request.BaseRequestBodyConfig
 import io.gatehill.imposter.plugin.config.resource.request.RequestBodyResourceConfig
 import io.gatehill.imposter.plugin.config.system.SystemConfigHolder
@@ -57,8 +58,8 @@ import io.gatehill.imposter.util.BodyQueryUtil
 import io.gatehill.imposter.util.InjectorUtil
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.MatchUtil
+import io.gatehill.imposter.util.PlaceholderUtil
 import org.apache.logging.log4j.LogManager
-import java.util.regex.Pattern
 
 
 /**
@@ -366,6 +367,50 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
         return match
     }
 
+    /**
+     * Match evals against the request.
+     */
+    protected fun matchEvals(
+        httpExchange: HttpExchange,
+        resourceConfig: BasicResourceConfig
+    ): ResourceMatchResult {
+        if (resourceConfig !is EvalMatchersConfigHolder) {
+            return ResourceMatchResult.noConfig("evals")
+        }
+
+        val evals = resourceConfig.evals ?: return ResourceMatchResult.noConfig("evals")
+        if (evals.isEmpty()) {
+            return ResourceMatchResult.noConfig("evals")
+        }
+
+        // evaluate each expression and check if it matches
+        val results = evals.map { evalConfig ->
+            matchUsingEvalConfig(httpExchange, evalConfig)
+        }
+
+        // all must match
+        return if (results.all { it }) {
+            ResourceMatchResult.exactMatch("evals")
+        } else {
+            ResourceMatchResult.notMatched("evals")
+        }
+    }
+
+    private fun matchUsingEvalConfig(
+        httpExchange: HttpExchange,
+        evalConfig: EvalMatcherConfig
+    ): Boolean {
+        val expression = evalConfig.expression ?: return false
+        val operator = evalConfig.operator ?: MatchOperator.EqualTo
+        val expectedValue = evalConfig.value
+
+        // evaluate the expression
+        val actualValue = PlaceholderUtil.replace(expression, httpExchange, PlaceholderUtil.templateEvaluators)
+
+        // compare using the operator
+        return MatchUtil.conditionMatches(expectedValue, operator, actualValue)
+    }
+
     protected fun matchEval(
         httpExchange: HttpExchange,
         pluginConfig: PluginConfig,
@@ -411,6 +456,5 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
 
     companion object {
         private val LOGGER = LogManager.getLogger(AbstractResourceMatcher::class.java)
-        private val patternCache = CacheBuilder.newBuilder().maximumSize(20).build<String, Pattern>()
     }
 }

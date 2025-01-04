@@ -88,6 +88,7 @@ class SoapResourceMatcher(
             matchOperation(resourceConfig, pluginConfig, httpExchange, soapAction),
             matchRequestBody(httpExchange, pluginConfig, resource.config),
             matchEval(httpExchange, pluginConfig, resource),
+            matchEvals(httpExchange, resource.config),
         )
         return determineMatch(matchResults, resource, httpExchange)
     }

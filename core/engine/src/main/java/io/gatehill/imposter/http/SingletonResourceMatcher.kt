@@ -49,8 +49,7 @@ import io.gatehill.imposter.plugin.config.resource.conditional.ConditionalNameVa
 import io.gatehill.imposter.plugin.config.resource.request.MethodResourceConfig
 import io.gatehill.imposter.util.CollectionUtil.convertKeysToLowerCase
 import io.gatehill.imposter.util.MatchUtil.conditionMatches
-import java.util.Locale
-
+import java.util.*
 
 /**
  * Matches resources using elements of the HTTP request.
@@ -58,9 +57,6 @@ import java.util.Locale
  * @author Pete Cornish
  */
 class SingletonResourceMatcher : AbstractResourceMatcher() {
-    /**
-     * {@inheritDoc}
-     */
     override fun matchRequest(
         pluginConfig: PluginConfig,
         resource: ResolvedResourceConfig,
@@ -78,6 +74,7 @@ class SingletonResourceMatcher : AbstractResourceMatcher() {
             matchPairs("headers", request.headers, resource.requestHeaders, false),
             matchRequestBody(httpExchange, pluginConfig, resource.config),
             matchEval(httpExchange, pluginConfig, resource),
+            matchEvals(httpExchange, resource.config),
         )
         return determineMatch(matchResults, resource, httpExchange)
     }

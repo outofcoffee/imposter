@@ -1,0 +1,77 @@
+plugin: "io.gatehill.imposter.plugin.test.TestPluginImpl"
+
+resources:
+- method: POST
+  path: /example
+  evals:
+    - expression: "${context.request.headers.X-Test}"
+      operator: EqualTo
+      value: test-value
+  response:
+    statusCode: 204
+
+- method: POST
+  path: /example-negative
+  evals:
+    - expression: "${context.request.headers.X-Test}"
+      operator: NotEqualTo
+      value: wrong-value
+  response:
+    content: "NotEqualTo"
+
+- method: POST
+  path: /example-contains
+  evals:
+    - expression: "${context.request.headers.X-Test}"
+      operator: Contains
+      value: "test"
+  response:
+    content: "Contains"
+
+- method: POST
+  path: /example-contains-negative
+  evals:
+    - expression: "${context.request.headers.X-Test}"
+      operator: NotContains
+      value: "wrong"
+  response:
+    content: "NotContains"
+
+- method: POST
+  path: /example-regex
+  evals:
+    - expression: "${context.request.headers.X-Test}"
+      operator: Matches
+      value: "test-.*"
+  response:
+    content: "Matches"
+
+- method: POST
+  path: /example-regex-negative
+  evals:
+    - expression: "${context.request.headers.X-Test}"
+      operator: NotMatches
+      value: "test-.*"
+  response:
+    content: "NotMatches"
+
+- method: POST
+  path: /example-allof
+  evals:
+    - expression: "${context.request.headers.X-Test1}"
+      operator: EqualTo
+      value: test-value-1
+    - expression: "${context.request.headers.X-Test2}"
+      operator: EqualTo
+      value: test-value-2
+  response:
+    content: "AllOf"
+
+- method: POST
+  path: /example-anyof
+  evals:
+    - expression: "${context.request.headers.X-Test}"
+      operator: EqualTo
+      value: test-value-1
+  response:
+    content: "AnyOf"
