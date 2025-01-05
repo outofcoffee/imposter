@@ -13,7 +13,7 @@ There are many ways to run Imposter. This section describes how to use the Docke
 > #### Embedded in tests
 > 
 > - Embedded within your **Java/Kotlin/Scala/JVM** unit tests - see [JVM bindings](./embed_jvm.md) 
-> - Embedded within your **JavaScript/Node.js** unit tests - see [JavaScript bindings](https://github.com/gatehill/imposter-js)
+> - Embedded within your **JavaScript/Node.js** unit tests - see [JavaScript bindings](https://github.com/imposter-project/imposter-js)
 
 ## Docker Image Features
 
