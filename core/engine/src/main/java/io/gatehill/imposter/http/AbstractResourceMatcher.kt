@@ -48,8 +48,8 @@ import io.gatehill.imposter.http.util.PathNormaliser
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.resource.conditional.MatchOperator
-import io.gatehill.imposter.plugin.config.resource.eval.EvalMatcherConfig
-import io.gatehill.imposter.plugin.config.resource.eval.EvalMatchersConfigHolder
+import io.gatehill.imposter.plugin.config.resource.expression.ExpressionMatcherConfig
+import io.gatehill.imposter.plugin.config.resource.expression.ExpressionMatchersConfigHolder
 import io.gatehill.imposter.plugin.config.resource.request.BaseRequestBodyConfig
 import io.gatehill.imposter.plugin.config.resource.request.RequestBodyResourceConfig
 import io.gatehill.imposter.plugin.config.system.SystemConfigHolder
@@ -374,31 +374,31 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
         httpExchange: HttpExchange,
         resourceConfig: BasicResourceConfig
     ): ResourceMatchResult {
-        if (resourceConfig !is EvalMatchersConfigHolder) {
-            return ResourceMatchResult.noConfig("evals")
+        if (resourceConfig !is ExpressionMatchersConfigHolder) {
+            return ResourceMatchResult.noConfig("allOf")
         }
 
-        val evals = resourceConfig.evals ?: return ResourceMatchResult.noConfig("evals")
-        if (evals.isEmpty()) {
-            return ResourceMatchResult.noConfig("evals")
+        val allOf = resourceConfig.allOf ?: return ResourceMatchResult.noConfig("allOf")
+        if (allOf.isEmpty()) {
+            return ResourceMatchResult.noConfig("allOf")
         }
 
         // evaluate each expression and check if it matches
-        val results = evals.map { evalConfig ->
+        val results = allOf.map { evalConfig ->
             matchUsingEvalConfig(httpExchange, evalConfig)
         }
 
         // all must match
         return if (results.all { it }) {
-            ResourceMatchResult.exactMatch("evals")
+            ResourceMatchResult.exactMatch("allOf")
         } else {
-            ResourceMatchResult.notMatched("evals")
+            ResourceMatchResult.notMatched("allOf")
         }
     }
 
     private fun matchUsingEvalConfig(
         httpExchange: HttpExchange,
-        evalConfig: EvalMatcherConfig
+        evalConfig: ExpressionMatcherConfig
     ): Boolean {
         val expression = evalConfig.expression ?: return false
         val operator = evalConfig.operator ?: MatchOperator.EqualTo

@@ -323,7 +323,7 @@ resources:
 
 You can match resources using expressions, using the [template syntax](./templates.md). This provides a powerful way to match against request attributes (including headers, path parameters, query parameters, or body content) as well as store items (including the `request` store).
 
-Specify the match configuration using the `evals` property of a resource. Each eval matcher consists of an expression to evaluate, an operator, and a value to match against.
+Specify the match configuration using the `allOf` property of a resource. Each matcher consists of an expression to evaluate, an operator, and a value to match against. All expressions must evaluate to true for the resource to be matched.
 
 For example:
 
@@ -331,7 +331,7 @@ For example:
 resources:
 - method: POST
   path: /example
-  evals:
+  allOf:
     - expression: "${context.request.headers.X-Test}"
       operator: EqualTo
       value: test-value
@@ -355,7 +355,7 @@ For example:
 resources:
 - method: POST
   path: /example
-  evals:
+  allOf:
     - expression: "${context.request.headers.X-Test1}"
       operator: EqualTo
       value: test-value-1
@@ -375,7 +375,7 @@ X-Test2: test-value-2
 
 ### Using match operators
 
-Any of the match operators, such as `Contains` and `Matches`, can be used in an eval matcher. If no operator is specified, `EqualTo` is used by default.
+Any of the match operators, such as `Contains` and `Matches`, can be used in an expression matcher. If no operator is specified, `EqualTo` is used by default.
 
 For example, using the `Contains` operator:
 
@@ -383,7 +383,7 @@ For example, using the `Contains` operator:
 resources:
 - method: POST
   path: /example
-  evals:
+  allOf:
     - expression: "${context.request.headers.X-Test}"
       operator: Contains
       value: "test"
@@ -397,7 +397,7 @@ Or using a regular expression with the `Matches` operator:
 resources:
 - method: POST
   path: /example
-  evals:
+  allOf:
     - expression: "${context.request.headers.X-Test}"
       operator: Matches
       value: "test-.*"

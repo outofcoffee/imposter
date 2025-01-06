@@ -48,8 +48,8 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import io.gatehill.imposter.http.HttpMethod
 import io.gatehill.imposter.plugin.config.resource.conditional.ConditionalNameValuePair
 import io.gatehill.imposter.plugin.config.resource.conditional.MatchOperator
-import io.gatehill.imposter.plugin.config.resource.eval.EvalMatcherConfig
-import io.gatehill.imposter.plugin.config.resource.eval.EvalMatchersConfigHolder
+import io.gatehill.imposter.plugin.config.resource.expression.ExpressionMatcherConfig
+import io.gatehill.imposter.plugin.config.resource.expression.ExpressionMatchersConfigHolder
 import io.gatehill.imposter.plugin.config.resource.request.FormParamsResourceConfig
 import io.gatehill.imposter.plugin.config.resource.request.LegacyQueryParamsResourceConfig
 import io.gatehill.imposter.plugin.config.resource.request.MethodResourceConfig
@@ -92,7 +92,8 @@ open class RestResourceConfig(
 
 ) : AbstractResourceConfig(), MethodResourceConfig, PathParamsResourceConfig,
     QueryParamsResourceConfig, LegacyQueryParamsResourceConfig, RequestHeadersResourceConfig, FormParamsResourceConfig,
-    RequestBodyResourceConfig, EvalResourceConfig, PassthroughResourceConfig, StepsConfigHolder, EvalMatchersConfigHolder {
+    RequestBodyResourceConfig, EvalResourceConfig, PassthroughResourceConfig, StepsConfigHolder,
+    ExpressionMatchersConfigHolder {
 
     @field:JsonProperty("method")
     override var method: HttpMethod? = null
@@ -135,10 +136,10 @@ open class RestResourceConfig(
     @field:JsonProperty("steps")
     override val steps: List<StepConfig>? = null
 
-    @field:JsonProperty("evals")
-    override var evals: List<EvalMatcherConfig>? = null
+    @field:JsonProperty("allOf")
+    override var allOf: List<ExpressionMatcherConfig>? = null
 
     override fun toString(): String {
-        return "RestResourceConfig(parent=${super.toString()}, method=$method, pathParams=$pathParams, queryParams=$queryParams, formParams=$formParams, requestHeaders=$requestHeaders, requestBody=$requestBody, eval=$eval, passthrough=$passthrough, evals=$evals)"
+        return "RestResourceConfig(parent=${super.toString()}, method=$method, pathParams=$pathParams, queryParams=$queryParams, formParams=$formParams, requestHeaders=$requestHeaders, requestBody=$requestBody, eval=$eval, passthrough=$passthrough, allOf=$allOf)"
     }
 }
