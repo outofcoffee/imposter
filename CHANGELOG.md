@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.5.0] - 2025-01-06
+### Added
+- feat: adds anyOf expression matcher.
+
+### Changed
+- docs: updates links to JavaScript bindings to https://github.com/imposter-project.
+- refactor: improves expression matcher config naming.
+
 ## [4.4.0] - 2025-01-04
 ### Added
 - feat: adds expression evaluator resource matcher.
