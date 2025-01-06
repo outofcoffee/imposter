@@ -68,10 +68,37 @@ resources:
     content: "AllOf"
 
 - method: POST
-  path: /example-anyof
-  allOf:
-    - expression: "${context.request.headers.X-Test}"
+  path: /example-anyof-match-first
+  anyOf:
+    - expression: "${context.request.headers.X-Test1}"
       operator: EqualTo
       value: test-value-1
+    - expression: "${context.request.headers.X-Test2}"
+      operator: EqualTo
+      value: test-value-2
   response:
     content: "AnyOf"
+
+- method: POST
+  path: /example-anyof-match-second
+  anyOf:
+    - expression: "${context.request.headers.X-Test1}"
+      operator: EqualTo
+      value: test-value-1
+    - expression: "${context.request.headers.X-Test2}"
+      operator: EqualTo
+      value: test-value-2
+  response:
+    content: "AnyOf"
+
+- method: POST
+  path: /example-anyof-no-match
+  anyOf:
+    - expression: "${context.request.headers.X-Test1}"
+      operator: EqualTo
+      value: wrong-value-1
+    - expression: "${context.request.headers.X-Test2}"
+      operator: EqualTo
+      value: wrong-value-2
+  response:
+    statusCode: 404

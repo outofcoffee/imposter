@@ -51,4 +51,9 @@ interface ExpressionMatchersConfigHolder {
      * The list of expression matchers that must all match.
      */
     var allOf: List<ExpressionMatcherConfig>?
+
+    /**
+     * The list of expression matchers where at least one must match.
+     */
+    var anyOf: List<ExpressionMatcherConfig>?
 }

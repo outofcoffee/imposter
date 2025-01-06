@@ -323,7 +323,9 @@ resources:
 
 You can match resources using expressions, using the [template syntax](./templates.md). This provides a powerful way to match against request attributes (including headers, path parameters, query parameters, or body content) as well as store items (including the `request` store).
 
-Specify the match configuration using the `allOf` property of a resource. Each matcher consists of an expression to evaluate, an operator, and a value to match against. All expressions must evaluate to true for the resource to be matched.
+### Using allOf expressions
+
+Use the `allOf` property when all expressions must evaluate to true for the resource to be matched.
 
 For example:
 
@@ -332,45 +334,54 @@ resources:
 - method: POST
   path: /example
   allOf:
-    - expression: "${context.request.headers.X-Test}"
+    - expression: "${context.request.headers.Authorization}"
+      operator: Matches
+      value: "Bearer .*"
+    - expression: "${context.request.headers.X-API-Version}"
       operator: EqualTo
-      value: test-value
+      value: "2024-01"
   response:
     statusCode: 204
-```
-
-This example will match a request with a header like this:
-
-```
-X-Test: test-value
-```
-
-### Multiple expressions
-
-You can specify multiple expressions, all of which must evaluate to true for the resource to be matched.
-
-For example:
-
-```yaml
-resources:
-- method: POST
-  path: /example
-  allOf:
-    - expression: "${context.request.headers.X-Test1}"
-      operator: EqualTo
-      value: test-value-1
-    - expression: "${context.request.headers.X-Test2}"
-      operator: EqualTo
-      value: test-value-2
-  response:
-    content: "All expressions matched"
 ```
 
 This example will match a request with both headers:
 
 ```
-X-Test1: test-value-1
-X-Test2: test-value-2
+Authorization: Bearer abc123
+X-API-Version: 2024-01
+```
+
+### Using anyOf expressions
+
+Use the `anyOf` property when at least one expression must evaluate to true for the resource to be matched.
+
+For example:
+
+```yaml
+resources:
+- method: POST
+  path: /example
+  anyOf:
+    - expression: "${context.request.headers.X-Legacy-Auth}"
+      operator: EqualTo
+      value: "legacy-token"
+    - expression: "${context.request.headers.Authorization}"
+      operator: Matches
+      value: "Bearer .*"
+  response:
+    statusCode: 204
+```
+
+This example will match a request with either header:
+
+```
+X-Legacy-Auth: legacy-token
+```
+
+or:
+
+```
+Authorization: Bearer abc123
 ```
 
 ### Using match operators

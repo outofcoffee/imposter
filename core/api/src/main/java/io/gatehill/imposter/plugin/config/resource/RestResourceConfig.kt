@@ -139,7 +139,10 @@ open class RestResourceConfig(
     @field:JsonProperty("allOf")
     override var allOf: List<ExpressionMatcherConfig>? = null
 
+    @field:JsonProperty("anyOf")
+    override var anyOf: List<ExpressionMatcherConfig>? = null
+
     override fun toString(): String {
-        return "RestResourceConfig(parent=${super.toString()}, method=$method, pathParams=$pathParams, queryParams=$queryParams, formParams=$formParams, requestHeaders=$requestHeaders, requestBody=$requestBody, eval=$eval, passthrough=$passthrough, allOf=$allOf)"
+        return "RestResourceConfig(parent=${super.toString()}, method=$method, pathParams=$pathParams, queryParams=$queryParams, formParams=$formParams, requestHeaders=$requestHeaders, requestBody=$requestBody, eval=$eval, passthrough=$passthrough, allOf=$allOf, anyOf=$anyOf)"
     }
 }

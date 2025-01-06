@@ -52,12 +52,12 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * Tests for eval matcher functionality.
+ * Tests for expression matcher functionality.
  *
  * @author Pete Cornish
  */
 @RunWith(VertxUnitRunner::class)
-class EvalMatcherTest : BaseVerticleTest() {
+class ExpressionMatcherTest : BaseVerticleTest() {
     override val pluginClass = TestPluginImpl::class.java
 
     @Before
@@ -69,7 +69,7 @@ class EvalMatcherTest : BaseVerticleTest() {
     }
 
     override val testConfigDirs = listOf(
-        "/eval-matcher"
+        "/expression-matcher"
     )
 
     /**
@@ -145,7 +145,7 @@ class EvalMatcherTest : BaseVerticleTest() {
     }
 
     /**
-     * Match requiring multiple header values using eval.
+     * Match requiring multiple header values using allOf.
      */
     @Test
     fun testAllOfMatchHeadersUsingEval() {
@@ -158,14 +158,41 @@ class EvalMatcherTest : BaseVerticleTest() {
     }
 
     /**
-     * Match requiring any of header values using eval.
+     * Match requiring any of header values using anyOf - first header matches.
      */
     @Test
-    fun testAnyOfMatchHeaderUsingEval() {
+    fun testAnyOfMatchHeadersFirstMatches() {
         RestAssured.given().`when`()
-            .header("X-Test", "test-value-1")
-            .post("/example-anyof")
+            .header("X-Test1", "test-value-1")
+            .header("X-Test2", "wrong-value")
+            .post("/example-anyof-match-first")
             .then()
             .body(equalTo("AnyOf"))
+    }
+
+    /**
+     * Match requiring any of header values using anyOf - second header matches.
+     */
+    @Test
+    fun testAnyOfMatchHeadersSecondMatches() {
+        RestAssured.given().`when`()
+            .header("X-Test1", "wrong-value")
+            .header("X-Test2", "test-value-2")
+            .post("/example-anyof-match-second")
+            .then()
+            .body(equalTo("AnyOf"))
+    }
+
+    /**
+     * Match requiring any of header values using anyOf - no headers match.
+     */
+    @Test
+    fun testAnyOfMatchHeadersNoMatch() {
+        RestAssured.given().`when`()
+            .header("X-Test1", "wrong-value-1")
+            .header("X-Test2", "wrong-value-2")
+            .post("/example-anyof-no-match")
+            .then()
+            .statusCode(equalTo(404))
     }
 }

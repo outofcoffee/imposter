@@ -74,7 +74,7 @@ class SingletonResourceMatcher : AbstractResourceMatcher() {
             matchPairs("headers", request.headers, resource.requestHeaders, false),
             matchRequestBody(httpExchange, pluginConfig, resource.config),
             matchEval(httpExchange, pluginConfig, resource),
-            matchEvals(httpExchange, resource.config),
+            matchExpressions(httpExchange, resource.config),
         )
         return determineMatch(matchResults, resource, httpExchange)
     }

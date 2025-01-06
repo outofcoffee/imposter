@@ -368,35 +368,44 @@ abstract class AbstractResourceMatcher : ResourceMatcher {
     }
 
     /**
-     * Match evals against the request.
+     * Match expressions against the request.
      */
-    protected fun matchEvals(
+    protected fun matchExpressions(
         httpExchange: HttpExchange,
         resourceConfig: BasicResourceConfig
     ): ResourceMatchResult {
         if (resourceConfig !is ExpressionMatchersConfigHolder) {
-            return ResourceMatchResult.noConfig("allOf")
+            return ResourceMatchResult.noConfig("expressions")
         }
 
-        val allOf = resourceConfig.allOf ?: return ResourceMatchResult.noConfig("allOf")
-        if (allOf.isEmpty()) {
-            return ResourceMatchResult.noConfig("allOf")
-        }
+        val allOf = resourceConfig.allOf
+        val anyOf = resourceConfig.anyOf
 
-        // evaluate each expression and check if it matches
-        val results = allOf.map { evalConfig ->
-            matchUsingEvalConfig(httpExchange, evalConfig)
-        }
+        if (!allOf.isNullOrEmpty()) {
+            val allOfResults = allOf.map { evalConfig ->
+                matchUsingExpressionConfig(httpExchange, evalConfig)
+            }
+            if (!allOfResults.all { it }) {
+                return ResourceMatchResult.notMatched("allOf")
+            }
+            // each matched config contributes to the weight
+            return ResourceMatchResult.exactMatch("allOf", allOf.size)
 
-        // all must match
-        return if (results.all { it }) {
-            ResourceMatchResult.exactMatch("allOf")
+        } else if (!anyOf.isNullOrEmpty()) {
+            val anyOfResults = anyOf.map { evalConfig ->
+                matchUsingExpressionConfig(httpExchange, evalConfig)
+            }
+            if (!anyOfResults.any { it }) {
+                return ResourceMatchResult.notMatched("anyOf")
+            }
+            return ResourceMatchResult.exactMatch("anyOf")
+
         } else {
-            ResourceMatchResult.notMatched("allOf")
+            return ResourceMatchResult.noConfig("expressions")
         }
     }
 
-    private fun matchUsingEvalConfig(
+    private fun matchUsingExpressionConfig(
         httpExchange: HttpExchange,
         evalConfig: ExpressionMatcherConfig
     ): Boolean {
