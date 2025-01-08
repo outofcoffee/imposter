@@ -53,6 +53,8 @@ import io.vertx.core.VertxOptions
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.RunTestOnContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
+import org.apache.logging.log4j.LogManager
+import org.junit.After
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Rule
@@ -66,24 +68,36 @@ import java.nio.file.Paths
  */
 @RunWith(VertxUnitRunner::class)
 abstract class BaseVerticleTest {
+    private val logger = LogManager.getLogger(BaseVerticleTest::class.java)
+
     @get:Rule
     val rule = RunTestOnContext(configureMetrics(VertxOptions()))
+
+    private var testEngine: TestMockEngine? = null
 
     @Before
     @Throws(Exception::class)
     open fun setUp(testContext: TestContext) {
         val async = testContext.async()
 
-        // simulate ImposterLauncher bootstrap
         ConfigHolder.resetConfig()
         configure(ConfigHolder.config)
 
-        rule.vertx().deployVerticle(ImposterVerticle::class.java.canonicalName) { completion ->
-            if (completion.succeeded()) {
-                async.complete()
-            } else {
-                testContext.fail(completion.cause())
-            }
+        logger.info("Using test engine: $testEngineType")
+        testEngine = when (testEngineType) {
+            TestEngine.JVM -> JvmMockEngine()
+            TestEngine.GO -> GoMockEngine()
+        }.also { engine ->
+            engine.start(rule.vertx(), host, async, testContext)
+        }
+    }
+
+    @After
+    fun tearDown(testContext: TestContext) {
+        try {
+            testEngine?.stop()
+        } finally {
+            testEngine = null
         }
     }
 
@@ -127,4 +141,11 @@ abstract class BaseVerticleTest {
             EnvVars.reset(emptyList())
         }
     }
+
+    enum class TestEngine {
+        JVM, GO
+    }
+
+    private val testEngineType: TestEngine
+        get() = if (System.getenv("TEST_ENGINE") == "go") TestEngine.GO else TestEngine.JVM
 }
