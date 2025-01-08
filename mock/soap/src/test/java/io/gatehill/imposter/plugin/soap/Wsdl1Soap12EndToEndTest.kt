@@ -52,8 +52,8 @@ import org.junit.Test
  */
 class Wsdl1Soap12EndToEndTest : AbstractEndToEndTest() {
     override val testConfigDirs = listOf("/wsdl1-soap12")
-    override val soapEnvNamespace = SoapUtil.soap11EnvNamespace
-    override val soapContentType = SoapUtil.soap11ContentType
+    override val soapEnvNamespace = SoapUtil.soap12RecEnvNamespace
+    override val soapContentType = SoapUtil.soap12ContentType
 
     @Test
     fun testRequestResponseUsingSoapActionInContentType() = soap12RequestResponseUsingSoapActionInContentType()
