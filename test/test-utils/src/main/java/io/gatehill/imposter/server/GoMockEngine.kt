@@ -109,6 +109,11 @@ class GoMockEngine : TestMockEngine {
                 lastException = e
                 logger.trace("Engine not ready ($e)")
             }
+            // check if process has terminated
+            if (!engineProcess!!.isAlive) {
+                lastException = RuntimeException("Engine process terminated")
+                break
+            }
             Thread.sleep(checkInterval)
         }
         val startEx = RuntimeException("Engine did not start after $timeout ms", lastException)
