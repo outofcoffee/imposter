@@ -77,6 +77,7 @@ class GoMockEngine : TestMockEngine {
                 env["IMPOSTER_PORT"] = ConfigHolder.config.listenPort.toString()
                 env["IMPOSTER_CONFIG_DIR"] = ConfigHolder.config.configDirs[0]
                 env["IMPOSTER_SUPPORT_LEGACY_CONFIG"] = "true"
+                env["IMPOSTER_LOG_LEVEL"] = "trace"
             }
             .redirectOutput(ProcessBuilder.Redirect.INHERIT)
             .redirectError(ProcessBuilder.Redirect.INHERIT)
