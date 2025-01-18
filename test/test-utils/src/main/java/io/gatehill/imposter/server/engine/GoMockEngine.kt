@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025.
+ * Copyright (c) 2025-2025.
  *
  * This file is part of Imposter.
  *
@@ -41,7 +41,7 @@
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.gatehill.imposter.server
+package io.gatehill.imposter.server.engine
 
 import io.gatehill.imposter.config.ConfigHolder
 import io.gatehill.imposter.util.HttpUtil
@@ -75,7 +75,7 @@ class GoMockEngine : TestMockEngine {
             .apply {
                 val env = environment()
                 env["IMPOSTER_PORT"] = ConfigHolder.config.listenPort.toString()
-                env["IMPOSTER_CONFIG_DIR"] = ConfigHolder.config.configDirs[0]
+                env["IMPOSTER_CONFIG_DIR"] = ConfigHolder.config.configDirs.joinToString(",")
                 env["IMPOSTER_SUPPORT_LEGACY_CONFIG"] = "true"
                 env["IMPOSTER_LOG_LEVEL"] = "trace"
             }

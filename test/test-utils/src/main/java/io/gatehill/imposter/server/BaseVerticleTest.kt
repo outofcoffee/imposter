@@ -47,6 +47,9 @@ import io.gatehill.imposter.config.ConfigHolder
 import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.plugin.DynamicPluginDiscoveryStrategyImpl
 import io.gatehill.imposter.plugin.Plugin
+import io.gatehill.imposter.server.engine.GoMockEngine
+import io.gatehill.imposter.server.engine.JvmMockEngine
+import io.gatehill.imposter.server.engine.TestMockEngine
 import io.gatehill.imposter.server.vertxweb.VertxWebServerFactoryImpl
 import io.gatehill.imposter.util.MetricsUtil.configureMetrics
 import io.vertx.core.VertxOptions

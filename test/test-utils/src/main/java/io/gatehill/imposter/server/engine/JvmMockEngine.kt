@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025.
+ * Copyright (c) 2025-2025.
  *
  * This file is part of Imposter.
  *
@@ -41,13 +41,29 @@
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.gatehill.imposter.server
+package io.gatehill.imposter.server.engine
 
+import io.gatehill.imposter.server.ImposterVerticle
 import io.vertx.core.Vertx
 import io.vertx.ext.unit.Async
 import io.vertx.ext.unit.TestContext
 
-interface TestMockEngine {
-    fun start(vertx: Vertx, host: String, async: Async, testContext: TestContext)
-    fun stop()
+/**
+ * JVM-based mock engine.
+ */
+class JvmMockEngine : TestMockEngine {
+    override fun start(vertx: Vertx, host: String, async: Async, testContext: TestContext) {
+        // simulate ImposterLauncher bootstrap
+        vertx.deployVerticle(ImposterVerticle::class.java.canonicalName) { completion ->
+            if (completion.succeeded()) {
+                async.complete()
+            } else {
+                testContext.fail(completion.cause())
+            }
+        }
+    }
+
+    override fun stop() {
+        // no op
+    }
 }
