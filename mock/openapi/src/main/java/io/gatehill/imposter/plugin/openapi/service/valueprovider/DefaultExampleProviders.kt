@@ -53,11 +53,13 @@ object DefaultExampleProviders {
         ExampleProvider.register("string", StringExampleProvider())
 
         ExampleProvider.register("number", object : ExampleProvider<Double> {
-            override fun provide(schema: Schema<*>, propNameHint: String?) = 0.0
+            // TODO consider min/max
+            override fun provide(schema: Schema<*>, propNameHint: String?) = 42.42
         })
 
         ExampleProvider.register("integer", object : ExampleProvider<Int> {
-            override fun provide(schema: Schema<*>, propNameHint: String?) = 0
+            // TODO consider min/max
+            override fun provide(schema: Schema<*>, propNameHint: String?) = 42
         })
 
         ExampleProvider.register("boolean", object : ExampleProvider<Boolean> {

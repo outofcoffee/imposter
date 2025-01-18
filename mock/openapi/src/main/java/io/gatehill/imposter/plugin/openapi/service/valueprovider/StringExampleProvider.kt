@@ -48,7 +48,7 @@ import io.swagger.v3.oas.models.media.Schema
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
-import java.util.UUID
+import java.util.*
 
 /**
  * Provides example values for string schemas.
@@ -71,8 +71,8 @@ open class StringExampleProvider : ExampleProvider<String> {
 
                 "email" -> return "test@example.com"
                 "uuid", "guid" -> return UUID.randomUUID().toString()
-                else -> ""
+                else -> "example"
             }
-        } ?: ""
+        } ?: "example"
     }
 }

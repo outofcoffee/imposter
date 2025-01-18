@@ -210,7 +210,7 @@ class RequestValidationTest : BaseVerticleTest() {
             .then()
             .log().ifValidationFails()
             .statusCode(200)
-            .body("$", Matchers.hasEntry("id", 0))
+            .body("$", Matchers.hasEntry("id", 42))
             .body("$", Matchers.hasEntry("valid", false))
     }
 

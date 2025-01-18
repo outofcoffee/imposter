@@ -87,8 +87,8 @@ internal class SchemaExamplesTest : BaseVerticleTest() {
             """
         [
             {
-                "name": "",
-                "id": 0,
+                "name": "example",
+                "id": 42,
                 "breed": "Collie",
                 "ownerEmail": "test@example.com",
                 "secret": "changeme",
@@ -120,8 +120,8 @@ internal class SchemaExamplesTest : BaseVerticleTest() {
         testContext.assertEquals(1, yamlBody.size)
 
         val first = yamlBody.first()
-        testContext.assertEquals("", first.get("name"))
-        testContext.assertEquals(0, first.get("id"))
+        testContext.assertEquals("example", first.get("name"))
+        testContext.assertEquals(42, first.get("id"))
         testContext.assertEquals("Collie", first.get("breed"))
         testContext.assertEquals("test@example.com", first.get("ownerEmail"))
         testContext.assertEquals("changeme", first.get("secret"))
