@@ -82,7 +82,7 @@ class S3DownloadTest {
 
         Assertions.assertNotNull(responseEvent, "Response event should be returned")
         Assertions.assertEquals(200, responseEvent.statusCode)
-        Assertions.assertEquals("""{ "id": 1, "name": "Cat" }""", responseEvent.body)
+        Assertions.assertEquals("""{"id":1,"name":"Cat"}""", responseEvent.body)
         Assertions.assertEquals(4, responseEvent.headers?.size)
         Assertions.assertEquals("imposter", responseEvent.headers["Server"])
     }

@@ -475,10 +475,10 @@ paths:
               examples:
                 # the example to return is selected by the script
                 catExample:
-                  value: |-
+                  value:
                     { "id": 1, "name": "Cat" }
                 dogExample:
-                  value: |-
+                  value:
                     { "id": 2, "name": "Dog" }
 ```
 

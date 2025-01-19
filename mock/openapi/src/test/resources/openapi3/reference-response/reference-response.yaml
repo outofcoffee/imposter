@@ -77,7 +77,7 @@ components:
             $ref: "#/components/schemas/Pets"
           examples:
             Pets:
-              value: |-
+              value:
                 [
                   {
                     "id": 101,

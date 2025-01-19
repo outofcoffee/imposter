@@ -33,7 +33,5 @@ components:
         message:
           type: string
       example:
-        {
-          "code": 99,
-          "message": "Default response"
-        }
+        code: 99
+        message: "Default response"

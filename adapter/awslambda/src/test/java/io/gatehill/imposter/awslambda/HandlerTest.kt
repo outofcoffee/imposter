@@ -74,7 +74,7 @@ class HandlerTest : AbstractHandlerTest() {
 
         assertNotNull(responseEvent, "Response event should be returned")
         assertEquals(200, responseEvent.statusCode)
-        assertEquals("""{ "id": 1, "name": "Cat" }""", responseEvent.body)
+        assertEquals("""{"id":1,"name":"Cat"}""", responseEvent.body)
         assertEquals(4, responseEvent.headers?.size)
         assertEquals("imposter", responseEvent.headers["Server"])
     }

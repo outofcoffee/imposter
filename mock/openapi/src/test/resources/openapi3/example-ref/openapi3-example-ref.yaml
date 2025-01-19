@@ -76,5 +76,5 @@ components:
           type: string
   examples:
     petExample:
-      value: |-
+      value:
         { "id": 1, "name": "Cat" }
