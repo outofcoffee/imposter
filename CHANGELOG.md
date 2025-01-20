@@ -3,6 +3,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.5.1] - 2025-01-20
+### Changed
+- docs: describes directory responses.
+- refactor: normalises response file path and store preload file path.
+
 ## [4.5.0] - 2025-01-06
 ### Added
 - feat: adds anyOf expression matcher.
