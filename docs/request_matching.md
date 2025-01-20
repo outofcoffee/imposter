@@ -431,6 +431,10 @@ Common placeholders include:
 - `${stores.request.someKey}` - Access a value stored in the `request` store
 - `${stores.example.someKey}` - Access a value stored in the `example` store
 
+## Directory-based responses
+
+See [Directory-based responses](./directory_responses.md) for a way to serve files from a directory based on the incoming request path.
+
 ## Resource matching performance
 
 [Resource matching](./configuration.md) is typically the fastest method of providing conditional responses. This is the case for request properties such as headers, query parameters, path parameters, path and HTTP method. In the case of using JsonPath or XPath to query the request body to conditionally match resources, however, the body must be parsed, which is computationally expensive and will result in lower performance.

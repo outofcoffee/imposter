@@ -33,6 +33,7 @@ To begin, check out the [Getting started](getting_started.md) guide. See the _Co
 - [Interceptors](./interceptors.md)
 - [OpenAPI validation](openapi_validation.md)
 - [Template queries](template_queries.md)
+- [Directory-based responses](directory_responses.md)
 - [Performance simulation](performance_simulation.md)
 - [Failure simulation](./failure_simulation.md)
 - [Generating fake data](fake_data.md)
