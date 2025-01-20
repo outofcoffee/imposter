@@ -58,12 +58,12 @@ import io.gatehill.imposter.store.factory.StoreFactory
 import io.gatehill.imposter.store.model.StoreProvider
 import io.gatehill.imposter.store.placeholder.StoreEvaluator
 import io.gatehill.imposter.store.util.StoreUtil
+import io.gatehill.imposter.util.FileUtil
 import io.gatehill.imposter.util.MapUtil
 import io.gatehill.imposter.util.PlaceholderUtil
 import io.gatehill.imposter.util.ResourceUtil
 import org.apache.logging.log4j.LogManager
 import java.io.IOException
-import java.nio.file.Paths
 import javax.inject.Inject
 
 /**
@@ -120,7 +120,7 @@ class StoreServiceImpl @Inject constructor(
 
         } ?: storeConfig.preloadFile?.let { preloadFile ->
             check(preloadFile.endsWith(".json")) { "Only JSON (.json) files containing a top-level object are supported for preloading" }
-            val preloadPath = Paths.get(pluginConfig.dir.path, preloadFile).toAbsolutePath()
+            val preloadPath = FileUtil.validatePath(preloadFile, pluginConfig.dir)
             LOGGER.trace("Preloading file {} into store: {}", preloadPath, storeName)
 
             try {

@@ -46,6 +46,7 @@ import com.google.common.base.Strings
 import io.gatehill.imposter.config.util.EnvVars
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
+import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.createDirectories
@@ -84,5 +85,22 @@ object FileUtil {
             }
         }
         return null
+    }
+
+    /**
+     * Validates a file path to ensure it is within the config directory.
+     *
+     * @param path the path to validate
+     * @param configDir the configuration directory
+     */
+    fun validatePath(path: String, configDir: File): Path {
+        val basePath = configDir.canonicalFile.toPath()
+        val resolvedPath = Paths.get(configDir.absolutePath, path).normalize()
+
+        // Ensure the resolved path is within the base directory
+        if (!resolvedPath.startsWith(basePath)) {
+            throw SecurityException("Access denied: Path '$path' attempts to escape the config directory")
+        }
+        return resolvedPath
     }
 }

@@ -11,3 +11,4 @@ node_modules/
 .tool-versions
 .imposter
 bin/
+/.vscode/

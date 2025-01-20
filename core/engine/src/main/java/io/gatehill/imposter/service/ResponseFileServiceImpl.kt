@@ -49,6 +49,7 @@ import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig
 import io.gatehill.imposter.script.ResponseBehaviour
+import io.gatehill.imposter.util.FileUtil
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.MetricsUtil
 import io.micrometer.core.instrument.Gauge
@@ -58,8 +59,6 @@ import io.vertx.core.json.JsonArray
 import org.apache.logging.log4j.LogManager
 import java.io.IOException
 import java.nio.file.NoSuchFileException
-import java.nio.file.Path
-import java.nio.file.Paths
 import javax.inject.Inject
 import kotlin.io.path.exists
 
@@ -133,19 +132,15 @@ class ResponseFileServiceImpl @Inject constructor(
     }
 
     private fun resolvePath(pluginConfig: PluginConfig, responseFile: String): String {
-        val normalisedPath = normalisePath(pluginConfig, responseFile)
+        val normalisedPath = FileUtil.validatePath(responseFile, pluginConfig.dir)
 
         val fsPath = if (normalisedPath.exists()) {
             normalisedPath.toString()
         } else {
-            // fall back to relative path, in case its in the working directory or on the classpath
+            // fall back to relative path, in case it's in the working directory or on the classpath
             "${pluginConfig.dir}/$responseFile"
         }
         return fsPath
-    }
-
-    private fun normalisePath(config: PluginConfig, responseFile: String): Path {
-        return Paths.get(config.dir.absolutePath, responseFile)
     }
 
     override fun loadResponseAsJsonArray(config: PluginConfig, behaviour: ResponseBehaviour): JsonArray {
@@ -158,8 +153,8 @@ class ResponseFileServiceImpl @Inject constructor(
             return JsonArray()
         }
         return try {
-            val configPath = normalisePath(config, responseFile).toFile()
-            JsonArray(configPath.readText())
+            val responseFilePath = FileUtil.validatePath(responseFile, config.dir).toFile()
+            JsonArray(responseFilePath.readText())
         } catch (e: IOException) {
             throw RuntimeException(e)
         }
