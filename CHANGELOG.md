@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.5.2] - 2025-01-20
+### Changed
+- refactor: provides richer JSON schema example values.
+- test(soap): fixes SOAP 1.2 envelope namespace.
+- test: go engine supports multiple config dirs.
+- test: healthcheck for terminated go engine processes should fail fast.
+- test: sets go engine log level to trace.
+- test: specify schema response examples as objects.
+- test: supports imposter-go engine.
+
 ## [4.5.1] - 2025-01-20
 ### Changed
 - docs: describes directory responses.
