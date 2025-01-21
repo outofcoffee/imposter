@@ -94,8 +94,8 @@ object FileUtil {
      * @param configDir the configuration directory
      */
     fun validatePath(path: String, configDir: File): Path {
-        val basePath = configDir.canonicalFile.toPath()
-        val resolvedPath = Paths.get(configDir.absolutePath, path).normalize()
+        val basePath = configDir.toCanonicalFilePath()
+        val resolvedPath = Paths.get(configDir.absolutePath, path).normalize().toCanonicalFilePath()
 
         // Ensure the resolved path is within the base directory
         if (!resolvedPath.startsWith(basePath)) {
@@ -103,4 +103,8 @@ object FileUtil {
         }
         return resolvedPath
     }
+
+    private fun File.toCanonicalFilePath() = this.canonicalFile.toPath()
+
+    private fun Path.toCanonicalFilePath() = this.toFile().toCanonicalFilePath()
 }
