@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.5.3] - 2025-01-21
+### Changed
+- test: improves coverage of path validator.
+
 ## [4.5.2] - 2025-01-20
 ### Changed
 - refactor: provides richer JSON schema example values.
