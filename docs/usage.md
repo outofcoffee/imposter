@@ -4,7 +4,7 @@
 
 Some options can be controlled using command line arguments.
 
-- If you are using the CLI, see [this documentation](https://github.com/gatehill/imposter-cli/blob/main/README.md#usage) for a list of command line arguments.
+- If you are using the CLI, see [this documentation](https://github.com/imposter-project/imposter-cli/blob/main/README.md#usage) for a list of command line arguments.
 - If you are using the JAR approach, see [this documentation](usage_jar.md).
 
 ## Environment variables

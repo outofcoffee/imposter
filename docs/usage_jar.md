@@ -3,7 +3,7 @@
 When you are using the [JAR approach](run_imposter_jar.md), some options can be controlled using command line arguments.
 
 > **Note**
-> If you are using the CLI, see [this documentation](https://github.com/gatehill/imposter-cli/blob/main/README.md) for a list of command line arguments.
+> If you are using the CLI, see [this documentation](https://github.com/imposter-project/imposter-cli/blob/main/README.md) for a list of command line arguments.
 
 ## Available arguments
 

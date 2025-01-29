@@ -41,12 +41,12 @@ If you have Homebrew installed:
 Or, use this one liner (macOS and Linux only):
 
 ```shell
-curl -L https://raw.githubusercontent.com/gatehill/imposter-cli/main/install/install_imposter.sh | bash -
+curl -L https://raw.githubusercontent.com/imposter-project/imposter-cli/main/install/install_imposter.sh | bash -
 ```
 
 ### Other installation options
 
-See the full [Installation](https://github.com/gatehill/imposter-cli/blob/main/docs/install.md) instructions for your system.
+See the full [Installation](https://github.com/imposter-project/imposter-cli/blob/main/docs/install.md) instructions for your system.
 
 ## Example
 
@@ -70,7 +70,7 @@ $ imposter up -t docker-all
 
 ## CLI usage
 
-See full usage instructions on [Imposter CLI](https://github.com/gatehill/imposter-cli).
+See full usage instructions on [Imposter CLI](https://github.com/imposter-project/imposter-cli).
 
 ---
 
