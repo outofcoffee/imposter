@@ -3,6 +3,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.5.4] - 2025-01-29
+### Changed
+- build: updates CLI org name.
+- chore: bumps CLI to 0.46.0.
+
 ## [4.5.3] - 2025-01-21
 ### Changed
 - test: improves coverage of path validator.
