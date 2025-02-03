@@ -66,6 +66,7 @@ nav:
     - AWS Lambda: 'run_imposter_aws_lambda.md'
     - Java JAR file: 'run_imposter_jar.md'
     - Deployment patterns: 'deployment_patterns.md'
+    - Running in GitHub Actions: 'github_actions.md'
     
   - Operational topics:
     - Metrics, health, logs and telemetry: 'metrics_logs_telemetry.md'

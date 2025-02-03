@@ -64,6 +64,7 @@ To begin, check out the [Getting started](getting_started.md) guide. See the _Co
 - [AWS Lambda](run_imposter_aws_lambda.md)
 - [Java JAR file](run_imposter_jar.md)
 - [Deployment patterns](./deployment_patterns.md)
+- [Running in GitHub Actions](github_actions)
 
 ### Operational topics
 

@@ -98,6 +98,10 @@ There are many ways to run Imposter.
 - Embedded within your **Java/Kotlin/Scala/JVM** unit tests - see [JVM bindings](./docs/embed_jvm.md)
 - Embedded within your **JavaScript/Node.js** unit tests - see [JavaScript bindings](https://github.com/imposter-project/imposter-js)
 
+### Within your CI/CD pipeline
+
+- Use the [Imposter GitHub Actions](./docs/github_actions.md) to start and stop Imposter during your CI/CD pipeline.
+
 ---
 
 ## Recent changes and Roadmap

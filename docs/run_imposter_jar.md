@@ -2,18 +2,25 @@
 
 There are many ways to run Imposter. This section describes how to use a JAR file on the JVM.
 
-> ### Other ways to run Imposter
-> 
-> #### Standalone mock server
-> 
-> - Using the command line client - see [Imposter CLI](./run_imposter_cli.md)
-> - As a Docker container - see [Imposter Docker container](./run_imposter_docker.md)
-> - As a Lambda function in AWS - see [Imposter AWS Lambda](./run_imposter_aws_lambda.md)
-> 
-> #### Embedded in tests
-> 
-> - Embedded within your **Java/Kotlin/Scala/JVM** unit tests - see [JVM bindings](./embed_jvm.md) 
-> - Embedded within your **JavaScript/Node.js** unit tests - see [JavaScript bindings](https://github.com/imposter-project/imposter-js)
+<details>
+<summary>Other ways to run Imposter</summary>
+
+### Standalone mock server
+
+- Using the command line client - see [Imposter CLI](./run_imposter_cli.md)
+- As a Docker container - see [Imposter Docker container](./run_imposter_docker.md)
+- As a Lambda function in AWS - see [Imposter AWS Lambda](./run_imposter_aws_lambda.md)
+
+### Embed in unit/integration tests
+
+- Embed within your **Java/Kotlin/Scala/JVM** unit tests - see [JVM bindings](./embed_jvm.md)
+- Embed within your **JavaScript/Node.js** unit tests - see [JavaScript bindings](https://github.com/imposter-project/imposter-js)
+
+### Within your CI/CD pipeline
+
+- Use the [Imposter GitHub Actions](./github_actions.md) to start and stop Imposter during your CI/CD pipeline.
+
+</details>
 
 ## JAR File Features
 
