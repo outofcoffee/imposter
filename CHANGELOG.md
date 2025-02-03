@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.5.5] - 2025-02-03
+### Changed
+- docs: describes GitHub Action usage.
+
 ## [4.5.4] - 2025-01-29
 ### Changed
 - build: updates CLI org name.
