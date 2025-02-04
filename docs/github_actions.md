@@ -24,7 +24,7 @@ This guide will show you how to start and stop mocks with GitHub Actions.
 ## Available Actions
 
 > **Note**
-> Replace `v1` in the examples below with the [latest release](https://github.com/imposter-project/imposter-github-action/tags) of the GitHub Actions.
+> Replace `v1` in the examples below with the [latest release](https://github.com/imposter-project/imposter-github-action/releases) of the GitHub Actions.
 
 ### 1. Setup Imposter (`setup`)
 Downloads and installs the Imposter mock server.
