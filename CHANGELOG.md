@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.5.6] - 2025-02-04
+### Changed
+- chore(deps): bump actions/setup-python from 5.3.0 to 5.4.0
+- chore(deps): bumps CLI version to 1.0.3.
+- docs: adds syntax highlighting in code blocks.
+- docs: enables markdown parsing within details blocks.
+- docs: improves details blocks.
+- docs: links to GitHub Actions releases page.
+
 ## [4.5.5] - 2025-02-03
 ### Changed
 - docs: describes GitHub Action usage.
