@@ -11,11 +11,11 @@ ENV IMPOSTER_VERSION="${IMPOSTER_VERSION}" \
     IMPOSTER_ENGINE=unpacked \
     IMPOSTER_JVM_DISTRODIR=/opt/imposter
 
-ARG IMPOSTER_CLI_VERSION="0.46.0"
-ADD https://github.com/imposter-project/imposter-cli/releases/download/v${IMPOSTER_CLI_VERSION}/imposter_${IMPOSTER_CLI_VERSION}_linux_amd64.tar.gz /tmp/imposter-cli/imposter.tar.gz
+ARG IMPOSTER_CLI_VERSION="1.0.3"
+ADD https://github.com/imposter-project/imposter-cli/releases/download/v${IMPOSTER_CLI_VERSION}/imposter-cli_linux_amd64.tar.gz /tmp/imposter-cli/imposter-cli.tar.gz
 
 RUN cd /tmp/imposter-cli && \
-    tar xvf /tmp/imposter-cli/imposter.tar.gz && \
+    tar xvf /tmp/imposter-cli/imposter-cli.tar.gz && \
     mv /tmp/imposter-cli/imposter /usr/local/bin/imposter && \
     rm -rf /tmp/imposter-cli
 
