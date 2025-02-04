@@ -20,6 +20,11 @@ You can do this in a few ways using [the CLI](run_imposter_cli.md):
 2. Set `version: x.y.z` in an `.imposter.yaml` file in the config directory, or
 3. Set `version: x.y.z` in your `$HOME/imposter/config.yaml` file
 
+If you're using the Imposter [GitHub Actions](github_actions.md) in your CI/CD workflow, you can:
+
+1. Set the `version` input to the `imposter-github-action/start-mocks` action, or
+2. Set `version: x.y.z` in an `.imposter.yaml` file in the config directory
+
 ## Using a local Imposter JAR with the CLI
 
 You can use a local Imposter JAR file with the CLI. 
@@ -37,13 +42,7 @@ For example:
 
 You can make use of Imposter mocks as standalone Docker containers.
 
-Here's a simple overview:
-
-1. Create a simple _Dockerfile_ that extends `outofcoffee/imposter` and adds your desired properties as its `CMD`.
-2. Add your mock configuration and mock data to `/opt/imposter/config` within the Docker image.
-3. Build an image from your _Dockerfile_.
-
-Now, when you start a container from your image, your standalone mock container will start, load your configuration and mock data, and listen for connections.
+See [bundling configuration](bundle.md#docker-bundles) for details on how to bundle your configuration and mock data into a Docker image.
 
 ## Testcontainers integration
 
