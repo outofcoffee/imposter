@@ -2,7 +2,7 @@
 
 There are many ways to run Imposter. This section describes how to use a JAR file on the JVM.
 
-<details>
+<details markdown>
 <summary>Other ways to run Imposter</summary>
 
 **Standalone mock server**

@@ -103,7 +103,7 @@ The following objects are available to your scripts, to help you determine what 
 
 For example, if you want to access the directory containing the configuration file, you can use `config.dir`.
 
-<details>
+<details markdown>
 <summary>JavaScript example</summary>
 
 ```js
@@ -114,7 +114,7 @@ var someFile = config.dir + "/example.txt"
 ```
 </details>
 
-<details>
+<details markdown>
 <summary>Groovy example</summary>
 
 ```groovy
@@ -268,7 +268,7 @@ You can read and write data in [Stores](./stores.md) using scripts.
 
 In advanced scenarios you can control the response processing behaviour of the mock plugin you're using. 
 
-<details>
+<details markdown>
 <summary>Skipping plugin default behaviour</summary>
 
 In order for the mock server to return the response file in an appropriate format, the plugin must be allowed to process it. This is the default behaviour after your script runs.

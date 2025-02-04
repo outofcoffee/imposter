@@ -2,11 +2,15 @@ theme:
   name: 'material'
   logo: images/plain_logo14.png
   favicon: images/favicon.ico
+
 site_name: Imposter Mocks
 
 plugins:
   - search
   - mermaid2
+
+markdown_extensions:
+  - md_in_html
 
 extra:
   analytics:

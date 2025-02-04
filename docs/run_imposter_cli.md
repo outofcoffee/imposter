@@ -2,7 +2,7 @@
 
 There are many ways to run Imposter. This section describes using the command line interface (CLI) tool.
 
-<details>
+<details markdown>
 <summary>Other ways to run Imposter</summary>
 
 **Standalone mock server**

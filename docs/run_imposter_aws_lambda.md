@@ -2,7 +2,7 @@
 
 There are many ways to run Imposter. This section describes how to run it as a Lambda function in AWS.
 
-<details>
+<details markdown>
 <summary>Other ways to run Imposter</summary>
 
 **Standalone mock server**

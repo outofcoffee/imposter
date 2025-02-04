@@ -2,7 +2,7 @@
 
 If you're using GitHub Actions for your CI/CD pipeline, you can run Imposter to mock your dependencies during testing.
 
-<details>
+<details markdown>
 <summary>Other ways to run Imposter</summary>
 
 **Standalone mock server**
@@ -51,7 +51,7 @@ Starts the Imposter mock server in the background, and waits for it to be ready.
     recursive-config-scan: 'false'  # default: 'false'
 ```
 
-<details>
+<details markdown>
 <summary>Advanced configuration options</summary>
 
 - `auto-restart`: Whether to automatically restart when configuration changes (default: false)
