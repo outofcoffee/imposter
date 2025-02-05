@@ -1,13 +1,10 @@
-const parent = context.additional;
-console.log('parent', parent);
-console.log('parent json', JSON.stringify(parent));
-console.log('parent keys', Object.keys(parent));
-console.log('parent name', parent.name);
+const echo = `request.method=${context.request.method}
+request.method.json=${JSON.stringify(context.request.method)}
+request.path=${context.request.path}
+request.queryParams=${JSON.stringify(context.request.queryParams)}
+request.pathParams=${JSON.stringify(context.request.pathParams)}
+request.headers=${JSON.stringify(context.request.headers)}
+request.formParams=${JSON.stringify(context.request.formParams)}
+`
 
-const child = parent.child;
-console.log('child', child);
-console.log('child json', JSON.stringify(child));
-console.log('child keys', Object.keys(child));
-console.log('child name', child.name);
-
-respond().withContent(parent.name + ' ' + child.name);
+respond().withContent(echo);
