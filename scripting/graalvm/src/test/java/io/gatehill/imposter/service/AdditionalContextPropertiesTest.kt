@@ -51,7 +51,7 @@ import org.junit.Test
 import javax.inject.Inject
 
 /**
- * Verify that scripts can access properties of context item.
+ * Verify that scripts can access additional properties of the context.
  *
  * @author Pete Cornish
  */
@@ -61,7 +61,7 @@ class AdditionalContextPropertiesTest : AbstractBaseScriptTest() {
 
     override fun getService() = service
 
-    override fun getScriptName() = "context_properties.js"
+    override fun getScriptName() = "additional_context_properties.js"
 
     @Test
     fun `access properties of context item`() {
