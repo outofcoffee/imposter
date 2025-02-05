@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.5.7] - 2025-02-05
+### Changed
+- docs: describes how to produce JSON in Groovy scripts.
+- test: renames additional context test.
+
+### Fixed
+- fix: context.request.method should return a string.
+
 ## [4.5.6] - 2025-02-04
 ### Changed
 - chore(deps): bump actions/setup-python from 5.3.0 to 5.4.0
