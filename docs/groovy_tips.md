@@ -62,6 +62,19 @@ $ curl -X POST  http://localhost:8080 -d '{ "hello": "world" }'
 world
 ```
 
+## Producing JSON strings
+
+To produce JSON from an object, use the `JsonOutput.toJson` method.
+
+Here's an example:
+
+```groovy
+def obj = [ hello: 'world' ]
+def json = groovy.json.JsonOutput.toJson(obj)
+        
+respond().withContent(json)
+```
+
 ## Dynamically loading other Groovy scripts
 
 You can dynamically include another Groovy script file in your script code.
