@@ -46,8 +46,7 @@ package io.gatehill.imposter.server.engine
 import io.gatehill.imposter.config.ConfigHolder
 import io.gatehill.imposter.util.HttpUtil
 import io.vertx.core.Vertx
-import io.vertx.ext.unit.Async
-import io.vertx.ext.unit.TestContext
+import io.vertx.junit5.VertxTestContext
 import org.apache.logging.log4j.LogManager
 import java.net.URI
 import java.net.http.HttpClient
@@ -61,11 +60,11 @@ class GoMockEngine : TestMockEngine {
     private val logger = LogManager.getLogger(GoMockEngine::class.java)
     private var engineProcess: Process? = null
 
-    override fun start(vertx: Vertx, host: String, async: Async, testContext: TestContext) {
+    override fun start(vertx: Vertx, host: String, testContext: VertxTestContext) {
         // full path to the 'imposter-go' binary
         val binaryPath = System.getenv("IMPOSTER_GO_PATH")
         if (binaryPath.isNullOrBlank()) {
-            testContext.fail("IMPOSTER_GO_PATH environment variable not set")
+            testContext.failNow("IMPOSTER_GO_PATH environment variable not set")
             return
         }
         logger.trace("Using imposter-go binary: $binaryPath")
@@ -83,10 +82,10 @@ class GoMockEngine : TestMockEngine {
             .redirectError(ProcessBuilder.Redirect.INHERIT)
             .start()
 
-        waitForEngine(host, async, testContext)
+        waitForEngine(host, testContext)
     }
 
-    private fun waitForEngine(host: String, async: Async, testContext: TestContext) {
+    private fun waitForEngine(host: String, testContext: VertxTestContext) {
         val timeout = 5000
         val checkInterval = 50L
 
@@ -103,7 +102,7 @@ class GoMockEngine : TestMockEngine {
                 )
                 if (response.statusCode() == HttpUtil.HTTP_OK) {
                     logger.debug("Engine ready")
-                    async.complete()
+                    testContext.completeNow()
                     return
                 }
             } catch (e: Exception) {
@@ -119,7 +118,7 @@ class GoMockEngine : TestMockEngine {
         }
         val startEx = RuntimeException("Engine did not start after $timeout ms", lastException)
         logger.error(startEx)
-        testContext.fail(startEx)
+        testContext.failNow(startEx)
     }
 
     override fun stop() {

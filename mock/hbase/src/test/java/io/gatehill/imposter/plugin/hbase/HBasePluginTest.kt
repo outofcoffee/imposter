@@ -43,10 +43,10 @@
 
 package io.gatehill.imposter.plugin.hbase
 
-
 import io.gatehill.imposter.server.BaseVerticleTest
 import io.gatehill.imposter.util.TestEnvironmentUtil
-import io.vertx.ext.unit.TestContext
+import io.vertx.core.Vertx
+import io.vertx.junit5.VertxTestContext
 import org.apache.hadoop.hbase.client.Get
 import org.apache.hadoop.hbase.client.Result
 import org.apache.hadoop.hbase.client.Scan
@@ -55,9 +55,10 @@ import org.apache.hadoop.hbase.rest.client.Client
 import org.apache.hadoop.hbase.rest.client.Cluster
 import org.apache.hadoop.hbase.rest.client.RemoteHTable
 import org.apache.hadoop.hbase.util.Bytes
-import org.junit.Before
-import org.junit.BeforeClass
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import java.io.IOException
 
 /**
@@ -72,20 +73,20 @@ class HBasePluginTest : BaseVerticleTest() {
 
     companion object {
         @JvmStatic
-        @BeforeClass
+        @BeforeAll
         fun beforeClass() {
             TestEnvironmentUtil.assumeJavaVersionLessThanOrEqualTo(8)
         }
     }
 
-    @Before
+    @BeforeEach
     @Throws(Exception::class)
-    override fun setUp(testContext: TestContext) {
-        super.setUp(testContext)
+    override fun setUp(vertx: Vertx, testContext: VertxTestContext) {
+        super.setUp(vertx, testContext)
         client = Client(Cluster().add(host, listenPort))
     }
 
-    private fun expectSuccessfulRows(testContext: TestContext, table: RemoteHTable, prefix: String) {
+    private fun expectSuccessfulRows(table: RemoteHTable, prefix: String) {
         val scan = Scan()
         scan.filter = PrefixFilter(Bytes.toBytes(prefix))
         val scanner = table.getScanner(scan)
@@ -93,12 +94,12 @@ class HBasePluginTest : BaseVerticleTest() {
         var rowCount = 0
         for (result in scanner) {
             rowCount++
-            testContext.assertEquals("exampleValue${rowCount}A", getStringValue(result, "abc", "exampleStringA"))
-            testContext.assertEquals("exampleValue${rowCount}B", getStringValue(result, "abc", "exampleStringB"))
-            testContext.assertEquals("exampleValue${rowCount}C", getStringValue(result, "abc", "exampleStringC"))
+            assertEquals("exampleValue${rowCount}A", getStringValue(result, "abc", "exampleStringA"))
+            assertEquals("exampleValue${rowCount}B", getStringValue(result, "abc", "exampleStringB"))
+            assertEquals("exampleValue${rowCount}C", getStringValue(result, "abc", "exampleStringC"))
         }
 
-        testContext.assertEquals(2, rowCount)
+        assertEquals(2, rowCount)
     }
 
     private fun getStringValue(result: Result, family: String, qualifier: String): String {
@@ -106,40 +107,40 @@ class HBasePluginTest : BaseVerticleTest() {
     }
 
     @Test
-    fun testFetchResults(testContext: TestContext) {
+    fun testFetchResults() {
         val table = RemoteHTable(client, "exampleTable")
-        expectSuccessfulRows(testContext, table, "examplePrefix")
+        expectSuccessfulRows(table, "examplePrefix")
     }
 
     @Test
-    fun testFetchIndividualRow_Success(testContext: TestContext) {
+    fun testFetchIndividualRow_Success() {
         val table = RemoteHTable(client, "exampleTable")
 
         val result1 = table.get(Get(Bytes.toBytes("row1")))
-        testContext.assertNotNull(result1)
-        testContext.assertEquals("exampleValue1A", getStringValue(result1, "abc", "exampleStringA"))
+        assertNotNull(result1)
+        assertEquals("exampleValue1A", getStringValue(result1, "abc", "exampleStringA"))
 
         val result2 = table.get(Get(Bytes.toBytes("row2")))
-        testContext.assertNotNull(result2)
-        testContext.assertEquals("exampleValue2A", getStringValue(result2, "abc", "exampleStringA"))
+        assertNotNull(result2)
+        assertEquals("exampleValue2A", getStringValue(result2, "abc", "exampleStringA"))
     }
 
     @Test
-    fun testFetchIndividualRow_NotFound(testContext: TestContext) {
+    fun testFetchIndividualRow_NotFound() {
         val table = RemoteHTable(client, "exampleTable")
 
         val actual = table.get(Get(Bytes.toBytes("row404")))
-        testContext.assertNull(actual.row)
+        assertNull(actual.row)
     }
 
     @Test
-    fun testScriptedSuccess(testContext: TestContext) {
+    fun testScriptedSuccess() {
         val table = RemoteHTable(client, "scriptedTable")
-        expectSuccessfulRows(testContext, table, "examplePrefix")
+        expectSuccessfulRows(table, "examplePrefix")
     }
 
     @Test
-    fun testScriptedFailure(testContext: TestContext) {
+    fun testScriptedFailure(testContext: VertxTestContext) {
         val table = RemoteHTable(client, "scriptedTable")
 
         val scan = Scan()
@@ -147,15 +148,16 @@ class HBasePluginTest : BaseVerticleTest() {
 
         try {
             table.getScanner(scan)
-            testContext.fail(IOException::class.java.simpleName + " expected")
+            testContext.failNow(IOException::class.java.simpleName + " expected")
 
         } catch (e: IOException) {
-            testContext.assertTrue(e.localizedMessage.contains("400"))
+            assertTrue(e.localizedMessage.contains("400"))
+            testContext.completeNow()
         }
     }
 
     @Test
-    fun testTableNotFound(testContext: TestContext) {
+    fun testTableNotFound(testContext: VertxTestContext) {
         val table = RemoteHTable(client, "nonExistentTable")
 
         val scan = Scan()
@@ -163,15 +165,16 @@ class HBasePluginTest : BaseVerticleTest() {
 
         try {
             table.getScanner(scan)
-            testContext.fail(IOException::class.java.simpleName + " expected")
+            testContext.failNow(IOException::class.java.simpleName + " expected")
 
         } catch (e: IOException) {
-            testContext.assertTrue(e.localizedMessage.contains("404"))
+            assertTrue(e.localizedMessage.contains("404"))
+            testContext.completeNow()
         }
     }
 
     @Test
-    fun testFilterMismatch(testContext: TestContext) {
+    fun testFilterMismatch(testContext: VertxTestContext) {
         val table = RemoteHTable(client, "exampleTable")
 
         val scan = Scan()
@@ -179,10 +182,11 @@ class HBasePluginTest : BaseVerticleTest() {
 
         try {
             table.getScanner(scan)
-            testContext.fail(IOException::class.java.simpleName + " expected")
+            testContext.failNow(IOException::class.java.simpleName + " expected")
 
         } catch (e: IOException) {
-            testContext.assertTrue(e.localizedMessage.contains("500"))
+            assertTrue(e.localizedMessage.contains("500"))
+            testContext.completeNow()
         }
     }
 }

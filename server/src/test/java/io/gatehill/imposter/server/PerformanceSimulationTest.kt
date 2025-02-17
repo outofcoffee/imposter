@@ -45,27 +45,24 @@ package io.gatehill.imposter.server
 import io.gatehill.imposter.plugin.test.TestPluginImpl
 import io.gatehill.imposter.util.HttpUtil
 import io.restassured.RestAssured
-import io.vertx.ext.unit.TestContext
-import io.vertx.ext.unit.junit.VertxUnitRunner
+import io.vertx.core.Vertx
+import io.vertx.junit5.VertxTestContext
 import org.hamcrest.Matchers
-import org.junit.Assert
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 /**
  * Tests for performance simulation.
  *
  * @author Pete Cornish
  */
-@RunWith(VertxUnitRunner::class)
 class PerformanceSimulationTest : BaseVerticleTest() {
     override val pluginClass = TestPluginImpl::class.java
 
-    @Before
-    @Throws(Exception::class)
-    override fun setUp(testContext: TestContext) {
-        super.setUp(testContext)
+    @BeforeEach
+    override fun setUp(vertx: Vertx, testContext: VertxTestContext) {
+        super.setUp(vertx, testContext)
         RestAssured.baseURI = "http://$host:$listenPort"
     }
 
@@ -84,9 +81,9 @@ class PerformanceSimulationTest : BaseVerticleTest() {
             .then()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
         val latency = System.currentTimeMillis() - startMs
-        Assert.assertTrue(
-            "Response latency should be >= 500ms - was: $latency",
-            latency >= 500
+        Assertions.assertTrue(
+            latency >= 500,
+            "Response latency should be >= 500ms - was: $latency"
         )
     }
 
@@ -102,9 +99,9 @@ class PerformanceSimulationTest : BaseVerticleTest() {
             .then()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
         val latency = System.currentTimeMillis() - startMs
-        Assert.assertTrue(
-            "Response latency should be >= 200ms and <= 400ms - was: $latency",
-            latency >= 200 && latency <= 400 + MEASUREMENT_TOLERANCE
+        Assertions.assertTrue(
+            latency >= 200 && latency <= 400 + MEASUREMENT_TOLERANCE,
+            "Response latency should be >= 200ms and <= 400ms - was: $latency"
         )
     }
 
@@ -119,9 +116,9 @@ class PerformanceSimulationTest : BaseVerticleTest() {
             .then()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
         val latency = System.currentTimeMillis() - startMs
-        Assert.assertTrue(
-            "Response latency should be >= 500ms - was: $latency",
-            latency >= 500
+        Assertions.assertTrue(
+            latency >= 500,
+            "Response latency should be >= 500ms - was: $latency"
         )
     }
 
@@ -137,9 +134,9 @@ class PerformanceSimulationTest : BaseVerticleTest() {
             .then()
             .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
         val latency = System.currentTimeMillis() - startMs
-        Assert.assertTrue(
-            "Response latency should be >= 200ms and <= 400ms - was: $latency",
-            latency >= 200 && latency <= 400 + MEASUREMENT_TOLERANCE
+        Assertions.assertTrue(
+            latency >= 200 && latency <= 400 + MEASUREMENT_TOLERANCE,
+            "Response latency should be >= 200ms and <= 400ms - was: $latency"
         )
     }
 

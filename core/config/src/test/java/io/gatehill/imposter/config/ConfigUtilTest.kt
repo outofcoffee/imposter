@@ -53,22 +53,22 @@ import org.hamcrest.Matchers.equalTo
 import org.hamcrest.Matchers.not
 import org.hamcrest.Matchers.nullValue
 import org.hamcrest.Matchers.startsWith
-import org.junit.AfterClass
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 import java.io.File
 
 /**
- * Tests for [io.gatehill.imposter.config.util.ConfigUtil].
+ * Tests for [ConfigUtil].
  *
  * @author Pete Cornish
  */
 class ConfigUtilTest {
     companion object {
-        @AfterClass
         @JvmStatic
+        @AfterAll
         fun afterClass() {
             ConfigHolder.config.listenPort = 0
         }
@@ -94,61 +94,51 @@ class ConfigUtilTest {
         assertThat(loadedConfig.serialised, containsString("port 9090"))
     }
 
-    /**
-     * All config files within the config dir and its subdirectories should be returned.
-     */
     @Test
-    fun testLoadRecursive_Enabled() {
-        val configDir = File(ConfigUtilTest::class.java.getResource("/recursive").toURI())
+    fun testListConfigFiles_Recursive() {
+        val configDir = File(javaClass.getResource("/recursive").toURI())
         val configFiles = ConfigUtil.listConfigFiles(configDir, true, emptyList())
 
         assertEquals(3, configFiles.size)
         assertTrue(
+            configFiles.map { it.file.toString() }.any { it.endsWith("/recursive/test-config.yaml") },
             "discovered files should include top level dir config",
-            configFiles.map { it.file.toString() }.any { it.endsWith("/recursive/test-config.yaml") }
         )
         assertTrue(
+            configFiles.map { it.file.toString() }.any { it.endsWith("/recursive/subdir1/test-config.yaml") },
             "discovered files should include subdir1 config",
-            configFiles.map { it.file.toString() }.any { it.endsWith("/recursive/subdir1/test-config.yaml") }
         )
         assertTrue(
+            configFiles.map { it.file.toString() }.any { it.endsWith("/recursive/subdir2/test-config.yaml") },
             "discovered files should include subdir2 config",
-            configFiles.map { it.file.toString() }.any { it.endsWith("/recursive/subdir2/test-config.yaml") }
         )
     }
 
-    /**
-     * A subset of the config files within the directory will be returned, subject to the
-     * exclusion list passed.
-     */
     @Test
-    fun testLoadRecursive_WithExclusions() {
-        val configDir = File(ConfigUtilTest::class.java.getResource("/recursive").toURI())
+    fun testListConfigFiles_RecursiveWithExclusions() {
+        val configDir = File(javaClass.getResource("/recursive").toURI())
         val configFiles = ConfigUtil.listConfigFiles(configDir, true, listOf("subdir2"))
 
         assertEquals(2, configFiles.size)
         assertTrue(
+            configFiles.map { it.file.toString() }.any { it.endsWith("/recursive/test-config.yaml") },
             "discovered files should include top level dir config",
-            configFiles.map { it.file.toString() }.any { it.endsWith("/recursive/test-config.yaml") }
         )
         assertTrue(
+            configFiles.map { it.file.toString() }.any { it.endsWith("/recursive/subdir1/test-config.yaml") },
             "discovered files should include subdir1 config",
-            configFiles.map { it.file.toString() }.any { it.endsWith("/recursive/subdir1/test-config.yaml") }
         )
     }
 
-    /**
-     * Only the top level config file within the config dir and its subdirectories should be returned.
-     */
     @Test
-    fun testLoadRecursive_Disabled() {
-        val configDir = File(ConfigUtilTest::class.java.getResource("/recursive").toURI())
+    fun testListConfigFiles_NonRecursive() {
+        val configDir = File(javaClass.getResource("/recursive").toURI())
         val configFiles = ConfigUtil.listConfigFiles(configDir, false, emptyList())
 
         assertEquals(1, configFiles.size)
         assertTrue(
+            configFiles.map { it.file.toString() }.any { it.endsWith("/recursive/test-config.yaml") },
             "discovered files should include top level dir config",
-            configFiles.map { it.file.toString() }.any { it.endsWith("/recursive/test-config.yaml") }
         )
     }
 
@@ -174,7 +164,7 @@ class ConfigUtilTest {
         assertThat("empty root response config should be empty", config.responseConfig.hasConfiguration(), equalTo(false))
 
         val exampleResource = config.resources?.find { it.path == "/example" }
-        assertNotNull("example resource should be set", exampleResource)
+        assertNotNull(exampleResource, "example resource should be set")
         assertThat("resource path should be set", exampleResource?.path, equalTo("/example"))
         assertThat("resource method should be set", exampleResource?.method, equalTo(HttpMethod.GET))
         assertThat("resource response config should not be empty", exampleResource?.responseConfig?.hasConfiguration(), equalTo(true))
@@ -182,11 +172,11 @@ class ConfigUtilTest {
         assertThat("resource response content should be set", exampleResource?.responseConfig?.content, equalTo("example"))
 
         val bracketStylePathResource = config.resources?.find { it.path?.startsWith("/bracket-style") == true }
-        assertNotNull("bracket style resource should be set", bracketStylePathResource)
+        assertNotNull(bracketStylePathResource, "bracket style resource should be set")
         assertThat("bracket style resource path should be preserved", bracketStylePathResource?.path, equalTo("/bracket-style/{param1}"))
 
         val vertxStylePathResource = config.resources?.find { it.path?.startsWith("/vertx-style") == true }
-        assertNotNull("vertx style resource should be set", vertxStylePathResource)
+        assertNotNull(vertxStylePathResource, "vertx style resource should be set")
         assertThat("vertx style resource path should be converted to bracketed style", vertxStylePathResource?.path, equalTo("/vertx-style/{param1}"))
     }
 
@@ -233,6 +223,33 @@ class ConfigUtilTest {
             val expectedBasePath = configFile.file.canonicalPath.substring(configFile.configRoot.canonicalPath.length).substringBeforeLast(File.separator)
             assertThat("config file should have base path set", config.path, startsWith(expectedBasePath))
         }
+    }
+
+    @Test
+    fun testParseConfigDirEnvVar() {
+        EnvVars.populate("IMPOSTER_CONFIG_DIR" to "/some/path")
+        val configDirs = ConfigUtil.parseConfigDirEnvVar()
+        assertNotNull(configDirs)
+        assertEquals(1, configDirs.size)
+        assertEquals("/some/path", configDirs[0])
+    }
+
+    @Test
+    fun testParseConfigDirEnvVarWithMultiplePaths() {
+        EnvVars.populate("IMPOSTER_CONFIG_DIR" to "/some/path,/another/path")
+        val configDirs = ConfigUtil.parseConfigDirEnvVar()
+        assertNotNull(configDirs)
+        assertEquals(2, configDirs.size)
+        assertEquals("/some/path", configDirs[0])
+        assertEquals("/another/path", configDirs[1])
+    }
+
+    @Test
+    fun testParseConfigDirEnvVarEmpty() {
+        EnvVars.reset(emptyList())
+        val configDirs = ConfigUtil.parseConfigDirEnvVar()
+        assertNotNull(configDirs)
+        assertEquals(0, configDirs.size)
     }
 
     private fun buildLoadedConfig(configRef: ConfigReference, configFile: File) =

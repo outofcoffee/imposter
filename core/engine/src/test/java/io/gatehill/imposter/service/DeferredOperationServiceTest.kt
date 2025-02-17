@@ -46,8 +46,8 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.apache.logging.log4j.LogManager
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 
 /**
  * Tests for [DeferredOperationService].
@@ -74,6 +74,6 @@ class DeferredOperationServiceTest {
         }.await()
         logger.trace("Execution checker stopped")
 
-        assertTrue("Operation should be executed", storedValue)
+        assertTrue(storedValue, "Operation should be executed")
     }
 }

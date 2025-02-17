@@ -44,13 +44,13 @@ package io.gatehill.imposter.plugin.rest
 
 import io.gatehill.imposter.server.BaseVerticleTest
 import io.gatehill.imposter.util.HttpUtil
-import io.restassured.RestAssured
 import io.restassured.RestAssured.*
 import io.restassured.config.RedirectConfig
-import io.vertx.ext.unit.TestContext
+import io.vertx.core.Vertx
+import io.vertx.junit5.VertxTestContext
 import org.hamcrest.Matchers.equalTo
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 /**
  * Tests matching using form parameters.
@@ -64,13 +64,13 @@ class FormParamsTest : BaseVerticleTest() {
         "/form-params"
     )
 
-    @Before
+    @BeforeEach
     @Throws(Exception::class)
-    override fun setUp(testContext: TestContext) {
-        super.setUp(testContext)
+    override fun setUp(vertx: Vertx, testContext: VertxTestContext) {
+        super.setUp(vertx, testContext)
         baseURI = "http://$host:$listenPort"
         config().redirect(RedirectConfig.redirectConfig().followRedirects(false))
-        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails()
+        enableLoggingOfRequestAndResponseIfValidationFails()
     }
 
     @Test

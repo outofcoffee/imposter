@@ -51,10 +51,10 @@ import io.gatehill.imposter.store.inmem.InMemoryStoreFactoryImpl
 import io.gatehill.imposter.util.HttpUtil
 import io.vertx.core.json.JsonObject
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doAnswer
@@ -75,7 +75,7 @@ class GraphQLQueryServiceTest {
     private lateinit var httpExchange: HttpExchange
     private lateinit var httpResponse: HttpResponse
 
-    @Before
+    @BeforeEach
     fun before() {
         storeFactory = InMemoryStoreFactoryImpl(mock())
         service = GraphQLQueryService(storeFactory, EngineLifecycleHooks())
@@ -110,10 +110,10 @@ class GraphQLQueryServiceTest {
 
         val json = JsonObject(body)
         val graphQlData = json.getJsonObject("data")
-        assertNotNull("GraphQL data property should exist", graphQlData)
+        assertNotNull(graphQlData, "GraphQL data property should exist")
 
         val items = graphQlData.getJsonArray("items")
-        assertNotNull("Items should be present in GraphQL response", items)
+        assertNotNull(items, "Items should be present in GraphQL response")
         assertEquals(2, items.size())
 
         val firstItem = items.mapIndexedNotNull { i, _ -> items.getJsonObject(i) }
@@ -146,10 +146,10 @@ class GraphQLQueryServiceTest {
 
         val json = JsonObject(body)
         val graphQlData = json.getJsonObject("data")
-        assertNotNull("GraphQL data property should exist", graphQlData)
+        assertNotNull(graphQlData, "GraphQL data property should exist")
 
         val items = graphQlData.getJsonArray("items")
-        assertNotNull("Items should be present in GraphQL response", items)
+        assertNotNull(items, "Items should be present in GraphQL response")
         assertEquals(1, items.size())
 
         val firstItem = items.getJsonObject(0)

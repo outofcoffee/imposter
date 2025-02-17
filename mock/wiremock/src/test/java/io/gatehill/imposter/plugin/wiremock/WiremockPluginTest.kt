@@ -57,8 +57,9 @@ import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.CoreMatchers.not
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.hasSize
-import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import java.io.File
 
@@ -73,7 +74,7 @@ class WiremockPluginTest {
         val configDir = convert("/wiremock-nowrap")
 
         val files = configDir.listFiles()?.map { it.name }
-        Assert.assertEquals(2, files?.size)
+        Assertions.assertEquals(2, files?.size)
 
         assertThat(files, CoreMatchers.hasItem("wiremock-0-config.json"))
         assertThat(files, CoreMatchers.hasItem("files"))
@@ -84,14 +85,14 @@ class WiremockPluginTest {
         val configDir = convert("/wiremock-simple")
 
         val files = configDir.listFiles()?.map { it.name }
-        Assert.assertEquals(2, files?.size)
+        Assertions.assertEquals(2, files?.size)
 
         assertThat(files, CoreMatchers.hasItem("wiremock-0-config.json"))
         assertThat(files, CoreMatchers.hasItem("files"))
 
         val responseFileDir = File(configDir, "files")
         val responseFiles = responseFileDir.listFiles()?.map { it.name }
-        Assert.assertEquals(1, responseFiles?.size)
+        Assertions.assertEquals(1, responseFiles?.size)
         assertThat(responseFiles, CoreMatchers.hasItem("response.json"))
     }
 
@@ -100,7 +101,7 @@ class WiremockPluginTest {
         val configDir = convert("/wiremock-simple", 2, "IMPOSTER_WIREMOCK_SEPARATE_CONFIG" to "true")
 
         val files = configDir.listFiles()?.map { it.name }
-        Assert.assertEquals(3, files?.size)
+        Assertions.assertEquals(3, files?.size)
 
         assertThat(files, CoreMatchers.hasItem("wiremock-0-config.json"))
         assertThat(files, CoreMatchers.hasItem("wiremock-1-config.json"))
@@ -108,7 +109,7 @@ class WiremockPluginTest {
 
         val responseFileDir = File(configDir, "files")
         val responseFiles = responseFileDir.listFiles()?.map { it.name }
-        Assert.assertEquals(1, responseFiles?.size)
+        Assertions.assertEquals(1, responseFiles?.size)
         assertThat(responseFiles, CoreMatchers.hasItem("response.json"))
     }
 
@@ -117,14 +118,14 @@ class WiremockPluginTest {
         val configDir = convert("/wiremock-templated")
 
         val files = configDir.listFiles()?.map { it.name }
-        Assert.assertEquals(2, files?.size)
+        Assertions.assertEquals(2, files?.size)
 
         assertThat(files, CoreMatchers.hasItem("wiremock-0-config.json"))
         assertThat(files, CoreMatchers.hasItem("files"))
 
         val responseFileDir = File(configDir, "files")
         val responseFiles = responseFileDir.listFiles()?.map { it.name }
-        Assert.assertEquals(1, responseFiles?.size)
+        Assertions.assertEquals(1, responseFiles?.size)
         assertThat(responseFiles, CoreMatchers.hasItem("response.xml"))
 
         val responseFile = File(responseFileDir, "response.xml").readText()
@@ -165,7 +166,7 @@ class WiremockPluginTest {
 
         val configDir = loadedConfigs.first().ref.file.parentFile
 
-        Assert.assertTrue("Config dir should exist", configDir.exists())
+        assertTrue(configDir.exists(), "Config dir should exist")
         assertThat(
             "Config dir should differ from source dir",
             configDir,

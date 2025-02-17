@@ -45,11 +45,13 @@ package io.gatehill.imposter.plugin.soap
 import com.example.petstore.ObjectFactory
 import com.example.petstore.PetService
 import io.gatehill.imposter.server.BaseVerticleTest
-import io.vertx.ext.unit.TestContext
+import io.vertx.core.Vertx
+import io.vertx.junit5.VertxTestContext
 import jakarta.xml.ws.BindingProvider
-import org.junit.Assert.assertEquals
-import org.junit.Before
-import org.junit.Test
+import org.hamcrest.Matchers.*
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 /**
  * Tests for [SoapPluginImpl] using JAX-WS.
@@ -62,10 +64,10 @@ class JAXWSTest : BaseVerticleTest() {
 
     private lateinit var baseURI: String
 
-    @Before
+    @BeforeEach
     @Throws(Exception::class)
-    override fun setUp(testContext: TestContext) {
-        super.setUp(testContext)
+    override fun setUp(vertx: Vertx, testContext: VertxTestContext) {
+        super.setUp(vertx, testContext)
         baseURI = "http://$host:$listenPort"
     }
 

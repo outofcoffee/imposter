@@ -43,7 +43,7 @@
 package io.gatehill.imposter.plugin.soap
 
 import io.gatehill.imposter.plugin.soap.util.SoapUtil
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 /**
  * Tests for [SoapPluginImpl] using WSDL v1 and SOAP 1.2.

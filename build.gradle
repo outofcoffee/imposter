@@ -37,7 +37,6 @@ ext {
     version_jackson = '2.18.0'
     version_jackson_databind = '2.18.0'
     version_jaxb_api = '2.3.1'
-    version_junit = '4.13.2'
     version_junit_jupiter = '5.10.0'
     version_log4j = '2.18.0'
     version_micrometer = '1.11.3'
@@ -90,6 +89,20 @@ subprojects {
         tasks.withType(JavaCompile) {
             sourceCompatibility = '11'
             targetCompatibility = '11'
+        }
+
+        test {
+            useJUnitPlatform {
+                if (project.hasProperty('onlyVerticleTests')) {
+                    includeTags 'verticle'
+                }
+            }
+        }
+
+        dependencies {
+            testImplementation "org.junit.jupiter:junit-jupiter-api:$version_junit_jupiter"
+            testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$version_junit_jupiter"
+            testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.10.0"
         }
 
         project.archivesBaseName = project.name.startsWith('imposter-') ? project.name : 'imposter-' + project.name

@@ -45,26 +45,23 @@ package io.gatehill.imposter.server
 import io.gatehill.imposter.plugin.test.TestPluginImpl
 import io.gatehill.imposter.util.HttpUtil
 import io.restassured.RestAssured
-import io.vertx.ext.unit.TestContext
-import io.vertx.ext.unit.junit.VertxUnitRunner
-import org.hamcrest.Matchers
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
+import io.vertx.core.Vertx
+import io.vertx.junit5.VertxTestContext
+import org.hamcrest.Matchers.equalTo
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 /**
  * Tests for security using query parameters.
  *
  * @author Pete Cornish
  */
-@RunWith(VertxUnitRunner::class)
 class SecurityQueryParamsTest : BaseVerticleTest() {
     override val pluginClass = TestPluginImpl::class.java
 
-    @Before
-    @Throws(Exception::class)
-    override fun setUp(testContext: TestContext) {
-        super.setUp(testContext)
+    @BeforeEach
+    override fun setUp(vertx: Vertx, testContext: VertxTestContext) {
+        super.setUp(vertx, testContext)
         RestAssured.baseURI = "http://$host:$listenPort"
     }
 
@@ -79,7 +76,7 @@ class SecurityQueryParamsTest : BaseVerticleTest() {
     fun testRequestDenied_NoAuth() {
         RestAssured.given().`when`().get("/example")
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_UNAUTHORIZED))
+            .statusCode(equalTo(HttpUtil.HTTP_UNAUTHORIZED))
     }
 
     /**
@@ -91,7 +88,7 @@ class SecurityQueryParamsTest : BaseVerticleTest() {
             .queryParam("apiKey", "invalid-value")
             .queryParam("userKey", "opensesame")["/example"]
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_UNAUTHORIZED))
+            .statusCode(equalTo(HttpUtil.HTTP_UNAUTHORIZED))
     }
 
     /**
@@ -103,7 +100,7 @@ class SecurityQueryParamsTest : BaseVerticleTest() {
             .queryParam("apiKey", "s3cr3t")
             .queryParam("userKey", "does-not-match")["/example"]
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_UNAUTHORIZED))
+            .statusCode(equalTo(HttpUtil.HTTP_UNAUTHORIZED))
     }
 
     /**
@@ -114,11 +111,11 @@ class SecurityQueryParamsTest : BaseVerticleTest() {
         RestAssured.given().`when`()
             .queryParam("apiKey", "s3cr3t")["/example"]
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_UNAUTHORIZED))
+            .statusCode(equalTo(HttpUtil.HTTP_UNAUTHORIZED))
         RestAssured.given().`when`()
             .queryParam("userKey", "opensesame")["/example"]
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_UNAUTHORIZED))
+            .statusCode(equalTo(HttpUtil.HTTP_UNAUTHORIZED))
     }
 
     /**
@@ -130,6 +127,6 @@ class SecurityQueryParamsTest : BaseVerticleTest() {
             .queryParam("apiKey", "s3cr3t")
             .queryParam("userKey", "opensesame")["/example"]
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
     }
 }

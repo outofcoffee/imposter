@@ -45,26 +45,24 @@ package io.gatehill.imposter.server
 import io.gatehill.imposter.plugin.test.TestPluginImpl
 import io.gatehill.imposter.util.HttpUtil
 import io.restassured.RestAssured
-import io.vertx.ext.unit.TestContext
-import io.vertx.ext.unit.junit.VertxUnitRunner
-import org.hamcrest.Matchers
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
+import io.vertx.core.Vertx
+import io.vertx.junit5.VertxTestContext
+import org.hamcrest.Matchers.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 /**
  * Tests for legacy response configuration.
  *
  * @author Pete Cornish
  */
-@RunWith(VertxUnitRunner::class)
 class DeprecatedResponseConfigTest : BaseVerticleTest() {
     override val pluginClass = TestPluginImpl::class.java
 
-    @Before
+    @BeforeEach
     @Throws(Exception::class)
-    override fun setUp(testContext: TestContext) {
-        super.setUp(testContext)
+    override fun setUp(vertx: Vertx, testContext: VertxTestContext) {
+        super.setUp(vertx, testContext)
         RestAssured.baseURI = "http://$host:$listenPort"
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails()
     }
@@ -78,8 +76,8 @@ class DeprecatedResponseConfigTest : BaseVerticleTest() {
         RestAssured.given().`when`()
             .get("/legacy-content")
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
-            .body(Matchers.equalTo("Hello content"))
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .body(equalTo("Hello content"))
     }
 
     @Test
@@ -87,8 +85,8 @@ class DeprecatedResponseConfigTest : BaseVerticleTest() {
         RestAssured.given().`when`()
             .get("/legacy-file")
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
-            .body(Matchers.equalTo("Hello file"))
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .body(equalTo("Hello file"))
     }
 
     @Test
@@ -96,7 +94,7 @@ class DeprecatedResponseConfigTest : BaseVerticleTest() {
         RestAssured.given().`when`()
             .get("/legacy-script")
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
-            .body(Matchers.equalTo("Hello script"))
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .body(equalTo("Hello script"))
     }
 }

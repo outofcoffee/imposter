@@ -47,9 +47,9 @@ import io.gatehill.imposter.store.core.PrefixedKeyStore
 import io.gatehill.imposter.store.inmem.InMemoryStore
 import org.hamcrest.CoreMatchers
 import org.hamcrest.MatcherAssert
-import org.junit.Assert
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 /**
  * Tests for [PrefixedKeyStore].
@@ -60,8 +60,7 @@ class PrefixedKeyStoreTest {
     private var delegateStore: InMemoryStore? = null
     private var store: PrefixedKeyStore? = null
 
-    @Before
-    @Throws(Exception::class)
+    @BeforeEach
     fun setUp() {
         delegateStore = InMemoryStore(
             DeferredOperationService(),
@@ -74,8 +73,8 @@ class PrefixedKeyStoreTest {
     @Test
     fun testPrefixedKeys() {
         store!!.save("foo", "bar")
-        Assert.assertTrue(delegateStore!!.hasItemWithKey("pref.foo"))
-        Assert.assertEquals(store!!.load("foo"), "bar")
+        Assertions.assertTrue(delegateStore!!.hasItemWithKey("pref.foo"))
+        Assertions.assertEquals(store!!.load("foo"), "bar")
 
         // prefix should not be present in keys
         val allKeys: Set<String?> = store!!.loadAll().keys

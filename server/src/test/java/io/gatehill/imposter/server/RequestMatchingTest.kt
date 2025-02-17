@@ -45,26 +45,24 @@ package io.gatehill.imposter.server
 import io.gatehill.imposter.plugin.test.TestPluginImpl
 import io.gatehill.imposter.util.HttpUtil
 import io.restassured.RestAssured
-import io.vertx.ext.unit.TestContext
-import io.vertx.ext.unit.junit.VertxUnitRunner
-import org.hamcrest.Matchers
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
+import io.vertx.core.Vertx
+import io.vertx.junit5.VertxTestContext
+import org.hamcrest.Matchers.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 /**
  * Tests for matching path parameters.
  *
  * @author Pete Cornish
  */
-@RunWith(VertxUnitRunner::class)
 class RequestMatchingTest : BaseVerticleTest() {
     override val pluginClass = TestPluginImpl::class.java
 
-    @Before
+    @BeforeEach
     @Throws(Exception::class)
-    override fun setUp(testContext: TestContext) {
-        super.setUp(testContext)
+    override fun setUp(vertx: Vertx, testContext: VertxTestContext) {
+        super.setUp(vertx, testContext)
         RestAssured.baseURI = "http://$host:$listenPort"
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails()
     }
@@ -81,7 +79,7 @@ class RequestMatchingTest : BaseVerticleTest() {
         RestAssured.given().`when`()
             .get("/users/1")
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_NO_CONTENT))
+            .statusCode(equalTo(HttpUtil.HTTP_NO_CONTENT))
     }
 
     /**
@@ -92,7 +90,7 @@ class RequestMatchingTest : BaseVerticleTest() {
         RestAssured.given().`when`()
             .get("/orders/99")
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_NOT_AUTHORITATIVE))
+            .statusCode(equalTo(HttpUtil.HTTP_NOT_AUTHORITATIVE))
     }
 
     /**
@@ -103,31 +101,31 @@ class RequestMatchingTest : BaseVerticleTest() {
         RestAssured.given().`when`()
             .get("/example")
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_ACCEPTED))
+            .statusCode(equalTo(HttpUtil.HTTP_ACCEPTED))
 
         RestAssured.given().`when`()
             .post("/example")
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_ACCEPTED))
+            .statusCode(equalTo(HttpUtil.HTTP_ACCEPTED))
 
         RestAssured.given().`when`()
             .put("/example")
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_ACCEPTED))
+            .statusCode(equalTo(HttpUtil.HTTP_ACCEPTED))
 
         RestAssured.given().`when`()
             .patch("/example")
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_ACCEPTED))
+            .statusCode(equalTo(HttpUtil.HTTP_ACCEPTED))
 
         RestAssured.given().`when`()
             .delete("/example")
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_ACCEPTED))
+            .statusCode(equalTo(HttpUtil.HTTP_ACCEPTED))
 
         RestAssured.given().`when`()
             .head("/example")
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_ACCEPTED))
+            .statusCode(equalTo(HttpUtil.HTTP_ACCEPTED))
     }
 }

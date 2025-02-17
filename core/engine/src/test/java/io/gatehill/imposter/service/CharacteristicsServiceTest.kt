@@ -50,10 +50,15 @@ import io.gatehill.imposter.http.HttpResponse
 import io.gatehill.imposter.script.FailureSimulationType
 import io.gatehill.imposter.script.PerformanceSimulationConfig
 import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
-import org.junit.Test
-import org.mockito.kotlin.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doAnswer
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 
 /**
  * Tests for [CharacteristicsService].

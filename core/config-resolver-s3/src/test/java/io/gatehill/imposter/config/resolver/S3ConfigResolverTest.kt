@@ -53,8 +53,10 @@ import io.gatehill.imposter.util.TestEnvironmentUtil.assumeDockerAccessible
 import io.vertx.core.AsyncResult
 import io.vertx.core.Vertx
 import org.junit.*
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 
 /**
  * Verifies loading remote config.
@@ -65,7 +67,7 @@ class S3ConfigResolverTest {
     private var s3Mock: S3MockContainer? = null
     private val s3ConfigResolver = S3ConfigResolver()
 
-    @Before
+    @BeforeEach
     fun setUp() {
         // These tests need Docker
         assumeDockerAccessible()
@@ -107,8 +109,8 @@ class S3ConfigResolverTest {
     @Throws(Exception::class)
     fun testLoadConfigFromS3() {
         val localConfigDir = s3ConfigResolver.resolve("s3://test")
-        Assert.assertNotNull("config should be fetched from S3", localConfigDir.exists())
-        Assert.assertEquals("files should be downloaded from S3", 3, localConfigDir.listFiles().size)
+        Assertions.assertNotNull(localConfigDir.exists(), "config should be fetched from S3")
+        Assertions.assertEquals(localConfigDir.listFiles().size, 3, "files should be downloaded from S3")
     }
 
     companion object {

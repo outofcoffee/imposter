@@ -52,7 +52,7 @@ import io.gatehill.imposter.store.core.Store
 import io.gatehill.imposter.store.factory.StoreFactory
 import io.gatehill.imposter.util.DateTimeUtil
 import io.gatehill.imposter.util.PlaceholderUtil
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq

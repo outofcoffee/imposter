@@ -45,9 +45,9 @@ package io.gatehill.imposter.store
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.store.factory.AbstractStoreFactory
 import io.gatehill.imposter.store.support.Example
-import org.junit.Assert
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import java.nio.file.Files
 
 /**
@@ -59,7 +59,7 @@ abstract class AbstractStoreFactoryTest {
     protected lateinit var factory: AbstractStoreFactory
     protected abstract val typeDescription: String
 
-    @Before
+    @BeforeEach
     fun before() {
         val configDir = Files.createTempDirectory("imposter")
 
@@ -73,7 +73,7 @@ abstract class AbstractStoreFactoryTest {
     @Test
     fun testBuildNewStore() {
         val store = factory.buildNewStore("test")
-        Assert.assertEquals(typeDescription, store.typeDescription)
+        Assertions.assertEquals(typeDescription, store.typeDescription)
     }
 
     @Test
@@ -81,70 +81,70 @@ abstract class AbstractStoreFactoryTest {
         factory.clearStore("sli", false)
         val store = factory.buildNewStore("sli")
 
-        Assert.assertEquals(0, store.count())
+        Assertions.assertEquals(0, store.count())
         store.save("foo", "bar")
         store.save("baz", 123L)
         store.save("qux", true)
         store.save("corge", null)
 
-        Assert.assertEquals("bar", store.load("foo"))
-        Assert.assertEquals(123L, store.load("baz"))
-        Assert.assertEquals(true, store.load("qux"))
-        Assert.assertNull(store.load("corge"))
+        Assertions.assertEquals("bar", store.load("foo"))
+        Assertions.assertEquals(123L, store.load("baz"))
+        Assertions.assertEquals(true, store.load("qux"))
+        Assertions.assertNull(store.load("corge"))
 
         val allItems = store.loadAll()
-        Assert.assertEquals("bar", allItems["foo"])
-        Assert.assertEquals(123L, allItems["baz"])
-        Assert.assertEquals(true, allItems["qux"])
-        Assert.assertNull(allItems["corge"])
-        Assert.assertTrue("Item should exist", store.hasItemWithKey("foo"))
+        Assertions.assertEquals("bar", allItems["foo"])
+        Assertions.assertEquals(123L, allItems["baz"])
+        Assertions.assertEquals(true, allItems["qux"])
+        Assertions.assertNull(allItems["corge"])
+        Assertions.assertTrue(store.hasItemWithKey("foo"), "Item should exist")
     }
 
     @Test
     fun testLoadByKeyPrefix() {
         val store = factory.buildNewStore("kp")
-        Assert.assertEquals(0, store.count())
+        Assertions.assertEquals(0, store.count())
         store.save("foo_one", "bar")
         store.save("foo_two", "baz")
 
         val items = store.loadByKeyPrefix("foo_")
-        Assert.assertEquals("bar", items["foo_one"])
-        Assert.assertEquals("baz", items["foo_two"])
+        Assertions.assertEquals("bar", items["foo_one"])
+        Assertions.assertEquals("baz", items["foo_two"])
     }
 
     @Test
     fun testSaveLoadMap() {
         val store = factory.buildNewStore("map")
-        Assert.assertEquals(0, store.count())
+        Assertions.assertEquals(0, store.count())
         store.save("grault", mapOf("foo" to "bar"))
 
         val loadedMap = store.load<Map<String, *>>("grault")
-        Assert.assertNotNull(loadedMap)
-        Assert.assertTrue("Returned value should be a Map", loadedMap is Map)
-        Assert.assertEquals("bar", loadedMap!!["foo"])
+        Assertions.assertNotNull(loadedMap)
+        Assertions.assertTrue(loadedMap is Map, "Returned value should be a Map")
+        Assertions.assertEquals("bar", loadedMap!!["foo"])
     }
 
     @Test
     open fun testSaveLoadComplexItemBinary() {
         val store = factory.buildNewStore("complex-binary")
-        Assert.assertEquals(0, store.count())
+        Assertions.assertEquals(0, store.count())
         store.save("garply", Example("test"))
 
         // POJO is deserialised as a Map
         val loaded = store.load<Example>("garply")
-        Assert.assertNotNull(loaded)
-        Assert.assertTrue("Returned value should be a ${Example::class.qualifiedName}", loaded is Example)
-        Assert.assertEquals("test", loaded!!.name)
+        Assertions.assertNotNull(loaded)
+        Assertions.assertTrue(loaded is Example, "Returned value should be a ${Example::class.qualifiedName}")
+        Assertions.assertEquals("test", loaded!!.name)
     }
 
     @Test
     fun testDeleteItem() {
         val store = factory.buildNewStore("di")
-        Assert.assertFalse("Item should not exist", store.hasItemWithKey("baz"))
+        Assertions.assertFalse(store.hasItemWithKey("baz"), "Item should not exist")
         store.save("baz", "qux")
-        Assert.assertTrue("Item should exist", store.hasItemWithKey("baz"))
+        Assertions.assertTrue(store.hasItemWithKey("baz"), "Item should exist")
         store.delete("baz")
-        Assert.assertFalse("Item should not exist", store.hasItemWithKey("baz"))
+        Assertions.assertFalse(store.hasItemWithKey("baz"), "Item should not exist")
     }
 
     @Test
@@ -152,6 +152,6 @@ abstract class AbstractStoreFactoryTest {
         val store = factory.buildNewStore("ds")
         store.save("baz", "qux")
         factory.clearStore("ds", false)
-        Assert.assertEquals("Store should be empty", 0, factory.getStoreByName("ds", false).count())
+        Assertions.assertEquals(0, factory.getStoreByName("ds", false).count(), "Store should be empty")
     }
 }

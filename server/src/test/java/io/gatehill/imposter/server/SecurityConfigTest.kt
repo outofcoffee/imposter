@@ -48,24 +48,25 @@ import io.gatehill.imposter.plugin.test.TestPluginImpl
 import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.InjectorUtil
 import io.restassured.RestAssured
-import io.vertx.ext.unit.TestContext
-import io.vertx.ext.unit.junit.VertxUnitRunner
+import io.vertx.core.Vertx
+import io.vertx.junit5.VertxTestContext
 import org.hamcrest.Matchers
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 /**
+ * Tests for security configuration.
+ *
  * @author Pete Cornish
  */
-@RunWith(VertxUnitRunner::class)
 class SecurityConfigTest : BaseVerticleTest() {
     override val pluginClass = TestPluginImpl::class.java
 
-    @Before
+    @BeforeEach
     @Throws(Exception::class)
-    override fun setUp(testContext: TestContext) {
-        super.setUp(testContext)
+    override fun setUp(vertx: Vertx, testContext: VertxTestContext) {
+        super.setUp(vertx, testContext)
         RestAssured.baseURI = "http://$host:$listenPort"
     }
 
@@ -74,35 +75,35 @@ class SecurityConfigTest : BaseVerticleTest() {
     )
 
     @Test
-    fun testPluginLoadAndConfig(testContext: TestContext) {
+    fun testPluginLoadAndConfig() {
         val pluginManager = InjectorUtil.getInstance<PluginManager>()
         val plugin = pluginManager.getPlugin<TestPluginImpl>(TestPluginImpl::class.java.canonicalName)
-        testContext.assertNotNull(plugin)
-        testContext.assertNotNull(plugin!!.configs)
-        testContext.assertEquals(1, plugin.configs.size)
+        assertNotNull(plugin)
+        assertNotNull(plugin!!.configs)
+        assertEquals(1, plugin.configs.size)
         val pluginConfig = plugin.configs[0]
 
         // check security config
         val securityConfig = pluginConfig.securityConfig
-        testContext.assertNotNull(securityConfig)
-        testContext.assertEquals(SecurityEffect.Deny, securityConfig!!.defaultEffect)
+        assertNotNull(securityConfig)
+        assertEquals(SecurityEffect.Deny, securityConfig!!.defaultEffect)
 
         // check conditions
-        testContext.assertEquals(2, securityConfig.conditions.size)
+        assertEquals(2, securityConfig.conditions.size)
 
         // check short configuration option
         val condition1 = securityConfig.conditions[0]
-        testContext.assertEquals(SecurityEffect.Permit, condition1.effect)
+        assertEquals(SecurityEffect.Permit, condition1.effect)
         val parsedHeaders1 = condition1.requestHeaders
-        testContext.assertEquals(1, parsedHeaders1.size)
-        testContext.assertEquals("s3cr3t", parsedHeaders1["Authorization"]!!.value)
+        assertEquals(1, parsedHeaders1.size)
+        assertEquals("s3cr3t", parsedHeaders1["Authorization"]!!.value)
 
         // check long configuration option
         val condition2 = securityConfig.conditions[1]
-        testContext.assertEquals(SecurityEffect.Deny, condition2.effect)
+        assertEquals(SecurityEffect.Deny, condition2.effect)
         val parsedHeaders2 = condition2.requestHeaders
-        testContext.assertEquals(1, parsedHeaders2.size)
-        testContext.assertEquals("opensesame", parsedHeaders2["X-Api-Key"]!!.value)
+        assertEquals(1, parsedHeaders2.size)
+        assertEquals("opensesame", parsedHeaders2["X-Api-Key"]!!.value)
     }
 
     /**
