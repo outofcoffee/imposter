@@ -3,7 +3,7 @@ package io.gatehill.imposter.expression.util
 import io.gatehill.imposter.expression.eval.ExpressionEvaluator
 import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.MatcherAssert.assertThat
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class ExpressionUtilTest {
     @Test

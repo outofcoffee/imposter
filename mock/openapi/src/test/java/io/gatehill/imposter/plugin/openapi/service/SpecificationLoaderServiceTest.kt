@@ -58,6 +58,7 @@ import io.vertx.core.http.HttpServer
 import io.vertx.core.http.HttpServerOptions
 import io.vertx.core.http.HttpServerRequest
 import org.junit.*
+import org.junit.jupiter.api.Assertions
 import java.net.ServerSocket
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -103,8 +104,8 @@ class SpecificationLoaderServiceTest {
         pluginConfig.specFile = specFilePath.fileName.toString()
 
         val spec = service.parseSpecification(pluginConfig)
-        Assert.assertNotNull("spec should be loaded from file", spec)
-        Assert.assertEquals("title should match", "Sample Petstore order service", spec.info.title)
+        Assertions.assertNotNull(spec, "spec should be loaded from file")
+        Assertions.assertEquals(spec.info.title, "Sample Petstore order service", "title should match")
     }
 
     /**
@@ -128,8 +129,8 @@ class SpecificationLoaderServiceTest {
         pluginConfig.specFile = "http://localhost:$listenPort"
 
         val spec = service.parseSpecification(pluginConfig)
-        Assert.assertNotNull("spec should be loaded from URL", spec)
-        Assert.assertEquals("title should match", "Sample Petstore order service", spec.info.title)
+        Assertions.assertNotNull(spec, "spec should be loaded from URL")
+        Assertions.assertEquals("Sample Petstore order service", spec.info.title, "title should match")
     }
 
     /**
@@ -157,8 +158,8 @@ class SpecificationLoaderServiceTest {
         val pluginConfig = uploadFileToS3(specFilePath)
 
         val spec = service.parseSpecification(pluginConfig)
-        Assert.assertNotNull("spec should be loaded from S3", spec)
-        Assert.assertEquals("title should match", "Sample Petstore order service", spec.info.title)
+        Assertions.assertNotNull(spec, "spec should be loaded from S3")
+        Assertions.assertEquals("Sample Petstore order service", spec.info.title, "title should match")
     }
 
     private fun uploadFileToS3(specFilePath: Path): OpenApiPluginConfig {

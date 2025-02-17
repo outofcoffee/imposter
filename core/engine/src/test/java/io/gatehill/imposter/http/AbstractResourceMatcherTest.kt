@@ -6,9 +6,9 @@ import io.gatehill.imposter.plugin.config.PluginConfigImpl
 import io.gatehill.imposter.util.ResourceUtil
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.equalTo
-import org.junit.Assert.assertSame
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertSame
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
@@ -20,7 +20,7 @@ import org.mockito.kotlin.mock
 class AbstractResourceMatcherTest {
     private lateinit var matcher: AbstractResourceMatcher
 
-    @Before
+    @BeforeEach
     fun setup() {
         matcher = object : AbstractResourceMatcher() {
             override fun matchRequest(

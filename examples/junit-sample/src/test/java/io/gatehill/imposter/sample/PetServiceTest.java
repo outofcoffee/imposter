@@ -45,15 +45,14 @@ package io.gatehill.imposter.sample;
 
 import io.gatehill.imposter.openapi.embedded.OpenApiImposterBuilder;
 import io.gatehill.imposter.openapi.embedded.OpenApiMockEngine;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Unit test for pet service that calls the pet API.
@@ -61,7 +60,7 @@ import static org.junit.Assert.assertEquals;
 public class PetServiceTest {
     private PetService petService;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         Path specFile = Paths.get(PetServiceTest.class.getResource("/config/petstore-simple.yaml").toURI());
 

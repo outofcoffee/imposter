@@ -46,10 +46,10 @@ package io.gatehill.imposter.plugin.soap.parser
 import io.gatehill.imposter.plugin.soap.model.BindingType
 import io.gatehill.imposter.plugin.soap.model.ElementOperationMessage
 import org.jdom2.input.SAXBuilder
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import java.io.File
 import javax.xml.namespace.QName
 
@@ -61,7 +61,7 @@ import javax.xml.namespace.QName
 class Wsdl1Soap11ParserTest {
     private lateinit var parser: Wsdl1Parser
 
-    @Before
+    @BeforeEach
     fun setUp() {
         val wsdlFile = File(Wsdl1Soap11ParserTest::class.java.getResource("/wsdl1-soap11-document-bare/service.wsdl")!!.toURI())
         val document = SAXBuilder().build(wsdlFile)
@@ -74,7 +74,7 @@ class Wsdl1Soap11ParserTest {
         assertEquals(1, parser.services.size)
 
         val petService = parser.services.find { it.name == "PetService" }
-        assertNotNull("PetService should not be null", petService)
+        assertNotNull(petService, "PetService should not be null")
 
         petService!!
         assertEquals("PetService", petService.name)
@@ -88,7 +88,7 @@ class Wsdl1Soap11ParserTest {
     @Test
     fun `get SOAP binding, getPetById operation`() {
         val binding = parser.getBinding("SoapBinding")
-        assertNotNull("SoapBinding should not be null", binding)
+        assertNotNull(binding, "SoapBinding should not be null")
 
         binding!!
         assertEquals("SoapBinding", binding.name)
@@ -97,7 +97,7 @@ class Wsdl1Soap11ParserTest {
 
         assertEquals(2, binding.operations.size)
         val operation = binding.operations.find { it.name == "getPetById" }
-        assertNotNull("getPetById operation should not be null", operation)
+        assertNotNull(operation, "getPetById operation should not be null")
 
         operation!!
         assertEquals("getPetById", operation.name)
@@ -123,7 +123,7 @@ class Wsdl1Soap11ParserTest {
     @Test
     fun `get HTTP binding, getPetByName operation`() {
         val binding = parser.getBinding("HttpBinding")
-        assertNotNull("HttpBinding should not be null", binding)
+        assertNotNull(binding, "HttpBinding should not be null")
 
         binding!!
         assertEquals("HttpBinding", binding.name)
@@ -132,7 +132,7 @@ class Wsdl1Soap11ParserTest {
 
         assertEquals(2, binding.operations.size)
         val operation = binding.operations.find { it.name == "getPetByName" }
-        assertNotNull("getPetByName operation should not be null", operation)
+        assertNotNull(operation, "getPetByName operation should not be null")
 
         operation!!
         assertEquals("getPetByName", operation.name)
@@ -158,7 +158,7 @@ class Wsdl1Soap11ParserTest {
     @Test
     fun getInterface() {
         val iface = parser.getInterface("PetPortType")
-        assertNotNull("PetPortType should not be null", iface)
+        assertNotNull(iface, "PetPortType should not be null")
 
         iface!!
         assertEquals("PetPortType", iface.name)

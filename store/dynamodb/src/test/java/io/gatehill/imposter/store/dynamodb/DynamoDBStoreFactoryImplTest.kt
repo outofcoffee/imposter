@@ -51,10 +51,10 @@ import io.gatehill.imposter.store.dynamodb.config.Settings
 import io.gatehill.imposter.store.dynamodb.support.DynamoDBStoreTestHelper
 import io.gatehill.imposter.store.support.Example
 import io.gatehill.imposter.util.TestEnvironmentUtil
-import org.junit.AfterClass
-import org.junit.Assert
-import org.junit.BeforeClass
-import org.junit.Test
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Test
 import org.testcontainers.containers.localstack.LocalStackContainer
 
 /**
@@ -69,7 +69,7 @@ class DynamoDBStoreFactoryImplTest : AbstractStoreFactoryTest() {
         private val helper = DynamoDBStoreTestHelper()
         private var dynamo: LocalStackContainer? = null
 
-        @BeforeClass
+        @BeforeAll
         @JvmStatic
         fun setUp() {
             // These tests need Docker
@@ -86,7 +86,7 @@ class DynamoDBStoreFactoryImplTest : AbstractStoreFactoryTest() {
             helper.createTable("Imposter")
         }
 
-        @AfterClass
+        @AfterAll
         @JvmStatic
         fun tearDown() {
             try {
@@ -110,14 +110,14 @@ class DynamoDBStoreFactoryImplTest : AbstractStoreFactoryTest() {
         )
 
         val store = factory.buildNewStore("complex-binary")
-        Assert.assertEquals(0, store.count())
+        Assertions.assertEquals(0, store.count())
         store.save("garply", Example("test"))
 
         // POJO is deserialised as a Map
         val loadedMap = store.load<Map<String, *>>("garply")
-        Assert.assertNotNull(loadedMap)
-        Assert.assertTrue("Returned value should be a Map", loadedMap is Map)
-        Assert.assertEquals("test", loadedMap!!["name"])
+        Assertions.assertNotNull(loadedMap)
+        Assertions.assertTrue(loadedMap is Map, "Returned value should be a Map")
+        Assertions.assertEquals("test", loadedMap!!["name"])
     }
 
     /**
@@ -130,13 +130,13 @@ class DynamoDBStoreFactoryImplTest : AbstractStoreFactoryTest() {
         )
 
         val store = factory.buildNewStore("complex-map")
-        Assert.assertEquals(0, store.count())
+        Assertions.assertEquals(0, store.count())
         store.save("garply", Example("test"))
 
         // POJO is deserialised as a Map
         val loadedMap = store.load<Map<String, *>>("garply")
-        Assert.assertNotNull(loadedMap)
-        Assert.assertTrue("Returned value should be a Map", loadedMap is Map)
-        Assert.assertEquals("test", loadedMap!!["name"])
+        Assertions.assertNotNull(loadedMap)
+        Assertions.assertTrue(loadedMap is Map, "Returned value should be a Map")
+        Assertions.assertEquals("test", loadedMap!!["name"])
     }
 }

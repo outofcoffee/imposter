@@ -45,25 +45,23 @@ package io.gatehill.imposter.server
 import io.gatehill.imposter.plugin.test.TestPluginImpl
 import io.gatehill.imposter.util.HttpUtil
 import io.restassured.RestAssured
-import io.vertx.ext.unit.TestContext
-import io.vertx.ext.unit.junit.VertxUnitRunner
+import io.vertx.core.Vertx
+import io.vertx.junit5.VertxTestContext
 import org.apache.commons.lang3.RandomStringUtils
-import org.hamcrest.Matchers
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
+import org.hamcrest.Matchers.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 /**
  * Tests for security configuration using regular expressions.
  */
-@RunWith(VertxUnitRunner::class)
 class SecurityConfigRegexTest : BaseVerticleTest() {
     override val pluginClass = TestPluginImpl::class.java
 
-    @Before
+    @BeforeEach
     @Throws(Exception::class)
-    override fun setUp(testContext: TestContext) {
-        super.setUp(testContext)
+    override fun setUp(vertx: Vertx, testContext: VertxTestContext) {
+        super.setUp(vertx, testContext)
         RestAssured.baseURI = "http://$host:$listenPort"
     }
 
@@ -80,7 +78,7 @@ class SecurityConfigRegexTest : BaseVerticleTest() {
             .header("Authorization", "Bearer " + RandomStringUtils.random(50, "ABCDEFGHIJKLMNOPRSTUVXYZabcdefghijklmnoprstuvxyz1234567890"))
             .get("/match")
                 .then()
-                .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
+                .statusCode(equalTo(HttpUtil.HTTP_OK))
     }
 
     /**
@@ -92,7 +90,7 @@ class SecurityConfigRegexTest : BaseVerticleTest() {
             .header("Authorization", "Token ")
             .get("/match")
                 .then()
-                .statusCode(Matchers.equalTo(HttpUtil.HTTP_UNAUTHORIZED))
+                .statusCode(equalTo(HttpUtil.HTTP_UNAUTHORIZED))
     }
 
     /**
@@ -104,7 +102,7 @@ class SecurityConfigRegexTest : BaseVerticleTest() {
             .header("Authorization", "Bearer magic-token")
             .get("/does-not-match")
                 .then()
-                .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
+                .statusCode(equalTo(HttpUtil.HTTP_OK))
     }
 
     /**
@@ -116,6 +114,6 @@ class SecurityConfigRegexTest : BaseVerticleTest() {
             .header("Authorization", "Bearer bad-token")
             .get("/does-not-match")
                 .then()
-                .statusCode(Matchers.equalTo(HttpUtil.HTTP_UNAUTHORIZED))
+                .statusCode(equalTo(HttpUtil.HTTP_UNAUTHORIZED))
     }
 }

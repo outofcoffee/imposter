@@ -51,9 +51,13 @@ import io.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PASSWORD
 import io.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PATH
 import io.gatehill.imposter.util.CryptoUtil.getDefaultKeystore
 import io.gatehill.imposter.util.FileUtil.CLASSPATH_PREFIX
-import io.vertx.ext.unit.TestContext
-import org.junit.Before
-import org.junit.Test
+import io.vertx.core.Vertx
+import io.vertx.junit5.VertxTestContext
+import org.hamcrest.Matchers.*
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLSession
 
@@ -65,10 +69,10 @@ import javax.net.ssl.SSLSession
 class SfdcPluginImplTest : BaseVerticleTest() {
     override val pluginClass = SfdcPluginImpl::class.java
 
-    @Before
+    @BeforeEach
     @Throws(Exception::class)
-    override fun setUp(testContext: TestContext) {
-        super.setUp(testContext)
+    override fun setUp(vertx: Vertx, testContext: VertxTestContext) {
+        super.setUp(vertx, testContext)
 
         // set up trust store for TLS
         System.setProperty("javax.net.ssl.trustStore", getDefaultKeystore(SfdcPluginImplTest::class.java).toString())
@@ -101,46 +105,48 @@ class SfdcPluginImplTest : BaseVerticleTest() {
     }
 
     @Test
-    fun testQueryRecordsSuccess(testContext: TestContext) {
+    fun testQueryRecordsSuccess() {
         // Something like 'SELECT Name, Id from Account LIMIT 100' becomes GET to:
         // http://localhost:8443/services/data/v20.0/query?q=SELECT%20Name,%20Id%20from%20Account%20LIMIT%20100
         val api = buildForceApi()
         val actual = api.query("SELECT Name, Id from Account LIMIT 100", Account::class.java)
-        testContext.assertNotNull(actual)
-        testContext.assertTrue(actual.isDone)
+        assertNotNull(actual)
+        assertTrue(actual.isDone)
 
         // check records
-        testContext.assertEquals(2, actual.records.size)
-        testContext.assertTrue(actual.records.any { account: Account -> "0015000000VALDtAAP" == account.id })
-        testContext.assertTrue(actual.records.any { account: Account -> "0015000000XALDuAAZ" == account.id })
+        assertEquals(2, actual.records.size)
+        assertTrue(actual.records.any { account: Account -> "0015000000VALDtAAP" == account.id })
+        assertTrue(actual.records.any { account: Account -> "0015000000XALDuAAZ" == account.id })
     }
 
     @Test
-    fun testGetRecordByIdSuccess(testContext: TestContext) {
+    fun testGetRecordByIdSuccess() {
         // GET Query for specific object with ID, like:
         // http://localhost:8443/services/data/v20.0/sobjects/Account/0015000000VALDtAAP/
         val api = buildForceApi()
         val actual = api.getSObject("Account", "0015000000VALDtAAP").`as`(Account::class.java)
-        testContext.assertNotNull(actual)
-        testContext.assertEquals("0015000000VALDtAAP", actual.id)
-        testContext.assertEquals("GenePoint", actual.name)
+        assertNotNull(actual)
+        assertEquals("0015000000VALDtAAP", actual.id)
+        assertEquals("GenePoint", actual.name)
     }
 
-    @Test(expected = RuntimeException::class)
+    @Test()
     fun testRecordNotFound() {
-        val api = buildForceApi()
-        api.getSObject("Account", "nonExistentId").`as`(Account::class.java)
+        assertThrows<RuntimeException> {
+            val api = buildForceApi()
+            api.getSObject("Account", "nonExistentId").`as`(Account::class.java)
+        }
     }
 
     @Test
-    fun testCreateRecord(testContext: TestContext) {
+    fun testCreateRecord() {
         // POST to create object, like:
         // http://localhost:8443/services/data/v20.0/sobjects/Account/
         val account = Account()
         account.name = "NewAccount"
         val api = buildForceApi()
         val actual = api.createSObject("Account", account)
-        testContext.assertNotNull(actual)
+        assertNotNull(actual)
     }
 
     @Test

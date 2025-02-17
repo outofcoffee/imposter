@@ -43,8 +43,8 @@
 package io.gatehill.imposter.script.impl
 
 import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl
-import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 
 class ReadWriteResponseBehaviourImplTest {
     @Test
@@ -52,9 +52,9 @@ class ReadWriteResponseBehaviourImplTest {
     fun shouldAddHeaderWithValue() {
         val scriptedResponseBehavior = ReadWriteResponseBehaviourImpl()
         scriptedResponseBehavior.withHeader("MyHeader", "MyValue")
-        Assert.assertEquals(1, scriptedResponseBehavior.responseHeaders.size.toLong())
-        Assert.assertTrue(scriptedResponseBehavior.responseHeaders.containsKey("MyHeader"))
-        Assert.assertEquals("MyValue", scriptedResponseBehavior.responseHeaders["MyHeader"])
+        Assertions.assertEquals(1, scriptedResponseBehavior.responseHeaders.size.toLong())
+        Assertions.assertTrue(scriptedResponseBehavior.responseHeaders.containsKey("MyHeader"))
+        Assertions.assertEquals("MyValue", scriptedResponseBehavior.responseHeaders["MyHeader"])
     }
 
     @Test
@@ -63,6 +63,6 @@ class ReadWriteResponseBehaviourImplTest {
         val scriptedResponseBehavior = ReadWriteResponseBehaviourImpl()
         scriptedResponseBehavior.responseHeaders["MyHeader"] = "MyValue"
         scriptedResponseBehavior.withHeader("MyHeader", null)
-        Assert.assertEquals(0, scriptedResponseBehavior.responseHeaders.size.toLong())
+        Assertions.assertEquals(0, scriptedResponseBehavior.responseHeaders.size.toLong())
     }
 }

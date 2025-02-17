@@ -10,7 +10,8 @@ dependencies {
     api project(':core:imposter-engine')
 
     // test
-    testImplementation "junit:junit:$version_junit"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$version_junit_jupiter"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$version_junit_jupiter"
     testImplementation "org.mockito:mockito-core:$version_mockito"
     testImplementation "org.mockito.kotlin:mockito-kotlin:$version_mockito_kotlin"
     testImplementation group: 'org.hamcrest', name: 'hamcrest', version: version_hamcrest
@@ -61,4 +62,8 @@ compileTestKotlin {
         // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
         freeCompilerArgs = ["-Xjvm-default=all"]
     }
+}
+
+test {
+    useJUnitPlatform()
 }

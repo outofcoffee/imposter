@@ -46,10 +46,11 @@ import io.gatehill.imposter.server.BaseVerticleTest
 import io.gatehill.imposter.util.HttpUtil
 import io.restassured.RestAssured
 import io.restassured.http.ContentType
-import io.vertx.ext.unit.TestContext
+import io.vertx.core.Vertx
+import io.vertx.junit5.VertxTestContext
 import org.hamcrest.Matchers.equalTo
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 /**
  * Tests for mock responses when the status code is not defined within the OpenAPI spec.
@@ -59,10 +60,10 @@ import org.junit.Test
 class UndefinedResourceTest : BaseVerticleTest() {
     override val pluginClass = OpenApiPluginImpl::class.java
 
-    @Before
+    @BeforeEach
     @Throws(Exception::class)
-    override fun setUp(testContext: TestContext) {
-        super.setUp(testContext)
+    override fun setUp(vertx: Vertx, testContext: VertxTestContext) {
+        super.setUp(vertx, testContext)
         RestAssured.baseURI = "http://$host:$listenPort"
     }
 
@@ -72,11 +73,9 @@ class UndefinedResourceTest : BaseVerticleTest() {
 
     /**
      * Should trigger warning and fallback handler.
-     *
-     * @param testContext
      */
     @Test
-    fun `should return fallback response`(testContext: TestContext) {
+    fun `should return fallback response`() {
         RestAssured.given()
             .log().ifValidationFails()
             .accept(ContentType.JSON)
@@ -88,11 +87,9 @@ class UndefinedResourceTest : BaseVerticleTest() {
 
     /**
      * Should return custom response.
-     *
-     * @param testContext
      */
     @Test
-    fun `should return custom response`(testContext: TestContext) {
+    fun `should return custom response`() {
         RestAssured.given()
             .log().ifValidationFails()
             .accept(ContentType.JSON)

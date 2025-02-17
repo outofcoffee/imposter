@@ -47,7 +47,7 @@ import io.swagger.v3.oas.models.media.StringSchema
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.containsString
 import org.hamcrest.Matchers.notNullValue
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 /**
  * Tests for [FakeExampleProvider].

@@ -4,7 +4,7 @@ You can embed the Imposter in your JVM tests, such as JUnit or TestNG.
 
 Typically, Imposter starts before your tests, providing synthetic responses to your unit under test. You connect your component under test to the mock HTTP endpoint provided by Imposter.
 
-Imposter starts before your test runs, such as in your test set-up method (e.g. `@Before` in JUnit), providing your application with simulated HTTP responses, in place of a real endpoint.
+Imposter starts before your test runs, such as in your test set-up method (e.g. `@BeforeEach` in JUnit), providing your application with simulated HTTP responses, in place of a real endpoint.
 
 ## Getting started
 

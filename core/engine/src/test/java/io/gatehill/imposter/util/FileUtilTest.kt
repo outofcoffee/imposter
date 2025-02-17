@@ -1,24 +1,24 @@
 package io.gatehill.imposter.util
 
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
-import org.junit.Assert.fail
-import org.junit.Rule
-import org.junit.Test
-import org.junit.rules.TemporaryFolder
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.nio.file.Path
 import kotlin.io.path.createTempDirectory
 
 /**
  * Tests for [FileUtil].
  */
 class FileUtilTest {
-    @get:Rule
-    val tempFolder = TemporaryFolder()
+    @TempDir
+    lateinit var tempDir: Path
 
     @Test
     fun validatePathShouldAllowValidPaths() {
-        val configDir = tempFolder.root
+        val configDir = tempDir.toFile()
         val validPaths = listOf(
             "file.txt",
             "dir/file.txt",
@@ -29,18 +29,18 @@ class FileUtilTest {
 
         validPaths.forEach { path ->
             val result = FileUtil.validatePath(path, configDir)
-            assertTrue("Path should start with config directory", result.startsWith(configDir.canonicalFile.toPath()))
+            assertTrue(result.startsWith(configDir.canonicalFile.toPath()), "Path should start with config directory")
             assertEquals(
-                "Path should resolve correctly",
                 configDir.canonicalFile.toPath().resolve(path).normalize(),
-                result
+                result,
+                "Path should resolve correctly",
             )
         }
     }
 
     @Test
     fun validatePathShouldPreventDirectoryTraversalAttempts() {
-        val configDir = tempFolder.root
+        val configDir = tempDir.toFile()
         val maliciousPaths = listOf(
             "../file.txt",
             "../../file.txt",
@@ -51,27 +51,24 @@ class FileUtilTest {
         )
 
         maliciousPaths.forEach { path ->
-            try {
+            assertThrows(SecurityException::class.java) {
                 FileUtil.validatePath(path, configDir)
-                fail("Should throw SecurityException for path: $path")
-            } catch (e: SecurityException) {
-                // Expected
             }
         }
     }
 
     @Test
     fun validatePathShouldHandleAbsolutePathsCorrectly() {
-        val configDir = tempFolder.root
+        val configDir = tempDir.toFile()
         val absolutePath = File(configDir, "file.txt").absolutePath
 
         val result = FileUtil.validatePath(absolutePath, configDir)
-        assertTrue("Path should start with config directory", result.startsWith(configDir.canonicalFile.toPath()))
+        assertTrue(result.startsWith(configDir.canonicalFile.toPath()), "Path should start with config directory")
     }
 
     @Test
     fun validatePathShouldHandleSymbolicLinksWithinAllowedDirectory() {
-        val configDir = tempFolder.root
+        val configDir = tempDir.toFile()
         val subDir = File(configDir, "subdir").apply { mkdir() }
         val targetFile = File(subDir, "target.txt").apply { writeText("test") }
         val symlink = File(configDir, "link.txt")
@@ -81,7 +78,7 @@ class FileUtilTest {
             java.nio.file.Files.createSymbolicLink(symlink.toPath(), targetFile.toPath())
             
             val result = FileUtil.validatePath("link.txt", configDir)
-            assertTrue("Path should start with config directory", result.startsWith(configDir.canonicalFile.toPath()))
+            assertTrue(result.startsWith(configDir.canonicalFile.toPath()), "Path should start with config directory")
             
         } catch (e: Exception) {
             // Skip test if unable to create symlinks (e.g. insufficient permissions)
@@ -91,7 +88,7 @@ class FileUtilTest {
 
     @Test
     fun validatePathShouldPreventSymlinkTraversalAttacks() {
-        val configDir = tempFolder.root
+        val configDir = tempDir.toFile()
         val outsideDir = createTempDirectory().toFile()
         val targetFile = File(outsideDir, "target.txt").apply { writeText("test") }
         val symlink = File(configDir, "malicious-link.txt")
@@ -99,11 +96,8 @@ class FileUtilTest {
         try {
             java.nio.file.Files.createSymbolicLink(symlink.toPath(), targetFile.toPath())
             
-            try {
+            assertThrows(SecurityException::class.java) {
                 FileUtil.validatePath("malicious-link.txt", configDir)
-                fail("Should throw SecurityException for malicious symlink")
-            } catch (e: SecurityException) {
-                // Expected
             }
             
         } catch (e: Exception) {

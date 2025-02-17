@@ -46,10 +46,12 @@ import io.gatehill.imposter.server.BaseVerticleTest
 import io.gatehill.imposter.util.HttpUtil
 import io.restassured.RestAssured
 import io.restassured.http.ContentType
+import io.vertx.core.Vertx
 import io.vertx.core.json.JsonArray
-import io.vertx.ext.unit.TestContext
-import org.junit.Before
-import org.junit.Test
+import io.vertx.junit5.VertxTestContext
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.yaml.snakeyaml.Yaml
 
 /**
@@ -60,10 +62,10 @@ import org.yaml.snakeyaml.Yaml
 internal class SchemaExamplesTest : BaseVerticleTest() {
     override val pluginClass = OpenApiPluginImpl::class.java
 
-    @Before
+    @BeforeEach
     @Throws(Exception::class)
-    override fun setUp(testContext: TestContext) {
-        super.setUp(testContext)
+    override fun setUp(vertx: Vertx, testContext: VertxTestContext) {
+        super.setUp(vertx, testContext)
         RestAssured.baseURI = "http://$host:$listenPort"
     }
 
@@ -72,7 +74,7 @@ internal class SchemaExamplesTest : BaseVerticleTest() {
     )
 
     @Test
-    fun testServeSchemaExamplesAsJson(testContext: TestContext) {
+    fun testServeSchemaExamplesAsJson() {
         val body = RestAssured.given()
             .log().ifValidationFails()
             .accept(ContentType.JSON) // JSON content type in 'Accept' header matches specification example
@@ -102,11 +104,11 @@ internal class SchemaExamplesTest : BaseVerticleTest() {
         ]
         """
         )
-        testContext.assertEquals(expected, actual)
+        assertEquals(expected, actual)
     }
 
     @Test
-    fun testServeSchemaExamplesAsYaml(testContext: TestContext) {
+    fun testServeSchemaExamplesAsYaml() {
         val rawBody = RestAssured.given()
             .log().ifValidationFails()
             .accept("application/x-yaml") // YAML content type in 'Accept' header matches specification example
@@ -117,22 +119,22 @@ internal class SchemaExamplesTest : BaseVerticleTest() {
             .extract().asString()
 
         val yamlBody = YAML_PARSER.load<List<Map<String, *>>>(rawBody)
-        testContext.assertEquals(1, yamlBody.size)
+        assertEquals(1, yamlBody.size)
 
         val first = yamlBody.first()
-        testContext.assertEquals("example", first.get("name"))
-        testContext.assertEquals(42, first.get("id"))
-        testContext.assertEquals("Collie", first.get("breed"))
-        testContext.assertEquals("test@example.com", first.get("ownerEmail"))
-        testContext.assertEquals("changeme", first.get("secret"))
-        testContext.assertEquals("2015-02-01T08:00:00Z", first.get("bornAt"))
-        testContext.assertEquals("2020-03-15", first.get("lastVetVisitOn"))
+        assertEquals("example", first.get("name"))
+        assertEquals(42, first.get("id"))
+        assertEquals("Collie", first.get("breed"))
+        assertEquals("test@example.com", first.get("ownerEmail"))
+        assertEquals("changeme", first.get("secret"))
+        assertEquals("2015-02-01T08:00:00Z", first.get("bornAt"))
+        assertEquals("2020-03-15", first.get("lastVetVisitOn"))
 
         @Suppress("UNCHECKED_CAST")
         val misc = first.get("misc") as Map<String, *>
-        testContext.assertNotNull(misc, "misc property should not be null")
-        testContext.assertEquals(false, misc.get("nocturnal"))
-        testContext.assertEquals(47435, misc.get("population"))
+        assertNotNull(misc, "misc property should not be null")
+        assertEquals(false, misc.get("nocturnal"))
+        assertEquals(47435, misc.get("population"))
     }
 
     companion object {

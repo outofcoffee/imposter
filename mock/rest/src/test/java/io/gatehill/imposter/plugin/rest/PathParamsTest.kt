@@ -47,11 +47,12 @@ import io.gatehill.imposter.util.HttpUtil
 import io.restassured.RestAssured
 import io.restassured.RestAssured.*
 import io.restassured.config.RedirectConfig
-import io.vertx.ext.unit.TestContext
+import io.vertx.core.Vertx
+import io.vertx.junit5.VertxTestContext
 import org.hamcrest.Matchers.equalTo
-import org.junit.Before
-import org.junit.Ignore
-import org.junit.Test
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
 
 /**
  * Tests matching using path parameters.
@@ -65,10 +66,10 @@ class PathParamsTest : BaseVerticleTest() {
         "/path-params"
     )
 
-    @Before
+    @BeforeEach
     @Throws(Exception::class)
-    override fun setUp(testContext: TestContext) {
-        super.setUp(testContext)
+    override fun setUp(vertx: Vertx, testContext: VertxTestContext) {
+        super.setUp(vertx, testContext)
         baseURI = "http://$host:$listenPort"
         config().redirect(RedirectConfig.redirectConfig().followRedirects(false))
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails()
@@ -174,7 +175,7 @@ class PathParamsTest : BaseVerticleTest() {
     }
 
     @Test
-    @Ignore("This isn't currently supported")
+    @Disabled("This isn't currently supported")
     fun `should match query params with NotExists operator`() {
         given()
             .`when`()

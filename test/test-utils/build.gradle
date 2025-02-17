@@ -12,8 +12,9 @@ dependencies {
     implementation project(':core:config-dynamic')
 
     // test
-    api "junit:junit:$version_junit"
-    api "io.vertx:vertx-unit:$version_vertx"
+    api "org.junit.jupiter:junit-jupiter-api:$version_junit_jupiter"
+    api "org.junit.jupiter:junit-jupiter-engine:$version_junit_jupiter"
+    api "io.vertx:vertx-junit5:$version_vertx"
     api group: 'org.hamcrest', name: 'hamcrest', version: version_hamcrest
 
     // logging

@@ -19,7 +19,8 @@ dependencies {
     pluginImplementation("com.apurebase:kgraphql:$version_kgraphql")
 
     // test
-    testImplementation "junit:junit:$version_junit"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$version_junit_jupiter"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$version_junit_jupiter"
     testImplementation "org.mockito:mockito-core:$version_mockito"
     testImplementation "org.mockito.kotlin:mockito-kotlin:$version_mockito_kotlin"
     testImplementation project(':store:store-inmem')
@@ -52,4 +53,8 @@ shadowJar {
 
 task dist {
     dependsOn shadowJar
+}
+
+test {
+    useJUnitPlatform()
 }

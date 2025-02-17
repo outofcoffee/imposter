@@ -45,7 +45,7 @@ package io.gatehill.imposter.plugin.fakedata
 
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.notNullValue
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 /**
  * Tests for [FakeEvaluator].

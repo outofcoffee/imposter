@@ -46,8 +46,8 @@ import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.service.DeferredOperationService
 import io.gatehill.imposter.store.AbstractStoreFactoryTest
 import io.gatehill.imposter.util.TestEnvironmentUtil
-import org.junit.AfterClass
-import org.junit.BeforeClass
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.utility.DockerImageName
@@ -68,7 +68,7 @@ class RedisStoreFactoryImplTest : AbstractStoreFactoryTest() {
         private var redis: GenericContainer<*>? = null
         private var imposterConfig: ImposterConfig? = null
 
-        @BeforeClass
+        @BeforeAll
         @JvmStatic
         @Throws(Exception::class)
         fun setUp() {
@@ -85,7 +85,7 @@ class RedisStoreFactoryImplTest : AbstractStoreFactoryTest() {
             }
         }
 
-        @AfterClass
+        @AfterAll
         @JvmStatic
         fun tearDown() {
             try {

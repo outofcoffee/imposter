@@ -43,9 +43,9 @@
 package io.gatehill.imposter.scripting
 
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Test
 
 /**
  * Verify that scripts can access properties of the context.

@@ -42,8 +42,7 @@
  */
 package io.gatehill.imposter.util
 
-import org.hamcrest.CoreMatchers
-import org.junit.Assume
+import org.junit.jupiter.api.Assumptions.*
 import java.io.File
 
 /**
@@ -58,7 +57,7 @@ object TestEnvironmentUtil {
      * Skips a JUnit test if Docker is not accessible.
      */
     fun assumeDockerAccessible() {
-        Assume.assumeThat("Docker is running", testDockerRunning(), CoreMatchers.`is`(0))
+        assumeTrue(testDockerRunning() == 0, "Docker is running")
     }
 
     /**
@@ -89,6 +88,6 @@ object TestEnvironmentUtil {
      * Skips a JUnit test if Java version does not meet expectations.
      */
     fun assumeJavaVersionLessThanOrEqualTo(majorVersion: Int) {
-        Assume.assumeTrue(getJvmVersion() <= majorVersion)
+        assumeTrue(getJvmVersion() <= majorVersion)
     }
 }

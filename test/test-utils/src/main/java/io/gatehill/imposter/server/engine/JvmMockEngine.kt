@@ -45,22 +45,15 @@ package io.gatehill.imposter.server.engine
 
 import io.gatehill.imposter.server.ImposterVerticle
 import io.vertx.core.Vertx
-import io.vertx.ext.unit.Async
-import io.vertx.ext.unit.TestContext
+import io.vertx.junit5.VertxTestContext
 
 /**
  * JVM-based mock engine.
  */
 class JvmMockEngine : TestMockEngine {
-    override fun start(vertx: Vertx, host: String, async: Async, testContext: TestContext) {
+    override fun start(vertx: Vertx, host: String, testContext: VertxTestContext) {
         // simulate ImposterLauncher bootstrap
-        vertx.deployVerticle(ImposterVerticle::class.java.canonicalName) { completion ->
-            if (completion.succeeded()) {
-                async.complete()
-            } else {
-                testContext.fail(completion.cause())
-            }
-        }
+        vertx.deployVerticle(ImposterVerticle::class.java.canonicalName, testContext.succeedingThenComplete())
     }
 
     override fun stop() {

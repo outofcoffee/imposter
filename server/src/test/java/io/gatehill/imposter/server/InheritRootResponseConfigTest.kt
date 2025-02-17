@@ -45,26 +45,24 @@ package io.gatehill.imposter.server
 import io.gatehill.imposter.plugin.test.TestPluginImpl
 import io.gatehill.imposter.util.HttpUtil
 import io.restassured.RestAssured
-import io.vertx.ext.unit.TestContext
-import io.vertx.ext.unit.junit.VertxUnitRunner
-import org.hamcrest.Matchers
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
+import io.vertx.core.Vertx
+import io.vertx.junit5.VertxTestContext
+import org.hamcrest.Matchers.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 /**
  * Tests for inheriting the root response configuration.
  *
  * @author Pete Cornish
  */
-@RunWith(VertxUnitRunner::class)
 class InheritRootResponseConfigTest : BaseVerticleTest() {
     override val pluginClass = TestPluginImpl::class.java
 
-    @Before
+    @BeforeEach
     @Throws(Exception::class)
-    override fun setUp(testContext: TestContext) {
-        super.setUp(testContext)
+    override fun setUp(vertx: Vertx, testContext: VertxTestContext) {
+        super.setUp(vertx, testContext)
         RestAssured.baseURI = "http://$host:$listenPort"
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails()
     }
@@ -81,8 +79,8 @@ class InheritRootResponseConfigTest : BaseVerticleTest() {
         RestAssured.given().`when`()
             .get("/example")
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_OK))
-            .body(Matchers.equalTo("Hello world")) // header inherited from root response config
+            .statusCode(equalTo(HttpUtil.HTTP_OK))
+            .body(equalTo("Hello world")) // header inherited from root response config
             .header("X-Always-Present", "Yes")
     }
 
@@ -95,6 +93,6 @@ class InheritRootResponseConfigTest : BaseVerticleTest() {
         RestAssured.given().`when`()
             .get("/")
             .then()
-            .statusCode(Matchers.equalTo(HttpUtil.HTTP_NOT_FOUND))
+            .statusCode(equalTo(HttpUtil.HTTP_NOT_FOUND))
     }
 }
