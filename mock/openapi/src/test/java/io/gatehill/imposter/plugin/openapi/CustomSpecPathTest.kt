@@ -47,10 +47,11 @@ import io.gatehill.imposter.server.BaseVerticleTest
 import io.gatehill.imposter.util.HttpUtil
 import io.restassured.RestAssured
 import io.restassured.http.ContentType
-import io.vertx.ext.unit.TestContext
-import org.junit.Before
-import org.junit.BeforeClass
-import org.junit.Test
+import io.vertx.core.Vertx
+import io.vertx.junit5.VertxTestContext
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 /**
  * Tests for the specification endpoint.
@@ -62,7 +63,7 @@ class CustomSpecPathTest : BaseVerticleTest() {
 
     companion object {
         @JvmStatic
-        @BeforeClass
+        @BeforeAll
         fun beforeClass() {
             EnvVars.populate(
                 "IMPOSTER_OPENAPI_SPEC_PATH_PREFIX" to "/custom-spec-path"
@@ -70,10 +71,10 @@ class CustomSpecPathTest : BaseVerticleTest() {
         }
     }
 
-    @Before
+    @BeforeEach
     @Throws(Exception::class)
-    override fun setUp(testContext: TestContext) {
-        super.setUp(testContext)
+    override fun setUp(vertx: Vertx, testContext: VertxTestContext) {
+        super.setUp(vertx, testContext)
         RestAssured.baseURI = "http://$host:$listenPort"
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails()
     }

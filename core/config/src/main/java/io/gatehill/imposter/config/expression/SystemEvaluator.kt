@@ -64,7 +64,7 @@ object SystemEvaluator : ExpressionEvaluator<String> {
             impl.eval(expression, context)
 }
 
-internal class SystemEvaluatorImpl(
+class SystemEvaluatorImpl(
     private val imposterConfig: ImposterConfig,
 ) : ExpressionEvaluator<String> {
     private val logger = LogManager.getLogger(SystemEvaluatorImpl::class.java)

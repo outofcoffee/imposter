@@ -46,9 +46,11 @@ import io.gatehill.imposter.server.BaseVerticleTest
 import io.gatehill.imposter.util.HttpUtil
 import io.restassured.RestAssured
 import io.restassured.http.ContentType
-import io.vertx.ext.unit.TestContext
-import org.junit.Before
-import org.junit.Test
+import io.vertx.core.Vertx
+import io.vertx.junit5.VertxTestContext
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.yaml.snakeyaml.Yaml
 
 /**
@@ -59,10 +61,10 @@ import org.yaml.snakeyaml.Yaml
 class ObjectExamplesTest : BaseVerticleTest() {
     override val pluginClass = OpenApiPluginImpl::class.java
 
-    @Before
+    @BeforeEach
     @Throws(Exception::class)
-    override fun setUp(testContext: TestContext) {
-        super.setUp(testContext)
+    override fun setUp(vertx: Vertx, testContext: VertxTestContext) {
+        super.setUp(vertx, testContext)
         RestAssured.baseURI = "http://$host:$listenPort"
     }
 
@@ -74,7 +76,7 @@ class ObjectExamplesTest : BaseVerticleTest() {
      * Should return object example formatted as JSON.
      */
     @Test
-    fun testObjectExampleAsJson(testContext: TestContext) {
+    fun testObjectExampleAsJson() {
         val body = RestAssured.given()
             .log().ifValidationFails()
             .accept(ContentType.JSON)
@@ -84,15 +86,15 @@ class ObjectExamplesTest : BaseVerticleTest() {
             .statusCode(HttpUtil.HTTP_OK)
             .extract().jsonPath()
 
-        testContext.assertEquals(10, body.get("id"))
-        testContext.assertEquals("Engineering", body.get("name"))
+        assertEquals(10, body.get("id"))
+        assertEquals("Engineering", body.get("name"))
     }
 
     /**
      * Should return object example formatted as YAML.
      */
     @Test
-    fun testObjectExampleAsYaml(testContext: TestContext) {
+    fun testObjectExampleAsYaml() {
         val rawBody = RestAssured.given()
             .log().ifValidationFails()
             .accept("application/x-yaml")
@@ -103,8 +105,8 @@ class ObjectExamplesTest : BaseVerticleTest() {
             .extract().asString()
 
         val yamlBody = YAML_PARSER.load<Map<String, *>>(rawBody)
-        testContext.assertEquals(20, yamlBody["id"])
-        testContext.assertEquals("Product", yamlBody["name"])
+        assertEquals(20, yamlBody["id"])
+        assertEquals("Product", yamlBody["name"])
     }
 
     companion object {

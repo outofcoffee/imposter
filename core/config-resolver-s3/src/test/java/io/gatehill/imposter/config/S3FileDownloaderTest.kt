@@ -52,7 +52,8 @@ import io.gatehill.imposter.util.TestEnvironmentUtil.assumeDockerAccessible
 import io.vertx.core.AsyncResult
 import io.vertx.core.Vertx
 import org.junit.*
-import org.junit.Assert.assertTrue
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import java.io.File
 import java.nio.file.Files
 
@@ -64,7 +65,7 @@ import java.nio.file.Files
 class S3FileDownloaderTest {
     private var s3Mock: S3MockContainer? = null
 
-    @Before
+    @BeforeEach
     fun setUp() {
         // These tests need Docker
         assumeDockerAccessible()
@@ -104,17 +105,17 @@ class S3FileDownloaderTest {
         S3FileDownloader.getInstance().downloadAllFiles("s3://test", configDir)
 
         val configFile = File(configDir, "imposter-config.yaml")
-        assertTrue("config should be fetched from S3", configFile.exists() && configFile.isFile)
+        assertTrue( configFile.exists() && configFile.isFile, "config should be fetched from S3")
 
-        assertTrue("spec file should be fetched from S3", File(configDir, "pet-api.yaml").exists())
+        assertTrue( File(configDir, "pet-api.yaml").exists(), "spec file should be fetched from S3")
         assertTrue(
+            File(configDir, "subdir/response.json").exists(),
             "response file should be fetched from S3 subdir",
-            File(configDir, "subdir/response.json").exists()
         )
 
         val localSubDir = File(configDir, "unused-subdir")
-        assertTrue("local subdir should exist", localSubDir.exists())
-        assertTrue("local subdir should be a directory", localSubDir.isDirectory)
+        assertTrue( localSubDir.exists(), "local subdir should exist")
+        assertTrue( localSubDir.isDirectory, "local subdir should be a directory")
     }
 
     companion object {

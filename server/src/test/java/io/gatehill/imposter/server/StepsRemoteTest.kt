@@ -50,16 +50,14 @@ import io.vertx.core.Vertx
 import io.vertx.core.http.HttpMethod
 import io.vertx.core.http.HttpServerOptions
 import io.vertx.core.http.HttpServerRequest
-import io.vertx.ext.unit.TestContext
-import io.vertx.ext.unit.junit.VertxUnitRunner
+import io.vertx.junit5.VertxTestContext
 import org.hamcrest.Matcher
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.equalTo
-import org.junit.AfterClass
-import org.junit.Before
-import org.junit.BeforeClass
-import org.junit.Test
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import java.util.concurrent.CountDownLatch
 import java.util.function.Consumer
 
@@ -68,14 +66,12 @@ import java.util.function.Consumer
  *
  * @author Pete Cornish
  */
-@RunWith(VertxUnitRunner::class)
 class StepsRemoteTest : BaseVerticleTest() {
     override val pluginClass = TestPluginImpl::class.java
 
-    @Before
-    @Throws(Exception::class)
-    override fun setUp(testContext: TestContext) {
-        super.setUp(testContext)
+    @BeforeEach
+    override fun setUp(vertx: Vertx, testContext: VertxTestContext) {
+        super.setUp(vertx, testContext)
         RestAssured.baseURI = "http://$host:$listenPort"
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails()
     }
@@ -129,13 +125,13 @@ class StepsRemoteTest : BaseVerticleTest() {
         private var vertx: Vertx? = null
 
         @JvmStatic
-        @BeforeClass
+        @BeforeAll
         fun beforeClass() {
             vertx = Vertx.vertx()
         }
 
         @JvmStatic
-        @AfterClass
+        @AfterAll
         @Throws(Exception::class)
         fun afterClass() {
             vertx?.close()

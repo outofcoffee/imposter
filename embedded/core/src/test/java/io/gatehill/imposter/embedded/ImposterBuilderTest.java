@@ -46,7 +46,7 @@ package io.gatehill.imposter.embedded;
 import io.gatehill.imposter.plugin.openapi.OpenApiPluginImpl;
 import io.gatehill.imposter.util.HttpUtil;
 import io.restassured.RestAssured;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;

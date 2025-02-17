@@ -45,27 +45,26 @@ package io.gatehill.imposter.server
 import io.gatehill.imposter.plugin.test.TestPluginImpl
 import io.gatehill.imposter.util.HttpUtil
 import io.restassured.RestAssured
-import io.vertx.ext.unit.TestContext
-import io.vertx.ext.unit.junit.VertxUnitRunner
+import io.vertx.core.Vertx
+import io.vertx.junit5.VertxTestContext
 import org.apache.http.NoHttpResponseException
 import org.hamcrest.Matchers.*
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 /**
  * Tests for failure simulation.
  *
  * @author Pete Cornish
  */
-@RunWith(VertxUnitRunner::class)
 class FailureSimulationTest : BaseVerticleTest() {
     override val pluginClass = TestPluginImpl::class.java
 
-    @Before
+    @BeforeEach
     @Throws(Exception::class)
-    override fun setUp(testContext: TestContext) {
-        super.setUp(testContext)
+    override fun setUp(vertx: Vertx, testContext: VertxTestContext) {
+        super.setUp(vertx, testContext)
         RestAssured.baseURI = "http://$host:$listenPort"
     }
 
@@ -83,13 +82,15 @@ class FailureSimulationTest : BaseVerticleTest() {
             .headers(emptyMap<String, String>())
     }
 
-    @Test(expected = NoHttpResponseException::class)
+    @Test
     fun `test close connection failure`() {
-        RestAssured.given().`when`()
-            .get("/static-failure-close")
-            .then()
-            .statusCode(equalTo(0))
-            .body(hasLength(0))
-            .headers(emptyMap<String, String>())
+        assertThrows<NoHttpResponseException> {
+            RestAssured.given().`when`()
+                .get("/static-failure-close")
+                .then()
+                .statusCode(equalTo(0))
+                .body(hasLength(0))
+                .headers(emptyMap<String, String>())
+        }
     }
 }

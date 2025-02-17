@@ -43,16 +43,25 @@
 
 package io.gatehill.imposter.service
 
-import io.gatehill.imposter.http.*
+import io.gatehill.imposter.http.ExchangePhase
+import io.gatehill.imposter.http.HttpExchange
+import io.gatehill.imposter.http.HttpMethod
+import io.gatehill.imposter.http.HttpRequest
+import io.gatehill.imposter.http.HttpResponse
 import io.gatehill.imposter.plugin.config.PluginConfigImpl
 import io.gatehill.imposter.plugin.config.resource.RestResourceConfig
 import io.gatehill.imposter.script.ReadWriteResponseBehaviourImpl
 import io.gatehill.imposter.util.HttpUtil
 import io.vertx.core.buffer.Buffer
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
-import org.junit.Test
-import org.mockito.kotlin.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doAnswer
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 import java.io.File
 
 /**
@@ -217,7 +226,7 @@ class ResponseServiceImplTest {
             blockExecuted = true
         }
 
-        assertTrue("the block should be executed", blockExecuted)
+        assertTrue(blockExecuted, "the block should be executed")
         verify(httpExchange).phase = ExchangePhase.RESPONSE_SENT
     }
 }

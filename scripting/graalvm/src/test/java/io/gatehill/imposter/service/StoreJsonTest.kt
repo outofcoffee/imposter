@@ -56,7 +56,7 @@ import io.gatehill.imposter.store.service.StoreServiceImpl
 import io.gatehill.imposter.util.asSingleton
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.equalTo
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import javax.inject.Inject
 
 /**

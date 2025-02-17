@@ -48,10 +48,13 @@ import io.restassured.RestAssured
 import io.restassured.http.ContentType
 import io.swagger.v3.parser.OpenAPIV3Parser
 import io.swagger.v3.parser.core.models.ParseOptions
+import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
-import io.vertx.ext.unit.TestContext
-import org.junit.Before
-import org.junit.Test
+import io.vertx.junit5.VertxTestContext
+import org.hamcrest.Matchers.*
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import java.util.function.Consumer
 
 /**
@@ -62,10 +65,10 @@ import java.util.function.Consumer
 class OpenApiPluginImplTest : BaseVerticleTest() {
     override val pluginClass = OpenApiPluginImpl::class.java
 
-    @Before
+    @BeforeEach
     @Throws(Exception::class)
-    override fun setUp(testContext: TestContext) {
-        super.setUp(testContext)
+    override fun setUp(vertx: Vertx, testContext: VertxTestContext) {
+        super.setUp(vertx, testContext)
         RestAssured.baseURI = "http://$host:$listenPort"
     }
 
@@ -74,26 +77,24 @@ class OpenApiPluginImplTest : BaseVerticleTest() {
         "/openapi3/simple"
     )
 
-    private fun assertBody(testContext: TestContext, body: String) {
-        testContext.assertNotNull(body)
+    private fun assertBody(body: String) {
+        assertNotNull(body)
         val jsonBody = JsonObject(body)
         val versions = jsonBody.getJsonArray("versions")
-        testContext.assertNotNull(versions, "Versions array should exist")
-        testContext.assertEquals(2, versions.size())
+        assertNotNull(versions, "Versions array should exist")
+        assertEquals(2, versions.size())
 
         // verify entries
-        testContext.assertNotNull(versions.getJsonObject(0), "Version array entry 0 should exist")
-        testContext.assertNotNull(versions.getJsonObject(1), "Version array entry 1 should exist")
+        assertNotNull(versions.getJsonObject(0), "Version array entry 0 should exist")
+        assertNotNull(versions.getJsonObject(1), "Version array entry 1 should exist")
     }
 
     /**
      * Should return the example from the specification for the default HTTP 200 status code, since the
      * content type in the 'Accept' header matches that in the specification example.
-     *
-     * @param testContext
      */
     @Test
-    fun testServeDefaultExampleMatchContentType(testContext: TestContext) {
+    fun testServeDefaultExampleMatchContentType() {
         val body = RestAssured.given()
             .log().ifValidationFails() // JSON content type in 'Accept' header matches specification example
             .accept(ContentType.JSON)
@@ -103,18 +104,17 @@ class OpenApiPluginImplTest : BaseVerticleTest() {
             .statusCode(HttpUtil.HTTP_OK)
             .extract().asString()
 
-        assertBody(testContext, body)
+        assertBody(body)
     }
 
     /**
      * Should return the example from the specification for the default HTTP 200 status code, even though the
      * content type in the 'Accept' header does not match that in the specification example.
      *
-     * @param testContext
      * @see OpenApiPluginConfig.isPickFirstIfNoneMatch
      */
     @Test
-    fun testServeDefaultExampleNoExactMatch(testContext: TestContext) {
+    fun testServeDefaultExampleNoExactMatch() {
         val body = RestAssured.given()
             .log().ifValidationFails() // do not set JSON content type in 'Accept' header, to force mismatch against specification example
             .accept(ContentType.TEXT)
@@ -124,16 +124,14 @@ class OpenApiPluginImplTest : BaseVerticleTest() {
             .statusCode(HttpUtil.HTTP_OK)
             .extract().asString()
 
-        assertBody(testContext, body)
+        assertBody(body)
     }
 
     /**
      * Should return the specification UI.
-     *
-     * @param testContext
      */
     @Test
-    fun testGetSpecUi(testContext: TestContext) {
+    fun testGetSpecUi() {
         val body = RestAssured.given()
             .log().ifValidationFails()
             .accept(ContentType.TEXT)
@@ -143,16 +141,14 @@ class OpenApiPluginImplTest : BaseVerticleTest() {
             .statusCode(HttpUtil.HTTP_OK)
             .extract().asString()
 
-        testContext.assertTrue(body.contains("</html>"))
+        assertTrue(body.contains("</html>"))
     }
 
     /**
      * Should return a combined specification.
-     *
-     * @param testContext
      */
     @Test
-    fun testGetCombinedSpec(testContext: TestContext) {
+    fun testGetCombinedSpec() {
         val body = RestAssured.given()
             .log().ifValidationFails()
             .accept(ContentType.JSON)
@@ -162,59 +158,57 @@ class OpenApiPluginImplTest : BaseVerticleTest() {
             .statusCode(HttpUtil.HTTP_OK)
             .extract().asString()
 
-        testContext.assertNotNull(body)
+        assertNotNull(body)
         val parseResult = OpenAPIV3Parser().readContents(body, emptyList(), ParseOptions())
-        testContext.assertNotNull(parseResult)
+        assertNotNull(parseResult)
 
         val combined = parseResult.openAPI
-        testContext.assertNotNull(combined)
-        testContext.assertNotNull(combined.info)
-        testContext.assertEquals("Imposter Mock APIs", combined.info.title)
+        assertNotNull(combined)
+        assertNotNull(combined.info)
+        assertEquals("Imposter Mock APIs", combined.info.title)
 
         // should contain combination of all specs' endpoints
-        testContext.assertEquals(6, combined.paths.size)
+        assertEquals(6, combined.paths.size)
 
         // should contain mock server endpoint
-        testContext.assertTrue(combined.servers.any { it.url == "http://$host:$listenPort/simple" })
+        assertTrue(combined.servers.any { it.url == "http://$host:$listenPort/simple" })
 
         // OASv2
-        testContext.assertTrue(combined.paths.containsKey("/apis"))
-        testContext.assertTrue(combined.paths.containsKey("/v2"))
-        testContext.assertTrue(combined.paths.containsKey("/pets"))
-        testContext.assertTrue(combined.paths.containsKey("/pets/{id}"))
+        assertTrue(combined.paths.containsKey("/apis"))
+        assertTrue(combined.paths.containsKey("/v2"))
+        assertTrue(combined.paths.containsKey("/pets"))
+        assertTrue(combined.paths.containsKey("/pets/{id}"))
 
         // OASv3
-        testContext.assertTrue(combined.paths.containsKey("/oas3/apis"))
-        testContext.assertTrue(combined.paths.containsKey("/oas3/v2"))
+        assertTrue(combined.paths.containsKey("/oas3/apis"))
+        assertTrue(combined.paths.containsKey("/oas3/v2"))
     }
 
     /**
      * Should return examples formatted as JSON.
-     *
-     * @param testContext
      */
     @Test
-    fun testExamples(testContext: TestContext) {
+    fun testExamples() {
         // OASv2
         queryEndpoint("/simple/apis") { responseBody: String ->
             val trimmed = responseBody.trim { it <= ' ' }
-            testContext.assertTrue(trimmed.startsWith("{"))
-            testContext.assertTrue(trimmed.contains("CURRENT"))
-            testContext.assertTrue(trimmed.endsWith("}"))
+            assertTrue(trimmed.startsWith("{"))
+            assertTrue(trimmed.contains("CURRENT"))
+            assertTrue(trimmed.endsWith("}"))
         }
         queryEndpoint("/api/pets/1") { responseBody: String ->
             val trimmed = responseBody.trim { it <= ' ' }
-            testContext.assertTrue(trimmed.startsWith("{"))
-            testContext.assertTrue(trimmed.contains("Fluffy"))
-            testContext.assertTrue(trimmed.endsWith("}"))
+            assertTrue(trimmed.startsWith("{"))
+            assertTrue(trimmed.contains("Fluffy"))
+            assertTrue(trimmed.endsWith("}"))
         }
 
         // OASv3
         queryEndpoint("/oas3/apis") { responseBody: String ->
             val trimmed = responseBody.trim { it <= ' ' }
-            testContext.assertTrue(trimmed.startsWith("{"))
-            testContext.assertTrue(trimmed.contains("CURRENT"))
-            testContext.assertTrue(trimmed.endsWith("}"))
+            assertTrue(trimmed.startsWith("{"))
+            assertTrue(trimmed.contains("CURRENT"))
+            assertTrue(trimmed.endsWith("}"))
         }
     }
 

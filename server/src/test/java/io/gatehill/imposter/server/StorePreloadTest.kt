@@ -45,26 +45,23 @@ package io.gatehill.imposter.server
 import io.gatehill.imposter.plugin.test.TestPluginImpl
 import io.gatehill.imposter.util.HttpUtil
 import io.restassured.RestAssured
-import io.vertx.ext.unit.TestContext
-import io.vertx.ext.unit.junit.VertxUnitRunner
+import io.vertx.core.Vertx
+import io.vertx.junit5.VertxTestContext
 import org.hamcrest.Matchers
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 /**
  * Tests for preloading data into storage subsystem.
  *
  * @author Pete Cornish
  */
-@RunWith(VertxUnitRunner::class)
 class StorePreloadTest : BaseVerticleTest() {
     override val pluginClass = TestPluginImpl::class.java
 
-    @Before
-    @Throws(Exception::class)
-    override fun setUp(testContext: TestContext) {
-        super.setUp(testContext)
+    @BeforeEach
+    override fun setUp(vertx: Vertx, testContext: VertxTestContext) {
+        super.setUp(vertx, testContext)
         RestAssured.baseURI = "http://$host:$listenPort"
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails()
     }

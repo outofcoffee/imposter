@@ -51,7 +51,7 @@ import org.hamcrest.Matchers.notNullValue
 import org.jdom2.Document
 import org.jdom2.Element
 import org.jdom2.Namespace
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.xml.sax.EntityResolver
 import java.io.File

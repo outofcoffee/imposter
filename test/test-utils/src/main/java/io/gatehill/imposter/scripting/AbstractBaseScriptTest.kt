@@ -57,9 +57,9 @@ import io.gatehill.imposter.util.FeatureUtil
 import io.gatehill.imposter.util.InjectorUtil
 import io.gatehill.imposter.util.MetricsUtil
 import org.apache.logging.log4j.LogManager
-import org.junit.AfterClass
-import org.junit.Before
-import org.junit.BeforeClass
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
 import org.mockito.Mockito.mock
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -72,19 +72,19 @@ import org.mockito.Mockito.`when` as When
 abstract class AbstractBaseScriptTest {
     companion object {
         @JvmStatic
-        @BeforeClass
+        @BeforeAll
         fun beforeClass() {
             FeatureUtil.disableFeature(MetricsUtil.FEATURE_NAME_METRICS)
         }
 
         @JvmStatic
-        @AfterClass
+        @AfterAll
         fun afterClass() {
             FeatureUtil.clearSystemPropertyOverrides()
         }
     }
 
-    @Before
+    @BeforeEach
     fun setUp() {
         onBeforeInject()
         InjectorUtil.create(*modules).injectMembers(this)

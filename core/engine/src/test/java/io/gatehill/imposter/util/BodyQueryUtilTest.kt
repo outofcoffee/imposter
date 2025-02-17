@@ -51,7 +51,7 @@ import org.hamcrest.core.IsEqual
 import org.jdom2.Document
 import org.jdom2.Namespace
 import org.jdom2.input.SAXBuilder
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import org.mockito.Mockito.anyString
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock

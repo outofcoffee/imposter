@@ -46,10 +46,11 @@ import io.gatehill.imposter.plugin.soap.util.SoapUtil
 import io.gatehill.imposter.server.BaseVerticleTest
 import io.gatehill.imposter.util.HttpUtil
 import io.restassured.RestAssured
-import io.vertx.ext.unit.TestContext
+import io.vertx.core.Vertx
+import io.vertx.junit5.VertxTestContext
 import org.hamcrest.Matchers
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 /**
  * Tests for [SoapPluginImpl] using WSDL v1 and SOAP 1.2.
@@ -62,10 +63,10 @@ class RequestBodyMatchTest : BaseVerticleTest() {
     private val soapEnvNamespace = SoapUtil.soap12RecEnvNamespace
     private val soapContentType = SoapUtil.soap12ContentType
 
-    @Before
+    @BeforeEach
     @Throws(Exception::class)
-    override fun setUp(testContext: TestContext) {
-        super.setUp(testContext)
+    override fun setUp(vertx: Vertx, testContext: VertxTestContext) {
+        super.setUp(vertx, testContext)
         RestAssured.baseURI = "http://$host:$listenPort"
     }
 

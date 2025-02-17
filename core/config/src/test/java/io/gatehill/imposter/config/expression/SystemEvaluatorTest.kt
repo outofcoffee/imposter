@@ -3,8 +3,8 @@ package io.gatehill.imposter.config.expression
 import io.gatehill.imposter.ImposterConfig
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.equalTo
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 /**
  * Tests for [SystemEvaluatorImpl].
@@ -12,7 +12,7 @@ import org.junit.Test
 class SystemEvaluatorTest {
     private lateinit var systemEvaluator: SystemEvaluatorImpl
 
-    @Before
+    @BeforeEach
     fun before() {
         val config = ImposterConfig().apply {
             listenPort = 8080

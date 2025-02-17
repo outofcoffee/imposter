@@ -45,9 +45,9 @@ package io.gatehill.imposter.util
 
 import io.gatehill.imposter.plugin.config.resource.conditional.ConditionalNameValuePair
 import io.gatehill.imposter.plugin.config.resource.conditional.MatchOperator
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 
 /**
  * Tests for [MatchUtil].

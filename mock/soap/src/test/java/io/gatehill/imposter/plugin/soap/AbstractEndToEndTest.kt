@@ -46,13 +46,14 @@ import io.gatehill.imposter.plugin.soap.util.SoapUtil
 import io.gatehill.imposter.server.BaseVerticleTest
 import io.gatehill.imposter.util.HttpUtil
 import io.restassured.RestAssured
-import io.vertx.ext.unit.TestContext
+import io.vertx.core.Vertx
+import io.vertx.junit5.VertxTestContext
 import org.hamcrest.Matchers.allOf
 import org.hamcrest.Matchers.containsString
 import org.jdom2.Namespace
-import org.junit.Assert.assertNotNull
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 /**
  * Common tests for [SoapPluginImpl].
@@ -83,10 +84,10 @@ abstract class AbstractEndToEndTest : BaseVerticleTest() {
 """.trim(), soapEnvNamespace
     )
 
-    @Before
+    @BeforeEach
     @Throws(Exception::class)
-    override fun setUp(testContext: TestContext) {
-        super.setUp(testContext)
+    override fun setUp(vertx: Vertx, testContext: VertxTestContext) {
+        super.setUp(vertx, testContext)
         RestAssured.baseURI = "http://$host:$listenPort"
     }
 
