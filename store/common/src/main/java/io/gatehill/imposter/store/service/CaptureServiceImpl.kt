@@ -92,11 +92,11 @@ class CaptureServiceImpl @Inject constructor(
         httpExchange: HttpExchange,
         phaseFilter: ExchangePhase,
     ) {
-        if (resourceConfig is CaptureConfigHolder) {
-            val captureConfig = (resourceConfig as CaptureConfigHolder).captureConfig
-            captureConfig?.let {
-                captureConfig.filterValues { it.enabled && it.phase == phaseFilter }
-                    .forEach { (captureConfigKey: String, itemConfig: ItemCaptureConfig) ->
+        when (resourceConfig) {
+            is CaptureConfigHolder -> {
+                resourceConfig.captureConfig
+                    ?.filterValues { it.enabled && it.phase == phaseFilter }
+                    ?.forEach { (captureConfigKey: String, itemConfig: ItemCaptureConfig) ->
                         captureItem(captureConfigKey, itemConfig, httpExchange, PlaceholderUtil.defaultEvaluators)
                     }
             }
