@@ -2,8 +2,8 @@ package io.gatehill.imposter.util
 
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 import java.time.ZoneId
 import java.time.ZonedDateTime
 

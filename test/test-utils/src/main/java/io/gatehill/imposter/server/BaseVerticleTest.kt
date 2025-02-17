@@ -51,17 +51,14 @@ import io.gatehill.imposter.server.engine.GoMockEngine
 import io.gatehill.imposter.server.engine.JvmMockEngine
 import io.gatehill.imposter.server.engine.TestMockEngine
 import io.gatehill.imposter.server.vertxweb.VertxWebServerFactoryImpl
-import io.gatehill.imposter.util.MetricsUtil.configureMetrics
-import io.vertx.core.VertxOptions
-import io.vertx.ext.unit.TestContext
-import io.vertx.ext.unit.junit.RunTestOnContext
-import io.vertx.ext.unit.junit.VertxUnitRunner
+import io.vertx.core.Vertx
+import io.vertx.junit5.VertxExtension
+import io.vertx.junit5.VertxTestContext
 import org.apache.logging.log4j.LogManager
-import org.junit.After
-import org.junit.Before
-import org.junit.BeforeClass
-import org.junit.Rule
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.extension.ExtendWith
 import java.io.IOException
 import java.net.ServerSocket
 import java.nio.file.Paths
@@ -69,20 +66,16 @@ import java.nio.file.Paths
 /**
  * @author Pete Cornish
  */
-@RunWith(VertxUnitRunner::class)
+@ExtendWith(VertxExtension::class)
+@VerticleTest
 abstract class BaseVerticleTest {
     private val logger = LogManager.getLogger(BaseVerticleTest::class.java)
 
-    @get:Rule
-    val rule = RunTestOnContext(configureMetrics(VertxOptions()))
-
     private var testEngine: TestMockEngine? = null
 
-    @Before
+    @BeforeEach
     @Throws(Exception::class)
-    open fun setUp(testContext: TestContext) {
-        val async = testContext.async()
-
+    open fun setUp(vertx: Vertx, testContext: VertxTestContext) {
         ConfigHolder.resetConfig()
         configure(ConfigHolder.config)
 
@@ -91,12 +84,12 @@ abstract class BaseVerticleTest {
             TestEngine.JVM -> JvmMockEngine()
             TestEngine.GO -> GoMockEngine()
         }.also { engine ->
-            engine.start(rule.vertx(), host, async, testContext)
+            engine.start(vertx, host, testContext)
         }
     }
 
-    @After
-    fun tearDown(testContext: TestContext) {
+    @AfterEach
+    fun tearDown() {
         try {
             testEngine?.stop()
         } finally {
@@ -139,7 +132,7 @@ abstract class BaseVerticleTest {
         protected val host = "localhost"
 
         @JvmStatic
-        @BeforeClass
+        @BeforeAll
         fun beforeClass() {
             EnvVars.reset(emptyList())
         }

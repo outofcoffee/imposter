@@ -51,9 +51,9 @@ import io.vertx.core.buffer.Buffer
 import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.number.OrderingComparison
-import org.junit.Assert.assertEquals
-import org.junit.Assert.fail
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.fail
+import org.junit.jupiter.api.Test
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -231,7 +231,7 @@ class PlaceholderUtilTest {
                 cause = cause.cause
             }
         }
-        assertEquals("IllegalStateException should be root cause", IllegalStateException::class.java, cause?.javaClass)
+        assertEquals(IllegalStateException::class.java, cause?.javaClass, "IllegalStateException should be root cause")
     }
 
     @Test

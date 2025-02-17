@@ -52,24 +52,23 @@ import io.gatehill.imposter.util.FileUtil.CLASSPATH_PREFIX
 import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.InjectorUtil
 import io.restassured.RestAssured
-import io.vertx.ext.unit.TestContext
-import io.vertx.ext.unit.junit.VertxUnitRunner
+import io.vertx.core.Vertx
+import io.vertx.junit5.VertxTestContext
 import org.hamcrest.Matchers
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 /**
  * @author Pete Cornish
  */
-@RunWith(VertxUnitRunner::class)
 class ImposterVerticleTest : BaseVerticleTest() {
     override val pluginClass = TestPluginImpl::class.java
 
-    @Before
+    @BeforeEach
     @Throws(Exception::class)
-    override fun setUp(testContext: TestContext) {
-        super.setUp(testContext)
+    override fun setUp(vertx: Vertx, testContext: VertxTestContext) {
+        super.setUp(vertx, testContext)
 
         // set up trust store for TLS
         RestAssured.trustStore(getDefaultKeystore(ImposterVerticleTest::class.java).toFile(), DEFAULT_KEYSTORE_PASSWORD)
@@ -91,17 +90,17 @@ class ImposterVerticleTest : BaseVerticleTest() {
     }
 
     @Test
-    fun testPluginLoadAndConfig(testContext: TestContext) {
+    fun testPluginLoadAndConfig() {
         val pluginManager = InjectorUtil.getInstance<PluginManager>()
         val plugin = pluginManager.getPlugin<TestPluginImpl>(TestPluginImpl::class.java.canonicalName)
-        testContext.assertNotNull(plugin)
-        testContext.assertNotNull(plugin!!.configs)
-        testContext.assertEquals(1, plugin.configs.size)
+        Assertions.assertNotNull(plugin)
+        Assertions.assertNotNull(plugin!!.configs)
+        Assertions.assertEquals(1, plugin.configs.size)
 
         val pluginConfig = plugin.configs[0]
-        testContext.assertEquals("/example", pluginConfig.path)
-        testContext.assertEquals("test-plugin-data.json", pluginConfig.responseConfig.file)
-        testContext.assertEquals("testValue", pluginConfig.customProperty)
+        Assertions.assertEquals("/example", pluginConfig.path)
+        Assertions.assertEquals("test-plugin-data.json", pluginConfig.responseConfig.file)
+        Assertions.assertEquals("testValue", pluginConfig.customProperty)
     }
 
     @Test

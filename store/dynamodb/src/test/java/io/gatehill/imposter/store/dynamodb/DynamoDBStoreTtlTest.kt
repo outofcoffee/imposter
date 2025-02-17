@@ -51,12 +51,12 @@ import io.gatehill.imposter.service.DeferredOperationService
 import io.gatehill.imposter.store.dynamodb.support.DynamoDBStoreTestHelper
 import io.gatehill.imposter.store.factory.AbstractStoreFactory
 import io.gatehill.imposter.util.TestEnvironmentUtil
-import org.junit.AfterClass
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertTrue
-import org.junit.Before
-import org.junit.BeforeClass
-import org.junit.Test
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.testcontainers.containers.localstack.LocalStackContainer
 import java.nio.file.Files
 
@@ -73,7 +73,7 @@ class DynamoDBStoreTtlTest {
         private val helper = DynamoDBStoreTestHelper()
         private var dynamo: LocalStackContainer? = null
 
-        @BeforeClass
+        @BeforeAll
         @JvmStatic
         fun setUp() {
             // These tests need Docker
@@ -90,7 +90,7 @@ class DynamoDBStoreTtlTest {
             helper.createTable("TtlTest")
         }
 
-        @AfterClass
+        @AfterAll
         @JvmStatic
         fun tearDown() {
             try {
@@ -102,7 +102,7 @@ class DynamoDBStoreTtlTest {
         }
     }
 
-    @Before
+    @BeforeEach
     fun before() {
         val configDir = Files.createTempDirectory("imposter")
 
@@ -127,13 +127,13 @@ class DynamoDBStoreTtlTest {
             )
         )
 
-        assertNotNull("Item should exist", item?.item)
+        assertNotNull(item?.item, "Item should exist")
 
         val ttlAttribute = item.item["ttl"]
-        assertNotNull("TTL attribute should exist", ttlAttribute)
+        assertNotNull(ttlAttribute, "TTL attribute should exist")
 
         val ttlValue = ttlAttribute!!.n
-        assertNotNull("TTL should be set to number", ttlValue)
-        assertTrue("TTL should be persistence time + configured value", ttlValue.toLong() >= (persistenceTime + ttlSeconds))
+        assertNotNull(ttlValue, "TTL should be set to number")
+        assertTrue(ttlValue.toLong() >= (persistenceTime + ttlSeconds), "TTL should be persistence time + configured value")
     }
 }

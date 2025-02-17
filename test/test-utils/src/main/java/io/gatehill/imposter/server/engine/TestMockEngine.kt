@@ -44,10 +44,9 @@
 package io.gatehill.imposter.server.engine
 
 import io.vertx.core.Vertx
-import io.vertx.ext.unit.Async
-import io.vertx.ext.unit.TestContext
+import io.vertx.junit5.VertxTestContext
 
 interface TestMockEngine {
-    fun start(vertx: Vertx, host: String, async: Async, testContext: TestContext)
+    fun start(vertx: Vertx, host: String, testContext: VertxTestContext)
     fun stop()
 }

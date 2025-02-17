@@ -46,10 +46,10 @@ import io.gatehill.imposter.config.util.ConfigUtil
 import io.gatehill.imposter.plugin.DynamicPluginDiscoveryStrategyImpl
 import io.gatehill.imposter.plugin.PluginManager
 import io.gatehill.imposter.plugin.PluginManagerImpl
-import org.junit.Assert
-import org.junit.Assert.assertEquals
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import java.io.File
 
 /**
@@ -60,7 +60,7 @@ import java.io.File
 class DynamicConfigUtilTest {
     private var pluginManager: PluginManager? = null
 
-    @Before
+    @BeforeEach
     fun setUp() {
         pluginManager = PluginManagerImpl(DynamicPluginDiscoveryStrategyImpl())
     }
@@ -74,7 +74,7 @@ class DynamicConfigUtilTest {
         assertEquals(1, configs.size)
 
         val pluginConfigs = configs["io.gatehill.imposter.core.test.ExamplePluginImpl"]
-        Assert.assertNotNull("Config files should be discovered", pluginConfigs)
+        Assertions.assertNotNull(pluginConfigs, "Config files should be discovered")
         assertEquals(2, pluginConfigs?.size)
     }
 }

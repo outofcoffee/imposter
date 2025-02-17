@@ -18,7 +18,8 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 
     // test
-    testImplementation "junit:junit:$version_junit"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$version_junit_jupiter"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$version_junit_jupiter"
     testImplementation group: 'org.hamcrest', name: 'hamcrest', version: version_hamcrest
     testImplementation "org.apache.logging.log4j:log4j-core:$version_log4j"
     testImplementation "org.apache.logging.log4j:log4j-slf4j18-impl:$version_log4j"
@@ -68,4 +69,8 @@ compileTestKotlin {
         // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
         freeCompilerArgs = ["-Xjvm-default=all"]
     }
+}
+
+test {
+    useJUnitPlatform()
 }

@@ -45,8 +45,10 @@ package io.gatehill.imposter.service
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.scripting.AbstractBaseScriptTest
 import io.gatehill.imposter.scripting.nashorn.service.NashornScriptServiceImpl
-import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Test
 import javax.inject.Inject
 
 /**
@@ -72,9 +74,9 @@ class RequireTypesTest : AbstractBaseScriptTest() {
         val script = resolveScriptFile(pluginConfig, resourceConfig)
         val actual = getService().executeScript(script, scriptBindings)
 
-        Assert.assertNotNull(actual)
-        Assert.assertEquals(201, actual.statusCode)
-        Assert.assertEquals("foo", actual.content)
-        Assert.assertNull("Behaviour type should not be set", actual.behaviourType)
+        assertNotNull(actual)
+        assertEquals(201, actual.statusCode)
+        assertEquals("foo", actual.content)
+        assertNull(actual.behaviourType, "Behaviour type should not be set")
     }
 }

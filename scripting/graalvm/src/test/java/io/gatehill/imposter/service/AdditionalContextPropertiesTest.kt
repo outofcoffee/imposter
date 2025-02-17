@@ -47,7 +47,7 @@ import io.gatehill.imposter.scripting.AbstractBaseScriptTest
 import io.gatehill.imposter.scripting.graalvm.service.GraalvmScriptServiceImpl
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.equalTo
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import javax.inject.Inject
 
 /**

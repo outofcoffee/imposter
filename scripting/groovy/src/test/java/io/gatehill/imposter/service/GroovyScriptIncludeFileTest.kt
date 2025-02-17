@@ -45,8 +45,8 @@ package io.gatehill.imposter.service
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.scripting.AbstractBaseScriptTest
 import io.gatehill.imposter.scripting.groovy.service.GroovyScriptServiceImpl
-import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 import javax.inject.Inject
 
 /**
@@ -69,7 +69,7 @@ class GroovyScriptIncludeFileTest : AbstractBaseScriptTest() {
         val script = resolveScriptFile(pluginConfig, resourceConfig)
         val actual = getService().executeScript(script, scriptBindings)
 
-        Assert.assertNotNull(actual)
-        Assert.assertEquals(201, actual.statusCode)
+        Assertions.assertNotNull(actual)
+        Assertions.assertEquals(201, actual.statusCode)
     }
 }

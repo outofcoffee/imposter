@@ -259,7 +259,7 @@ object ConfigUtil {
      * @param configRef             the configuration reference
      * @return the loaded configuration
      */
-    internal fun readPluginConfig(configRef: ConfigReference): LoadedConfig {
+    fun readPluginConfig(configRef: ConfigReference): LoadedConfig {
         val configFile = configRef.file
         try {
             val rawContents = configFile.readText()

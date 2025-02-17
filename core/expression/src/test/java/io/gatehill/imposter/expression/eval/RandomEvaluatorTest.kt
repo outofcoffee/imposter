@@ -45,8 +45,8 @@ package io.gatehill.imposter.expression.eval
 
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.text.CharSequenceLength.hasLength
-import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 
 class RandomEvaluatorTest {
     @Test
@@ -90,19 +90,21 @@ class RandomEvaluatorTest {
     @Test
     fun `returns null for invalid chars string`() {
         val result = RandomEvaluator.eval("""random.any(chars=notquoted, length=5)""", emptyMap<String, Any>())
-        Assert.assertNull(result)
+        Assertions.assertNull(result)
     }
 
     @Test
     fun `returns null for invalid random type`() {
         val result = RandomEvaluator.eval("random.invalid()", emptyMap<String, Any>())
-        Assert.assertNull(result)
+        Assertions.assertNull(result)
     }
 
     private fun assertContainsOnly(
         actual: String?,
         allowed: List<Char>
     ) = actual?.let {
-        if (!actual.all { allowed.contains(it) }) Assert.fail("Expected value to contain only $allowed but was: $actual")
-    } ?: Assert.fail("Expected value to contain only $allowed but was null")
+        if (!actual.all { allowed.contains(it) }) {
+            Assertions.fail<Unit>("Expected value to contain only $allowed but was: $actual")
+        }
+    } ?: Assertions.fail("Expected value to contain only $allowed but was null")
 }

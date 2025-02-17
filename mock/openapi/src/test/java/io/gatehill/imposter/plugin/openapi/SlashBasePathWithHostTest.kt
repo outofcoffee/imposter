@@ -46,9 +46,11 @@ import io.gatehill.imposter.server.BaseVerticleTest
 import io.gatehill.imposter.util.HttpUtil
 import io.restassured.RestAssured
 import io.restassured.http.ContentType
-import io.vertx.ext.unit.TestContext
-import org.junit.Before
-import org.junit.Test
+import io.vertx.core.Vertx
+import io.vertx.junit5.VertxTestContext
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 /**
  * Tests for OpenAPI definitions with a single '/' as the base path and a specified host.
@@ -58,10 +60,10 @@ import org.junit.Test
 class SlashBasePathWithHostTest : BaseVerticleTest() {
     override val pluginClass = OpenApiPluginImpl::class.java
 
-    @Before
+    @BeforeEach
     @Throws(Exception::class)
-    override fun setUp(testContext: TestContext) {
-        super.setUp(testContext)
+    override fun setUp(vertx: Vertx, testContext: VertxTestContext) {
+        super.setUp(vertx, testContext)
         RestAssured.baseURI = "http://$host:$listenPort"
     }
 
@@ -71,11 +73,9 @@ class SlashBasePathWithHostTest : BaseVerticleTest() {
 
     /**
      * Should return the example.
-     *
-     * @param testContext
      */
     @Test
-    fun testSpec(testContext: TestContext) {
+    fun testSpec() {
         val paths = RestAssured.given()
             .log().ifValidationFails()
             .accept(ContentType.JSON)
@@ -85,17 +85,15 @@ class SlashBasePathWithHostTest : BaseVerticleTest() {
             .statusCode(HttpUtil.HTTP_OK)
             .extract().jsonPath().getMap<String, Any>("paths")
 
-        testContext.assertEquals(1, paths.size)
-        testContext.assertTrue(paths.containsKey("/pets"))
+        assertEquals(1, paths.size)
+        assertTrue(paths.containsKey("/pets"))
     }
 
     /**
      * Should return the example.
-     *
-     * @param testContext
      */
     @Test
-    fun testExample(testContext: TestContext) {
+    fun testExample() {
         val body = RestAssured.given()
             .log().ifValidationFails()
             .accept(ContentType.ANY)
@@ -106,6 +104,6 @@ class SlashBasePathWithHostTest : BaseVerticleTest() {
             .extract().jsonPath()
 
         val pets = body.getList<Any>("")
-        testContext.assertEquals(2, pets.size)
+        assertEquals(2, pets.size)
     }
 }

@@ -46,9 +46,11 @@ import io.gatehill.imposter.server.BaseVerticleTest
 import io.gatehill.imposter.util.HttpUtil
 import io.restassured.RestAssured
 import io.restassured.http.ContentType
-import io.vertx.ext.unit.TestContext
-import org.junit.Before
-import org.junit.Test
+import io.vertx.core.Vertx
+import io.vertx.junit5.VertxTestContext
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 /**
  * Tests for OpenAPI definitions with reference responses.
@@ -58,10 +60,10 @@ import org.junit.Test
 class DefaultResponseTest : BaseVerticleTest() {
     override val pluginClass = OpenApiPluginImpl::class.java
 
-    @Before
+    @BeforeEach
     @Throws(Exception::class)
-    override fun setUp(testContext: TestContext) {
-        super.setUp(testContext)
+    override fun setUp(vertx: Vertx, testContext: VertxTestContext) {
+        super.setUp(vertx, testContext)
         RestAssured.baseURI = "http://$host:$listenPort"
     }
 
@@ -71,11 +73,9 @@ class DefaultResponseTest : BaseVerticleTest() {
 
     /**
      * Should return example from reference response.
-     *
-     * @param testContext
      */
     @Test
-    fun testReferenceObjectExample(testContext: TestContext) {
+    fun testReferenceObjectExample() {
         val body = RestAssured.given()
             .log().ifValidationFails()
             .accept(ContentType.JSON)
@@ -85,7 +85,7 @@ class DefaultResponseTest : BaseVerticleTest() {
             .statusCode(HttpUtil.HTTP_OK)
             .extract().jsonPath()
 
-        testContext.assertEquals(99, body.get("code"))
-        testContext.assertEquals("Default response", body.get("message"))
+        assertEquals(99, body.get("code"))
+        assertEquals("Default response", body.get("message"))
     }
 }

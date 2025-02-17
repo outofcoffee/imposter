@@ -14,7 +14,8 @@ dependencies {
     api "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     api "com.fasterxml.jackson.core:jackson-databind:$version_jackson_databind"
 
-    testImplementation "junit:junit:$version_junit"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$version_junit_jupiter"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$version_junit_jupiter"
     testImplementation group: 'org.hamcrest', name: 'hamcrest', version: version_hamcrest
 }
 
@@ -62,4 +63,8 @@ compileTestKotlin {
         // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
         freeCompilerArgs = ["-Xjvm-default=all"]
     }
+}
+
+test {
+    useJUnitPlatform()
 }

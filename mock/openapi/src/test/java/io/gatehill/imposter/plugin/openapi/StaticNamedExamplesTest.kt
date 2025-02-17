@@ -46,10 +46,11 @@ import io.gatehill.imposter.server.BaseVerticleTest
 import io.gatehill.imposter.util.HttpUtil
 import io.restassured.RestAssured
 import io.restassured.http.ContentType
-import io.vertx.ext.unit.TestContext
-import org.hamcrest.Matchers
-import org.junit.Before
-import org.junit.Test
+import io.vertx.core.Vertx
+import io.vertx.junit5.VertxTestContext
+import org.hamcrest.Matchers.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 /**
  * Tests for named response examples controlled by config.
@@ -59,10 +60,10 @@ import org.junit.Test
 class StaticNamedExamplesTest : BaseVerticleTest() {
     override val pluginClass = OpenApiPluginImpl::class.java
 
-    @Before
+    @BeforeEach
     @Throws(Exception::class)
-    override fun setUp(testContext: TestContext) {
-        super.setUp(testContext)
+    override fun setUp(vertx: Vertx, testContext: VertxTestContext) {
+        super.setUp(vertx, testContext)
         RestAssured.baseURI = "http://$host:$listenPort"
     }
 
@@ -83,8 +84,8 @@ class StaticNamedExamplesTest : BaseVerticleTest() {
             .then()
             .log().ifValidationFails()
             .statusCode(HttpUtil.HTTP_OK)
-            .body("id", Matchers.equalTo(1))
-            .body("name", Matchers.equalTo("Cat"))
+            .body("id", equalTo(1))
+            .body("name", equalTo("Cat"))
 
         // pet with ID 2 is Dog
         RestAssured.given()
@@ -94,7 +95,7 @@ class StaticNamedExamplesTest : BaseVerticleTest() {
             .then()
             .log().ifValidationFails()
             .statusCode(HttpUtil.HTTP_OK)
-            .body("id", Matchers.equalTo(2))
-            .body("name", Matchers.equalTo("Dog"))
+            .body("id", equalTo(2))
+            .body("name", equalTo("Dog"))
     }
 }
