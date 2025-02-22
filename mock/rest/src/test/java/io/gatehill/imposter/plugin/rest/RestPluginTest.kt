@@ -61,6 +61,10 @@ import org.junit.jupiter.api.Test
 class RestPluginTest : BaseVerticleTest() {
     override val pluginClass = RestPluginImpl::class.java
 
+    override val testConfigDirs = listOf(
+        "/config"
+    )
+
     @BeforeEach
     @Throws(Exception::class)
     override fun setUp(vertx: Vertx, testContext: VertxTestContext) {

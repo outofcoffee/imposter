@@ -114,11 +114,6 @@ abstract class BaseVerticleTest {
         }.toTypedArray()
     }
 
-    /**
-     * @return the relative path under the test resources directory, starting with a slash, e.g "/my-config"
-     */
-    protected open val testConfigDirs = listOf("/config")
-
     @Throws(IOException::class)
     private fun findFreePort() = ServerSocket(0).use { it.localPort }
 
@@ -126,6 +121,11 @@ abstract class BaseVerticleTest {
         get() = ConfigHolder.config.listenPort
 
     protected abstract val pluginClass: Class<out Plugin?>
+
+    /**
+     * @return the relative path under the test resources directory, starting with a slash, e.g "/my-config"
+     */
+    protected abstract val testConfigDirs: List<String>
 
     companion object {
         @JvmStatic

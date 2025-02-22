@@ -69,6 +69,10 @@ import javax.net.ssl.SSLSession
 class SfdcPluginImplTest : BaseVerticleTest() {
     override val pluginClass = SfdcPluginImpl::class.java
 
+    override val testConfigDirs = listOf(
+        "/config"
+    )
+
     @BeforeEach
     @Throws(Exception::class)
     override fun setUp(vertx: Vertx, testContext: VertxTestContext) {

@@ -71,6 +71,10 @@ class HBasePluginTest : BaseVerticleTest() {
 
     override val pluginClass = HBasePluginImpl::class.java
 
+    override val testConfigDirs = listOf(
+        "/config"
+    )
+
     companion object {
         @JvmStatic
         @BeforeAll
