@@ -42,8 +42,13 @@
  */
 package io.gatehill.imposter.server
 
+import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.plugin.PluginManager
 import io.gatehill.imposter.plugin.test.TestPluginImpl
+import io.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PASSWORD
+import io.gatehill.imposter.util.CryptoUtil.DEFAULT_KEYSTORE_PATH
+import io.gatehill.imposter.util.CryptoUtil.getDefaultKeystore
+import io.gatehill.imposter.util.FileUtil.CLASSPATH_PREFIX
 import io.gatehill.imposter.util.HttpUtil
 import io.gatehill.imposter.util.InjectorUtil
 import io.restassured.RestAssured
@@ -55,22 +60,34 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 /**
- * @author Pete Cornish
+ * Tests HTTPS support.
  */
-class ImposterVerticleTest : BaseVerticleTest() {
+class HttpsTest : BaseVerticleTest() {
     override val pluginClass = TestPluginImpl::class.java
 
     @BeforeEach
     @Throws(Exception::class)
     override fun setUp(vertx: Vertx, testContext: VertxTestContext) {
         super.setUp(vertx, testContext)
-        RestAssured.baseURI = "http://$host:$listenPort"
-        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails()
+
+        // set up trust store for TLS
+        RestAssured.trustStore(getDefaultKeystore(HttpsTest::class.java).toFile(), DEFAULT_KEYSTORE_PASSWORD)
+        RestAssured.baseURI = "https://$host:$listenPort"
     }
 
     override val testConfigDirs = listOf(
         "/simple-config"
     )
+
+    @Throws(Exception::class)
+    override fun configure(imposterConfig: ImposterConfig) {
+        super.configure(imposterConfig)
+
+        // enable TLS
+        imposterConfig.isTlsEnabled = true
+        imposterConfig.keystorePath = CLASSPATH_PREFIX + DEFAULT_KEYSTORE_PATH
+        imposterConfig.keystorePassword = DEFAULT_KEYSTORE_PASSWORD
+    }
 
     @Test
     fun testPluginLoadAndConfig() {
