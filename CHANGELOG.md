@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.5.8] - 2025-02-22
+### Changed
+- chore(deps): bump org.apache.maven.plugins:maven-clean-plugin
+- chore(deps): bump org.apache.maven.plugins:maven-compiler-plugin
+- chore(deps): bumps Vert.x to 4.5.13.
+- refactor: remove redundant cast.
+- test: migrate to JUnit 5.
+- test: removes implicit config dir from base verticle test.
+
 ## [4.5.7] - 2025-02-05
 ### Changed
 - docs: describes how to produce JSON in Groovy scripts.
