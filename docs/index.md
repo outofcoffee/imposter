@@ -38,6 +38,7 @@ To begin, check out the [Getting started](getting_started.md) guide. See the _Co
 - [Failure simulation](./failure_simulation.md)
 - [Generating fake data](fake_data.md)
 - [CORS](cors.md)
+- [JavaScript scripting tips](javascript_tips.md)
 - [Groovy scripting tips](groovy_tips.md)
 - [JavaScript compatibility](scripting_modern_js.md)
 - [Examples](https://github.com/outofcoffee/imposter/tree/main/examples)
