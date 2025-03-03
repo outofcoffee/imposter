@@ -300,6 +300,7 @@ respond().withFile('static-data.json')
 
 ## Further reading
 
+* [Tips and tricks for JavaScript scripts](./javascript_tips.md)
 * [Tips and tricks for Groovy scripts](./groovy_tips.md)
 * [Debugging Groovy scripts](./groovy_debugging.md)
 * [Using modern JavaScript in scripts](./scripting_modern_js.md)
