@@ -3,7 +3,7 @@ apply plugin: 'kotlin'
 apply plugin: 'maven-publish'
 
 ext {
-    version_graal = '22.3.5'
+    version_graal = '24.1.2'
 }
 
 compileJava {
