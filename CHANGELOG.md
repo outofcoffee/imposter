@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.6.1] - 2025-03-10
+### Changed
+- docs: link to WireMock examples.
+- docs: moves examples to separate repository.
+
+### Fixed
+- fix: wiremock plugin should pass converted config to REST plugin.
+
 ## [4.6.0] - 2025-03-10
 ### Added
 - feat: updates GitHub org to imposter-project.
