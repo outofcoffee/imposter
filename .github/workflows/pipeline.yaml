@@ -29,14 +29,20 @@ on:
 jobs:
   validate:
     uses: ./.github/workflows/validate.yaml
+    permissions:
+      checks: write
 
   integ-test:
     uses: ./.github/workflows/integ-test.yaml
+    permissions:
+      checks: write
 
   release:
     needs: [validate, integ-test]
     if: ${{ inputs.release || inputs.effective-branch == 'develop' }}
     uses: ./.github/workflows/release.yaml
+    permissions:
+      contents: write
     with:
       effective-branch: ${{ inputs.effective-branch }}
       release: ${{ inputs.release }}
@@ -47,6 +53,8 @@ jobs:
     needs: [validate, integ-test]
     if: ${{ inputs.release }}
     uses: ./.github/workflows/maven-publish.yaml
+    permissions:
+      contents: write
     secrets: inherit
 
   distroless:

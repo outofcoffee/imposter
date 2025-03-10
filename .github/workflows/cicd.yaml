@@ -32,6 +32,9 @@ jobs:
   ci:
     needs: [setup]
     uses: ./.github/workflows/pipeline.yaml
+    permissions:
+      checks: write
+      contents: write
     with:
       effective-branch: ${{ needs.setup.outputs.effective-branch }}
       release: ${{ needs.setup.outputs.release == 'true' }}
