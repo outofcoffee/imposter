@@ -56,6 +56,14 @@ This starts a mock server using the WireMock plugin. Responses are served based 
 
 Using the example above, Imposter will parse the WireMock mappings files and create an HTTP mock on [http://localhost:8080/](http://localhost:8080/).
 
+### Testing the mock
+
+```bash
+curl http://localhost:8080/example1 -H 'Accept: application/json'
+
+{ "id": 2, "name": "Dog" }
+```
+
 ## Additional script context objects
 
 There are no additional script context objects available.
