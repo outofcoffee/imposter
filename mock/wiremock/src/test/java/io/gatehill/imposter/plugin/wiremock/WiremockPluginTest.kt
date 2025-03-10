@@ -52,8 +52,9 @@ import io.gatehill.imposter.service.ResponseFileService
 import io.gatehill.imposter.service.ResponseRoutingService
 import io.gatehill.imposter.service.ResponseService
 import io.vertx.core.Vertx
-import org.hamcrest.CoreMatchers
+import org.hamcrest.CoreMatchers.containsString
 import org.hamcrest.CoreMatchers.equalTo
+import org.hamcrest.CoreMatchers.hasItem
 import org.hamcrest.CoreMatchers.not
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.hasSize
@@ -76,8 +77,8 @@ class WiremockPluginTest {
         val files = configDir.listFiles()?.map { it.name }
         Assertions.assertEquals(2, files?.size)
 
-        assertThat(files, CoreMatchers.hasItem("wiremock-0-config.json"))
-        assertThat(files, CoreMatchers.hasItem("files"))
+        assertThat(files, hasItem("wiremock-0-config.json"))
+        assertThat(files, hasItem("files"))
     }
 
     @Test
@@ -87,13 +88,13 @@ class WiremockPluginTest {
         val files = configDir.listFiles()?.map { it.name }
         Assertions.assertEquals(2, files?.size)
 
-        assertThat(files, CoreMatchers.hasItem("wiremock-0-config.json"))
-        assertThat(files, CoreMatchers.hasItem("files"))
+        assertThat(files, hasItem("wiremock-0-config.json"))
+        assertThat(files, hasItem("files"))
 
         val responseFileDir = File(configDir, "files")
         val responseFiles = responseFileDir.listFiles()?.map { it.name }
         Assertions.assertEquals(1, responseFiles?.size)
-        assertThat(responseFiles, CoreMatchers.hasItem("response.json"))
+        assertThat(responseFiles, hasItem("response.json"))
     }
 
     @Test
@@ -103,14 +104,14 @@ class WiremockPluginTest {
         val files = configDir.listFiles()?.map { it.name }
         Assertions.assertEquals(3, files?.size)
 
-        assertThat(files, CoreMatchers.hasItem("wiremock-0-config.json"))
-        assertThat(files, CoreMatchers.hasItem("wiremock-1-config.json"))
-        assertThat(files, CoreMatchers.hasItem("files"))
+        assertThat(files, hasItem("wiremock-0-config.json"))
+        assertThat(files, hasItem("wiremock-1-config.json"))
+        assertThat(files, hasItem("files"))
 
         val responseFileDir = File(configDir, "files")
         val responseFiles = responseFileDir.listFiles()?.map { it.name }
         Assertions.assertEquals(1, responseFiles?.size)
-        assertThat(responseFiles, CoreMatchers.hasItem("response.json"))
+        assertThat(responseFiles, hasItem("response.json"))
     }
 
     @Test
@@ -120,23 +121,23 @@ class WiremockPluginTest {
         val files = configDir.listFiles()?.map { it.name }
         Assertions.assertEquals(2, files?.size)
 
-        assertThat(files, CoreMatchers.hasItem("wiremock-0-config.json"))
-        assertThat(files, CoreMatchers.hasItem("files"))
+        assertThat(files, hasItem("wiremock-0-config.json"))
+        assertThat(files, hasItem("files"))
 
         val responseFileDir = File(configDir, "files")
         val responseFiles = responseFileDir.listFiles()?.map { it.name }
         Assertions.assertEquals(1, responseFiles?.size)
-        assertThat(responseFiles, CoreMatchers.hasItem("response.xml"))
+        assertThat(responseFiles, hasItem("response.xml"))
 
         val responseFile = File(responseFileDir, "response.xml").readText()
-        assertThat(responseFile, not(CoreMatchers.containsString("{{")))
+        assertThat(responseFile, not(containsString("{{")))
         assertThat(
             responseFile,
-            CoreMatchers.containsString("\${context.request.body://getPetByIdRequest/id}")
+            containsString("\${context.request.body://getPetByIdRequest/id}")
         )
         assertThat(
             responseFile,
-            CoreMatchers.containsString("\${random.alphabetic(length=5,uppercase=true)}")
+            containsString("\${random.alphabetic(length=5,uppercase=true)}")
         )
     }
 

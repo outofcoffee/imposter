@@ -5,7 +5,7 @@
         "method": "GET",
         "url": "/example1",
         "headers": {
-          "content-type": {
+          "accept": {
             "equalTo": "application/json"
           }
         },

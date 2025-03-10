@@ -102,7 +102,7 @@ class WiremockPluginImpl @Inject constructor(
      * Converts wiremock mappings to Imposter format in a temporary directory,
      * then returns the path to the generated config file.
      */
-    internal fun convert(mappingsFile: LoadedConfig): List<LoadedConfig> {
+    fun convert(mappingsFile: LoadedConfig): List<LoadedConfig> {
         val sourceDir = mappingsFile.ref.file.parentFile
         val localConfigDir = Files.createTempDirectory("wiremock").toFile()
 
@@ -115,7 +115,7 @@ class WiremockPluginImpl @Inject constructor(
                 throw IOException("Failed to create response file dir: $responseFileDir")
             }
 
-            val configFiles = mutableListOf<File>()
+            val configFiles = mutableListOf<LoadedConfig>()
             val converted = mappings.map { mf ->
                 mf.mapNotNull { m -> convertMapping(sourceDir, localConfigDir, m) }
             }
@@ -126,7 +126,7 @@ class WiremockPluginImpl @Inject constructor(
                     configFiles += writeConfig(localConfigDir, 0, converted.flatten())
                 }
                 logger.debug("Wrote converted wiremock mapping file(s) to $localConfigDir")
-                return configFiles.map { LoadedConfig(ConfigReference(it, mappingsFile.ref.configRoot), mappingsFile.serialised, mappingsFile.plugin) }
+                return configFiles
             }
         }
         logger.warn("No wiremock mapping files found in $sourceDir")
@@ -149,15 +149,21 @@ class WiremockPluginImpl @Inject constructor(
             }
         }
 
-    private fun writeConfig(destDir: File, index: Int, resources: List<RestPluginResourceConfig>): File {
+    private fun writeConfig(destDir: File, index: Int, resources: List<RestPluginResourceConfig>): LoadedConfig {
         val destFile = File(destDir, "wiremock-$index-config.json")
         val config = RestPluginConfig().apply {
             plugin = "rest"
             this.resources = resources
         }
-        destFile.writeText(MapUtil.jsonify(config))
+        val serialised = MapUtil.jsonify(config)
+        destFile.writeText(serialised)
         logger.trace("Converted wiremock mapping file to Imposter config: {}", destFile)
-        return destFile
+
+        return LoadedConfig(
+            plugin = config.plugin!!,
+            ref = ConfigReference(destFile, destDir),
+            serialised = serialised,
+        )
     }
 
     private fun convertMapping(sourceDir: File, destDir: File, mapping: WiremockMapping): RestPluginResourceConfig? {

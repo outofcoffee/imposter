@@ -13,6 +13,7 @@ dependencies {
 
     // test
     testImplementation project(':test:test-utils')
+    testImplementation project(':test:api-tests')
     testImplementation "org.mockito.kotlin:mockito-kotlin:$version_mockito_kotlin"
 
     // java 11 compatibility
