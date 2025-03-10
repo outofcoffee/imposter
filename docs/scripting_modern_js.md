@@ -18,7 +18,7 @@ To use the GraalVM JavaScript engine, you need to be running Imposter v4.0.0 or 
 
 ## Examples
 
-For examples, see the `examples/graal` directory [in GitHub](https://github.com/imposter-project/imposter-jvm-engine/blob/main/examples/graal).
+For examples, see the `examples/graal` directory [in GitHub](https://github.com/imposter-project/examples/blob/main/graal).
 
 ### Simple example
 
@@ -38,7 +38,7 @@ Hello Ada
 
 ### Advanced example
 
-See the `examples/graal/es6` [directory](https://github.com/imposter-project/imposter-jvm-engine/blob/main/examples/graal) for an example of using modern JavaScript features in a script.
+See the `examples/graal/es6` [directory](https://github.com/imposter-project/examples/blob/main/graal) for an example of using modern JavaScript features in a script.
 
 ---
 

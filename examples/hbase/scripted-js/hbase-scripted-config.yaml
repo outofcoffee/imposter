@@ -1,4 +1,0 @@
-plugin: "hbase"
-tableName: "scriptedTable"
-response:
-  scriptFile: "hbase-plugin.js"

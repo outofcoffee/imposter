@@ -27,19 +27,6 @@ updates:
       prefix: "chore"
       include: "scope"
 
-  - package-ecosystem: maven
-    directory: "/examples/junit-sample"
-    schedule:
-      interval: "daily"
-    target-branch: "develop"
-    open-pull-requests-limit: 4
-    labels:
-      - "dependencies"
-      - "examples"
-    commit-message:
-      prefix: "chore"
-      include: "scope"
-
   - package-ecosystem: docker
     directory: "/"
     schedule:

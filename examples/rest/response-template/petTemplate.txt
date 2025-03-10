@@ -1,1 +1,0 @@
-Pet ID: ${stores.request.petId}

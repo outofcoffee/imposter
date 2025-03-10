@@ -1,6 +1,0 @@
-plugin: "hbase"
-tableName: "exampleTable"
-prefix: "examplePrefix"
-idField: "abc:id"
-response:
-  file: "hbase-data.json"

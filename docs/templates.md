@@ -360,4 +360,4 @@ Template files are cached in memory once read from disk, so they do not incur as
 
 ## Examples
 
-- [response-template](https://github.com/imposter-project/imposter-jvm-engine/blob/main/examples/rest/response-template)
+- [response-template](https://github.com/imposter-project/examples/blob/main/rest/response-template)

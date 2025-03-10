@@ -56,7 +56,7 @@ nav:
     - JavaScript scripting tips: 'javascript_tips.md'
     - Groovy scripting tips: 'groovy_tips.md'
     - JavaScript compatibility: 'scripting_modern_js.md'
-    - Examples: 'https://github.com/imposter-project/imposter-jvm-engine/tree/main/examples'
+    - Examples: 'https://github.com/imposter-project/examples'
 
   - Data capture and storage:
     - Data capture: 'data_capture.md'

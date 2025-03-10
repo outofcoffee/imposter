@@ -3,7 +3,6 @@ requireBranch: main
 ignore:
   - "prep for release"
   - "next development version"
-  - "/examples/junit-sample"
 
 before:
   - script: |

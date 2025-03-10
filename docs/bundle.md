@@ -144,5 +144,5 @@ $ docker run --rm -it -p 8080:8080 example/mocks
 
 This is a standard Docker container image, so you can push it to a registry and run it anywhere Docker runs.
 
-> See [the Docker example project](https://github.com/imposter-project/imposter-jvm-engine/tree/main/examples/docker) for a working example.
+> See [the Docker example project](https://github.com/imposter-project/examples/tree/main/docker) for a working example.
 

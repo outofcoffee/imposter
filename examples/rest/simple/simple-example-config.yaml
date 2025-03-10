@@ -1,5 +1,0 @@
----
-plugin: rest
-path: "/example"
-response:
-  file: example-data.json

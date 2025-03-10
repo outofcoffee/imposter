@@ -53,9 +53,9 @@ Configuration and commands to allow benchmarks to be independently reproduced.
 
 #### Scenarios
 
-- Scenario 1: Static, configuration-driven: [examples/rest/simple](https://github.com/imposter-project/imposter-jvm-engine/blob/main/examples/rest/simple)
-- Scenario 2: Conditional, configuration-driven: [examples/rest/conditional-config](https://github.com/imposter-project/imposter-jvm-engine/blob/main/examples/rest/conditional-config)
-- Scenario 3: Dynamic, script-driven: [examples/rest/conditional-scripted](https://github.com/imposter-project/imposter-jvm-engine/blob/main/examples/rest/conditional-scripted)
+- Scenario 1: Static, configuration-driven: [examples/rest/simple](https://github.com/imposter-project/examples/blob/main/rest/simple)
+- Scenario 2: Conditional, configuration-driven: [examples/rest/conditional-config](https://github.com/imposter-project/examples/blob/main/rest/conditional-config)
+- Scenario 3: Dynamic, script-driven: [examples/rest/conditional-scripted](https://github.com/imposter-project/examples/blob/main/rest/conditional-scripted)
 
 #### Start command
 

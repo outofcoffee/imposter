@@ -1,4 +1,0 @@
----
-plugin: openapi
-# the OpenAPI specification is hosted in the following S3 bucket
-specFile: s3://example-bucket/petstore.yaml

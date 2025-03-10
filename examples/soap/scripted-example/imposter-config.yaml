@@ -1,4 +1,0 @@
-plugin: soap
-wsdlFile: petstore.wsdl
-response:
-  scriptFile: example.groovy

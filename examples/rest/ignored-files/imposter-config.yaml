@@ -1,7 +1,0 @@
-plugin: rest
-
-resources:
-  - path: /test1
-    method: GET
-    response:
-      statusCode: 200
