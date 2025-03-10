@@ -14,6 +14,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Remove placeholder examples directory
+        run: rm -rf examples
+
+      - name: Checkout examples
+        uses: actions/checkout@v4
+        with:
+          repository: 'imposter-project/examples'
+          path: 'examples'
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
