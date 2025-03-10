@@ -4,6 +4,7 @@ on: [ push ]
 jobs:
   setup:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     outputs:
       effective-branch: ${{ steps.git-meta.outputs.EFFECTIVE_BRANCH }}
       release: ${{ startsWith(github.ref, 'refs/tags/') }}

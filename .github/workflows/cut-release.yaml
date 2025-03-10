@@ -10,6 +10,7 @@ jobs:
     outputs:
       version: ${{ steps.since.outputs.CURRENT_VERSION }}
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     env:
       SINCE_VERSION: "0.15.5"
     steps:

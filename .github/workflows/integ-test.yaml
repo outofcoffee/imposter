@@ -5,6 +5,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       checks: write
     env:
