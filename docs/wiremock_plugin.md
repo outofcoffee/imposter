@@ -41,6 +41,10 @@ For working examples, see [WireMock examples](https://github.com/imposter-projec
 
 Let's assume your configuration is in a folder named `wiremock-simple`.
 
+CLI example:
+
+    imposter up ./wiremock-simple --engine-type docker-all
+
 Docker example:
 
     docker run -ti -p 8080:8080 \

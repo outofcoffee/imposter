@@ -40,6 +40,10 @@ In this example, we are using a static response file (`example-data.json`) conta
 
 Let's assume your configuration is in the directory: `examples/rest/simple`.
 
+CLI example:
+
+    imposter up ./examples/rest/simple
+
 Docker example:
 
     docker run --rm -ti -p 8080:8080 \
@@ -48,7 +52,7 @@ Docker example:
 
 Standalone Java example:
 
-    java -jar distro/rest/build/libs/imposter.jar \
+    java -jar distro/core/build/libs/imposter-core.jar \
         --configDir ./examples/rest/simple
 
 Send an HTTP request to the `/example` path defined in the configuration file to see the example response:

@@ -102,17 +102,17 @@ Let's assume your configuration is in the directory: `examples/soap/simple`. Her
 
 CLI example:
 
-    imposter up -p 8080 ./examples/soap/simple
+    imposter up ./examples/soap/simple
 
 Docker example:
 
     docker run --rm -ti -p 8080:8080 \
         -v $PWD/examples/soap/simple:/opt/imposter/config \
-        outofcoffee/imposter-all
+        outofcoffee/imposter
 
 Java JAR example:
 
-    java -jar distro/soap/build/libs/imposter-all.jar \
+    java -jar distro/core/build/libs/imposter-core.jar \
         --configDir ./examples/soap/simple
 
 This starts a mock server using the SOAP plugin. Responses are served based on the WSDL file and its referenced XSD file `schema.xsd`.

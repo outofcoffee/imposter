@@ -110,7 +110,7 @@ Let's assume your configuration is in the directory: `examples/openapi/simple`. 
 
 CLI example:
 
-    imposter up -p 8080 ./examples/openapi/simple
+    imposter up ./examples/openapi/simple
 
 Docker example:
 
@@ -120,7 +120,7 @@ Docker example:
 
 Java JAR example:
 
-    java -jar distro/openapi/build/libs/imposter.jar \
+    java -jar distro/core/build/libs/imposter-core.jar \
         --configDir ./examples/openapi/simple
 
 This starts a mock server using the OpenAPI plugin. Responses are served based on the OpenAPI specification `petstore.yaml`.

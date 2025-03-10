@@ -42,6 +42,10 @@ For working examples, see:
 
 Let's assume your configuration is in a folder named `config`.
 
+CLI example:
+
+    imposter up ./config
+
 Docker example:
 
     docker run -ti -p 8080:8080 \
@@ -51,7 +55,7 @@ Docker example:
 
 Standalone Java example:
 
-    java -jar distro/hbase/build/libs/imposter-all.jar \
+    java -jar distro/all/build/libs/imposter-all.jar \
         --configDir ./config \
         --serverUrl http://localhost:8080
 
