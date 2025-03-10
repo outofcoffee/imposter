@@ -63,4 +63,4 @@ curl -i http://localhost:8080/pets
 ]
 ```
 
-* See the `examples/rest/conditional-scripted` directory [in GitHub](https://github.com/imposter-project/imposter-jvm-engine/blob/main/examples/rest/conditional-scripted).
+* See the `examples/rest/conditional-scripted` directory [in GitHub](https://github.com/imposter-project/examples/blob/main/rest/conditional-scripted).

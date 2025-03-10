@@ -68,4 +68,4 @@ Using JsonPath in placeholder templates is computationally expensive, as it requ
 
 ## Examples
 
-- [response-template](https://github.com/imposter-project/imposter-jvm-engine/blob/main/examples/rest/response-template)
+- [response-template](https://github.com/imposter-project/examples/blob/main/rest/response-template)

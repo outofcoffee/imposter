@@ -8,7 +8,7 @@ Imposter starts before your test runs, such as in your test set-up method (e.g. 
 
 ## Getting started
 
-> For a full working example project, see [examples/junit-sample](https://github.com/imposter-project/imposter-jvm-engine/tree/main/examples/junit-sample)
+> For a full working example project, see [examples/junit-sample](https://github.com/imposter-project/examples/tree/main/junit-sample)
 
 First, note the latest [release version](https://github.com/imposter-project/imposter-jvm-engine/releases).
 
@@ -49,7 +49,7 @@ String mockEndpoint = imposter.getBaseUrl() + "/v1/pets";
 // simulated HTTP responses, in place of a real endpoint.
 ```
 
-> For a full working example project, see [examples/junit-sample](https://github.com/imposter-project/imposter-jvm-engine/tree/main/examples/junit-sample)
+> For a full working example project, see [examples/junit-sample](https://github.com/imposter-project/examples/tree/main/junit-sample)
 
 ## Using a full configuration file
 

@@ -71,7 +71,7 @@ This is because in the corresponding part of the OpenAPI specification, both the
 
 Note that if the request body were provided, its structure would be validated against the corresponding schema entry.
 
-See [examples/openapi/request-validation](https://github.com/imposter-project/imposter-jvm-engine/blob/master/examples/openapi/request-validation) for a working example.
+See [examples/openapi/request-validation](https://github.com/imposter-project/examples/blob/main/openapi/request-validation) for a working example.
 
 ## Configuring issue behaviour
 

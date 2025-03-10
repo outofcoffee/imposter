@@ -1,3 +1,0 @@
-contributor(scope: scriptScope()) {
-    property name: 'context', type: 'io.gatehill.imposter.script.ExecutionContext'
-}

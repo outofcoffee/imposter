@@ -1,7 +1,0 @@
-plugin: rest
-
-resources:
-- path: /
-  method: POST
-  response:
-    scriptFile: json-parse.groovy

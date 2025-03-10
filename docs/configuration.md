@@ -150,7 +150,7 @@ resources:
 
 In this example, responses to both `/example1` and `/example2` will have the header `X-Always-Present: Yes` set, as it is inherited from the root configuration.
 
-> See [default-response-config](https://github.com/imposter-project/imposter-jvm-engine/blob/main/examples/rest/default-response-config) for an example.
+> See [default-response-config](https://github.com/imposter-project/examples/blob/main/rest/default-response-config) for an example.
 
 #### Default response values
 

@@ -123,8 +123,8 @@ For more sophisticated script development, you can set up a project in your IDE 
 
 This requires setting up a project with a dependency on `imposter-api.jar` and adding the GroovyDSL (GDSL) file.
 
-➡️ [See an example project](https://github.com/imposter-project/imposter-jvm-engine/tree/main/examples/groovy-dsl)
+➡️ [See an example project](https://github.com/imposter-project/examples/tree/main/groovy-dsl)
 
 If you just want to download the GDSL file see:
 
-➡️ [Download the GDSL file](https://github.com/imposter-project/imposter-jvm-engine/tree/main/examples/groovy-dsl/src/main/resources/imposter.gdsl) 
+➡️ [Download the GDSL file](https://github.com/imposter-project/examples/tree/main/groovy-dsl/src/main/resources/imposter.gdsl) 

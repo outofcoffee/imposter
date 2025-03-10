@@ -425,4 +425,4 @@ Using JsonPath to capture the request body is computationally expensive, as it r
 
 ## Examples
 
-- [data-capture](https://github.com/imposter-project/imposter-jvm-engine/blob/main/examples/rest/data-capture)
+- [data-capture](https://github.com/imposter-project/examples/blob/main/rest/data-capture)

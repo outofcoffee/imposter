@@ -1,7 +1,0 @@
-plugin: rest
-
-resources:
-  - path: /
-    method: GET
-    response:
-      scriptFile: example.js

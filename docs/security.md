@@ -246,5 +246,5 @@ resources:
 
 See the `examples` directory for working sample configurations, such as:
 
-* [Simple authentication](https://github.com/imposter-project/imposter-jvm-engine/blob/main/examples/openapi/authentication-simple)
-* [Extended authentication](https://github.com/imposter-project/imposter-jvm-engine/blob/main/examples/openapi/authentication-extended)
+* [Simple authentication](https://github.com/imposter-project/examples/blob/main/openapi/authentication-simple)
+* [Extended authentication](https://github.com/imposter-project/examples/blob/main/openapi/authentication-extended)

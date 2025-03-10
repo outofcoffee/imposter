@@ -1,4 +1,0 @@
----
-plugin: openapi
-# the OpenAPI specification is hosted at the following URL
-specFile: https://example.com/petstore.yaml
