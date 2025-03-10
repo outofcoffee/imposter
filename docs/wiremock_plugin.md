@@ -37,9 +37,7 @@ Enable it with the following environment variables:
 
 ## Example
 
-For working examples, see:
-
-    mock/wiremock/src/test/resources
+For working examples, see [WireMock examples](https://github.com/imposter-project/examples/tree/main/wiremock).
 
 Let's assume your configuration is in a folder named `wiremock-simple`.
 
@@ -51,7 +49,7 @@ Docker example:
 
 Standalone Java example:
 
-    java -jar distro/wiremock/build/libs/imposter-all.jar \
+    java -jar distro/all/build/libs/imposter-all.jar \
         --configDir ./wiremock-simple
 
 This starts a mock server using the WireMock plugin. Responses are served based on the mappings files inside the `wiremock-simple/mappings` folder and the templated response files in the `wiremock-simple/__files` folder.
@@ -61,3 +59,7 @@ Using the example above, Imposter will parse the WireMock mappings files and cre
 ## Additional script context objects
 
 There are no additional script context objects available.
+
+## Further reading
+
+- [WireMock examples](https://github.com/imposter-project/examples/tree/main/wiremock)
