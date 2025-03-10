@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.6.0] - 2025-03-10
+### Added
+- feat: updates GitHub org to imposter-project.
+
+### Changed
+- chore(deps): bump org.apache.maven.plugins:maven-project-info-reports-plugin
+- chore(deps): bump version_groovy from 4.0.21 to 4.0.25
+- ci: set permissions in parent job.
+- docs: links to JavaScript bundling examples.
+- test: splits HTTPS test into separate suite.
+
 ## [4.5.8] - 2025-02-22
 ### Changed
 - chore(deps): bump org.apache.maven.plugins:maven-clean-plugin
