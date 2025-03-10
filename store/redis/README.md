@@ -14,7 +14,7 @@ This will install the plugin version matching the current engine version used by
 
 ### Option 2: Install the plugin manually
 
-To use this plugin, download the `imposter-plugin-store-redis.jar` JAR file from the [Releases page](https://github.com/outofcoffee/imposter/releases).
+To use this plugin, download the `imposter-plugin-store-redis.jar` JAR file from the [Releases page](https://github.com/imposter-project/imposter-jvm-engine/releases).
 
 Set the following environment variable:
 
@@ -50,7 +50,7 @@ The following variables can be set:
 
 ## Example
 
-> See the [example](https://github.com/outofcoffee/imposter/tree/main/store/redis/example) directory for sample configuration files.
+> See the [example](https://github.com/imposter-project/imposter-jvm-engine/tree/main/store/redis/example) directory for sample configuration files.
 
 Start a local Redis instance:
 
@@ -97,7 +97,7 @@ Test retrieving the value:
 
 ### Scripted example
 
-Start Imposter as above, using the scripted example configuration files in the [example](https://github.com/outofcoffee/imposter/tree/main/store/redis/example) directory.
+Start Imposter as above, using the scripted example configuration files in the [example](https://github.com/imposter-project/imposter-jvm-engine/tree/main/store/redis/example) directory.
 
 Test writing a value:
 

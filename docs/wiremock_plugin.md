@@ -25,7 +25,7 @@ This will install the plugin version matching the current engine version used by
 
 ### Option 2: Install the plugin manually
 
-To use this plugin, download the `imposter-plugin-wiremock.jar` JAR file from the [Releases page](https://github.com/outofcoffee/imposter/releases).
+To use this plugin, download the `imposter-plugin-wiremock.jar` JAR file from the [Releases page](https://github.com/imposter-project/imposter-jvm-engine/releases).
 
 Enable it with the following environment variables:
 

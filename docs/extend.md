@@ -14,7 +14,7 @@ To add dependencies on Imposter, using Gradle, add the following to your build c
 
 ```
 ext {
-    // choose latest release from: https://github.com/outofcoffee/imposter/releases
+    // choose latest release from: https://github.com/imposter-project/imposter-jvm-engine/releases
     imposter_version = '1.0.0'
 }
 
@@ -53,7 +53,7 @@ Using Maven, add the following to your POM:
     </repositories>
     ...
     <properties>
-        <!-- choose latest release from https://github.com/outofcoffee/imposter/releases -->
+        <!-- choose latest release from https://github.com/imposter-project/imposter-jvm-engine/releases -->
         <imposter.version>1.0.0</imposter.version>
     </properties>
     ...

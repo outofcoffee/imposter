@@ -56,7 +56,7 @@ nav:
     - JavaScript scripting tips: 'javascript_tips.md'
     - Groovy scripting tips: 'groovy_tips.md'
     - JavaScript compatibility: 'scripting_modern_js.md'
-    - Examples: 'https://github.com/outofcoffee/imposter/tree/main/examples'
+    - Examples: 'https://github.com/imposter-project/imposter-jvm-engine/tree/main/examples'
 
   - Data capture and storage:
     - Data capture: 'data_capture.md'
@@ -102,6 +102,6 @@ nav:
     - Mocking SOAP web services with Imposter: 'https://medium.com/@outofcoffee/mocking-soap-web-services-with-imposter-da8e9666b5b4'
   
   - Developers:
-    - GitHub: 'https://github.com/outofcoffee/imposter'
+    - GitHub: 'https://github.com/imposter-project/imposter-jvm-engine'
     - Roadmap: 'roadmap.md'
     - Build: 'build.md'

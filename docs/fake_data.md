@@ -56,7 +56,7 @@ Some common examples:
 
 #### Try it out
 
-See the [example directory](https://github.com/outofcoffee/imposter/blob/main/examples/rest/fake-data) for a working example.
+See the [example directory](https://github.com/imposter-project/imposter-jvm-engine/blob/main/examples/rest/fake-data) for a working example.
 
 ```bash
 curl http://localhost:8080/users/1
@@ -80,7 +80,7 @@ When using the `fake-data` plugin with the OpenAPI plugin, common property names
 
 #### Try it out
 
-See the [example directory](https://github.com/outofcoffee/imposter/blob/main/examples/openapi/fake-data) for a working example.
+See the [example directory](https://github.com/imposter-project/imposter-jvm-engine/blob/main/examples/openapi/fake-data) for a working example.
 
 For example:
 

@@ -21,7 +21,7 @@ dependencies {
     implementation project (':mock:mock-soap')
     implementation project (':mock:mock-wiremock')
 
-    // HBase excluded in favour of standalone plugin, due to https://github.com/outofcoffee/imposter/issues/547
+    // HBase excluded in favour of standalone plugin, due to https://github.com/imposter-project/imposter-jvm-engine/issues/547
     // implementation project (':mock:mock-hbase')
 
     // stores

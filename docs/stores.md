@@ -196,8 +196,8 @@ You must provide an object with key/value pairs, such as that shown above, or in
 Different store implementations exist:
 
 - In memory store (default)
-- [DynamoDB store](https://github.com/outofcoffee/imposter/tree/main/store/dynamodb)
-- [Redis store](https://github.com/outofcoffee/imposter/tree/main/store/redis)
+- [DynamoDB store](https://github.com/imposter-project/imposter-jvm-engine/tree/main/store/dynamodb)
+- [Redis store](https://github.com/imposter-project/imposter-jvm-engine/tree/main/store/redis)
 
 ## GraphQL support
 

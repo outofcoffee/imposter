@@ -65,7 +65,7 @@ To run Imposter, map the path to the configuration files directory to the `/opt/
 
     docker run -ti -v /path/to/config:/opt/imposter/config -p 8080:8080 outofcoffee/imposter
 
-> To get up and running quickly, see the [examples](https://github.com/outofcoffee/imposter/tree/main/examples).
+> To get up and running quickly, see the [examples](https://github.com/imposter-project/imposter-jvm-engine/tree/main/examples).
 
 ### Example
 
@@ -142,7 +142,7 @@ However, it is possible to build container images and use shell commands in a Do
 
 > **An example**
 > 
-> Here is an example of a custom Docker image: https://github.com/outofcoffee/imposter/blob/main/examples/docker/Dockerfile
+> Here is an example of a custom Docker image: https://github.com/imposter-project/imposter-jvm-engine/blob/main/examples/docker/Dockerfile
 >
 > This example extends from the Java base image so has its various userspace tools available (and more you can install with the package manager).
 

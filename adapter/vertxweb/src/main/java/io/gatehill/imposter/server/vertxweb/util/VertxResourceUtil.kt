@@ -57,7 +57,7 @@ object VertxResourceUtil {
     /**
      * Vert.x shouldn't interpret a colon in a path component as the
      * start of a path parameter.
-     * Work-around for https://github.com/outofcoffee/imposter/issues/587
+     * Work-around for https://github.com/imposter-project/imposter-jvm-engine/issues/587
      */
     private val escapeColonsInPath: Boolean
         get() = EnvVars.getEnv("IMPOSTER_ESCAPE_COLONS_IN_PATH").toBoolean()

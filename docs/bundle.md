@@ -31,7 +31,7 @@ You can create a bundle using [the CLI](./run_imposter_cli.md) using the `impost
 $ imposter bundle -t awslambda -o bundle.zip
 
 creating awslambda bundle /users/person/mock using version 3.32.0
-downloading https://github.com/outofcoffee/imposter/releases/download/v3.32.0/imposter-awslambda.zip
+downloading https://github.com/imposter-project/imposter-jvm-engine/releases/download/v3.32.0/imposter-awslambda.zip
 bundling 3 files from workspace
 created deployment package
 created awslambda bundle: /users/person/mock/bundle.zip
@@ -43,7 +43,7 @@ The bundle file (`bundle.zip` in this example), can be [deployed to AWS Lambda](
 
 If you do not want to use the CLI, you can create a bundle using standard `zip` tools.
 
-Download the latest `imposter-awslambda.zip` distribution from the [Releases page](https://github.com/outofcoffee/imposter/releases).
+Download the latest `imposter-awslambda.zip` distribution from the [Releases page](https://github.com/imposter-project/imposter-jvm-engine/releases).
 
 Let's assume your configuration sits in a directory called `config`.
 
@@ -144,5 +144,5 @@ $ docker run --rm -it -p 8080:8080 example/mocks
 
 This is a standard Docker container image, so you can push it to a registry and run it anywhere Docker runs.
 
-> See [the Docker example project](https://github.com/outofcoffee/imposter/tree/main/examples/docker) for a working example.
+> See [the Docker example project](https://github.com/imposter-project/imposter-jvm-engine/tree/main/examples/docker) for a working example.
 

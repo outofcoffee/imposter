@@ -58,7 +58,7 @@ Other useful metrics:
 | script_execution_duration   | Script engine execution duration in seconds |
 | script_cache_entries        | The number of cached compiled scripts       |
 
-> Also see [the metrics example](https://github.com/outofcoffee/imposter/blob/main/examples/metrics).
+> Also see [the metrics example](https://github.com/imposter-project/imposter-jvm-engine/blob/main/examples/metrics).
 
 ## Logs
 

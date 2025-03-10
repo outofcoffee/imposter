@@ -156,7 +156,7 @@ Once you're finished, stop the server with CTRL+C.
 
 > For more working examples, see:
 >
-> * [examples/soap](https://github.com/outofcoffee/imposter/blob/main/examples/soap)
+> * [examples/soap](https://github.com/imposter-project/imposter-jvm-engine/blob/main/examples/soap)
 
 ## Conditional responses
 
@@ -248,7 +248,7 @@ resources:
 
 > **Tip**
 > Use conditional matching with resources, to only return a fault in particular circumstances.
-> See [fault-example](https://github.com/outofcoffee/imposter/blob/main/examples/soap/fault-example) for an example of how to do this.
+> See [fault-example](https://github.com/imposter-project/imposter-jvm-engine/blob/main/examples/soap/fault-example) for an example of how to do this.
 
 ## Scripted responses (advanced)
 
@@ -256,7 +256,7 @@ For more advanced scenarios, you can also control Imposter's responses using Jav
 
 > See the [Scripting](scripting.md) section for more information.
 
-For a simple script, see [examples/soap/scripted-example](https://github.com/outofcoffee/imposter/blob/main/examples/soap/scripted-example) for a working example.
+For a simple script, see [examples/soap/scripted-example](https://github.com/imposter-project/imposter-jvm-engine/blob/main/examples/soap/scripted-example) for a working example.
 
 ### Additional context objects
 
@@ -317,9 +317,9 @@ respond().withStatusCode(500)
 
 #### Scripting examples
 
-- [conditional-example](https://github.com/outofcoffee/imposter/blob/main/examples/soap/conditional-example)
-- [scripted-example](https://github.com/outofcoffee/imposter/blob/main/examples/soap/scripted-example)
-- [fault-example](https://github.com/outofcoffee/imposter/blob/main/examples/soap/fault-example)
+- [conditional-example](https://github.com/imposter-project/imposter-jvm-engine/blob/main/examples/soap/conditional-example)
+- [scripted-example](https://github.com/imposter-project/imposter-jvm-engine/blob/main/examples/soap/scripted-example)
+- [fault-example](https://github.com/imposter-project/imposter-jvm-engine/blob/main/examples/soap/fault-example)
 
 ### Configuration reference
 

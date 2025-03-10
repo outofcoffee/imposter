@@ -46,7 +46,7 @@ This method uses the AWS Web Console to create a Lambda function, and enables yo
 
 The Imposter engine for AWS Lambda is packaged as a ZIP file. You should upload this file to an S3 bucket, from where it will be referenced by your Lambda function.
 
-Open the [AWS S3 Console](https://s3.console.aws.amazon.com/s3/home). Upload the `imposter-awslambda.zip` file from the [Releases page](https://github.com/outofcoffee/imposter/releases/latest) to an S3 bucket.
+Open the [AWS S3 Console](https://s3.console.aws.amazon.com/s3/home). Upload the `imposter-awslambda.zip` file from the [Releases page](https://github.com/imposter-project/imposter-jvm-engine/releases/latest) to an S3 bucket.
 
 For the purposes of this guide, we will assume you have uploaded the ZIP file to a bucket named `example-imposter-bucket`, so the full path to the file would be:
 
@@ -85,7 +85,7 @@ Set the environment variable to point to the path holding the configuration file
 
 *Important:* Ensure the Lambda execution role has permission to access the S3 bucket containing your configuration.
 
-See [deploy/example/bucket-policy.json](https://raw.githubusercontent.com/outofcoffee/imposter/main/distro/awslambda/deploy/example/bucket-policy.json) for an example IAM role.
+See [deploy/example/bucket-policy.json](https://raw.githubusercontent.com/imposter-project/imposter-jvm-engine/main/distro/awslambda/deploy/example/bucket-policy.json) for an example IAM role.
 
 ![Lambda environment variables](./images/lambda_config_env.png)
 

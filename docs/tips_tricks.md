@@ -29,7 +29,7 @@ If you're using the Imposter [GitHub Actions](github_actions.md) in your CI/CD w
 
 You can use a local Imposter JAR file with the CLI. 
 
-1. Download the JAR file from the [releases page](https://github.com/outofcoffee/imposter/releases).
+1. Download the JAR file from the [releases page](https://github.com/imposter-project/imposter-jvm-engine/releases).
 2. Set the `IMPOSTER_JVM_JARFILE` environment variable to the local path of the JAR file.
 3. Start Imposter using the CLI, specifying the `jvm` engine type.
 

@@ -41,7 +41,7 @@ To begin, check out the [Getting started](getting_started.md) guide. See the _Co
 - [JavaScript scripting tips](javascript_tips.md)
 - [Groovy scripting tips](groovy_tips.md)
 - [JavaScript compatibility](scripting_modern_js.md)
-- [Examples](https://github.com/outofcoffee/imposter/tree/main/examples)
+- [Examples](https://github.com/imposter-project/imposter-jvm-engine/tree/main/examples)
 
 ### Data capture and storage
 
@@ -109,6 +109,6 @@ Imposter provides specialised mocks for the following scenarios:
 
 ### Developers
 
-- [GitHub](https://github.com/outofcoffee/imposter)
+- [GitHub](https://github.com/imposter-project/imposter-jvm-engine)
 - [Roadmap](roadmap.md)
 - [Build](build.md)

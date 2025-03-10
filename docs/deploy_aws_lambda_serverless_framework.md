@@ -52,7 +52,7 @@ Install the Serverless Framework:
 
 ### Step 2: Download the ZIP file
 
-Download the `imposter-awslambda.zip` file from the [Releases page](https://github.com/outofcoffee/imposter/releases/latest).
+Download the `imposter-awslambda.zip` file from the [Releases page](https://github.com/imposter-project/imposter-jvm-engine/releases/latest).
 
 ### Step 3: Configure the function
 
@@ -93,7 +93,7 @@ functions:
 
 *Important:* Ensure the Lambda execution role has permission to access the S3 bucket containing your configuration.
 
-See [deploy/example/bucket-policy.json](https://raw.githubusercontent.com/outofcoffee/imposter/main/distro/awslambda/deploy/example/bucket-policy.json) for an example IAM role.
+See [deploy/example/bucket-policy.json](https://raw.githubusercontent.com/imposter-project/imposter-jvm-engine/main/distro/awslambda/deploy/example/bucket-policy.json) for an example IAM role.
 
 Deploy your Lambda function with the Serverless CLI:
 

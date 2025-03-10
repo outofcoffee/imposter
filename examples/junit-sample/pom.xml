@@ -59,7 +59,7 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
 
-    <!-- choose latest release from https://github.com/outofcoffee/imposter/releases -->
+    <!-- choose latest release from https://github.com/imposter-project/imposter-jvm-engine/releases -->
     <imposter.version>4.5.7</imposter.version>
   </properties>
 

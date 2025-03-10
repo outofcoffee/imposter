@@ -8,9 +8,9 @@ Imposter starts before your test runs, such as in your test set-up method (e.g. 
 
 ## Getting started
 
-> For a full working example project, see [examples/junit-sample](https://github.com/outofcoffee/imposter/tree/main/examples/junit-sample)
+> For a full working example project, see [examples/junit-sample](https://github.com/imposter-project/imposter-jvm-engine/tree/main/examples/junit-sample)
 
-First, note the latest [release version](https://github.com/outofcoffee/imposter/releases).
+First, note the latest [release version](https://github.com/imposter-project/imposter-jvm-engine/releases).
 
 Add the following Maven repository to your build tool:
 
@@ -20,10 +20,10 @@ Add the following Maven dependencies in your build tool:
 
 | Component      | Group ID               | Artifact ID       | Version                                                                           |
 |----------------|------------------------|-------------------|-----------------------------------------------------------------------------------|
-| Main library   | `io.gatehill.imposter` | `distro-embedded` | As per [Releases](https://github.com/outofcoffee/imposter/releases), e.g. `4.2.2` |
-| HTTP server    | `io.gatehill.imposter` | `imposter-server` | As per [Releases](https://github.com/outofcoffee/imposter/releases), e.g. `4.2.2` |
-| Config parser  | `io.gatehill.imposter` | `config-dynamic`  | As per [Releases](https://github.com/outofcoffee/imposter/releases), e.g. `4.2.2` |
-| OpenAPI plugin | `io.gatehill.imposter` | `mock-openapi`    | As per [Releases](https://github.com/outofcoffee/imposter/releases), e.g. `4.2.2` |
+| Main library   | `io.gatehill.imposter` | `distro-embedded` | As per [Releases](https://github.com/imposter-project/imposter-jvm-engine/releases), e.g. `4.2.2` |
+| HTTP server    | `io.gatehill.imposter` | `imposter-server` | As per [Releases](https://github.com/imposter-project/imposter-jvm-engine/releases), e.g. `4.2.2` |
+| Config parser  | `io.gatehill.imposter` | `config-dynamic`  | As per [Releases](https://github.com/imposter-project/imposter-jvm-engine/releases), e.g. `4.2.2` |
+| OpenAPI plugin | `io.gatehill.imposter` | `mock-openapi`    | As per [Releases](https://github.com/imposter-project/imposter-jvm-engine/releases), e.g. `4.2.2` |
 
 > See the _Dependencies_ section for full Maven and Gradle examples.
 
@@ -49,7 +49,7 @@ String mockEndpoint = imposter.getBaseUrl() + "/v1/pets";
 // simulated HTTP responses, in place of a real endpoint.
 ```
 
-> For a full working example project, see [examples/junit-sample](https://github.com/outofcoffee/imposter/tree/main/examples/junit-sample)
+> For a full working example project, see [examples/junit-sample](https://github.com/imposter-project/imposter-jvm-engine/tree/main/examples/junit-sample)
 
 ## Using a full configuration file
 
@@ -84,7 +84,7 @@ Using Gradle, add the following to your build configuration:
 
 ```groovy
 ext {
-    // choose latest release from: https://github.com/outofcoffee/imposter/releases
+    // choose latest release from: https://github.com/imposter-project/imposter-jvm-engine/releases
     imposter_version = '4.2.2'
 }
 
@@ -120,7 +120,7 @@ Using Maven, add the following to your POM:
     </repositories>
     ...
     <properties>
-        <!-- choose latest release from https://github.com/outofcoffee/imposter/releases -->
+        <!-- choose latest release from https://github.com/imposter-project/imposter-jvm-engine/releases -->
         <imposter.version>4.2.2</imposter.version>
     </properties>
     ...

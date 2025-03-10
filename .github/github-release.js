@@ -94,8 +94,8 @@ module.exports = async ({github, context}, assetPaths) => {
 async function getExistingRelease(releaseVersion, github) {
     console.log(`Checking for release: ${releaseVersion}`);
     const releases = await github.rest.repos.listReleases({
-        owner: 'outofcoffee',
-        repo: 'imposter',
+        owner: 'imposter-project',
+        repo: 'imposter-jvm-engine',
     });
     let releaseId;
     for (const release of releases.data) {
@@ -122,11 +122,11 @@ async function createRelease(releaseVersion, github) {
     } catch (e) {
         console.warn(`Failed to read CHANGES.md: ${e}`);
     }
-    body += '\n\nSee [change log](https://github.com/outofcoffee/imposter/blob/main/CHANGELOG.md).'
+    body += '\n\nSee [change log](https://github.com/imposter-project/imposter-jvm-engine/blob/main/CHANGELOG.md).'
 
     const release = await github.rest.repos.createRelease({
-        owner: 'outofcoffee',
-        repo: 'imposter',
+        owner: 'imposter-project',
+        repo: 'imposter-jvm-engine',
         tag_name: releaseVersion,
         body,
         draft: true,
@@ -151,8 +151,8 @@ async function releaseJar(github, releaseId, localFilePath) {
 async function uploadAsset(github, releaseId, assetFileName, localFilePath) {
     console.log(`Uploading ${localFilePath} as release asset ${assetFileName}...`);
     await github.rest.repos.uploadReleaseAsset({
-        owner: 'outofcoffee',
-        repo: 'imposter',
+        owner: 'imposter-project',
+        repo: 'imposter-jvm-engine',
         release_id: releaseId,
         name: assetFileName,
         data: await fs.promises.readFile(localFilePath),
@@ -162,8 +162,8 @@ async function uploadAsset(github, releaseId, assetFileName, localFilePath) {
 async function publishRelease(github, releaseId) {
     console.log(`Publishing release ${releaseId}...`);
     await github.rest.repos.updateRelease({
-        owner: 'outofcoffee',
-        repo: 'imposter',
+        owner: 'imposter-project',
+        repo: 'imposter-jvm-engine',
         release_id: releaseId,
         draft: false,
     });

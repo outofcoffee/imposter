@@ -34,7 +34,7 @@ For example:
     201 Created
 
 > **Note**
-> See this [rest plugin example](https://github.com/outofcoffee/imposter/blob/main/examples/rest/conditional-scripted) for a simple example.
+> See this [rest plugin example](https://github.com/imposter-project/imposter-jvm-engine/blob/main/examples/rest/conditional-scripted) for a simple example.
 
 ### Another example
 
@@ -258,7 +258,7 @@ respond().withExampleName('example1')
 This selects the example from the OpenAPI `examples` section for the API response.
 
 > **Note**
-> See this [openapi plugin example](https://github.com/outofcoffee/imposter/blob/main/examples/openapi/scripted-named-example) for a simple example.
+> See this [openapi plugin example](https://github.com/imposter-project/imposter-jvm-engine/blob/main/examples/openapi/scripted-named-example) for a simple example.
 
 ### Using stores
 

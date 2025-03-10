@@ -19,7 +19,7 @@ This will install the plugin version matching the current engine version used by
 
 ### Option 2: Install the plugin manually
 
-To use this plugin, download the `imposter-plugin-js-nashorn.jar` JAR file from the [Releases page](https://github.com/outofcoffee/imposter/releases).
+To use this plugin, download the `imposter-plugin-js-nashorn.jar` JAR file from the [Releases page](https://github.com/imposter-project/imposter-jvm-engine/releases).
 
 Enable it with the following environment variable:
 
@@ -63,4 +63,4 @@ curl -i http://localhost:8080/pets
 ]
 ```
 
-* See the `examples/rest/conditional-scripted` directory [in GitHub](https://github.com/outofcoffee/imposter/blob/main/examples/rest/conditional-scripted).
+* See the `examples/rest/conditional-scripted` directory [in GitHub](https://github.com/imposter-project/imposter-jvm-engine/blob/main/examples/rest/conditional-scripted).

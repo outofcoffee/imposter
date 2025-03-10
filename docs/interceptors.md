@@ -120,5 +120,5 @@ Both interceptors store data, which is later used by the `/example` resource.
 
 See the following examples:
 
-- See [examples/rest/interceptors-simple](https://github.com/outofcoffee/imposter/blob/main/examples/rest/interceptors-simple) for a short-circuit example.
-- See [examples/rest/interceptors-passthrough](https://github.com/outofcoffee/imposter/blob/main/examples/rest/interceptors-passthrough) for a passthrough example.
+- See [examples/rest/interceptors-simple](https://github.com/imposter-project/imposter-jvm-engine/blob/main/examples/rest/interceptors-simple) for a short-circuit example.
+- See [examples/rest/interceptors-passthrough](https://github.com/imposter-project/imposter-jvm-engine/blob/main/examples/rest/interceptors-passthrough) for a passthrough example.
