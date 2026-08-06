@@ -105,6 +105,7 @@ nav:
     - Performance tuning: 'performance_tuning.md'
     - Benchmarks: 'benchmarks.md'
     - TLS/SSL: 'tls_ssl.md'
+    - Upgrading to Imposter 5: 'upgrade_v5.md'
 
   - Other:
     - Plugins: 'plugins.md'
