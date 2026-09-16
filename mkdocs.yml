@@ -98,6 +98,7 @@ nav:
     - TLS/SSL: 'tls_ssl.md'
 
   - Other:
+    - Agent skills: 'agent_skills.md'
     - Plugins: 'plugins.md'
     - Features: 'features.md'
     - Tips and tricks: 'tips_tricks.md'
