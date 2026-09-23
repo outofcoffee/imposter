@@ -41,6 +41,20 @@ Once installed, invoke the skill with:
 /imposter:mocks
 ```
 
+### npx skills
+
+Install the skill using the [Skills CLI](https://github.com/vercel-labs/skills) (works with Claude Code, Copilot, Cursor, and other supported tools):
+
+```bash
+npx skills add imposter-project/agent-skills --skill mocks
+```
+
+List available skills in the repository:
+
+```bash
+npx skills add imposter-project/agent-skills --list
+```
+
 ### Manual installation
 
 **Personal (all projects):**
